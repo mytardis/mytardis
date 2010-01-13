@@ -1,0 +1,75 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+			<div id="content">
+				<div class="post">
+					<h1 class="title"><a name="abouttardis">About TARDIS</a></h1>
+					<div class="entry">
+
+		    <p>There is a pressing need for the archival and curation of raw X-ray diffraction data. However, the relatively large size of these datasets has presented challenges for storage in a single worldwide repository.  This problem can be avoided by using a federated approach, where each institution or university utilizes its institutional repository.</p>
+
+		<p>In addition to ensuring that valuable data is not lost, the provision of raw data has several uses for the crystallographic community. Most importantly, structure determination can only be truly repeated or verified when the raw data is available.  In addition, the availability of raw data is extremely useful for the development of improved methods of image analysis and data processing.</p>
+
+
+
+		    </div>
+		    </div>
+		    <br/>
+		    <div class="post">
+		    <h1 class="title"><a name="roadmap">Roadmap</a></h1>
+		    <div class="entry">
+
+		    <ul>
+		    <li>Develop a schema for crystallography datasets, through community involvement and consensus.
+		     </li>
+			<li>Develop a staging repository, for refining a dataset collection’s metadata and for holding it before publication.
+			</li>
+			<li>Develop tools which simplify the deposition of datasets into the staging and publication repositories which:
+			  <ul>
+		        <li>automatically extract metadata (and populate the new schema)
+		        </li>
+				<li>allow instruments to deposit new datasets directly into the repository using <a href="http://cimaportal.indiana.edu:8080/gridsphere/gridsphere">Common Instrument Middleware Architecture (CIMA)</a>.
+
+				</li>
+				<li>facilitate the uptake of legacy datasets
+				</li>
+
+		        </ul>
+		      </li>
+			<li>Federate the crystallography repositories by:</li>
+			  <ul>
+		    <li>Establishing a register of repositories</li>
+			<li>Extending the portal to search and browse the registered repositories</li>
+		    </ul>
+
+		<li>Develop tools which allow the processing of datasets in the staging repository</li>
+		</ul>
+		<p>
+		Please cite the following when referring to TARDIS:<br/>
+
+		<small><br/>Androulakis S, Schmidberger J, Bate MA, Degori R, Beitz A, Keong C, Cameron B, McGowan S, Porter CJ, Harrison A, Hunter J, Martin JL, Kobe B, Dobson RC, Parker MW, Whisstock JC, Gray J, Treloar A, Groenewegen D, Dickson N, Buckle AM. (2008) Federated repositories of X-ray diffraction images. Acta Crystallogr D Biol Crystallogr. Jul;64(Pt 7):810-4. <a href="http://www.ncbi.nlm.nih.gov/pubmed/18566516?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_RVDocSum">[PubMed]</a></small>
+		</p>
+		<p>
+		  For more information on the TARDIS project please contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate Professor Ashley Buckle</a>.</p>
+
+		  	</div>
+		  </div>
+
+		</div>
+
+
+			{% endblock %} {% block sidebar %}
+
+				<ul>
+					<li>
+						<h2>About</h2>
+
+							<ul>
+								<li><a href="#abouttardis">About TARDIS</a></li>
+								<li><a href="#roadmap">Roadmap</a></li>
+							</ul>
+					</li>
+				</ul>		
+
+		<p>
+			{% endblock %}

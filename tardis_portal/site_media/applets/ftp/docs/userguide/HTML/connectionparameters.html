@@ -1,0 +1,435 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!-- saved from url=(0029)http://www.helpandmanual.com/ -->
+<head><script type="text/javascript" src="helpman_topicinit.js"></script>
+<!-- Redirect browser to frame page if page is not in the content frame. -->
+<script type="text/javascript">
+<!--
+if (top.location.search.lastIndexOf("toc=0")<=0) {
+  if (top.frames.length==0) { top.location.href="index.html?connectionparameters.html"; }
+  else { parent.quicksync('a2.5'); }
+}
+//-->
+</script>
+<script type="text/javascript" src="highlight.js"></script>
+   <title>Connection parameters</title>
+   <meta name="generator" content="Help & Manual">
+   <meta name="keywords" content="">
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+   <link type="text/css" href="default.css" rel="stylesheet" />
+</head>
+
+
+  <!-- Redirect browser to index page if page is not in the content frame.
+       This script is only valid for regular HTML export -->
+
+
+<body bgcolor="#FFFFFF" onload="highlight();">
+<div id="hmpopupDiv" style="visibility:hidden; position:absolute; z-index:1000; "></div>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#E2E2E2">
+  <tr>
+    <td align="left">
+      <p class="p_Heading1"><span class="f_Heading1">Connection parameters</span></p>
+
+    </td>
+    <td align="right">
+     <font face="Arial" size="2">
+     <a href="introoverview.html"><img src="ico_nav_up.gif" border=0 alt="Top"></a>&nbsp;
+     <a href="userinterfacecustomizationp.html"><img src="ico_nav_back.gif" border=0 alt="Previous"></a>&nbsp;
+     <a href="internationalizationparameter.html"><img src="ico_nav_next.gif" border=0 alt="Next"></a>
+     </font>
+    </td>
+  </tr>
+</table>
+<br>
+
+<p>SftpThe connection parameters control properties of the FTP session such as login and remote startup directory. Each of these parameters may be provided to the applet in the HTML source file.</p>
+<p>&nbsp;</p>
+<div style="text-align: left; text-indent: 0px; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px;"><table cellspacing="0" cellpadding="0" border="0" style="border: none; border-spacing:0px; border-collapse: collapse;">
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText" style="font-weight: bold;">Parameter</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText" style="font-weight: bold;">Description</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">autoConnect</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Controls if connection is established automatically after applet is loaded using hostname, username, password and connectionType applet parameters.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">hostname</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The fully qualified hostname or IP address of the FTP server.&nbsp; If connectionType is webdav then this should be the URL of the WebDav server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid hostname, IP address or WebDAV URL</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">port</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The remote port that the FTP server is listening on.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: 21</span></p>
+<p><span class="f_NoteText">Valid values: 1-65535</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">passive</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables passive FTP data transfer.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: true</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">timeout</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The amount of time measured in milliseconds to wait for a FTP server response. Exceeding timeout will result in the display of an error dialog indicating that the connection has been lost and allowing you to reconnect.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: 20000 (20 seconds)</span></p>
+<p><span class="f_NoteText">Valid values: any positive integer</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">username</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The username that you use to login to the FTP server. For an anonymous connection this is the username anonymous.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid username</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">password</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The password that you use to login to the FTP server. For an anonymous connection FTP servers generally request your email address.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid password</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">connectionType</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The type of connection FTP, SFTP (FTP over SSH), FTPS (FTP over SSL)&nbsp; or WebDAV to use by default when using autoConnect parameter or when displaying Connect dialog.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: ftp</span></p>
+<p><span class="f_NoteText">Valid values: ftp, sftp, ftps, ftps-implicit, webdav</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p class="p_ExampleCode"><span class="f_CourierFixed">ccc</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p class="p_ExampleCode"><span class="f_NoteText">If the </span><span class="f_CourierFixed">connectionType</span><span class="f_NoteText"> is </span><span class="f_CourierFixed">ftps </span><span class="f_NoteText">and this property is enabled then the CCC command will be issued after authentication succeeds, clearning the control channel.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">cccClose</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">If the </span><span class="f_CourierFixed">connectionType</span><span class="f_NoteText"> is ftps and the </span><span class="f_CourierFixed">ccc</span><span class="f_NoteText"> property is enabled then the SSL connection will be closed based on this setting.&nbsp; </span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: true</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">encrypt</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">This option should be used if the username and password applet parameters are encoded to prevent from being displayed in the HTML source. This is not to be confused with the connectionType applet parameter which determines if the connection is established using standard FTP or encrypted using SFTP/SSH.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">If set to &quot;true&quot; then you must BASE64 encode the username and password parameters. Secure FTP Applet will then decode these values prior to establishing a connection to the FTP server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">mode</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The transfer mode to be used after a connection to the FTP server has been established.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: ascii</span></p>
+<p><span class="f_NoteText">Valid values: ascii, binary</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">localDir</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The local directory to change to upon startup.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: system root directory</span></p>
+<p><span class="f_NoteText">Valid values: a valid local path e.g. c:\documents</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">For Windows and Mac clients you may optionally specify the value &quot;user.desktop&quot;. This will specify the users local directory as their desktop directory. </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">localFilter</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The file extension filters to apply to the local directory. Multiple extensions may be provided with each file extension separated by a comma.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a comma delimited list of file extensions. E.g. &quot;.gif, .jpg&quot;</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">remoteDir</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The remote directory to change to upon successful login to the FTP server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid remote directory path</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">remoteFilter</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The file extension filters to apply to the remote directory. Multiple extensions may be provided with each file extension separated by a comma.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a comma delimited list of file extensions. E.g. &quot;.gif, .jpg&quot; </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">restrictRemoteDir</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">If set to &quot;true&quot; then the user may only see files at and below the remote directory specified in the remoteDir parameter. If user attempts to access any directories above the level of the remotedir parameter then an error dialog will be displayed. Note: remoteDir MUST begin with a forward slash &quot;/&quot;.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">restrictLoginDir</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">If set to &quot;true&quot; then the user may only see files at and below the directory the user is placed in by default after login. If user attempts to access any directories above the level of the default login directory then an error dialog will be displayed.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">remoteDirs</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Comma delimited list of remote directories to be included remote directory listing, all other directories are excluded. This filter is applied to the remote directory listing each time it is refreshed.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a comma delimited list of named remote directories</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">excludeRemoteDirs</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Comma delimited list of remote directories to be excluded from remote directory listing, all other directories are included. This filter is applied to the remote directory listing each time it is refreshed.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a comma delimited list of named remote directories </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">createRemoteDir</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The full path of the directory to create upon establishing a connection with the FTP server. This directory will be created prior to changing to the remote directory provided in the remoteDir applet parameter.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid remote directory path</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">language</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The language properties file to use when initializing the applet.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid language code represented by a language properties file. E.g. &quot;fr&quot; where language_fr.properties file exists relative to the applet.</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">showProxy</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables the display of the SOCKS proxy fields in the connect dialog.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">proxyType</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The type of proxy to connect with.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: SOCKS5</span></p>
+<p><span class="f_NoteText">Valid values: HTTP or SOCKS5</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">proxyHostname</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The hostname or IP address of the proxy to connect to.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid hostname or IP address </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">proxyPort</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The port that the proxy server is listening on.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: 1080</span></p>
+<p><span class="f_NoteText">Valid values: 1-65535 </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">proxyUser</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The username of proxy server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid proxy username</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">proxyPassword</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The password of proxy server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid proxy password</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">loginErrorUrl</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The web address to redirect user to in the event that a bad username or password is submitted during login.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid web address e.g. http://www.jscape.com</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">retryLimit</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The number of times to retry transferring a file if an error occurs.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: 0</span></p>
+<p><span class="f_NoteText">Valid values: Any numeric value greater than or equal to 0.</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">performChecksum</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Whether or not to perform a checksum after transferring files using FTP/S protocols.&nbsp; The XCRC command must be supported by the FTP server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">tempExtension</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">The temporary extension to use when uploading files.&nbsp; After file has completed upload file will be renamed to original filename.&nbsp; For example, when using tempExtension of .tmp the source file test.txt would be uploaded as test.txt.tmp prior to being renamed to test.txt once upload is complete.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: Any valid string extension.</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">natAddress</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">NAT address to use when communicating using FTP/S protocols.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid IP address </span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">enableCompression</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables ZIP compression when performing file transfers and directory listings.&nbsp; Server must support MODE Z command.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">showSftpAuth</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables whether SFTP public-key authentication options are displayed.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">useSftpPassword</span><span class="f_NoteText"> </span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables whether SFTP private key is password protected when using public-key authentication.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: true</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">useSftpPrivateKey</span><span class="f_NoteText"> </span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables whether public-key authentication should be used when connecting to SFTP Server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">sftpPrivateKey</span><span class="f_NoteText"> </span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Defines path for private key when using public-key authentication with SFTP server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid file path.</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">sftpPrivatePassPhrase</span><span class="f_NoteText"> </span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Defines passphrase for private key when using public-key authentication with SFTP server.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: &quot;&quot;</span></p>
+<p><span class="f_NoteText">Valid values: a valid passphrase</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">transferEncoding</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Defines character encoding to be used for filenames.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: null</span></p>
+<p><span class="f_NoteText">Valid values: UTF8</span></p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:top;">
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_CourierFixed">useExtendedDirectoryListing</span></p>
+</td>
+<td valign="top" width="479" style="width:479px; border: solid 1px #000000;"><p><span class="f_NoteText">Enables / disables whether LIST -a command is used when retrieving directory listing from server or whether standard LIST command is used.</span></p>
+<p><span class="f_NoteText">&nbsp;</span></p>
+<p><span class="f_NoteText">Default: false</span></p>
+<p><span class="f_NoteText">Valid values: true, false</span></p>
+</td>
+</tr>
+</table>
+</div>
+
+
+</body>
+</html>

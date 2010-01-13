@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% load xmldate %}
+<registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/home/orca/schemata/registryObjects.xsd">
+
+		<registryObject
+			group="Monash University">
+		<key>au.edu.tardis</key>
+		<originatingSource>http://www.tardis.edu.au</originatingSource>
+		<collection type="registry" dateAccessioned="{{now|toxmldatetime}}"  dateModified="{{now|toxmldatetime}}">
+		<identifier type="local">tardis.edu.au</identifier>
+		<location>
+		<address><electronic type="url"> <value>http://www.tardis.edu.au</value>
+		</electronic> <physical> <addressPart type="Monash University"></addressPart>
+		</physical></address>
+		</location>	
+		<description type="about">
+		TARDIS is a multi-institutional collaborative venture that aims to
+		facilitate the archiving and sharing of raw X-ray diffraction images
+		(collectively known as a 'dataset') from the Australian protein
+		crystallography community.
+		</description>
+		</collection>
+		</registryObject>
+
+		{% for experiment in experiments %}
+	  <registryObject group="Monash University">
+	  {% if experiment.handle %}<key>http://hdl.handle.net/{{experiment.handle}}</key>{% endif %}
+		<originatingSource>http://www.tardis.edu.au</originatingSource>
+	  <collection type="object" dateAccessioned="{{experiment.update_time|toxmldatetime}}"  dateModified="{{experiment.update_time|toxmldatetime}}">
+	    <identifier type="local">experiment/view/{{experiment.id}}</identifier>
+		<identifier type="handle">hdl:{{experiment.handle}}</identifier>
+	{% for pdbid in experiment.pdbid_set.all %}
+		<identifier type="pdb">{{ pdbid.pdbid }}</identifier> 
+	{% endfor %}
+	    <name type="primary">
+			<namePart>
+				{{experiment.title}}
+			</namePart>
+		</name>
+	    <location>
+	      <address>
+	        <electronic type="url">
+	          <value>http://tardis.edu.au/experiment/view/{{experiment.id}}</value>
+	        </electronic>
+	        <physical>
+	          <addressPart type="text">{{experiment.institution_name}}</addressPart>
+	        </physical>
+	      </address>
+	    </location>
+	    <relatedObject>
+	      <key>au.edu.tardis</key>
+	      <relation type="isOwnedBy">
+	        <description>Is owned by</description>
+	        <url>http://www.tardis.edu.au</url>
+	      </relation>
+	    </relatedObject>
+	    <description type="about">{{experiment.description}}</description>
+	
+		{% if experiment.citation_set %}
+		{% for citation in experiment.citation_set.all %}
+		<relatedInfo>{{citation.url}}</relatedInfo>
+		{% endfor %}
+		{% endif %}	
+	  </collection>
+	</registryObject>
+	{% endfor %}
+
+</registryObjects>

@@ -1,0 +1,49 @@
+{% if experiment.ftp_location %}
+<object width="800" height="600" classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93" codebase="http://java.sun.com/products/plugin/autodl/jinstall-1_5_0-windows-i586.cab#Version=1,5,0,0">
+    <param name="code" value="com.jscape.ftpapplet.FtpApplet.class">
+    <param name="archive" value="/site_media/applets/ftp/sftpapplet.jar">
+    <param name="name" value="ftpapplet">
+    <param name="type" value="application/x-java-applet;version=1.5">
+    <param name="scriptable" value="false">
+    <param name="mode" value="binary">
+    <param name="bgcolor" value="FFFFFF">
+	<param name="hostname" value="{{experiment.ftp_location}}">
+	<param name="port" value="{{experiment.ftp_port}}">
+	<param name="username" value="{{experiment.ftp_username}}">
+	<param name="password" value="{{experiment.ftp_password}}">
+	<param name="autoConnect" value="true">
+
+    <comment>
+	<embed 
+            type="application/x-java-applet;version=1.5"
+            code="com.jscape.ftpapplet.FtpApplet.class" 
+            archive="/site_media/applets/ftp/sftpapplet.jar" 
+            name="ftpapplet" 
+            width="800" 
+            height="600" 
+            mode="binary" 
+            bgcolor="FFFFFF" 
+		    scriptable="false" 
+			autoConnect="true" 
+	        hostname="{{experiment.ftp_location}}" 
+			port="{{experiment.ftp_port}}" 
+			username="{{experiment.ftp_username}}" 
+			password="{{experiment.ftp_password}}" 
+		    pluginspage = "http://java.sun.com/products/plugin/index.html#download" />
+    </comment>
+</object>
+
+<br/>
+<strong>FTP Information</strong><br/>
+<em>If you'd like to connect using your own ftp client, information is as follows</em><br/><br/>
+<blockquote>
+<strong>Hostname:</strong> {{experiment.ftp_location}} <br/>
+<strong>Port:</strong> {%if experiment.ftp_port %}{{experiment.ftp_port}} {% else %}21 {% endif %}<br/>
+<strong>Username:</strong>{{experiment.ftp_username}} <br/>
+<strong>Password:</strong> {{experiment.ftp_password}} <br/>
+</blockquote>
+{% else %}
+
+Sorry, this entry doesn't have FTP downloading capability.
+
+{% endif %}

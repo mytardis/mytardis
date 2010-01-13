@@ -1,0 +1,230 @@
+{% extends "portal_template.html" %} 
+		
+		{% block script %}
+		
+		<script type="text/javascript">
+			$(function() {
+				$("#tabs").tabs();
+			});
+		</script>
+
+		<script type="text/javascript">
+			$(document).ready(function() {
+				
+				// show hide various metadata divs
+				
+			   $('#datasets').find('.dataset_info').end().find('h2').click(function() {
+			     $(this).next().toggle();
+			   });
+
+			   $('.dataset_info').find('.datafile_list').hide().end().find('.datafile_list_toggle').click(function() {
+			     $(this).next().toggle();
+			   });	
+
+			
+			// default text set
+			
+			$(".dataset_metadata_toggle").text("[Hide]");		
+			$(".datafile_list_toggle").text("[Show]");		
+			
+			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
+
+			// metadata text / ajax toggle
+
+			// dataset md
+			 $(".dataset_metadata_toggle").toggle(function(){
+			   $(this).text("[Show]");
+			    var href= $(this).attr("href");
+				$(href).hide();
+			
+			 },function(){
+			   $(this).text("[Hide]");
+			    var href= $(this).attr("href");
+				$(href).show();	
+			 });
+			
+			// datafile list
+			 $(".datafile_list_toggle").toggle(function(){
+			   $(this).text("[Hide]");
+				var href = $(this).attr("href");
+
+				$(this).next().html(loadingHTML + "</br>");									
+				
+				var datafile_info_container = $(this).next();
+				
+				// add initialisation for new datafile handlers as callback once ajax has loaded
+				// damn I love jQuery
+				$(this).next().load(href,function(){
+						$(document).ready(function(){					
+							
+							var datafile_info_selectors = 	
+								datafile_info_container.find('.datafile_info').hide().end().find('.datafile_info_toggle');
+							
+							datafile_info_selectors.text("[Show Metadata]");
+
+							// datafile metadata
+							 datafile_info_selectors.toggle(function(){
+				 				$(this).text("[Hide Metadata]");
+								var href = $(this).attr("href");
+
+								//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
+								//{
+									$(this).next().html(loadingHTML);									
+								//}
+								$(this).next().load(href);
+															
+							 },function(){
+								$(this).text("[Show Metadata]");
+							 });	
+							
+							   datafile_info_selectors.click(function() {
+								$(this).next().toggle();				
+							   });													
+						});
+					 });			
+			 },function(){
+			   $(this).text("[Show]");
+			 });
+
+			});
+		</script>		
+		
+		{% endblock %}
+		
+		{% block fullpage %}
+
+		<div id="fullpage">
+			<div class="post">
+				<h1 class="title">
+					<a href=".">{{ experiment.title }} 
+							{% if experiment.pdbid_set.count %}
+								<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
+							{% endif %}
+					</a>
+				</h1>
+				<div align="right">Ingested From: <span class="url"><a href="{{ experiment.url }}">{{ experiment.url }}</a></span></div>
+
+
+					<div class="demo">
+
+					<div id="tabs">
+						<ul>
+							<li><a href="#tabs-1">Description</a></li>
+							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>
+							{% if experiment.ftp_location %}<li><a href="/ajax/ftp/{{experiment.id}}">FTP Download</a></li>{% endif %}
+						</ul>
+						<div id="tabs-1">
+							<p>
+							<strong>Authors: </strong><br/>
+							{% for author in authors %}
+								{{ author.author.name }}{% if not forloop.last %},{% endif %}
+							{% endfor %}
+							</p>
+							<p>
+							<strong>Abstract: </strong>
+							<div class="abstract">
+							{{ experiment.description|safe }}					
+							</div>
+							</p>
+							<p>
+							{% if experiment.pdbid_set.count %}
+							<strong>PDB id(s):</strong>
+							{% for pdbid in experiment.pdbid_set.all %}
+							{{ pdbid.pdbid }}{% if not forloop.last %},{% endif %}
+							{% endfor %}
+							{% endif %}
+							</p>
+							<p>
+							{% if experiment.citation_set.count %}
+							<strong>Citations:</strong><br/>
+							{% for citation in experiment.citation_set.all %}
+							<a href="{{ citation.url }}">{{ citation.url }}</a><br/>
+							{% endfor %}
+							{% endif %}
+							</p>
+							
+							{% if experiment.handle %}
+							<p>
+							<strong>Persistent Handle:</strong>
+							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>							
+							</p>							
+							{% endif %}
+							
+							<p>
+							<strong>Institution:</strong>
+							{{experiment.institution_name}}<br/>							
+							</p>
+							
+							<p>
+								<strong>Dataset Information:</strong>
+								<div>
+									<!-- <strong>Dataset Metadata: </strong>	 -->
+									<div class="dataset_information">
+										<ul>
+												<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
+												<li><strong>Files:</strong> {{datafiles.count}}</li>
+												<li><strong>Size:</strong> {{totalfilesize|filesizeformat}}</li>
+										</ul>										
+									</div>								
+								</div>
+							</p>							
+
+							<p>
+							<strong>Experiment Last Updated:</strong>
+							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
+							</p>														
+							
+						</div>
+						<div id="tabs-2">
+							<div id="datasets">
+							{% for dataset in experiment.dataset_set.all %}
+								
+								<div class="dataset_title">
+									<strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
+								</div>
+								 
+								<div class="dataset_info">
+									
+									<div class="dataset_description">
+									<strong>Dataset Description</strong>: {{ dataset.description|safe }}	
+									</div>
+									
+									<div class="dataset_extrainfo">
+										{% if dataset.datasetparameter_set.count %}
+										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
+										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
+										<ul>
+											{% for parameter in dataset.datasetparameter_set.all %}
+												<li><strong>{{ parameter.name.full_name }}: </strong>
+													{% if parameter.name.is_numeric %}
+														{{ parameter.numerical_value }} {{ parameter.name.units }}
+													{% else %}
+														{{ parameter.string_value }}
+													{% endif %}
+												</li>
+											{% endfor %}
+										</ul>	
+										</div>	
+										{% endif %}					
+								
+										<div>	
+											<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
+											<a class="datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>						
+											<ul class="datafile_list">
+									
+											</ul>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+							</div>							
+						</div>		
+																		
+					</div>
+
+					</div><!-- End demo -->		
+
+			</div>
+			</div>
+
+			{% endblock %}	

@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.tardis.edu.au/schemas/trdDatafile" xmlns:trd="http://www.tardis.edu.au/schemas/datafile/1" elementFormDefault="qualified">
+
+    <!-- Protein Crystallography Datafile schema -->
+    <!-- Version 1.0 - Updated 08/07/2008 -->
+   
+<xsd:element name="datafile">
+    <xsd:complexType>
+        <xsd:sequence>
+
+        <!-- Dataset Basics -->
+        <xsd:element name="collectionDate" type="xsd:date" minOccurs = "0" maxOccurs = "1"/>
+        <xsd:element name="imageType" type="xsd:string" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="images" type="xsd:nonNegativeInteger" minOccurs = "1" maxOccurs = "1"/>
+                                   
+        <!-- Rotation Range Info -->
+        <xsd:element name="oscillationRange" minOccurs="0" maxOccurs="unbounded">
+            <xsd:complexType>
+                       <xsd:all>
+                        <xsd:element name="start" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+                        <xsd:element name="end" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>    
+                      </xsd:all>
+               </xsd:complexType>
+        </xsd:element>   
+       
+        <!-- OTHER DIFFDUMP-PRODUCED INFO -->
+        <xsd:element name="exposureTime" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="detectorSN" type="xsd:string" minOccurs = "1" maxOccurs = "1"/>            
+        <xsd:element name="xrayWavelength" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="directBeamXPos" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="directBeamYPos" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="detectorDistance" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>            
+        <xsd:element name="imageSizeX" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="imageSizeY" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="pixelSizeX" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="pixelSizeY" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+        <xsd:element name="twoTheta" type="xsd:float" minOccurs = "1" maxOccurs = "1"/>
+
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:element>
+</xsd:schema>

@@ -1,0 +1,1 @@
+Thanks for signing up to TARDIS.edu.au. Use this link to activate your registration: http://127.0.0.1:8000/accounts/activate/{{ activation_key }}/

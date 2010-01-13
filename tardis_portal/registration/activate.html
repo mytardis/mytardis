@@ -1,0 +1,74 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Account Activation</a>
+				</h1>
+				<div class="entry">
+					<p>
+
+						{% if account %}
+						
+							<b>{{ account.username }}</b> successfully activated. <a href="/login">Click here to Log In.</a></br>
+						
+						{% endif %}
+
+					</p>
+				</div>
+			</div>
+		</div>
+
+			{% endblock %} {% block sidebar %}
+
+		<ul>
+			<li>
+				<h2>
+					Recent News
+				</h2>
+				<ul>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-10-12T19:38:00.001-07:00">Google Group created</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-09-16T20:32:00.000-07:00">Wiki Created</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-09-01T20:58:00.000-07:00">DatasetTools Update</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-08-21T06:43:00.000-07:00">TARDIS Portal Out Of Beta</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-06-22T17:45:00.000-07:00">TARDIS Beta Portal</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-06-17T23:13:00.000-07:00">Acta Cryst. Paper Online</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-05-04T17:27:00.000-07:00">Dataset Tools Released</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-04-16T17:14:00.000-07:00">TARDIS Mentioned In Acta Cryst</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-04-10T21:22:00.000-07:00">Site Revamp</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-02-21T14:49:00.000-08:00">Deposition Tools Coming Soon!</a>
+					</li>
+					<li>
+						<a href="http://tardis.edu.au/blog.php#2008-02-03T16:37:00.000-08:00">Site Update</a>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<p>
+			{% endblock %} {% block bottom %}
+		</p>
+
+		<p>
+			{% endblock %}
+		</p>
