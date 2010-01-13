@@ -1,0 +1,90 @@
+/* Text Styles */
+hr { color: #000000}
+body, table /* Normal */
+{
+ font-size: 10pt;
+ font-family: 'Arial';
+ font-style: normal;
+ font-weight: normal;
+ color: #000000;
+ text-decoration: none;
+}
+span.f_CodeExample /* Code Example */
+{
+ font-size: 8pt;
+ font-family: 'Courier New';
+ color: #000000;
+}
+span.f_Comment /* Comment */
+{
+}
+span.f_CourierFixed /* Courier Fixed */
+{
+ font-family: 'Courier New';
+ color: #000000;
+}
+span.f_Example /* Example */
+{
+ font-weight: bold;
+ color: #008000;
+}
+span.f_ExampleCode /* Example Code */
+{
+ font-family: 'Courier New';
+ color: #000000;
+}
+span.f_Heading1 /* Heading1 */
+{
+ font-size: 12pt;
+ font-weight: bold;
+ color: #000080;
+}
+span.f_ImageCaption /* Image Caption */
+{
+ font-size: 8pt;
+ font-weight: bold;
+}
+span.f_Note /* Note */
+{
+ font-weight: bold;
+ color: #ff0000;
+}
+span.f_NoteText /* Note Text */
+{
+ color: #000000;
+}
+span.f_Notes /* Notes */
+{
+}
+/* Paragraph styles */
+p /* Normal */
+{
+ text-align: left;
+ text-indent: 0px;
+ padding: 0px 0px 0px 0px;
+ margin: 0px 0px 0px 0px;
+}
+.p_CodeExample /* Code Example */
+{
+ white-space: nowrap;
+}
+.p_Comment /* Comment */
+{
+}
+.p_ExampleCode /* Example Code */
+{
+}
+.p_Heading1 /* Heading1 */
+{
+}
+.p_ImageCaption /* Image Caption */
+{
+}
+.p_NoteText /* Note Text */
+{
+ text-indent: 48px;
+ margin: 0px 48px 0px 0px;
+}
+.p_Notes /* Notes */
+{
+}

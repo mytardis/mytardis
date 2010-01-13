@@ -1,0 +1,83 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Control Panel</a>
+				</h1>
+				<div class="entry">
+					<p>
+						{% if experiments %}
+								
+								<table class="experiment-table">
+								{% for experiment in experiments %}
+									<tr>
+										<th width="70%">
+											<a href="../view/{{ experiment.id }}">{{ experiment.title }}</a>
+
+											<br/>
+												{% if user.is_staff %}<em>registered by {{ experiment.created_by }}</em>{% endif %}
+												{% if not experiment.approved %}
+													 (Unapproved) 
+												{% endif %}
+												{% if experiment.private_password %}
+													 (Private)
+												{% endif %}												
+										</th>
+										<td><a href="../edit/{{ experiment.id }}">Edit</a></td> 
+										<td><a href="../reingest?id={{ experiment.id }}">Reingest</a></td>	
+										{% if not experiment.approved %}	
+										<td><a href="../approve?id={{ experiment.id }}">Approve</a></td>
+										{% endif %}								
+									</tr>					
+
+
+								{%endfor %}
+
+								</table>								
+
+						{% else %}
+						
+							There are no experiments under your control.
+						
+						{% endif %}
+					</p>
+				</div>
+			</div>
+		</div>
+
+		{% endblock %}
+		{% block sidebar %}
+
+		<ul>
+			<li>
+				<h2>
+					Browse Experiments
+				</h2>
+				<ul>
+					<li>
+						<a href="/experiment/view">Index</a>
+					</li>
+					<li>
+						<a href="/search/experiment">Search</a>
+					</li>					
+				</ul>
+				{% if user.is_authenticated %}
+				<h2>
+					Controls
+				</h2>
+				<ul>
+					<li>
+						<a href="/experiment/register">New Experiment</a>
+					</li>
+					<li>
+						<a href="/experiment/control_panel">Control Panel</a>
+					</li>					
+				</ul>
+				{% endif %}
+			</li>			
+		</ul>
+		<p>
+			{% endblock %}

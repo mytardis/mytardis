@@ -1,0 +1,180 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+
+			<div id="content">
+				<div class="post">
+				<h1 class="title"><a href="abouttardis">TARDIS Data Packager</a></h1>
+
+				<div class="entry">
+						<p>The TARDIS Data Packager program assists the annotation of data for registration with TARDIS.edu.au.</p>
+						</p>
+						
+						</p>
+							<img src="/site_media/images/datapackager.png"/ width="80%">
+						</p>
+						<br />
+							<a id="download" href="/site_media/downloads/TARDISDataPackager.zip">Download (7.2mb, Windows/Linux/OS X)</a>
+						<p>
+							
+						
+					</div>
+				</div>				
+			<br/>
+			<div class="post">
+			<h1 class="title"><a href="abouttardis">Deposition Guide</a></h1>
+			
+			Also available in <a href="/site_media/downloads/DatasetDepositionGuide.pdf">PDF</a> format
+			
+			<div class="entry">
+			<h2 id="organise">Organise Data for Submission</h2>
+
+			<p>There are two types of Datasets able to be published, raw and ancillary. Each set of raw diffraction images (img/osc/adsc etc..) should be in its own directory. Ancillary files are for log files, processed files, and anything else to be included with the published experiment.</p>
+
+			<p><img src="/site_media/images/guide/9.png"></p>
+
+			<p><em>"images_sample" - a directory containing raw diffraction images</em></p>
+
+			<p><img src="/site_media/images/guide/10.png"></p>
+
+			<p><em>"ancillary" - a directory containing all other types of files to be included</em></p>
+
+			<h2 id="annotate">Annotate Data</h2>
+
+			<p>Download the TARDIS Data Packager program and run it. The initial screen gives users the ability to describe the overall experiment (a collection of datasets). Also important is the "Destination for Data" field. Choose an empty directory for the annotated data to be output to.</p>
+
+			<img src="/site_media/images/guide/11.png">
+
+			<p>Click "New Raw Dataset" to locate and annotate a set of diffraction images.</p>
+
+			<img src="/site_media/images/guide/12.png">
+
+			<p>Click "New Ancillary Dataset" to choose the path to extra files, and describe the set.</p>
+
+			<img src="/site_media/images/guide/13.png">
+
+			<p>Click "Package Dataset" to begin the annotation and organisation process. Metadata is automatically extracted from raw diffraction images, files are copied to their destination and an annotation file "METS.XML" is created.</p>
+
+			<img src="/site_media/images/guide/15.png">
+
+			<p>Files are copied along with the annotation file (METS.XML) to the destination path chosen in the experiment section. All of these files should be copied to a publically web-accessible location, so a URL can be created and submitted to TARDIS.</p>
+
+			<h2 id="copy">Copy Data To A Public Location</h2>
+
+			<p><strong>The copying of files to a web server can vary widely and a system administrator should be contacted for assistance. For example purposes, this section outlines how one might copy files via FTP to their web server.</strong></p>
+
+			<p>Open an FTP client (Transmit for the Mac is pictured here) and connect to the web server that will store the files.</p>
+
+			<img src="/site_media/images/guide/17.png">
+
+			<p>Copy the entire directory holding the datasets and the METS.XML file across to the server.</p>
+
+			<img src="/site_media/images/guide/18.png">
+
+			<h2 id="register">Register Data on TARDIS</h2>
+
+			<p>Once on a web server, the data should be accessible via URL. To verify this, a good test would be to try and access the METS.XML file in a browser. A successful display of METS.XML in Firefox is shown below.</p>
+
+			<img src="/site_media/images/guide/19.png">
+
+			<p>This URL will provide as the basis for experiment registration. Log in to TARDIS and click "Data" then "New Experiment". Paste the full URL to METS.XML in the "METS XML url" field. A password can be entered to protect the experiment from the public view. Optionally, FTP details can be entered for easy downloading of full datasets.</p>
+
+			<img src="/site_media/images/guide/20.png">
+
+			<p>Experiment ingestion into TARDIS" local cache can take minutes. A successful registration is shown below.</p>
+
+			<img src="/site_media/images/guide/21.png">
+
+			<p>Note: Data needs to be approved by an administrator before attaining a persistent handle or showing in the public experiment index.</p>
+				</div>
+			</div>
+			<br/>
+				<div class="post">
+				<h1 class="title"><a href="ancillary">Ancillary Dataset Guide</a></h1>
+
+					<div class="entry">
+						TARDIS gives the ability for users to create a dataset of 'ancillary files' alongside their raw datasets.  Files such as merged intensities (.mtz) and log files (refmac, scala) are recommended to go here. TARDIS takes a 'minimal information' approach to describing these datasets, allowing you to describe the files in free text. See Dataset 4 <a href="http://tardis.edu.au/experiment/view/12/#tabs-2">here for an example.</a>
+						<br/><br/>
+						HTML tags are also supported. Try &lt;strong&gt;<strong>for bold text</strong>&lt;/strong&gt;, and &lt;br/&gt; for new lines.
+					</div>
+			  	</div>			
+		<br/>
+			<div class="post">
+			<h1 class="title"><a href="abouttardis">Developers</a></h1>
+			
+				<div class="entry">
+				<h2>TARDIS Dataset Schema v2</h2>
+				This schema is compatible with TARDIS v2<br/>
+				<a href="/site_media/xml/schemas/dataset/2/trdDataset2.xsd">Download</a>
+				</div>
+
+				<div class="entry">
+				<h2>TARDIS Datafile Schema v1</h2>
+				<a href="/site_media/xml/schemas/datafile/1/trdDatafile.xsd">Download</a>
+				
+				<p>
+				TARDIS can 'officially' support more metadata formats on request.
+				</p>
+				
+				</div>
+				</br>	
+				<div class="entry">
+				<h2>Example TARDIS METS XML Manifest File</h2>
+				This file was generated using a custom tool (soon to be available) and is used in registration of a new experiment.
+				<a href="/site_media/xml/METS_sample.xml">Download</a>
+				</div>
+		  	</div>		
+		  </div>
+
+		</div>
+
+
+			{% endblock %} {% block sidebar %}
+			
+			<ul>
+				<li>
+					<h2>TARDIS Data Packager</h2>
+
+						<ul>
+							<li><a href="#download">Download</a></li>				
+						</ul>
+				</li>
+			</ul>			
+
+			<ul>
+				<li>
+					<h2>Deposition Guide</h2>
+
+						<ul>
+							<li><a href="#organise">Organise Data for Submission</a></li>
+							<li><a href="#annotate">Annotate Data</a></li>
+							<li><a href="#copy">Copy Data To A Public Location</a></li>		
+							<li><a href="#register">Register Data on TARDIS</a></li>						
+						</ul>
+				</li>
+			</ul>
+			
+			<ul>
+				<li>
+					<h2>Ancillary Set Guide</h2>
+
+						<ul>
+							<li><a href="#ancillary">Ancillary Dataset Guide</a></li>						
+						</ul>
+				</li>
+			</ul>			
+
+				<ul>
+					<li>
+						<h2>Developers</h2>
+
+							<ul>
+								<li><a href="/site_media/xml/schemas/dataset/2/trdDataset2.xsd">TARDIS Dataset 2</a></li>
+								<li><a href="/site_media/xml/schemas/datafile/1/trdDatafile.xsd">TARDIS Datafile</a></li>
+								<li><a href="/site_media/xml/METS_sample.xml">METS Sample File</a></li>								
+							</ul>
+					</li>
+				</ul>		
+
+		<p>
+			{% endblock %}

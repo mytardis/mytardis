@@ -1,0 +1,112 @@
+{% extends "portal_template.html" %} 
+{% load experimentstats %}
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Search Experiment</a>
+				</h1>
+				<div style="padding-left: 10px">Search Experiment | <a href="../datafile/">Datafile</a></div><br/>
+				<div class="entry">
+					<p>
+						
+						{% if submitted %}
+						{% if experiments.count %}<em><strong>{{ experiments.count }}</strong> result(s) found..</em>
+						{% else %}
+						No experiments found
+						{% endif %}
+							<table class="experiment-table">
+							{% for experiment in experiments %}
+								<tr>
+									<th>
+										<a href="../../experiment/view/{{ experiment.id }}">{{ experiment.title }}
+											{% if experiment.pdbid_set.count %}
+												<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
+											{% endif %}										
+
+											</a>
+									</th>
+
+								</tr>	
+
+								<tr>
+
+										<td>From <strong>{{experiment.institution_name}}</strong>, deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong></td>
+
+								</tr>
+
+								<tr>
+
+										<td class="experiment-table-stats"><strong>{{ experiment.dataset_set.all.count }}</strong> dataset(s), containing <strong>{{ experiment.id|experiment_file_count }}</strong> files totalling <strong>{{ experiment.id|experiment_file_size|filesizeformat }}</strong></td>
+
+								</tr>				
+
+							{%endfor %}
+						</table>
+						
+						{% else %}				
+						
+									<form name="input" action="." method="get">
+									<input type="hidden" name="results" value="">
+
+									<table width="100%">
+									<tr valign="top">
+										<td>
+										Experiment Title
+									<br><input type="text" name="title" value="" size="20">
+									<br><br> Experiment Description
+									<br><input type="text" name="description" value="" size="20">			
+									<br><br>Institution Name
+									<br><input type="text" name="institution_name" value="" size="20">
+									<br><br>Author's Name
+									<br><input type="text" name="creator" value="" size="20">
+			
+									<br><br>			
+									<input type="submit" value="Submit">
+									</td>
+
+									</tr>
+									</table>
+									</form>
+						{% endif %}
+
+					</p>
+				</div>
+			</div>
+		</div>
+
+			{% endblock %} {% block sidebar %}
+
+			<ul>
+				<li>
+					<h2>
+						Browse Experiments
+					</h2>
+					<ul>
+						<li>
+							<a href="/experiment/view">Index</a>
+						</li>
+						<li>
+							<a href="/search/experiment">Search</a>
+						</li>					
+					</ul>
+					{% if user.is_authenticated %}
+					<h2>
+						Controls
+					</h2>
+					<ul>
+						<li>
+							<a href="/experiment/register">New Experiment</a>
+						</li>
+						<li>
+							<a href="/experiment/control_panel">Control Panel</a>
+						</li>					
+					</ul>
+					{% endif %}
+				</li>			
+			</ul>
+			<p>
+			{% endblock %}
+		</p>

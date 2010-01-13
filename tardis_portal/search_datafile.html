@@ -1,0 +1,142 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Search Datafile</a>
+				</h1>
+				<div style="padding-left: 10px">Search <a href="../experiment/">Experiment</a> | Datafile</div><br/>
+				<div class="entry">					
+					<p>
+						
+						{% if submitted %}
+						{% if paginator.object_list.count %}<strong>{{ paginator.object_list.count }}</strong> result(s) found
+						{% else %}
+						No datafiles found
+											
+						{% endif %}
+							<table class="results-table">
+								<tr>
+									<th>Filename</th>
+									<th>Dataset</th>
+									<th>Experiment</th>
+								</tr>									
+							{% for datafile in datafiles.object_list %}
+								<tr>
+									<th>
+										<a  href="/experiment/view/{{datafile.dataset.experiment.id}}/download?url={{datafile.url|urlencode}}">{{ datafile.filename }}</a>
+									</th>
+									<td> {{datafile.dataset.description}} </td>
+									<td> <a href="/experiment/view/{{datafile.dataset.experiment.id}}">{{datafile.dataset.experiment.title}}</a> </td>
+								</tr>					
+	
+							{%endfor %}
+											
+							</table>
+							
+							<div class="pagination">
+							    <span class="step-links">
+							        {% if datafiles.has_previous %}
+							            <a href="?{{query_string}}&page={{ datafiles.previous_page_number }}">previous</a>
+							        {% endif %}
+
+							        <span class="current">
+							            Page {{ datafiles.number }} of {{ datafiles.paginator.num_pages }}.
+							        </span>
+
+							        {% if datafiles.has_next %}
+							            <a href="?{{query_string}}&page={{ datafiles.next_page_number }}">next</a>
+							        {% endif %}
+							    </span>
+							</div>						
+						
+						{% else %}				
+						
+									<form name="input" action="." method="get">
+									<input type="hidden" name="results" value="">
+
+									<table width="100%">
+									<tr>
+									<td valign="top">
+
+									Diffractometer Type
+									<br/>
+									<select name="diffractometerType">
+									<option value="-">-</option>
+									<option value="Synchrotron">Synchrotron</option>
+									<option value="Rotating Anode">Rotating Anode</option>
+									<option value="Tube">Tube</option>
+									</select>
+									<br><br>X-ray Source
+									<br>
+									<input type="text" name="xraySource" value="" size="20">
+									<br/>
+									<br/>Crystal Name
+									<br/><input type="text" name="crystalName" value="" size="20">
+									</td>
+									<td>
+													
+									Filename
+									<br/>
+									<input type="text" name="filename" value="" size="20">
+									<br/>
+									<br/>
+									
+									Max Resolution Limit
+									<br/>
+									<input type="text" name="resLimitTo" value="" size="4">	Å					
+
+									<br/>
+									<br>X-ray Wavelength
+								
+									Between <input type="text" name="xrayWavelengthFrom" value="" size="4"> and
+									<input type="text" name="xrayWavelengthTo" value="" size="4"> Å					
+									<br><br>			
+									<input type="submit" value="Submit">
+									</td>
+
+									</tr>
+									</table>
+									</form>
+						{% endif %}
+
+					</p>
+				</div>
+			</div>
+		</div>
+
+			{% endblock %} {% block sidebar %}
+
+			<ul>
+				<li>
+					<h2>
+						Browse Experiments
+					</h2>
+					<ul>
+						<li>
+							<a href="/experiment/view">Index</a>
+						</li>
+						<li>
+							<a href="/search/experiment">Search</a>
+						</li>					
+					</ul>
+					{% if user.is_authenticated %}
+					<h2>
+						Controls
+					</h2>
+					<ul>
+						<li>
+							<a href="/experiment/register">New Experiment</a>
+						</li>
+						<li>
+							<a href="/experiment/control_panel">Control Panel</a>
+						</li>					
+					</ul>
+					{% endif %}
+				</li>			
+			</ul>
+			<p>
+			{% endblock %}
+		</p>

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.tardis.edu.au/schemas" xmlns:trd="http://www.tardis.edu.au/schemas/dataset/2" elementFormDefault="qualified">
+
+<!-- Protein Crystallography Dataset schema -->
+<!-- Version 2.0 - Updated 10/02/2009 -->
+<xsd:element name="dataset">
+        <xsd:complexType>
+            <xsd:sequence>
+    
+            <!-- Dataset Basics -->
+            <xsd:element name="resolutionLimit" type="xsd:float" minOccurs = "0" maxOccurs = "1"/>      
+               
+            <!-- Instrument Info -->
+            <xsd:element name="diffractometerType" type="xsd:string" minOccurs = "0" maxOccurs = "1"/>
+            <xsd:element name="xraySource" type="xsd:string" minOccurs = "0" maxOccurs = "1"/>
+    
+            <!-- Crystal Name -->
+            <xsd:element name="crystalName" type="xsd:string" minOccurs = "0" maxOccurs = "1"/>
+    
+            <!-- OPTIONAL USER INPUT -->
+            <xsd:element name="mosaicSpread" type="xsd:float" minOccurs = "0" maxOccurs = "1"/>            
+            <xsd:element name="chiAngle" type="xsd:float" minOccurs = "0" maxOccurs = "1"/>    
+    
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

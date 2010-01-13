@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<!-- saved from url=(0029)http://www.helpandmanual.com/ -->
+<head><script type="text/javascript" src="helpman_topicinit.js"></script>
+<!-- Redirect browser to frame page if page is not in the content frame. -->
+<script type="text/javascript">
+<!--
+if (top.location.search.lastIndexOf("toc=0")<=0) {
+  if (top.frames.length==0) { top.location.href="index.html?specifyingappletparameters.html"; }
+  else { parent.quicksync('a2.2'); }
+}
+//-->
+</script>
+<script type="text/javascript" src="highlight.js"></script>
+   <title>Specifying applet parameters</title>
+   <meta name="generator" content="Help & Manual">
+   <meta name="keywords" content="">
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+   <link type="text/css" href="default.css" rel="stylesheet" />
+</head>
+
+
+  <!-- Redirect browser to index page if page is not in the content frame.
+       This script is only valid for regular HTML export -->
+
+
+<body bgcolor="#FFFFFF" onload="highlight();">
+<div id="hmpopupDiv" style="visibility:hidden; position:absolute; z-index:1000; "></div>
+
+
+<table width="100%" border="0" cellspacing="0" cellpadding="2" bgcolor="#E2E2E2">
+  <tr>
+    <td align="left">
+      <p class="p_Heading1"><span class="f_Heading1">Specifying applet parameters</span></p>
+
+    </td>
+    <td align="right">
+     <font face="Arial" size="2">
+     <a href="introoverview.html"><img src="ico_nav_up.gif" border=0 alt="Top"></a>&nbsp;
+     <a href="userinterface.html"><img src="ico_nav_back.gif" border=0 alt="Previous"></a>&nbsp;
+     <a href="managinglocalandremotefile.html"><img src="ico_nav_next.gif" border=0 alt="Next"></a>
+     </font>
+    </td>
+  </tr>
+</table>
+<br>
+
+<p>All applet parameters may be defined in sections of the HTML code and are used to control both the behavior and look and feel of Secure FTP Applet. The default applet HTML code for Secure FTP Applet is provided below. These are the minimum applet parameters that must be used in order to successfully load the applet and SHOULD NOT be removed or modified. </p>
+<p>&nbsp;</p>
+<p><span style="font-weight: bold;">Default HTML Code</span></p>
+<p>&nbsp;</p>
+<p><span class="f_CourierFixed">&lt;object width=&quot;800&quot; height=&quot;600&quot; classid=&quot;clsid:8AD9C840-044E-11D1-B3E9-00805F499D93&quot; codebase=&quot;http://java.sun.com/products/plugin/autodl/jinstall-1_5_0-windows-i586.cab#Version=1,5,0,0&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;code&quot; value=&quot;com.jscape.ftpapplet.FtpApplet.class&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;archive&quot; value=&quot;sftpapplet.jar&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;scriptable&quot; value=&quot;false&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;comment&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">&lt;embed </span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type=&quot;application/x-java-applet;version=1.5&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; code=&quot;com.jscape.ftpapplet.FtpApplet.class&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; archive=&quot;sftpapplet.jar&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name=&quot;ftpapplet&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; width=&quot;800&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; height=&quot;600&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; scriptable=&quot;false&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; pluginspage = &quot;http://java.sun.com/products/plugin/index.html#download&quot;&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; &lt;noembed&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/noembed&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">&lt;/embed&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;/comment&gt;</span></p>
+<p><span class="f_CourierFixed">&lt;/object&gt;</span></p>
+<p>&nbsp;</p>
+<p><span style="font-weight: bold;">Adding applet parameters</span></p>
+<p>&nbsp;</p>
+<p>You may add applet parameters to the default HTML code to control the behavior and look and feel of the applet. You will find these parameters discussed in other topics included with this documentation.</p>
+<p>&nbsp;</p>
+<p>In order for parameters to be recognized by both Microsoft IE and Firefox browsers they must be defined in two places within the HTML code. The first place is by adding a &lt;param&gt; tag and the second is to define a name/value pair in the &lt;embed&gt; tag. Notice that a terminating \ must be added when adding parameters to the &lt;embed&gt; tag where parameters span multiple lines. An updated version of the default applet HTML code which contains hostname and username parameters has been provided to illustrate this. Additional parameters may be added in a similar manner. </p>
+<p>&nbsp;</p>
+<p><span class="f_Example">Example</span></p>
+<p>&nbsp;</p>
+<p><span class="f_CourierFixed">&lt;object width=&quot;800&quot; height=&quot;600&quot; classid=&quot;clsid:8AD9C840-044E-11D1-B3E9-00805F499D93&quot; codebase=&quot;http://java.sun.com/products/plugin/autodl/jinstall-1_5_0-windows-i586.cab#Version=1,5,0,0&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;code&quot; value=&quot;com.jscape.ftpapplet.FtpApplet.class&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;archive&quot; value=&quot;sftpapplet.jar&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;scriptable&quot; value=&quot;false&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;hostname&quot; value=&quot;ftp.myserver.com&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;param name=&quot;username&quot; value=&quot;jsmith&quot;&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;comment&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">&lt;embed </span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type=&quot;application/x-java-applet;version=1.5&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; code=&quot;com.jscape.ftpapplet.FtpApplet.class&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; archive=&quot;sftpapplet.jar&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name=&quot;ftpapplet&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; width=&quot;800&quot; \</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; height=&quot;600&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; scriptable=&quot;false&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">hostname=&quot;ftp.myserver.com&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">username=&quot;jsmith&quot; \</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; pluginspage = &quot;http://java.sun.com/products/plugin/index.html#download&quot;&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed"> &nbsp;&nbsp; &lt;noembed&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/noembed&gt;</span></p>
+<p> &nbsp; &nbsp; &nbsp; &nbsp;<span class="f_CourierFixed">&lt;/embed&gt;</span></p>
+<p><span class="f_CourierFixed"> &nbsp;&nbsp; &lt;/comment&gt;</span></p>
+<p><span class="f_CourierFixed">&lt;/object&gt;</span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+{% extends "portal_template.html" %} 
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">User Registration</a>
+				</h1>
+				<div class="entry">
+					<p>
+
+					Users must register before creating new experiments in TARDIS.
+						<form action="." method="POST">
+						{{ form.as_p }}
+						<br/>
+						<input type="submit" value="Submit" />
+						</form>
+
+					</p>
+				</div>
+			</div>
+		</div>
+
+			{% endblock %} {% block sidebar %}
+
+		<p>
+			{% endblock %} {% block bottom %}
+		</p>
+
+		<p>
+			{% endblock %}
+		</p>
