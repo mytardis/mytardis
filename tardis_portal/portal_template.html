@@ -16,6 +16,16 @@
 <script type="text/javascript" src="/site_media/js/jquery-1.3.1.js"></script>
 <script type="text/javascript" src="/site_media/js/jquery-ui-personalized-1.6rc6.js"></script>
 
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-5443750-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
 {% block script %}{% endblock %}
 
 </head><body>
@@ -24,7 +34,7 @@
 
 
 <div id="logo">
-	<h1><a href="#">TARDIS</a><span style="font-size: 14px; color: gray"> v2 Beta</span></h1><br>
+	<h1><a href="#">TARDIS</a><span style="font-size: 14px; color: gray"> v2</span></h1><br>
 	<h2>FEDERATED DIFFRACTION IMAGE PUBLICATION REPOSITORY</h2><br>
 	<h3>
 	<a href="http://www.ncbi.nlm.nih.gov/pubmed/18566516?ordinalpos=1&amp;itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_RVDocSum" target="_blank">
@@ -66,7 +76,7 @@
 			<li><a href="/news">News</a></li>
 			<li><a href="/about">About</a></li>
 			<li><a href="/experiment/view">Data</a></li>
-			<!-- <li><a href="/deposit">Deposit</a></li> -->
+			<li><a href="/deposit">Deposit</a></li>
 			<!-- <li><a href="#">Wiki</a></li> -->
 			<li><a href="/partners">Partners</a></li>
 			
