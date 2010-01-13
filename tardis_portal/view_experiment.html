@@ -1,4 +1,5 @@
 {% extends "portal_template.html" %} 
+{% load basiccomparisonfilters %}
 		
 		{% block script %}
 		
@@ -116,8 +117,8 @@
 						<div id="tabs-1">
 							<p>
 							<strong>Authors: </strong><br/>
-							{% for author in authors %}
-								{{ author.author.name }}{% if not forloop.last %},{% endif %}
+							{% for author in experiment.authors.all %}
+								{{ author.name }}{% if not forloop.last %},{% endif %}
 							{% endfor %}
 							</p>
 							<p>
@@ -190,29 +191,32 @@
 									</div>
 									
 									<div class="dataset_extrainfo">
-										{% if dataset.datasetparameter_set.count %}
+										{% if dataset.trddataset2 %}
 										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
-											{% for parameter in dataset.datasetparameter_set.all %}
-												<li><strong>{{ parameter.name.full_name }}: </strong>
-													{% if parameter.name.is_numeric %}
-														{{ parameter.numerical_value }} {{ parameter.name.units }}
-													{% else %}
-														{{ parameter.string_value }}
-													{% endif %}
-												</li>
-											{% endfor %}
+												<li><strong>Resolution Limit: </strong>{{ dataset.trddataset2.resolutionLimit }} Å</li>
+												<li><strong>Diffractometer Type: </strong>{{ dataset.trddataset2.diffractometerType }}</li>
+												<li><strong>X-Ray Source: </strong>{{ dataset.trddataset2.xraySource }}</li>
+												<li><strong>Crystal Name: </strong>{{ dataset.trddataset2.crystalName }}</li>
+												<li><strong>Mosaic Spread: </strong>{{ dataset.trddataset2.mosaicSpread }}</li>
+												<li><strong>Chi Angle: </strong>{{ dataset.trddataset2.chiAngle }}</li>
 										</ul>	
 										</div>	
 										{% endif %}					
 								
 										<div>	
 											<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
-											<a class="datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>						
+											<a {% if dataset.dataset_file_set.count|lt:"1000" %}class="datafile_list_toggle"{% else %}target="_blank"{% endif %} href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>					
+											{% if dataset.dataset_file_set.count|gt:"1000" %}
+											<br/>
+											<p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
+											{% endif %}	
+											
 											<ul class="datafile_list">
 									
 											</ul>
+											
 										</div>
 									</div>
 								</div>
