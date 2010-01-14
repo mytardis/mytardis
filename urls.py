@@ -36,6 +36,8 @@ urlpatterns = patterns('',
 	(r'^accounts/', include('registration.urls')),
 	(r'site_media/(?P<path>.*)$', 'django.views.static.serve',
 	        {'document_root': settings.STATIC_DOC_ROOT}),
+	(r'media/(?P<path>.*)$', 'django.views.static.serve',
+	        {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
 
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
     # to INSTALLED_APPS to enable admin documentation:
