@@ -1,0 +1,40 @@
+# mod_wsgi configuration directives - I like having stdout access, the other two
+# options run mod_wsgi in daemon mode - more on this in a minute.
+# WSGIPythonHome /Library/Frameworks/Python.framework/Versions/Current/lib/python2.5
+# WSGIRestrictStdout Off
+# WSGIDaemonProcess django
+# WSGIProcessGroup django
+
+
+# This should be the path of the /mysite/media directory
+# for example "/Users/jesse/mysite/media/"
+
+# Alias /site_media/ "/Users/steve/django-jython-svn/myTARDIS/tardis/tardis_portal/site_media"
+# <Directory "/Users/steve/django-jython-svn/myTARDIS/tardis/tardis_portal/site_media">
+# Order allow,deny
+# Options Indexes
+# Allow from all
+# IndexOptions FancyIndexing
+# </Directory>
+
+#
+# Directory path to the admin media, for example:
+#
+
+# Alias /media/ /Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/django/contrib/admin/media
+# <Directory /Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/django/contrib/admin>
+# Order allow,deny
+# Options Indexes
+# Allow from all
+# IndexOptions FancyIndexing
+# </Directory>
+
+# Path to the mysite.wsgi file, for example:
+# "/Users/jesse/mysite/apache/mysite.wsgi"
+
+
+WSGIScriptAlias / "/Users/steve/django-jython-svn/myTARDIS_checkout/tardis/apache/django.wsgi"
+
+<Directory "/Users/steve/django-jython-svn/myTARDIS_checkout/tardis/apache">
+Allow from all
+</Directory>
