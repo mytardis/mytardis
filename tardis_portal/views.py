@@ -172,7 +172,7 @@ def view_experiment(request, experiment_id):
 			'experiment': experiment,
 			'authors': author_experiments,
 			'datafiles': datafiles,
-			'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],			
+			# 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],			
 			'subtitle': experiment.title,			
 		})
 	except Experiment.DoesNotExist, de:
