@@ -43,18 +43,12 @@ pageTracker._trackPageview();
 	
 		<div id="logostats">
                         {% if public_datasets %}
-                {{ public_datasets.count }} <a href="#">datasets </a> from {{ public_pdbids.count }} <a href="#">structures, </a> {{ public_datafiles.count }} <a href="#">files, </a>
-
-                {{ public_datafiles_aggregate.size__sum|filesizeformat }} <a href="#">indexed data, </a> 
-
-               {{ public_dataset_avg_size|filesizeformat }} <a href="#">avg. dataset size</a> 
+                {{ public_datasets.count }} <a href="#">datasets </a> from {{ public_pdbids.count }} <a href="#">structures, </a> {{ public_datafiles.count }} <a href="#">files <a href="#">indexed data </a> 
 
         {% endif %}
 			{% if public_datasets %}
 		<div style="margin-top: 4px; margin-right: 8px;">
-			 <a href="#">Pre-release data:</a> {{ private_datasets.count }} datasets, {{ private_datafiles.count }} files,
-
-			 {{ private_datafiles_aggregate.size__sum|filesizeformat }}
+			 <a href="#">Pre-release data:</a> {{ private_datasets.count }} datasets, {{ private_datafiles.count }} files
 		</div>
 		   {% endif %}
 		<div style="margin-top: 4px; margin-right: 8px;">{% if is_authenticated %}Welcome, {{ username }} <a href="/logout">[Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}</div>
