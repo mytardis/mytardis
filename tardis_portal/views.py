@@ -32,12 +32,13 @@ def render_response_index(request, *args, **kwargs):
 	 dataset__experiment__private_password="")
 	kwargs['context_instance']['public_experiments'] = Experiment.objects.filter(approved=True, private_password="")
 	kwargs['context_instance']['public_pdbids'] = Pdbid.objects.filter(experiment__approved=True, experiment__private_password="")
+
 	# kwargs['context_instance']['public_datafiles_aggregate'] = kwargs['context_instance']['public_datafiles'].aggregate(Sum('size'))
-	
+	# 
 	# if kwargs['context_instance']['public_datasets'].count() > 0:
-	# 	# kwargs['context_instance']['public_dataset_avg_size'] = kwargs['context_instance']['public_datafiles_aggregate']['size__sum'] / kwargs['context_instance']['public_datasets'].count()
+	# 	kwargs['context_instance']['public_dataset_avg_size'] = kwargs['context_instance']['public_datafiles_aggregate']['size__sum'] / kwargs['context_instance']['public_datasets'].count()
 	# else:
-	# 	# kwargs['context_instance']['public_dataset_avg_size'] = 0
+	# 	kwargs['context_instance']['public_dataset_avg_size'] = 0
 		
 	#private
 	
@@ -51,7 +52,7 @@ def render_response_index(request, *args, **kwargs):
 	kwargs['context_instance']['private_experiments'] = private_experiments.exclude(private_password="")
 	
 	# kwargs['context_instance']['private_datafiles_aggregate'] = kwargs['context_instance']['private_datafiles'].aggregate(Sum('size'))
-	
+	# 
 	return render_to_response(*args, **kwargs)
 	
 def return_response_error(request):
