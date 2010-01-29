@@ -1,0 +1,504 @@
+body {
+	margin: 0;
+	padding: 0;
+	background: #FFFFFF url(../images/mimg01.jpg) repeat-x left top;
+	text-align: justify;
+	font-family: Tahoma, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #404040;
+}
+
+form {
+	margin: 0;
+	padding: 0;
+}
+
+fieldset {
+	margin: 0;
+	padding: 0;
+	border: none;
+}
+
+input, textarea, select {
+	font: normal 1em "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+
+h1, h2, h3 {
+	font-weight: normal;
+	color: #212121;
+}
+
+h1 {
+	letter-spacing: -1px;
+	font-size: 2.2em;
+}
+
+h2 {
+	font-size: 1.4em;
+}
+
+h3 {
+	font-size: 1.2em;
+}
+
+p, ul, ol {
+}
+
+p {
+}
+
+.blockbg {
+	background: #D9D785;
+}
+
+blockquote {
+	background: url(../images/mimg08.jpg) no-repeat left top;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-style: italic;
+	margin: 0 0 0 15px;
+	padding: 0px 20px 0px 30px;
+	font-size: 18px;
+	color: #3D3D3D;
+}
+
+ul {
+}
+
+ol {
+}
+
+a {
+	color: #000000;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+small {
+}
+
+hr {
+	display: none;
+}
+
+img {
+	border: none;
+}
+
+img.left {
+	float: left;
+	margin: 0 15px 0 0;
+	border: #D9D785 1px dashed;
+}
+
+img.right {
+	float: right;
+	margin: 0 0 0 15px;
+	border: #D9D785 1px dashed;
+}
+
+.text1 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-style: italic;
+	margin: 0 0 0 15px;
+	padding: 90px 20px 0px 30px;
+	font-size: 30px;
+	color: black;
+}
+
+/* Header */
+
+#header {
+	width: 1000px;
+	margin: 0 auto;
+	height: 71px;
+	letter-spacing: -1px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+}
+
+
+#headerbg {
+	clear: both;
+	margin: 0 auto;
+	width: 1000px;
+	height: 128px;
+	background: url(../images/mimg05.jpg) left top;
+	margin: 0 auto;
+	margin-top: 20px;
+}
+
+/* Logo */
+
+#logo {
+	float: left;
+	margin-top: 30px;
+}
+
+#logo h1, #logo h2, #logo p {
+	float: left;
+	margin: 0;
+}
+
+#logo h1 {
+	background: url(../images/mimg04.jpg) no-repeat left 50%;
+	padding-left: 60px;
+	text-align: center;
+	font-size: 3.2em;
+	color: #000000;
+}
+
+#logo h1 a {
+	color: #000000;
+}
+
+#logo p {
+	padding-top: 24px;
+	padding-left: 10px;
+	text-transform: uppercase;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color: #000000;
+}
+
+#logo h2 a, #logo p a {
+	color: #000000;
+}
+
+#logo a {
+	text-decoration: none;
+}
+
+/* Menu */
+
+#menu {
+	float: right;
+	margin-top: 21px;
+}
+
+#menu ul {
+	margin: 0;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	float: left;
+	padding: 30px 20px 0 20px;
+	text-align: center;
+	text-decoration: none;
+	text-transform: uppercase;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	font-size: 14px;
+	color: #4E4E4E;
+}
+
+#menu a:hover {
+	background: url(../images/mimg03.jpg) no-repeat center top;
+}
+
+#menu .current_page_item a {
+	background: url(../images/mimg03.jpg) no-repeat center top;
+}
+
+/* Page */
+
+#page {
+	width: 1000px;
+	margin: 0 auto;
+	background: #F4F4F4;
+}
+
+#status {
+	width: 1000px;
+	margin: 0 auto;
+	background: #F4F4F4;
+}
+
+#content {
+	float: left;
+	width: 700px;
+}
+
+#content-box {
+	padding: 20px;
+}
+
+#latest-post {
+	float: left;
+	width: 570px;
+	padding: 0px 20px 0px 20px;
+	line-height: 25px;
+	font-size: 12px;
+}
+
+#recent-posts {
+	float: right;
+	width: 250px;
+
+	line-height: 25px;
+	font-size: 12px;
+}
+
+#recent-posts .entry {
+}
+
+#recent-posts .entry a {
+	background: #333333;
+	padding: 5px 10px;
+	text-transform: uppercase;
+	text-decoration: none;
+	font-size: 10px;
+	color: #CCCCCC;
+}
+
+#recent-posts .more {
+	background: url(../images/mimg04.gif) no-repeat left 50%;
+	padding-left: 20px;
+}
+
+.post {
+}
+
+.post .title {
+	margin: 0;
+	padding: 0 10px 0 0;
+}
+
+.post .meta {
+	margin: 0;
+	padding-bottom: 10px;
+	padding-top: 10px;
+	line-height: normal;
+	font-size: 13px;
+	color: #505050;
+}
+
+.post .meta a {
+	color: #000000;
+}
+
+.post .entry {
+	margin-bottom: 20px;
+	padding-bottom: 5px;
+	border-bottom: #9C9C9C 1px dashed;
+
+}
+
+/* Sidebar */
+
+#bottombar {
+	clear: both;
+	width: 1000px;
+	background: #000000;
+	color: #CCCCCC;
+	padding: 10px 0 0 0;
+}
+
+#bottombar ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#bottombar li {
+	display: block;
+	float: left;
+	width: 187px;
+	padding: 10px 10px 10px 25px;
+	text-align: center;
+}
+
+#bottombar li ul {
+	line-height: 1.8em;
+}
+
+#bottombar li li {
+	display: list-item;
+	background: url(../images/mimg07.gif) no-repeat left 50%;
+	float: none;
+	width: auto;
+	padding: 0 0 0 10px;
+	line-height: 25px;
+}
+
+#bottombar h2 {
+	margin: 0 0 10px 0;
+	color: #FFFFFF;
+}
+
+#bottombar a {
+	text-decoration: none;
+	color: #CCCCCC;
+}
+
+#bottombar a:hover {
+	text-decoration: underline;
+}
+
+/* Footer */
+
+#footer {
+	width: 1000px;
+	height: 50px;
+	margin: 0 auto;
+	margin-bottom: 20px;
+	background: url(../images/mimg06.jpg) no-repeat left top;
+	font-size: 11px;
+	color: #CCCCCC;
+}
+
+#footer p {
+	margin: 0;
+	padding: 13px 20px 15px 20px;
+}
+
+#footer a {
+	color: #FFFFFF;
+}
+
+#legal {
+	float: left;
+}
+
+#links {
+	float: right;
+}
+
+table.experiment-table {
+	margin: 0;
+	padding: 0;
+	width: 85%;	
+	}
+	
+	/* trdDataset2 */
+
+	.dataset_metadata
+	{
+		margin: 10px;
+	}
+
+	.dataset_metadata ul {
+		list-style-type: none;
+		list-style-image: none;
+		list-style-position: inside;
+		font-size: 12px;
+	}
+
+	.dataset_information ul {
+
+		list-style-position: inside;
+		font-size: 14px;
+	}
+
+	.datafile_list
+	{
+		list-style-type: none;
+		list-style-image: none;
+		list-style-position: inside;
+		font-size: 14px;	
+	}
+
+	.dataset_title
+	{
+		display: inline;
+	}
+
+	.dataset_info
+	{
+		border-width: 2px;
+		border-color: gray;
+		border-style: dotted;
+		margin: 5px;
+		padding: 10px;
+		margin-bottom: 30px;
+	}
+
+	.dataset_description
+	{
+		border-width: 1px;
+		border-color: black;
+		border-style: solid;
+		margin: 2px;
+		padding: 5px;
+		background-color: #fbfbfb;	
+	}
+
+	.dataset_extrainfo
+	{
+		border-width: 1px;
+		border-color: black;
+		border-style: solid;
+		margin: 2px;
+		padding: 5px;
+		background-color: #fcfcfc;	
+	}
+
+	.datafile_info {
+		list-style-type: none;
+		list-style-image: none;
+		list-style-position: inside;
+		font-size: 14px;
+		font-size: 12px;
+		background-color: #f0f3f6;	
+		width: 90%;
+		padding: 10px;
+		margin: 10px;
+	}
+
+	a.filelink {
+		color: #9b3430;
+	}
+
+	#statusBox {
+		border-width: 2px;
+		border-color: #666666;
+		border-style: dashed;
+		margin: 20px 20px 0 20px;
+		padding: 5px;
+		background-color: #fff68c;	
+		clear: both;
+		color: black;
+		font-weight: bold;
+		text-align: center;
+	}
+
+	#statusBoxError {
+		border-width: 2px;
+		border-color: #E92E2E;
+		border-style: dashed;
+		margin: 20px 20px 0 20px;
+		padding: 5px;
+		background-color: #FF8C8C;	
+		clear: both;
+		color: black;
+		font-weight: bold;
+		text-align: center;
+	}	
+	
+	.sidebar ul {
+		margin: 0;
+		padding: 0 0 0 20px;
+		list-style: none;
+	}
+
+	.sidebar li {
+		margin-bottom: 2em;
+	}
+
+	.sidebar li ul {
+	}
+
+	.sidebar li li {
+		margin: 0;
+	}
+
+	.sidebar li h2 {
+		margin: 0 0 1em 0;
+	}	
