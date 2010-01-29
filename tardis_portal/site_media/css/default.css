@@ -502,3 +502,7 @@ table.experiment-table {
 	.sidebar li h2 {
 		margin: 0 0 1em 0;
 	}	
+	
+	.demo {
+		padding: 10px 0 10px 0;
+	}
