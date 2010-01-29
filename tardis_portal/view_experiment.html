@@ -97,13 +97,13 @@
 		<div id="fullpage">
 			<div class="post">
 				<h1 class="title">
-					<a href=".">{{ experiment.title }} 
+					{{ experiment.title }} 
 							{% if experiment.pdbid_set.count %}
 								<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
 							{% endif %}
-					</a>
+					
 				</h1>
-				<div align="right">Ingested From: <span class="url"><a href="{{ experiment.url }}">{{ experiment.url }}</a></span></div>
+				
 
 
 					<div class="demo">
@@ -115,12 +115,13 @@
 							{% if experiment.ftp_location %}<li><a href="/ajax/ftp/{{experiment.id}}">FTP Download</a></li>{% endif %}
 						</ul>
 						<div id="tabs-1">
-							<p>
-							<strong>Authors: </strong><br/>
-							{% for author in experiment.authors.all %}
-								{{ author.name }}{% if not forloop.last %},{% endif %}
-							{% endfor %}
-							</p>
+                            <p>
+                            <strong>Authors: </strong><br/>
+                            {% for author in authors %}
+                                    {{ author.author.name }}{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                            </p>
+
 							<p>
 							<strong>Abstract: </strong>
 							<div class="abstract">
