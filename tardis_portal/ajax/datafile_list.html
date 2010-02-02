@@ -1,6 +1,9 @@
+Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
+<br/><br/>
 {% for datafile in dataset %}
 <li class="datafile">
-	<a class="filelink" href="download?url={{datafile.url|urlencode}}">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
+	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
+	<a class="filelink" href="download?dfid={{datafile.id}}">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
 	
 	{% if datafile.datafileparameter_set.count %}
 	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Metadata]</a>
@@ -12,7 +15,6 @@
 	{% if datafile.xml_data_set.count %}
 	<a class="datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
 	<ul class="datafile_info" style="width: 95%; overflow:auto; padding: 5px; font-size: 12px">
-
 	</ul>
 	{% endif %}	
 	

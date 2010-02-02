@@ -105,10 +105,59 @@ def news(request):
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/news.html', c))			
 	
-def download(request, url):
+def download(request, dfid):
 
-	if request.GET.has_key('url') and len(request.GET['url']) > 0:
-		return HttpResponseRedirect(request.GET['url'])
+	#todo handle missing file, general error
+	if request.GET.has_key('dfid') and len(request.GET['dfid']) > 0:
+		datafile = Dataset_File.objects.get(pk=request.GET['dfid'])
+		url = datafile.url
+		
+		if url.startswith('http://') or url.startswith('https://') or url.startswith('ftp://'):
+			return HttpResponseRedirect(request.GET['url'])
+		else:
+			file_path = settings.FILE_STORE_PATH + "/" + str(datafile.dataset.experiment.id) + "/" + datafile.url.partition('//')[2]
+
+			response = HttpResponse(mimetype='application/octet-stream')
+			response['Content-Disposition'] = 'attachment; filename=' + datafile.filename
+			
+			f = open(file_path)
+			
+			response.write(f.read())
+			return response
+		
+def downloadTar(request):
+	# Create the HttpResponse object with the appropriate headers.
+	# todo handle no datafile, invalid filename, all http links (tarfile count?)
+	
+	if request.POST.has_key('datafile'):
+		
+		from django.utils.safestring import SafeUnicode
+		response = HttpResponse(mimetype='application/x-tar')
+		response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'		
+		
+		import StringIO
+
+		buffer = StringIO.StringIO()	
+	
+		import tarfile
+		import os	
+		tar = tarfile.open("", "w", buffer)
+	
+		fileString = ""
+		for dfid in request.POST.getlist('datafile'):
+			datafile = Dataset_File.objects.get(pk=dfid)
+			if datafile.url.startswith('file://'):
+				absolute_filename = datafile.url.partition('//')[2]
+				file_string = settings.FILE_STORE_PATH + '/' + request.POST['expid'] + '/' + absolute_filename
+				tar.add(file_string.encode('ascii'))
+	
+		tar.close()
+	
+		# Get the value of the StringIO buffer and write it to the response.
+		tarFile = buffer.getvalue()
+		buffer.close()
+		response.write(tarFile)
+		return response		
 
 def about(request):
 	
@@ -436,7 +485,7 @@ def retrieve_datafile_list(request, dataset_id):
 	c = Context({
 		'dataset': dataset,
 	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/datafile_list.html', c)) 
+	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/datafile_list.html', c)) 	
 
 @login_required()
 def control_panel(request):

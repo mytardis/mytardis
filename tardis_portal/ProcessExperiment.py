@@ -139,20 +139,20 @@ class ProcessExperiment:
 		
 			for fileid in ep.getFileIDs(dmdid):
 				
-				if ep.getFileLocation(fileid).startswith('file://'):
-					absolute_filename = url_path + ep.getFileLocation(fileid).partition('//')[2]
-				else:
-					absolute_filename = ep.getFileLocation(fileid)	
+				# if ep.getFileLocation(fileid).startswith('file://'):
+				# 					absolute_filename = url_path + ep.getFileLocation(fileid).partition('//')[2]
+				# 				else:
+				# 					absolute_filename = ep.getFileLocation(fileid)	
 				
 				if self.null_check(ep.getFileName(fileid)):
 					filename = ep.getFileName(fileid)
 				else:
-					filename = absolute_filename.rpartition('/')[2]
+					filename = ep.getFileLocation(fileid).rpartition('/')[2]
 					
 				print filename
 				
 				datafile=Dataset_File(dataset=d, filename=filename, \
-				url=absolute_filename, size=ep.getFileSize(fileid))
+				url=ep.getFileLocation(fileid), size=ep.getFileSize(fileid))
 				datafile.save()
 				
 				for admid in ep.getFileADMIDs(fileid):

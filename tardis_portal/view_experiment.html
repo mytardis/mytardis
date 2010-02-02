@@ -80,7 +80,18 @@
 							
 							   datafile_info_selectors.click(function() {
 								$(this).next().toggle();				
-							   });													
+							   });		
+							
+								// file selectors
+								datafile_info_container.find('.dataset_selector_all').click(function() {	
+									$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+							   });
+							
+								datafile_info_container.find('.dataset_selector_none').click(function() {	
+									$(this).parent().find('.datafile_checkbox').removeAttr("checked");
+
+							   });																		
 						});
 					 });			
 			 },function(){
@@ -177,6 +188,8 @@
 							
 						</div>
 						<div id="tabs-2">
+							<form method="POST" action="/downloadTar/" target="_blank">
+							<input type="hidden" name="expid" value="{{experiment.id}}">							
 							<div id="datasets">
 							{% for dataset in experiment.dataset_set.all %}
 								
@@ -221,7 +234,9 @@
 									</div>
 								</div>
 							{% endfor %}
-							</div>							
+							</div>		
+							<input type="submit" value="Download Selected Files" />
+							</form>												
 						</div>		
 																		
 					</div>
