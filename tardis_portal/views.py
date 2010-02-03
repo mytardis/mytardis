@@ -152,7 +152,7 @@ def downloadTar(request):
 					file_string = settings.FILE_STORE_PATH + '/' + request.POST['expid'] + '/' + absolute_filename
 					
 					try:
-						tar.add(file_string.encode('ascii'))
+						tar.add(file_string.encode('ascii'), arcname=absolute_filename.encode('ascii'), recursive=False)
 					except OSError, i:
 						return return_response_not_found(request)
 						
@@ -242,7 +242,7 @@ def view_experiment(request, experiment_id):
 
 def experiment_index(request):
 	
-	experiments = Experiment.objects.filter(approved=True, private_password="")
+	experiments = Experiment.objects.filter(approved=True)
 	experiments = experiments.order_by('title')
 	
 	c = Context({
@@ -291,93 +291,36 @@ def register_experiment_ws(request):
 	else:
 		return return_response_error(request)
 
-@login_required()
-def register_experiment(request):
-	
-	# from java.lang import Exception
+# web service
+def register_experiment_ws_xmldata(request):
 	import sys
-	
+
 	process_experiment = ProcessExperiment()
 	status = ""
 	if request.method == 'POST': # If the form has been submitted...
+
 		form = RegisterExperimentForm(request.POST) # A form bound to the POST data
 		if form.is_valid(): # All validation rules pass
-		
-			url = form.cleaned_data['url']
-			private_password = form.cleaned_data['private_password']
-			ftp_location = form.cleaned_data['ftp_location']
-			ftp_port = form.cleaned_data['ftp_port']
-			ftp_username = form.cleaned_data['ftp_username']
-			ftp_password = form.cleaned_data['ftp_password']			
 
-			if request.POST.has_key('eid'):
-				edit_e = Experiment.objects.get(pk=request.POST['eid'])
-				if edit_e.created_by == request.user or request.user.is_staff:
-					
-					try:
-						process_experiment.edit_experiment(url=url, eid=int(request.POST['eid']), private_password=private_password, ftp_location=ftp_location, ftp_port=ftp_port, ftp_username=ftp_username, ftp_password=ftp_password)
-					except IOError, i:
-						return return_response_error_message(request, 'tardis_portal/blank_status.html', "Error reading file. Perhaps an incorrect URL?")				
-					except:
-						return return_response_error_message(request, 'tardis_portal/blank_status.html', "Unexpected Error - ", sys.exc_info()[0])																
-					
-					status = "Experiment successfully edited."	
-					
-					c = Context({
-						'title': "Edit Experiment",
-						'status': status,
-						'subtitle': "Edit Experiment",
-					})
-					return HttpResponse(render_response_index(request, 'tardis_portal/blank_status.html', c))							
-				else:
-					return return_response_not_found(request)
-			else:	
-				
-				# try:
-				process_experiment.register_experiment(url=url, created_by=request.user, private_password=private_password, ftp_location=ftp_location, ftp_port=ftp_port, ftp_username=ftp_username, ftp_password=ftp_password)
-					# 				except IOError, i:
-					# 					return return_response_error_message(request, 'tardis_portal/blank_status.html', "Error reading file. Perhaps an incorrect URL?")				
-					# 				except:
-					# 					return return_response_error_message(request, 'tardis_portal/blank_status.html', "Unexpected Error - ", sys.exc_info()[0])				
-							
-				status = "Experiment successfully registered. Experiment must be approved " \
-				"by an administrator before being made public."
+			xmldata = form.cleaned_data['xmldata']
+			username = form.cleaned_data['username']
+			password = form.cleaned_data['password']
+			experiment_owner = form.cleaned_data['experiment_owner']
 
-				c = Context({
-					'title': "Register Experiment",
-					'status': status,
-					'subtitle': "Register Experiment",
-				})
-				return HttpResponse(render_response_index(request, 'tardis_portal/blank_status.html', c))				
-	elif request.GET.has_key('id'):
-		try:
-			experiment_id = request.GET['id']
-			edit_e = Experiment.objects.get(pk=experiment_id)
-
-			if edit_e.created_by == request.user or request.user.is_staff:
-				try:
-					process_experiment.reingest_experiment(eid=int(experiment_id))
-				except IOError, i:
-					return return_response_error_message(request, 'tardis_portal/blank_status.html', "Error reading file. Perhaps an incorrect URL?")				
+			from django.contrib.auth import authenticate
+			user = authenticate(username=username, password=password)
+			if user is not None:
+				if not user.is_active:
+					return return_response_error(request)
 			else:
-				return return_response_error(request)
+				return return_response_error(request)			
 
-			if request.user.is_authenticated():
-				if request.user.is_staff:
-					experiments = Experiment.objects.filter()
-				else:
-					experiments = Experiment.objects.filter(created_by=request.user)
-		except Experiment.DoesNotExist, de:
-			return return_response_not_found(request)				
+			eid = process_experiment.register_experiment_xmldata(xmldata=xmldata, created_by=user, experiment_owner=experiment_owner) # steve dummy data
 
-		status = "Experiment successfully reingested."
-		
-		c = Context({
-			'title': "Reingest Experiment",
-			'status': status,
-			'subtitle': "Reingest Experiment",
-		})
-		return HttpResponse(render_response_index(request, 'tardis_portal/blank_status.html', c))			
+			response = HttpResponse(status=201)
+			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
+
+			return response
 
 	else:
 		form = RegisterExperimentForm() # An unbound form

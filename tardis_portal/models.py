@@ -29,6 +29,7 @@ class Experiment(models.Model):
 	update_time = models.DateTimeField(auto_now=True)
 	created_by = models.ForeignKey(User)
 	handle = models.TextField(null=True, blank=True)
+	experiment_owner = models.CharField(max_length=400, null=True, blank=True)
 	
 	def __unicode__(self):
 		return self.title
