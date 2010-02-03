@@ -113,7 +113,7 @@ def download(request, dfid):
 		url = datafile.url
 		
 		if url.startswith('http://') or url.startswith('https://') or url.startswith('ftp://'):
-			return HttpResponseRedirect(request.GET['url'])
+			return HttpResponseRedirect(datafile.url)
 		else:
 			file_path = settings.FILE_STORE_PATH + "/" + str(datafile.dataset.experiment.id) + "/" + datafile.url.partition('//')[2]
 
