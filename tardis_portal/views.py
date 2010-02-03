@@ -131,33 +131,43 @@ def downloadTar(request):
 	
 	if request.POST.has_key('datafile'):
 		
-		from django.utils.safestring import SafeUnicode
-		response = HttpResponse(mimetype='application/x-tar')
-		response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'		
+		if not len(request.POST.getlist('datafile')) == 0:
+			from django.utils.safestring import SafeUnicode
+			response = HttpResponse(mimetype='application/x-tar')
+			response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'		
 		
-		import StringIO
+			import StringIO
 
-		buffer = StringIO.StringIO()	
+			buffer = StringIO.StringIO()	
 	
-		import tarfile
-		import os	
-		tar = tarfile.open("", "w", buffer)
+			import tarfile
+			import os	
+			tar = tarfile.open("", "w", buffer)
 	
-		fileString = ""
-		for dfid in request.POST.getlist('datafile'):
-			datafile = Dataset_File.objects.get(pk=dfid)
-			if datafile.url.startswith('file://'):
-				absolute_filename = datafile.url.partition('//')[2]
-				file_string = settings.FILE_STORE_PATH + '/' + request.POST['expid'] + '/' + absolute_filename
-				tar.add(file_string.encode('ascii'))
+			fileString = ""
+			for dfid in request.POST.getlist('datafile'):
+				datafile = Dataset_File.objects.get(pk=dfid)
+				if datafile.url.startswith('file://'):
+					absolute_filename = datafile.url.partition('//')[2]
+					file_string = settings.FILE_STORE_PATH + '/' + request.POST['expid'] + '/' + absolute_filename
+					
+					try:
+						tar.add(file_string.encode('ascii'))
+					except OSError, i:
+						return return_response_not_found(request)
+						
+			tar.close()
 	
-		tar.close()
-	
-		# Get the value of the StringIO buffer and write it to the response.
-		tarFile = buffer.getvalue()
-		buffer.close()
-		response.write(tarFile)
-		return response		
+			# Get the value of the StringIO buffer and write it to the response.
+			tarFile = buffer.getvalue()
+			buffer.close()
+			response.write(tarFile)
+			return response
+		else:
+			return return_response_not_found(request)
+	else:
+		return return_response_not_found(request)
+		
 
 def about(request):
 	

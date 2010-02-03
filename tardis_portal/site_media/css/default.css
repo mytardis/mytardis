@@ -70,10 +70,11 @@ ol {
 
 a {
 	color: #000000;
+	text-decoration: none;
 }
 
 a:hover {
-	text-decoration: none;
+	text-decoration: underline;
 }
 
 small {

@@ -122,7 +122,7 @@
 					<div id="tabs">
 						<ul>
 							<li><a href="#tabs-1">Description</a></li>
-							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>
+							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>						
 							{% if experiment.ftp_location %}<li><a href="/ajax/ftp/{{experiment.id}}">FTP Download</a></li>{% endif %}
 						</ul>
 						<div id="tabs-1">
