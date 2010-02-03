@@ -18,69 +18,24 @@ class ProcessExperiment:
 		else:
 			return string
 			
-	def register_experiment(self, url, created_by, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None):
-		
-		xmlString = self.download_xml(url)
-		self.url = url
+	def register_experiment_xmldata(self, xmldata, created_by, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None, experiment_owner=None):
 
-		ep = ExperimentParser(xmlString)
+			xmlString = xmldata
+			url = "http://www.example.com"
+			self.url = "http://www.example.com"
 
-		e = Experiment(url=url, approved=False, private_password=private_password, ftp_location=ftp_location , \
-		ftp_port=ftp_port , ftp_username=ftp_username, ftp_password=ftp_password , \
-		title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
-		description=ep.getAbstract(), created_by=created_by)
-	
-		
-		e.save()
-		
-		self.process_METS(e, ep)
-		
-		return e.id
-					
-	def edit_experiment(self, url, eid, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None):
-		
-		xmlString = self.download_xml(url)
-		self.url = url
-		
-		ep = ExperimentParser(xmlString)
-											
-		existing_e = Experiment.objects.get(pk=eid)
-		handle = existing_e.handle
-		existing_e.delete()
-		print "experiment deleted"
-			
-		e = Experiment(id=eid, url=url, private_password=private_password , ftp_location=ftp_location , \
-		ftp_port=ftp_port , ftp_username=ftp_username, ftp_password=ftp_password , \
-		title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR") , \
-		description=ep.getAgentName("DISSEMINATOR"), \
-		created_by=existing_e.created_by, handle=handle)
-				
-		e.save()
-		
-		self.process_METS(e, ep)		
-				
-	def reingest_experiment(self, eid):		
-		
-		existing_e = Experiment.objects.get(pk=eid)	
+			ep = ExperimentParser(str(xmlString))
 
-		url = existing_e.url
-		xmlString = self.download_xml(url)
-		self.url = url			
+			e = Experiment(url=url, approved=False, private_password=private_password , ftp_location=ftp_location , \
+			ftp_port=ftp_port , ftp_username=ftp_username, ftp_password=ftp_password , \
+			title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
+			description=ep.getAbstract(), created_by=created_by, experiment_owner=SafeUnicode(experiment_owner))
 
-		ep = ExperimentParser(xmlString)
+			e.save()
 
-		e = Experiment(id=eid, url=existing_e.url, approved=existing_e.approved , \
-		private_password=existing_e.private_password , ftp_location=existing_e.ftp_location , \
-		ftp_port=existing_e.ftp_port , ftp_username=existing_e.ftp_username, \
-		ftp_password=existing_e.ftp_password, \
-		title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR") , \
-		description=ep.getAbstract(), created_by=existing_e.created_by, handle=existing_e.handle)	
+			self.process_METS(e, ep)
 
-		existing_e.delete()		
-
-		e.save()
-		
-		self.process_METS(e, ep)		
+			return e.id
 			
 	def process_METS(self, e, ep):
 		
