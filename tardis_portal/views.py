@@ -251,7 +251,7 @@ def experiment_index(request):
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/experiment_index.html', c))
 
-# web service
+# web service, depreciated
 def register_experiment_ws(request):
 	# from java.lang import Exception
 	import sys
@@ -317,7 +317,7 @@ def register_experiment_ws_xmldata(request):
 
 			eid = process_experiment.register_experiment_xmldata(xmldata=xmldata, created_by=user, experiment_owner=experiment_owner) # steve dummy data
 
-			response = HttpResponse(status=201)
+			response = HttpResponse(eid, status=201)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
 
 			return response

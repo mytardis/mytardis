@@ -26,7 +26,7 @@ class ProcessExperiment:
 
 			ep = ExperimentParser(str(xmlString))
 
-			e = Experiment(url=url, approved=False, private_password=private_password , ftp_location=ftp_location , \
+			e = Experiment(url=url, approved=True, private_password=private_password , ftp_location=ftp_location , \
 			ftp_port=ftp_port , ftp_username=ftp_username, ftp_password=ftp_password , \
 			title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
 			description=ep.getAbstract(), created_by=created_by, experiment_owner=SafeUnicode(experiment_owner))
