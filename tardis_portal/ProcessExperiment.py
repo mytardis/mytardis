@@ -71,14 +71,15 @@ class ProcessExperiment:
 					prefix = techxml.getroot().prefix
 					xmlns = techxml.getroot().nsmap[prefix]					
 			
-					schema = Schema.objects.get(namespace__exact=xmlns)
-					
-					if(schema):
+					try:
+			
+						schema = Schema.objects.get(namespace__exact=xmlns)
+
 						parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
 						parameternames = parameternames.order_by('id')					
-					
+				
 						for pn in parameternames:
-							
+						
 							if pn.is_numeric:
 								value = ep.getParameterFromTechXML(techxml, pn.name)
 
@@ -89,8 +90,11 @@ class ProcessExperiment:
 							else:
 								dp = DatasetParameter(dataset=d, name=pn, \
 								string_value=ep.getParameterFromTechXML(techxml, pn.name), numerical_value=None)
-								dp.save()															
-							
+								dp.save()	
+								
+					except Schema.DoesNotExist:						
+						print "Schema " + xmlns + " doesn't exist!"
+						#todo replace with logging
 		
 			for fileid in ep.getFileIDs(dmdid):
 				
@@ -116,12 +120,13 @@ class ProcessExperiment:
 					prefix = techxml.getroot().prefix
 					xmlns = techxml.getroot().nsmap[prefix]					
 			
-					schema = Schema.objects.get(namespace__exact=xmlns)
+					try:
+						schema = Schema.objects.get(namespace__exact=xmlns)
 					
-					if(schema):
+
 						parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
 						parameternames = parameternames.order_by('id')
-						
+					
 						for pn in parameternames:
 
 							if pn.is_numeric:
@@ -134,7 +139,7 @@ class ProcessExperiment:
 								dp = DatafileParameter(dataset_file=datafile, name=pn, \
 								string_value=ep.getParameterFromTechXML(techxml, pn.name), numerical_value=None)
 								dp.save()
-					
-					else:
-						xml_Data = XML_data(datafile=datafile, xmlns=xmlns, data=techxml)
-						xml_Data.save()
+							
+					except Schema.DoesNotExist:	
+						xml_data = XML_data(datafile=datafile, dataset=d, experiment=e, xmlns=xmlns, data=techxml)
+						xml_data.save()
