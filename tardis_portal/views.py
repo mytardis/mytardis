@@ -316,6 +316,18 @@ def register_experiment_ws_xmldata(request):
 				return return_response_error(request)			
 
 			eid = process_experiment.register_experiment_xmldata(xmldata=xmldata, created_by=user, experiment_owner=experiment_owner) # steve dummy data
+			dir = settings.FILE_STORE_PATH + "/" + str(eid)
+			
+			#todo probably need fancy classes/functions for this
+			import os
+			if not os.path.exists(dir):
+			    os.makedirs(dir)
+			
+			file = open(dir + '/METS.xml', 'w')
+
+			file.write(xmldata)
+
+			file.close()					
 
 			response = HttpResponse(eid, status=201)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
