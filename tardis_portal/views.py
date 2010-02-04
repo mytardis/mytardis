@@ -329,7 +329,7 @@ def register_experiment_ws_xmldata(request):
 
 			file.close()					
 
-			response = HttpResponse(eid, status=201)
+			response = HttpResponse(str(eid), status=201)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
 
 			return response
