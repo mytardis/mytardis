@@ -21,16 +21,10 @@
 												{% if user.is_staff %}<em>registered by {{ experiment.created_by }}</em>{% endif %}
 												{% if not experiment.approved %}
 													 (Unapproved) 
-												{% endif %}
-												{% if experiment.private_password %}
-													 (Private)
-												{% endif %}												
+												{% endif %}										
 										</th>
-										<td><a href="../edit/{{ experiment.id }}">Edit</a></td> 
-										<td><a href="../reingest?id={{ experiment.id }}">Reingest</a></td>	
-										{% if not experiment.approved %}	
-										<td><a href="../approve?id={{ experiment.id }}">Approve</a></td>
-										{% endif %}								
+										<td><a href=".">Access Control here?</a></td>
+						
 									</tr>					
 
 

@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib.auth.views import login, logout
+from registration.forms import RegistrationFormUniqueEmail
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -15,9 +16,7 @@ urlpatterns = patterns('',
 	(r'^schema/$', 'tardis.tardis_portal.views.deposit'),	
 	(r'^orca/$', 'tardis.tardis_portal.views.orca'),						
 	(r'^experiment/view/(?P<experiment_id>\d+)/$', 'tardis.tardis_portal.views.view_experiment'),
-	(r'^experiment/edit/(?P<experiment_id>\d+)/$', 'tardis.tardis_portal.views.edit_experiment'),	
 	(r'^experiment/view/$', 'tardis.tardis_portal.views.experiment_index'),	
-	(r'^experiment/edit/$', 'tardis.tardis_portal.views.edit_experiment'),	
 	(r'^experiment/approve/$', 'tardis.tardis_portal.views.approve_experiment'),			
 	(r'^experiment/register/$', 'tardis.tardis_portal.views.register_experiment_ws_xmldata'),	
 	(r'^experiment/view/(\d+)/download/$', 'tardis.tardis_portal.views.download'),	
@@ -32,7 +31,7 @@ urlpatterns = patterns('',
 	(r'^ajax/ftp/(?P<id>\d+)/$', 'tardis.tardis_portal.views.retrieve_ftp'),	
 	(r'^login/$',  login, {'template_name': 'tardis_portal/registration/login.html'}),
 	(r'^logout/$', logout, {'next_page': '/'}),
-	(r'^accounts/', include('registration.urls')),
+	(r'^accounts/', include('registration.urls'),{'form_class':RegistrationFormUniqueEmail}),
 	(r'site_media/(?P<path>.*)$', 'django.views.static.serve',
 	        {'document_root': settings.STATIC_DOC_ROOT}),
 	(r'media/(?P<path>.*)$', 'django.views.static.serve',

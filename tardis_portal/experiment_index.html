@@ -8,7 +8,7 @@
 				<h1 class="title">
 					<a href="#">Experiments</a>
 				</h1>
-				 {% if public_datasets %}
+				 {% if experiments %}
 		            <strong>{{ experiments.count }}</strong> experiments
 
 			    {% endif %}
@@ -45,7 +45,7 @@
 					</table>					
 						
 				{% else %}
-					No experiments publically available at this time.
+					No experiments available at this time.
 				{% endif %}
 			</div>
 		</div>

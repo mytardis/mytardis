@@ -18,22 +18,23 @@ class Author(models.Model):
 class Experiment(models.Model):
 	url = models.URLField(verify_exists=False, max_length=400) #use verify-exists
 	approved = models.BooleanField()
-	private_password = models.CharField(max_length=50, null=True, blank=True)
-	ftp_location = models.CharField(max_length=400, null=True, blank=True)
-	ftp_port = models.PositiveIntegerField(null=True, blank=True)
-	ftp_username = models.CharField(max_length=50, null=True, blank=True)
-	ftp_password = models.CharField(max_length=50, null=True, blank=True)
 	title = models.CharField(max_length=400)
 	institution_name = models.CharField(max_length=400)
 	description = models.TextField(blank=True)
 	update_time = models.DateTimeField(auto_now=True)
 	created_by = models.ForeignKey(User)
 	handle = models.TextField(null=True, blank=True)
-	experiment_owner = models.CharField(max_length=400, null=True, blank=True)
 	
 	def __unicode__(self):
 		return self.title
 		
+class Experiment_Owner(models.Model):
+	experiment = models.ForeignKey(Experiment)
+	user = models.ForeignKey(User)
+	
+	def __unicode__(self):
+		return SafeUnicode(self.experiment.id) + " | " + SafeUnicode(self.user.username)
+	
 class Author_Experiment(models.Model):
 	experiment = models.ForeignKey(Experiment)
 	author = models.ForeignKey(Author)

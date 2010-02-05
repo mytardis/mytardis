@@ -18,7 +18,7 @@ class ProcessExperiment:
 		else:
 			return string
 			
-	def register_experiment_xmldata(self, xmldata, created_by, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None, experiment_owner=None):
+	def register_experiment_xmldata(self, xmldata, created_by):
 
 			xmlString = xmldata
 			url = "http://www.example.com"
@@ -26,10 +26,9 @@ class ProcessExperiment:
 
 			ep = ExperimentParser(str(xmlString))
 
-			e = Experiment(url=url, approved=True, private_password=private_password , ftp_location=ftp_location , \
-			ftp_port=ftp_port , ftp_username=ftp_username, ftp_password=ftp_password , \
+			e = Experiment(url=url, approved=True, \
 			title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
-			description=ep.getAbstract(), created_by=created_by, experiment_owner=SafeUnicode(experiment_owner))
+			description=ep.getAbstract(), created_by=created_by)
 
 			e.save()
 
@@ -141,5 +140,5 @@ class ProcessExperiment:
 								dp.save()
 							
 					except Schema.DoesNotExist:	
-						xml_data = XML_data(datafile=datafile, dataset=d, experiment=e, xmlns=xmlns, data=techxml)
+						xml_data = XML_data(datafile=datafile, xmlns=SafeUnicode(xmlns), data=SafeUnicode(techxml))
 						xml_data.save()
