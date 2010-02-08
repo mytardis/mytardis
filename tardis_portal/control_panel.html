@@ -1,4 +1,178 @@
 {% extends "portal_template.html" %} 
+		{% block script %}
+		<script type="text/javascript" src="/site_media/js/lib/jquery.js"></script>
+		<script type='text/javascript' src='/site_media/js/lib/jquery.bgiframe.min.js'></script>
+		<script type='text/javascript' src='/site_media/js/lib/jquery.ajaxQueue.js'></script>
+		<script type='text/javascript' src='/site_media/js/lib/thickbox-compressed.js'></script>
+		<script type='text/javascript' src='/site_media/js/jquery.autocomplete.js'></script>
+		<script type='text/javascript' src='/site_media/js/localdata.js'></script>	
+
+		<link rel="stylesheet" type="text/css" href="/site_media/css/autocomplete/jquery.autocomplete.css" />
+		<link rel="stylesheet" type="text/css" href="/site_media/css/autocomplete/lib/thickbox.css" />			
+		<script type="text/javascript">
+		
+		$(document).ready(function() {		
+
+			//beginswith, endswith
+			String.prototype.beginsWith = function(t, i) { if (i==false) { return
+			(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+			== this.substring(0, t.length).toLowerCase()); } }
+
+			String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+			== this.substring(this.length - t.length)); } else { return
+			(t.toLowerCase() == this.substring(this.length -
+			t.length).toLowerCase()); } }			
+					
+		   $('.access_list').hide().end().find('.access_list_toggle').click(function() {
+		     $(this).next().toggle();
+
+		   });		
+		
+			$(".access_list_toggle").text("[Show]");	
+			
+			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";					
+			
+			// access list
+			 $(".access_list_toggle").toggle(function(){
+			   $(this).text("[Hide]");
+				var href = $(this).attr("href");
+
+				$(this).next().html(loadingHTML + "</br>");
+				
+				$(this).next().load(href, function(){
+						$(document).ready(function(){
+								var value = (function () {
+								    var val = null;
+
+								    $.ajax({
+								        'async': false,
+								        'global': false,
+								        'url': '/ajax/user_list',
+								        'success': function (data) {
+								            val = data;
+
+								        }
+								    });
+
+								    return val;
+
+								})();					
+
+								$(".usersuggest").autocomplete(value.split(" "), {
+									matchContains: true,
+									minChars: 0
+								});							
+								
+								$(".form_submit").unbind('click');
+								$(".form_submit").click(function(event) {
+									event.preventDefault();
+									
+								    var usersuggest = $(this).siblings(".usersuggest").val();  
+								    var experiment_id = $(this).siblings(".experiment_id").val();									
+									var users_div = $(this).parents('.access_list').children('.users')
+									
+									action = experiment_id + '/access_list/add/' + usersuggest;							
+									
+								    $.ajax({  
+							        'async': false,
+							        'global': true,									
+								     type: "GET",  
+								     url: action,  
+								     success: function(data) { 
+										if (data.beginsWith("<div class=", true) == true)
+										{									
+											users_div.hide()
+											.append(data).fadeIn();
+										// todo this is a duplicate function..
+										   $(".remove_user").unbind('click');
+										   $(".remove_user").click(function() { 
+
+												var href = $(this).attr("href");
+
+												remove_user = $(this);
+
+												$.ajax({
+												        'async': false,
+												        'global': false,
+												        'url': href,
+												        'success': function (data) {
+
+												            val = data;
+
+															if(val == "OK")
+															{
+																remove_user.fadeOut(500, function(){
+																remove_user.parents('.access_list_user').remove();
+																});
+															}
+															else
+															{
+																alert('Error adding user. Perhaps they already have access?');
+															}
+														}
+												    }); // end ajax
+
+
+												return false;								
+
+											 }); // end remove user											
+										}
+										else
+										{
+											alert('Error adding user. Perhaps they already have access?');
+										}
+								     },  								     
+								     error: function(data) { 
+										alert('Error adding user');
+								     }  
+								    });								
+
+								    return false;									
+
+								});								
+												
+							   $(".remove_user").unbind('click');
+							   $(".remove_user").click(function() { 
+
+									var href = $(this).attr("href");
+
+									remove_user = $(this);
+
+									$.ajax({
+									        'async': false,
+									        'global': false,
+									        'url': href,
+									        'success': function (data) {
+
+									            val = data;
+
+												if(val == "OK")
+												{
+													remove_user.fadeOut(500, function(){
+													remove_user.parents('.access_list_user').remove();
+													});
+												}
+											}
+									    }); // end ajax
+
+									
+									return false;								
+								
+								 }); // end remove user
+													
+							});
+						});								
+
+			 },function(){
+			   $(this).text("[Show]");
+			 });			
+			
+			
+		});
+		
+		</script>
+		
+		{% endblock %}
 
 		{% block content %}
 
@@ -8,6 +182,7 @@
 					<a href="#">Control Panel</a>
 				</h1>
 				<div class="entry">
+					<br/>
 					<p>
 						{% if experiments %}
 								
@@ -18,13 +193,19 @@
 											<a href="../view/{{ experiment.id }}">{{ experiment.title }}</a>
 
 											<br/>
-												{% if user.is_staff %}<em>registered by {{ experiment.created_by }}</em>{% endif %}
-												{% if not experiment.approved %}
-													 (Unapproved) 
-												{% endif %}										
 										</th>
-										<td><a href=".">Access Control here?</a></td>
+									</tr>
+									<tr>								
+										<td>
+											Experiment Access <a href="{{experiment.id}}/access_list/" class="access_list_toggle">[Show Access List]</a>				
 						
+											<div class="access_list">
+									
+											</div>											
+											
+											<br/>
+											<br/>
+										</td>
 									</tr>					
 
 
@@ -38,6 +219,7 @@
 						
 						{% endif %}
 					</p>
+										
 				</div>
 			</div>
 		</div>
