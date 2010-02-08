@@ -124,10 +124,21 @@ img.right {
 	clear: both;
 	margin: 0 auto;
 	width: 1000px;
-	height: 128px;
+	height: 68px;
 	background: url(../images/mimg05.jpg) left top;
 	margin: 0 auto;
 	margin-top: 20px;
+}
+
+#headerloginstatus {
+	padding: 10px;
+	color: white;
+
+}
+
+#headerloginstatus a {
+	color: #f1f5f2;
+	font-weight: bold;
 }
 
 /* Logo */
@@ -506,4 +517,12 @@ table.experiment-table {
 	
 	.demo {
 		padding: 10px 0 10px 0;
+	}
+	
+	.access_list 
+	{
+		background-color: white;
+		margin-left: 10px;
+		margin-top: 10px;
+		padding: 5px;
 	}

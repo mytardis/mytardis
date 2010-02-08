@@ -94,6 +94,20 @@ def has_experiment_ownership(experiment_id, user_id):
 		return True
 	else:
 		return False
+		
+#custom decorator
+def experiment_ownership_required(f):
+        def wrap(request, *args, **kwargs):
+				#if user isn't logged in it will redirect to login page
+				if not request.user.is_authenticated():
+					return HttpResponseRedirect("/login")
+				if not has_experiment_ownership(kwargs['experiment_id'], request.user.pk):
+					return return_response_error(request)
+
+				return f(request, *args, **kwargs)
+        wrap.__doc__=f.__doc__
+        wrap.__name__=f.__name__
+        return wrap		
 
 #custom decorator
 def experiment_access_required(f):
@@ -164,6 +178,32 @@ def has_datafile_access(dataset_file_id, user_id):
 
 
 	if g:
+		return True
+	else:
+		return False
+		
+def in_group(user, group):
+	"""Returns True/False if the user is in the given group(s).
+	Usage::
+		{% if user|in_group:"Friends" %}
+		or
+		{% if user|in_group:"Friends,Enemies" %}
+		...
+		{% endif %}
+	You can specify a single group or comma-delimited list.
+	No white space allowed.
+	"""
+
+	group_list = [group.name]
+	
+	user_groups = []
+	
+	for group in user.groups.all(): user_groups.append(str(group.name))
+	
+	print group_list
+	print user_groups
+	
+	if filter(lambda x:x in user_groups, group_list):
 		return True
 	else:
 		return False			
@@ -685,3 +725,83 @@ def search_datafile(request):
 		'subtitle': "Search Datafiles",
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/search_datafile.html', c))
+	
+@login_required()
+def retrieve_user_list(request):
+
+	users = User.objects.all().order_by('username')
+
+	c = Context({
+		'users': users,
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/user_list.html', c))	
+	
+@experiment_ownership_required
+def retrieve_access_list(request, experiment_id):
+
+	users = User.objects.filter(groups__name=experiment_id).order_by('username')
+
+	c = Context({
+		'users': users,
+		'experiment_id': experiment_id,
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/access_list.html', c))
+	
+@experiment_ownership_required
+def add_access_experiment(request, experiment_id, username):
+	try:
+		u = User.objects.get(username=username)
+
+		g = Group.objects.get(name=experiment_id)
+
+		if not in_group(u, g):
+			u.groups.add(g)
+			
+			c = Context({
+				'user': u,
+				'experiment_id': experiment_id,
+			})			
+			return HttpResponse(render_response_index(request, 'tardis_portal/ajax/add_user_result.html', c))
+		else:
+			return return_response_error(request)
+
+	except User.DoesNotExist, ue:
+		return return_response_not_found(request)		
+	except Group.DoesNotExist, ge:
+		return return_response_not_found(request)
+
+	return return_response_error(request)
+	
+@experiment_ownership_required
+def remove_access_experiment(request, experiment_id, username):
+
+	try:
+		u = User.objects.get(username=username)
+
+		g = Group.objects.get(name=experiment_id)
+		
+		e = Experiment.objects.get(pk=experiment_id)
+
+		if in_group(u, g):
+			u.groups.remove(g)		
+
+			try:
+				eo = Experiment_Owner.objects.filter(experiment=e, user=u)
+				eo.delete()
+			except User.DoesNotExist, ue:
+				pass
+
+			c = Context({
+			})			
+			return HttpResponse(render_response_index(request, 'tardis_portal/ajax/remove_user_result.html', c))
+		else:
+			return return_response_error(request)
+
+	except User.DoesNotExist, ue:
+		return return_response_not_found(request)		
+	except Group.DoesNotExist, ge:
+		return return_response_not_found(request)
+	except Experiment.DoesNotExist, ge:
+		return return_response_not_found(request)		
+
+	return return_response_error(request)		
