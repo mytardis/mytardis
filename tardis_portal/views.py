@@ -59,25 +59,28 @@ def return_response_error_message(request, redirect_path, message):
 	
 def get_accessible_experiments(user_id):
 	
-	# from stackoverflow question 852414
-	from django.db.models import Q
+	try:
+		# from stackoverflow question 852414
+		from django.db.models import Q
 	
-	user = User.objects.get(pk=user_id)
-	
-	queries = [Q(pk=group.id) for group in user.groups.all()]
+		user = User.objects.get(pk=user_id)
 
-	experiments = None
+		queries = [Q(pk=group.id) for group in user.groups.all()]
+
+		experiments = None
+
+		if queries:
+			query = queries.pop()
+
+			for item in queries:
+				query |= item
 	
-	if queries:
-		query = queries.pop()
-	
-		for item in queries:
-			query |= item
-		
-		experiments = Experiment.objects.filter(query)
-	
-	return experiments
-	
+			experiments = Experiment.objects.filter(query)
+
+		return experiments
+	except User.DoesNotExist, ue:
+		return None
+
 def get_owned_experiments(user_id):
 
 	experiments = Experiment.objects.filter(experiment_owner__user__pk=user_id)
@@ -368,6 +371,7 @@ def view_experiment(request, experiment_id):
 	
 	return HttpResponse(render_response_index(request, 'tardis_portal/view_experiment.html', c))
 
+@login_required()
 def experiment_index(request):
 	
 	experiments = get_accessible_experiments(request.user.id)
@@ -804,4 +808,4 @@ def remove_access_experiment(request, experiment_id, username):
 	except Experiment.DoesNotExist, ge:
 		return return_response_not_found(request)		
 
-	return return_response_error(request)		
+	return return_response_error(request)
