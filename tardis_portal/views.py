@@ -163,7 +163,7 @@ def has_experiment_access(experiment_id, user_id):
 def has_dataset_access(dataset_id, user_id):
 
 	experiment = Experiment.objects.get(dataset__pk=dataset_id)
-	g = Group.objects.filter(pk=experiment.id, user__pk=user_id)
+	g = Group.objects.filter(name=experiment.id, user__pk=user_id)
 	
 
 	if g:
@@ -174,7 +174,7 @@ def has_dataset_access(dataset_id, user_id):
 def has_datafile_access(dataset_file_id, user_id):
 
 	experiment = Experiment.objects.get(dataset__dataset_file__pk=dataset_file_id)
-	g = Group.objects.filter(pk=experiment.id, user__pk=user_id)
+	g = Group.objects.filter(name=experiment.id, user__pk=user_id)
 
 
 	if g:
