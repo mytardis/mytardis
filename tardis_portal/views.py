@@ -58,28 +58,25 @@ def return_response_error_message(request, redirect_path, message):
 	return HttpResponseServerError(render_response_index(request, redirect_path, c))
 	
 def get_accessible_experiments(user_id):
-	
-	try:
-		# from stackoverflow question 852414
-		from django.db.models import Q
-	
-		user = User.objects.get(pk=user_id)
-
-		queries = [Q(pk=group.id) for group in user.groups.all()]
 
 		experiments = None
 
-		if queries:
-			query = queries.pop()
+		# from stackoverflow question 852414
+		from django.db.models import Q
 
-			for item in queries:
-				query |= item
-	
-			experiments = Experiment.objects.filter(query)
+		user = User.objects.get(id=user_id)
+
+		queries = [Q(id=group.name) for group in user.groups.all()]
+
+		if queries:
+				query = queries.pop()
+
+				for item in queries:
+						query |= item
+
+				experiments = Experiment.objects.filter(query)
 
 		return experiments
-	except User.DoesNotExist, ue:
-		return None
 
 def get_owned_experiments(user_id):
 
@@ -156,7 +153,7 @@ def datafile_access_required(f):
 
 def has_experiment_access(experiment_id, user_id):
 
-	g = Group.objects.filter(pk=experiment_id, user__pk=user_id)
+	g = Group.objects.filter(name=experiment_id, user__id=user_id)
 
 	if g:
 		return True
@@ -354,10 +351,6 @@ def view_experiment(request, experiment_id):
 		author_experiments = author_experiments.order_by('order')
 		
 		datafiles = Dataset_File.objects.filter(dataset__experiment=experiment_id)
-
-		if experiment.created_by != request.user and request.user.is_staff == False: #if exp isn't owned by current user or user isn't staff
-			if experiment.approved == False: #if either unapproved or private
-				return return_response_error(request)
 		
 		c = Context({
 			'experiment': experiment,
