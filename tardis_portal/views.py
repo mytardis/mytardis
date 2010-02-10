@@ -174,7 +174,7 @@ def has_dataset_access(dataset_id, user_id):
 def has_datafile_access(dataset_file_id, user_id):
 
 	df = Dataset_File.objects.get(id=dataset_file_id)
-	g = Group.objects.filter(name=experiment.id, user__pk=user_id)
+	g = Group.objects.filter(name=df.dataset.experiment.id, user__pk=user_id)
 
 
 	if g:
@@ -410,7 +410,7 @@ def register_experiment_ws(request):
 		except:
 			return return_response_error_message(request, 'tardis_portal/blank_status.html', "Unexpected Error - ", sys.exc_info()[0])				
 
-		response = HttpResponse(status=201)
+		response = HttpResponse(status=200)
 		response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
 
 		return response	
@@ -447,7 +447,8 @@ def register_experiment_ws_xmldata(request):
 			#todo this entire function needs a fancy class with functions for each part..
 			import os
 			if not os.path.exists(dir):
-			    os.makedirs(dir)
+				os.makedirs(dir)
+				os.system('chmod g+w ' + dir)
 			
 			file = open(dir + '/METS.xml', 'w')
 
@@ -465,6 +466,9 @@ def register_experiment_ws_xmldata(request):
 						#create user, generate username, randomly generated pass, send email with pass
 			
 			if not len(request.POST.getlist('experiment_owner')) == 0:
+				g = Group(name=eid)
+				g.save()
+							
 				for owner in request.POST.getlist('experiment_owner'):
 					
 					u = None
@@ -483,8 +487,20 @@ def register_experiment_ws_xmldata(request):
 						new_username = owner.partition('@')[0]
 						new_username = new_username.replace(".", "_")
 						
-						u = User.objects.create_user(new_username, owner, random_password)
-						u.save()
+						# email new username and password
+						from django.core.mail import send_mail
+						
+						recipient_list = list()
+						
+						# subject = "TARDIS Debug"
+						# from_email = "steve.androulakis@gmail.com"
+						# message = request.raw_post_data
+						# recipient_list.append(from_email)
+						# print recipient_list
+						# send_mail(subject, message, from_email, recipient_list, fail_silently=False)									
+						# 
+						# u = User.objects.create_user(new_username, owner, random_password)
+						# u.save()
 						
 						# email new username and password
 						from django.core.mail import send_mail
@@ -497,15 +513,13 @@ def register_experiment_ws_xmldata(request):
 						recipient_list.append(owner)
 						print recipient_list
 						
-						send_mail(subject, message, from_email, recipient_list, fail_silently=False)						
+						#send_mail(subject, message, from_email, recipient_list, fail_silently=False)						
 					
 					exp_owner = Experiment_Owner(experiment=Experiment.objects.get(pk=eid), user=u)
 					exp_owner.save()
-					g = Group(name=eid)
-					g.save()
-					u.groups.add(g)				
+					u.groups.add(g)			
 
-			response = HttpResponse(str(eid), status=201)
+			response = HttpResponse(str(eid), status=200)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
 
 			return response
