@@ -173,7 +173,7 @@ def has_dataset_access(dataset_id, user_id):
 		
 def has_datafile_access(dataset_file_id, user_id):
 
-	experiment = Experiment.objects.get(dataset__dataset_file__pk=dataset_file_id)
+	df = Dataset_File.objects.get(id=dataset_file_id)
 	g = Group.objects.filter(name=experiment.id, user__pk=user_id)
 
 
@@ -239,7 +239,7 @@ def download(request, dfid):
 	#todo handle missing file, general error
 	if request.GET.has_key('dfid') and len(request.GET['dfid']) > 0:
 		datafile = Dataset_File.objects.get(pk=request.GET['dfid'])
-		if has_datafile_access(dfid, request.user.id):
+		if has_datafile_access(datafile.id, request.user.id):
 			url = datafile.url
 		
 			if url.startswith('http://') or url.startswith('https://') or url.startswith('ftp://'):
