@@ -300,7 +300,7 @@ def downloadTar(request):
 			
 			response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
 			response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'
-			response['Content-Length'] = fileSize
+			response['Content-Length'] = fileSize + 5120
 
 			return response
 		else:
