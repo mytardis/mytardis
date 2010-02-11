@@ -249,14 +249,16 @@ def download(request, dfid):
 			
 				try:
 					print file_path
-					f = open(file_path)
+					from django.core.servers.basehttp import FileWrapper
+					wrapper = FileWrapper(file(file_path))
 					
-					response = HttpResponse(mimetype='application/octet-stream')
+					response = HttpResponse(wrapper, mimetype='application/octet-stream')
 					response['Content-Disposition'] = 'attachment; filename=' + datafile.filename
-
-					response.write(f.read())	
 					
-					return response				
+					import os
+					response['Content-Length'] = os.path.getsize(file_path)
+					
+					return response
 
 				except IOError, io:
 					return return_response_not_found(request)				
@@ -271,37 +273,35 @@ def downloadTar(request):
 	if request.POST.has_key('datafile'):
 		
 		if not len(request.POST.getlist('datafile')) == 0:
-			from django.utils.safestring import SafeUnicode
-			response = HttpResponse(mimetype='application/x-tar')
-			response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'		
+			from django.utils.safestring import SafeUnicode	
+			from django.core.servers.basehttp import FileWrapper
 		
 			import StringIO
 
-			buffer = StringIO.StringIO()	
+			buffer = StringIO.StringIO()			
 	
-			import tarfile
-			import os	
-			tar = tarfile.open("", "w", buffer)
+			import os		
 	
 			fileString = ""
+			fileSize = 0
 			for dfid in request.POST.getlist('datafile'):
 				datafile = Dataset_File.objects.get(pk=dfid)
 				if has_datafile_access(dfid, request.user.id):
 					if datafile.url.startswith('file://'):
 						absolute_filename = datafile.url.partition('//')[2]
-						file_string = settings.FILE_STORE_PATH + '/' + request.POST['expid'] + '/' + absolute_filename
-					
-						try:
-							tar.add(file_string.encode('ascii'), arcname=absolute_filename.encode('ascii'), recursive=False)
-						except OSError, i:
-							return return_response_not_found(request)
-					
-			tar.close()
+						fileString = fileString + request.POST['expid'] + '/' + absolute_filename + " "
+						fileSize = fileSize + long(datafile.size)
 	
-			# Get the value of the StringIO buffer and write it to the response.
-			tarFile = buffer.getvalue()
-			buffer.close()
-			response.write(tarFile)
+			#tarfile class doesn't work on large files being added and streamed on the fly, so going command-line-o
+			
+			tar_command = "tar -C " + settings.FILE_STORE_PATH + " -c " + fileString												
+			
+			import shlex, subprocess
+			
+			response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
+			response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'
+			response['Content-Length'] = fileSize
+
 			return response
 		else:
 			return return_response_not_found(request)
@@ -486,11 +486,6 @@ def register_experiment_ws_xmldata(request):
 						
 						new_username = owner.partition('@')[0]
 						new_username = new_username.replace(".", "_")
-						
-						# email new username and password
-						from django.core.mail import send_mail
-						
-						recipient_list = list()
 						
 						# subject = "TARDIS Debug"
 						# from_email = "steve.androulakis@gmail.com"
