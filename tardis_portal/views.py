@@ -469,6 +469,8 @@ def register_experiment_ws_xmldata(request):
 						recipient_list.append(owner)
 						print recipient_list
 						
+						User.objects.create_user(new_username, owner, random_password)
+						
 						#send_mail(subject, message, from_email, recipient_list, fail_silently=False)						
 					
 					exp_owner = Experiment_Owner(experiment=Experiment.objects.get(pk=eid), user=u)
