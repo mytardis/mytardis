@@ -221,18 +221,7 @@ def index(request):
 	c = Context({
 		'status': status,
 	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))
-
-def news(request):
-	import feedparser
-
-	channels = feedparser.parse('http://tardis.edu.au/site_media/xml/localBlogCopy.xml')
-		
-	c = Context({
-		'entries': channels.entries,
-		'subtitle': "News",
-	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/news.html', c))			
+	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))		
 	
 def download(request, dfid):
 
@@ -321,25 +310,7 @@ def partners(request):
 	c = Context({
 
 	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/partners.html', c))	
-	
-def deposit(request):
-
-	c = Context({
-		'subtitle': "Deposit",
-	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/deposit.html', c))	
-	
-def orca(request):
-	import datetime
-	
-	experiments = Experiment.objects.filter(approved=True)
-
-	c = Context({
-		'experiments': experiments,
-		'now': datetime.datetime.now(),
-	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/rif.xml', c), mimetype='application/xml')	
+	return HttpResponse(render_response_index(request, 'tardis_portal/partners.html', c))
 
 @experiment_access_required
 def view_experiment(request, experiment_id):
@@ -486,17 +457,7 @@ def register_experiment_ws_xmldata(request):
 						
 						new_username = owner.partition('@')[0]
 						new_username = new_username.replace(".", "_")
-						
-						# subject = "TARDIS Debug"
-						# from_email = "steve.androulakis@gmail.com"
-						# message = request.raw_post_data
-						# recipient_list.append(from_email)
-						# print recipient_list
-						# send_mail(subject, message, from_email, recipient_list, fail_silently=False)									
-						# 
-						# u = User.objects.create_user(new_username, owner, random_password)
-						# u.save()
-						
+
 						# email new username and password
 						from django.core.mail import send_mail
 
@@ -528,35 +489,6 @@ def register_experiment_ws_xmldata(request):
 		'subtitle': "Register Experiment",
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/register_experiment.html', c))
-	
-@login_required()
-def approve_experiment(request):
-	if request.user.is_staff:
-		if request.GET.has_key('id'):
-			experiment_id = request.GET['id']
-			
-			try:
-				e = Experiment.objects.get(pk=experiment_id)
-				
-				e.approved = True
-				e.save()	
-
-				status = "Experiment successfully approved."
-
-				c = Context({
-					'title': "Reingest Experiment",
-					'status': status,
-					'subtitle': "Reingest Experiment",
-				})
-				return HttpResponse(render_response_index(request, 'tardis_portal/blank_status.html', c))				
-				
-			except Experiment.DoesNotExist, de:
-				return return_response_not_found(request)
-		
-		else:
-			return return_response_not_found(request)			
-	else:
-		return return_response_error(request)
 
 @datafile_access_required	
 def retrieve_parameters(request, dataset_file_id):
@@ -585,19 +517,6 @@ def retrieve_xml_data(request, dataset_file_id):
 		'formatted_xml': formatted_xml,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/xml_data.html', c))	
-	
-def retrieve_ftp(request, id):
-	try:
-		experiment = Experiment.objects.get(pk=id)
-
-		c = Context({
-			'experiment': experiment,
-		})
-		
-	except Experiment.DoesNotExist, de:
-		return return_response_not_found(request)		
-		
-	return HttpResponse(render_response_index(request, 'tardis_portal/site_media/applets/ftp/ftp.html', c))	
 
 @dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
