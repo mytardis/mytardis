@@ -162,6 +162,13 @@ def monash_login(request):
 		username = request.POST['username']
 		password = request.POST['password']
 		
+		next = '/'
+		if request.POST.has_key('next'):
+			next = request.POST['next']
+			
+		c = Context({
+		})					
+		
 		try:
 			u = User.objects.get(username=username)
 			
@@ -170,26 +177,23 @@ def monash_login(request):
 					if authenticate_user_authcate(username, password):
 						u.backend='django.contrib.auth.backends.ModelBackend'
 						login(request, u)
-						#todo direct to success page
+						return HttpResponseRedirect(next)
 					else:
-						pass
-						#todo return error incorrect u/p
+						return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")
 				else:
 					if authenticate(username=username, password=password):
 						u.backend='django.contrib.auth.backends.ModelBackend'
 						login(request, u)
-						#todo redirect
+						return HttpResponseRedirect(next)
 					else:
-						pass
-						#todo return error incorrect u/p
+						return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")
 			except UserProfile.DoesNotExist, ue:
 				if authenticate(username=username, password=password):
 					u.backend='django.contrib.auth.backends.ModelBackend'
 					login(request, u)
-					#todo redirect
+					return HttpResponseRedirect(next)
 				else:
-					pass
-					#todo return error incorrect u/p				
+					return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")				
 		except User.DoesNotExist, ue:
 			if authenticate_user_authcate(username, password):
 				email = get_authcate_email_for_user(username)
@@ -210,11 +214,9 @@ def monash_login(request):
 				
 				u.backend='django.contrib.auth.backends.ModelBackend' #todo consolidate
 				login(request, u)
-				
-				#direct to success page
+				return HttpResponseRedirect(next)	
 			else:
-				pass
-				#return error: incorrect u/p	
+				return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")	
 
 	c = Context({
 	})
