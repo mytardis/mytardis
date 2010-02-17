@@ -27,7 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.models import Experiment, Author, XML_data, XSLT_docs, Dataset_File, Dataset, Pdbid, Citation, Schema, ParameterName, DatafileParameter, DatasetParameter, Author_Experiment, Experiment_Owner
+from tardis.tardis_portal.models import Experiment, Author, XML_data, XSLT_docs, Dataset_File, Dataset, Pdbid, Citation, Schema, ParameterName, DatafileParameter, DatasetParameter, Author_Experiment, Experiment_Owner, UserProfile
 from django.contrib import admin
 
 admin.site.register(XML_data)
@@ -44,3 +44,4 @@ admin.site.register(DatafileParameter)
 admin.site.register(DatasetParameter)
 admin.site.register(Author_Experiment)
 admin.site.register(Experiment_Owner)
+admin.site.register(UserProfile)

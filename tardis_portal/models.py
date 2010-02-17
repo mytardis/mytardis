@@ -31,6 +31,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.safestring import SafeUnicode
 
+class UserProfile(models.Model):
+    authcate_user = models.BooleanField()
+    user = models.ForeignKey(User, unique=True)
+
 class XSLT_docs(models.Model):
 	xmlns = models.URLField(max_length=400, primary_key=True)
 	data = models.TextField()
@@ -144,4 +148,4 @@ class XML_data(models.Model):
 	data = models.TextField()
 
 	def __unicode__(self):
-		return self.xmlns	
+		return self.xmlns

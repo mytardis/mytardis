@@ -92,8 +92,13 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+LDAP_URL = "directory.example.com"
+BASE_DN = "o=Organisation, c=X"
+AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
+
 STATIC_DOC_ROOT = '/path/to/myTARDIS/tardis/tardis_portal/site_media'
 ADMIN_MEDIA_STATIC_DOC_ROOT = '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/django/contrib/admin/media'
+FILE_STORE_PATH='/path/to/store'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
