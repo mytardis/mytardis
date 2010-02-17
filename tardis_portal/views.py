@@ -18,6 +18,8 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from tardis.tardis_portal.models import *
 from django.db.models import Sum
 
+import ldap
+
 def render_response_index(request, *args, **kwargs):
 
 	kwargs['context_instance'] = RequestContext(request)
@@ -56,6 +58,220 @@ def return_response_error_message(request, redirect_path, message):
 	})
 
 	return HttpResponseServerError(render_response_index(request, redirect_path, c))
+	
+#todo complete
+def authenticate_user_authcate(username, password):
+	l = None
+	l_bind = None
+	try:		
+		l = ldap.open(settings.LDAP_URL)
+		
+		searchScope = ldap.SCOPE_SUBTREE
+		## retrieve all attributes - again adjust to your needs - see documentation for more options
+		retrieveAttributes = None
+		searchFilter = 'uid=' + username	
+
+		l.protocol_version = ldap.VERSION3
+
+		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
+
+		DN = result[0][0]
+
+		l_bind = ldap.open("directory.monash.edu.au")
+
+		l_bind.simple_bind_s(DN, password)	
+		
+		return True	
+	
+	except ldap.LDAPError, e:
+		return False
+		
+	except IndexError, i:
+		
+		return ''		
+		
+	finally:
+		if l:
+			l.unbind_s()
+		if l_bind:
+			l_bind.unbind_s()
+	
+def get_authcate_username_for_email(email):
+	l = None
+	try:
+		l = ldap.open(settings.LDAP_URL)
+
+		searchScope = ldap.SCOPE_SUBTREE
+		## retrieve all attributes - again adjust to your needs - see documentation for more options
+		retrieveAttributes = ['uid']
+		searchFilter = '(|(mail=' + email + ')(mailalternateaddress=' + email + '))'	
+
+		l.protocol_version = ldap.VERSION3
+
+		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
+
+		return result[0][1]['uid'][0]
+
+	except ldap.LDAPError, e:
+
+		return ''	
+
+	except IndexError, i:
+
+		return ''			
+	
+	finally:
+		if l:
+			l.unbind_s()
+	
+def get_authcate_email_for_user(username):
+	l = None
+	try:
+		l = ldap.open(settings.LDAP_URL)
+	
+		searchScope = ldap.SCOPE_SUBTREE
+		## retrieve all attributes - again adjust to your needs - see documentation for more options
+		retrieveAttributes = ['mail']
+		searchFilter = 'uid=' + username	
+
+		l.protocol_version = ldap.VERSION3
+
+		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
+
+		return result[0][1]['mail'][0]
+	
+	except ldap.LDAPError, e:
+	
+		return ''	
+		
+	except IndexError, i:
+		
+		return ''
+	
+	finally:
+		if l:
+			l.unbind_s()
+
+#todo complete	
+def monash_login(request):
+	from django.contrib.auth import authenticate, login
+	# if user exists then check if ldap: try log in through ldap, else try log in usual way, either way login
+
+	#todo put me in SETTINGS
+	if request.POST.has_key('username') and request.POST.has_key('password'):
+		username = request.POST['username']
+		password = request.POST['password']
+		
+		try:
+			u = User.objects.get(username=username)
+			
+			try:
+				if u.get_profile().authcate_user:
+					if authenticate_user_authcate(username, password):
+						u.backend='django.contrib.auth.backends.ModelBackend'
+						login(request, u)
+						#todo direct to success page
+					else:
+						pass
+						#todo return error incorrect u/p
+				else:
+					if authenticate(username=username, password=password):
+						u.backend='django.contrib.auth.backends.ModelBackend'
+						login(request, u)
+						#todo redirect
+					else:
+						pass
+						#todo return error incorrect u/p
+			except UserProfile.DoesNotExist, ue:
+				if authenticate(username=username, password=password):
+					u.backend='django.contrib.auth.backends.ModelBackend'
+					login(request, u)
+					#todo redirect
+				else:
+					pass
+					#todo return error incorrect u/p				
+		except User.DoesNotExist, ue:
+			if authenticate_user_authcate(username, password):
+				email = get_authcate_email_for_user(username)
+				
+				from random import choice
+				import string
+				
+				#random password todo make function
+				random_password = ""
+				chars = string.letters + string.digits
+				
+				for i in range(8):
+					random_password = random_password + choice(chars)
+				
+				u = User.objects.create_user(username, email, random_password)
+				up = UserProfile(authcate_user=True, user=u)
+				up.save()
+				
+				u.backend='django.contrib.auth.backends.ModelBackend' #todo consolidate
+				login(request, u)
+				
+				#direct to success page
+			else:
+				pass
+				#return error: incorrect u/p	
+
+	c = Context({
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/login.html', c))
+
+#todo complete
+def get_or_create_user_authcate(email):
+	
+	authcate_user = None
+	username = get_authcate_username_for_email(email)
+	try:
+
+		u = User.objects.get(username=username)
+		print u.get_profile()
+		# if, somehow someone else has created a user manually that has this username
+		if not u.get_profile().authcate_user:
+			# see if this has already happened and a new user was assigned with a diff username
+			try:
+				u_email = User.objects.get(email__exact=email, username=username)
+				authcate_user = u_email
+				
+			except User.DoesNotExist, ue:
+				pass #this is a rare case and will have to be handled later
+				# create user somehow and email? (auto_gen username?)
+		else:
+			authcate_user = u
+			
+	except User.DoesNotExist, ue:
+
+		from random import choice
+		import string	
+		#random password todo make function
+		random_password = ""
+		chars = string.letters + string.digits
+
+		for i in range(8):
+			random_password = random_password + choice(chars)
+
+		authcate_user = User.objects.create_user(username, email, random_password)
+		up = UserProfile(authcate_user=True, user=authcate_user)
+		up.save()
+		
+		#todo :send email with notification
+	return authcate_user	
+
+def logout(request):
+	try:
+		del request.session['username']
+		del request.session['password']
+	except KeyError:
+		pass
+
+	c = Context({
+
+	})		
+	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))	
+	
 	
 def get_accessible_experiments(user_id):
 
@@ -360,7 +576,7 @@ def register_experiment_ws(request):
 		url = request.POST['url']
 		username = request.POST['username']
 		password = request.POST['password']
-		
+
 		from django.contrib.auth import authenticate
 		user = authenticate(username=username, password=password)
 		if user is not None:
@@ -443,37 +659,27 @@ def register_experiment_ws_xmldata(request):
 				for owner in request.POST.getlist('experiment_owner'):
 					
 					u = None
-					try:
-						u = User.objects.get(email__exact=owner)
-					except User.DoesNotExist, ue:
-						from random import choice
-						import string
-						
-						#random password
-						random_password = ""
-						chars = string.letters + string.digits
-						for i in range(8):
-							random_password = random_password + choice(chars)					
-						
-						new_username = owner.partition('@')[0]
-						new_username = new_username.replace(".", "_")
 
 						# email new username and password
-						from django.core.mail import send_mail
+						# from django.core.mail import send_mail
 
-						recipient_list = list()
-
-						subject = "TARDIS User Automatically Created"
-						message = "A new user has been created in myTARDIS as a result of data you own being stored. Log in to " + settings.TARDISURLPREFIX + "/login with the username: " + new_username + " password: " + random_password
-						from_email = "steve.androulakis@gmail.com"
-						recipient_list.append(owner)
-						print recipient_list
+						# recipient_list = list()
+						# 
+						# subject = "TARDIS User Automatically Created"
+						# message = "A new user has been created in myTARDIS as a result of data you own being stored. Log in to " + settings.TARDISURLPREFIX + "/login with the username: " + new_username + " password: " + random_password
+						# from_email = "steve.androulakis@gmail.com"
+						# recipient_list.append(owner)
+						# print recipient_list
+						# 
+						# u = User.objects.create_user(new_username, owner, random_password)
 						
-						u = User.objects.create_user(new_username, owner, random_password)
+						#send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 						
-						#send_mail(subject, message, from_email, recipient_list, fail_silently=False)						
-					
-					exp_owner = Experiment_Owner(experiment=Experiment.objects.get(pk=eid), user=u)
+					# try get user from email
+											
+					u = get_or_create_user_authcate(owner)
+					e = Experiment.objects.get(pk=eid)
+					exp_owner = Experiment_Owner(experiment=e, user=u)
 					exp_owner.save()
 					u.groups.add(g)			
 
