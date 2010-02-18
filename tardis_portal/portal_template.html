@@ -63,7 +63,7 @@
 <div id="header">
 	<div id="logo">
 		<h1><a href="#">myTARDIS</a></h1>
-		<p>DIFFRACTION IMAGE REPOSITORY: {{public_datafile_size|filesizeformat}} data stored</p>
+		<p>DIFFRACTION IMAGE REPOSITORY: {% if public_datafile_size %}{{public_datafile_size|filesizeformat}}{% endif %} data stored</p>
 	</div>
 	<div id="menu">
 		<ul>
