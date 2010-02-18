@@ -154,7 +154,8 @@
 							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>						
 							{% if experiment.ftp_location %}<li><a href="/ajax/ftp/{{experiment.id}}">FTP Download</a></li>{% endif %}
 						</ul>
-						<div id="tabs-1">
+						<div id="tabs-1">							
+							
                             <p>
                             <strong>Authors: </strong><br/>
                             {% for author in authors %}
@@ -205,6 +206,7 @@
 										<ul>
 												<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
 												<li><strong>Files:</strong> {{datafiles.count}}</li>
+												<li><strong>Size:</strong> {{size|filesizeformat}}</li>
 										</ul>										
 									</div>								
 								</div>
@@ -213,7 +215,19 @@
 							<p>
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
-							</p>														
+							</p>		
+							
+							<p>
+							<strong><a href="downloadExperiment/">Download Experiment</a></strong><br/>
+							</p>							
+							
+                            <p align="right">
+							<br/>
+                            <strong>Experiment Administrators </strong><br/>
+                            {% for owner in owners %}
+                                    {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+                            {% endfor %}
+                            </p>																			
 							
 						</div>
 						<div id="tabs-2">
@@ -233,17 +247,19 @@
 									</div>
 									
 									<div class="dataset_extrainfo">
-										{% if dataset.trddataset2 %}
+										{% if dataset.datasetparameter_set.count %}
 										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
-												<!-- #todo fix this up to do new params -->
-												<li><strong>Resolution Limit: </strong>{{ dataset.trddataset2.resolutionLimit }} Å</li>
-												<li><strong>Diffractometer Type: </strong>{{ dataset.trddataset2.diffractometerType }}</li>
-												<li><strong>X-Ray Source: </strong>{{ dataset.trddataset2.xraySource }}</li>
-												<li><strong>Crystal Name: </strong>{{ dataset.trddataset2.crystalName }}</li>
-												<li><strong>Mosaic Spread: </strong>{{ dataset.trddataset2.mosaicSpread }}</li>
-												<li><strong>Chi Angle: </strong>{{ dataset.trddataset2.chiAngle }}</li>
+												{% for parameter in dataset.datasetparameter_set.all %}
+													<li><strong>{{ parameter.name.full_name }}: </strong>
+														{% if parameter.name.is_numeric %}
+															{{ parameter.numerical_value }} {{ parameter.name.units }}
+														{% else %}
+															{{ parameter.string_value }}
+														{% endif %}
+													</li>
+												{% endfor %}
 										</ul>	
 										</div>	
 										{% endif %}					

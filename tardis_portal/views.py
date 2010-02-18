@@ -32,6 +32,12 @@ def render_response_index(request, *args, **kwargs):
 	kwargs['context_instance']['public_datafiles'] = Dataset_File.objects.filter(dataset__experiment__approved=True)
 	kwargs['context_instance']['public_experiments'] = Experiment.objects.filter(approved=True)
 	kwargs['context_instance']['public_pdbids'] = Pdbid.objects.filter(experiment__approved=True)
+	
+	size = 0
+	for df in kwargs['context_instance']['public_datafiles']:
+		size = size + long(df.size)
+	
+	kwargs['context_instance']['public_datafile_size'] = size	
 
 	return render_to_response(*args, **kwargs)
 	
@@ -40,7 +46,6 @@ def return_response_error(request):
 		'status': "ERROR: Forbidden",
 		'error': True		
 	})
-
 	return HttpResponseForbidden(render_response_index(request, 'tardis_portal/blank_status.html', c))
 	
 def return_response_not_found(request):
@@ -63,7 +68,7 @@ def return_response_error_message(request, redirect_path, message):
 def authenticate_user_authcate(username, password):
 	l = None
 	l_bind = None
-	try:		
+	try:
 		l = ldap.open(settings.LDAP_URL)
 		
 		searchScope = ldap.SCOPE_SUBTREE
@@ -167,7 +172,9 @@ def monash_login(request):
 			next = request.POST['next']
 			
 		c = Context({
-		})					
+		})
+		
+		error_template_redirect = "tardis_portal/login.html"		
 		
 		try:
 			u = User.objects.get(username=username)
@@ -179,21 +186,21 @@ def monash_login(request):
 						login(request, u)
 						return HttpResponseRedirect(next)
 					else:
-						return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")
+						return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
 				else:
 					if authenticate(username=username, password=password):
 						u.backend='django.contrib.auth.backends.ModelBackend'
 						login(request, u)
 						return HttpResponseRedirect(next)
 					else:
-						return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")
+						return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
 			except UserProfile.DoesNotExist, ue:
 				if authenticate(username=username, password=password):
 					u.backend='django.contrib.auth.backends.ModelBackend'
 					login(request, u)
 					return HttpResponseRedirect(next)
 				else:
-					return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")				
+					return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")				
 		except User.DoesNotExist, ue:
 			if authenticate_user_authcate(username, password):
 				email = get_authcate_email_for_user(username)
@@ -216,7 +223,7 @@ def monash_login(request):
 				login(request, u)
 				return HttpResponseRedirect(next)	
 			else:
-				return_response_error_message(request, "tardis_portal/index.html", "Sorry, username and password don't match")	
+				return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")	
 
 	c = Context({
 	})
@@ -481,11 +488,7 @@ def downloadTar(request):
 		
 		if not len(request.POST.getlist('datafile')) == 0:
 			from django.utils.safestring import SafeUnicode	
-			from django.core.servers.basehttp import FileWrapper
-		
-			import StringIO
-
-			buffer = StringIO.StringIO()			
+			from django.core.servers.basehttp import FileWrapper		
 	
 			import os		
 	
@@ -515,6 +518,39 @@ def downloadTar(request):
 	else:
 		return return_response_not_found(request)
 		
+@experiment_access_required
+def downloadExperiment(request, experiment_id):
+	# Create the HttpResponse object with the appropriate headers.
+	# todo handle no datafile, invalid filename, all http links (tarfile count?)
+
+	from django.utils.safestring import SafeUnicode	
+	from django.core.servers.basehttp import FileWrapper
+
+	import os		
+
+	fileString = ""
+	fileSize = 0
+	experiment = Experiment.objects.get(pk=experiment_id)
+	
+	for dataset in experiment.dataset_set.all():
+		for datafile in dataset.dataset_file_set.all():
+			if has_datafile_access(datafile.id, request.user.id):
+				if datafile.url.startswith('file://'):
+					absolute_filename = datafile.url.partition('//')[2]
+					fileString = fileString + experiment_id + '/' + absolute_filename + " "
+					fileSize = fileSize + long(datafile.size)
+
+	#tarfile class doesn't work on large files being added and streamed on the fly, so going command-line-o
+
+	tar_command = "tar -C " + settings.FILE_STORE_PATH + " -c " + fileString												
+
+	import shlex, subprocess
+
+	response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
+	response['Content-Disposition'] = 'attachment; filename=experiment' + str(experiment.id) + '-complete.tar'
+	response['Content-Length'] = fileSize + 5120
+
+	return response	
 
 def about(request):
 	
@@ -541,12 +577,25 @@ def view_experiment(request, experiment_id):
 		
 		datafiles = Dataset_File.objects.filter(dataset__experiment=experiment_id)
 		
+		size = 0
+		for dataset in experiment.dataset_set.all():
+			for df in dataset.dataset_file_set.all():
+				size = size + long(df.size)
+		
+		owners = None
+		try:
+			owners = Experiment_Owner.objects.filter(experiment=experiment)
+		except Experiment_Owner.DoesNotExist, eo:
+			pass
+		
 		c = Context({
 			'experiment': experiment,
 			'authors': author_experiments,
 			'datafiles': datafiles,
 			# 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],			
-			'subtitle': experiment.title,			
+			'subtitle': experiment.title,	
+			'owners': owners,
+			'size': size,		
 		})
 	except Experiment.DoesNotExist, de:
 		return return_response_not_found(request)
@@ -923,7 +972,7 @@ def remove_access_experiment(request, experiment_id, username):
 			try:
 				eo = Experiment_Owner.objects.filter(experiment=e, user=u)
 				eo.delete()
-			except User.DoesNotExist, ue:
+			except Experiment_Owner.DoesNotExist, eo:
 				pass
 
 			c = Context({
