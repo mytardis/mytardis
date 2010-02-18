@@ -436,12 +436,6 @@ def in_group(user, group):
 def index(request):
 	
 	status = ""
-	
-	#import feedparser
-
-	#channels = feedparser.parse('http://tardis.edu.au/site_media/xml/localBlogCopy.xml')
-	
-	# 'entries': channels.entries,
 
 	c = Context({
 		'status': status,
@@ -517,6 +511,40 @@ def downloadTar(request):
 			return return_response_not_found(request)
 	else:
 		return return_response_not_found(request)
+		
+def display_dataset_image(request, dataset_id, parameter_name):
+	
+	#todo handle not exist
+	dataset = Dataset.objects.get(pk=dataset_id)
+	if has_experiment_access(dataset.experiment.id, request.user.id):
+		image = dataset.datasetparameter_set.get(name__name=parameter_name)
+	
+		import base64
+	
+		data = base64.b64decode(image.string_value)
+	
+		response = HttpResponse(data, mimetype='image/jpeg')
+	
+		return response
+	else:
+		return return_response_error(request)	
+		
+def display_datafile_image(request, dataset_file_id, parameter_name):
+
+	#todo handle not exist
+	datafile = Dataset_File.objects.get(pk=dataset_file_id)
+	if has_experiment_access(datafile.dataset.experiment.id, request.user.id):
+		image = datafile.datafileparameter_set.get(name__name=parameter_name)
+
+		import base64
+
+		data = base64.b64decode(image.string_value)
+
+		response = HttpResponse(data, mimetype='image/jpeg')
+
+		return response
+	else:
+		return return_response_error(request)			
 		
 @experiment_access_required
 def downloadExperiment(request, experiment_id):
