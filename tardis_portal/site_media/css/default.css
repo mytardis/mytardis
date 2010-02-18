@@ -2,7 +2,7 @@ body {
 	margin: 0;
 	padding: 0;
 	background: #FFFFFF url(../images/mimg01.jpg) repeat-x left top;
-	text-align: justify;
+	text-align: left;
 	font-family: Tahoma, Arial, Helvetica, sans-serif;
 	font-size: 12px;
 	color: #404040;
@@ -24,7 +24,7 @@ input, textarea, select {
 }
 
 
-h1, h2, h3 {
+h2, h3 {
 	font-weight: normal;
 	color: #212121;
 }
@@ -32,6 +32,8 @@ h1, h2, h3 {
 h1 {
 	letter-spacing: -1px;
 	font-size: 2.2em;
+	color: #781F1F;
+	font-weight: normal;
 }
 
 h2 {
@@ -69,7 +71,7 @@ ol {
 }
 
 a {
-	color: #000000;
+	color: #781F1F;
 	text-decoration: none;
 }
 
@@ -228,7 +230,7 @@ img.right {
 }
 
 #status {
-	width: 1000px;
+	width: 80%;
 	margin: 0 auto;
 	background: #F4F4F4;
 }
@@ -386,7 +388,7 @@ img.right {
 table.experiment-table {
 	margin: 0;
 	padding: 0;
-	width: 85%;	
+	font-size: 12px;
 	}
 	
 	/* trdDataset2 */
@@ -472,7 +474,6 @@ table.experiment-table {
 		border-width: 2px;
 		border-color: #666666;
 		border-style: dashed;
-		margin: 20px 20px 0 20px;
 		padding: 5px;
 		background-color: #fff68c;	
 		clear: both;
@@ -485,13 +486,13 @@ table.experiment-table {
 		border-width: 2px;
 		border-color: #E92E2E;
 		border-style: dashed;
-		margin: 20px 20px 0 20px;
 		padding: 5px;
 		background-color: #FF8C8C;	
 		clear: both;
 		color: black;
 		font-weight: bold;
 		text-align: center;
+		width: 70%;
 	}	
 	
 	.sidebar ul {

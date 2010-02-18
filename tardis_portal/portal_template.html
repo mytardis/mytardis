@@ -35,7 +35,6 @@
 	<title>myTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
 	<meta name="keywords" content="">
 	<meta name="description" content="">
-	<!-- <link href="/site_media/css/style.css" rel="stylesheet" type="text/css" media="screen"> -->
 	<link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
 
 	<link type="text/css" href="/site_media/css/theme/ui.all.css" rel="Stylesheet" />	
@@ -64,7 +63,7 @@
 <div id="header">
 	<div id="logo">
 		<h1><a href="#">myTARDIS</a></h1>
-		<p><a href="http://www.freecsstemplates.org/">DIFFRACTION IMAGE REPOSITORY</a></p>
+		<p>DIFFRACTION IMAGE REPOSITORY: {{public_datafile_size|filesizeformat}} data stored</p>
 	</div>
 	<div id="menu">
 		<ul>
@@ -79,28 +78,27 @@
 <!-- end header -->
 <div id="headerbg">
 	<div id="headerloginstatus">
-		{% if is_authenticated %}Welcome, {{ username }} <a href="/logout">[Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}
+		{% if is_authenticated %}Welcome, <em>{{ username }}</em> - <a href="/logout"> [Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}
+		
 	</div>
 </div>
-
-{% if status %}
-<div id="status">
-	{% if error %}
-<div id="statusBoxError">
-	{{status}}
-</div>
-	{% else %}
-<div id="statusBox">
-	{{status}}
-</div>
-	{% endif %}
-</div>
-{% endif %}
 <!-- start page -->
 <div id="page">
 	<!-- start content -->
 	<div id="content-box">
-			
+		{% if status %}
+		<div id="status">
+			{% if error %}
+		<div id="statusBoxError">
+			{{status}}
+		</div>
+			{% else %}
+		<div id="statusBox">
+			{{status}}
+		</div>
+			{% endif %}
+		</div>
+		{% endif %}
 		
 		{% block content %}
 		<!-- start latest-post -->
