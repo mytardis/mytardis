@@ -302,6 +302,22 @@ def get_accessible_experiments(user_id):
 				experiments = Experiment.objects.filter(query)
 
 		return experiments
+		
+def get_accessible_datafiles_for_user(experiments):
+
+	# from stackoverflow question 852414
+	from django.db.models import Q
+
+	queries = [Q(dataset__experiment__id=e.id) for e in experiments]
+
+	query = queries.pop()
+
+	for item in queries:
+		query |= item
+
+	dataset_files = Dataset_File.objects.filter(query)
+
+	return dataset_files		
 
 def get_owned_experiments(user_id):
 
@@ -829,26 +845,26 @@ def control_panel(request):
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/control_panel.html', c))
 	
+@login_required()
 def search_experiment(request):
 	get = False
-	experiments = Experiment.objects.all()
-	experiments = Experiment.objects.order_by('title')
-	
-	experiments = Experiment.objects.filter(approved=True)
+	experiments = get_accessible_experiments(request.user.id)
+	if experiments:
+		experiments = Experiment.objects.order_by('title')
 
-	if request.GET.has_key('results'):
-		get = True
-		if request.GET.has_key('title') and len(request.GET['title']) > 0:
-			experiments = experiments.filter(title__icontains=request.GET['title'])
+		if request.GET.has_key('results'):
+			get = True
+			if request.GET.has_key('title') and len(request.GET['title']) > 0:
+				experiments = experiments.filter(title__icontains=request.GET['title'])
 
-		if request.GET.has_key('description') and len(request.GET['description']) > 0:
-			experiments = experiments.filter(description__icontains=request.GET['description'])
+			if request.GET.has_key('description') and len(request.GET['description']) > 0:
+				experiments = experiments.filter(description__icontains=request.GET['description'])
 
-		if request.GET.has_key('institution_name') and len(request.GET['institution_name']) > 0:
-			experiments = experiments.filter(institution_name__icontains=request.GET['institution_name'])
+			if request.GET.has_key('institution_name') and len(request.GET['institution_name']) > 0:
+				experiments = experiments.filter(institution_name__icontains=request.GET['institution_name'])
 
-		if request.GET.has_key('creator') and len(request.GET['creator']) > 0:
-			experiments = experiments.filter(author_experiment__author__name__icontains=request.GET['creator'])
+			if request.GET.has_key('creator') and len(request.GET['creator']) > 0:
+				experiments = experiments.filter(author_experiment__author__name__icontains=request.GET['creator'])
 
 	c = Context({
 		'submitted': get,
@@ -857,12 +873,11 @@ def search_experiment(request):
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/search_experiment.html', c))	
 	
+@login_required()
 def search_quick(request):
 	get = False
 	experiments = Experiment.objects.all()
 	experiments = Experiment.objects.order_by('title')
-
-	experiments = Experiment.objects.filter(approved=True)
 
 	if request.GET.has_key('results'):
 		get = True
@@ -882,39 +897,39 @@ def search_quick(request):
 		'subtitle': "Search Experiments",
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/search_experiment.html', c))	
-	
+
+
 def search_datafile(request):
 	get = False
-	datafile_results = Dataset_File.objects.all()
-	datafile_results = Dataset_File.objects.order_by('filename')
+	datafile_results = get_accessible_datafiles_for_user(get_accessible_experiments(request.user.id))
+	if datafile_results:
+		datafile_results = datafile_results.order_by('filename')
 
-	datafile_results = Dataset_File.objects.filter(dataset__experiment__approved=True)	
+		if request.GET.has_key('results'):
+			get = True
+			if request.GET.has_key('filename') and len(request.GET['filename']) > 0:
+				datafile_results = datafile_results.filter(filename__icontains=request.GET['filename'])
 
-	if request.GET.has_key('results'):
-		get = True
-		if request.GET.has_key('filename') and len(request.GET['filename']) > 0:
-			datafile_results = datafile_results.filter(filename__icontains=request.GET['filename'])
-
-		if request.GET.has_key('diffractometerType') and request.GET['diffractometerType'] != '-':
-			datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='diffractometerType', \
-			dataset__datasetparameter__string_value__icontains=request.GET['diffractometerType'])
+			if request.GET.has_key('diffractometerType') and request.GET['diffractometerType'] != '-':
+				datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='diffractometerType', \
+				dataset__datasetparameter__string_value__icontains=request.GET['diffractometerType'])
 			
-		if request.GET.has_key('xraySource') and len(request.GET['xraySource']) > 0:
-			datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='xraySource', \
-			dataset__datasetparameter__string_value__icontains=request.GET['xraySource'])			
+			if request.GET.has_key('xraySource') and len(request.GET['xraySource']) > 0:
+				datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='xraySource', \
+				dataset__datasetparameter__string_value__icontains=request.GET['xraySource'])			
 		
-		if request.GET.has_key('crystalName') and len(request.GET['crystalName']) > 0:
-			datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='crystalName', \
-			dataset__datasetparameter__string_value__icontains=request.GET['crystalName'])			
+			if request.GET.has_key('crystalName') and len(request.GET['crystalName']) > 0:
+				datafile_results = datafile_results.filter(dataset__datasetparameter__name__name__icontains='crystalName', \
+				dataset__datasetparameter__string_value__icontains=request.GET['crystalName'])			
 
-		if request.GET.has_key('resLimitTo') and len(request.GET['resLimitTo']) > 0:
-			datafile_results = datafile_results.filter(datafileparameter__name__name__icontains='resolutionLimit', \
-			datafileparameter__numerical_value__lte=request.GET['resLimitTo'])
+			if request.GET.has_key('resLimitTo') and len(request.GET['resLimitTo']) > 0:
+				datafile_results = datafile_results.filter(datafileparameter__name__name__icontains='resolutionLimit', \
+				datafileparameter__numerical_value__lte=request.GET['resLimitTo'])
 
-		if request.GET.has_key('xrayWavelengthFrom') and len(request.GET['xrayWavelengthFrom']) > 0 and request.GET.has_key('xrayWavelengthTo') and len(request.GET['xrayWavelengthTo']) > 0:
-			datafile_results = datafile_results.filter(datafileparameter__name__name__icontains='xrayWavelength', \
-			datafileparameter__numerical_value__range=(request.GET['xrayWavelengthFrom'], \
-			request.GET['xrayWavelengthTo']))	
+			if request.GET.has_key('xrayWavelengthFrom') and len(request.GET['xrayWavelengthFrom']) > 0 and request.GET.has_key('xrayWavelengthTo') and len(request.GET['xrayWavelengthTo']) > 0:
+				datafile_results = datafile_results.filter(datafileparameter__name__name__icontains='xrayWavelength', \
+				datafileparameter__numerical_value__range=(request.GET['xrayWavelengthFrom'], \
+				request.GET['xrayWavelengthTo']))	
 			
 	paginator = Paginator(datafile_results, 25)	
 		
