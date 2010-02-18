@@ -27,12 +27,13 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
+{% load parametertypecheck %}
 {% for parameter in parameters %}
 	<li><strong>{{ parameter.name.full_name }}: </strong>
 		{% if parameter.name.is_numeric %}
 			{{ parameter.numerical_value }} {{ parameter.name.units }}
 		{% else %}
-			{{ parameter.string_value }}
+			{{ parameter.string_value|dfparametertypecheck:parameter.id|safe }}
 		{% endif %}
 	</li>
 {% endfor %}

@@ -29,6 +29,7 @@
 -->
 {% extends "portal_template.html" %} 
 {% load basiccomparisonfilters %}
+{% load parametertypecheck %}
 		
 		{% block script %}
 		
@@ -256,7 +257,7 @@
 														{% if parameter.name.is_numeric %}
 															{{ parameter.numerical_value }} {{ parameter.name.units }}
 														{% else %}
-															{{ parameter.string_value }}
+															{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
 														{% endif %}
 													</li>
 												{% endfor %}
