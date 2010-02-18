@@ -850,7 +850,7 @@ def search_experiment(request):
 	get = False
 	experiments = get_accessible_experiments(request.user.id)
 	if experiments:
-		experiments = Experiment.objects.order_by('title')
+		experiments = experiments.order_by('title')
 
 		if request.GET.has_key('results'):
 			get = True
