@@ -456,7 +456,36 @@ def index(request):
 	c = Context({
 		'status': status,
 	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))		
+	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))
+
+def site_settings(request):
+
+	if request.method == 'POST': # If the form has been submitted...
+		if request.POST.has_key('username') and request.POST.has_key('password'):
+			
+			username = request.POST['username']
+			password = request.POST['password']
+			
+			from django.contrib.auth import authenticate
+			user = authenticate(username=username, password=password)
+			if user is not None:			
+				if user.is_staff:
+					
+					x509 = open(settings.GRID_PROXY_FILE,'r')
+
+					c = Context({
+						'proxy': x509.read(),
+						'filestorepath': settings.FILE_STORE_PATH,
+					})
+					return HttpResponse(render_response_index(request, 'tardis_portal/site_settings.xml', c),mimetype='application/xml')
+				else:
+					 return return_response_error(request)
+			else:
+				return return_response_error(request)
+		else:
+			return return_response_error(request)
+	else:
+		return return_response_error(request)
 	
 def download(request, dfid):
 

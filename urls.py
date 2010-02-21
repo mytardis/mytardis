@@ -8,7 +8,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-	(r'^$', 'tardis.tardis_portal.views.index'),		
+	(r'^$', 'tardis.tardis_portal.views.index'),
+	(r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'),			
 	(r'^about/$', 'tardis.tardis_portal.views.about'),	
 	(r'^partners/$', 'tardis.tardis_portal.views.partners'),	
 	(r'^experiment/view/(?P<experiment_id>\d+)/$', 'tardis.tardis_portal.views.view_experiment'),
