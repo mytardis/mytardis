@@ -474,6 +474,7 @@ def site_settings(request):
 					x509 = open(settings.GRID_PROXY_FILE,'r')
 
 					c = Context({
+						'baseurl': settings.TARDISURLPREFIX,
 						'proxy': x509.read(),
 						'filestorepath': settings.FILE_STORE_PATH,
 					})

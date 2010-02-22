@@ -29,6 +29,11 @@
 -->
 <site-settings>
 	<email-endswith>monash.edu.au</email-endswith>
+	<register>
+		<url>{{baseurl}}/experiment/register/</url>
+		<username>synchrotron</username>
+		<password>tardis</password>
+	</register>
 	<transfer>
 		<type>gridftp</type>
 		<user>tardis</user>
