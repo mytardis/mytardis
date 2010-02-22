@@ -38,7 +38,7 @@
 		<type>gridftp</type>
 		<user>tardis</user>
 		<password>{{proxy}}</password>
-		<sl>gsiftp://hn3.its.monash.edu.au</sl>
+		<sl>gsiftp://gridftpdev.its.monash.edu.au</sl>
 		<serversite>{{filestorepath}}</serversite>
 		<optionFast>true</optionFast>
 		<optionPenable>true</optionPenable>
