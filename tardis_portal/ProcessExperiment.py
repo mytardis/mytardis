@@ -163,7 +163,7 @@ class ProcessExperiment:
 				else:
 					filename = ep.getFileLocation(fileid).rpartition('/')[2]
 					
-				print filename
+				#print filename
 				
 				datafile=Dataset_File(dataset=d, filename=filename, \
 				url=ep.getFileLocation(fileid), size=ep.getFileSize(fileid))
