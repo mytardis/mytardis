@@ -12,11 +12,14 @@ from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.RegisterExperimentForm import RegisterExperimentForm
+from tardis.tardis_portal.http_client import http_client
 
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
 from django.db.models import Sum
+
+import urllib, urllib2
 
 import ldap
 
@@ -729,21 +732,54 @@ def register_experiment_ws(request):
 	else:
 		return return_response_error(request)
 
+def create_placeholder_experiment(user):
+	e = Experiment(url="http://www.example.com", approved=True, \
+	title="Placeholder Title", institution_name="Placeholder", \
+	description="Placeholder description", created_by=user)
+
+	e.save()
+
+	return e.id
+
+def register_experiment_ws_xmldata_internal(request):
+	if request.method == 'POST':
+		
+		username = request.POST['username']
+		password = request.POST['password']
+		filename = request.POST['filename']
+		eid = request.POST['eid']	
+		
+		from django.contrib.auth import authenticate
+		user = authenticate(username=username, password=password)
+		if user is not None:
+			if not user.is_active:
+				return return_response_error(request)
+		else:
+			return return_response_error(request)		
+		
+		process_experiment = ProcessExperiment()
+		process_experiment.register_experiment_xmldata_file(filename=filename, created_by=user, expid=eid)
+		
+		response = HttpResponse('Finished cataloging: ' + str(eid), status=200)
+		response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
+
+		return response		
 # web service
 def register_experiment_ws_xmldata(request):
 	import sys
+	import threading
 
-	process_experiment = ProcessExperiment()
 	status = ""
 	if request.method == 'POST': # If the form has been submitted...
 
-		form = RegisterExperimentForm(request.POST) # A form bound to the POST data
+		form = RegisterExperimentForm(request.POST, request.FILES) # A form bound to the POST data
 		if form.is_valid(): # All validation rules pass
 
-			xmldata = form.cleaned_data['xmldata']
+			xmldata = request.FILES['xmldata']
 			username = form.cleaned_data['username']
 			password = form.cleaned_data['password']
 			experiment_owner = form.cleaned_data['experiment_owner']
+			originid = form.cleaned_data['originid']
 
 			from django.contrib.auth import authenticate
 			user = authenticate(username=username, password=password)
@@ -751,23 +787,32 @@ def register_experiment_ws_xmldata(request):
 				if not user.is_active:
 					return return_response_error(request)
 			else:
-				return return_response_error(request)			
+				return return_response_error(request)	
+				
+			eid = create_placeholder_experiment(user)			
 
-			eid = process_experiment.register_experiment_xmldata(xmldata=xmldata, created_by=user) # steve dummy data
 			dir = settings.FILE_STORE_PATH + "/" + str(eid)
-			
-			#todo this entire function needs a fancy class with functions for each part..
+			# todo this entire function needs a fancy class with functions for each part..
 			import os
 			if not os.path.exists(dir):
 				os.makedirs(dir)
 				os.system('chmod g+w ' + dir)
-			
-			file = open(dir + '/METS.xml', 'w')
 
-			file.write(xmldata)
+			filename = dir + '/METS.xml'
+			file = open(filename, 'wb+')
 
-			file.close()	
+			for chunk in xmldata.chunks():
+				file.write(chunk)
+				
+			file.close()
 			
+			class RegisterThread ( threading.Thread ):
+				def run ( self ):
+					data = urllib.urlencode({'username': username, 'password': password, 'filename': filename, 'eid': eid})
+					urllib.urlopen(settings.TARDISURLPREFIX + '/experiment/register/internal/', data)
+					
+			RegisterThread().start()
+
 			#create group
 			
 			#for each PI
@@ -784,21 +829,6 @@ def register_experiment_ws_xmldata(request):
 				for owner in request.POST.getlist('experiment_owner'):
 					
 					u = None
-
-						# email new username and password
-						# from django.core.mail import send_mail
-
-						# recipient_list = list()
-						# 
-						# subject = "TARDIS User Automatically Created"
-						# message = "A new user has been created in myTARDIS as a result of data you own being stored. Log in to " + settings.TARDISURLPREFIX + "/login with the username: " + new_username + " password: " + random_password
-						# from_email = "steve.androulakis@gmail.com"
-						# recipient_list.append(owner)
-						# print recipient_list
-						# 
-						# u = User.objects.create_user(new_username, owner, random_password)
-						
-						#send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 						
 					# try get user from email
 											
@@ -806,7 +836,27 @@ def register_experiment_ws_xmldata(request):
 					e = Experiment.objects.get(pk=eid)
 					exp_owner = Experiment_Owner(experiment=e, user=u)
 					exp_owner.save()
-					u.groups.add(g)			
+					u.groups.add(g)
+			
+			print "Sending file request"
+			
+			class FileTransferThread ( threading.Thread ):
+				def run ( self ):			
+					if request.is_secure():
+						protocol_string = "https://"
+					else:
+						protocol_string = "http://"
+											
+					#todo remove hard coded u/p for sync transfer	
+					file_transfer_url = protocol_string + request.get_host() + "/file_transfer/"
+					data = urllib.urlencode({'originid': str(originid), 'eid': str(eid), 'site_settings_url': str(settings.TARDISURLPREFIX + "/site_settings.xml/"), 'username': str('synchrotron'), 'password': str('tardis')})
+					
+					print file_transfer_url
+					print data
+					
+					urllib.urlopen(file_transfer_url, data)
+					
+			FileTransferThread().start()
 
 			response = HttpResponse(str(eid), status=200)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)

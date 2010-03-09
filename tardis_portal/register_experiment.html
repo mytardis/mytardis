@@ -39,7 +39,7 @@
 				<div class="entry">
 					<p>
 						<strong>Note:</strong> FTP details of the download location of the experiment are optional, but recommended. Experiment Registration/Editing/Reingestion may take a few minutes to process.<br/><br/>
-						<form action="/experiment/register/" method="POST">
+						<form action="/experiment/register/" method="POST" enctype="multipart/form-data">
 						{{ form.as_p }}
 						{% if edit %}<input type="hidden" name="eid" value="{{ experiment_id }}"/>{% endif %}
 						<input type="submit" value="Submit" />
