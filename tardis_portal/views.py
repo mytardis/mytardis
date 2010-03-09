@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.RegisterExperimentForm import RegisterExperimentForm
-from tardis.tardis_portal.http_client import http_client
 
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
@@ -780,6 +779,7 @@ def register_experiment_ws_xmldata(request):
 			password = form.cleaned_data['password']
 			experiment_owner = form.cleaned_data['experiment_owner']
 			originid = form.cleaned_data['originid']
+			from_url = request.POST['from_url']
 
 			from django.contrib.auth import authenticate
 			user = authenticate(username=username, password=password)
@@ -828,6 +828,9 @@ def register_experiment_ws_xmldata(request):
 							
 				for owner in request.POST.getlist('experiment_owner'):
 					
+					owner = urllib.unquote_plus(owner)
+					
+					print "registering owner: " + owner
 					u = None
 						
 					# try get user from email
@@ -841,15 +844,13 @@ def register_experiment_ws_xmldata(request):
 			print "Sending file request"
 			
 			class FileTransferThread ( threading.Thread ):
-				def run ( self ):			
-					if request.is_secure():
-						protocol_string = "https://"
-					else:
-						protocol_string = "http://"
+				def run ( self ):
 											
 					#todo remove hard coded u/p for sync transfer	
-					file_transfer_url = protocol_string + request.get_host() + "/file_transfer/"
-					data = urllib.urlencode({'originid': str(originid), 'eid': str(eid), 'site_settings_url': str(settings.TARDISURLPREFIX + "/site_settings.xml/"), 'username': str('synchrotron'), 'password': str('tardis')})
+					print "started transfer thread"
+					
+					file_transfer_url = from_url + "/file_transfer/"
+					data = urllib.urlencode({'originid': str(originid), 'eid': str(eid), 'site_settings_url': str(settings.TARDISURLPREFIX + "/site-settings.xml/"), 'username': str('synchrotron'), 'password': str('tardis')})
 					
 					print file_transfer_url
 					print data
@@ -857,6 +858,8 @@ def register_experiment_ws_xmldata(request):
 					urllib.urlopen(file_transfer_url, data)
 					
 			FileTransferThread().start()
+			
+			print "returning response from main call"
 
 			response = HttpResponse(str(eid), status=200)
 			response['Location'] = settings.TARDISURLPREFIX + "/experiment/view/" + str(eid)
