@@ -267,8 +267,8 @@
 								
 										<div>	
 											<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
-											<a {% if dataset.dataset_file_set.count|lt:"1000" %}class="datafile_list_toggle"{% else %}target="_blank"{% endif %} href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>					
-											{% if dataset.dataset_file_set.count|gt:"1000" %}
+											<a {% if dataset.dataset_file_set.count|lt:"1000000" %}class="datafile_list_toggle"{% else %}target="_blank"{% endif %} href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>					
+											{% if dataset.dataset_file_set.count|gt:"1000000" %}
 											<br/>
 											<p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
 											{% endif %}	

@@ -64,6 +64,34 @@ class ProcessExperiment:
 
 			return e.id
 			
+	def register_experiment_xmldata_file(self, filename, created_by, expid=None):
+
+		f = open(filename, "r")
+		xmlString = f.read()
+		f.close()
+
+		url = "http://www.example.com"
+		self.url = "http://www.example.com"
+
+		ep = ExperimentParser(str(xmlString))
+		
+		del xmlString
+
+		e = Experiment(id=expid, url=url, approved=True, \
+		title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
+		description=ep.getAbstract(), created_by=created_by)
+
+		e.save()
+
+		self.process_METS(e, ep)
+
+		del ep
+
+		import gc
+		gc.collect()			
+
+		return e.id			
+			
 	def process_METS(self, e, ep):
 		
 		url_path = self.url.rpartition('/')[0] + self.url.rpartition('/')[1]
