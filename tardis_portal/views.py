@@ -604,27 +604,16 @@ def downloadExperiment(request, experiment_id):
 
 	import os		
 
-	fileString = ""
-	fileSize = 0
 	experiment = Experiment.objects.get(pk=experiment_id)
-	
-	for dataset in experiment.dataset_set.all():
-		for datafile in dataset.dataset_file_set.all():
-			if has_datafile_access(datafile.id, request.user.id):
-				if datafile.url.startswith('file://'):
-					absolute_filename = datafile.url.partition('//')[2]
-					fileString = fileString + experiment_id + '/' + absolute_filename + " "
-					fileSize = fileSize + long(datafile.size)
 
-	#tarfile class doesn't work on large files being added and streamed on the fly, so going command-line-o
-
-	tar_command = "tar -C " + settings.FILE_STORE_PATH + " -c " + fileString												
+	tar_command = "tar -C " + settings.FILE_STORE_PATH + " -c " + str(experiment.id) + "/"		
+	print "TAR COMMAND: " + tar_command										
 
 	import shlex, subprocess
 
 	response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
 	response['Content-Disposition'] = 'attachment; filename=experiment' + str(experiment.id) + '-complete.tar'
-	response['Content-Length'] = fileSize + 5120
+	# response['Content-Length'] = fileSize + 5120
 
 	return response	
 
