@@ -27,9 +27,30 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
+<div class="pagination">
+    <span class="step-links">
+        {% if dataset.has_previous %}
+            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}">Previous</a>
+        {% endif %}
+		
+		{% for pagenum in dataset.paginator.page_range %}
+				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}">{{pagenum}}</a>
+		{% endfor %}
+
+        {% if dataset.has_next %}
+            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}">Next</a>
+        {% endif %}
+
+		<br/>
+        <span class="current">
+            Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+        </span>
+    </span>
+</div>
+<br/>
 Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
 <br/><br/>
-{% for datafile in dataset %}
+{% for datafile in dataset.object_list %}
 <li class="datafile">
 	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
 	<a class="filelink" href="download?dfid={{datafile.id}}">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
@@ -45,7 +66,28 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 	<a class="datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
 	<ul class="datafile_info" style="width: 95%; overflow:auto; padding: 5px; font-size: 12px">
 	</ul>
-	{% endif %}	
+	{% endif %}
 	
 </li>
 {% endfor %}
+<br/>
+<div class="pagination">
+    <span class="step-links">
+        {% if dataset.has_previous %}
+            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}">Previous</a>
+        {% endif %}
+		
+		{% for pagenum in dataset.paginator.page_range %}
+				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}">{{pagenum}}</a>
+		{% endfor %}
+
+        {% if dataset.has_next %}
+            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}">Next</a>
+        {% endif %}
+
+		<br/>
+        <span class="current">
+            Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+        </span>
+    </span>
+</div>

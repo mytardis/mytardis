@@ -35,11 +35,11 @@ def render_response_index(request, *args, **kwargs):
 	kwargs['context_instance']['public_experiments'] = Experiment.objects.filter(approved=True)
 	kwargs['context_instance']['public_pdbids'] = Pdbid.objects.filter(experiment__approved=True)
 	
-	size = 0
-	for df in kwargs['context_instance']['public_datafiles']:
-		size = size + long(df.size)
+	# size = 0
+	# for df in kwargs['context_instance']['public_datafiles']:
+	# 	size = size + long(df.size)
 	
-	kwargs['context_instance']['public_datafile_size'] = size	
+	# kwargs['context_instance']['public_datafile_size'] = size	
 
 	return render_to_response(*args, **kwargs)
 	
@@ -779,7 +779,10 @@ def register_experiment_ws_xmldata(request):
 			password = form.cleaned_data['password']
 			experiment_owner = form.cleaned_data['experiment_owner']
 			originid = form.cleaned_data['originid']
-			from_url = request.POST['from_url']
+			
+			from_url = None
+			if request.POST.has_key('from_url'):
+				from_url = request.POST['from_url']
 
 			from django.contrib.auth import authenticate
 			user = authenticate(username=username, password=password)
@@ -833,31 +836,32 @@ def register_experiment_ws_xmldata(request):
 					print "registering owner: " + owner
 					u = None
 						
-					# try get user from email
-											
-					u = get_or_create_user_authcate(owner)
-					e = Experiment.objects.get(pk=eid)
-					exp_owner = Experiment_Owner(experiment=e, user=u)
-					exp_owner.save()
-					u.groups.add(g)
+					#try get user from email
+					if settings.LDAP_ENABLE:						
+						u = get_or_create_user_authcate(owner)
+						e = Experiment.objects.get(pk=eid)
+						exp_owner = Experiment_Owner(experiment=e, user=u)
+						exp_owner.save()
+						u.groups.add(g)
 			
 			print "Sending file request"
 			
-			class FileTransferThread ( threading.Thread ):
-				def run ( self ):
+			if from_url:
+				class FileTransferThread ( threading.Thread ):
+					def run ( self ):
 											
-					#todo remove hard coded u/p for sync transfer	
-					print "started transfer thread"
+						#todo remove hard coded u/p for sync transfer	
+						print "started transfer thread"
 					
-					file_transfer_url = from_url + "/file_transfer/"
-					data = urllib.urlencode({'originid': str(originid), 'eid': str(eid), 'site_settings_url': str(settings.TARDISURLPREFIX + "/site-settings.xml/"), 'username': str('synchrotron'), 'password': str('tardis')})
+						file_transfer_url = from_url + "/file_transfer/"
+						data = urllib.urlencode({'originid': str(originid), 'eid': str(eid), 'site_settings_url': str(settings.TARDISURLPREFIX + "/site-settings.xml/"), 'username': str('synchrotron'), 'password': str('tardis')})
 					
-					print file_transfer_url
-					print data
+						print file_transfer_url
+						print data
 					
-					urllib.urlopen(file_transfer_url, data)
+						urllib.urlopen(file_transfer_url, data)
 					
-			FileTransferThread().start()
+				FileTransferThread().start()
 			
 			print "returning response from main call"
 
@@ -908,10 +912,25 @@ def retrieve_xml_data(request, dataset_file_id):
 def retrieve_datafile_list(request, dataset_id):
 	from django.db.models import Count
 
-	dataset = Dataset_File.objects.filter(dataset__pk=dataset_id).order_by('filename')
+	dataset_results = Dataset_File.objects.filter(dataset__pk=dataset_id).order_by('filename')
+	
+	paginator = Paginator(dataset_results, 250)	
+		
+	try:
+		page = int(request.GET.get('page', '1'))
+	except ValueError:
+		page = 1
 
+	# If page request (9999) is out of range, deliver last page of results.
+	try:
+		dataset = paginator.page(page)
+	except (EmptyPage, InvalidPage):
+		dataset = paginator.page(paginator.num_pages)
+				
 	c = Context({
 		'dataset': dataset,
+		'paginator': paginator,
+		'dataset_id': dataset_id,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/datafile_list.html', c)) 	
 
