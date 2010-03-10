@@ -62,6 +62,21 @@
 <!-- start header -->
 <div id="header">
 	<div id="logo">
+				<h1>myTARDIS</h1>
+				<p>DIFFRACTION IMAGE REPOSITORY: {% if public_datafile_size %} {{public_datafile_size|filesizeformat}}{% endif %} data stored</p>
+			</div>
+			<div id="menu">
+				<ul>
+					<li><a href="/">Home</a></li>
+					<li><a href="/about">About</a></li>
+					<li><a href="/experiment/view">Data</a></li>
+					<li><a href="/partners">Partners</a></li>
+
+				</ul>
+			</div>
+		</div>
+		<!-- end header -->
+		<div id="headerbg">
 			<div id="headerloginstatus">
 		{% if is_authenticated %}Welcome, <em>{{ username }}</em> - <a href="/logout"> [Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}
 		

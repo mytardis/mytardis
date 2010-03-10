@@ -40,7 +40,7 @@
 		</script>
 
 		<script type="text/javascript">
-			$(document).ready(function() {
+			$(document).ready(function() {			
 				
 				// show hide various metadata divs
 				
@@ -52,6 +52,52 @@
 			     $(this).next().toggle();
 			   });	
 
+
+				$('.pagelink').live('click', function( event ){
+							var href = $(this).attr("href");
+							html = $(this).html();
+							$(this).html(html + " " + loadingHTML);
+							$(this).parents('.datafile_list').load(href, function(){
+									$(document).ready(function(){
+											// datafile metadata
+											$(".datafile_info_toggle").unbind('click');
+											$(document).find('.datafile_info_toggle').text("[Show Metadata]");
+											$(document).find('.datafile_info').hide();
+											 $(document).find('.datafile_info_toggle').toggle(function(){
+								 				$(this).text("[Hide Metadata]");
+												var href = $(this).attr("href");
+												$(this).next().show();
+
+												//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
+												//{
+													$(this).next().html(loadingHTML);									
+												//}
+												$(this).next().load(href);
+
+											 },function(){
+												$(this).text("[Show Metadata]");
+												$(this).next().hide();
+											 });
+											
+											$(".dataset_selector_all").unbind('click');
+											$(".dataset_selector_none").unbind('click');
+											// file selectors
+											$(document).find('.dataset_selector_all').click(function() {	
+												$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+										   });
+
+											$(document).find('.dataset_selector_none').click(function() {	
+												$(this).parent().find('.datafile_checkbox').removeAttr("checked");
+
+										   });											
+										});
+														
+							//$(this).html(html);
+							
+						})
+						return false;
+					});
 			
 			// default text set
 			
@@ -86,7 +132,7 @@
 				// add initialisation for new datafile handlers as callback once ajax has loaded
 				// damn I love jQuery
 				$(this).next().load(href,function(){
-						$(document).ready(function(){					
+						$(document).ready(function(){						
 							
 							var datafile_info_selectors = 	
 								datafile_info_container.find('.datafile_info').hide().end().find('.datafile_info_toggle');
@@ -121,7 +167,8 @@
 								datafile_info_container.find('.dataset_selector_none').click(function() {	
 									$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
-							   });																		
+							   });	
+							
 						});
 					 });			
 			 },function(){
@@ -219,7 +266,7 @@
 							</p>		
 							
 							<p>
-							<strong><a href="downloadExperiment/">Download Experiment</a></strong><br/>
+							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
 							</p>							
 							
                             <p align="right">
@@ -232,6 +279,9 @@
 							
 						</div>
 						<div id="tabs-2">
+							<p>
+							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
+							</p>
 							<form method="POST" action="/downloadTar/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">							
 							<div id="datasets">
