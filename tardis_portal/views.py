@@ -511,8 +511,8 @@ def download(request, dfid):
 					response = HttpResponse(wrapper, mimetype='application/octet-stream')
 					response['Content-Disposition'] = 'attachment; filename=' + datafile.filename
 					
-					import os
-					response['Content-Length'] = os.path.getsize(file_path)
+					# import os
+					# response['Content-Length'] = os.path.getsize(file_path)
 					
 					return response
 
