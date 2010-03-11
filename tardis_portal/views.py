@@ -593,7 +593,7 @@ def display_datafile_image(request, dataset_file_id, parameter_name):
 		return response
 	else:
 		return return_response_error(request)			
-		
+	
 @experiment_access_required
 def downloadExperiment(request, experiment_id):
 	# Create the HttpResponse object with the appropriate headers.
@@ -613,7 +613,7 @@ def downloadExperiment(request, experiment_id):
 
 	response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
 	response['Content-Disposition'] = 'attachment; filename=experiment' + str(experiment.id) + '-complete.tar'
-	# response['Content-Length'] = fileSize + 5120
+	#response['Content-Length'] = fileSize + 5120
 
 	return response	
 
@@ -903,6 +903,12 @@ def retrieve_datafile_list(request, dataset_id):
 
 	dataset_results = Dataset_File.objects.filter(dataset__pk=dataset_id).order_by('filename')
 	
+	filename_search = None
+	
+	if request.GET.has_key('filename') and len(request.GET['filename']) > 0:
+		filename_search = request.GET['filename']
+		dataset_results = dataset_results.filter(filename__icontains=filename_search)
+	
 	paginator = Paginator(dataset_results, 250)	
 		
 	try:
@@ -920,6 +926,7 @@ def retrieve_datafile_list(request, dataset_id):
 		'dataset': dataset,
 		'paginator': paginator,
 		'dataset_id': dataset_id,
+		'filename_search': filename_search,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/ajax/datafile_list.html', c)) 	
 
