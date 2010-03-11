@@ -33,6 +33,21 @@
 		
 		{% block script %}
 		
+		<script language="JavaScript">
+
+		function disableEnterKey(e)
+		{
+		     var key;     
+		     if(window.event)
+		          key = window.event.keyCode; //IE
+		     else
+		          key = e.which; //firefox     
+
+		     return (key != 13);
+		}
+
+		</script>		
+		
 		<script type="text/javascript">
 			$(function() {
 				$("#tabs").tabs();
@@ -40,7 +55,54 @@
 		</script>
 
 		<script type="text/javascript">
-			$(document).ready(function() {			
+			$(document).ready(function() {	
+				
+				$('.filename_search').live('keyup', function(e) {
+					e.preventDefault();
+					if(e.keyCode == 13) {
+						dataset_id = $(this).siblings('.dataset_id').val();
+
+						$(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + $(this).val(), function(){
+								$(document).ready(function(){
+										// datafile metadata
+										$(".datafile_info_toggle").unbind('click');
+										$(document).find('.datafile_info_toggle').text("[Show Metadata]");
+										$(document).find('.datafile_info').hide();
+										 $(document).find('.datafile_info_toggle').toggle(function(){
+							 				$(this).text("[Hide Metadata]");
+											var href = $(this).attr("href");
+											$(this).next().show();
+
+											//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
+											//{
+												$(this).next().html(loadingHTML);									
+											//}
+											$(this).next().load(href);
+
+										 },function(){
+											$(this).text("[Show Metadata]");
+											$(this).next().hide();
+										 });
+										
+										$(".dataset_selector_all").unbind('click');
+										$(".dataset_selector_none").unbind('click');
+										// file selectors
+										$(document).find('.dataset_selector_all').click(function() {	
+											$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+									   });
+
+										$(document).find('.dataset_selector_none').click(function() {	
+											$(this).parent().find('.datafile_checkbox').removeAttr("checked");
+
+									   });											
+									});
+						
+								});
+						}
+
+					});
+						
 				
 				// show hide various metadata divs
 				
