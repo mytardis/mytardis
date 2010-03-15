@@ -107,7 +107,7 @@ class ProcessExperiment:
 
 			return e.id
 			
-	def register_experiment_xmldata_file(self, filename, created_by, expid=None):
+	def register_experiment_xmldata_file(self, filename, created_by, expid=None, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None):
 		
 		f = open(filename)
 		
