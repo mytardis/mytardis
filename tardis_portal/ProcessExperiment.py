@@ -327,36 +327,38 @@ class ProcessExperiment:
 						
 						print datafile
 						
-						md = datafile['metadata']
-						xmlns = getXmlnsFromTechXMLRaw(md)
-								
-						try:
-							print "trying to find parameters with an xmlns of " + xmlns
-							schema = Schema.objects.get(namespace__exact=xmlns)
-
-							parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-							parameternames = parameternames.order_by('id')
+						if datafile.has_key('metadata'):
 							
-							tech_xml = getTechXMLFromRaw(md)
+							md = datafile['metadata']
+							xmlns = getXmlnsFromTechXMLRaw(md)
+								
+							try:
+								print "trying to find parameters with an xmlns of " + xmlns
+								schema = Schema.objects.get(namespace__exact=xmlns)
+
+								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
+								parameternames = parameternames.order_by('id')
+							
+								tech_xml = getTechXMLFromRaw(md)
 					
-							for pn in parameternames:
-								try:
-									print "finding parameter " + pn.name + " in metadata"
-									dfile = Dataset_File.objects.get(pk=current_df_id)
-									if pn.is_numeric:
-										value = getParameterFromTechXML(tech_xml, pn.name)	
-										if value != None:
+								for pn in parameternames:
+									try:
+										print "finding parameter " + pn.name + " in metadata"
+										dfile = Dataset_File.objects.get(pk=current_df_id)
+										if pn.is_numeric:
+											value = getParameterFromTechXML(tech_xml, pn.name)	
+											if value != None:
+												dp = DatafileParameter(dataset_file=dfile, name=pn, \
+												string_value=None, numerical_value=float(value))
+												dp.save()
+										else:
 											dp = DatafileParameter(dataset_file=dfile, name=pn, \
-											string_value=None, numerical_value=float(value))
+											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
 											dp.save()
-									else:
-										dp = DatafileParameter(dataset_file=dfile, name=pn, \
-										string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
-										dp.save()
-								except e:
-									print e
-						except e:
-							print e						
+									except e:
+										print e
+							except e:
+								print e						
 					# commit any dataset if current = dataset
 					current = "file"
 					df = df + 1
@@ -402,36 +404,37 @@ class ProcessExperiment:
 						
 						print datafile		
 						
-						md = datafile['metadata']
-						xmlns = getXmlnsFromTechXMLRaw(md)
+						if datafile.has_key('metadata'):
+							md = datafile['metadata']
+							xmlns = getXmlnsFromTechXMLRaw(md)
 								
-						try:
-							print "trying to find parameters with an xmlns of " + xmlns
-							schema = Schema.objects.get(namespace__exact=xmlns)
+							try:
+								print "trying to find parameters with an xmlns of " + xmlns
+								schema = Schema.objects.get(namespace__exact=xmlns)
 
-							parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-							parameternames = parameternames.order_by('id')
+								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
+								parameternames = parameternames.order_by('id')
 							
-							tech_xml = getTechXMLFromRaw(md)
+								tech_xml = getTechXMLFromRaw(md)
 					
-							for pn in parameternames:
-								try:
-									print "finding parameter " + pn.name + " in metadata"
-									dfile = Dataset_File.objects.get(pk=current_df_id)
-									if pn.is_numeric:
-										value = getParameterFromTechXML(tech_xml, pn.name)	
-										if value != None:
+								for pn in parameternames:
+									try:
+										print "finding parameter " + pn.name + " in metadata"
+										dfile = Dataset_File.objects.get(pk=current_df_id)
+										if pn.is_numeric:
+											value = getParameterFromTechXML(tech_xml, pn.name)	
+											if value != None:
+												dp = DatafileParameter(dataset_file=dfile, name=pn, \
+												string_value=None, numerical_value=float(value))
+												dp.save()
+										else:
 											dp = DatafileParameter(dataset_file=dfile, name=pn, \
-											string_value=None, numerical_value=float(value))
+											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
 											dp.save()
-									else:
-										dp = DatafileParameter(dataset_file=dfile, name=pn, \
-										string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
-										dp.save()
-								except e:
-									print e
-						except e:
-							print e						
+									except e:
+										print e
+							except e:
+								print e						
 				try:
 					print "attempting to parse line: " + line
 					dom = parseString(line)
