@@ -909,7 +909,7 @@ def retrieve_datafile_list(request, dataset_id):
 		filename_search = request.GET['filename']
 		dataset_results = dataset_results.filter(filename__icontains=filename_search)
 	
-	paginator = Paginator(dataset_results, 250)	
+	paginator = Paginator(dataset_results, 400)	
 		
 	try:
 		page = int(request.GET.get('page', '1'))
