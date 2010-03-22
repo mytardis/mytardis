@@ -28,18 +28,6 @@ def render_response_index(request, *args, **kwargs):
 	
 	kwargs['context_instance']['is_authenticated'] = request.user.is_authenticated()
 	kwargs['context_instance']['username'] = request.user.username
-	
-	#stats
-	kwargs['context_instance']['public_datasets'] = Dataset.objects.filter(experiment__approved=True)
-	kwargs['context_instance']['public_datafiles'] = Dataset_File.objects.filter(dataset__experiment__approved=True)
-	kwargs['context_instance']['public_experiments'] = Experiment.objects.filter(approved=True)
-	kwargs['context_instance']['public_pdbids'] = Pdbid.objects.filter(experiment__approved=True)
-	
-	# size = 0
-	# for df in kwargs['context_instance']['public_datafiles']:
-	# 	size = size + long(df.size)
-	
-	# kwargs['context_instance']['public_datafile_size'] = size	
 
 	return render_to_response(*args, **kwargs)
 	
@@ -907,9 +895,9 @@ def retrieve_datafile_list(request, dataset_id):
 	
 	if request.GET.has_key('filename') and len(request.GET['filename']) > 0:
 		filename_search = request.GET['filename']
-		dataset_results = dataset_results.filter(filename__icontains=filename_search)
+		dataset_results = dataset_results.filter(url__icontains=filename_search)
 	
-	paginator = Paginator(dataset_results, 400)	
+	paginator = Paginator(dataset_results, 500)	
 		
 	try:
 		page = int(request.GET.get('page', '1'))
@@ -1130,3 +1118,21 @@ def remove_access_experiment(request, experiment_id, username):
 		return return_response_not_found(request)		
 
 	return return_response_error(request)
+	
+def stats(request):
+	#stats
+	public_datafiles = Dataset_File.objects.filter()
+	public_experiments = Experiment.objects.filter()
+	
+	size = 0
+	for df in public_datafiles:
+		size = size + long(df.size)
+	
+	public_datafile_size = size
+	
+	c = Context({
+		'public_datafiles': len(public_datafiles),
+		'public_experiments': len(public_experiments),
+		'public_datafile_size': public_datafile_size,
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/stats.html', c))

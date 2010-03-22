@@ -312,6 +312,39 @@ class ProcessExperiment:
 						d = Dataset(experiment=experiment, description=dataset['description'])
 						d.save()
 						print dataset
+						
+						if dataset.has_key('metadata'):
+							
+							md = dataset['metadata']
+							xmlns = getXmlnsFromTechXMLRaw(md)
+								
+							try:
+								print "trying to find parameters with an xmlns of " + xmlns
+								schema = Schema.objects.get(namespace__exact=xmlns)
+
+								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
+								parameternames = parameternames.order_by('id')
+							
+								tech_xml = getTechXMLFromRaw(md)
+					
+								for pn in parameternames:
+									try:
+										print "finding parameter " + pn.name + " in metadata"
+
+										if pn.is_numeric:
+											value = getParameterFromTechXML(tech_xml, pn.name)	
+											if value != None:
+												dp = DatasetParameter(dataset=d, name=pn, \
+												string_value=None, numerical_value=float(value))
+												dp.save()
+										else:
+											dp = DatasetParameter(dataset=d, name=pn, \
+											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
+											dp.save()
+									except e:
+										print e
+							except e:
+								print e						
 					else:
 						if self.null_check(datafile['name']):
 							filename = datafile['name']
@@ -371,7 +404,10 @@ class ProcessExperiment:
 						line = f.next()
 						if line.strip() != "</metadata>":
 							md = md + line
-					datafile['metadata'] = md
+					if current == "file":
+						datafile['metadata'] = md
+					else:
+						dataset['metadata'] = md
 					
 				elif line.startswith("<abstract"):
 					ab = line.partition("<abstract>")[2]

@@ -391,7 +391,9 @@ table.experiment-table {
 	font-size: 12px;
 	}
 	
-	/* trdDataset2 */
+table.experiment-table th {
+	text-align: left;
+	}
 
 	.dataset_metadata
 	{
