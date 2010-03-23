@@ -72,3 +72,13 @@ a.buttoninline {
 .entry {
 	padding: 5px;
 }
+.transparent #leftnav a
+{
+	max-width: 30% !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;	
+}
+ul .pageitem {
+	width: 90%;
+}
