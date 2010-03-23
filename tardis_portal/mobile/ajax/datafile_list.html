@@ -49,7 +49,8 @@
 </div>
 <br/>
 <div>
-<ul class="pageitem" style="width: 200px"><li class="bigfield"><input class="dataset_id" type="hidden" value="{{dataset_id}}"><input type="text" TITLE="Search" placeholder="filename filter" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></li></ul>
+<form method="POST" action="." class="filterform">
+<ul class="pageitem" style="width: 200px"><li class="bigfield"><input class="dataset_id" type="hidden" value="{{dataset_id}}"><input type="text" TITLE="Search" placeholder="filename filter" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></li></ul>
 </div>
 <br/><br/>
 {% for datafile in dataset.object_list %}
@@ -72,6 +73,7 @@
 </li>
 {% endfor %}
 <br/>
+</form>
 <div class="pagination">
     <span class="step-links">
         {% if dataset.has_previous %}

@@ -35,16 +35,6 @@
 
 <script language="JavaScript">
 
-function disableEnterKey(e)
-{
-     var key;     
-     if(window.event)
-          key = window.event.keyCode; //IE
-     else
-          key = e.which; //firefox     
-
-     return (key != 13);
-}
 
 </script>
 
@@ -52,12 +42,14 @@ function disableEnterKey(e)
 	$(document).ready(function(e) {	
 		
 		
-		$('.filename_search').live('keyup', function(e) {
-			e.preventDefault();
-			if(e.keyCode == 13) {
-				dataset_id = $(this).siblings('.dataset_id').val();
+		$('.filterform').live('submit', function(e) {
+				e.preventDefault();
 
-				$(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + $(this).val(), function(){
+				filterbox = $(this).find('.filename_search');
+
+				dataset_id = filterbox.siblings('.dataset_id').val();
+
+				filterbox.parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + filterbox.val(), function(){
 						$(document).ready(function(){
 								// datafile metadata
 								$(".datafile_info_toggle").unbind('click');
@@ -81,7 +73,7 @@ function disableEnterKey(e)
 							});
 				
 						});
-				}
+
 
 			});
 				
@@ -320,7 +312,7 @@ function disableEnterKey(e)
 									</div>
 									<div id="tabs-2">
 										<br/>
-										<form method="POST" action="/downloadTar/" target="_blank">
+
 										<input type="hidden" name="expid" value="{{experiment.id}}">							
 										<div id="datasets">
 										{% for dataset in experiment.dataset_set.all %}
@@ -364,8 +356,7 @@ function disableEnterKey(e)
 												</div>
 											</div>
 										{% endfor %}
-										</div>		
-										</form>							
+										</div>									
 						
 						</li> 
 						
