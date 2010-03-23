@@ -72,12 +72,12 @@ a.buttoninline {
 .entry {
 	padding: 5px;
 }
-.transparent #leftnav a
+.transparent #leftnav a.last
 {
-	max-width: 30% !important;
+	max-width: 60% !important;
+	display: inline;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;	
+	text-overflow: ellipsis;	
 }
 ul .pageitem {
 	width: 90%;

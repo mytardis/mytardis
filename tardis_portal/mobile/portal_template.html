@@ -59,7 +59,7 @@ try {
 var pageTracker = _gat._getTracker("UA-5443750-1");
 pageTracker._trackPageview();
 } catch(err) {}</script>
-
+{% load basiccomparisonfilters %}
 {% block script %}{% endblock %}
 </head>
 
@@ -71,7 +71,7 @@ pageTracker._trackPageview();
 			
 			{% if nav %}
 			{% for n in nav %}
-			<a href="{{n.link}}">{{n.name}}</a> 
+			<a href="{{n.link}}" {% if forloop.last and forloop.counter|gt:"1" %}class="last" {% endif %}>{{n.name}}</a>
 			{% endfor %}
 			{% endif %}
 			</div>
