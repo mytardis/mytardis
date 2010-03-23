@@ -908,7 +908,13 @@ def retrieve_datafile_list(request, dataset_id):
 		filename_search = request.GET['filename']
 		dataset_results = dataset_results.filter(url__icontains=filename_search)
 	
-	paginator = Paginator(dataset_results, 500)	
+	pgresults = 500
+	if request.mobile:
+		pgresults = 30
+	else:
+		pgresults = 500
+		
+	paginator = Paginator(dataset_results, pgresults)	
 		
 	try:
 		page = int(request.GET.get('page', '1'))

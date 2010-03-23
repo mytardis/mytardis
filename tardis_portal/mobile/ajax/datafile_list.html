@@ -57,14 +57,14 @@
 	{{ datafile.filename }}
 	
 	{% if datafile.datafileparameter_set.count %}
-	<a class="buttoninline datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Metadata]</a>
+	<br/><a class="buttoninline datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Metadata]</a>
 	<ul class="datafile_info">
 
 	</ul>
 	{% endif %}
 	
 	{% if datafile.xml_data_set.count %}
-	<a class="buttoninline datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
+	<br/><a class="buttoninline datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
 	<ul class="datafile_info" style="width: 95%; overflow:auto; padding: 5px; font-size: 12px">
 	</ul>
 	{% endif %}
