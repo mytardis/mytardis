@@ -33,11 +33,6 @@
 
 {% block script %}
 
-<script language="JavaScript">
-
-
-</script>
-
 <script type="text/javascript">
 	$(document).ready(function(e) {	
 		
@@ -222,144 +217,144 @@
 
 {% endblock %}
 
-		{% block content %}
+{% block content %}
 
+<div class="post">
+	<span class="graytitle">{{experiment.title}}</span>
+	<ul class="pageitem"> 
 			
-			<div class="post">
-				<span class="graytitle">{{experiment.title}}</span>
-				<ul class="pageitem"> 
+			<li class="textbox">
+
+					<div class="demo">
+
+					<div id="tabs">
 						
-						<li class="textbox">
+						<div id="tabs-1">							
 
-								<div class="demo">
+                            <p>
+                            <span class="header">Authors</span>
+                            {% for author in authors %}
+                                    {{ author.author.name }}{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                            </p>
 
-								<div id="tabs">
-									
-									<div id="tabs-1">							
+							<p>
+							<span class="header">Abstract</span>
+							<div class="abstract">
+							{{ experiment.description|safe }}					
+							</div>
+							</p>
+							<p>
+							{% if experiment.pdbid_set.count %}
+							<strong>PDB id(s):</strong>
+							{% for pdbid in experiment.pdbid_set.all %}
+							{{ pdbid.pdbid }}{% if not forloop.last %},{% endif %}
+							{% endfor %}
+							{% endif %}
+							</p>
+							<p>
+							{% if experiment.citation_set.count %}
+							<strong>Citations:</strong><br/>
+							{% for citation in experiment.citation_set.all %}
+							<a href="{{ citation.url }}">{{ citation.url }}</a><br/>
+							{% endfor %}
+							{% endif %}
+							</p>
 
-			                            <p>
-			                            <span class="header">Authors</span>
-			                            {% for author in authors %}
-			                                    {{ author.author.name }}{% if not forloop.last %},{% endif %}
-			                            {% endfor %}
-			                            </p>
+							{% if experiment.handle %}
+							<p>
+							<strong>Persistent Handle:</strong>
+							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>							
+							</p>							
+							{% endif %}
 
-										<p>
-										<span class="header">Abstract</span>
-										<div class="abstract">
-										{{ experiment.description|safe }}					
-										</div>
-										</p>
-										<p>
-										{% if experiment.pdbid_set.count %}
-										<strong>PDB id(s):</strong>
-										{% for pdbid in experiment.pdbid_set.all %}
-										{{ pdbid.pdbid }}{% if not forloop.last %},{% endif %}
-										{% endfor %}
-										{% endif %}
-										</p>
-										<p>
-										{% if experiment.citation_set.count %}
-										<strong>Citations:</strong><br/>
-										{% for citation in experiment.citation_set.all %}
-										<a href="{{ citation.url }}">{{ citation.url }}</a><br/>
-										{% endfor %}
-										{% endif %}
-										</p>
+							<p>
+							<span class="header">Institution</span>
+							{{experiment.institution_name}}<br/>							
+							</p>
 
-										{% if experiment.handle %}
-										<p>
-										<strong>Persistent Handle:</strong>
-										<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>							
-										</p>							
-										{% endif %}
+							<p>
+								<span class="header">Dataset Information</span>
+								<div>
+									<!-- <strong>Dataset Metadata: </strong>	 -->
+									<div class="dataset_information">
+										<ul>
+												<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
+												<li><strong>Files:</strong> {{datafiles.count}}</li>
+												<li><strong>Size:</strong> {{size|filesizeformat}}</li>
+										</ul>										
+									</div>								
+								</div>
+							</p>							
 
-										<p>
-										<span class="header">Institution</span>
-										{{experiment.institution_name}}<br/>							
-										</p>
+							<p>
+							<span class="header">Experiment Last Updated</span>
+							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
+							</p>		
 
-										<p>
-											<span class="header">Dataset Information</span>
-											<div>
-												<!-- <strong>Dataset Metadata: </strong>	 -->
-												<div class="dataset_information">
-													<ul>
-															<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
-															<li><strong>Files:</strong> {{datafiles.count}}</li>
-															<li><strong>Size:</strong> {{size|filesizeformat}}</li>
-													</ul>										
-												</div>								
-											</div>
-										</p>							
+                            <p align="right">
+							
+							{% if owners %}
+							<br/>
+							<span class="header">Experiment Administrators</span>
+                            {% for owner in owners %}
+                                    {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+                            {% endfor %}
+							{% endif %}
+                            </p>																			
 
-										<p>
-										<span class="header">Experiment Last Updated</span>
-										{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
-										</p>		
+						</div>
+						<div id="tabs-2">
+							<br/>
 
-			                            <p align="right">
-										
-										{% if owners %}
-										<br/>
-										<span class="header">Experiment Administrators</span>
-			                            {% for owner in owners %}
-			                                    {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
-			                            {% endfor %}
-										{% endif %}
-			                            </p>																			
+							<input type="hidden" name="expid" value="{{experiment.id}}">							
+							<div id="datasets">
+							{% for dataset in experiment.dataset_set.all %}
+								<span class="header" style="color: black;">
+									<strong>Dataset {{ forloop.counter }}</strong>
+								</span>
 
+								<div class="dataset_info">
+
+									<div class="dataset_description">
+									<span class="header">Dataset Description</span>{{ dataset.description|safe }}	
 									</div>
-									<div id="tabs-2">
+									<br/>
+
+									<div class="dataset_extrainfo">
+										{% if dataset.datasetparameter_set.count %}
+										<a class="button dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">Show Dataset Metadata</a>	
+										<div class="dataset_metadata" style="display: none" id="dataset_metadata_{{forloop.counter}}">
+										<ul>
+												{% for parameter in dataset.datasetparameter_set.all %}
+													<li><strong>{{ parameter.name.full_name }}: </strong>
+														{% if parameter.name.is_numeric %}
+															{{ parameter.numerical_value }} {{ parameter.name.units }}
+														{% else %}
+															{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
+														{% endif %}
+													</li>
+												{% endfor %}
+										</ul>	
+										</div>	
 										<br/>
+										{% endif %}					
 
-										<input type="hidden" name="expid" value="{{experiment.id}}">							
-										<div id="datasets">
-										{% for dataset in experiment.dataset_set.all %}
-											<span class="header" style="color: black;">
-												<strong>Dataset {{ forloop.counter }}</strong>
-											</span>
+										<div>
+											<a class="button datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">Show Data Files</a>					
+											<ul class="datafile_list">
 
-											<div class="dataset_info">
+											</ul>
 
-												<div class="dataset_description">
-												<span class="header">Dataset Description</span>{{ dataset.description|safe }}	
-												</div>
-												<br/>
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+							</div>									
+			
+			</li> 
+			
+	</ul>
+</div>	
 
-												<div class="dataset_extrainfo">
-													{% if dataset.datasetparameter_set.count %}
-													<a class="button dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">Show Dataset Metadata</a>	
-													<div class="dataset_metadata" style="display: none" id="dataset_metadata_{{forloop.counter}}">
-													<ul>
-															{% for parameter in dataset.datasetparameter_set.all %}
-																<li><strong>{{ parameter.name.full_name }}: </strong>
-																	{% if parameter.name.is_numeric %}
-																		{{ parameter.numerical_value }} {{ parameter.name.units }}
-																	{% else %}
-																		{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
-																	{% endif %}
-																</li>
-															{% endfor %}
-													</ul>	
-													</div>	
-													<br/>
-													{% endif %}					
-
-													<div>
-														<a class="button datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">Show Data Files</a>					
-														<ul class="datafile_list">
-
-														</ul>
-
-													</div>
-												</div>
-											</div>
-										{% endfor %}
-										</div>									
-						
-						</li> 
-						
-				</ul>
-			</div>
-			{% endblock %}
+{% endblock %}
