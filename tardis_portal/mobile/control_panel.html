@@ -1,0 +1,286 @@
+<!--
+ Copyright (c) 2010, Monash e-Research Centre
+   (Monash University, Australia)
+ Copyright (c) 2010, VeRSI Consortium
+   (Victorian eResearch Strategic Initiative, Australia)
+ All rights reserved.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+{% extends "portal_template.html" %} 
+		{% block script %}
+		<script type="text/javascript" src="/site_media/js/lib/jquery.js"></script>
+		<script type='text/javascript' src='/site_media/js/lib/jquery.bgiframe.min.js'></script>
+		<script type='text/javascript' src='/site_media/js/lib/jquery.ajaxQueue.js'></script>
+		<script type='text/javascript' src='/site_media/js/lib/thickbox-compressed.js'></script>
+		<script type='text/javascript' src='/site_media/js/jquery.autocomplete.js'></script>
+		<script type='text/javascript' src='/site_media/js/localdata.js'></script>	
+
+		<link rel="stylesheet" type="text/css" href="/site_media/css/autocomplete/jquery.autocomplete.css" />
+		<link rel="stylesheet" type="text/css" href="/site_media/css/autocomplete/lib/thickbox.css" />			
+		<script type="text/javascript">
+		
+		$(document).ready(function() {		
+
+			//beginswith, endswith
+			String.prototype.beginsWith = function(t, i) { if (i==false) { return
+			(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+			== this.substring(0, t.length).toLowerCase()); } }
+
+			String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+			== this.substring(this.length - t.length)); } else { return
+			(t.toLowerCase() == this.substring(this.length -
+			t.length).toLowerCase()); } }			
+					
+		   $('.access_list').hide().end().find('.access_list_toggle').click(function() {
+		     $(this).next().toggle();
+
+		   });		
+		
+			$(".access_list_toggle").text("[Show]");	
+			
+			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";					
+			
+			// access list
+			 $(".access_list_toggle").toggle(function(){
+			   $(this).text("[Hide]");
+				var href = $(this).attr("href");
+
+				$(this).next().html(loadingHTML + "</br>");
+				
+				$(this).next().load(href, function(){
+						$(document).ready(function(){
+								var value = (function () {
+								    var val = null;
+
+								    $.ajax({
+								        'async': false,
+								        'global': false,
+								        'url': '/ajax/user_list',
+								        'success': function (data) {
+								            val = data;
+
+								        }
+								    });
+
+								    return val;
+
+								})();					
+
+								$(".usersuggest").autocomplete(value.split(" "), {
+									matchContains: true,
+									minChars: 0
+								});							
+								
+								$(".form_submit").unbind('click');
+								$(".form_submit").click(function(event) {
+									event.preventDefault();
+									
+								    var usersuggest = $(this).siblings(".usersuggest").val();  
+								    var experiment_id = $(this).siblings(".experiment_id").val();									
+									var users_div = $(this).parents('.access_list').children('.users')
+									
+									action = experiment_id + '/access_list/add/' + usersuggest;							
+									
+								    $.ajax({  
+							        'async': false,
+							        'global': true,									
+								     type: "GET",  
+								     url: action,  
+								     success: function(data) { 
+										if (data.beginsWith("<div class=", true) == true)
+										{									
+											users_div.hide()
+											.append(data).fadeIn();
+										// todo this is a duplicate function..
+										   $(".remove_user").unbind('click');
+										   $(".remove_user").click(function() { 
+
+												var href = $(this).attr("href");
+
+												remove_user = $(this);
+
+												$.ajax({
+												        'async': false,
+												        'global': false,
+												        'url': href,
+												        'success': function (data) {
+
+												            val = data;
+
+															if(val == "OK")
+															{
+																remove_user.fadeOut(500, function(){
+																remove_user.parents('.access_list_user').remove();
+																});
+															}
+															else
+															{
+																alert('Error adding user. Perhaps they already have access?');
+															}
+														}
+												    }); // end ajax
+
+
+												return false;								
+
+											 }); // end remove user											
+										}
+										else
+										{
+											alert('Error adding user. Perhaps they already have access?');
+										}
+								     },  								     
+								     error: function(data) { 
+										alert('Error adding user');
+								     }  
+								    });								
+
+								    return false;									
+
+								});								
+												
+							   $(".remove_user").unbind('click');
+							   $(".remove_user").click(function() { 
+
+									var href = $(this).attr("href");
+
+									remove_user = $(this);
+
+									$.ajax({
+									        'async': false,
+									        'global': false,
+									        'url': href,
+									        'success': function (data) {
+
+									            val = data;
+
+												if(val == "OK")
+												{
+													remove_user.fadeOut(500, function(){
+													remove_user.parents('.access_list_user').remove();
+													});
+												}
+											}
+									    }); // end ajax
+
+									
+									return false;								
+								
+								 }); // end remove user
+													
+							});
+						});								
+
+			 },function(){
+			   $(this).text("[Show]");
+			 });			
+			
+			
+		});
+		
+		</script>
+		
+		{% endblock %}
+
+		{% block content %}
+
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Control Panel</a>
+				</h1>
+				<div class="entry">
+					<br/>
+					<p>
+						{% if experiments %}
+								
+								<table class="experiment-table">
+								{% for experiment in experiments %}
+									<tr>
+										<th width="70%">
+											<a href="../view/{{ experiment.id }}">{{ experiment.title }}</a>
+
+											<br/>
+										</th>
+									</tr>
+									<tr>								
+										<td>
+											Experiment Access <a href="{{experiment.id}}/access_list/" class="access_list_toggle">[Show Access List]</a>				
+						
+											<div class="access_list">
+									
+											</div>											
+											
+											<br/>
+											<br/>
+										</td>
+									</tr>					
+
+
+								{%endfor %}
+
+								</table>								
+
+						{% else %}
+						
+							There are no experiments under your control.
+						
+						{% endif %}
+					</p>
+										
+				</div>
+			</div>
+		</div>
+
+		{% endblock %}
+		{% block sidebar %}
+
+		<ul>
+			<li>
+				<h2>
+					Browse Experiments
+				</h2>
+				<ul>
+					<li>
+						<a href="/experiment/view">Index</a>
+					</li>
+					<li>
+						<a href="/search/experiment">Search</a>
+					</li>					
+				</ul>
+				{% if user.is_authenticated %}
+				<br/>
+				<h2>
+					Controls
+				</h2>
+				<ul>
+					<li>
+						<a href="/experiment/control_panel">Control Panel</a>
+					</li>					
+				</ul>
+				{% endif %}
+			</li>			
+		</ul>
+		<p>
+			{% endblock %}

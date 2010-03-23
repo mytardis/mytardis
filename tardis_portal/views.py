@@ -29,6 +29,11 @@ def render_response_index(request, *args, **kwargs):
 	kwargs['context_instance']['is_authenticated'] = request.user.is_authenticated()
 	kwargs['context_instance']['username'] = request.user.username
 
+	if request.mobile:
+		template_path = args[0]
+		split = template_path.partition('/')
+		args = (split[0] + '/mobile/' + split[2],) + args[1:]
+	
 	return render_to_response(*args, **kwargs)
 	
 def return_response_error(request):
@@ -609,6 +614,8 @@ def about(request):
 	
 	c = Context({
 		'subtitle': "About",
+		'about_pressed': True,
+		'nav': [{'name': 'About', 'link': '/about/'}],
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/about.html', c))	
 
@@ -649,6 +656,7 @@ def view_experiment(request, experiment_id):
 			'subtitle': experiment.title,	
 			'owners': owners,
 			'size': size,		
+			'nav': [{'name': 'Data', 'link': '/experiment/view/'}, {'name': experiment.title, 'link': '/experiment/view/' + str(experiment.id) + '/'}]
 		})
 	except Experiment.DoesNotExist, de:
 		return return_response_not_found(request)
@@ -665,6 +673,9 @@ def experiment_index(request):
 	c = Context({
 		'experiments': experiments,
 		'subtitle': "Experiment Index",
+		'bodyclass': 'list',
+		'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
+		'data_pressed': True,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/experiment_index.html', c))
 
@@ -952,10 +963,17 @@ def search_experiment(request):
 			if request.GET.has_key('creator') and len(request.GET['creator']) > 0:
 				experiments = experiments.filter(author_experiment__author__name__icontains=request.GET['creator'])
 
+	bodyclass = None
+	if get:
+		bodyclass = 'list'
+
 	c = Context({
 		'submitted': get,
 		'experiments': experiments,
 		'subtitle': "Search Experiments",
+		'nav': [{'name': 'Search Experiment', 'link': '/search/experiment/'}],		
+		'bodyclass': bodyclass,
+		'search_pressed': True,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/search_experiment.html', c))	
 	
@@ -1029,6 +1047,10 @@ def search_datafile(request):
 		datafiles = paginator.page(page)
 	except (EmptyPage, InvalidPage):
 		datafiles = paginator.page(paginator.num_pages)
+		
+	bodyclass = None
+	if get:
+		bodyclass = 'list'	
 				
 	c = Context({
 		'submitted': get,
@@ -1036,6 +1058,9 @@ def search_datafile(request):
 		'paginator': paginator,
 		'query_string': request.META['QUERY_STRING'],
 		'subtitle': "Search Datafiles",
+		'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],		
+		'bodyclass': bodyclass,	
+		'search_pressed': True,	
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/search_datafile.html', c))
 	
