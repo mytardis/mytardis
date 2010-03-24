@@ -20,7 +20,7 @@ from django.db.models import Sum
 
 import urllib, urllib2
 
-import ldap
+from tardis.tardis_portal import ldap_auth
 
 def render_response_index(request, *args, **kwargs):
 
@@ -58,211 +58,6 @@ def return_response_error_message(request, redirect_path, message):
 	})
 
 	return HttpResponseServerError(render_response_index(request, redirect_path, c))
-	
-#todo complete
-def authenticate_user_authcate(username, password):
-	l = None
-	l_bind = None
-	try:
-		l = ldap.open(settings.LDAP_URL)
-		
-		searchScope = ldap.SCOPE_SUBTREE
-		## retrieve all attributes - again adjust to your needs - see documentation for more options
-		retrieveAttributes = None
-		searchFilter = 'uid=' + username	
-
-		l.protocol_version = ldap.VERSION3
-
-		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
-
-		DN = result[0][0]
-
-		l_bind = ldap.open("directory.monash.edu.au")
-
-		l_bind.simple_bind_s(DN, password)	
-		
-		return True	
-	
-	except ldap.LDAPError, e:
-		return False
-		
-	except IndexError, i:
-		
-		return ''		
-		
-	finally:
-		if l:
-			l.unbind_s()
-		if l_bind:
-			l_bind.unbind_s()
-	
-def get_authcate_username_for_email(email):
-	l = None
-	try:
-		l = ldap.open(settings.LDAP_URL)
-
-		searchScope = ldap.SCOPE_SUBTREE
-		## retrieve all attributes - again adjust to your needs - see documentation for more options
-		retrieveAttributes = ['uid']
-		searchFilter = '(|(mail=' + email + ')(mailalternateaddress=' + email + '))'	
-
-		l.protocol_version = ldap.VERSION3
-
-		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
-
-		return result[0][1]['uid'][0]
-
-	except ldap.LDAPError, e:
-
-		return ''	
-
-	except IndexError, i:
-
-		return ''			
-	
-	finally:
-		if l:
-			l.unbind_s()
-	
-def get_authcate_email_for_user(username):
-	l = None
-	try:
-		l = ldap.open(settings.LDAP_URL)
-	
-		searchScope = ldap.SCOPE_SUBTREE
-		## retrieve all attributes - again adjust to your needs - see documentation for more options
-		retrieveAttributes = ['mail']
-		searchFilter = 'uid=' + username	
-
-		l.protocol_version = ldap.VERSION3
-
-		result = l.search_s(settings.BASE_DN, searchScope, searchFilter, retrieveAttributes)
-
-		return result[0][1]['mail'][0]
-	
-	except ldap.LDAPError, e:
-	
-		return ''	
-		
-	except IndexError, i:
-		
-		return ''
-	
-	finally:
-		if l:
-			l.unbind_s()
-
-#todo complete	
-def monash_login(request):
-	from django.contrib.auth import authenticate, login
-	# if user exists then check if ldap: try log in through ldap, else try log in usual way, either way login
-
-	#todo put me in SETTINGS
-	if request.POST.has_key('username') and request.POST.has_key('password'):
-		username = request.POST['username']
-		password = request.POST['password']
-		
-		next = '/'
-		if request.POST.has_key('next'):
-			next = request.POST['next']
-			
-		c = Context({
-		})
-		
-		error_template_redirect = "tardis_portal/login.html"		
-		
-		try:
-			u = User.objects.get(username=username)
-			
-			try:
-				if u.get_profile().authcate_user:
-					if authenticate_user_authcate(username, password):
-						u.backend='django.contrib.auth.backends.ModelBackend'
-						login(request, u)
-						return HttpResponseRedirect(next)
-					else:
-						return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
-				else:
-					if authenticate(username=username, password=password):
-						u.backend='django.contrib.auth.backends.ModelBackend'
-						login(request, u)
-						return HttpResponseRedirect(next)
-					else:
-						return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
-			except UserProfile.DoesNotExist, ue:
-				if authenticate(username=username, password=password):
-					u.backend='django.contrib.auth.backends.ModelBackend'
-					login(request, u)
-					return HttpResponseRedirect(next)
-				else:
-					return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")				
-		except User.DoesNotExist, ue:
-			if authenticate_user_authcate(username, password):
-				email = get_authcate_email_for_user(username)
-				
-				from random import choice
-				import string
-				
-				#random password todo make function
-				random_password = ""
-				chars = string.letters + string.digits
-				
-				for i in range(8):
-					random_password = random_password + choice(chars)
-				
-				u = User.objects.create_user(username, email, random_password)
-				up = UserProfile(authcate_user=True, user=u)
-				up.save()
-				
-				u.backend='django.contrib.auth.backends.ModelBackend' #todo consolidate
-				login(request, u)
-				return HttpResponseRedirect(next)	
-			else:
-				return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")	
-
-	c = Context({
-	})
-	return HttpResponse(render_response_index(request, 'tardis_portal/login.html', c))
-
-#todo complete
-def get_or_create_user_authcate(email):
-	
-	authcate_user = None
-	username = get_authcate_username_for_email(email)
-	try:
-
-		u = User.objects.get(username=username)
-		print u.get_profile()
-		# if, somehow someone else has created a user manually that has this username
-		if not u.get_profile().authcate_user:
-			# see if this has already happened and a new user was assigned with a diff username
-			try:
-				u_email = User.objects.get(email__exact=email, username=username)
-				authcate_user = u_email
-				
-			except User.DoesNotExist, ue:
-				pass #this is a rare case and will have to be handled later
-				# create user somehow and email? (auto_gen username?)
-		else:
-			authcate_user = u
-			
-	except User.DoesNotExist, ue:
-
-		from random import choice
-		import string	
-		#random password todo make function
-		random_password = ""
-		chars = string.letters + string.digits
-
-		for i in range(8):
-			random_password = random_password + choice(chars)
-
-		authcate_user = User.objects.create_user(username, email, random_password)
-		up = UserProfile(authcate_user=True, user=authcate_user)
-		up.save()
-		
-		#todo :send email with notification
-	return authcate_user	
 
 def logout(request):
 	try:
@@ -275,7 +70,6 @@ def logout(request):
 
 	})		
 	return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))	
-	
 	
 def get_accessible_experiments(user_id):
 
@@ -727,6 +521,86 @@ def create_placeholder_experiment(user):
 	e.save()
 
 	return e.id
+	
+#todo complete	
+def ldap_login(request):
+	from django.contrib.auth import authenticate, login
+	# if user exists then check if ldap: try log in through ldap, else try log in usual way, either way login
+
+	#todo put me in SETTINGS
+	if request.POST.has_key('username') and request.POST.has_key('password'):
+		username = request.POST['username']
+		password = request.POST['password']
+
+		next = '/'
+		if request.POST.has_key('next'):
+			next = request.POST['next']
+
+		c = Context({
+		})
+
+		error_template_redirect = "tardis_portal/login.html"		
+
+		if settings.LDAP_ENABLE:
+			try:
+				u = User.objects.get(username=username)
+
+				try:
+					if u.get_profile().authcate_user:
+						if ldap_auth.authenticate_user_ldap(username, password):
+							u.backend='django.contrib.auth.backends.ModelBackend'
+							login(request, u)
+							return HttpResponseRedirect(next)
+						else:
+							return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
+					else:
+						if authenticate(username=username, password=password):
+							u.backend='django.contrib.auth.backends.ModelBackend'
+							login(request, u)
+							return HttpResponseRedirect(next)
+						else:
+							return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
+				except UserProfile.DoesNotExist, ue:
+					if authenticate(username=username, password=password):
+						u.backend='django.contrib.auth.backends.ModelBackend'
+						login(request, u)
+						return HttpResponseRedirect(next)
+					else:
+						return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")				
+			except User.DoesNotExist, ue:
+				if ldap_auth.authenticate_user_ldap(username, password):
+					email = ldap_auth.get_ldap_email_for_user(username)
+
+					from random import choice
+					import string
+
+					#random password todo make function
+					random_password = ""
+					chars = string.letters + string.digits
+
+					for i in range(8):
+						random_password = random_password + choice(chars)
+
+					u = User.objects.create_user(username, email, random_password)
+					up = UserProfile(authcate_user=True, user=u)
+					up.save()
+
+					u.backend='django.contrib.auth.backends.ModelBackend' #todo consolidate
+					login(request, u)
+					return HttpResponseRedirect(next)	
+				else:
+					return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")
+		u = authenticate(username=username, password=password)
+		if u:
+			u.backend='django.contrib.auth.backends.ModelBackend'
+			login(request, u)
+			return HttpResponseRedirect(next)
+		else:
+			return return_response_error_message(request, error_template_redirect, "Sorry, username and password don't match")			
+
+	c = Context({
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/login.html', c))	
 
 def register_experiment_ws_xmldata_internal(request):
 	if request.method == 'POST':
@@ -826,7 +700,7 @@ def register_experiment_ws_xmldata(request):
 						
 					#try get user from email
 					if settings.LDAP_ENABLE:						
-						u = get_or_create_user_authcate(owner)
+						u = ldap_auth.get_or_create_user_ldap(owner)
 						e = Experiment.objects.get(pk=eid)
 						exp_owner = Experiment_Owner(experiment=e, user=u)
 						exp_owner.save()
