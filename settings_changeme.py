@@ -29,6 +29,9 @@
 #
 import sys
 
+APP_ROOT = "/path/to/tardis/"
+TARDISURLPREFIX = 'http://127.0.0.1'
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -82,6 +85,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 'django.core.context_processors.auth',
 'django.core.context_processors.debug',
 'django.core.context_processors.i18n',
+'tardis.tardis_portal.minidetector.Middleware',
 )
 
 TEMPLATE_DIRS = (
@@ -92,6 +96,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+LDAP_ENABLE = False
 LDAP_URL = "directory.example.com"
 BASE_DN = "o=Organisation, c=X"
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
@@ -110,7 +115,7 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 MEDIA_URL = '/site_media/'
 
 INSTALLED_APPS = (
-	'extensions',
+	'django_extensions',
 	'django.contrib.auth',
 	'django.contrib.contenttypes',
 	'django.contrib.sessions',
