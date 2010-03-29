@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.RegisterExperimentForm import RegisterExperimentForm
+from tardis.tardis_portal.ImportParamsForm import ImportParamsForm
 
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
@@ -1041,3 +1042,59 @@ def stats(request):
 		'public_datafile_size': public_datafile_size,
 	})
 	return HttpResponse(render_response_index(request, 'tardis_portal/stats.html', c))
+	
+def import_params(request):
+	if request.method == 'POST': # If the form has been submitted...
+
+		form = ImportParamsForm(request.POST, request.FILES) # A form bound to the POST data
+		if form.is_valid(): # All validation rules pass
+
+			params = request.FILES['params']
+			username = form.cleaned_data['username']
+			password = form.cleaned_data['password']
+			
+			from django.contrib.auth import authenticate
+			user = authenticate(username=username, password=password)
+			if user is not None:
+			    if not user.is_active or not user.is_staff:
+			        return return_response_error(request)
+			else:
+			    return return_response_error(request)			
+			
+			i = 0
+			for line in params:
+				if i == 0:
+					prefix = line
+					print prefix
+				elif i == 1:
+					schema = line
+					print schema
+					
+					try:
+						Schema.objects.get(namespace=schema)
+						return HttpResponse('Schema already exists.')
+					except Schema.DoesNotExist, s:						
+						schema_db = Schema(namespace=schema)
+						schema_db.save()										
+				else:
+					part = line.split('^')
+					if len(part) == 4:
+					
+						is_numeric = False
+						if part[3].strip(' \n\r') == 'True':
+							is_numeric = True					
+
+						pn = ParameterName(schema=schema_db, name=part[0], full_name=part[1], units=part[2], is_numeric=is_numeric)
+						pn.save()					
+		
+				i = i + 1
+				
+			return HttpResponse('OK')
+	else:
+		form = ImportParamsForm()
+		
+	c = Context({
+		'form': form,
+		'subtitle': "Import Parameters",
+	})
+	return HttpResponse(render_response_index(request, 'tardis_portal/import_params.html', c))			
