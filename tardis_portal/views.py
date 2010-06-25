@@ -23,6 +23,8 @@ import urllib, urllib2
 
 from tardis.tardis_portal import ldap_auth
 
+from tardis.tardis_portal.MultiPartForm import MultiPartForm
+
 def render_response_index(request, *args, **kwargs):
 
 	kwargs['context_instance'] = RequestContext(request)
@@ -143,11 +145,13 @@ def experiment_ownership_required(f):
 #custom decorator
 def experiment_access_required(f):
         def wrap(request, *args, **kwargs):
-				#if user isn't logged in it will redirect to login page
-				if not request.user.is_authenticated():
-					return HttpResponseRedirect("/login")
-				if not has_experiment_access(kwargs['experiment_id'], request.user.pk):
-					return return_response_error(request)
+	
+				if not has_experiment_access(kwargs['experiment_id'], request.user):
+					#if user isn't logged in it will redirect to login page
+					if not request.user.is_authenticated():
+						return HttpResponseRedirect("/login")					
+					else:
+						return return_response_error(request)
 				
 				return f(request, *args, **kwargs)
         wrap.__doc__=f.__doc__
@@ -157,11 +161,12 @@ def experiment_access_required(f):
 #custom decorator
 def dataset_access_required(f):
         def wrap(request, *args, **kwargs):
-				#if user isn't logged in it will redirect to login page
-				if not request.user.is_authenticated():
-					return HttpResponseRedirect("/login")
-				if not has_dataset_access(kwargs['dataset_id'], request.user.pk):
-					return return_response_error(request)
+				if not has_dataset_access(kwargs['dataset_id'], request.user):
+					#if user isn't logged in it will redirect to login page
+					if not request.user.is_authenticated():
+						return HttpResponseRedirect("/login")					
+					else:
+						return return_response_error(request)
 
 				return f(request, *args, **kwargs)
         wrap.__doc__=f.__doc__
@@ -171,30 +176,50 @@ def dataset_access_required(f):
 #custom decorator
 def datafile_access_required(f):
         def wrap(request, *args, **kwargs):
-				#if user isn't logged in it will redirect to login page
-				if not request.user.is_authenticated():
-					return HttpResponseRedirect("/login")
-				if not has_datafile_access(kwargs['dataset_file_id'], request.user.pk):
-					return return_response_error(request)
+				if not has_datafile_access(kwargs['dataset_file_id'], request.user):
+					#if user isn't logged in it will redirect to login page
+					if not request.user.is_authenticated():
+						return HttpResponseRedirect("/login")					
+					else:
+						return return_response_error(request)
 
 				return f(request, *args, **kwargs)
         wrap.__doc__=f.__doc__
         wrap.__name__=f.__name__
         return wrap
 
-def has_experiment_access(experiment_id, user_id):
-
-	g = Group.objects.filter(name=experiment_id, user__id=user_id)
+def has_experiment_access(experiment_id, user):
+	
+	#public route
+	try:
+		e = Experiment.objects.get(id=experiment_id)
+		
+		if e.public:
+			return True
+	except Experiment.DoesNotExist, ge:
+		pass
+		
+	if not user.is_authenticated():
+		return False
+		
+	g = Group.objects.filter(name=experiment_id, user__id=user.pk)
 
 	if g:
 		return True
 	else:
 		return False
 		
-def has_dataset_access(dataset_id, user_id):
+def has_dataset_access(dataset_id, user):
 
 	experiment = Experiment.objects.get(dataset__pk=dataset_id)
-	g = Group.objects.filter(name=experiment.id, user__pk=user_id)
+	
+	if experiment.public:
+		return True	
+	
+	if not user.is_authenticated():
+		return False	
+	
+	g = Group.objects.filter(name=experiment.id, user__pk=user.pk)
 	
 
 	if g:
@@ -202,11 +227,17 @@ def has_dataset_access(dataset_id, user_id):
 	else:
 		return False	
 		
-def has_datafile_access(dataset_file_id, user_id):
+def has_datafile_access(dataset_file_id, user):
 
 	df = Dataset_File.objects.get(id=dataset_file_id)
-	g = Group.objects.filter(name=df.dataset.experiment.id, user__pk=user_id)
-
+	
+	if df.dataset.experiment.public:
+		return True
+		
+	if not user.is_authenticated():
+		return False		
+	
+	g = Group.objects.filter(name=df.dataset.experiment.id, user__pk=user.pk)
 
 	if g:
 		return True
@@ -278,37 +309,42 @@ def site_settings(request):
 	else:
 		return return_response_error(request)
 	
-def download(request, dfid):
+def download(request, experiment_id):
 
 	#todo handle missing file, general error
 	if request.GET.has_key('dfid') and len(request.GET['dfid']) > 0:
 		datafile = Dataset_File.objects.get(pk=request.GET['dfid'])
-		if has_datafile_access(datafile.id, request.user.id):
-			url = datafile.url
+	elif request.GET.has_key('url') and len(request.GET['url']) > 0:
+		datafile = Dataset_File.objects.get(url=urllib.unquote(request.GET['url']), dataset__experiment__id=experiment_id)
+	else:
+		return return_response_error(request)
 		
-			if url.startswith('http://') or url.startswith('https://') or url.startswith('ftp://'):
-				return HttpResponseRedirect(datafile.url)
-			else:
-				file_path = settings.FILE_STORE_PATH + "/" + str(datafile.dataset.experiment.id) + "/" + datafile.url.partition('//')[2]
-			
-				try:
-					print file_path
-					from django.core.servers.basehttp import FileWrapper
-					wrapper = FileWrapper(file(file_path))
-					
-					response = HttpResponse(wrapper, mimetype='application/octet-stream')
-					response['Content-Disposition'] = 'attachment; filename=' + datafile.filename
-					
-					# import os
-					# response['Content-Length'] = os.path.getsize(file_path)
-					
-					return response
-
-				except IOError, io:
-					return return_response_not_found(request)				
-
+	if has_datafile_access(datafile.id, request.user):
+		url = datafile.url
+	
+		if url.startswith('http://') or url.startswith('https://') or url.startswith('ftp://'):
+			return HttpResponseRedirect(datafile.url)
 		else:
-			return return_response_error(request)
+			file_path = settings.FILE_STORE_PATH + "/" + str(datafile.dataset.experiment.id) + "/" + datafile.url.partition('//')[2]
+		
+			try:
+				print file_path
+				from django.core.servers.basehttp import FileWrapper
+				wrapper = FileWrapper(file(file_path))
+				
+				response = HttpResponse(wrapper, mimetype='application/octet-stream')
+				response['Content-Disposition'] = 'attachment; filename=' + datafile.filename
+				
+				# import os
+				# response['Content-Length'] = os.path.getsize(file_path)
+				
+				return response
+
+			except IOError, io:
+				return return_response_not_found(request)				
+
+	else:
+		return return_response_error(request)
 		
 def downloadTar(request):
 	# Create the HttpResponse object with the appropriate headers.
@@ -326,7 +362,7 @@ def downloadTar(request):
 			fileSize = 0
 			for dfid in request.POST.getlist('datafile'):
 				datafile = Dataset_File.objects.get(pk=dfid)
-				if has_datafile_access(dfid, request.user.id):
+				if has_datafile_access(dfid, request.user):
 					if datafile.url.startswith('file://'):
 						absolute_filename = datafile.url.partition('//')[2]
 						fileString = fileString + request.POST['expid'] + '/' + absolute_filename + " "
@@ -343,6 +379,35 @@ def downloadTar(request):
 			response['Content-Length'] = fileSize + 5120
 
 			return response
+	elif request.POST.has_key('url'):
+
+		if not len(request.POST.getlist('url')) == 0:
+			from django.utils.safestring import SafeUnicode	
+			from django.core.servers.basehttp import FileWrapper		
+
+			import os		
+
+			fileString = ""
+			fileSize = 0
+			for url in request.POST.getlist('url'):
+				datafile = Dataset_File.objects.get(url=urllib.unquote(url), dataset__experiment__id=request.POST['expid'])
+				if has_datafile_access(datafile.id, request.user):
+					if datafile.url.startswith('file://'):
+						absolute_filename = datafile.url.partition('//')[2]
+						fileString = fileString + request.POST['expid'] + '/' + absolute_filename + " "
+						fileSize = fileSize + long(datafile.size)
+
+			#tarfile class doesn't work on large files being added and streamed on the fly, so going command-line-o
+
+			tar_command = "tar -C " + settings.FILE_STORE_PATH + " -c " + fileString												
+
+			import shlex, subprocess
+
+			response = HttpResponse(FileWrapper(subprocess.Popen(tar_command, stdout=subprocess.PIPE, shell=True).stdout), mimetype='application/x-tar')
+			response['Content-Disposition'] = 'attachment; filename=experiment' + request.POST['expid'] + '.tar'
+			response['Content-Length'] = fileSize + 5120
+
+			return response						
 		else:
 			return return_response_not_found(request)
 	else:
@@ -352,7 +417,7 @@ def display_dataset_image(request, dataset_id, parameter_name):
 	
 	#todo handle not exist
 	dataset = Dataset.objects.get(pk=dataset_id)
-	if has_experiment_access(dataset.experiment.id, request.user.id):
+	if has_experiment_access(dataset.experiment.id, request.user):
 		image = dataset.datasetparameter_set.get(name__name=parameter_name)
 	
 		import base64
@@ -369,7 +434,7 @@ def display_datafile_image(request, dataset_file_id, parameter_name):
 
 	#todo handle not exist
 	datafile = Dataset_File.objects.get(pk=dataset_file_id)
-	if has_experiment_access(datafile.dataset.experiment.id, request.user.id):
+	if has_experiment_access(datafile.dataset.experiment.id, request.user):
 		image = datafile.datafileparameter_set.get(name__name=parameter_name)
 
 		import base64
@@ -458,15 +523,23 @@ def view_experiment(request, experiment_id):
 	
 	return HttpResponse(render_response_index(request, 'tardis_portal/view_experiment.html', c))
 
-@login_required()
 def experiment_index(request):
+
+	experiments = None
 	
-	experiments = get_accessible_experiments(request.user.id)
-	if experiments:
-		experiments = experiments.order_by('title')
+	# if logged in
+	if request.user.is_authenticated():
+		experiments = get_accessible_experiments(request.user.id)
+		if experiments:
+			experiments = experiments.order_by('title')
+		
+	public_experiments = Experiment.objects.filter(public=True)
+	if public_experiments:
+		public_experiments = public_experiments.order_by('title')	
 	
 	c = Context({
 		'experiments': experiments,
+		'public_experiments': public_experiments,		
 		'subtitle': "Experiment Index",
 		'bodyclass': 'list',
 		'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
@@ -1024,7 +1097,50 @@ def remove_access_experiment(request, experiment_id, username):
 		return return_response_not_found(request)		
 
 	return return_response_error(request)
+
+@experiment_ownership_required
+def publish_experiment(request, experiment_id):
 	
+	experiment = Experiment.objects.get(id=experiment_id)
+	
+	if not experiment.public:
+		filename = settings.FILE_STORE_PATH + "/" + experiment_id + "/METS.XML"
+	
+		mpform = MultiPartForm()
+		mpform.add_field('username', settings.TARDIS_USERNAME)
+		mpform.add_field('password', settings.TARDIS_PASSWORD)	
+		mpform.add_field('url', settings.TARDISURLPREFIX + "/")
+		mpform.add_field('mytardis_id', experiment_id)
+
+		f = open(filename, "r")
+		# Add a fake file
+		mpform.add_file('xmldata', 'METS.xml', 
+					  fileHandle=f)	
+
+		print "about to send register request to site"
+		# Build the request
+		requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
+		requestmp.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+		body = str(mpform)
+		requestmp.add_header('Content-type', mpform.get_content_type())
+		requestmp.add_header('Content-length', len(body))
+		requestmp.add_data(body)
+
+		print
+		print 'OUTGOING DATA:'
+		print requestmp.get_data()
+
+		print
+		print 'SERVER RESPONSE:'
+		print urllib2.urlopen(requestmp).read()
+		
+		experiment.public = True
+		experiment.save()
+	
+		return HttpResponse(render_response_index(request, 'tardis_portal/index.html', c))
+	else:
+		return return_response_error(request)
+		
 def stats(request):
 	#stats
 	public_datafiles = Dataset_File.objects.filter()

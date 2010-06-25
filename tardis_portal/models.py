@@ -36,20 +36,20 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
 
 class XSLT_docs(models.Model):
-	xmlns = models.URLField(max_length=400, primary_key=True)
+	xmlns = models.URLField(max_length=255, primary_key=True)
 	data = models.TextField()
 	
 	def __unicode__(self):
 		return self.xmlns
 
 class Author(models.Model):
-	name = models.CharField(max_length=400, primary_key=True)
+	name = models.CharField(max_length=255, primary_key=True)
 	
 	def __unicode__(self):
 		return self.name
 
 class Experiment(models.Model):
-	url = models.URLField(verify_exists=False, max_length=400) #use verify-exists
+	url = models.URLField(verify_exists=False, max_length=255) #use verify-exists
 	approved = models.BooleanField()
 	title = models.CharField(max_length=400)
 	institution_name = models.CharField(max_length=400)
@@ -57,6 +57,7 @@ class Experiment(models.Model):
 	update_time = models.DateTimeField(auto_now=True)
 	created_by = models.ForeignKey(User)
 	handle = models.TextField(null=True, blank=True)
+	public = models.BooleanField()
 	
 	def __unicode__(self):
 		return self.title

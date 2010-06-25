@@ -162,24 +162,25 @@
 					});
 			
 			// default text set
-			
-			$(".dataset_metadata_toggle").text("[Hide]");		
+
+			$(".dataset_metadata_toggle").text("[Show]");	
+			$(".dataset_metadata_toggle").next().hide();
 			$(".datafile_list_toggle").text("[Show]");		
-			
+
 			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
 			// metadata text / ajax toggle
 
 			// dataset md
 			 $(".dataset_metadata_toggle").toggle(function(){
+			   $(this).text("[Hide]");
+			    var href= $(this).attr("href");
+				$(href).show();				
+
+			 },function(){
 			   $(this).text("[Show]");
 			    var href= $(this).attr("href");
 				$(href).hide();
-			
-			 },function(){
-			   $(this).text("[Hide]");
-			    var href= $(this).attr("href");
-				$(href).show();	
 			 });
 			
 			// datafile list
