@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -27,7 +29,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.models import Experiment, Author, XML_data, XSLT_docs, Dataset_File, Dataset, Pdbid, Citation, Schema, ParameterName, DatafileParameter, DatasetParameter, Author_Experiment, Experiment_Owner, UserProfile
+
+from tardis.tardis_portal.models import Experiment, Author, XML_data, \
+    XSLT_docs, Dataset_File, Dataset, Pdbid, Citation, Schema, \
+    ParameterName, DatafileParameter, DatasetParameter, \
+    Author_Experiment, Experiment_Owner, UserProfile
 from django.contrib import admin
 
 admin.site.register(XML_data)

@@ -1,15 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 '''
 The function `rfc3339` formats dates according to the :RFC:`3339`. `rfc3339`
 tries to have as much as possible sensible defaults.
 '''
 
 __author__ = 'Henry Precheur <henry@precheur.org>'
-__license__ = "Public Domain"
-__all__ = ('rfc3339',)
+__license__ = 'Public Domain'
+__all__ = ('rfc3339', )
 
 import datetime
 import time
+
 
 def _timezone(utcoffset):
     '''
@@ -20,12 +23,14 @@ def _timezone(utcoffset):
     >>> _timezone(-28800)
     '-08:00'
     '''
+
     hours = abs(utcoffset) // 3600
     minutes = abs(utcoffset) % 3600
     if utcoffset >= 0:
         return '+%02d:%02d' % (hours, minutes)
     else:
         return '-%02d:%02d' % (hours, minutes)
+
 
 def _utc_offset(date, use_system_timezone):
     '''
@@ -41,6 +46,7 @@ def _utc_offset(date, use_system_timezone):
     >>> _utc_offset(datetime.datetime.now(), False)
     0
     '''
+
     if date.utcoffset() is not None:
         return date.utcoffset()
     elif use_system_timezone:
@@ -51,8 +57,10 @@ def _utc_offset(date, use_system_timezone):
     else:
         return 0
 
+
 def _utc_string(d):
     return d.strftime('%Y-%m-%dT%H:%M:%SZ')
+
 
 def rfc3339(date, utc=False, use_system_timezone=True):
     '''
@@ -84,7 +92,9 @@ def rfc3339(date, utc=False, use_system_timezone=True):
         ...
         TypeError: excepted datetime, got str instead
     '''
+
     # Check if `date` is a timestamp.
+
     try:
         if utc:
             return _utc_string(datetime.datetime.utcfromtimestamp(date))
@@ -93,17 +103,23 @@ def rfc3339(date, utc=False, use_system_timezone=True):
     except TypeError:
         pass
     if isinstance(date, datetime.date):
+
         # If `date` is a `datetime.date` convert it to a `datetime.datetime`.
+
         if not isinstance(date, datetime.datetime):
             date = datetime.datetime(*date.timetuple()[:3])
         utcoffset = _utc_offset(date, use_system_timezone)
         if utc:
-            return _utc_string(date + datetime.timedelta(seconds=utcoffset))
+            return _utc_string(date
+                               + datetime.timedelta(seconds=utcoffset))
         else:
-            return date.strftime('%Y-%m-%dT%H:%M:%S') + _timezone(utcoffset)
+            return date.strftime('%Y-%m-%dT%H:%M:%S') \
+                + _timezone(utcoffset)
     else:
-        raise TypeError('excepted %s, got %s instead' %
-                        (datetime.datetime.__name__, date.__class__.__name__))
+        raise TypeError('excepted %s, got %s instead'
+                        % (datetime.datetime.__name__,
+                        date.__class__.__name__))
+
 
 if __name__ == '__main__':
     import doctest
