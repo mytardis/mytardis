@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -27,11 +29,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 from django import forms
 
+
 class RegisterExperimentForm(forms.Form):
-	username = forms.CharField(max_length=400, required=True)
-	password = forms.CharField(max_length=400, required=True)
-	xmldata = forms.FileField()
-	experiment_owner = forms.CharField(max_length=400, required=False)
-	originid = forms.CharField(max_length=400, required=False)
+
+    username = forms.CharField(max_length=400, required=True)
+    password = forms.CharField(max_length=400, required=True)
+    xmldata = forms.FileField()
+    experiment_owner = forms.CharField(max_length=400, required=False)
+    originid = forms.CharField(max_length=400, required=False)
+
+

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -27,7 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from __future__ import with_statement # This isn't required in Python 2.6
+
+from __future__ import with_statement  # This isn't required in Python 2.6
 from xml.dom.minidom import parse, parseString
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.ExperimentParser import ExperimentParser
@@ -35,471 +38,593 @@ from django.utils.safestring import SafeUnicode
 import datetime
 import urllib
 
-#todo move me out of here
+# todo move me out of here
+
 from StringIO import StringIO
 from lxml import etree
 
-def getText(nodelist):
-	rc = ""
-	for node in nodelist:
-		if node.nodeType == node.TEXT_NODE:
-			rc = rc + node.data
-	return rc
-	
-def getSingleResult(elements):
-	if len(elements) == 1:
-		return SafeUnicode(elements[0])
-	else:
-		return None	
-	
-def getParameterFromTechXML(tech_xml, parameter_name):
-	prefix = tech_xml.getroot().prefix
-	xmlns = tech_xml.getroot().nsmap[prefix]
 
-	parameter_string = ""
-	for parameter in parameter_name.split('/'):
-		parameter_string = parameter_string + "/" + prefix + ":" + parameter
-		
-	elements = tech_xml.xpath("/" + parameter_string + "/text()",
-		namespaces={prefix: xmlns})
-		
-	print elements
-	return getSingleResult(elements)
-	
+def getText(nodelist):
+    rc = ''
+    for node in nodelist:
+        if node.nodeType == node.TEXT_NODE:
+            rc = rc + node.data
+    return rc
+
+
+def getSingleResult(elements):
+    if len(elements) == 1:
+        return SafeUnicode(elements[0])
+    else:
+        return None
+
+
+def getParameterFromTechXML(tech_xml, parameter_name):
+    prefix = tech_xml.getroot().prefix
+    xmlns = tech_xml.getroot().nsmap[prefix]
+
+    parameter_string = ''
+    for parameter in parameter_name.split('/'):
+        parameter_string = parameter_string + '/' + prefix + ':' \
+            + parameter
+
+    elements = tech_xml.xpath('/' + parameter_string + '/text()',
+                              namespaces={prefix: xmlns})
+
+    print elements
+    return getSingleResult(elements)
+
+
 def getTechXMLFromRaw(md):
-	return etree.parse(StringIO(md))	
-	
+    return etree.parse(StringIO(md))
+
+
 def getXmlnsFromTechXMLRaw(md):
-	tech_xml = etree.parse(StringIO(md))
-	prefix = tech_xml.getroot().prefix
-	xmlns = tech_xml.getroot().nsmap[prefix]		
-	
-	return xmlns
+    tech_xml = etree.parse(StringIO(md))
+    prefix = tech_xml.getroot().prefix
+    xmlns = tech_xml.getroot().nsmap[prefix]
+
+    return xmlns
+
 
 class ProcessExperiment:
-	def download_xml(self, url):
-		f = urllib.urlopen(url)
-		xmlString = f.read()
-		
-		return xmlString
-		
-	def null_check(self, string):
-		if string == "null":
-			return None
-		else:
-			return string
-			
-	def register_experiment_xmldata(self, xmldata, created_by):
 
-			xmlString = xmldata
-			url = "http://www.example.com"
-			self.url = "http://www.example.com"
+    def download_xml(self, url):
+        f = urllib.urlopen(url)
+        xmlString = f.read()
 
-			ep = ExperimentParser(str(xmlString))
+        return xmlString
 
-			e = Experiment(url=url, approved=True, \
-			title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
-			description=ep.getAbstract(), created_by=created_by)
+    def null_check(self, string):
+        if string == 'null':
+            return None
+        else:
+            return string
 
-			e.save()
+    def register_experiment_xmldata(self, xmldata, created_by):
 
-			self.process_METS(e, ep)
+        xmlString = xmldata
+        url = 'http://www.example.com'
+        self.url = 'http://www.example.com'
 
-			return e.id
-			
-	def register_experiment_xmldata_file(self, filename, created_by, expid=None, private_password=None, ftp_location=None, ftp_port=None, ftp_username=None, ftp_password=None):
-		
-		f = open(filename)
-		
-		firstline = f.readline()
-		
-		f.close()
-		
-		if firstline.startswith('<experiment'):
-			print "processing simple xml"
-			eid = self.process_simple(filename, created_by, expid)
-		else:
-			print "processing METS"
-			eid = self.process_METS(filename, created_by, expid)			
+        ep = ExperimentParser(str(xmlString))
 
-		return eid		
-			
-	def process_METS(self, filename, created_by, expid=None):
-		
-		print "START EXP: " + str(expid)
-		
-		url = "http://www.example.com"
-		self.url = "http://www.example.com"		
-		
-		f = open(filename, "r")
-		xmlString = f.read()
-		f.close()
-		
-		ep = ExperimentParser(str(xmlString))
-		
-		del xmlString		
-		
-		e = Experiment(id=expid, url=url, approved=True, \
-		title=ep.getTitle(), institution_name=ep.getAgentName("DISSEMINATOR"), \
-		description=ep.getAbstract(), created_by=created_by)
+        e = Experiment(
+            url=url,
+            approved=True,
+            title=ep.getTitle(),
+            institution_name=ep.getAgentName('DISSEMINATOR'),
+            description=ep.getAbstract(),
+            created_by=created_by,
+            )
 
-		e.save()		
-		
-		url_path = self.url.rpartition('/')[0] + self.url.rpartition('/')[1]
-		
-		for pdbid in ep.getPDBIDs():
-			p = Pdbid(experiment=e, pdbid=SafeUnicode(pdbid))
-			p.save()
-		
-		for citation in ep.getRelationURLs():
-			c = Citation(experiment=e, url=SafeUnicode(citation))
-			c.save()		
-		
-		author_experiments = Author_Experiment.objects.all()
-		author_experiments = author_experiments.filter(experiment=e).delete()
-		
-		x = 0
-		for authorName in ep.getAuthors():
-			author = Author(name=SafeUnicode(authorName))
-			author.save()
-			author_experiment = Author_Experiment(experiment=e, author=author, order=x)
-			author_experiment.save()
-			x = x + 1
+        e.save()
 
-		e.dataset_set.all().delete()
+        self.process_METS(e, ep)
 
-		for dmdid in ep.getDatasetDMDIDs():
-			d = Dataset(experiment=e, description=ep.getDatasetTitle(dmdid))
-			d.save()
-			for admid in ep.getDatasetADMIDs(dmdid):
-				
-					techxml = ep.getTechXML(admid)
-					prefix = techxml.getroot().prefix
-					xmlns = techxml.getroot().nsmap[prefix]					
-			
-					try:
-			
-						schema = Schema.objects.get(namespace__exact=xmlns)
+        return e.id
 
-						parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
-						parameternames = parameternames.order_by('id')					
-				
-						for pn in parameternames:
-						
-							if pn.is_numeric:
-								value = ep.getParameterFromTechXML(techxml, pn.name)
+    def register_experiment_xmldata_file(
+        self,
+        filename,
+        created_by,
+        expid=None,
+        private_password=None,
+        ftp_location=None,
+        ftp_port=None,
+        ftp_username=None,
+        ftp_password=None,
+        ):
 
-								if value != None:
-									dp = DatasetParameter(dataset=d, name=pn, \
-									string_value=None, numerical_value=float(value))
-									dp.save()
-							else:
-								dp = DatasetParameter(dataset=d, name=pn, \
-								string_value=ep.getParameterFromTechXML(techxml, pn.name), numerical_value=None)
-								dp.save()	
-								
-					except Schema.DoesNotExist:						
-						print "Schema " + xmlns + " doesn't exist!"
-						#todo replace with logging
-		
-			for fileid in ep.getFileIDs(dmdid):
-				
-				# if ep.getFileLocation(fileid).startswith('file://'):
-				# 					absolute_filename = url_path + ep.getFileLocation(fileid).partition('//')[2]
-				# 				else:
-				# 					absolute_filename = ep.getFileLocation(fileid)	
-				
-				if self.null_check(ep.getFileName(fileid)):
-					filename = ep.getFileName(fileid)
-				else:
-					filename = ep.getFileLocation(fileid).rpartition('/')[2]
-					
-				#print filename
-				
-				datafile=Dataset_File(dataset=d, filename=filename, \
-				url=ep.getFileLocation(fileid), size=ep.getFileSize(fileid))
-				datafile.save()
-				
-				for admid in ep.getFileADMIDs(fileid):
+        f = open(filename)
 
-					techxml = ep.getTechXML(admid)
-					prefix = techxml.getroot().prefix
-					xmlns = techxml.getroot().nsmap[prefix]					
-			
-					try:
-						schema = Schema.objects.get(namespace__exact=xmlns)
-					
+        firstline = f.readline()
 
-						parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-						parameternames = parameternames.order_by('id')
-					
-						for pn in parameternames:
+        f.close()
 
-							if pn.is_numeric:
-								value = ep.getParameterFromTechXML(techxml, pn.name)
-								if value != None:
-									dp = DatafileParameter(dataset_file=datafile, name=pn, \
-									string_value=None, numerical_value=float(value))
-									dp.save()
-							else:
-								dp = DatafileParameter(dataset_file=datafile, name=pn, \
-								string_value=ep.getParameterFromTechXML(techxml, pn.name), numerical_value=None)
-								dp.save()
-							
-					except Schema.DoesNotExist:	
-						xml_data = XML_data(datafile=datafile, xmlns=SafeUnicode(xmlns), data=SafeUnicode(techxml.getvalue()))
-						xml_data.save()
-						
-		print "DONE EXP: " + str(e.id)
-						
-		return e.id	
-	
-	def process_simple(self, filename, created_by, expid=None):
+        if firstline.startswith('<experiment'):
+            print 'processing simple xml'
+            eid = self.process_simple(filename, created_by, expid)
+        else:
+            print 'processing METS'
+            eid = self.process_METS(filename, created_by, expid)
 
-		print "START EXP: " + str(expid)
-		
-		url = "http://www.example.com"
-		self.url = "http://www.example.com"		
-		
-		with open(filename) as f:
-			e = 0
-			ds = 0
-			df = 0
-			current = None
-			current_df_id = 0
-			for line in f:
-				line = line.strip()
-				# print "LINE: " + line
-				if line.startswith("<experiment>"):
-					current = "experiment"
-					e = e + 1
-					ds = 0
-					df = 0
-					print "experiment: " + str(e)
+        return eid
 
-					exp = dict()
-					authors = list()
-				elif line.startswith("<dataset>"):
-					# commit any experiment if current = experiment
-					if current == "experiment":
+    def process_METS(
+        self,
+        filename,
+        created_by,
+        expid=None,
+        ):
 
-						experiment = Experiment(id=expid, url=url, approved=True, \
-						title=exp['title'], institution_name=exp['organization'], \
-						description=exp['abstract'], created_by=created_by)
+        print 'START EXP: ' + str(expid)
 
-						experiment.save()
-						
-						author_experiments = Author_Experiment.objects.all()
-						author_experiments = author_experiments.filter(experiment=experiment).delete()
+        url = 'http://www.example.com'
+        self.url = 'http://www.example.com'
 
-						x = 0
-						for authorName in authors:
-							author = Author(name=SafeUnicode(authorName))
-							author.save()
-							author_experiment = Author_Experiment(experiment=experiment, author=author, order=x)
-							author_experiment.save()
-							x = x + 1
+        f = open(filename, 'r')
+        xmlString = f.read()
+        f.close()
 
-						experiment.dataset_set.all().delete()						
-					current = "dataset"
-					ds = ds + 1
-					df = 0
-					dataset = dict()
-					print "experiment: " + str(e) + " dataset: " + str(ds)
+        ep = ExperimentParser(str(xmlString))
 
-				elif line.startswith("<file>"):
-					if current == "dataset":
-						d = Dataset(experiment=experiment, description=dataset['description'])
-						d.save()
-						print dataset
-						
-						if dataset.has_key('metadata'):
-							
-							md = dataset['metadata']
-							xmlns = getXmlnsFromTechXMLRaw(md)
-								
-							try:
-								print "trying to find parameters with an xmlns of " + xmlns
-								schema = Schema.objects.get(namespace__exact=xmlns)
+        del xmlString
 
-								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-								parameternames = parameternames.order_by('id')
-							
-								tech_xml = getTechXMLFromRaw(md)
-					
-								for pn in parameternames:
-									try:
-										print "finding parameter " + pn.name + " in metadata"
+        e = Experiment(
+            id=expid,
+            url=url,
+            approved=True,
+            title=ep.getTitle(),
+            institution_name=ep.getAgentName('DISSEMINATOR'),
+            description=ep.getAbstract(),
+            created_by=created_by,
+            )
 
-										if pn.is_numeric:
-											value = getParameterFromTechXML(tech_xml, pn.name)	
-											if value != None:
-												dp = DatasetParameter(dataset=d, name=pn, \
-												string_value=None, numerical_value=float(value))
-												dp.save()
-										else:
-											dp = DatasetParameter(dataset=d, name=pn, \
-											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
-											dp.save()
-									except e:
-										print e
-							except e:
-								print e						
-					else:
-						if self.null_check(datafile['name']):
-							filename = datafile['name']
-						else:
-							filename = datafile['path']
+        e.save()
 
-						#print filename
+        url_path = self.url.rpartition('/')[0] + self.url.rpartition('/'
+                )[1]
 
-						dfile=Dataset_File(dataset=d, filename=filename, \
-						url=datafile['path'], size=datafile['size'])
-						dfile.save()
-						current_df_id = dfile.id
-						
-						print datafile
-						
-						if datafile.has_key('metadata'):
-							
-							md = datafile['metadata']
-							xmlns = getXmlnsFromTechXMLRaw(md)
-								
-							try:
-								print "trying to find parameters with an xmlns of " + xmlns
-								schema = Schema.objects.get(namespace__exact=xmlns)
+        for pdbid in ep.getPDBIDs():
+            p = Pdbid(experiment=e, pdbid=SafeUnicode(pdbid))
+            p.save()
 
-								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-								parameternames = parameternames.order_by('id')
-							
-								tech_xml = getTechXMLFromRaw(md)
-					
-								for pn in parameternames:
-									try:
-										print "finding parameter " + pn.name + " in metadata"
-										dfile = Dataset_File.objects.get(pk=current_df_id)
-										if pn.is_numeric:
-											value = getParameterFromTechXML(tech_xml, pn.name)	
-											if value != None:
-												dp = DatafileParameter(dataset_file=dfile, name=pn, \
-												string_value=None, numerical_value=float(value))
-												dp.save()
-										else:
-											dp = DatafileParameter(dataset_file=dfile, name=pn, \
-											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
-											dp.save()
-									except e:
-										print e
-							except e:
-								print e						
-					# commit any dataset if current = dataset
-					current = "file"
-					df = df + 1
-					datafile = dict()
-					print "experiment: " + str(e) + " dataset: " + str(ds) + " datafile: " + str(df)
+        for citation in ep.getRelationURLs():
+            c = Citation(experiment=e, url=SafeUnicode(citation))
+            c.save()
 
-				elif line.startswith("<metadata"):
-					md = ''
-					while line.strip() != "</metadata>":
-						line = f.next()
-						if line.strip() != "</metadata>":
-							md = md + line
-					if current == "file":
-						datafile['metadata'] = md
-					else:
-						dataset['metadata'] = md
-					
-				elif line.startswith("<abstract"):
-					ab = line.partition("<abstract>")[2]
-					print "found abstract"
-					while (not line.strip().endswith("</abstract>")):
-						line = f.next()
-						ab = ab + line.partition("</abstract>")[0]
-					print "ABSTRACTAMUNDO = " + ab
-					exp['abstract'] = ab					
-					
-				elif line.startswith("</experiment>"):
-					if current == "dataset":
-						d = Dataset(experiment=experiment, description=dataset['description'])
-						d.save()
-						print dataset
-					else:
-						if self.null_check(datafile['name']):
-							filename = datafile['name']
-						else:
-							filename = datafile['path']
+        author_experiments = Author_Experiment.objects.all()
+        author_experiments = \
+            author_experiments.filter(experiment=e).delete()
 
-						#print filename
+        x = 0
+        for authorName in ep.getAuthors():
+            author = Author(name=SafeUnicode(authorName))
+            author.save()
+            author_experiment = Author_Experiment(experiment=e,
+                    author=author, order=x)
+            author_experiment.save()
+            x = x + 1
 
-						dfile=Dataset_File(dataset=d, filename=filename, \
-						url=datafile['path'], size=datafile['size'])
-						dfile.save()
-						
-						print dfile.id
-						current_df_id = dfile.id
-						
-						print datafile		
-						
-						if datafile.has_key('metadata'):
-							md = datafile['metadata']
-							xmlns = getXmlnsFromTechXMLRaw(md)
-								
-							try:
-								print "trying to find parameters with an xmlns of " + xmlns
-								schema = Schema.objects.get(namespace__exact=xmlns)
+        e.dataset_set.all().delete()
 
-								parameternames = ParameterName.objects.filter(schema__namespace__exact=schema.namespace)					
-								parameternames = parameternames.order_by('id')
-							
-								tech_xml = getTechXMLFromRaw(md)
-					
-								for pn in parameternames:
-									try:
-										print "finding parameter " + pn.name + " in metadata"
-										dfile = Dataset_File.objects.get(pk=current_df_id)
-										if pn.is_numeric:
-											value = getParameterFromTechXML(tech_xml, pn.name)	
-											if value != None:
-												dp = DatafileParameter(dataset_file=dfile, name=pn, \
-												string_value=None, numerical_value=float(value))
-												dp.save()
-										else:
-											dp = DatafileParameter(dataset_file=dfile, name=pn, \
-											string_value=getParameterFromTechXML(tech_xml, pn.name), numerical_value=None)
-											dp.save()
-									except e:
-										print e
-							except e:
-								print e						
-				try:
-					print "attempting to parse line: " + line
-					dom = parseString(line)
-					doc = dom.documentElement
-					#print doc.tagName + ": " + getText(contents)
-					tag_name = doc.tagName
-					print tag_name + " discovered"
-					if current == "experiment":
-						if tag_name == "title" or tag_name == "organization":
-							contents = doc.childNodes
-							exp[tag_name] = getText(contents)
-							print "\tADDED " + tag_name + ": " + getText(contents)
-						if tag_name == "author":
-							contents = doc.childNodes
-							authors.append(getText(contents))
-							print "\tADDED " + tag_name + ": " + getText(contents)
-					if current == "dataset":
-						if tag_name == "description":
-							contents = doc.childNodes
-							dataset[tag_name] = getText(contents)
-							print "\t" + tag_name + ": " + getText(contents)
-					if current == "file":
-						if tag_name == "name" or tag_name == "size" or tag_name == "path":
-							contents = doc.childNodes
-							datafile[tag_name] = getText(contents)
-							print "\t" + tag_name + ": " + getText(contents)				
-				except:
-					pass
-					
-		print "DONE EXP: " + str(experiment.id)
-					
-		return experiment.id
+        for dmdid in ep.getDatasetDMDIDs():
+            d = Dataset(experiment=e,
+                        description=ep.getDatasetTitle(dmdid))
+            d.save()
+            for admid in ep.getDatasetADMIDs(dmdid):
+
+                techxml = ep.getTechXML(admid)
+                prefix = techxml.getroot().prefix
+                xmlns = techxml.getroot().nsmap[prefix]
+
+                try:
+
+                    schema = Schema.objects.get(namespace__exact=xmlns)
+
+                    parameternames = \
+                        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                    parameternames = parameternames.order_by('id')
+
+                    for pn in parameternames:
+
+                        if pn.is_numeric:
+                            value = ep.getParameterFromTechXML(techxml,
+                                    pn.name)
+
+                            if value != None:
+                                dp = DatasetParameter(dataset=d,
+                                        name=pn, string_value=None,
+                                        numerical_value=float(value))
+                                dp.save()
+                        else:
+                            dp = DatasetParameter(dataset=d, name=pn,
+                                    string_value=ep.getParameterFromTechXML(techxml,
+                                    pn.name), numerical_value=None)
+                            dp.save()
+                except Schema.DoesNotExist:
+
+                    print 'Schema ' + xmlns + " doesn't exist!"
+
+                        # todo replace with logging
+
+            for fileid in ep.getFileIDs(dmdid):
+
+                # if ep.getFileLocation(fileid).startswith('file://'):
+                # ....................absolute_filename = url_path + ep.getFileLocation(fileid).partition('//')[2]
+                # ................else:
+                # ....................absolute_filename = ep.getFileLocation(fileid)....
+
+                if self.null_check(ep.getFileName(fileid)):
+                    filename = ep.getFileName(fileid)
+                else:
+                    filename = ep.getFileLocation(fileid).rpartition('/'
+                            )[2]
+
+                # print filename
+
+                datafile = Dataset_File(dataset=d, filename=filename,
+                        url=ep.getFileLocation(fileid),
+                        size=ep.getFileSize(fileid))
+                datafile.save()
+
+                for admid in ep.getFileADMIDs(fileid):
+
+                    techxml = ep.getTechXML(admid)
+                    prefix = techxml.getroot().prefix
+                    xmlns = techxml.getroot().nsmap[prefix]
+
+                    try:
+                        schema = \
+                            Schema.objects.get(namespace__exact=xmlns)
+
+                        parameternames = \
+                            ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                        parameternames = parameternames.order_by('id')
+
+                        for pn in parameternames:
+
+                            if pn.is_numeric:
+                                value = \
+                                    ep.getParameterFromTechXML(techxml,
+                                        pn.name)
+                                if value != None:
+                                    dp = \
+    DatafileParameter(dataset_file=datafile, name=pn,
+                      string_value=None, numerical_value=float(value))
+                                    dp.save()
+                            else:
+                                dp = \
+                                    DatafileParameter(dataset_file=datafile,
+                                        name=pn,
+                                        string_value=ep.getParameterFromTechXML(techxml,
+                                        pn.name), numerical_value=None)
+                                dp.save()
+                    except Schema.DoesNotExist:
+
+                        xml_data = XML_data(datafile=datafile,
+                                xmlns=SafeUnicode(xmlns),
+                                data=SafeUnicode(techxml.getvalue()))
+                        xml_data.save()
+
+        print 'DONE EXP: ' + str(e.id)
+
+        return e.id
+
+    def process_simple(
+        self,
+        filename,
+        created_by,
+        expid=None,
+        ):
+
+        print 'START EXP: ' + str(expid)
+
+        url = 'http://www.example.com'
+        self.url = 'http://www.example.com'
+
+        with open(filename) as f:
+            e = 0
+            ds = 0
+            df = 0
+            current = None
+            current_df_id = 0
+            for line in f:
+                line = line.strip()
+
+                # print "LINE: " + line
+
+                if line.startswith('<experiment>'):
+                    current = 'experiment'
+                    e = e + 1
+                    ds = 0
+                    df = 0
+                    print 'experiment: ' + str(e)
+
+                    exp = dict()
+                    authors = list()
+                elif line.startswith('<dataset>'):
+
+                    # commit any experiment if current = experiment
+
+                    if current == 'experiment':
+
+                        experiment = Experiment(
+                            id=expid,
+                            url=url,
+                            approved=True,
+                            title=exp['title'],
+                            institution_name=exp['organization'],
+                            description=exp['abstract'],
+                            created_by=created_by,
+                            )
+
+                        experiment.save()
+
+                        author_experiments = \
+                            Author_Experiment.objects.all()
+                        author_experiments = \
+                            author_experiments.filter(experiment=experiment).delete()
+
+                        x = 0
+                        for authorName in authors:
+                            author = \
+                                Author(name=SafeUnicode(authorName))
+                            author.save()
+                            author_experiment = \
+                                Author_Experiment(experiment=experiment,
+                                    author=author, order=x)
+                            author_experiment.save()
+                            x = x + 1
+
+                        experiment.dataset_set.all().delete()
+                    current = 'dataset'
+                    ds = ds + 1
+                    df = 0
+                    dataset = dict()
+                    print 'experiment: ' + str(e) + ' dataset: ' \
+                        + str(ds)
+                elif line.startswith('<file>'):
+
+                    if current == 'dataset':
+                        d = Dataset(experiment=experiment,
+                                    description=dataset['description'])
+                        d.save()
+                        print dataset
+
+                        if dataset.has_key('metadata'):
+
+                            md = dataset['metadata']
+                            xmlns = getXmlnsFromTechXMLRaw(md)
+
+                            try:
+                                print 'trying to find parameters with an xmlns of ' \
+                                    + xmlns
+                                schema = \
+                                    Schema.objects.get(namespace__exact=xmlns)
+
+                                parameternames = \
+                                    ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                parameternames = \
+                                    parameternames.order_by('id')
+
+                                tech_xml = getTechXMLFromRaw(md)
+
+                                for pn in parameternames:
+                                    try:
+                                        print 'finding parameter ' \
+    										+ pn.name + ' in metadata'
+
+                                        if pn.is_numeric:
+                                            value = \
+    											getParameterFromTechXML(tech_xml, pn.name)
+                                            if value != None:
+                                                dp = \
+												    DatasetParameter(dataset=d, name=pn, string_value=None,
+												        numerical_value=float(value))
+                                                dp.save()
+                                        else:
+                                            dp = \
+										        DatasetParameter(dataset=d, name=pn,
+												    string_value=getParameterFromTechXML(tech_xml,
+												    pn.name), numerical_value=None)
+                                            dp.save()
+                                    except e:
+                                        print e
+                            except e:
+                                print e
+                    else:
+                        if self.null_check(datafile['name']):
+                            filename = datafile['name']
+                        else:
+                            filename = datafile['path']
+
+                        # print filename
+
+                        dfile = Dataset_File(dataset=d,
+                                filename=filename, url=datafile['path'
+                                ], size=datafile['size'])
+                        dfile.save()
+                        current_df_id = dfile.id
+
+                        print datafile
+
+                        if datafile.has_key('metadata'):
+
+                            md = datafile['metadata']
+                            xmlns = getXmlnsFromTechXMLRaw(md)
+
+                            try:
+                                print 'trying to find parameters with an xmlns of ' \
+                                    + xmlns
+                                schema = \
+                                    Schema.objects.get(namespace__exact=xmlns)
+
+                                parameternames = \
+                                    ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                parameternames = \
+                                    parameternames.order_by('id')
+
+                                tech_xml = getTechXMLFromRaw(md)
+
+                                for pn in parameternames:
+                                    try:
+                                        print 'finding parameter ' \
+    										+ pn.name + ' in metadata'
+                                        dfile = \
+    									    Dataset_File.objects.get(pk=current_df_id)
+                                        if pn.is_numeric:
+                                            value = \
+    										    getParameterFromTechXML(tech_xml, pn.name)
+                                            if value != None:
+                                                dp = \
+    											    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
+                      								    numerical_value=float(value))
+                                                dp.save()
+                                        else:
+                                            dp = \
+    											DatafileParameter(dataset_file=dfile, name=pn,
+                      								string_value=getParameterFromTechXML(tech_xml,
+                      								pn.name), numerical_value=None)
+                                            dp.save()
+                                    except e:
+                                        print e
+                            except e:
+                                print e
+
+                    # commit any dataset if current = dataset
+
+                    current = 'file'
+                    df = df + 1
+                    datafile = dict()
+                    print 'experiment: ' + str(e) + ' dataset: ' \
+                        + str(ds) + ' datafile: ' + str(df)
+                elif line.startswith('<metadata'):
+
+                    md = ''
+                    while line.strip() != '</metadata>':
+                        line = f.next()
+                        if line.strip() != '</metadata>':
+                            md = md + line
+                    if current == 'file':
+                        datafile['metadata'] = md
+                    else:
+                        dataset['metadata'] = md
+                elif line.startswith('<abstract'):
+
+                    ab = line.partition('<abstract>')[2]
+                    print 'found abstract'
+                    while not line.strip().endswith('</abstract>'):
+                        line = f.next()
+                        ab = ab + line.partition('</abstract>')[0]
+                    print 'ABSTRACTAMUNDO = ' + ab
+                    exp['abstract'] = ab
+                elif line.startswith('</experiment>'):
+
+                    if current == 'dataset':
+                        d = Dataset(experiment=experiment,
+                                    description=dataset['description'])
+                        d.save()
+                        print dataset
+                    else:
+                        if self.null_check(datafile['name']):
+                            filename = datafile['name']
+                        else:
+                            filename = datafile['path']
+
+                        # print filename
+
+                        dfile = Dataset_File(dataset=d,
+                                filename=filename, url=datafile['path'
+                                ], size=datafile['size'])
+                        dfile.save()
+
+                        print dfile.id
+                        current_df_id = dfile.id
+
+                        print datafile
+
+                        if datafile.has_key('metadata'):
+                            md = datafile['metadata']
+                            xmlns = getXmlnsFromTechXMLRaw(md)
+
+                            try:
+                                print 'trying to find parameters with an xmlns of ' \
+                                    + xmlns
+                                schema = \
+                                    Schema.objects.get(namespace__exact=xmlns)
+
+                                parameternames = \
+                                    ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                parameternames = \
+                                    parameternames.order_by('id')
+
+                                tech_xml = getTechXMLFromRaw(md)
+
+                                for pn in parameternames:
+                                    try:
+                                        print 'finding parameter ' \
+    									    + pn.name + ' in metadata'
+                                        dfile = \
+    										Dataset_File.objects.get(pk=current_df_id)
+                                        if pn.is_numeric:
+                                            value = \
+    										    getParameterFromTechXML(tech_xml, pn.name)
+                                            if value != None:
+                                                dp = \
+    											    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
+                      								    numerical_value=float(value))
+                                                dp.save()
+                                        else:
+                                            dp = \
+    										    DatafileParameter(dataset_file=dfile, name=pn,
+                      							    string_value=getParameterFromTechXML(tech_xml,
+                      							    pn.name), numerical_value=None)
+                                            dp.save()
+                                    except e:
+                                        print e
+                            except e:
+                                print e
+                try:
+                    print 'attempting to parse line: ' + line
+                    dom = parseString(line)
+                    doc = dom.documentElement
+
+                    # print doc.tagName + ": " + getText(contents)
+
+                    tag_name = doc.tagName
+                    print tag_name + ' discovered'
+                    if current == 'experiment':
+                        if tag_name == 'title' or tag_name \
+                            == 'organization':
+                            contents = doc.childNodes
+                            exp[tag_name] = getText(contents)
+                            print '\tADDED ' + tag_name + ': ' \
+                                + getText(contents)
+                        if tag_name == 'author':
+                            contents = doc.childNodes
+                            authors.append(getText(contents))
+                            print '\tADDED ' + tag_name + ': ' \
+                                + getText(contents)
+                    if current == 'dataset':
+                        if tag_name == 'description':
+                            contents = doc.childNodes
+                            dataset[tag_name] = getText(contents)
+                            print '\t' + tag_name + ': ' \
+                                + getText(contents)
+                    if current == 'file':
+                        if tag_name == 'name' or tag_name == 'size' \
+                            or tag_name == 'path':
+                            contents = doc.childNodes
+                            datafile[tag_name] = getText(contents)
+                            print '\t' + tag_name + ': ' \
+                                + getText(contents)
+                except:
+                    pass
+
+        print 'DONE EXP: ' + str(experiment.id)
+
+        return experiment.id
+
+
