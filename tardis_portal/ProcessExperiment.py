@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -291,8 +292,8 @@ class ProcessExperiment:
                                         pn.name)
                                 if value != None:
                                     dp = \
-    DatafileParameter(dataset_file=datafile, name=pn,
-                      string_value=None, numerical_value=float(value))
+                                        DatafileParameter(dataset_file=datafile, name=pn,
+                                            string_value=None, numerical_value=float(value))
                                     dp.save()
                             else:
                                 dp = \
@@ -414,21 +415,21 @@ class ProcessExperiment:
                                 for pn in parameternames:
                                     try:
                                         print 'finding parameter ' \
-    										+ pn.name + ' in metadata'
+                                            + pn.name + ' in metadata'
 
                                         if pn.is_numeric:
                                             value = \
-    											getParameterFromTechXML(tech_xml, pn.name)
+                                                getParameterFromTechXML(tech_xml, pn.name)
                                             if value != None:
                                                 dp = \
-												    DatasetParameter(dataset=d, name=pn, string_value=None,
-												        numerical_value=float(value))
+                                                    DatasetParameter(dataset=d, name=pn, string_value=None,
+                                                        numerical_value=float(value))
                                                 dp.save()
                                         else:
                                             dp = \
-										        DatasetParameter(dataset=d, name=pn,
-												    string_value=getParameterFromTechXML(tech_xml,
-												    pn.name), numerical_value=None)
+                                                DatasetParameter(dataset=d, name=pn,
+                                                    string_value=getParameterFromTechXML(tech_xml,
+                                                    pn.name), numerical_value=None)
                                             dp.save()
                                     except e:
                                         print e
@@ -471,22 +472,22 @@ class ProcessExperiment:
                                 for pn in parameternames:
                                     try:
                                         print 'finding parameter ' \
-    										+ pn.name + ' in metadata'
+                                            + pn.name + ' in metadata'
                                         dfile = \
-    									    Dataset_File.objects.get(pk=current_df_id)
+                                            Dataset_File.objects.get(pk=current_df_id)
                                         if pn.is_numeric:
                                             value = \
-    										    getParameterFromTechXML(tech_xml, pn.name)
+                                                getParameterFromTechXML(tech_xml, pn.name)
                                             if value != None:
                                                 dp = \
-    											    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
-                      								    numerical_value=float(value))
+                                                    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
+                                                        numerical_value=float(value))
                                                 dp.save()
                                         else:
                                             dp = \
-    											DatafileParameter(dataset_file=dfile, name=pn,
-                      								string_value=getParameterFromTechXML(tech_xml,
-                      								pn.name), numerical_value=None)
+                                                DatafileParameter(dataset_file=dfile, name=pn,
+                                                    string_value=getParameterFromTechXML(tech_xml,
+                                                    pn.name), numerical_value=None)
                                             dp.save()
                                     except e:
                                         print e
@@ -565,22 +566,22 @@ class ProcessExperiment:
                                 for pn in parameternames:
                                     try:
                                         print 'finding parameter ' \
-    									    + pn.name + ' in metadata'
+                                            + pn.name + ' in metadata'
                                         dfile = \
-    										Dataset_File.objects.get(pk=current_df_id)
+                                            Dataset_File.objects.get(pk=current_df_id)
                                         if pn.is_numeric:
                                             value = \
-    										    getParameterFromTechXML(tech_xml, pn.name)
+                                                getParameterFromTechXML(tech_xml, pn.name)
                                             if value != None:
                                                 dp = \
-    											    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
-                      								    numerical_value=float(value))
+                                                    DatafileParameter(dataset_file=dfile, name=pn, string_value=None,
+                                                        numerical_value=float(value))
                                                 dp.save()
                                         else:
                                             dp = \
-    										    DatafileParameter(dataset_file=dfile, name=pn,
-                      							    string_value=getParameterFromTechXML(tech_xml,
-                      							    pn.name), numerical_value=None)
+                                                DatafileParameter(dataset_file=dfile, name=pn,
+                                                    string_value=getParameterFromTechXML(tech_xml,
+                                                    pn.name), numerical_value=None)
                                             dp.save()
                                     except e:
                                         print e
