@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -31,9 +32,10 @@
 #
 
 from tardis.tardis_portal.models import Experiment, Author, XML_data, \
-    XSLT_docs, Dataset_File, Dataset, Pdbid, Citation, Schema, \
-    ParameterName, DatafileParameter, DatasetParameter, \
-    Author_Experiment, Experiment_Owner, UserProfile
+    XSLT_docs, Dataset_File, Dataset, Schema, ParameterName, \
+    DatafileParameter, DatasetParameter, Author_Experiment, \
+    Experiment_Owner, UserProfile, DatafileParameterSet, \
+    DatasetParameterSet, ExperimentParameterSet, ExperimentParameter
 from django.contrib import admin
 
 admin.site.register(XML_data)
@@ -42,8 +44,6 @@ admin.site.register(Experiment)
 admin.site.register(Author)
 admin.site.register(Dataset)
 admin.site.register(Dataset_File)
-admin.site.register(Pdbid)
-admin.site.register(Citation)
 admin.site.register(Schema)
 admin.site.register(ParameterName)
 admin.site.register(DatafileParameter)
@@ -51,3 +51,7 @@ admin.site.register(DatasetParameter)
 admin.site.register(Author_Experiment)
 admin.site.register(Experiment_Owner)
 admin.site.register(UserProfile)
+admin.site.register(ExperimentParameter)
+admin.site.register(DatafileParameterSet)
+admin.site.register(DatasetParameterSet)
+admin.site.register(ExperimentParameterSet)

@@ -96,24 +96,6 @@ class Author_Experiment(models.Model):
             + SafeUnicode(self.order)
 
 
-class Pdbid(models.Model):
-
-    experiment = models.ForeignKey(Experiment)
-    pdbid = models.CharField(max_length=5)
-
-    def __unicode__(self):
-        return self.pdbid
-
-
-class Citation(models.Model):
-
-    experiment = models.ForeignKey(Experiment)
-    url = models.CharField(max_length=400)
-
-    def __unicode__(self):
-        return self.url
-
-
 class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
@@ -142,8 +124,37 @@ class Schema(models.Model):
         return self.namespace
 
 
-class ParameterName(models.Model):
+class DatafileParameterSet(models.Model):
+    schema = models.ForeignKey(Schema)
+    dataset_file = models.ForeignKey(Dataset_File)
 
+    def __unicode__(self):
+        return self.schema.namespace + " / " + self.dataset_file.filename
+
+    class Meta:
+        ordering = ['id']   
+
+class DatasetParameterSet(models.Model):
+    schema = models.ForeignKey(Schema)
+    dataset = models.ForeignKey(Dataset)
+
+    def __unicode__(self):
+        return self.schema.namespace + " / " + self.dataset.description
+
+    class Meta:
+        ordering = ['id']   
+
+class ExperimentParameterSet(models.Model):
+    schema = models.ForeignKey(Schema)
+    experiment = models.ForeignKey(Experiment)
+
+    def __unicode__(self):
+        return self.schema.namespace + " / " + self.experiment.title
+
+    class Meta:
+        ordering = ['id']           
+
+class ParameterName(models.Model):
     schema = models.ForeignKey(Schema)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
@@ -151,30 +162,44 @@ class ParameterName(models.Model):
     is_numeric = models.BooleanField()
 
     def __unicode__(self):
-        return self.name
-
-
-class DatasetParameter(models.Model):
-
-    dataset = models.ForeignKey(Dataset)
-    name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name.name
-
+        return self.name    
 
 class DatafileParameter(models.Model):
-
-    dataset_file = models.ForeignKey(Dataset_File)
+    parameterset = models.ForeignKey(DatafileParameterSet)
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        return self.name.name   
 
+    class Meta:
+        ordering = ['id']           
+
+class DatasetParameter(models.Model):
+    parameterset = models.ForeignKey(DatasetParameterSet)
+    name = models.ForeignKey(ParameterName)
+    string_value = models.TextField(null=True, blank=True)
+    numerical_value = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name.name   
+
+    class Meta:
+        ordering = ['id']           
+
+
+class ExperimentParameter(models.Model):
+    parameterset = models.ForeignKey(ExperimentParameterSet)
+    name = models.ForeignKey(ParameterName)
+    string_value = models.TextField(null=True, blank=True)
+    numerical_value = models.FloatField(null=True, blank=True)
+
+    def __unicode__(self):
+        return self.name.name   
+
+    class Meta:
+        ordering = ['id']
 
 class XML_data(models.Model):
 

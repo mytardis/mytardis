@@ -249,9 +249,6 @@
 			<div class="post">
 				<h1 class="title">
 					{{ experiment.title }} 
-							{% if experiment.pdbid_set.count %}
-								<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
-							{% endif %}
 					
 				</h1>
 				
@@ -280,22 +277,6 @@
 							{{ experiment.description|safe }}					
 							</div>
 							</p>
-							<p>
-							{% if experiment.pdbid_set.count %}
-							<strong>PDB id(s):</strong>
-							{% for pdbid in experiment.pdbid_set.all %}
-							{{ pdbid.pdbid }}{% if not forloop.last %},{% endif %}
-							{% endfor %}
-							{% endif %}
-							</p>
-							<p>
-							{% if experiment.citation_set.count %}
-							<strong>Citations:</strong><br/>
-							{% for citation in experiment.citation_set.all %}
-							<a href="{{ citation.url }}">{{ citation.url }}</a><br/>
-							{% endfor %}
-							{% endif %}
-							</p>
 							
 							{% if experiment.handle %}
 							<p>
@@ -308,6 +289,32 @@
 							<strong>Institution:</strong>
 							{{experiment.institution_name}}<br/>							
 							</p>
+							
+							<p>
+								<div class="dataset_extrainfo">
+									{% if experiment.experimentparameterset_set.count %}
+									<strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
+									<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
+									<ul>
+											{% for parameterset in experiment.experimentparameterset_set.all %}
+											<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+											
+											{% for parameter in parameterset.experimentparameter_set.all %}
+												<li><strong>{{ parameter.name.full_name }}: </strong>
+													{% if parameter.name.is_numeric %}
+														{{ parameter.numerical_value }} {{ parameter.name.units }}
+													{% else %}
+														{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
+													{% endif %}
+												</li>
+											{% endfor %}
+											<br/><br/>
+											{% endfor %}									
+									</ul>	
+									</div>
+									</div>
+									{% endif %}								
+							</p>	
 							
 							<p>
 								<strong>Dataset Information:</strong>
@@ -361,11 +368,14 @@
 									</div>
 									
 									<div class="dataset_extrainfo">
-										{% if dataset.datasetparameter_set.count %}
+										{% if dataset.datasetparameterset_set.count %}
 										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
-												{% for parameter in dataset.datasetparameter_set.all %}
+												{% for parameterset in dataset.datasetparameterset_set.all %}
+												<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+												
+												{% for parameter in parameterset.datasetparameter_set.all %}
 													<li><strong>{{ parameter.name.full_name }}: </strong>
 														{% if parameter.name.is_numeric %}
 															{{ parameter.numerical_value }} {{ parameter.name.units }}
@@ -374,9 +384,11 @@
 														{% endif %}
 													</li>
 												{% endfor %}
+												<br/><br/>
+												{% endfor %}
 										</ul>	
-										</div>	
-										{% endif %}					
+										</div>
+										{% endif %}				
 								
 										<div>	
 											<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>

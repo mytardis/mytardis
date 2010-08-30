@@ -17,7 +17,8 @@ urlpatterns = patterns(  # (r'^search/quick/$', 'tardis.tardis_portal.views.sear
                          # Uncomment the next line to enable the admin:
     '',
     (r'^$', 'tardis.tardis_portal.views.index'),
-    (r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'),
+    (r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'
+     ),
     (r'^about/$', 'tardis.tardis_portal.views.about'),
     (r'^partners/$', 'tardis.tardis_portal.views.partners'),
     (r'^stats/$', 'tardis.tardis_portal.views.stats'),
@@ -29,25 +30,27 @@ urlpatterns = patterns(  # (r'^search/quick/$', 'tardis.tardis_portal.views.sear
     (r'^experiment/register/$',
      'tardis.tardis_portal.views.register_experiment_ws_xmldata'),
     (r'^experiment/register/internal/$',
-     'tardis.tardis_portal.views.register_experiment_ws_xmldata_internal'),
+     'tardis.tardis_portal.views.register_experiment_ws_xmldata_internal'
+     ),
     (r'^experiment/view/(\d+)/download/$',
      'tardis.tardis_portal.views.download'),
     (r'^experiment/view/(?P<experiment_id>\d+)/publish/$',
      'tardis.tardis_portal.views.publish_experiment'),
     (r'^search/experiment/$',
      'tardis.tardis_portal.views.search_experiment'),
-    (r'^search/datafile/$', 'tardis.tardis_portal.views.search_datafile'),
+    (r'^search/datafile/$', 'tardis.tardis_portal.views.search_datafile'
+     ),
     (r'^downloadTar/$', 'tardis.tardis_portal.views.downloadTar'),
-    (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameter_name>\w+)/$',
-	 'tardis.tardis_portal.views.display_dataset_image'),
-    (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_datafile_image'),
+    (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$'
+     , 'tardis.tardis_portal.views.display_dataset_image'),
+    (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$'
+     , 'tardis.tardis_portal.views.display_datafile_image'),
     (r'^experiment/view/(?P<experiment_id>\d+)/downloadExperiment/$',
      'tardis.tardis_portal.views.downloadExperiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/(?P<username>\w+)$',
-     'tardis.tardis_portal.views.add_access_experiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/(?P<username>\w+)$',
-     'tardis.tardis_portal.views.remove_access_experiment'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/(?P<username>\w+)$'
+     , 'tardis.tardis_portal.views.add_access_experiment'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/(?P<username>\w+)$'
+     , 'tardis.tardis_portal.views.remove_access_experiment'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/$',
      'tardis.tardis_portal.views.retrieve_access_list'),
     (r'^experiment/control_panel/$',

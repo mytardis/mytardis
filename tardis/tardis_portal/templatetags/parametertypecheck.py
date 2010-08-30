@@ -11,9 +11,10 @@ def dsparametertypecheck(value, arg):
     datasetparameter = DatasetParameter.objects.get(id=arg)
 
     if datasetparameter.name.name.endswith('Image'):
-        dsid = datasetparameter.dataset.id
+        dsid = datasetparameter.parameterset.dataset.id
+        psid = datasetparameter.parameterset.id
         return "<img src='/displayDatasetImage/" + str(dsid) + '/' \
-            + datasetparameter.name.name + "/' />"
+            + str(psid) + '/' + datasetparameter.name.name + "/' />"
     else:
         return value
 
@@ -23,8 +24,9 @@ def dfparametertypecheck(value, arg):
     datafileparameter = DatafileParameter.objects.get(id=arg)
 
     if datafileparameter.name.name.endswith('Image'):
-        dfid = datafileparameter.dataset_file.id
+        dfid = datafileparameter.parameterset.dataset_file.id
+        psid = datafileparameter.parameterset.id
         return "<img src='/displayDatafileImage/" + str(dfid) + '/' \
-            + datafileparameter.name.name + "/' />"
+            + str(psid) + '/' + datafileparameter.name.name + "/' />"
     else:
         return value

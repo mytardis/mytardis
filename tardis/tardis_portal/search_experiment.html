@@ -50,10 +50,7 @@
 							{% for experiment in experiments %}
 								<tr>
 									<th>
-										<a href="../../experiment/view/{{ experiment.id }}">{{ experiment.title }}
-											{% if experiment.pdbid_set.count %}
-												<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
-											{% endif %}										
+										<a href="../../experiment/view/{{ experiment.id }}">{{ experiment.title }}								
 
 											</a>
 									</th>

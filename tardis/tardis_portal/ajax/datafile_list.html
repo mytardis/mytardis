@@ -58,9 +58,9 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 {% for datafile in dataset.object_list %}
 <li class="datafile">
 	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
-	<a class="filelink" href="download?dfid={{datafile.id}}">{{ datafile.filename }}</a>  ({% if datafile.size %}{{ datafile.size|filesizeformat }} {% endif %}{{ datafile.url }})
+	<a class="filelink" href="download?url={{datafile.url|urlencode}}&expid={{datafile.dataset.experiment.expid}}" target="_blank">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
 	
-	{% if datafile.datafileparameter_set.count %}
+	{% if datafile.datafileparameterset_set.count %}
 	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Metadata]</a>
 	<ul class="datafile_info">
 

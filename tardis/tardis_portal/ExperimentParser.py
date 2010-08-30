@@ -74,15 +74,6 @@ class ExperimentParser:
                             : 'http://www.loc.gov/METS/'})
         return self.getSingleResult(elements)
 
-    def getPDBIDs(self):
-        elements = \
-            self.tree.xpath("//METS:dmdSec[//METS:div[@TYPE='investigation']/@DMDID ="
-                            + " @ID]/METS:mdWrap[@MDTYPE='MODS']//mods:identifier[@type='pdb']/text()"
-                            , namespaces={'mods'
-                            : 'http://www.loc.gov/mods/v3', 'METS'
-                            : 'http://www.loc.gov/METS/'})
-        return elements
-
     def getRelationURLs(self):
         elements = \
             self.tree.xpath("//METS:dmdSec[//METS:div[@TYPE='investigation']/@DMDID ="
