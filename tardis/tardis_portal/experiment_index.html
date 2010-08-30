@@ -48,10 +48,7 @@
 						{% for experiment in experiments %}
 							<tr>
 								<th>
-									<a href="../view/{{ experiment.id }}">{{ experiment.title }}
-										{% if experiment.pdbid_set.count %}
-											<em>({% for pdbid in experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
-										{% endif %}										
+									<a href="../view/{{ experiment.id }}">{{ experiment.title }}									
 										
 										</a>
 								</th>
@@ -93,10 +90,7 @@
 						{% for public_experiment in public_experiments %}
 							<tr>
 								<th>
-									<a href="../view/{{ public_experiment.id }}">{{ public_experiment.title }}
-										{% if public_experiment.pdbid_set.count %}
-											<em>({% for pdbid in public_experiment.pdbid_set.all %}{{ pdbid.pdbid }}{% if not forloop.last %}, {% endif %}{% endfor %})</em>							
-										{% endif %}										
+									<a href="../view/{{ public_experiment.id }}">{{ public_experiment.title }}									
 										
 										</a>
 								</th>

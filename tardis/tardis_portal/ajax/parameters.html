@@ -28,12 +28,16 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 {% load parametertypecheck %}
-{% for parameter in parameters %}
-	<li><strong>{{ parameter.name.full_name }}: </strong>
-		{% if parameter.name.is_numeric %}
-			{{ parameter.numerical_value }} {{ parameter.name.units }}
-		{% else %}
-			{{ parameter.string_value|dfparametertypecheck:parameter.id|safe }}
-		{% endif %}
-	</li>
+{% for parameterset in parametersets %}
+	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+	{% for parameter in parameterset.datafileparameter_set.all %}
+		<li><strong>{{ parameter.name.full_name }}: </strong>
+			{% if parameter.name.is_numeric %}
+				{{ parameter.numerical_value }} {{ parameter.name.units }}
+			{% else %}
+				{{ parameter.string_value|dfparametertypecheck:parameter.id }}
+			{% endif %}
+		</li>
+	{% endfor %}
+	<br/><br/>
 {% endfor %}

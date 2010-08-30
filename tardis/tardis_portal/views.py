@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 from django.template import Context, loader
 from django.http import HttpResponse
 
@@ -498,14 +499,20 @@ def downloadTar(request):
         return return_response_not_found(request)
 
 
-def display_dataset_image(request, dataset_id, parameter_name):
+def display_dataset_image(
+    request,
+    dataset_id,
+    parameterset_id,
+    parameter_name,
+    ):
 
     # todo handle not exist
 
     dataset = Dataset.objects.get(pk=dataset_id)
     if has_experiment_access(dataset.experiment.id, request.user):
-        image = \
-            dataset.datasetparameter_set.get(name__name=parameter_name)
+
+        image = DatasetParameter.objects.get(name__name=parameter_name,
+                parameterset=parameterset_id)
 
         import base64
 
@@ -518,15 +525,20 @@ def display_dataset_image(request, dataset_id, parameter_name):
         return return_response_error(request)
 
 
-def display_datafile_image(request, dataset_file_id, parameter_name):
+def display_datafile_image(
+    request,
+    dataset_file_id,
+    parameterset_id,
+    parameter_name,
+    ):
 
     # todo handle not exist
 
     datafile = Dataset_File.objects.get(pk=dataset_file_id)
-    if has_experiment_access(datafile.dataset.experiment.id,
-                             request.user):
+    if has_experiment_access(dataset.experiment.id, request.user):
         image = \
-            datafile.datafileparameter_set.get(name__name=parameter_name)
+            DatafileParameter.objects.get(name__name=parameter_name,
+                parameterset=parameterset_id)
 
         import base64
 
@@ -1010,10 +1022,11 @@ def register_experiment_ws_xmldata(request):
 @datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
 
-    parameters = DatafileParameter.objects.all()
-    parameters = parameters.filter(dataset_file__pk=dataset_file_id)
+    parametersets = DatafileParameterSet.objects.all()
+    parametersets = \
+        parametersets.filter(dataset_file__pk=dataset_file_id)
 
-    c = Context({'parameters': parameters})
+    c = Context({'parametersets': parametersets})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
@@ -1162,8 +1175,6 @@ def search_quick(request):
                 | experiments.filter(institution_name__icontains=request.GET['quicksearch'
                     ]) \
                 | experiments.filter(author_experiment__author__name__icontains=request.GET['quicksearch'
-                    ]) \
-                | experiments.filter(pdbid__pdbid__icontains=request.GET['quicksearch'
                     ])
 
             experiments = experiments.distinct()
@@ -1476,5 +1487,4 @@ def import_params(request):
     c = Context({'form': form, 'subtitle': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
-
 
