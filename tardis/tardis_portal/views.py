@@ -1186,7 +1186,7 @@ def search_quick(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/search_experiment.html', c))
 
-
+@login_required()
 def search_datafile(request):
     get = False
     datafile_results = \
