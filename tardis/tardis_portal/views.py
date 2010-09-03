@@ -535,7 +535,7 @@ def display_datafile_image(
     # todo handle not exist
 
     datafile = Dataset_File.objects.get(pk=dataset_file_id)
-    if has_experiment_access(dataset.experiment.id, request.user):
+    if has_experiment_access(datafile.dataset.experiment.id, request.user):
         image = \
             DatafileParameter.objects.get(name__name=parameter_name,
                 parameterset=parameterset_id)
@@ -1406,6 +1406,7 @@ def publish_experiment(request, experiment_id):
         experiment.public = True
         experiment.save()
 
+		c = Context({})
         return HttpResponse(render_response_index(request,
                             'tardis_portal/index.html', c))
     else:
