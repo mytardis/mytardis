@@ -109,16 +109,19 @@ def get_accessible_datafiles_for_user(experiments):
 
     from django.db.models import Q
 
-    queries = [Q(dataset__experiment__id=e.id) for e in experiments]
-
-    query = queries.pop()
-
-    for item in queries:
-        query |= item
-
-    dataset_files = Dataset_File.objects.filter(query)
-
-    return dataset_files
+    if experiments is not None:
+        queries = [Q(dataset__experiment__id=e.id) for e in experiments]
+    
+        query = queries.pop()
+    
+        for item in queries:
+            query |= item
+    
+        dataset_files = Dataset_File.objects.filter(query)
+    
+        return dataset_files
+    else:
+        return []
 
 
 def get_owned_experiments(user_id):
@@ -1406,7 +1409,7 @@ def publish_experiment(request, experiment_id):
         experiment.public = True
         experiment.save()
 
-		c = Context({})
+        c = Context({})
         return HttpResponse(render_response_index(request,
                             'tardis_portal/index.html', c))
     else:
