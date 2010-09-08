@@ -1,5 +1,5 @@
 DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = '/tmp/shorturls.db'
+DATABASE_NAME = ':memory:'
 ROOT_URLCONF = 'tardis_portal.urls'
 DEBUG = True
 STATIC_DOC_ROOT = 'tardis_portal/site_media'
@@ -14,5 +14,6 @@ INSTALLED_APPS = ['tardis.tardis_portal',
         'django.contrib.sites',
         'django.contrib.admin',
         'django.contrib.admindocs',
-        'test_extensions',
+        'django_nose',
         'tardis.tardis_portal.templatetags',]
+TEST_RUNNER = 'django_nose.run_tests'
