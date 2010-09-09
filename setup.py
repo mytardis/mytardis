@@ -14,5 +14,9 @@ setup(
         'setuptools',
         'lxml',
         'feedparser',
+        'django-registration',
+        'django_extensions',
+        'suds',
+        'python-ldap',
         ],
 )
