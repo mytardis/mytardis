@@ -55,6 +55,16 @@
 	pageTracker._trackPageview();
 	} catch(err) {}</script>
 
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#id_type").change(function () {
+      if ($("#id_type").val() != '-') {
+         $(this).parent().submit();
+      }
+  });
+});
+</script>
+
 	{% block script %}{% endblock %}
 
 </head>

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -30,15 +31,42 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from django import forms
+import logging.handlers
+
+from django.conf import settings
 
 
-class RegisterExperimentForm(forms.Form):
+def init_logging():
+    """
+    logging facility for tardis
+    sends logging output to a disk file
+    supports rotation of disk log files
+    fallback on console if disk log file cannot be openend
 
-    username = forms.CharField(max_length=400, required=True)
-    password = forms.CharField(max_length=400, required=True)
-    xmldata = forms.FileField()
-    experiment_owner = forms.CharField(max_length=400, required=False)
-    originid = forms.CharField(max_length=400, required=False)
+    http://docs.python.org/library/logging.html
+    logg
+    >>> from tardis.tardis_portal.logger import logger
+    >>> logger.info('Hello world.')
+
+    """
+
+    logger = logging.getLogger(__name__)
+    logger.setLevel(settings.LOG_LEVEL)
+
+    hd = None
+    try:
+        hd = \
+            logging.handlers.RotatingFileHandler(settings.LOG_FILENAME,
+                maxBytes=1000000, backupCount=5)
+    except:
+        hd = logging.StreamHandler()
+
+    fm = logging.Formatter(settings.LOG_FORMAT)
+    hd.setFormatter(fm)
+    logger.addHandler(hd)
+    return logger
 
 
+logger = None
+if not logger:
+    logger = init_logging()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
@@ -51,9 +51,11 @@ def _utc_offset(date, use_system_timezone):
         return date.utcoffset()
     elif use_system_timezone:
         if time.daylight:
-            return -time.altzone
+            # multiplying by "-1" had to be done as pep8 wouldn't allow
+            # "-time.altzone"
+            return time.altzone * -1
         else:
-            return -time.timezone
+            return time.timezone * -1
     else:
         return 0
 
