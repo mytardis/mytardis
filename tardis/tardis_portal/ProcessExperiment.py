@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 #
 # Copyright (c) 2010, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -35,6 +34,7 @@ from __future__ import with_statement  # This isn't required in Python 2.6
 from xml.dom.minidom import parse, parseString
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.ExperimentParser import ExperimentParser
+from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
 import datetime
 import urllib
@@ -72,7 +72,7 @@ def getParameterFromTechXML(tech_xml, parameter_name):
     elements = tech_xml.xpath('/' + parameter_string + '/text()',
                               namespaces={prefix: xmlns})
 
-    print elements
+    logger.debug(elements)
     return getSingleResult(elements)
 
 
@@ -139,10 +139,10 @@ class ProcessExperiment:
         f.close()
 
         if firstline.startswith('<experiment'):
-            print 'processing simple xml'
+            logger.debug('processing simple xml')
             eid = self.process_simple(filename, created_by, expid)
         else:
-            print 'processing METS'
+            logger.debug('processing METS')
             eid = self.process_METS(filename, created_by, expid)
 
         return eid
@@ -154,7 +154,7 @@ class ProcessExperiment:
         expid=None,
         ):
 
-        print 'START EXP: ' + str(expid)
+        logger.debug('START EXP: ' + str(expid))
 
         url = 'http://www.example.com'
         self.url = 'http://www.example.com'
@@ -179,8 +179,7 @@ class ProcessExperiment:
 
         e.save()
 
-        url_path = self.url.rpartition('/')[0] + self.url.rpartition('/'
-                )[1]
+        url_path = self.url.rpartition('/')[0] + self.url.rpartition('/')[1]
 
         author_experiments = Author_Experiment.objects.all()
         author_experiments = \
@@ -195,12 +194,17 @@ class ProcessExperiment:
             author_experiment.save()
             x = x + 1
 
+        # looks like the intention here is to reload all the datasets from
+        # scratch
         e.dataset_set.all().delete()
 
+        # for each dataset...
         for dmdid in ep.getDatasetDMDIDs():
             d = Dataset(experiment=e,
                         description=ep.getDatasetTitle(dmdid))
             d.save()
+
+            # for each metadata element of this dataset...
             for admid in ep.getDatasetADMIDs(dmdid):
 
                 techxml = ep.getTechXML(admid)
@@ -212,7 +216,8 @@ class ProcessExperiment:
                     schema = Schema.objects.get(namespace__exact=xmlns)
 
                     parameternames = \
-                        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                        ParameterName.objects.filter(
+                        schema__namespace__exact=schema.namespace)
                     parameternames = parameternames.order_by('id')
 
                     for pn in parameternames:
@@ -228,35 +233,37 @@ class ProcessExperiment:
                                 dp.save()
                         else:
                             dp = DatasetParameter(dataset=d, name=pn,
-                                    string_value=ep.getParameterFromTechXML(techxml,
-                                    pn.name), numerical_value=None)
+                                string_value=ep.getParameterFromTechXML(
+                                techxml, pn.name), numerical_value=None)
                             dp.save()
                 except Schema.DoesNotExist:
 
-                    print 'Schema ' + xmlns + " doesn't exist!"
+                    logger.debug('Schema ' + xmlns + " doesn't exist!")
 
                         # todo replace with logging
 
+            # for each file in the dataset...
             for fileid in ep.getFileIDs(dmdid):
 
                 # if ep.getFileLocation(fileid).startswith('file://'):
-                # ....................absolute_filename = url_path + ep.getFileLocation(fileid).partition('//')[2]
-                # ................else:
-                # ....................absolute_filename = ep.getFileLocation(fileid)....
+                #     absolute_filename = url_path + \
+                #         ep.getFileLocation(fileid).partition('//')[2]
+                # else:
+                #     absolute_filename = ep.getFileLocation(fileid)....
 
                 if self.null_check(ep.getFileName(fileid)):
                     filename = ep.getFileName(fileid)
                 else:
-                    filename = ep.getFileLocation(fileid).rpartition('/'
-                            )[2]
+                    filename = ep.getFileLocation(fileid).rpartition('/')[2]
 
-                # print filename
+                # logger.debug(filename)
 
                 datafile = Dataset_File(dataset=d, filename=filename,
-                        url=ep.getFileLocation(fileid),
-                        size=ep.getFileSize(fileid))
+                    url=ep.getFileLocation(fileid),
+                    size=ep.getFileSize(fileid))
                 datafile.save()
 
+                # for each metadata element of this file...
                 for admid in ep.getFileADMIDs(fileid):
 
                     techxml = ep.getTechXML(admid)
@@ -268,7 +275,8 @@ class ProcessExperiment:
                             Schema.objects.get(namespace__exact=xmlns)
 
                         parameternames = \
-                            ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                            ParameterName.objects.filter(
+                            schema__namespace__exact=schema.namespace)
                         parameternames = parameternames.order_by('id')
 
                         for pn in parameternames:
@@ -279,15 +287,17 @@ class ProcessExperiment:
                                         pn.name)
                                 if value != None:
                                     dp = \
-    DatafileParameter(dataset_file=datafile, name=pn,
-                      string_value=None, numerical_value=float(value))
+                                        DatafileParameter(
+                                        dataset_file=datafile, name=pn,
+                                        string_value=None,
+                                        numerical_value=float(value))
                                     dp.save()
                             else:
                                 dp = \
                                     DatafileParameter(dataset_file=datafile,
-                                        name=pn,
-                                        string_value=ep.getParameterFromTechXML(techxml,
-                                        pn.name), numerical_value=None)
+                                    name=pn,
+                                    string_value=ep.getParameterFromTechXML(
+                                    techxml, pn.name), numerical_value=None)
                                 dp.save()
                     except Schema.DoesNotExist:
 
@@ -296,18 +306,17 @@ class ProcessExperiment:
                                 data=SafeUnicode(techxml.getvalue()))
                         xml_data.save()
 
-        print 'DONE EXP: ' + str(e.id)
+        logger.debug('DONE EXP: ' + str(e.id))
 
         return e.id
 
     # this is the worst code of all time :) -steve
-
     def process_simple(
-    self,
-    filename,
-    created_by,
-    eid,
-    ):
+        self,
+        filename,
+        created_by,
+        eid,
+        ):
 
         url = 'http://www.example.com'
         self.url = 'http://www.example.com'
@@ -322,21 +331,18 @@ class ProcessExperiment:
             for line in f:
                 line = line.strip()
 
-            # print "LINE: " + line
-
+                # logger.debug("LINE: " + line)
                 if line.startswith('<experiment>'):
                     current = 'experiment'
                     e = e + 1
                     ds = 0
                     df = 0
-                    print 'experiment: ' + str(e)
 
                     exp = dict()
                     authors = list()
                 elif line.startswith('<dataset>'):
 
-                # commit any experiment if current = experiment
-
+                    # commit any experiment if current = experiment
                     if current == 'experiment':
 
                         experiment = Experiment(
@@ -354,7 +360,8 @@ class ProcessExperiment:
                         author_experiments = \
                             Author_Experiment.objects.all()
                         author_experiments = \
-                            author_experiments.filter(experiment=experiment).delete()
+                            author_experiments.filter(
+                            experiment=experiment).delete()
 
                         x = 0
                         for authorName in authors:
@@ -369,51 +376,67 @@ class ProcessExperiment:
 
                         experiment.dataset_set.all().delete()
 
-                        if exp.has_key('metadata'):
+                        if 'metadata' in exp:
                             for md in exp['metadata']:
                                 xmlns = getXmlnsFromTechXMLRaw(md)
 
                                 try:
-                                    print 'trying to find parameters with an xmlns of ' \
-        + xmlns
+                                    logger.debug(
+                                        'trying to find parameters with an' +
+                                        ' xmlns of ' + xmlns)
                                     schema = \
-        Schema.objects.get(namespace__exact=xmlns)
+                                        Schema.objects.get(
+                                        namespace__exact=xmlns)
 
                                     parameternames = \
-        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                        ParameterName.objects.filter(
+                                    schema__namespace__exact=schema.namespace)
+
                                     parameternames = \
-        parameternames.order_by('id')
+                                        parameternames.order_by('id')
 
                                     tech_xml = getTechXMLFromRaw(md)
 
                                     parameterset = \
-        ExperimentParameterSet(schema=schema, experiment=experiment)
+                                        ExperimentParameterSet(
+                                        schema=schema, experiment=experiment)
 
                                     parameterset.save()
 
                                     for pn in parameternames:
                                         try:
-
-                                        # print "finding parameter " + pn.name + " in metadata"
+                                            logger.debug(
+                                                "finding parameter " +
+                                                pn.name + " in metadata")
 
                                             if pn.is_numeric:
                                                 value = \
-        getParameterFromTechXML(tech_xml, pn.name)
+                                                    getParameterFromTechXML(
+                                                    tech_xml, pn.name)
+
                                                 if value != None:
                                                     ep = \
-        ExperimentParameter(parameterset=parameterset, name=pn,
-                    string_value=None, numerical_value=float(value))
+                                                        ExperimentParameter(
+                                                parameterset=parameterset,
+                                                        name=pn,
+                                                        string_value=None,
+                                                numerical_value=float(value))
                                                     ep.save()
                                             else:
                                                 ep = \
-        ExperimentParameter(parameterset=parameterset, name=pn,
-                    string_value=getParameterFromTechXML(tech_xml,
-                    pn.name), numerical_value=None)
+                                                    ExperimentParameter(
+                                                    parameterset=parameterset,
+                                                    name=pn,
+                                        string_value=getParameterFromTechXML(
+                                                    tech_xml, pn.name),
+                                                    numerical_value=None)
                                                 ep.save()
                                         except e:
-                                            print e
+                                            logger.debug(
+                                                'error saving experiment ' +
+                                                'parameter: ' + e)
                                 except Schema.DoesNotExist, e:
-                                    print e
+                                    logger.debug('schema not found: ' + e)
 
                     current = 'dataset'
                     ds = ds + 1
@@ -421,72 +444,81 @@ class ProcessExperiment:
                     mdslist = []
                     df = 0
                     dataset = dict()
-                    print 'experiment: ' + str(e) + ' dataset: ' \
-                        + str(ds)
+
                 elif line.startswith('<file>'):
 
                     if current == 'dataset':
                         d = Dataset(experiment=experiment,
                                 description=dataset['description'])
                         d.save()
-                        print dataset
 
-                        if dataset.has_key('metadata'):
+                        if 'metadata' in dataset:
                             for md in dataset['metadata']:
-                                if dataset.has_key('metadata'):
+                                if 'metadata' in dataset:
                                     xmlns = \
-        getXmlnsFromTechXMLRaw(md)
+                                        getXmlnsFromTechXMLRaw(md)
 
                                     try:
-                                        print 'trying to find parameters with an xmlns of ' \
-        + xmlns
+                                        logger.debug(
+                                            'trying to find parameters with ' +
+                                            'an xmlns of ' + xmlns)
                                         schema = \
-        Schema.objects.get(namespace__exact=xmlns)
+                                            Schema.objects.get(
+                                            namespace__exact=xmlns)
 
                                         parameternames = \
-        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                            ParameterName.objects.filter(
+                                    schema__namespace__exact=schema.namespace)
+
                                         parameternames = \
-        parameternames.order_by('id')
+                                            parameternames.order_by('id')
 
                                         tech_xml = \
-        getTechXMLFromRaw(md)
+                                            getTechXMLFromRaw(md)
 
                                         parameterset = \
-        DatasetParameterSet(schema=schema, dataset=d)
+                                            DatasetParameterSet(
+                                            schema=schema, dataset=d)
 
                                         parameterset.save()
 
                                         for pn in parameternames:
                                             try:
 
-                                            # print "finding parameter " + pn.name + " in metadata"
-
                                                 if pn.is_numeric:
                                                     value = \
-        getParameterFromTechXML(tech_xml, pn.name)
-                                                    if value \
-        != None:
+                                                    getParameterFromTechXML(
+                                                        tech_xml, pn.name)
+
+                                                    if value != None:
                                                         dp = \
-        DatasetParameter(parameterset=parameterset, name=pn,
-                 string_value=None, numerical_value=float(value))
+                                                            DatasetParameter(
+                                                    parameterset=parameterset,
+                                                            name=pn,
+                                                            string_value=None,
+                                                numerical_value=float(value))
                                                         dp.save()
                                                 else:
                                                     dp = \
-        DatasetParameter(parameterset=parameterset, name=pn,
-                 string_value=getParameterFromTechXML(tech_xml,
-                 pn.name), numerical_value=None)
+                                                        DatasetParameter(
+                                                    parameterset=parameterset,
+                                                        name=pn,
+                                        string_value=getParameterFromTechXML(
+                                                        tech_xml, pn.name),
+                                                        numerical_value=None)
                                                     dp.save()
                                             except e:
-                                                print e
+                                                logger.debug(
+                                                    'error saving ' +
+                                                    'experiment parameter: ' +
+                                                    e)
                                     except Schema.DoesNotExist, e:
-                                        print e
+                                        logger.debug('schema not found: ' + e)
                     else:
                         if self.null_check(datafile['name']):
                             filename = datafile['name']
                         else:
                             filename = datafile['path']
-
-                    # print filename
 
                         dfile = Dataset_File(dataset=d,
                                 filename=filename,
@@ -495,63 +527,72 @@ class ProcessExperiment:
                         dfile.save()
                         current_df_id = dfile.id
 
-                        print datafile
-
                         for md in datafile['metadata']:
                             xmlns = getXmlnsFromTechXMLRaw(md)
 
                             try:
-                                print 'trying to find parameters with an xmlns of ' \
-        + xmlns
                                 schema = \
-        Schema.objects.get(namespace__exact=xmlns)
+                                    Schema.objects.get(namespace__exact=xmlns)
 
                                 parameternames = \
-        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                    ParameterName.objects.filter(
+                                    schema__namespace__exact=schema.namespace)
                                 parameternames = \
-        parameternames.order_by('id')
+                                    parameternames.order_by('id')
 
                                 tech_xml = getTechXMLFromRaw(md)
 
                                 parameterset = \
-        DatafileParameterSet(schema=schema, dataset_file=dfile)
+                                    DatafileParameterSet(schema=schema,
+                                    dataset_file=dfile)
 
                                 parameterset.save()
 
                                 for pn in parameternames:
                                     try:
 
-                                    # print "finding parameter " + pn.name + " in metadata"
+                                        # print "finding parameter " +
+                                        #     pn.name + " in metadata"
 
                                         dfile = \
-        Dataset_File.objects.get(pk=current_df_id)
+                                            Dataset_File.objects.get(
+                                            pk=current_df_id)
                                         if pn.is_numeric:
-                                            value = \
-        getParameterFromTechXML(tech_xml, pn.name)
+                                            value = getParameterFromTechXML(
+                                                tech_xml, pn.name)
                                             if value != None:
                                                 dp = \
-        DatafileParameter(parameterset=parameterset, name=pn,
-                  string_value=None, numerical_value=float(value))
+                                                    DatafileParameter(
+                                                    parameterset=parameterset,
+                                                    name=pn,
+                                                    string_value=None,
+                                                numerical_value=float(value))
+
                                                 dp.save()
                                         else:
                                             dp = \
-        DatafileParameter(parameterset=parameterset, name=pn,
-                  string_value=getParameterFromTechXML(tech_xml,
-                  pn.name), numerical_value=None)
+                                                DatafileParameter(
+                                                parameterset=parameterset,
+                                                name=pn,
+                                        string_value=getParameterFromTechXML(
+                                                tech_xml,
+                                                pn.name), numerical_value=None)
                                             dp.save()
                                     except e:
-                                        print e
+                                        logger.debug('error saving ' +
+                                            'experiment parameter: ' + e)
                             except Schema.DoesNotExist, e:
-                                print e
+                                logger.debug('schema not found: ' + e)
 
-                # commit any dataset if current = dataset
+                    # commit any dataset if current = dataset
 
                     current = 'file'
                     df = df + 1
                     mdflist = []
                     datafile = dict()
-                    print 'experiment: ' + str(e) + ' dataset: ' \
-                        + str(ds) + ' datafile: ' + str(df)
+                    logger.debug('experiment: ' + str(e) + ' dataset: ' +
+                        str(ds) + ' datafile: ' + str(df))
+
                 elif line.startswith('<metadata'):
 
                     md = ''
@@ -571,11 +612,9 @@ class ProcessExperiment:
                 elif line.startswith('<abstract'):
 
                     ab = line.partition('<abstract>')[2]
-                    print 'found abstract'
                     while not line.strip().endswith('</abstract>'):
                         line = f.next()
                         ab = ab + line.partition('</abstract>')[0]
-                    print 'ABSTRACTAMUNDO = ' + ab
                     exp['abstract'] = ab
                 elif line.startswith('</experiment>'):
 
@@ -583,7 +622,6 @@ class ProcessExperiment:
                         d = Dataset(experiment=experiment,
                                 description=dataset['description'])
                         d.save()
-                        print dataset
                     else:
 
                         if self.null_check(datafile['name']):
@@ -591,55 +629,56 @@ class ProcessExperiment:
                         else:
                             filename = datafile['path']
 
-                    # print filename
-
                         dfile = Dataset_File(dataset=d,
                                 filename=filename,
                                 url=datafile['path'],
                                 size=datafile['size'])
                         dfile.save()
 
-                        print dfile.id
                         current_df_id = dfile.id
 
-                        print datafile
-
-                        if datafile.has_key('metadata'):
+                        if 'metadata' in datafile:
                             for md in datafile['metadata']:
                                 xmlns = getXmlnsFromTechXMLRaw(md)
 
                                 try:
-                                    print 'trying to find parameters with an xmlns of ' \
-        + xmlns
                                     schema = \
-        Schema.objects.get(namespace__exact=xmlns)
+                                        Schema.objects.get(
+                                        namespace__exact=xmlns)
 
                                     parameternames = \
-        ParameterName.objects.filter(schema__namespace__exact=schema.namespace)
+                                        ParameterName.objects.filter(
+                                    schema__namespace__exact=schema.namespace)
+
                                     parameternames = \
-        parameternames.order_by('id')
+                                        parameternames.order_by('id')
 
                                     tech_xml = getTechXMLFromRaw(md)
 
-                                    parameterset = \
-        DatafileParameterSet(schema=schema, dataset_file=dfile)
+                                    parameterset = DatafileParameterSet(
+                                        schema=schema, dataset_file=dfile)
 
                                     parameterset.save()
 
                                     for pn in parameternames:
                                         try:
 
-                                        # print "finding parameter " + pn.name + " in metadata"
+                                            # print "finding parameter " +
+                                            #     pn.name + " in metadata"
 
-                                            dfile = \
-        Dataset_File.objects.get(pk=current_df_id)
+                                            dfile = Dataset_File.objects.get(
+                                                pk=current_df_id)
                                             if pn.is_numeric:
                                                 value = \
-        getParameterFromTechXML(tech_xml, pn.name)
+                                    getParameterFromTechXML(tech_xml, pn.name)
+
                                                 if value != None:
-                                                    dp = \
-        DatafileParameter(parameterset=parameterset, name=pn,
-                  string_value=None, numerical_value=float(value))
+                                                    dp = DatafileParameter(
+                                                    parameterset=parameterset,
+                                                        name=pn,
+                                                        string_value=None,
+                                                numerical_value=float(value))
+
                                                     dp.save()
                                             else:
                                                 dp = \
@@ -648,48 +687,36 @@ class ProcessExperiment:
                   pn.name), numerical_value=None)
                                                 dp.save()
                                         except e:
-                                            print e
+                                            logger.debug('error saving ' +
+                                                'experiment parameter: ' + e)
                                 except Schema.DoesNotExist, e:
-                                    print e
+                                    logger.debug('schema not found: ' + e)
                 try:
-                    print 'attempting to parse line: ' + line
+                    logger.debug('attempting to parse line: ' + line)
                     dom = parseString(line)
                     doc = dom.documentElement
 
-                # print doc.tagName + ": " + getText(contents)
-
                     tag_name = doc.tagName
-                    print tag_name + ' discovered'
+                    logger.debug(tag_name + ' discovered')
                     if current == 'experiment':
-                        if tag_name == 'title' or tag_name \
-                            == 'organization':
+                        if tag_name == 'title' or tag_name == 'organization':
                             contents = doc.childNodes
                             exp[tag_name] = getText(contents)
-                            print '\tADDED ' + tag_name + ': ' \
-                                + getText(contents)
                         if tag_name == 'author':
                             contents = doc.childNodes
                             authors.append(getText(contents))
-                            print '\tADDED ' + tag_name + ': ' \
-                                + getText(contents)
                     if current == 'dataset':
                         if tag_name == 'description':
                             contents = doc.childNodes
                             dataset[tag_name] = getText(contents)
-                            print '\t' + tag_name + ': ' \
-                                + getText(contents)
                     if current == 'file':
-                        if tag_name == 'name' or tag_name == 'size' \
-                            or tag_name == 'path':
+                        if tag_name == 'name' or tag_name == 'size' or \
+                                tag_name == 'path':
                             contents = doc.childNodes
                             datafile[tag_name] = getText(contents)
-                            print '\t' + tag_name + ': ' \
-                                + getText(contents)
                 except:
                     pass
 
-        print 'DONE EXP: ' + str(experiment.id)
+        logger.debug('DONE EXP: ' + str(experiment.id))
 
         return experiment.id
-
-

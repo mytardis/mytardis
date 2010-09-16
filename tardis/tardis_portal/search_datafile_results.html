@@ -27,56 +27,46 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
+{% extends "search_datafile.html" %} 
 
-		{% block content %}
+		{% block searchPageBody %}
+						{% if paginator.object_list.count %}<strong>{{ paginator.object_list.count }}</strong> result(s) found
+						{% else %}
+						No datafiles found
+											
+						{% endif %}
+							<table class="results-table">
+								<tr>
+									<th>Filename</th>
+									<th>Dataset</th>
+									<th>Experiment</th>
+								</tr>									
+							{% for datafile in datafiles.object_list %}
+								<tr>
+									<th>
+										<a class="filelink" href="/experiment/view/{{datafile.dataset.experiment.id}}/download?dfid={{datafile.id}}">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
+									</th>
+									<td> {{datafile.dataset.description}} </td>
+									<td> <a href="/experiment/view/{{datafile.dataset.experiment.id}}">{{datafile.dataset.experiment.title}}</a> </td>
+								</tr>					
+	
+							{%endfor %}
+											
+							</table>
+							
+							<div class="pagination">
+							    <span class="step-links">
+							        {% if datafiles.has_previous %}
+							            <a href="?{{ query_string }}&page={{ datafiles.previous_page_number }}">previous</a>
+							        {% endif %}
 
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Search Datafile</a>
-				</h1>
-				<div style="padding-left: 10px">Search <a href="../experiment/">Experiment</a>
-				| <form action="/search/datafile" method="GET" style="display: inline">
-                     {{ searchDatafileSelectionForm.type }}
-                     <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/>
-				<div class="entry">					
-					<p>
-						{% block searchPageBody %}{% endblock %}
-					</p>
-				</div>
-			</div>
-		</div>
+							        <span class="current">
+							            Page {{ datafiles.number }} of {{ datafiles.paginator.num_pages }}.
+							        </span>
 
-			{% endblock %} {% block sidebar %}
-
-			<ul>
-				<li>
-					<h2>
-						Browse Experiments
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/view">Index</a>
-						</li>
-						<li>
-							<a href="/search/experiment">Search</a>
-						</li>					
-					</ul>
-					{% if user.is_authenticated %}
-					<br/>
-					<h2>
-						Controls
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/control_panel">Control Panel</a>
-						</li>					
-					</ul>
-					{% endif %}
-				</li>			
-			</ul>
-			<p>
-			{% endblock %}
-		</p>
+							        {% if datafiles.has_next %}
+							            <a href="?{{ query_string }}&page={{ datafiles.next_page_number }}">next</a>
+							        {% endif %}
+							    </span>
+							</div>						
+		{% endblock %}

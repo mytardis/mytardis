@@ -1,15 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 import itertools
 import mimetools
 import mimetypes
 from cStringIO import StringIO
-import urllib
 import urllib2
+from tardis.tardis_portal.logger import logger
 
 
 class MultiPartForm(object):
-
     """Accumulate the data to be used when posting a form."""
 
     def __init__(self):
@@ -44,25 +44,25 @@ class MultiPartForm(object):
         return
 
     def __str__(self):
-        """Return a string representing the form data, including attached files."""
+        """Return a string representing the form data, including attached
+        files.
+
+        """
 
         # Build a list of lists, each containing "lines" of the
         # request.  Each part is separated by a boundary string.
         # Once the list is built, return a string where each
         # line is separated by '\r\n'.
-
         parts = []
         part_boundary = '--' + self.boundary
 
         # Add the form fields
-
         parts.extend([part_boundary,
                      'Content-Disposition: form-data; name="%s"'
                      % name, '', value] for (name, value) in
                      self.form_fields)
 
         # Add the files to upload
-
         parts.extend([part_boundary,
                      'Content-Disposition: file; name="%s"; filename="%s"'
                       % (field_name, filename), 'Content-Type: %s'
@@ -71,7 +71,6 @@ class MultiPartForm(object):
 
         # Flatten the list and add closing boundary marker,
         # then return CR+LF separated data
-
         flattened = list(itertools.chain(*parts))
         flattened.append('--' + self.boundary + '--')
         flattened.append('')
@@ -81,18 +80,15 @@ class MultiPartForm(object):
 if __name__ == '__main__':
 
     # Create the form with simple fields
-
     form = MultiPartForm()
     form.add_field('firstname', 'Doug')
     form.add_field('lastname', 'Hellmann')
 
     # Add a fake file
-
     form.add_file('biography', 'bio.txt',
                   fileHandle=StringIO('Python developer and blogger.'))
 
     # Build the request
-
     request = urllib2.Request('http://localhost:8080/')
     request.add_header('User-agent',
                        'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
@@ -101,10 +97,8 @@ if __name__ == '__main__':
     request.add_header('Content-length', len(body))
     request.add_data(body)
 
-    print
-    print 'OUTGOING DATA:'
-    print request.get_data()
+    logger.debug('OUTGOING DATA:')
+    logger.debug(request.get_data())
 
-    print
-    print 'SERVER RESPONSE:'
-    print urllib2.urlopen(request).read()
+    logger.debug('SERVER RESPONSE:')
+    logger.debug(urllib2.urlopen(request).read())

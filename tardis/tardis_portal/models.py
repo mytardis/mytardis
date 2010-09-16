@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -60,7 +60,7 @@ class Author(models.Model):
 
 class Experiment(models.Model):
 
-    url = models.URLField(verify_exists=False, max_length=255)  # use verify-exists
+    url = models.URLField(verify_exists=False, max_length=255)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -132,7 +132,8 @@ class DatafileParameterSet(models.Model):
         return self.schema.namespace + " / " + self.dataset_file.filename
 
     class Meta:
-        ordering = ['id']   
+        ordering = ['id']
+
 
 class DatasetParameterSet(models.Model):
     schema = models.ForeignKey(Schema)
@@ -142,7 +143,8 @@ class DatasetParameterSet(models.Model):
         return self.schema.namespace + " / " + self.dataset.description
 
     class Meta:
-        ordering = ['id']   
+        ordering = ['id']
+
 
 class ExperimentParameterSet(models.Model):
     schema = models.ForeignKey(Schema)
@@ -152,41 +154,73 @@ class ExperimentParameterSet(models.Model):
         return self.schema.namespace + " / " + self.experiment.title
 
     class Meta:
-        ordering = ['id']           
+        ordering = ['id']
+
 
 class ParameterName(models.Model):
+
+    EXACT_VALUE_COMPARISON = 1
+    NOT_EQUAL_COMPARISON = 2
+    RANGE_COMPARISON = 3
+    GREATER_THAN_COMPARISON = 4
+    GREATER_THAN_EQUAL_COMPARISON = 5
+    LESS_THAN_COMPARISON = 6
+    LESS_THAN_EQUAL_COMPARISON = 7
+    CONTAINS_COMPARISON = 8
+    __COMPARISON_CHOICES = (
+        (EXACT_VALUE_COMPARISON, 'Exact value'),
+        (CONTAINS_COMPARISON, 'Contains'),
+        # TODO: enable this next time if i figure out how to support
+        #(NOT_EQUAL_COMPARISON, 'Not equal'),
+        (RANGE_COMPARISON, 'Range'),
+        (GREATER_THAN_COMPARISON, 'Greater than'),
+        (GREATER_THAN_EQUAL_COMPARISON, 'Greater than or equal'),
+        (LESS_THAN_COMPARISON, 'Less than'),
+        (LESS_THAN_EQUAL_COMPARISON, 'Less than or equal'),
+    )
+
     schema = models.ForeignKey(Schema)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
     is_numeric = models.BooleanField()
+    comparison_type = models.IntegerField(
+        choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
+    is_searchable = models.BooleanField(default=False)
+    # TODO: we'll need to rethink the way choices for drop down menus are
+    #       represented in the DB. doing it this way is just a bit wasteful.
+    choices = models.CharField(max_length=500, blank=True)
 
     def __unicode__(self):
-        return self.name    
+        return self.name
+
 
 class DatafileParameter(models.Model):
+
     parameterset = models.ForeignKey(DatafileParameterSet)
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name   
+        return self.name.name
 
     class Meta:
-        ordering = ['id']           
+        ordering = ['id']
+
 
 class DatasetParameter(models.Model):
+
     parameterset = models.ForeignKey(DatasetParameterSet)
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name   
+        return self.name.name
 
     class Meta:
-        ordering = ['id']           
+        ordering = ['id']
 
 
 class ExperimentParameter(models.Model):
@@ -196,13 +230,13 @@ class ExperimentParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name   
+        return self.name.name
 
     class Meta:
         ordering = ['id']
 
-class XML_data(models.Model):
 
+class XML_data(models.Model):
     datafile = models.OneToOneField(Dataset_File, null=True, blank=True)
     dataset = models.OneToOneField(Dataset, null=True, blank=True)
     experiment = models.OneToOneField(Experiment, null=True, blank=True)
@@ -211,5 +245,3 @@ class XML_data(models.Model):
 
     def __unicode__(self):
         return self.xmlns
-
-
