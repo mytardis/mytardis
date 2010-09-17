@@ -1,3 +1,5 @@
+import logging 
+
 DATABASE_ENGINE = 'sqlite3'
 DATABASE_NAME = ':memory:'
 ROOT_URLCONF = 'tardis.urls'
@@ -27,3 +29,10 @@ INSTALLED_APPS = ['tardis.tardis_portal',
         'tardis.tardis_portal.templatetags',
         ]
 TEST_RUNNER = 'django_nose.run_tests'
+
+LOG_FILENAME = '/dev/stderr'
+
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
+LOG_LEVEL = logging.DEBUG
