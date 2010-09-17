@@ -1,0 +1,72 @@
+/*
+* Copyright (c) 2010, Monash e-Research Centre
+*   (Monash University, Australia)
+* Copyright (c) 2010, VeRSI Consortium
+*   (Victorian eResearch Strategic Initiative, Australia)
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*    *  Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*    *  Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+#ArtForms {
+	background-color:#f0f4f7;
+}
+#artforms-box {
+	width:545px;
+}
+#artforms-buttons {
+	width:100%;
+	background-color:#FFF;
+	padding-top:15px;
+}
+#artforms-box .inputbox, #artforms-box .inputboxtxt {
+	border:1px solid #C2C2C2;
+	padding:1px 3px;
+	width:276px;
+	margin:3px 0px;
+}
+#artforms-box .inputboxtxt {
+	height:94px;
+}
+
+.artformstextarea-txt{
+	padding-bottom:25px;
+}
+
+#artforms-reqtext{
+float:left;
+font-style:italic;
+font-size:11px;
+padding:1px 0px 20px 115px;
+margin:10px 0px;
+margin-top:-30px;
+}
+.artforms-errorfield {
+	margin: 2px 0px 2px;
+	padding: 5px 15px 5px 5px;
+	background:#f0f4f7;
+	text-align: left;
+	color: red;
+	background-image: url(/images/AS/minierror.png);
+	background-repeat: no-repeat;
+	background-position: 10px 50%;
+}
