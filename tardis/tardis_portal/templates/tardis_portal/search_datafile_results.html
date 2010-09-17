@@ -27,17 +27,46 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
+{% extends "tardis_portal/search_datafile.html" %}
 
-{% block fullpage %}
+		{% block searchPageBody %}
+						{% if paginator.object_list.count %}<strong>{{ paginator.object_list.count }}</strong> result(s) found
+						{% else %}
+						No datafiles found
+											
+						{% endif %}
+							<table class="results-table">
+								<tr>
+									<th>Filename</th>
+									<th>Dataset</th>
+									<th>Experiment</th>
+								</tr>									
+							{% for datafile in datafiles.object_list %}
+								<tr>
+									<th>
+										<a class="filelink" href="/experiment/view/{{datafile.dataset.experiment.id}}/download?dfid={{datafile.id}}">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
+									</th>
+									<td> {{datafile.dataset.description}} </td>
+									<td> <a href="/experiment/view/{{datafile.dataset.experiment.id}}">{{datafile.dataset.experiment.title}}</a> </td>
+								</tr>					
+	
+							{%endfor %}
+											
+							</table>
+							
+							<div class="pagination">
+							    <span class="step-links">
+							        {% if datafiles.has_previous %}
+							            <a href="?{{ query_string }}&page={{ datafiles.previous_page_number }}">previous</a>
+							        {% endif %}
 
-<div id="fullpage">
-	<div class="post">
-		<div id="statusBoxError">
-			Error: Forbidden
-		</div>
-	</div>
-</div>	
+							        <span class="current">
+							            Page {{ datafiles.number }} of {{ datafiles.paginator.num_pages }}.
+							        </span>
 
-{% endblock %}
-		</p>
+							        {% if datafiles.has_next %}
+							            <a href="?{{ query_string }}&page={{ datafiles.next_page_number }}">next</a>
+							        {% endif %}
+							    </span>
+							</div>						
+		{% endblock %}
