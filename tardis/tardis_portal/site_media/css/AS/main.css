@@ -1,0 +1,195 @@
+/*
+* Copyright (c) 2010, Monash e-Research Centre
+*   (Monash University, Australia)
+* Copyright (c) 2010, VeRSI Consortium
+*   (Victorian eResearch Strategic Initiative, Australia)
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*    *  Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*    *  Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+/* -- Additional Style sheets --*/
+@import url('layout.css');
+@import url('listmenu_h.css');
+@import url('forms.css');
+@import url('clearing.css');
+
+/* default Joomla styles */
+div.componentheading {}
+div.contentpane {}
+div.contentdescription {}
+td.sectiontablefooter {}
+td.sectiontableheader {}
+a.category {}
+td.sectiontableentry1 {}
+td.sectiontableentry2 {}
+form#selectForm {}
+table.contentpane {}
+td.contentheading {}
+form#emailForm {}
+input#contact_name {}
+label#contact_emailmsg {}
+input#contact_email {}
+input#contact_subject {}
+label#contact_textmsg {}
+textarea#contact_text {}
+input#contact_email_copy {}
+form.form-validate {}
+div.contact_email {}
+input.inputbox {
+}
+input.required {}
+input.validate-email {}
+textarea.inputbox {}
+textarea.required {}
+button.button {}
+button.validate {}
+span.hasTip {}
+hr#system-readmore {}
+form#jForm {}
+ul#archive-list {}
+div#navigation {}
+li.row {}
+h4.title {}
+h5.metadata {}
+span.created-date {}
+span.author {}
+div.intro {}
+div.contentpaneopen_edit {}
+table.contentpaneopen {}
+a.contentpagetitle {}
+td.buttonheading {}
+span.small {}
+td.createdate {}
+td.modifydate {}
+a.readon {}
+span.article_separator {}
+input#title {}
+input#created_by_alias {}
+input#publish_up {}
+input#publish_down {}
+textarea#metadesc {}
+textarea#metakey {}
+table.adminform {}
+td.key {}
+img.calendar {}
+input#alt {}
+table.blog {}
+td.article_column {}
+div.blog_more {}
+a.blogsection
+td.contentdescription {}
+span .article_separator {}
+td.componentheading {}
+form#poll {}
+table.pollstableborder {}
+th.sectiontableheader {}
+td.smalldark {}
+span.highlight {}
+table.searchintro {}
+input#search_searchword {}
+/*input#area_{VALUE} {} /* Value is set programatically */
+input.button {}
+form#login {}
+form#josForm {}
+label#namemsg {}
+input#name {}
+label#usernamemsg {}
+input#username {}
+label#emailmsg {}
+input#email {}
+label#pwmsg {}
+input#password {}
+label#pw2msg {}
+input#password2 {}
+div.message {}
+form.josForm {}
+label.hasTip {}
+input#password1 {}
+input.validate-password {}
+input#token {}
+input#name {}
+form#adminForm {}
+input#jformtitle {}
+input#jformurl {}
+textarea#jformdescription {}
+table#explain-sql {}
+table.Table {}
+td.TD {}
+div#keepAliveLayer {}
+/*input#cb{ROW_NUMBER} {} /* Value is set programatically */
+dl.tabs {}
+div.pane-sliders {}
+div.panel {}
+h3.jpane-toggler  {}
+h3.title {}
+div.jpane-slider  {}
+div.content {}
+table.paramlist {}
+table.admintable {}
+td.paramlist_description {}
+td.paramlist_key {}
+td.paramlist_value {}
+div.toolbar {}
+#search {}
+input.text_area {}
+select.inputbox {}
+span.breadcrumbs  {}
+span.pathway {}
+/*button#trigger_{ID} {} /* Value is set programatically */
+div.expander {}
+/*input#{NAME} {} /* Value is set programatically */
+/*input#{VALUE} {} /* Value is set programatically */
+div#overDiv {}
+a.tooltip {}
+/*form{FORMNAME} {} /* Value is set programatically */
+link#luna-tab-style-sheet {}
+/*div#{PANEID} {} /* Value is set programatically */
+div.tab-page {}
+h2.tab {}
+div.bannergroup {}
+div.bannerheader {}
+div.banneritem {}
+div.clr {}
+div.bannerfooter {}
+a.pathway {}
+table.moduletable {}
+ul.newsfeed {}
+ul.latestnews {}
+li.latestnews {}
+a.latestnews {}
+input#mod_login_username {}
+input#mod_login_password {}
+input#mod_login_remember {}
+/*li#{ITEM ID} {} /* Value is set programatically */
+span.separator {}
+ul#mainlevel {}
+ul#sublevel {}
+ul.mostread {}
+li.mostread {}
+a.mostread {}
+/*input#voteid{VOTE ID NUMBER} {} /* Value is set programatically */
+table.poll {}
+ul.relateditems {}
+input#mod_search_searchword {}
+div.search {}
+ul.sections {}

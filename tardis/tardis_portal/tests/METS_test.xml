@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<mets OBJID="J-1"
+	LABEL="Crystal structure of wildtype MENT in the native conformation"
+	TYPE="study" PROFILE="Scientific Dataset Profile 1.0" xmlns="http://www.loc.gov/METS/"
+	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd">
+	<metsHdr CREATEDATE="2009-03-18T17:31:55" LASTMODDATE="2009-03-18T17:31:55">
+		<agent ROLE="DISSEMINATOR" TYPE="ORGANIZATION">
+			<name>Disseminator</name>
+		</agent>
+		<agent ROLE="CREATOR" TYPE="OTHER">
+			<name>Creator</name>
+		</agent>
+	</metsHdr>
+	<dmdSec ID="J-1">
+		<mdWrap MDTYPE="MODS">
+			<xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+					xmlns:xlink="http://www.w3.org/1999/xlink">
+					<mods:titleInfo>
+						<mods:title>Test Title</mods:title>
+					</mods:titleInfo>
+					<mods:identifier type="pdb">SAMPLE_PDBID</mods:identifier>
+					<mods:genre>experiment</mods:genre>
+					<mods:relatedItem type="otherVersion">
+						<mods:originInfo>
+							<mods:publisher>Primary Citation</mods:publisher>
+						</mods:originInfo>
+						<mods:location>
+							<mods:url>http://www.test.com
+							</mods:url>
+						</mods:location>
+					</mods:relatedItem>
+					<mods:abstract>Test
+					Abstract.
+					</mods:abstract>
+					<mods:name type="personal">
+						<mods:namePart>Author1</mods:namePart>
+						<mods:role>
+							<mods:roleTerm type="text">author</mods:roleTerm>
+						</mods:role>
+					</mods:name>
+					<mods:name type="personal">
+						<mods:namePart>Author2</mods:namePart>
+						<mods:role>
+							<mods:roleTerm type="text">author</mods:roleTerm>
+						</mods:role>
+					</mods:name>
+					<mods:name type="personal">
+						<mods:namePart>Author3</mods:namePart>
+						<mods:role>
+							<mods:roleTerm type="text">author</mods:roleTerm>
+						</mods:role>
+					</mods:name>
+				</mods:mods>
+			</xmlData>
+		</mdWrap>
+	</dmdSec>
+	<dmdSec ID="J-2">
+		<mdWrap MDTYPE="MODS">
+			<xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+					xmlns:xlink="http://www.w3.org/1999/xlink">
+					<mods:titleInfo>
+						<mods:title>Dataset1 Title</mods:title>
+					</mods:titleInfo>
+				</mods:mods>
+			</xmlData>
+		</mdWrap>
+	</dmdSec>
+	<dmdSec ID="J-3">
+		<mdWrap MDTYPE="MODS">
+			<xmlData>
+				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+					xmlns:xlink="http://www.w3.org/1999/xlink">
+					<mods:titleInfo>
+						<mods:title>Dataset2 Title</mods:title>
+					</mods:titleInfo>
+				</mods:mods>
+			</xmlData>
+		</mdWrap>
+	</dmdSec>
+	<amdSec>
+		<techMD ID="A-1">
+			<mdWrap MDTYPE="PREMIS">
+				<xmlData>
+					<premis:object xmlns:premis="http://www.loc.gov/standards/premis">
+						<premis:objectIdentifier>
+							<premis:objectIdentifierType>internal
+							</premis:objectIdentifierType>
+							<premis:objectIdentifierValue>J-1</premis:objectIdentifierValue>
+						</premis:objectIdentifier>
+						<premis:preservationLevel>level 1</premis:preservationLevel>
+						<premis:objectCategory>Representation</premis:objectCategory>
+					</premis:object>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-2">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATASET">
+				<xmlData>
+					<trd:dataset xmlns:trd="http://www.tardis.edu.au/schemas/trdDataset/2">
+						<trd:resolutionLimit>2.7</trd:resolutionLimit>
+						<trd:diffractometerType>Rotating Anode</trd:diffractometerType>
+						<trd:xraySource>RIGAKU RAXIS IV</trd:xraySource>
+						<trd:crystalName>MENT WT</trd:crystalName>
+					</trd:dataset>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-3">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
+				<xmlData>
+					<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+						<trd:imageType>R-AXIS</trd:imageType>
+						<trd:oscillationRange>
+							<trd:start>35.0</trd:start>
+							<trd:end>35.5</trd:end>
+						</trd:oscillationRange>
+						<trd:exposureTime>3.5166667</trd:exposureTime>
+						<trd:detectorSN>N/A</trd:detectorSN>
+						<trd:xrayWavelength>1.5418</trd:xrayWavelength>
+						<trd:directBeamXPos>149.59</trd:directBeamXPos>
+						<trd:directBeamYPos>150.5</trd:directBeamYPos>
+						<trd:detectorDistance>220.0</trd:detectorDistance>
+						<trd:imageSizeX>3000.0</trd:imageSizeX>
+						<trd:imageSizeY>3000.0</trd:imageSizeY>
+						<trd:pixelSizeX>0.1</trd:pixelSizeX>
+						<trd:pixelSizeY>0.1</trd:pixelSizeY>
+						<trd:twoTheta>0.0</trd:twoTheta>
+					</trd:datafile>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+	</amdSec>
+	<fileSec>
+		<fileGrp USE="original">
+			<file ID="F-1" MIMETYPE="application/octet-stream" SIZE="6148"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File1">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File1" />
+			</file>
+			<file ID="F-2" MIMETYPE="application/octet-stream" SIZE="76"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File2.bat">
+				<FLocat LOCTYPE="URL" xlink:type="simple"
+					xlink:href="file://Images/File2.bat" />
+			</file>
+			<file ID="F-3" MIMETYPE="application/octet-stream" SIZE="1419287050"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File3.zip">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File3.zip" />
+			</file>
+			<file ID="F-4" MIMETYPE="application/octet-stream" SIZE="18006000"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File4.img"
+				ADMID="A-3">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File4.img" />
+			</file>
+		</fileGrp>
+	</fileSec>
+	<structMap TYPE="logical">
+		<div DMDID="J-1" ADMID="A-1" TYPE="investigation">
+			<div DMDID="J-2" ADMID="A-2" TYPE="dataset">
+				<fptr FILEID="F-1" />
+				<fptr FILEID="F-2" />
+			</div>
+			<div DMDID="J-3" TYPE="dataset">
+				<fptr FILEID="F-3" />
+				<fptr FILEID="F-4" />
+			</div>
+		</div>
+	</structMap>
+</mets>

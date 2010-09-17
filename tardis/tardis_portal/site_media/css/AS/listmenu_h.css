@@ -1,0 +1,220 @@
+/*
+* Copyright (c) 2010, Monash e-Research Centre
+*   (Monash University, Australia)
+* Copyright (c) 2010, VeRSI Consortium
+*   (Victorian eResearch Strategic Initiative, Australia)
+* All rights reserved.
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*    *  Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*    *  Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+.topmenu ul {
+	margin:0px;
+	padding:0px;
+	list-style:none;
+}
+.topmenu ul ul {
+	display:none;
+	position:absolute;
+	left:2px;
+	width:218px;
+	border:1px solid #C2C2C2;
+}
+.topmenu ul ul ul {
+	top:-1px;
+	left:218px;
+}
+.topmenu li.item55 ul {
+	left:-30px;
+}
+.topmenu li.item30 ul ul, .topmenu li.item55 ul ul {
+	left:-220px;
+}
+.topmenu li {
+	float:left;
+	display:block;
+	position:relative;
+	padding-left:2px;
+	background:url(/images/AS/separator_navitem.gif) left center no-repeat;
+}
+.topmenu li.item53 {
+	padding-left:0px;
+	background:none;
+}
+.topmenu li li {
+	float:none;
+	padding:0px;
+	background:none;
+}
+.topmenu a {
+	display:block;
+	line-height:13px;
+	font-size:11px;
+	font-weight:bold;
+	color:#FFF;
+	text-decoration:none;
+	padding:0px 24px;
+	cursor:pointer;
+}
+.topmenu a span {
+	display:block;
+	padding:8px 0px 7px;
+	position:relative;
+	border-bottom:2px solid #7C7C7C;
+}
+.topmenu li.item53 a span {
+	background:url(/images/AS/icon_home.gif) 0px 11px no-repeat;
+	padding:8px 0px 9px 13px;
+	border:0px;
+}
+.topmenu ul ul a {
+	padding:0px 25px;
+	background-color:#626262;
+}
+.topmenu ul ul a span {
+	padding:6px 0px;
+	border:none;
+}
+.topmenu a:hover, .topmenu a.highlighted, .topmenu a.highlighted:hover, .topmenu a:focus, .topmenu li.active a {
+	color:#F5CB25;
+	text-decoration:none;
+}
+.topmenu li.active li a {
+	color:#FFF;
+}
+.topmenu a:hover span, .topmenu a.highlighted span, .topmenu a.highlighted:hover span, .topmenu a:focus span, .topmenu li.active a span {
+	border-color:#F5CB25;
+}
+.topmenu li li a:hover, .topmenu li li a.highlighted, .topmenu li li a.highlighted:hover, .topmenu li li a:focus, .topmenu li li.active a {
+	color:#F5CB25;
+	background-color:#252525;
+}
+.topmenu li li.active li a {
+	color:#FFF;
+	background-color:#626262;
+}
+.topmenu li li li a:hover, .topmenu li li li a.highlighted, .topmenu li li li a.highlighted:hover, .topmenu li li li a:focus, .topmenu li li li.active a {
+	color:#91C5F2;
+	background-color:#252525;
+}
+.topmenu li li li.active li a {
+	color:#FFF;
+	background-color:#626262;
+}
+.topmenu li li li li a:hover, .topmenu li li li li a.highlighted, .topmenu li li li li a.highlighted:hover, .topmenu li li li li a:focus, .topmenu li li li li.active a {
+	color:#91C5F2;
+	background-color:#252525;
+}
+.topmenu ul.menu a .subind {
+	display:none;
+}
+/* 'Escaped Comment' hack for horizontal menubar width in IE5/Mac */
+.topmenu ul.menu a {
+	float:left;
+}
+.topmenu ul.menu ul a {
+	float:none;
+}
+/* \*/
+.topmenu ul.menu a {
+	float:none;
+}
+/* */
+
+/*
+ HACKS:IE/Win:
+ A small height on <li> and <a> tags and floating prevents gaps in menu.
+ * html affects <=IE6 and *:first-child+html affects IE7.
+*/
+*:first-child+html .topmenu li li {
+	float:left;
+	width:100%;
+}
+* html .topmenu li li {
+	float:left;
+	height:1%;
+}
+* html .topmenu ul ul a {
+	height:1%;
+}
+/* End Hacks */
+
+.tardismenu ul {
+	margin:0px;
+	padding:0px;
+	list-style:none;
+}
+.tardismenu ul ul {
+	display:none;
+	position:absolute;
+	left:2px;
+	width:218px;
+	border:1px solid #C2C2C2;
+}
+.tardismenu ul ul ul {
+	top:-1px;
+	left:218px;
+}
+.tardismenu li.item55 ul {
+	left:-30px;
+}
+.tardismenu li.item30 ul ul, .tardismenu li.item55 ul ul {
+	left:-220px;
+}
+.tardismenu li {
+	float:left;
+	display:block;
+	position:relative;
+	padding-left:2px;
+	background:url(/images/AS/separator_navitem.gif) left center no-repeat;
+}
+.tardismenu li.item53 {
+	padding-left:35px;
+	padding-top: 8px;
+	background:none;
+}
+.tardismenu li li {
+	float:none;
+	padding:0px;
+	background:none;
+}
+
+/* */
+
+/*
+ HACKS:IE/Win:
+ A small height on <li> and <a> tags and floating prevents gaps in menu.
+ * html affects <=IE6 and *:first-child+html affects IE7.
+*/
+*:first-child+html .tardismenu li li {
+	float:left;
+	width:100%;
+}
+* html .tardismenu li li {
+	float:left;
+	height:1%;
+}
+* html .tardismenu ul ul a {
+	height:1%;
+}
+/* End Hacks */
+
