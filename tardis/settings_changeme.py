@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -30,7 +30,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import sys
+import logging
 
 APP_ROOT = '/path/to/tardis/'
 TARDISURLPREFIX = 'http://127.0.0.1'
@@ -42,7 +42,8 @@ ADMINS = (('bob', 'bob@bobmail.com'), )
 
 MANAGERS = ADMINS
 
-DATABASE_ENGINE = 'postgresql_psycopg2'  # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+DATABASE_ENGINE = 'postgresql_psycopg2'
 DATABASE_NAME = 'tardis'  # Or path to database file if using sqlite3.
 DATABASE_USER = 'x'  # Not used with sqlite3.
 DATABASE_PASSWORD = ''  # Not used with sqlite3.
@@ -80,24 +81,22 @@ ADMIN_MEDIA_PREFIX = '/media/'
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
 MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
-                      'django.contrib.sessions.middleware.SessionMiddleware'
-                      ,
-                      'django.contrib.auth.middleware.AuthenticationMiddleware'
-                      , 'tardis.tardis_portal.minidetector.Middleware')
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tardis.tardis_portal.minidetector.Middleware')
 
 ROOT_URLCONF = 'tardis.urls'
 
-TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request'
-                               , 'django.core.context_processors.auth',
+TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
+                               'django.core.context_processors.auth',
                                'django.core.context_processors.debug',
                                'django.core.context_processors.i18n')
 
+# Put strings here, like "/home/html/django_templates" or
+# "C:/www/django/templates". Always use forward slashes, even on Windows.
+# Don't forget to use absolute paths, not relative paths.
 TEMPLATE_DIRS = ('/path/to/myTARDIS/tardis/',
                  '/path/to/myTARDIS/tardis/tardis_portal')
-
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
 
 LDAP_ENABLE = False
 LDAP_URL = 'directory.example.com'
@@ -106,7 +105,8 @@ AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
 STATIC_DOC_ROOT = '/path/to/myTARDIS/tardis/tardis_portal/site_media'
 ADMIN_MEDIA_STATIC_DOC_ROOT = \
-    '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/site-packages/django/contrib/admin/media'
+    '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/'\
+    'site-packages/django/contrib/admin/media'
 FILE_STORE_PATH = '/path/to/store'
 
 # Absolute path to the directory that holds media.
@@ -144,3 +144,10 @@ EMAIL_HOST_USER = 'bob@bobmail.com'
 EMAIL_HOST_PASSWORD = 'bob'
 
 EMAIL_USE_TLS = True
+
+LOG_FILENAME = '/var/tmp/tardis.log'
+
+LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
+LOG_LEVEL = logging.DEBUG
