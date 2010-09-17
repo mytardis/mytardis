@@ -13,4 +13,5 @@ def experiment_file_count(value):
 
 # @register.filter
 # def experiment_file_size(value):....
-# ....return Dataset_File.objects.filter(dataset__experiment__pk=value).aggregate(Sum('size'))['size__sum']
+#     return Dataset_File.objects.filter(dataset__experiment__pk=value).
+#         aggregate(Sum('size'))['size__sum']

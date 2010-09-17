@@ -1020,7 +1020,8 @@ def register_experiment_ws_xmldata(request):
         form = RegisterExperimentForm()  # An unbound form
 
     c = Context({'form': form, 'status': status,
-        'subtitle': 'Register Experiment'})
+        'subtitle': 'Register Experiment',
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/register_experiment.html', c))
 

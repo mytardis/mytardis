@@ -6,12 +6,13 @@ STATIC_DOC_ROOT = 'tardis_portal/site_media'
 ADMIN_MEDIA_STATIC_DOC_ROOT = ''
 HANDLEURL = ''
 SITE_ID = '1'
-TEMPLATE_DIRS = ['.','tardis_portal/']
+TEMPLATE_DIRS = ['.', 'tardis_portal/']
 
-MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
-                      'django.contrib.sessions.middleware.SessionMiddleware',
-                      'django.contrib.auth.middleware.AuthenticationMiddleware',
-                      'tardis.tardis_portal.minidetector.Middleware')
+MIDDLEWARE_CLASSES = (
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'tardis.tardis_portal.minidetector.Middleware')
 
 INSTALLED_APPS = ['tardis.tardis_portal',
         'django.contrib.auth',
