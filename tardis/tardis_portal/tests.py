@@ -43,6 +43,7 @@ from django.test import TestCase
 from django.test.client import Client
 from tardis.tardis_portal.logger import logger
 import unittest
+from os import path
 
 
 class SearchTestCase(TestCase):
@@ -156,7 +157,7 @@ class UserInterfaceTestCase(TestCase):
         self.client = Client()
 
         from django.contrib.auth.models import User
-        from tardis import settings
+        from django.conf import settings
         import os
 
         user = 'user1'
@@ -164,8 +165,8 @@ class UserInterfaceTestCase(TestCase):
         email = ''
         User.objects.create_user(user, email, pwd)
 
-        f = open(os.path.join(settings.APP_ROOT,
-                 'tardis_portal/tests/notMETS_test.xml'), 'r')
+        f = open(os.path.join(path.abspath(path.dirname(__file__)),
+                 'tests/notMETS_test.xml'), 'r')
         response = self.client.post('/experiment/register/', {
             'username': user,
             'password': pwd,
@@ -190,10 +191,10 @@ class UserInterfaceTestCase(TestCase):
 class ExperimentParserTestCase(unittest.TestCase):
 
     def setUp(self):
-        from tardis import settings
+        from django.conf import settings
         import os
-        f = open(os.path.join(settings.APP_ROOT,
-                 'tardis_portal/tests/METS_test.xml'), 'r')
+        f = open(os.path.join(path.abspath(path.dirname(__file__)),
+                 'tests/METS_test.xml'), 'r')
         xmlString = f.read()
         f.close()
         from tardis.tardis_portal.ExperimentParser import ExperimentParser

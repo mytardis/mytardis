@@ -27,60 +27,17 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
+{% extends "tardis_portal/portal_template.html" %}
 
-		{% block content %}
+{% block fullpage %}
 
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">{{ title }}</a>
-				</h1>
-				<div class="entry">
-					<p>
-
-
-					</p>
-				</div>
-			</div>
+<div id="fullpage">
+	<div class="post">
+		<div id="statusBoxError">
+			Error: Page not found
 		</div>
+	</div>
+</div>	
 
-			{% endblock %}
-
-			{% block sidebar %}
-
-			<ul>
-				<li>
-					<h2>
-						Browse Experiments
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/view">Index</a>
-						</li>
-						<li>
-							<a href="/search/experiment">Search</a>
-						</li>					
-					</ul>
-					<br/>
-					<h2>
-						Controls
-					</h2>
-					<br/>
-					<ul>
-						<li>
-							<a href="/experiment/register">New Experiment</a>
-						</li>
-						<li>
-							<a href="/experiment/control_panel">Control Panel</a>
-						</li>					
-					</ul>
-				</li>			
-			</ul>
-			<p>
-
-			{% endblock %} {% block bottom %}
-		</p>
-
-			{% endblock %}
+{% endblock %}
 		</p>

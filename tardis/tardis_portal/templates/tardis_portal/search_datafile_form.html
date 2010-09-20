@@ -27,17 +27,35 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
-
-{% block fullpage %}
-
-<div id="fullpage">
-	<div class="post">
-		<div id="statusBoxError">
-			Error: Page not found
-		</div>
-	</div>
-</div>	
-
-{% endblock %}
+{% extends "tardis_portal/search_datafile.html" %}
+        {% block searchPageBody %}
+	         {% if searchForm.errors %}
+	            <p style="color: red;">
+	                Please correct the error{{ searchForm.errors|pluralize }} below.
+	            </p>
+	         {% endif %}       
+             <form name="input" action="." method="get">
+             <table width="100%">
+             {# {{ searchForm.as_table }} #}
+             {% for fields in modifiedSearchForm %}
+                <tr>
+                 {% for field in fields %}
+                 {% if not field.is_hidden %}
+                 <th>{{ field.label }}</th><td>{{ field }} {{ field.errors }}</td>
+                 {% else %}
+                 <td>{{ field }}</td>
+                 {% endif %}
+                 
+                 {% if fields|length == 2 and forloop.first %}
+                 <td>to</td>
+                 {% endif %}
+                 
+                 {% endfor %}
+                 </tr>
+             {% endfor %}
+             
+		     <tr><td colspan="2" style="text-align:center"><input type="submit" value="Submit"></td></tr>
+             </table>
+             </form>
+        {% endblock %}
 		</p>

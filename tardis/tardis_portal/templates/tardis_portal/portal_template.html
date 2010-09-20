@@ -1,0 +1,144 @@
+<!--
+ Copyright (c) 2010, Monash e-Research Centre
+   (Monash University, Australia)
+ Copyright (c) 2010, VeRSI Consortium
+   (Victorian eResearch Strategic Initiative, Australia)
+ All rights reserved.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>myTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+	<meta name="keywords" content="">
+	<meta name="description" content="">
+	<link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
+
+	<link type="text/css" href="/site_media/css/theme/ui.all.css" rel="Stylesheet" />	
+	<script type="text/javascript" src="/site_media/js/jquery-1.3.1.js"></script>
+	<script type="text/javascript" src="/site_media/js/jquery-ui-personalized-1.6rc6.js"></script>
+	
+	<link type="text/css" href="/site_media/css/smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />	
+	<script type="text/javascript" src="/site_media/js/jquery-1.3.2.min.js"></script>
+	<script type="text/javascript" src="/site_media/js/jquery-ui-1.7.2.custom.min.js"></script>	
+
+	<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+	try {
+	var pageTracker = _gat._getTracker("UA-5443750-1");
+	pageTracker._trackPageview();
+	} catch(err) {}</script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  $("#id_type").change(function () {
+      if ($("#id_type").val() != '-') {
+         $(this).parent().submit();
+      }
+  });
+});
+</script>
+
+	{% block script %}{% endblock %}
+
+</head>
+<body>
+<!-- start header -->
+<div id="header">
+	<div id="logo">
+				<h1>myTARDIS</h1>
+				<p>DIFFRACTION IMAGE REPOSITORY</p>
+			</div>
+			<div id="menu">
+				<ul>
+					<li><a href="/">Home</a></li>
+					<li><a href="/about">About</a></li>
+					<li><a href="/experiment/view">Data</a></li>
+					<li><a href="/partners">Partners</a></li>
+					<li><a href="/stats">Stats</a></li>
+				</ul>
+			</div>
+		</div>
+		<!-- end header -->
+		<div id="headerbg">
+			<div id="headerloginstatus">
+		{% if is_authenticated %}Welcome, <em>{{ username }}</em> - <a href="/logout"> [Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}
+		
+	</div>
+</div>
+<!-- start page -->
+<div id="page">
+	<!-- start content -->
+	<div id="content-box">
+		{% if status %}
+		<div id="status">
+			{% if error %}
+		<div id="statusBoxError">
+			{{status}}
+		</div>
+			{% else %}
+		<div id="statusBox">
+			{{status}}
+		</div>
+			{% endif %}
+		</div>
+		{% endif %}
+		
+		{% block content %}
+		<!-- start latest-post -->
+		
+		{% endblock %}
+		<!-- end latest-post -->
+		<!-- start recent-posts -->
+		<div id="recent-posts" class="sidebar">
+			<div class="post">
+				{% block sidebar %}{% endblock %}
+			</div>
+		</div>
+		<!-- end recent-posts -->
+
+	<!-- end content -->
+	
+	<div style="clear: both; width: 700px;">
+
+		{% block bottom %}{% endblock %}
+
+	</div>
+		{% block fullpage %}
+
+		{% endblock %}
+	</div>	
+	
+	<!-- start sidebar -->
+	<div id="bottombar">
+		©2010 All Rights Reserved. &nbsp;•&nbsp; <a href="mailto:%20steve.androulakis@med.monash.edu.au">Designed by Steve Androulakis</a> - Version v1.07
+	</div>
+	</div>	
+</body>
+</html>

@@ -27,23 +27,18 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
+{% extends "tardis_portal/portal_template.html" %}
 
 		{% block content %}
 
 		<div id="content">
 			<div class="post">
 				<h1 class="title">
-					<a href="#">{% if edit %} Edit {% else %} Register {% endif %} Experiment</a>
+					<a href="#">{{ title }}</a>
 				</h1>
 				<div class="entry">
 					<p>
-						<strong>Note:</strong> FTP details of the download location of the experiment are optional, but recommended. Experiment Registration/Editing/Reingestion may take a few minutes to process.<br/><br/>
-						<form action="/experiment/register/" method="POST" enctype="multipart/form-data">
-						{{ form.as_p }}
-						{% if edit %}<input type="hidden" name="eid" value="{{ experiment_id }}"/>{% endif %}
-						<input type="submit" value="Submit" />
-						</form>
+
 
 					</p>
 				</div>
@@ -67,10 +62,11 @@
 							<a href="/search/experiment">Search</a>
 						</li>					
 					</ul>
-
+					<br/>
 					<h2>
 						Controls
 					</h2>
+					<br/>
 					<ul>
 						<li>
 							<a href="/experiment/register">New Experiment</a>

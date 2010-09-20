@@ -27,17 +27,19 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
-
-{% block fullpage %}
-
-<div id="fullpage">
-	<div class="post">
-		<div id="statusBoxError">
-			Error: Forbidden
-		</div>
-	</div>
-</div>	
-
-{% endblock %}
-		</p>
+{% load parametertypecheck %}
+{% for parameterset in parametersets %}
+	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+    {% autoescape off %}
+	{% for parameter in parameterset.datafileparameter_set.all %}
+		<li><strong>{{ parameter.name.full_name }}: </strong>
+			{% if parameter.name.is_numeric %}
+				{{ parameter.numerical_value }} {{ parameter.name.units }}
+			{% else %}
+				{{ parameter.string_value|dfparametertypecheck:parameter.id }}
+			{% endif %}
+		</li>
+	{% endfor %}
+    {% endautoescape %}
+	<br/><br/>
+{% endfor %}

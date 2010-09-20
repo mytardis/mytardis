@@ -27,29 +27,32 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "portal_template.html" %} 
+{% extends "tardis_portal/portal_template.html" %}
 
 		{% block content %}
 
 		<div id="content">
 			<div class="post">
 				<h1 class="title">
-					<a href="#">Search Datafile</a>
+					<a href="#">{% if edit %} Edit {% else %} Register {% endif %} Experiment</a>
 				</h1>
-				<!-- <div style="padding-left: 10px">Search <a href="../experiment/">Experiment</a>
-				| <form action="/search/datafile" method="get" style="display: inline">
-                     {{ searchDatafileSelectionForm.type }}
-                     <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/> -->
 				<div class="entry">
 					<p>
-						{% block searchPageBody %}{% endblock %}
+						<strong>Note:</strong> FTP details of the download location of the experiment are optional, but recommended. Experiment Registration/Editing/Reingestion may take a few minutes to process.<br/><br/>
+						<form action="/experiment/register/" method="POST" enctype="multipart/form-data">
+						{{ form.as_p }}
+						{% if edit %}<input type="hidden" name="eid" value="{{ experiment_id }}"/>{% endif %}
+						<input type="submit" value="Submit" />
+						</form>
+
 					</p>
 				</div>
 			</div>
 		</div>
 
-			{% endblock %} {% block sidebar %}
+			{% endblock %}
+
+			{% block sidebar %}
 
 			<ul>
 				<li>
@@ -64,19 +67,24 @@
 							<a href="/search/experiment">Search</a>
 						</li>					
 					</ul>
-					{% if user.is_authenticated %}
-					<br/>
+
 					<h2>
 						Controls
 					</h2>
 					<ul>
 						<li>
+							<a href="/experiment/register">New Experiment</a>
+						</li>
+						<li>
 							<a href="/experiment/control_panel">Control Panel</a>
 						</li>					
 					</ul>
-					{% endif %}
 				</li>			
 			</ul>
 			<p>
+
+			{% endblock %} {% block bottom %}
+		</p>
+
 			{% endblock %}
 		</p>
