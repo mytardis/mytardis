@@ -27,19 +27,42 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% load parametertypecheck %}
-{% for parameterset in parametersets %}
-	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-	{% autoescape off %}
-	{% for parameter in parameterset.datafileparameter_set.all %}
-		<li><strong>{{ parameter.name.full_name }}: </strong>
-			{% if parameter.name.is_numeric %}
-				{{ parameter.numerical_value }} {{ parameter.name.units }}
-			{% else %}
-				{{ parameter.string_value|dfparametertypecheck:parameter.id }}
-			{% endif %}
-		</li>
-	{% endfor %}
-	{% endautoescape %}
-	<br/><br/>
-{% endfor %}
+{% extends "tardis_portal/portal_template.html" %}
+
+		{% block content %}
+		</p>
+		<div id="content">
+			<div class="post">
+				<h1 class="title">
+					<a href="#">Welcome</a>
+				</h1>
+				<div class="entry">
+					<p>
+
+					  {% if form.errors %}
+					    <p class="error">Sorry, that's not a valid username or password</p>
+					  {% endif %}
+
+					  <form action='.' method='post'>
+					    <label for="username">User name:</label>
+					    <input type="text" name="username" value="" id="username">
+					    <label for="password">Password:</label>
+					    <input type="password" name="password" value="" id="password">
+
+					    <input type="submit" value="login" />
+					    <input type="hidden" name="next" value="/" />
+					  <form action='.' method='post'>
+
+					</p>
+				</div>
+			</div>
+		</div>
+
+			{% endblock %} {% block sidebar %}
+		<p>
+			{% endblock %} {% block bottom %}
+		</p>
+
+		<p>
+			{% endblock %}
+		</p>
