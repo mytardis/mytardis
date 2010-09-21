@@ -29,25 +29,23 @@
 -->
 {% extends "tardis_portal/search_experiment.html" %}
 		{% block searchPageBody %}
-				<form name="input" action="." method="get">
-				<table width="100%">
-				<tr valign="top">
-					<td>
-					Experiment Title
-				<br><input type="text" name="title" value="" size="20">
-				<br><br> Experiment Description
-				<br><input type="text" name="description" value="" size="20">			
-				<br><br>Institution Name
-				<br><input type="text" name="institution_name" value="" size="20">
-				<br><br>Author's Name
-				<br><input type="text" name="creator" value="" size="20">
+             {% if searchForm.errors %}
+                <p style="color: red;">
+                    Please correct the error{{ searchForm.errors|pluralize }} below.
+                </p>
+             {% endif %}       
+             <form name="input" action="." method="get">
+             <table width="100%">
+             <tr valign="top">
+             <td>
+             {% for field in searchForm %}
+             {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
+             {% endfor %}
+             <input type="submit" value="Submit">
+             </td>
 
-				<br><br>			
-				<input type="submit" value="Submit">
-				</td>
-
-				</tr>
-				</table>
-				</form>
+             </tr>
+             </table>
+             </form>
 		{% endblock %}
 		</p>

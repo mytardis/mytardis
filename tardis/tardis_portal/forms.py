@@ -151,6 +151,63 @@ def createSearchDatafileForm(searchQueryType):
             (searchQueryType, ))
 
 
+def createSearchExperimentForm():
+
+    from tardis.tardis_portal.models import ParameterName
+    from tardis.tardis_portal import constants
+
+    parameterNames = []
+
+    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+        parameterNames += \
+            ParameterName.objects.filter(
+            schema__namespace__iexact=experimentSchema,
+            is_searchable='True')
+
+    fields = {}
+
+    fields['title'] = forms.CharField(label='Title',
+            max_length=20, required=False)
+    fields['description'] = forms.CharField(label='Experiment Description',
+            max_length=20, required=False)
+    fields['institutionName'] = forms.CharField(label='Institution Name',
+            max_length=20, required=False)
+    fields['creator'] = forms.CharField(label="Author's Name",
+            max_length=20, required=False)
+
+    for parameterName in parameterNames:
+        if parameterName.is_numeric:
+            if parameterName.comparison_type \
+                == ParameterName.RANGE_COMPARISON:
+                fields[parameterName.name + 'From'] = \
+                    forms.DecimalField(label=parameterName.full_name
+                        + ' From', required=False)
+                fields[parameterName.name + 'To'] = \
+                    forms.DecimalField(label=parameterName.full_name
+                        + ' To', required=False)
+            else:
+                # note that we'll also ignore the choices text box entry
+                # even if it's filled if the parameter is of numeric type
+                # TODO: decide if we are to raise an exception if
+                #       parameterName.choices is not empty
+                fields[parameterName.name] = \
+                    forms.DecimalField(label=parameterName.full_name,
+                        required=False)
+        else:  # parameter is a string
+            if parameterName.choices != '':
+                fields[parameterName.name] = \
+                    forms.CharField(label=parameterName.full_name,
+                    widget=forms.Select(choices=__getParameterChoices(
+                    parameterName.choices)), required=False)
+            else:
+                fields[parameterName.name] = \
+                    forms.CharField(label=parameterName.full_name,
+                    max_length=255, required=False)
+
+    return type('SearchExperimentForm', (forms.BaseForm, ),
+                    {'base_fields': fields})
+
+
 def __getParameterChoices(choicesString):
     """Handle the choices string in this format:
     '(hello:hi how are you), (yes:i am here), (no:joe)'
