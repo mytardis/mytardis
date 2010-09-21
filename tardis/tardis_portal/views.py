@@ -1128,35 +1128,14 @@ def search_experiment(request):
     if len(request.GET) == 0:
         return __forwardToSearchExperimentFormPage(request)
 
-    experiments = get_accessible_experiments(request.user.id)
-    if experiments:
-        experiments = experiments.order_by('title')
+    form = __getSearchExperimentForm(request)
+    experiments = __processExperimentParameters(request, form)
 
-        if 'title' in request.GET and len(request.GET['title']) > 0:
-            experiments = \
-                experiments.filter(title__icontains=request.GET['title'])
-
-        if 'description' in request.GET and \
-                len(request.GET['description']) > 0:
-            experiments = \
-                experiments.filter(
-                description__icontains=request.GET['description'])
-
-        if 'institution_name' in request.GET \
-                and len(request.GET['institution_name']) > 0:
-            experiments = \
-                experiments.filter(
-                institution_name__icontains=request.GET[
-                'institution_name'])
-
-        if 'creator' in request.GET and \
-                len(request.GET['creator']) > 0:
-            experiments = \
-                experiments.filter(
-                author_experiment__author__name__icontains=request.GET[
-                'creator'])
-
-    bodyclass = 'list'
+    # check if the submitted form is valid
+    if experiments is not None:
+        bodyclass = 'list'
+    else:
+        return __forwardToSearchExperimentFormPage(request)
 
     c = Context({
         'experiments': experiments,
@@ -1261,6 +1240,65 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
         datafile_results = datafile_results.order_by('filename')
 
     return datafile_results
+
+
+@login_required()
+def __getFilteredExperiments(request, searchFilterData):
+    """Filter the list of experiments using the cleaned up searchFilterData.
+
+    Arguments:
+    request -- the HTTP request
+    searchFilterData -- the cleaned up search experiment form data
+
+    Returns:
+    A list of experiments as a result of the query or None if the provided
+      search request is invalid
+
+    """
+
+    #from django.db.models import Q
+
+    experiments = get_accessible_experiments(request.user.id)
+
+    if len(experiments) == 0:
+        return experiments
+
+    # search for the default experiment fields
+    if searchFilterData['title'] != '':
+        experiments = \
+            experiments.filter(title__icontains=searchFilterData['title'])
+
+    if searchFilterData['description'] != '':
+        experiments = \
+            experiments.filter(
+            description__icontains=searchFilterData['description'])
+
+    if searchFilterData['institutionName'] != '':
+        experiments = \
+            experiments.filter(
+            institution_name__icontains=searchFilterData['institutionName'])
+
+    if searchFilterData['creator'] != '':
+        experiments = \
+            experiments.filter(
+        author_experiment__author__name__icontains=searchFilterData['creator'])
+
+    # initialise the extra experiment parameters
+    parameters = []
+
+    # get all the experiment parameters
+    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+        parameters += ParameterName.objects.filter(
+            schema__namespace__exact=experimentSchema)
+
+    experiments = __filterParameters(parameters, experiments,
+            searchFilterData, 'experimentparameterset__experimentparameter')
+
+    # let's sort it in the end
+    if experiments:
+        experiments = experiments.order_by('title')
+
+    return experiments
 
 
 def __filterParameters(
@@ -1438,21 +1476,25 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 def __forwardToSearchExperimentFormPage(request):
     """Forward to the search experiment form page."""
 
+    searchForm = __getSearchExperimentForm(request)
+    print searchForm
+
     c = Context({
+        'searchForm': searchForm,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_experiment_form.html'
     return HttpResponse(render_response_index(request, url, c))
 
 
-def __getSearchForm(request, searchQueryType):
-    """Create the search form based on the HTTP GET request.
+def __getSearchDatafileForm(request, searchQueryType):
+    """Create the search datafile form based on the HTTP GET request.
 
     Arguments:
     request -- The HTTP request object
     searchQueryType -- The search query type: 'mx' or 'sax'
 
     Returns:
-    The supported search form
+    The supported search datafile form
 
     Throws:
     UnsupportedSearchQueryTypeError is the provided searchQueryType is not
@@ -1468,7 +1510,23 @@ def __getSearchForm(request, searchQueryType):
         raise e
 
 
-def __processParameters(request, searchQueryType, form):
+def __getSearchExperimentForm(request):
+    """Create the search experiment form.
+
+    Arguments:
+    request -- The HTTP request object
+
+    Returns:
+    The search experiment form
+
+    """
+
+    SearchExperimentForm = createSearchExperimentForm()
+    form = SearchExperimentForm(request.GET)
+    return form
+
+
+def __processDatafileParameters(request, searchQueryType, form):
     """Validate the provided datafile search request and return search results.
 
     Arguments:
@@ -1502,6 +1560,33 @@ def __processParameters(request, searchQueryType, form):
         return None
 
 
+def __processExperimentParameters(request, form):
+    """Validate the provided experiment search request and return search
+    results.
+
+    Arguments:
+    request -- The HTTP request object
+    form -- The search form to use
+
+    Returns:
+    A list of experiments as a result of the query or None if the provided
+      search request is invalid
+
+    """
+
+    if form.is_valid():
+
+        experiments = __getFilteredExperiments(request, form.cleaned_data)
+
+        # let's cache the query with all the filters in the session so
+        # we won't have to keep running the query all the time it is needed
+        # by the paginator
+        request.session['experiments'] = experiments
+        return experiments
+    else:
+        return None
+
+
 @login_required()
 def search_datafile(request):
     """Either show the search datafile form or the result of the search
@@ -1524,8 +1609,8 @@ def search_datafile(request):
             len(request.GET) > 1:
         # display the 1st page of the results
 
-        form = __getSearchForm(request, searchQueryType)
-        datafile_results = __processParameters(request, searchQueryType, form)
+        form = __getSearchDatafileForm(request, searchQueryType)
+        datafile_results = __processDatafileParameters(request, searchQueryType, form)
         if datafile_results is not None:
             bodyclass = 'list'
         else:
@@ -1538,8 +1623,8 @@ def search_datafile(request):
             if 'datafileResults' in request.session:
                 datafile_results = request.session['datafileResults']
             else:
-                form = __getSearchForm(request, searchQueryType)
-                datafile_results = __processParameters(request,
+                form = __getSearchDatafileForm(request, searchQueryType)
+                datafile_results = __processDatafileParameters(request,
                     searchQueryType, form)
                 if datafile_results is not None:
                     bodyclass = 'list'
