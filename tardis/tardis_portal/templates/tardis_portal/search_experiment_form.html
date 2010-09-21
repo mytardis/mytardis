@@ -27,56 +27,27 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/search_experiment.html" %}
+		{% block searchPageBody %}
+				<form name="input" action="." method="get">
+				<table width="100%">
+				<tr valign="top">
+					<td>
+					Experiment Title
+				<br><input type="text" name="title" value="" size="20">
+				<br><br> Experiment Description
+				<br><input type="text" name="description" value="" size="20">			
+				<br><br>Institution Name
+				<br><input type="text" name="institution_name" value="" size="20">
+				<br><br>Author's Name
+				<br><input type="text" name="creator" value="" size="20">
 
-		{% block content %}
+				<br><br>			
+				<input type="submit" value="Submit">
+				</td>
 
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Search Experiment</a>
-				</h1>
-				<!-- <div style="padding-left: 10px">Search Experiment
-				| <form action="/search/datafile" method="get" style="display: inline">
-                     {{ searchDatafileSelectionForm.type }}
-                     <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/></div><br/> -->
-				<div class="entry">
-					<p>
-						{% block searchPageBody %}{% endblock %}
-					</p>
-				</div>
-			</div>
-		</div>
-
-			{% endblock %} {% block sidebar %}
-
-			<ul>
-				<li>
-					<h2>
-						Browse Experiments
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/view">Index</a>
-						</li>
-						<li>
-							<a href="/search/experiment">Search</a>
-						</li>					
-					</ul>
-					{% if user.is_authenticated %}
-					<br/>
-					<h2>
-						Controls
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/control_panel">Control Panel</a>
-						</li>					
-					</ul>
-					{% endif %}
-				</li>			
-			</ul>
-			<p>
-			{% endblock %}
+				</tr>
+				</table>
+				</form>
+		{% endblock %}
 		</p>

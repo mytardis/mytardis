@@ -593,7 +593,9 @@ def downloadExperiment(request, experiment_id):
 def about(request):
 
     c = Context({'subtitle': 'About', 'about_pressed': True,
-                'nav': [{'name': 'About', 'link': '/about/'}]})
+                'nav': [{'name': 'About', 'link': '/about/'}],
+                'searchDatafileSelectionForm':
+                getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -672,7 +674,8 @@ def experiment_index(request):
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'data_pressed': True,
-        })
+        'searchDatafileSelectionForm':
+            getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/experiment_index.html', c))
 
@@ -1117,52 +1120,50 @@ def control_panel(request):
 
 @login_required()
 def search_experiment(request):
-    get = False
+    """Either show the search experiment form or the result of the search
+    experiment query.
+
+    """
+
+    if len(request.GET) == 0:
+        return __forwardToSearchExperimentFormPage(request)
+
     experiments = get_accessible_experiments(request.user.id)
     if experiments:
         experiments = experiments.order_by('title')
 
-        if 'results' in request.GET:
-            get = True
-            if 'title' in request.GET and len(request.GET['title']) > 0:
-                experiments = \
-                    experiments.filter(title__icontains=request.GET['title'])
+        if 'title' in request.GET and len(request.GET['title']) > 0:
+            experiments = \
+                experiments.filter(title__icontains=request.GET['title'])
 
-            if 'description' in request.GET and \
-                    len(request.GET['description']) > 0:
-                experiments = \
-                    experiments.filter(
-                    description__icontains=request.GET['description'])
+        if 'description' in request.GET and \
+                len(request.GET['description']) > 0:
+            experiments = \
+                experiments.filter(
+                description__icontains=request.GET['description'])
 
-            if 'institution_name' in request.GET \
-                    and len(request.GET['institution_name']) > 0:
-                experiments = \
-                    experiments.filter(
-                    institution_name__icontains=request.GET[
-                    'institution_name'])
+        if 'institution_name' in request.GET \
+                and len(request.GET['institution_name']) > 0:
+            experiments = \
+                experiments.filter(
+                institution_name__icontains=request.GET[
+                'institution_name'])
 
-            if 'creator' in request.GET and \
-                    len(request.GET['creator']) > 0:
-                experiments = \
-                    experiments.filter(
-                    author_experiment__author__name__icontains=request.GET[
-                    'creator'])
+        if 'creator' in request.GET and \
+                len(request.GET['creator']) > 0:
+            experiments = \
+                experiments.filter(
+                author_experiment__author__name__icontains=request.GET[
+                'creator'])
 
-    bodyclass = None
-    if get:
-        bodyclass = 'list'
+    bodyclass = 'list'
 
     c = Context({
-        'submitted': get,
         'experiments': experiments,
-        'subtitle': 'Search Experiments',
-        'nav': [{'name': 'Search Experiment',
-            'link': '/search/experiment/'}],
         'bodyclass': bodyclass,
-        'search_pressed': True,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/search_experiment.html', c))
+    url = 'tardis_portal/search_experiment_results.html'
+    return HttpResponse(render_response_index(request, url, c))
 
 
 @login_required()
@@ -1426,11 +1427,21 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    return render_to_response(url, {'username': request.user.username,
-                              'searchForm': searchForm,
-                              'modifiedSearchForm': modifiedSearchForm,
-                              'searchDatafileSelectionForm':
-                              getNewSearchDatafileSelectionForm()})
+    c = Context({
+        'searchForm': searchForm,
+        'modifiedSearchForm': modifiedSearchForm,
+        'searchDatafileSelectionForm':
+        getNewSearchDatafileSelectionForm()})
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def __forwardToSearchExperimentFormPage(request):
+    """Forward to the search experiment form page."""
+
+    c = Context({
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/search_experiment_form.html'
+    return HttpResponse(render_response_index(request, url, c))
 
 
 def __getSearchForm(request, searchQueryType):
@@ -1493,6 +1504,10 @@ def __processParameters(request, searchQueryType, form):
 
 @login_required()
 def search_datafile(request):
+    """Either show the search datafile form or the result of the search
+    datafile query.
+
+    """
 
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
