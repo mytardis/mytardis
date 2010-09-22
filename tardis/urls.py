@@ -40,6 +40,9 @@ urlpatterns = patterns(
     (r'^search/datafile/$',
      'tardis.tardis_portal.views.search_datafile'),
     (r'^downloadTar/$', 'tardis.tardis_portal.views.downloadTar'),
+    (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'tardis.tardis_portal.views.display_experiment_image'),
     (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
      '(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_dataset_image'),

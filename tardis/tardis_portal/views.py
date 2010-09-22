@@ -508,6 +508,30 @@ def downloadTar(request):
     else:
         return return_response_not_found(request)
 
+def display_experiment_image(
+    request,
+    experiment_id,
+    parameterset_id,
+    parameter_name,
+    ):
+
+    # todo handle not exist
+
+    experiment = Experiment.objects.get(pk=experiment_id)
+    if has_experiment_access(experiment.id, request.user):
+
+        image = ExperimentParameter.objects.get(name__name=parameter_name,
+                parameterset=parameterset_id)
+
+        import base64
+
+        data = base64.b64decode(image.string_value)
+
+        response = HttpResponse(data, mimetype='image/jpeg')
+
+        return response
+    else:
+        return return_response_error(request)
 
 def display_dataset_image(
     request,
