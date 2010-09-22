@@ -31,8 +31,9 @@
 #
 
 import logging
+import os
 
-APP_ROOT = '/path/to/tardis/'
+
 TARDISURLPREFIX = 'http://127.0.0.1'
 
 DEBUG = True
@@ -95,15 +96,21 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
 # Don't forget to use absolute paths, not relative paths.
-TEMPLATE_DIRS = ('/path/to/myTARDIS/tardis/',
-                 '/path/to/myTARDIS/tardis/tardis_portal')
+TEMPLATE_DIRS = (
+    os.path.join(os.path.dirname(__file__),
+    'tardis_portal/templates/tardis_portal').replace('\\', '/'),
+    os.path.join(os.path.dirname(__file__),
+    'tardis_portal/astemplates').replace('\\', '/'),
+)
 
 LDAP_ENABLE = False
 LDAP_URL = 'directory.example.com'
 BASE_DN = 'o=Organisation, c=X'
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
-STATIC_DOC_ROOT = '/path/to/myTARDIS/tardis/tardis_portal/site_media'
+STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
+                               'tardis_portal/site_media').replace('\\', '/')
+
 ADMIN_MEDIA_STATIC_DOC_ROOT = \
     '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/'\
     'site-packages/django/contrib/admin/media'
@@ -147,7 +154,7 @@ EMAIL_USE_TLS = True
 
 LOG_FILENAME = '/var/tmp/tardis.log'
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 LOG_LEVEL = logging.DEBUG
