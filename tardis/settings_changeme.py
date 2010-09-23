@@ -98,9 +98,11 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 # Don't forget to use absolute paths, not relative paths.
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__),
-    'tardis_portal/templates/tardis_portal').replace('\\', '/'),
+    'tardis_portal').replace('\\', '/'),
     os.path.join(os.path.dirname(__file__),
     'tardis_portal/astemplates').replace('\\', '/'),
+    os.path.join(os.path.dirname(__file__),
+    'tardis_portal/templates/tardis_portal').replace('\\', '/'),
 )
 
 LDAP_ENABLE = False
