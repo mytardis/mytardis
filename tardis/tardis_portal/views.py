@@ -362,7 +362,7 @@ def site_settings(request):
 
                     x509 = open(settings.GRID_PROXY_FILE, 'r')
 
-                    c = Context({'baseurl': settings.TARDISURLPREFIX,
+                    c = Context({'baseurl': request.build_absolute_uri('/'),
                         'proxy': x509.read(), 'filestorepath':
                         settings.FILE_STORE_PATH})
                     return HttpResponse(render_response_index(request,
@@ -720,8 +720,8 @@ def register_experiment_ws(request):
                     'Unexpected Error - ', sys.exc_info()[0])
 
         response = HttpResponse(status=200)
-        response['Location'] = settings.TARDISURLPREFIX \
-            + '/experiment/view/' + str(eid)
+        response['Location'] = request.build_absolute_uri(
+            '/experiment/view/' + str(eid))
 
         return response
     else:
@@ -875,8 +875,8 @@ def register_experiment_ws_xmldata_internal(request):
 
         response = HttpResponse('Finished cataloging: ' + str(eid),
                                 status=200)
-        response['Location'] = settings.TARDISURLPREFIX \
-            + '/experiment/view/' + str(eid)
+        response['Location'] = request.build_absolute_uri(
+            '/experiment/view/' + str(eid))
 
         return response
 
@@ -942,9 +942,8 @@ def register_experiment_ws_xmldata(request):
                         'filename': filename,
                         'eid': eid,
                         })
-                    urllib.urlopen(settings.TARDISURLPREFIX
-                                   + '/experiment/register/internal/',
-                                   data)
+                    urllib.urlopen(request.build_absolute_uri(
+                            '/experiment/register/internal/'), data)
 
             RegisterThread().start()
 
@@ -995,8 +994,8 @@ def register_experiment_ws_xmldata(request):
                         data = urllib.urlencode({
                             'originid': str(originid),
                             'eid': str(eid),
-                            'site_settings_url': str(settings.TARDISURLPREFIX +
-                            '/site-settings.xml/'),
+                            'site_settings_url': request.build_absolute_uri(
+                                    '/site-settings.xml/'),
                             'username': str('synchrotron'),
                             'password': str('tardis'),
                             })
@@ -1011,8 +1010,8 @@ def register_experiment_ws_xmldata(request):
             logger.debug('returning response from main call')
 
             response = HttpResponse(str(eid), status=200)
-            response['Location'] = settings.TARDISURLPREFIX \
-                + '/experiment/view/' + str(eid)
+            response['Location'] = request.build_absolute_uri(
+                '/experiment/view/' + str(eid))
 
             return response
     else:
@@ -1662,7 +1661,7 @@ def publish_experiment(request, experiment_id):
         mpform = MultiPartForm()
         mpform.add_field('username', settings.TARDIS_USERNAME)
         mpform.add_field('password', settings.TARDIS_PASSWORD)
-        mpform.add_field('url', settings.TARDISURLPREFIX + '/')
+        mpform.add_field('url', request.build_absolute_uri('/'))
         mpform.add_field('mytardis_id', experiment_id)
 
         f = open(filename, 'r')

@@ -33,7 +33,6 @@
 import logging
 
 APP_ROOT = '/path/to/tardis/'
-TARDISURLPREFIX = 'http://127.0.0.1'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
