@@ -21,18 +21,20 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.minidetector.Middleware')
 
-INSTALLED_APPS = ['tardis.tardis_portal',
+INSTALLED_APPS = (
         'django.contrib.auth',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
         'django.contrib.sites',
         'django.contrib.admin',
         'django.contrib.admindocs',
-        'django_nose',
         'django_extensions',
+        'tardis.tardis_portal',
         'registration',
         'tardis.tardis_portal.templatetags',
-        ]
+        'django_nose',
+        )
+
 TEST_RUNNER = 'django_nose.run_tests'
 
 LOG_FILENAME = '/dev/stderr'
