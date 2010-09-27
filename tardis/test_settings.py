@@ -8,6 +8,9 @@ DEBUG = True
 STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
                             'tardis_portal/site_media')
 
+# LDAP configuration
+LDAP_ENABLE = False
+
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__), "../var/store/"))
 ADMIN_MEDIA_STATIC_DOC_ROOT = ''
 HANDLEURL = ''
