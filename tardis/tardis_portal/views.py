@@ -499,6 +499,7 @@ def downloadTar(request):
     else:
         return return_response_not_found(request)
 
+
 def display_experiment_image(
     request,
     experiment_id,
@@ -523,6 +524,7 @@ def display_experiment_image(
         return response
     else:
         return return_response_error(request)
+
 
 def display_dataset_image(
     request,
