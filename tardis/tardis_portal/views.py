@@ -163,8 +163,6 @@ def has_experiment_ownership(experiment_id, user_id):
 
 
 # custom decorator
-
-
 def experiment_ownership_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -183,8 +181,6 @@ def experiment_ownership_required(f):
 
 
 # custom decorator
-
-
 def experiment_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -206,8 +202,6 @@ def experiment_access_required(f):
 
 
 # custom decorator
-
-
 def dataset_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -227,8 +221,6 @@ def dataset_access_required(f):
 
 
 # custom decorator
-
-
 def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -251,7 +243,6 @@ def datafile_access_required(f):
 def has_experiment_access(experiment_id, user):
 
     # public route
-
     try:
         e = Experiment.objects.get(id=experiment_id)
 
@@ -1240,7 +1231,6 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # TODO: might need to cache the result of this later on
 
     # get all the datafile parameters for the given schema
-    # TODO: if p is searchable
     parameters = [p for p in
         ParameterName.objects.filter(
         schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
@@ -1250,7 +1240,6 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
             searchFilterData, 'datafileparameterset__datafileparameter')
 
     # get all the dataset parameters for given schema
-    # TODO: if p is searchable
     parameters = [p for p in
         ParameterName.objects.filter(
         schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
@@ -1284,8 +1273,8 @@ def __getFilteredExperiments(request, searchFilterData):
 
     experiments = get_accessible_experiments(request.user.id)
 
-    if len(experiments) == 0:
-        return experiments
+    if experiments is None:
+        return []
 
     # search for the default experiment fields
     if searchFilterData['title'] != '':
@@ -1501,7 +1490,6 @@ def __forwardToSearchExperimentFormPage(request):
     """Forward to the search experiment form page."""
 
     searchForm = __getSearchExperimentForm(request)
-    print searchForm
 
     c = Context({
         'searchForm': searchForm,
