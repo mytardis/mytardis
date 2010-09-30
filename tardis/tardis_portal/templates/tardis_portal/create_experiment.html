@@ -1,0 +1,201 @@
+<!--
+ Copyright (c) 2010, Monash e-Research Centre
+   (Monash University, Australia)
+ Copyright (c) 2010, VeRSI Consortium
+   (Victorian eResearch Strategic Initiative, Australia)
+ All rights reserved.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+ 
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+{% extends "tardis_portal/portal_template.html" %}
+
+		{% block script %}
+		
+		<script type="text/javascript">
+		$(document).ready(function() {
+			$("#demo1").jstree({
+					core : { /* core options go here */ },
+					plugins : [ "themes", "html_data", "checkbox" ]
+				});	
+				//Get checked
+				$('.add_files').live('click', function(){
+					
+					file_list = $(this).parents(".dataset_container").find(".dataset");
+					local_id = $(this).parents(".dataset_container").attr("id");
+					
+				   $(".jstree-leaf.jstree-checked").each(function(){
+						exists = false;
+						id = $(this).attr('id');
+						
+						file_list.find(".file").each(function(){
+							
+							if(id == $(this).html())
+							{
+								exists = true;
+							}
+						});
+
+						if(!exists)
+						{
+							
+							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/><li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
+						}						
+				      	
+					   });
+					
+
+				});				
+				
+			});
+		</script>	
+		
+		<script type="text/javascript">
+		$(document).ready(function()
+		{
+		  //hide the all of the element with class msg_body
+		  //toggle the componenet with class msg_body
+			
+		$(".msg_head").live('click', function() {
+			if($(this).next(".msg_body").is(':visible'))
+			{
+			  $(this).css('background-color', '#FFCCCC')
+			  $(this).next(".msg_body").hide();		
+			}
+			else
+			{
+			  $(this).css('background-color', '#ccffcc')
+			  $(this).next(".msg_body").show();		
+			}
+		});
+			
+			dataset_id = 1
+		    $(".add_new_dataset").click(function() {
+				//$(this).siblings(".datasets").find(".dataset_container").first().clone().appendTo(".datasets").find('.dataset').html('');
+				
+				dataset_code = "<div class=\"dataset_container\" id=\"" + dataset_id + "\">" + 
+				"	<p class=\"msg_head\">Dataset</p>" + 
+				"	<div class=\"msg_body\">" + 
+				"		<p>Dataset Description: <br/><textarea name=\"dataset_description[" + dataset_id + "]\" cols=\"80\" rows=\"2\"></textarea></p>" + 
+				"		<p><input class=\"add_files\" type=\"button\" value=\"Add selected files to dataset\"/></p>" + 
+				"		<p><strong>Files</strong></p>" + 
+				"		<div>" + 
+				"" + 
+				"			<ul class=\"dataset\">" + 
+				"			" + 
+				"			</ul>" + 
+				"		</div>				" + 
+				"		<div style=\"text-align: right\" class=\"remove_dataset\">(Remove Dataset)</div>" + 
+				"	</div>" + 
+				"</div>";
+				
+				$(this).siblings(".datasets").append(dataset_code)
+				$("#" + dataset_id).find('.dataset').html('');
+				dataset_id = dataset_id + 1;
+			});						
+			
+		    $(".remove_dataset").live('click', function() {
+					if($(".dataset_container").size() > 1)
+					{
+						$(this).parents(".dataset_container").remove();
+					}
+					else
+					{
+						alert('experiments must have at least one dataset!');
+					}
+			});			
+			
+		    $(".remove_file").live('click', function() {
+				$(this).parent().remove()
+			});			
+			
+		});
+		</script>			
+		
+		{% endblock %}
+
+		{% block content %}
+			<div id="content">
+				<div class="post">
+					<h1 class="title"><a name="abouttardis">Create Experiment</a></h1>
+					<div class="entry">
+
+			<form action="/experiment/create/" method="POST">
+			<div class="msg_list">
+			<p class="msg_head">Experiment Information</p>
+			<div class="msg_body">
+				<p>Title: <br/><input name="title" type="text" size="90"/></p>
+				<p>Authors (comma separate): <br/><input name="authors" type="text" size="90"/></p>
+				<p>Abstract: <br/><textarea name="abstract" cols="100" rows="6"></textarea></p>
+			</div>
+			<p class="add_new_dataset">Add New Dataset</p>
+			<p class="msg_head">My Files</p>
+			<div class="msg_body">
+				<p><strong>Select Files For New Dataset</strong></p>
+				<div id="demo1" class="demo"> 
+
+					{{directory_listing|safe}}
+
+				</div>
+				<br/>
+			</div>
+			<div class="datasets">
+			<div class="dataset_container" id="0">
+				<p class="msg_head">Dataset</p>
+				<div class="msg_body">
+					<p>Dataset Description: <br/><textarea name="dataset_description[0]" cols="80" rows="2"></textarea></p>
+					<p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+					<p><strong>Files</strong></p>
+					<div>
+
+						<ul class="dataset">
+						
+						</ul>
+					</div>				
+					<div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
+				</div>
+			</div>
+			</div>
+			<br/>
+			<input id="button" type="submit" value="Create Experiment"/>
+			</div>
+
+			</form>
+		    		</div>
+		    	</div>
+			</div>
+		    <br/>
+
+			{% endblock %} {% block sidebar %}
+
+				<ul>
+					<li>
+						<h2></h2>
+
+							<ul>
+								
+							</ul>
+					</li>
+				</ul>		
+
+		<p>
+			{% endblock %}

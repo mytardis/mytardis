@@ -529,3 +529,61 @@ table.experiment-table th {
 		margin-top: 10px;
 		padding: 5px;
 	}
+	
+	.msg_list {
+	margin: 10px;
+	padding: 0px;
+	width: 90%;
+	}
+	
+	.msg_head {
+	padding: 5px 10px;
+	cursor: pointer;
+	position: relative;
+	background-color: #ccffcc;
+	
+	margin:1px;
+	font-size: 14px;
+	font-weight: bold;
+	}
+	
+	.add_new_dataset {
+	padding: 5px 10px;
+	cursor: pointer;
+	position: relative;
+	background-color: #cce5ff;
+	
+	margin:1px;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	}	
+	
+	.msg_body {
+	padding: 5px 10px 15px 20px;
+	background-color:white;
+	}
+	
+	.staging_dataset {
+		background-color: white; padding: 5px;
+	}
+	
+	.remove_dataset {
+		font-size: 12px;
+		font-weight: normal;
+		cursor: pointer;		
+	}
+	
+	.remove_file {
+		font-size: 12px;
+		font-weight: normal;
+		cursor: pointer;
+	}	
+	
+	.dataset {
+		border-width: 1px;
+		border-color: black;
+		border-style: dashed;
+		padding: 10px 30px 10px 30px;
+		width: 80%;
+	}	

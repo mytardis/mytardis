@@ -36,7 +36,10 @@ from django.db.models import Sum
 import urllib
 import urllib2
 
+import os
+
 from tardis.tardis_portal import ldap_auth
+from tardis.tardis_portal import staging
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
@@ -1776,3 +1779,20 @@ def import_params(request):
     c = Context({'form': form, 'subtitle': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
+
+@login_required
+def create_experiment(request):
+    global returnString
+    returnString = ""
+    os.chdir(settings.STAGING_PATH)
+
+	#recurse through directories and form html list tree for jtree
+    returnString = ""
+    returnString = staging.traverse(settings.STAGING_PATH)
+    returnString = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>" + returnString + "</ul></li></ul>" 
+
+    c = Context({'subtitle': 'Create Experiment',
+                 'directory_listing': returnString,
+              })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/create_experiment.html', c))
