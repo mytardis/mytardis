@@ -35,6 +35,8 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.download'),
     (r'^experiment/view/(?P<experiment_id>\d+)/publish/$',
      'tardis.tardis_portal.views.publish_experiment'),
+    (r'^experiment/create/$',
+     'tardis.tardis_portal.views.create_experiment'),
     (r'^search/experiment/$',
      'tardis.tardis_portal.views.search_experiment'),
     (r'^search/datafile/$',
