@@ -34,7 +34,10 @@ from tardis.tardis_portal.models import Experiment, Author, XML_data, \
     XSLT_docs, Dataset_File, Dataset, Schema, ParameterName, \
     DatafileParameter, DatasetParameter, Author_Experiment, \
     Experiment_Owner, UserProfile, DatafileParameterSet, \
-    DatasetParameterSet, ExperimentParameterSet, ExperimentParameter
+    DatasetParameterSet, ExperimentParameterSet, ExperimentParameter, \
+    GroupAdmin, ACLOwner, UserAuthentication, ExperimentLocationACL, \
+    ExperimentUserAndGroupAttributeACL, ExperimentAttributeACL, \
+    ExperimentDateACL
 from django.contrib import admin
 
 admin.site.register(XML_data)
@@ -54,3 +57,10 @@ admin.site.register(ExperimentParameter)
 admin.site.register(DatafileParameterSet)
 admin.site.register(DatasetParameterSet)
 admin.site.register(ExperimentParameterSet)
+admin.site.register(GroupAdmin)
+admin.site.register(ACLOwner)
+admin.site.register(UserAuthentication)
+admin.site.register(ExperimentUserAndGroupAttributeACL)
+admin.site.register(ExperimentLocationACL)
+admin.site.register(ExperimentAttributeACL)
+admin.site.register(ExperimentDateACL)

@@ -99,23 +99,11 @@ def logout(request):
 
 def get_accessible_experiments(user_id):
 
-    experiments = None
-
-    # from stackoverflow question 852414
-
-    from django.db.models import Q
-
-    user = User.objects.get(id=user_id)
-
-    queries = [Q(id=group.name) for group in user.groups.all()]
-
-    if queries:
-        query = queries.pop()
-
-        for item in queries:
-            query |= item
-
-        experiments = Experiment.objects.filter(query)
+    experiments = \
+        Experiment.objects.filter(
+        experimentuserandgroupattributeacl__isUser=True,
+        experimentuserandgroupattributeacl__userOrGroupID=user_id,
+        experimentuserandgroupattributeacl__canRead=True)
 
     return experiments
 
@@ -263,9 +251,10 @@ def has_experiment_access(experiment_id, user):
     if not user.is_authenticated():
         return False
 
-    g = Group.objects.filter(name=experiment_id, user__id=user.pk)
+    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
+        userOrGroupID=user.pk, experiment__id=experiment_id, canRead=True)
 
-    if g:
+    if results:
         return True
     else:
         return False
@@ -281,9 +270,10 @@ def has_dataset_access(dataset_id, user):
     if not user.is_authenticated():
         return False
 
-    g = Group.objects.filter(name=str(experiment.id), user__pk=user.pk)
+    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
+        userOrGroupID=user.pk, experiment__id=experiment.id, canRead=True)
 
-    if g:
+    if results:
         return True
     else:
         return False
@@ -299,10 +289,11 @@ def has_datafile_access(dataset_file_id, user):
     if not user.is_authenticated():
         return False
 
-    g = Group.objects.filter(name=df.dataset.experiment.id,
-                             user__pk=user.pk)
+    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
+        userOrGroupID=user.pk, experiment__id=df.dataset.experiment.id,
+        canRead=True)
 
-    if g:
+    if results:
         return True
     else:
         return False
@@ -1594,10 +1585,14 @@ def add_access_experiment(request, experiment_id, username):
     try:
         u = User.objects.get(username=username)
 
-        g = Group.objects.get(name=experiment_id)
+        if not has_experiment_access(experiment_id, u):
 
-        if not in_group(u, g):
-            u.groups.add(g)
+            e = Experiment.objects.get(id=experiment_id)
+            owner = ACLOwner.objects.get(user=request.user)
+
+            acl = ExperimentUserAndGroupAttributeACL(userOrGroupID=u.id,
+                experiment=e, canRead=True, aclOwner=owner)
+            acl.save()
 
             c = Context({'user': u, 'experiment_id': experiment_id})
             return HttpResponse(render_response_index(request,
@@ -1618,30 +1613,20 @@ def remove_access_experiment(request, experiment_id, username):
 
     try:
         u = User.objects.get(username=username)
-
-        g = Group.objects.get(name=experiment_id)
-
         e = Experiment.objects.get(pk=experiment_id)
 
-        if in_group(u, g):
-            u.groups.remove(g)
+        acl = ExperimentUserAndGroupAttributeACL.objects.filter(
+            isUser=True, userOrGroupID=u.id, experiment=e)
 
-            try:
-                eo = Experiment_Owner.objects.filter(experiment=e,
-                        user=u)
-                eo.delete()
-            except Experiment_Owner.DoesNotExist, eo:
-                pass
-
+        if acl:
+            acl.delete()
+            
             c = Context({})
             return HttpResponse(render_response_index(request,
                 'tardis_portal/ajax/remove_user_result.html', c))
         else:
             return return_response_error(request)
     except User.DoesNotExist, ue:
-
-        return return_response_not_found(request)
-    except Group.DoesNotExist, ge:
         return return_response_not_found(request)
     except Experiment.DoesNotExist, ge:
         return return_response_not_found(request)
