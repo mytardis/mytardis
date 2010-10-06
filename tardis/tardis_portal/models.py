@@ -29,6 +29,13 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+"""
+models.py
+
+@author Steve Androulakis
+@author Gerson Galang
+
+"""
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -37,7 +44,6 @@ from django.utils.safestring import SafeUnicode
 
 
 class UserProfile(models.Model):
-
     authcate_user = models.BooleanField()
     user = models.ForeignKey(User, unique=True)
 
@@ -45,23 +51,6 @@ class UserProfile(models.Model):
 class GroupAdmin(models.Model):
     user = models.ForeignKey(User)
     group = models.ForeignKey(Group)
-
-
-class ACLOwner(models.Model):
-    EXPERIMENT_USER_GROUP_ATTR_ACL = 1
-    EXPERIMENT_LOCATION_ACL = 2
-    EXPERIMENT_ATTR_ACL = 3
-    EXPERIMENT_DATE_ACL = 4
-    __COMPARISON_CHOICES = (
-        (EXPERIMENT_USER_GROUP_ATTR_ACL, 'Experiment User or Group Attribute ACL'),
-        (EXPERIMENT_LOCATION_ACL, 'Experiment Location ACL'),
-        (EXPERIMENT_ATTR_ACL, 'Experiment Attribute ACL'),
-        (EXPERIMENT_DATE_ACL, 'Experiment Date ACL'),
-    )
-    aclType = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=EXPERIMENT_USER_GROUP_ATTR_ACL)
-    aclID = models.PositiveIntegerField()
-    user = models.ForeignKey(User)
 
 
 class UserAuthentication(models.Model):
@@ -281,7 +270,11 @@ class XML_data(models.Model):
         return self.xmlns
 
 
-class ExperimentUserAndGroupAttributeACL(models.Model):
+class ACL(models.Model):
+    aclowner = models.ManyToManyField(User)
+
+
+class ExperimentUserAndGroupAttributeACL(ACL):
     isUser = models.BooleanField(default=True)
     userOrGroupID = models.PositiveIntegerField()
     experiment = models.ForeignKey(Experiment)
@@ -289,27 +282,28 @@ class ExperimentUserAndGroupAttributeACL(models.Model):
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)
-    aclOwner = models.ForeignKey(ACLOwner)
+    parentACL = models.OneToOneField(ACL, parent_link=True)
 
 
-class ExperimentLocationACL(models.Model):
+class ExperimentLocationACL(ACL):
     experiment = models.ForeignKey(Experiment)
+    # location is the IP Address ACL
     location = models.TextField(max_length=31)
-    aclOwner = models.ForeignKey(ACLOwner)
+    parentACL = models.OneToOneField(ACL, parent_link=True)
 
 
-class ExperimentAttributeACL(models.Model):
+class ExperimentAttributeACL(ACL):
     experimentParameterName = models.ForeignKey(ParameterName)
     # TODO: properly declare the comparisonType with the correct
     # comparison type choices
     comparisonType = models.IntegerField()
     comparisonValue = models.TextField(blank=True)
-    aclOwner = models.ForeignKey(ACLOwner)
+    parentACL = models.OneToOneField(ACL, parent_link=True)
 
 
-class ExperimentDateACL(models.Model):
+class ExperimentDateACL(ACL):
     isUser = models.BooleanField(default=True)
     userOrGroupID = models.PositiveIntegerField()
     experiment = models.ForeignKey(Experiment)
     date = models.DateField()
-    aclOwner = models.ForeignKey(ACLOwner)
+    parentACL = models.OneToOneField(ACL, parent_link=True)
