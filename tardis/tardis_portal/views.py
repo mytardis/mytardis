@@ -39,7 +39,6 @@ import urllib2
 import os
 
 from tardis.tardis_portal import ldap_auth
-from tardis.tardis_portal import staging
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
@@ -1780,6 +1779,28 @@ def import_params(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
 
+returnString = ""
+import os
+def traverse(path):
+    # print ' ' * traverse.level + data['text']
+    global returnString
+    dir_list = os.listdir(path)
+    for f in dir_list:
+        if not (f.startswith('.')):
+            if os.path.isdir(f):
+                #print '---' * traverse.level + '/' + f
+                os.chdir(f)
+
+                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a><ul>"
+                returnString = traverse(".")
+                returnString = returnString + "</ul></li>"
+
+                os.chdir("..")
+            else:
+                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a></li>"
+                #print '---' * traverse.level + f
+    return returnString
+
 @login_required
 def create_experiment(request):
     global returnString
@@ -1788,7 +1809,7 @@ def create_experiment(request):
 
 	#recurse through directories and form html list tree for jtree
     returnString = ""
-    returnString = staging.traverse(settings.STAGING_PATH)
+    returnString = traverse(settings.STAGING_PATH)
     returnString = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>" + returnString + "</ul></li></ul>" 
 
     c = Context({'subtitle': 'Create Experiment',
