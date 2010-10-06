@@ -108,6 +108,8 @@ def get_accessible_experiments(user_id):
     return experiments
 
 
+# TODO: we need to review the way this function is implemented. we need to
+#       consider the dataset/experiment read permissions
 def get_accessible_datafiles_for_user(experiments):
 
     # from stackoverflow question 852414
@@ -948,6 +950,8 @@ def register_experiment_ws_xmldata(request):
                         # create user, generate username, randomly generated
                         # pass, send email with pass
 
+            # TODO: this bit will need to be updated to reflect the new
+            #       user authentication requirements
             if not len(request.POST.getlist('experiment_owner')) == 0:
                 g = Group(name=eid)
                 g.save()
