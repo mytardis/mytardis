@@ -38,6 +38,9 @@ forms module
 '''
 
 from django import forms
+from django.forms.util import ErrorDict
+
+from tardis.tardis_portal import models
 
 
 class DatafileSearchForm(forms.Form):
@@ -90,6 +93,142 @@ class RegisterExperimentForm(forms.Form):
     xmldata = forms.FileField()
     experiment_owner = forms.CharField(max_length=400, required=False)
     originid = forms.CharField(max_length=400, required=False)
+
+
+class Author_Experiment(forms.ModelForm):
+    class Meta:
+        model = models.Author_Experiment
+
+
+class Author(forms.ModelForm):
+    class Meta:
+        model = models.Author
+
+
+class Dataset(forms.ModelForm):
+    class Meta:
+        model = models.Dataset
+
+
+class Dataset_File(forms.ModelForm):
+    class Meta:
+        model = models.Dataset_File
+
+
+class Experiment(forms.ModelForm):
+    class Meta:
+        model = models.Experiment
+        exclude = ('authors',)
+
+
+class FullExperiment(object):
+    """
+    This handles the complex experiemnt forms.
+
+    The post format is expected to be like::
+
+        abstract Test
+        authors Mr Bob
+        dataset_description[0] 1
+        dataset_description[2] 2
+        dataset_description[3] 3
+        file[0] 2R9Y/downloadFiles.py
+        file[0] 2R9Y/Images/0510060001.osc
+        file[0] 2R9Y/Images/0510060002.osc
+        file[0] 2R9Y/Images/0510060003.osc
+        file[0] 2R9Y/Images/0510060004.osc
+        file[0] 2R9Y/Images/0510060005.osc
+        file[0] 2R9Y/Images/0510060006.osc
+        file[0] 2R9Y/Images/0510060007.osc
+        file[0] 2R9Y/Images/0510060008.osc
+        file[0] 2R9Y/Images/0510060009.osc
+        file[0] 2R9Y/Images/0510060010.osc
+        file[0] 2R9Y/Images/traverseScript/traverse.py
+        file[0] 2R9Y/toplevel.log
+        file[2] 2R9Y/downloadFiles.py
+        file[3] 2R9Y/downloadFiles.py
+        file[3] 2R9Y/toplevel.log
+        title Test Title
+
+    """
+    def __init__(self, data):
+        self.data = data
+
+        self.experiment = None
+        self.authors = []
+        self.datasets = {}
+        self.data_files = {}
+        self.parsed_data = self.parse_form(data)
+
+    def parse_form(self, data):
+        f = Experiment(data)
+        self.experiment = f
+
+        authors = [(c, a.strip()) for c, a in
+                   enumerate(data.get('authors').split(','))]
+        for num, author in authors:
+            f = Author({'name': author})
+            self.authors.append(f)
+
+        import re
+        c = re.compile('dataset_description\[([\d]+)\]$')
+
+        for k, v in data.items():
+            match = c.match(k)
+            if not match: continue
+            number = match.groups()[0]
+            f = Dataset({'description': v})
+            self.datasets[number] = f
+            self.data_files[number] = []
+
+            for f in data['file[' + number + ']']:
+                d = Dataset_File({'filename':f})
+                self.data_files[number].append(d)
+
+        return data
+
+    def _get_errors(self):
+        errors = ErrorDict()
+        errors.update(self.experiment.errors)
+
+        # TODO since this is a compound field, this should merge the errors
+        for author in self.authors:
+            errors.update(author.errors)
+
+        for key, dataset in self.datasets.items():
+            if dataset.errors.has_key('description'):
+                errors['dataset_description[' + key + ']'] = \
+                    dataset.errors['description']
+
+        return errors
+
+    errors = property(_get_errors)
+
+    def save(self):
+        experiment = self.experiment.save()
+        for num, author in enumerate(self.authors):
+            o_author = author.save()
+            f = Author_Experiment({'author': o_author.pk,
+                                   'order': num,
+                                   'experiment': experiment.pk})
+            author = f.save()
+
+        for key, dataset in self.datasets.items():
+            dataset.data['experiment'] = experiment.pk
+            dataset = Dataset(dataset.data)
+            o_dataset = dataset.save()
+            # save any datafiles if the data set has any
+            if key in self.data_files:
+                for df in self.data_files[key]:
+                    df.data['dataset'] = o_dataset.pk
+                    dataset_file = Dataset_File(df.data)
+                    print dataset_file.errors
+                    dataset_file.save()
+
+        return experiment
+
+    def is_valid(self):
+        return not bool(self.errors)
 
 
 def createSearchDatafileForm(searchQueryType):

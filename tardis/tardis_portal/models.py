@@ -69,6 +69,7 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
+    authors = models.ManyToManyField(Author, through='Author_Experiment')
 
     def __unicode__(self):
         return self.title
@@ -109,7 +110,7 @@ class Dataset_File(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    url = models.URLField(max_length=400)
+    url = models.URLField(blank=True, max_length=400)
     size = models.CharField(blank=True, max_length=400)
 
     def __unicode__(self):
