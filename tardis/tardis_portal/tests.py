@@ -286,6 +286,64 @@ class ExperimentParserTestCase(unittest.TestCase):
         pass
 
 
+class ExperimentFormTestCase(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)
+
+    def test_form_parsing(self):
+        from tardis.tardis_portal import forms, models
+
+        example_post = {'title': 'test experiment',
+                        'created_by': self.user.pk,
+                        'url': 'http://www.test.com',
+                        'institution_name': 'some university',
+                        'description': 'desc.....',
+                        'authors': 'russell, steve',
+                        'dataset_description[0]': 'first one',
+                        'file[0]': ['file/location.py', 'file/another.py'],
+                        'dataset_description[1]': 'second',
+                        'file[1]': ['second_ds/file.py'],
+                        }
+        check_files = {'first one': ['file/location.py', 'file/another.py'],
+                       'second': ['second_ds/file.py']}
+        f = forms.FullExperiment(example_post)
+
+        # test validity of form data
+        self.assertTrue(f.is_valid(), repr(f.errors))
+
+        # save form
+        exp = f.save()
+
+        # retrieve model from database
+        e = models.Experiment.objects.get(pk=exp.pk)
+        self.assertEqual(e.title, example_post['title'])
+        self.assertEqual(e.created_by.pk, example_post['created_by'])
+        self.assertEqual(e.institution_name, example_post['institution_name'])
+        self.assertEqual(e.description, example_post['description'])
+
+        # test there are 2 authors
+        self.assertEqual(len(e.authors.all()), 2)
+
+        # check we can get one of the authors back
+        self.assertEqual(e.authors.get(name='steve').name, 'steve')
+
+        # check both datasets have been saved
+        ds = models.Dataset.objects.filter(experiment=exp.pk)
+        self.assertEqual(len(ds), 2)
+
+        # check that all the files exist in the database
+        for d in ds:
+            files = models.Dataset_File.objects.filter(dataset=d.pk)
+            v_files = check_files[d.description]
+            for f in files:
+                self.assertTrue(f.filename in v_files)
+
+
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
