@@ -334,11 +334,14 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
 							</p>		
-							
 							<p>
-							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
-							</p>							
-							
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							</p>
+							{% for p in protocols %}
+							<p>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							</p>		
+							{% endfor %}
                             <p align="right">
 							<br/>
                             <strong>Experiment Administrators </strong><br/>
@@ -350,9 +353,14 @@
 						</div>
 						<div id="tabs-2">
 							<p>
-							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							</p>						
+							{% for p in protocols %}
+							<p>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							</p>
-							<form method="POST" action="/downloadTar/" target="_blank">
+							{% endfor %}
+							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">							
 							<div id="datasets">
 							{% for dataset in experiment.dataset_set.all %}
