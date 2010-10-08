@@ -371,137 +371,6 @@ def site_settings(request):
         return return_response_error(request)
 
 
-def download(request, experiment_id):
-
-    # todo handle missing file, general error
-
-    if 'dfid' in request.GET and len(request.GET['dfid']) > 0:
-        datafile = Dataset_File.objects.get(pk=request.GET['dfid'])
-    elif 'url' in request.GET and len(request.GET['url']) > 0:
-        datafile = \
-            Dataset_File.objects.get(url=urllib.unquote(request.GET['url']),
-            dataset__experiment__id=experiment_id)
-    else:
-        return return_response_error(request)
-
-    if has_datafile_access(datafile.id, request.user):
-        url = datafile.url
-
-        if url.startswith('http://') or url.startswith('https://') \
-            or url.startswith('ftp://'):
-            return HttpResponseRedirect(datafile.url)
-        else:
-            file_path = settings.FILE_STORE_PATH + '/' \
-                + str(datafile.dataset.experiment.id) + '/' \
-                + datafile.url.partition('//')[2]
-
-            try:
-                logger.debug(file_path)
-                from django.core.servers.basehttp import FileWrapper
-                wrapper = FileWrapper(file(file_path))
-
-                response = HttpResponse(wrapper,
-                        mimetype='application/octet-stream')
-                response['Content-Disposition'] = \
-                    'attachment; filename=' + datafile.filename
-
-                # import os
-                # response['Content-Length'] = os.path.getsize(file_path)
-
-                return response
-            except IOError, io:
-
-                return return_response_not_found(request)
-    else:
-
-        return return_response_error(request)
-
-
-def downloadTar(request):
-
-    # Create the HttpResponse object with the appropriate headers.
-    # TODO: handle no datafile, invalid filename, all http links
-    # (tarfile count?)
-
-    if 'datafile' in request.POST:
-
-        if not len(request.POST.getlist('datafile')) == 0:
-            from django.utils.safestring import SafeUnicode
-            from django.core.servers.basehttp import FileWrapper
-
-            fileString = ''
-            fileSize = 0
-            for dfid in request.POST.getlist('datafile'):
-                datafile = Dataset_File.objects.get(pk=dfid)
-                if has_datafile_access(dfid, request.user):
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString = fileString + request.POST['expid'] \
-                            + '/' + absolute_filename + ' '
-                        fileSize = fileSize + long(datafile.size)
-
-            # tarfile class doesn't work on large files being added and
-            # streamed on the fly, so going command-line-o
-
-            tar_command = 'tar -C ' + settings.FILE_STORE_PATH + ' -c ' \
-                + fileString
-
-            import shlex
-            import subprocess
-
-            response = \
-                HttpResponse(FileWrapper(subprocess.Popen(tar_command,
-                             stdout=subprocess.PIPE,
-                             shell=True).stdout),
-                             mimetype='application/x-tar')
-            response['Content-Disposition'] = \
-                'attachment; filename=experiment' + \
-                request.POST['expid'] + '.tar'
-            response['Content-Length'] = fileSize + 5120
-
-            return response
-    elif 'url' in request.POST:
-
-        if not len(request.POST.getlist('url')) == 0:
-            from django.utils.safestring import SafeUnicode
-            from django.core.servers.basehttp import FileWrapper
-
-            fileString = ''
-            fileSize = 0
-            for url in request.POST.getlist('url'):
-                datafile = \
-                    Dataset_File.objects.get(url=urllib.unquote(url),
-                        dataset__experiment__id=request.POST['expid'])
-                if has_datafile_access(datafile.id, request.user):
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString = fileString + request.POST['expid'] \
-                            + '/' + absolute_filename + ' '
-                        fileSize = fileSize + long(datafile.size)
-
-            # tarfile class doesn't work on large files being added and
-            # streamed on the fly, so going command-line-o
-
-            tar_command = 'tar -C ' + settings.FILE_STORE_PATH + ' -c ' + \
-                fileString
-
-            response = \
-                HttpResponse(FileWrapper(subprocess.Popen(tar_command,
-                             stdout=subprocess.PIPE,
-                             shell=True).stdout),
-                             mimetype='application/x-tar')
-            response['Content-Disposition'] = \
-                'attachment; filename=experiment' + request.POST['expid'] + \
-                '.tar'
-            response['Content-Length'] = fileSize + 5120
-
-            return response
-        else:
-            return return_response_not_found(request)
-    else:
-        return return_response_not_found(request)
-
-
 def display_experiment_image(
     request,
     experiment_id,
@@ -645,6 +514,9 @@ def view_experiment(request, experiment_id):
         except Experiment_Owner.DoesNotExist, eo:
             pass
 
+        qs = datafiles.exclude(protocol='file').exclude(protocol__istartswith='http')
+        protocols = [df['protocol'] for df in qs.values('protocol').distinct()]
+
         c = Context({
             # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
             'experiment': experiment,
@@ -653,6 +525,7 @@ def view_experiment(request, experiment_id):
             'subtitle': experiment.title,
             'owners': owners,
             'size': size,
+            'protocols': protocols,
             'nav': [{'name': 'Data', 'link': '/experiment/view/'},
                     {'name': experiment.title, 'link': '/experiment/view/' +
                      str(experiment.id) + '/'}],
