@@ -9,6 +9,8 @@ views.py
 
 """
 
+from base64 import b64decode
+
 from django.template import Context, loader
 from django.http import HttpResponse
 
@@ -510,20 +512,13 @@ def display_experiment_image(
     # todo handle not exist
 
     experiment = Experiment.objects.get(pk=experiment_id)
-    if has_experiment_access(experiment.id, request.user):
-
-        image = ExperimentParameter.objects.get(name__name=parameter_name,
-                parameterset=parameterset_id)
-
-        import base64
-
-        data = base64.b64decode(image.string_value)
-
-        response = HttpResponse(data, mimetype='image/jpeg')
-
-        return response
-    else:
+    if not has_experiment_access(experiment.id, request.user):
         return return_response_error(request)
+
+    image = ExperimentParameter.objects.get(name__name=parameter_name,
+                                            parameterset=parameterset_id)
+
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
 def display_dataset_image(
