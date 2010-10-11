@@ -224,7 +224,7 @@ class FullExperiment(forms.BaseForm):
         for author in self.authors:
             errors.update(author.errors)
 
-        for key, dataset in self.datasets.items():
+        for number, dataset in self.datasets.items():
             for name, error in dataset.errors.items():
                 if isinstance(dataset.fields[name], ModelChoiceField):
                     continue
