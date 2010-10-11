@@ -525,13 +525,14 @@ class ProcessExperiment:
                         else:
                             filename = datafile['path']
 
+                        url = datafile['path']
                         protocol = datafile['path'].partition('://')[0]
-                        if 'file' or 'http' or 'https' in protocol:
+                        if protocol in ['file', 'http', 'https']:
                             protocol = ''
                             
                         dfile = Dataset_File(dataset=d,
                                              filename=filename,
-                                             url=datafile['path'],
+                                             url=url,
                                              size=datafile['size'],
                                              protocol=protocol
                                              )
@@ -640,13 +641,14 @@ class ProcessExperiment:
                         else:
                             filename = datafile['path']
 
-                        protocol = datafile['path'].partition('://')[0]
-                        if 'file' or 'http' or 'https' in protocol:
+                        url = datafile['path']
+                        protocol = url.partition('://')[0]
+                        if protocol in  ['file', 'http', 'https']:
                             protocol = ''
 
                         dfile = Dataset_File(dataset=d,
                                              filename=filename,
-                                             url=datafile['path'],
+                                             url=url,
                                              size=datafile['size'],
                                              protocol=protocol
                                              )
@@ -709,7 +711,7 @@ class ProcessExperiment:
                                 except Schema.DoesNotExist, e:
                                     logger.debug('schema not found: ' + e)
                 try:
-                    logger.debug('attempting to parse line: ' + line)
+                    # logger.debug('attempting to parse line: ' + line)
                     dom = parseString(line)
                     doc = dom.documentElement
 
