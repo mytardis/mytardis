@@ -38,6 +38,7 @@ forms module
 '''
 
 import re
+from os.path import basename
 
 from django import forms
 from django.forms.util import ErrorDict
@@ -116,8 +117,11 @@ class Dataset(forms.ModelForm):
 
 
 class Dataset_File(forms.ModelForm):
+    url = forms.CharField(max_length=400, required=True)
+
     class Meta:
         model = models.Dataset_File
+        exclude = ('url',)
 
 
 class Experiment(forms.ModelForm):
@@ -196,7 +200,8 @@ class FullExperiment(forms.BaseForm):
             datafiles = data.getlist('file[' + number + ']')
 
             for f in datafiles:
-                d = Dataset_File({'filename': f})
+                d = Dataset_File({'url': 'file://' + f,
+                                  'filename': basename(f)})
                 self._add_datafile_form(number, d)
 
         return data
