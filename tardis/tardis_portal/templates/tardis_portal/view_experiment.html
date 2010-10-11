@@ -334,12 +334,13 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
 							</p>		
-							<p>
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
-							</p>
 							{% for p in protocols %}
 							<p>
+							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							{% else %}
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							{% endif %}
 							</p>		
 							{% endfor %}
                             <p align="right">
@@ -352,13 +353,14 @@
 							
 						</div>
 						<div id="tabs-2">
-							<p>
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
-							</p>						
 							{% for p in protocols %}
 							<p>
+							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
-							</p>
+							{% else %}
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							{% endif %}
+							</p>		
 							{% endfor %}
 							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">							

@@ -514,8 +514,7 @@ def view_experiment(request, experiment_id):
         except Experiment_Owner.DoesNotExist, eo:
             pass
 
-        qs = datafiles.exclude(protocol='file').exclude(protocol__istartswith='http')
-        protocols = [df['protocol'] for df in qs.values('protocol').distinct()]
+        protocols = [df['protocol'] for df in datafiles.values('protocol').distinct()]
 
         c = Context({
             # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
