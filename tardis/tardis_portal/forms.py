@@ -37,10 +37,15 @@ forms module
 @author: Gerson Galang
 '''
 
+import re
+
 from django import forms
 from django.forms.util import ErrorDict
+from django.forms.models import ModelChoiceField
+from django.forms.fields import MultiValueField
 
 from tardis.tardis_portal import models
+from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 
 
 class DatafileSearchForm(forms.Form):
@@ -121,7 +126,7 @@ class Experiment(forms.ModelForm):
         exclude = ('authors',)
 
 
-class FullExperiment(object):
+class FullExperiment(forms.BaseForm):
     """
     This handles the complex experiemnt forms.
 
@@ -151,41 +156,65 @@ class FullExperiment(object):
         title Test Title
 
     """
-    def __init__(self, data):
-        self.data = data
+    re_dataset = re.compile('dataset_description\[([\d]+)\]$')
+    dataset_field_translation = {"description": "dataset_description"}
+    base_fields = {}
+
+    def __init__(self, data=None, initial=None):
+        super(FullExperiment, self).__init__(data=data, initial=initial)
 
         self.experiment = None
         self.authors = []
         self.datasets = {}
         self.data_files = {}
-        self.parsed_data = self.parse_form(data)
+        self.fields = {}
+        if data:
+            self.parsed_data = self.parse_form(data)
 
     def parse_form(self, data):
-        f = Experiment(data)
-        self.experiment = f
+        experiment = Experiment(data)
+        self.experiment = experiment
+        self.fields.update(self.experiment.fields)
 
         authors = [(c, a.strip()) for c, a in
                    enumerate(data.get('authors').split(','))]
         for num, author in authors:
             f = Author({'name': author})
             self.authors.append(f)
-
-        import re
-        c = re.compile('dataset_description\[([\d]+)\]$')
+        self.fields['authors'] = MultiValueCommaSeparatedField(self.authors)
 
         for k, v in data.items():
-            match = c.match(k)
-            if not match: continue
+            match = self.re_dataset.match(k)
+            if not match:
+                continue
             number = match.groups()[0]
-            f = Dataset({'description': v})
-            self.datasets[number] = f
-            self.data_files[number] = []
+            form = Dataset({'description': v})
+            self._add_dataset_form(number, form)
 
+            self.data_files[number] = []
             for f in data['file[' + number + ']']:
-                d = Dataset_File({'filename':f})
-                self.data_files[number].append(d)
+                d = Dataset_File({'filename': f})
+                self._add_datafile_form(number, d)
 
         return data
+
+    def _translate_dsfieldname(self, name, number):
+        """
+        return the dataset forms translated field name
+        """
+        return self.dataset_field_translation[name] + '[' + str(number) + ']'
+
+    def _add_dataset_form(self, number, form):
+        self.datasets[number] = form
+        for name, field in self.datasets[number].fields.items():
+            if isinstance(field, ModelChoiceField):
+                continue
+            self.fields[self._translate_dsfieldname(name, number)] = field
+
+    def _add_datafile_form(self, number, form):
+        self.data_files[number].append(form)
+        self.fields['files[' + number + ']'] = \
+            MultiValueField(self.data_files[number])
 
     def _get_errors(self):
         errors = ErrorDict()
@@ -196,9 +225,11 @@ class FullExperiment(object):
             errors.update(author.errors)
 
         for key, dataset in self.datasets.items():
-            if dataset.errors.has_key('description'):
-                errors['dataset_description[' + key + ']'] = \
-                    dataset.errors['description']
+            for name, error in dataset.errors.items():
+                if isinstance(dataset.fields[name], ModelChoiceField):
+                    continue
+                errors[self._translate_dsfieldname(name, number)] = \
+                    dataset.errors[name]
 
         return errors
 
