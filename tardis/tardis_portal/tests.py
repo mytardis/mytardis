@@ -359,7 +359,7 @@ class ExperimentFormTestCase(TestCase):
         exp = f.save()
 
         # retrieve model from database
-        e = models.Experiment.objects.get(pk=exp.pk)
+        e = models.Experiment.objects.get(pk=exp['experiment'].pk)
         self.assertEqual(e.title, example_post['title'])
         self.assertEqual(unicode(e.created_by.pk), example_post['created_by'])
         self.assertEqual(e.institution_name, example_post['institution_name'])
@@ -372,7 +372,7 @@ class ExperimentFormTestCase(TestCase):
         self.assertEqual(e.authors.get(name='steve').name, 'steve')
 
         # check both datasets have been saved
-        ds = models.Dataset.objects.filter(experiment=exp.pk)
+        ds = models.Dataset.objects.filter(experiment=exp['experiment'].pk)
         self.assertEqual(len(ds), 2)
 
         # check that all the files exist in the database

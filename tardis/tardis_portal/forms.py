@@ -243,31 +243,43 @@ class FullExperiment(forms.BaseForm):
 
     errors = property(_get_errors)
 
-    def save(self):
+    def save(self, commit=True):
         experiment = self.experiment.save()
+        authors = []
+        author_experiments = []
+        datasets = []
+        dataset_files = []
+
         for num, author in enumerate(self.authors):
             try:
                 o_author = models.Author.objects.get(name=author.data['name'])
             except models.Author.DoesNotExist:
                 o_author = author.save()
+            authors.append(o_author)
 
             f = Author_Experiment({'author': o_author.pk,
                                    'order': num,
                                    'experiment': experiment.pk})
             author = f.save()
+            author_experiments.append(author)
 
         for key, dataset in self.datasets.items():
             dataset.data['experiment'] = experiment.pk
             dataset = Dataset(dataset.data)
             o_dataset = dataset.save()
+            datasets.append(o_dataset)
             # save any datafiles if the data set has any
             if key in self.data_files:
                 for df in self.data_files[key]:
                     df.data['dataset'] = o_dataset.pk
                     dataset_file = Dataset_File(df.data)
-                    dataset_file.save()
+                    dataset_files.append(dataset_file.save(commit))
 
-        return experiment
+        return {'experiment': experiment,
+                'author_experiments': author_experiments,
+                'authors': authors,
+                'datasets': datasets,
+                'dataset_files': dataset_file}
 
     def is_valid(self):
         return not bool(self.errors)
