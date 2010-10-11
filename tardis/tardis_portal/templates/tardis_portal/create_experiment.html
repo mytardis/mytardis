@@ -46,7 +46,6 @@
 				   $(".jstree-leaf.jstree-checked").each(function(){
 						exists = false;
 						id = $(this).attr('id');
-						size = $(this).children('.size').html()
 						
 						file_list.find(".file").each(function(){
 							
@@ -59,7 +58,7 @@
 						if(!exists)
 						{
 							
-							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/> <input type=\"hidden\" name=\"size[" + local_id + "]\" value=\"" + size + "\"/> <li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
+							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/> <li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
 						}						
 				      	
 					   });

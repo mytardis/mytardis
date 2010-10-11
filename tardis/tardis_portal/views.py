@@ -624,7 +624,10 @@ def view_experiment(request, experiment_id):
         size = 0
         for dataset in experiment.dataset_set.all():
             for df in dataset.dataset_file_set.all():
-                size = size + long(df.size)
+                try:
+                    size = size + long(df.size)
+                except:
+                    pass
 
         owners = None
         try:
@@ -1798,7 +1801,7 @@ def traverse(path):
 
                 os.chdir("..")
             else:
-                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><span class=\"size\" style=\"display: none\">" + str(os.path.getsize(os.path.abspath(f))) + "</span><a>" + f + "</a></li>"
+                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a></li>"
                 #print '---' * traverse.level + f
     return returnString
 
