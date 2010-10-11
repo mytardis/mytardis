@@ -46,6 +46,7 @@
 				   $(".jstree-leaf.jstree-checked").each(function(){
 						exists = false;
 						id = $(this).attr('id');
+						size = $(this).children('.size').html()
 						
 						file_list.find(".file").each(function(){
 							
@@ -58,7 +59,7 @@
 						if(!exists)
 						{
 							
-							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/><li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
+							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/> <input type=\"hidden\" name=\"size[" + local_id + "]\" value=\"" + size + "\"/> <li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
 						}						
 				      	
 					   });
@@ -146,6 +147,9 @@
 				<p>Title: <br/><input name="title" type="text" size="90"/></p>
 				<p>Authors (comma separate): <br/><input name="authors" type="text" size="90"/></p>
 				<p>Abstract: <br/><textarea name="abstract" cols="100" rows="6"></textarea></p>
+				<p>Institution Name: <br/><input name="institution_name" type="text" size="90"/></p>
+				<input name="url" type="hidden" value="http://remove.me"/>
+				<input name="created_by" type="hidden" value="{{user.id}}"/>
 			</div>
 			<p class="add_new_dataset">Add New Dataset</p>
 			<p class="msg_head">My Files</p>

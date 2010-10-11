@@ -1790,30 +1790,51 @@ def traverse(path):
             if os.path.isdir(f):
                 #print '---' * traverse.level + '/' + f
                 os.chdir(f)
-
-                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a><ul>"
+                
+                #print "FUCKFUCK" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:]
+                returnString = returnString + "<li id=\"" + os.path.abspath(f).rpartition('/')[0][len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a><ul>"
                 returnString = traverse(".")
                 returnString = returnString + "</ul></li>"
 
                 os.chdir("..")
             else:
-                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a></li>"
+                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><span class=\"size\" style=\"display: none\">" + str(os.path.getsize(os.path.abspath(f))) + "</span><a>" + f + "</a></li>"
                 #print '---' * traverse.level + f
     return returnString
 
 @login_required
 def create_experiment(request):
+    if request.method == 'POST':    
+
+        form = FullExperiment(request.POST, request.FILES)
+        if form.is_valid():
+            experiment = form.save()
+
+            # group/owner assignment stuff, soon to be replaced
+            g = Group(name=experiment.id)
+            g.save()
+            exp_owner = Experiment_Owner(experiment=experiment,
+                    user=request.user)
+            exp_owner.save()
+            request.user.groups.add(g)
+            
+            return HttpResponseRedirect('/experiment/view/' + str(experiment.id))
+        else:
+            print form.errors
+
     global returnString
     returnString = ""
     os.chdir(settings.STAGING_PATH)
 
-	#recurse through directories and form html list tree for jtree
+    #recurse through directories and form html list tree for jtree
     returnString = ""
     returnString = traverse(settings.STAGING_PATH)
     returnString = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>" + returnString + "</ul></li></ul>" 
 
     c = Context({'subtitle': 'Create Experiment',
                  'directory_listing': returnString,
+                 'user_id': request.user.id,
               })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/create_experiment.html', c))
+    
