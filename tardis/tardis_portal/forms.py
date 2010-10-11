@@ -192,7 +192,14 @@ class FullExperiment(forms.BaseForm):
             self._add_dataset_form(number, form)
 
             self.data_files[number] = []
-            for f in data['file[' + number + ']']:
+            datafiles = data['file[' + number + ']']
+
+            if isinstance(datafiles, str) or isinstance(datafiles, unicode):
+                d = Dataset_File({'filename': datafiles})
+                self._add_datafile_form(number, d)
+                continue
+
+            for f in datafiles:
                 d = Dataset_File({'filename': f})
                 self._add_datafile_form(number, d)
 
