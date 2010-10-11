@@ -192,12 +192,8 @@ class FullExperiment(forms.BaseForm):
             self._add_dataset_form(number, form)
 
             self.data_files[number] = []
-            datafiles = data['file[' + number + ']']
 
-            if isinstance(datafiles, str) or isinstance(datafiles, unicode):
-                d = Dataset_File({'filename': datafiles})
-                self._add_datafile_form(number, d)
-                continue
+            datafiles = data.getlist('file[' + number + ']')
 
             for f in datafiles:
                 d = Dataset_File({'filename': f})
@@ -245,7 +241,11 @@ class FullExperiment(forms.BaseForm):
     def save(self):
         experiment = self.experiment.save()
         for num, author in enumerate(self.authors):
-            o_author = author.save()
+            try:
+                o_author = models.Author.objects.get(name=author.data['name'])
+            except models.Author.DoesNotExist:
+                o_author = author.save()
+
             f = Author_Experiment({'author': o_author.pk,
                                    'order': num,
                                    'experiment': experiment.pk})

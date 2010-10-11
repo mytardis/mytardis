@@ -297,18 +297,22 @@ class ExperimentFormTestCase(TestCase):
 
     def test_form_printing(self):
         from tardis.tardis_portal import forms
+        from django.http import QueryDict
 
-        example_post = {'title': 'test experiment',
-                        'created_by': self.user.pk,
-                        'url': 'http://www.test.com',
-                        'institution_name': 'some university',
-                        'description': 'desc.....',
-                        'authors': 'russell, steve',
-                        'dataset_description[0]': 'first one',
-                        'file[0]': ['file/location.py', 'file/another.py'],
-                        'dataset_description[1]': 'second',
-                        'file[1]': 'second_ds/file.py',
-                        }
+        example_post = [('title', 'test experiment'),
+                        ('created_by', self.user.pk),
+                        ('url', 'http://www.test.com'),
+                        ('institution_name', 'some university'),
+                        ('description', 'desc.....'),
+                        ('authors', 'russell, steve'),
+                        ('dataset_description[0]', 'first one'),
+                        ('file[0]', 'file/location.py'),
+                        ('file[0]', 'file/another.py'),
+                        ('dataset_description[1]', 'second'),
+                        ('file[1]', 'second_ds/file.py'),
+                        ]
+        example_post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in example_post]))
+
         f = forms.FullExperiment(example_post)
         as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
 <tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
@@ -330,18 +334,22 @@ class ExperimentFormTestCase(TestCase):
 
     def test_form_parsing(self):
         from tardis.tardis_portal import forms, models
+        from django.http import QueryDict
 
-        example_post = {'title': 'test experiment',
-                        'created_by': self.user.pk,
-                        'url': 'http://www.test.com',
-                        'institution_name': 'some university',
-                        'description': 'desc.....',
-                        'authors': 'russell, steve',
-                        'dataset_description[0]': 'first one',
-                        'file[0]': ['file/location.py', 'file/another.py'],
-                        'dataset_description[1]': 'second',
-                        'file[1]': 'second_ds/file.py',
-                        }
+        example_post = [('title', 'test experiment'),
+                        ('created_by', self.user.pk),
+                        ('url', 'http://www.test.com'),
+                        ('institution_name', 'some university'),
+                        ('description', 'desc.....'),
+                        ('authors', 'russell, steve'),
+                        ('dataset_description[0]', 'first one'),
+                        ('file[0]', 'file/location.py'),
+                        ('file[0]', 'file/another.py'),
+                        ('dataset_description[1]', 'second'),
+                        ('file[1]', 'second_ds/file.py'),
+                        ]
+        example_post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in example_post]))
+
         f = forms.FullExperiment(example_post)
 
         # test validity of form data
@@ -353,7 +361,7 @@ class ExperimentFormTestCase(TestCase):
         # retrieve model from database
         e = models.Experiment.objects.get(pk=exp.pk)
         self.assertEqual(e.title, example_post['title'])
-        self.assertEqual(e.created_by.pk, example_post['created_by'])
+        self.assertEqual(unicode(e.created_by.pk), example_post['created_by'])
         self.assertEqual(e.institution_name, example_post['institution_name'])
         self.assertEqual(e.description, example_post['description'])
 
