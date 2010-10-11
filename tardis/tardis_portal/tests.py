@@ -295,6 +295,39 @@ class ExperimentFormTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
+    def test_form_printing(self):
+        from tardis.tardis_portal import forms
+
+        example_post = {'title': 'test experiment',
+                        'created_by': self.user.pk,
+                        'url': 'http://www.test.com',
+                        'institution_name': 'some university',
+                        'description': 'desc.....',
+                        'authors': 'russell, steve',
+                        'dataset_description[0]': 'first one',
+                        'file[0]': ['file/location.py', 'file/another.py'],
+                        'dataset_description[1]': 'second',
+                        'file[1]': ['second_ds/file.py'],
+                        }
+        f = forms.FullExperiment(example_post)
+        as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
+<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
+<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
+<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" value="http://www.test.com" maxlength="255" /></td></tr>
+<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
+<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
+<option value="">---------</option>
+<option value="1" selected="selected">tardis_user1</option>
+</select></td></tr>
+<tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
+<tr><th><label for="id_files[0]">Files[0]:</label></th><td><input type="text" name="files[0]" id="id_files[0]" /></td></tr>
+<tr><th><label for="id_files[1]">Files[1]:</label></th><td><input type="text" name="files[1]" id="id_files[1]" /></td></tr>
+<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="id_authors" /></td></tr>
+<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]">first one</textarea></td></tr>
+<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
+<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>"""
+        self.assertEqual(f.as_table(), as_table)
+
     def test_form_parsing(self):
         from tardis.tardis_portal import forms, models
 
@@ -309,8 +342,6 @@ class ExperimentFormTestCase(TestCase):
                         'dataset_description[1]': 'second',
                         'file[1]': ['second_ds/file.py'],
                         }
-        check_files = {'first one': ['file/location.py', 'file/another.py'],
-                       'second': ['second_ds/file.py']}
         f = forms.FullExperiment(example_post)
 
         # test validity of form data
@@ -337,11 +368,21 @@ class ExperimentFormTestCase(TestCase):
         self.assertEqual(len(ds), 2)
 
         # check that all the files exist in the database
+        check_files = {'first one': ['file/location.py', 'file/another.py'],
+                       'second': ['second_ds/file.py']}
         for d in ds:
             files = models.Dataset_File.objects.filter(dataset=d.pk)
             v_files = check_files[d.description]
             for f in files:
                 self.assertTrue(f.filename in v_files)
+
+    def test_field_translation(self):
+        from tardis.tardis_portal import forms
+        f = forms.FullExperiment()
+        self.assertEqual(f._translate_dsfieldname('description', 10),
+                         'dataset_description[10]')
+        self.assertEqual(f._translate_dsfieldname('description', '1'),
+                         'dataset_description[1]')
 
 
 def suite():
