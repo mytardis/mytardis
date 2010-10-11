@@ -307,7 +307,7 @@ class ExperimentFormTestCase(TestCase):
                         'dataset_description[0]': 'first one',
                         'file[0]': ['file/location.py', 'file/another.py'],
                         'dataset_description[1]': 'second',
-                        'file[1]': ['second_ds/file.py'],
+                        'file[1]': 'second_ds/file.py',
                         }
         f = forms.FullExperiment(example_post)
         as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
@@ -340,7 +340,7 @@ class ExperimentFormTestCase(TestCase):
                         'dataset_description[0]': 'first one',
                         'file[0]': ['file/location.py', 'file/another.py'],
                         'dataset_description[1]': 'second',
-                        'file[1]': ['second_ds/file.py'],
+                        'file[1]': 'second_ds/file.py',
                         }
         f = forms.FullExperiment(example_post)
 
