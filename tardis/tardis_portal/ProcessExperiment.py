@@ -258,9 +258,14 @@ class ProcessExperiment:
 
                 # logger.debug(filename)
 
-                datafile = Dataset_File(dataset=d, filename=filename,
-                    url=ep.getFileLocation(fileid),
-                    size=ep.getFileSize(fileid))
+                url = ep.getFileLocation(fileid)
+                protocol = url.partition('://')[0]
+                datafile = Dataset_File(dataset=d,
+                                        filename=filename,
+                                        url=url,
+                                        size=ep.getFileSize(fileid),
+                                        protocol=protocol
+                                        )
                 datafile.save()
 
                 # for each metadata element of this file...
@@ -521,17 +526,15 @@ class ProcessExperiment:
                             filename = datafile['path']
 
                         protocol = datafile['path'].partition('://')[0]
-
-                        if protocol == 'file' \
-                            or protocol == 'http' \
-                            or protocol == 'https':
+                        if 'file' or 'http' or 'https' in protocol:
                             protocol = ''
+                            
                         dfile = Dataset_File(dataset=d,
-                                filename=filename,
-                                url=datafile['path'],
-                                size=datafile['size'],
-                                protocol=protocol
-                                )
+                                             filename=filename,
+                                             url=datafile['path'],
+                                             size=datafile['size'],
+                                             protocol=protocol
+                                             )
                         dfile.save()
                         current_df_id = dfile.id
 
@@ -638,17 +641,15 @@ class ProcessExperiment:
                             filename = datafile['path']
 
                         protocol = datafile['path'].partition('://')[0]
-                        if protocol == 'file' \
-                            or protocol == 'http' \
-                            or protocol == 'https':
-                                protocol = ''
-                      
+                        if 'file' or 'http' or 'https' in protocol:
+                            protocol = ''
+
                         dfile = Dataset_File(dataset=d,
-                                filename=filename,
-                                url=datafile['path'],
-                                size=datafile['size'],
-                                protocol=protocol
-                                )
+                                             filename=filename,
+                                             url=datafile['path'],
+                                             size=datafile['size'],
+                                             protocol=protocol
+                                             )
                         dfile.save()
 
                         current_df_id = dfile.id
@@ -733,6 +734,6 @@ class ProcessExperiment:
                 except:
                     pass
 
-                logger.debug('DONE EXP: ' + str(experiment.id))
+        logger.debug('DONE EXP: ' + str(experiment.id))
 
         return experiment.id
