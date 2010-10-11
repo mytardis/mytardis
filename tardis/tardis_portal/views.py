@@ -1794,7 +1794,6 @@ def traverse(path):
                 #print '---' * traverse.level + '/' + f
                 os.chdir(f)
                 
-                #print "FUCKFUCK" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:]
                 returnString = returnString + "<li id=\"" + os.path.abspath(f).rpartition('/')[0][len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a><ul>"
                 returnString = traverse(".")
                 returnString = returnString + "</ul></li>"
@@ -1807,7 +1806,9 @@ def traverse(path):
 
 @login_required
 def create_experiment(request):
-    if request.method == 'POST':    
+    if request.method == 'POST':   
+    
+        print request.POST
 
         form = FullExperiment(request.POST, request.FILES)
         if form.is_valid():
