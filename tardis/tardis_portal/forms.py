@@ -260,7 +260,6 @@ class FullExperiment(forms.BaseForm):
                 for df in self.data_files[key]:
                     df.data['dataset'] = o_dataset.pk
                     dataset_file = Dataset_File(df.data)
-                    print dataset_file.errors
                     dataset_file.save()
 
         return experiment
