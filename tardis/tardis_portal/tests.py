@@ -333,6 +333,7 @@ class ExperimentFormTestCase(TestCase):
         self.assertEqual(f.as_table(), as_table)
 
     def test_form_parsing(self):
+        from os.path import basename
         from tardis.tardis_portal import forms, models
         from django.http import QueryDict
 
@@ -376,13 +377,15 @@ class ExperimentFormTestCase(TestCase):
         self.assertEqual(len(ds), 2)
 
         # check that all the files exist in the database
-        check_files = {'first one': ['location.py', 'another.py'],
-                       'second': ['file.py']}
+        check_files = {'first one': ['file/location.py', 'file/another.py'],
+                       'second': ['second_ds/file.py']}
         for d in ds:
             files = models.Dataset_File.objects.filter(dataset=d.pk)
-            v_files = check_files[d.description]
+            v_files = [basename(f) for f in check_files[d.description]]
+            v_urls = ['file://' + f for f in check_files[d.description]]
             for f in files:
                 self.assertTrue(f.filename in v_files, "%s not in %s" % (f.filename, v_files))
+                self.assertTrue(f.url in v_urls, "%s not in %s" % (f.url, v_urls))
 
     def test_field_translation(self):
         from tardis.tardis_portal import forms

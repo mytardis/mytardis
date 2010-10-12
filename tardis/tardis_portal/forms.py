@@ -121,7 +121,6 @@ class Dataset_File(forms.ModelForm):
 
     class Meta:
         model = models.Dataset_File
-        exclude = ('url',)
 
 
 class Experiment(forms.ModelForm):
