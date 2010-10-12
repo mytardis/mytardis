@@ -175,19 +175,25 @@ class FullExperiment(forms.BaseForm):
         self.data_files = {}
         self.fields = {}
         if data:
-            self.parsed_data = self.parse_form(data)
+            self.parsed_data = self._parse_form(data)
+        else:
+            self._parse_form()
 
-    def parse_form(self, data):
+    def _parse_form(self, data=None, initial=None):
         experiment = Experiment(data)
         self.experiment = experiment
         self.fields.update(self.experiment.fields)
 
-        authors = [(c, a.strip()) for c, a in
-                   enumerate(data.get('authors').split(','))]
-        for num, author in authors:
-            f = Author({'name': author})
-            self.authors.append(f)
+        if data and 'authors' in data:
+            authors = [(c, a.strip()) for c, a in
+                       enumerate(data.get('authors').split(','))]
+            for num, author in authors:
+                f = Author({'name': author})
+                self.authors.append(f)
         self.fields['authors'] = MultiValueCommaSeparatedField(self.authors)
+
+        if not data:
+            return data
 
         for k, v in data.items():
             match = self.re_dataset.match(k)

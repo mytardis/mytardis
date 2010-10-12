@@ -381,8 +381,6 @@ class ExperimentFormTestCase(TestCase):
 <tr><th><label for="id_file[0]_0">File[0]:</label></th><td><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
 
-
-
     def test_form_parsing(self):
         from os.path import basename
         from tardis.tardis_portal import forms, models
@@ -437,6 +435,24 @@ class ExperimentFormTestCase(TestCase):
             for f in files:
                 self.assertTrue(f.filename in v_files, "%s not in %s" % (f.filename, v_files))
                 self.assertTrue(f.url in v_urls, "%s not in %s" % (f.url, v_urls))
+
+    def test_initial_form(self):
+        from tardis.tardis_portal import forms
+
+        as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
+<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
+<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" maxlength="400" /></td></tr>
+<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" maxlength="255" /></td></tr>
+<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
+<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
+<option value="" selected="selected">---------</option>
+<option value="1">tardis_user1</option>
+</select></td></tr>
+<tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
+<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" id="id_authors" /></td></tr>
+<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>"""
+        f = forms.FullExperiment()
+        self.assertEqual(f.as_table(), as_table)
 
     def test_field_translation(self):
         from tardis.tardis_portal import forms
