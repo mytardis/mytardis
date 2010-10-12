@@ -373,13 +373,15 @@ class ExperimentFormTestCase(TestCase):
 <option value="1" selected="selected">tardis_user1</option>
 </select></td></tr>
 <tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
-<tr><th><label for="id_files[0]">Files[0]:</label></th><td><input type="text" name="files[0]" id="id_files[0]" /></td></tr>
-<tr><th><label for="id_files[1]">Files[1]:</label></th><td><input type="text" name="files[1]" id="id_files[1]" /></td></tr>
 <tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="id_authors" /></td></tr>
+<tr><th><label for="id_file[1]_0">File[1]:</label></th><td><input type="text" name="file[1]" value="second_ds/file.py" id="id_file[1]" /></td></tr>
 <tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]">first one</textarea></td></tr>
 <tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
-<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>"""
+<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>
+<tr><th><label for="id_file[0]_0">File[0]:</label></th><td><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
+
+
 
     def test_form_parsing(self):
         from os.path import basename
