@@ -286,6 +286,55 @@ class ExperimentParserTestCase(unittest.TestCase):
         pass
 
 
+class ModelTestCase(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)
+
+    def test_experiment(self):
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        exp.save()
+        self.assertEqual(exp.title, 'test exp1')
+        self.assertEqual(exp.url, '')
+        self.assertEqual(exp.institution_name, 'monash')
+        self.assertEqual(exp.approved, False)
+        self.assertEqual(exp.handle, None)
+        self.assertEqual(exp.created_by, self.user)
+        self.assertEqual(exp.public, False)
+
+    def test_datafile(self):
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                approved=True,
+                                created_by=self.user,
+                                public=False,
+                                )
+        exp.save()
+
+        dataset = models.Dataset(description="dataset description...",
+                                 experiment=exp)
+        dataset.save()
+
+        df_file = models.Dataset_File(dataset=dataset,
+                                      filename='file.txt',
+                                      url='file://path/file.txt',
+                                      )
+        df_file.save()
+        self.assertEqual(df_file.filename, 'file.txt')
+        self.assertEqual(df_file.url, 'file://path/file.txt')
+        self.assertEqual(df_file.dataset, dataset)
+        self.assertEqual(df_file.size, '')
+
+
 class ExperimentFormTestCase(TestCase):
 
     def setUp(self):
