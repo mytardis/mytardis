@@ -44,9 +44,11 @@ from django import forms
 from django.forms.util import ErrorDict
 from django.forms.models import ModelChoiceField
 from django.forms.fields import MultiValueField
+from django.forms.widgets import MultiWidget, TextInput
 
 from tardis.tardis_portal import models
-from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
+from tardis.tardis_portal.fields import MultiValueCommaSeparatedField, MultiValueFileField
+from tardis.tardis_portal.widgets import MultiFileWidget
 
 
 class DatafileSearchForm(forms.Form):
@@ -161,6 +163,7 @@ class FullExperiment(forms.BaseForm):
     """
     re_dataset = re.compile('dataset_description\[([\d]+)\]$')
     dataset_field_translation = {"description": "dataset_description"}
+    datafile_field_translation = {"filename": "file"}
     base_fields = {}
 
     def __init__(self, data=None, initial=None):
@@ -211,6 +214,12 @@ class FullExperiment(forms.BaseForm):
         """
         return self.dataset_field_translation[name] + '[' + str(number) + ']'
 
+    def _translate_dffieldname(self, name, number):
+        """
+        return the datafile forms translated field name
+        """
+        return self.datafile_field_translation[name] + '[' + str(number) + ']'
+
     def _add_dataset_form(self, number, form):
         self.datasets[number] = form
         for name, field in self.datasets[number].fields.items():
@@ -220,8 +229,10 @@ class FullExperiment(forms.BaseForm):
 
     def _add_datafile_form(self, number, form):
         self.data_files[number].append(form)
-        self.fields['files[' + str(number) + ']'] = \
-            MultiValueField(self.data_files[number])
+        forms = self.data_files[number]
+        for field_name, form_name in self.datafile_field_translation.items():
+            self.fields[form_name + '[' + str(number) + ']'] = MultiValueFileField(
+                [f.fields[field_name] for f in forms], widget=MultiFileWidget([TextInput for f in forms]))
 
     def _get_errors(self):
         errors = ErrorDict()
