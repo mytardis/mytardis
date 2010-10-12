@@ -190,13 +190,13 @@ class FullExperiment(forms.BaseForm):
             match = self.re_dataset.match(k)
             if not match:
                 continue
-            number = match.groups()[0]
+            number = int(match.groups()[0])
             form = Dataset({'description': v})
             self._add_dataset_form(number, form)
 
             self.data_files[number] = []
 
-            datafiles = data.getlist('file[' + number + ']')
+            datafiles = data.getlist('file[' + str(number) + ']')
 
             for f in datafiles:
                 d = Dataset_File({'url': 'file://' + f,
@@ -220,7 +220,7 @@ class FullExperiment(forms.BaseForm):
 
     def _add_datafile_form(self, number, form):
         self.data_files[number].append(form)
-        self.fields['files[' + number + ']'] = \
+        self.fields['files[' + str(number) + ']'] = \
             MultiValueField(self.data_files[number])
 
     def _get_errors(self):
