@@ -273,7 +273,8 @@ class FullExperiment(forms.BaseForm):
                 for df in self.data_files[key]:
                     df.data['dataset'] = o_dataset.pk
                     dataset_file = Dataset_File(df.data)
-                    dataset_files.append(dataset_file.save(commit))
+                    ds = dataset_file.save(commit)
+                    dataset_files.append(ds)
 
         return {'experiment': experiment,
                 'author_experiments': author_experiments,
