@@ -27,20 +27,20 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/portal_template.html" %} 
 
 		{% block content %}
 
 		<div id="content">
 			<div class="post">
 				<h1 class="title">
-					<a href="#">Search Experiment</a>
+					<a href="#">Search Datafile</a>
 				</h1>
-				<div style="padding-left: 10px">Search Experiment
-				| <form action="/search/datafile" method="GET" style="display: inline">
+				<!-- <div style="padding-left: 10px">Search <a href="../experiment/">Experiment</a>
+				| <form action="/search/datafile" method="get" style="display: inline">
                      {{ searchDatafileSelectionForm.type }}
                      <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/>
+                  </form></div><br/> -->
 				<div class="entry">
 					<p>
 						{% block searchPageBody %}{% endblock %}
