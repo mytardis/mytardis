@@ -166,7 +166,7 @@ class FullExperiment(forms.BaseForm):
     datafile_field_translation = {"filename": "file"}
     base_fields = {}
 
-    def __init__(self, data=None, initial=None):
+    def __init__(self, data=None, initial=None, extra=1):
         super(FullExperiment, self).__init__(data=data, initial=initial)
 
         self.experiment = None
@@ -178,6 +178,12 @@ class FullExperiment(forms.BaseForm):
             self.parsed_data = self._parse_form(data)
         else:
             self._parse_form()
+            self._blank_form(extra)
+
+    def _blank_form(self, extra):
+        for i in xrange(extra):
+            form = Dataset()
+            self._add_dataset_form(i, form)
 
     def _parse_form(self, data=None, initial=None):
         experiment = Experiment(data)
