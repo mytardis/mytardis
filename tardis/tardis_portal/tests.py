@@ -450,6 +450,7 @@ class ExperimentFormTestCase(TestCase):
 </select></td></tr>
 <tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
 <tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" id="id_authors" /></td></tr>
+<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
 <tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>"""
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
