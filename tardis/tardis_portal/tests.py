@@ -133,6 +133,62 @@ class SearchTestCase(TestCase):
         # TODO: need to decide if we are to make those private functions public
         #       so they can be tested
 
+    def testSearchExperimentForm(self):
+        response = self.client.get('/search/experiment/')
+
+        # check if the response is a redirect to the login page
+        self.assertRedirects(response,
+            '/accounts/login/?next=/search/experiment/')
+
+        # let's try to login this time...
+        self.client.login(username='test', password='test')
+        response = self.client.get('/search/experiment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['searchDatafileSelectionForm'] is not
+            None)
+        self.assertTemplateUsed(response,
+            'tardis_portal/search_experiment_form.html')
+
+        self.client.logout()
+
+    def testSearchExperimentAuthentication(self):
+        response = self.client.get('/search/experiment/',
+            {'title': 'cookson', })
+
+        # check if the response is a redirect to the login page
+        self.assertEqual(response.status_code, 302)
+
+        # let's try to login this time...
+        self.client.login(username='test', password='test')
+        response = self.client.get('/search/experiment/',
+            {'title': 'cookson', })
+        self.assertEqual(response.status_code, 200)
+        self.client.logout()
+
+    def testSearchExperimentResults(self):
+        self.client.login(username='test', password='test')
+        response = self.client.get('/search/experiment/',
+            {'title': 'cookson'})
+
+        # check for the existence of the contexts..
+        self.assertTrue(response.context['experiments'] is not None)
+        self.assertTrue(response.context['bodyclass'] is not None)
+        self.assertTrue(response.context['searchDatafileSelectionForm'] is not
+            None)
+
+        self.assertTemplateUsed(response,
+            'tardis_portal/search_experiment_results.html')
+
+        self.assertTrue(
+            len(response.context['experiments']) == 1)
+
+        # check if searching for nothing would result to returning everything
+        response = self.client.get('/search/experiment/',
+            {'title': '', })
+        self.assertEqual(len(response.context['experiments']), 3)
+
+        self.client.logout()
+
 
 # http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
 class UserInterfaceTestCase(TestCase):

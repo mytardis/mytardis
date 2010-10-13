@@ -7,6 +7,19 @@ register = template.Library()
 
 
 @register.filter
+def eparametertypecheck(value, arg):
+    experimentparameter = ExperimentParameter.objects.get(id=arg)
+
+    if experimentparameter.name.name.endswith('Image'):
+        eid = experimentparameter.parameterset.id
+        psid = experimentparameter.parameterset.id
+        return "<img src='/displayExperimentImage/" + str(eid) + '/' \
+            + str(psid) + '/' + experimentparameter.name.name + "/' />"
+    else:
+        return value
+
+
+@register.filter
 def dsparametertypecheck(value, arg):
     datasetparameter = DatasetParameter.objects.get(id=arg)
 
