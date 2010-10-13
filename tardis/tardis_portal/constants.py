@@ -22,3 +22,6 @@ SCHEMA_DICT = {
         {'datafile': 'http://www.tardis.edu.au/schemas/opusDatafile/1',
          'dataset': 'http://www.tardis.edu.au/schemas/opusDataset/1'},
     }
+
+EXPERIMENT_SCHEMAS = \
+    ['http://www.tardis.edu.au/schemas/as/experiment/2010/09/21', ]

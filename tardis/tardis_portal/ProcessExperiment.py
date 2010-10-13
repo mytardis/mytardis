@@ -258,9 +258,13 @@ class ProcessExperiment:
 
                 # logger.debug(filename)
 
-                datafile = Dataset_File(dataset=d, filename=filename,
-                    url=ep.getFileLocation(fileid),
-                    size=ep.getFileSize(fileid))
+                url = ep.getFileLocation(fileid)
+                protocol = url.partition('://')[0]
+                datafile = Dataset_File(dataset=d,
+                                        filename=filename,
+                                        url=url,
+                                        size=ep.getFileSize(fileid),
+                                        protocol=protocol)
                 datafile.save()
 
                 # for each metadata element of this file...
@@ -520,10 +524,16 @@ class ProcessExperiment:
                         else:
                             filename = datafile['path']
 
+                        url = datafile['path']
+                        protocol = datafile['path'].partition('://')[0]
+                        if protocol in ['file', 'http', 'https']:
+                            protocol = ''
+
                         dfile = Dataset_File(dataset=d,
-                                filename=filename,
-                                url=datafile['path'],
-                                size=datafile['size'])
+                                             filename=filename,
+                                             url=url,
+                                             size=datafile['size'],
+                                             protocol=protocol)
                         dfile.save()
                         current_df_id = dfile.id
 
@@ -629,10 +639,16 @@ class ProcessExperiment:
                         else:
                             filename = datafile['path']
 
+                        url = datafile['path']
+                        protocol = url.partition('://')[0]
+                        if protocol in  ['file', 'http', 'https']:
+                            protocol = ''
+
                         dfile = Dataset_File(dataset=d,
-                                filename=filename,
-                                url=datafile['path'],
-                                size=datafile['size'])
+                                             filename=filename,
+                                             url=url,
+                                             size=datafile['size'],
+                                             protocol=protocol)
                         dfile.save()
 
                         current_df_id = dfile.id
@@ -692,7 +708,7 @@ class ProcessExperiment:
                                 except Schema.DoesNotExist, e:
                                     logger.debug('schema not found: ' + e)
                 try:
-                    logger.debug('attempting to parse line: ' + line)
+                    # logger.debug('attempting to parse line: ' + line)
                     dom = parseString(line)
                     doc = dom.documentElement
 

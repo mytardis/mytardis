@@ -27,56 +27,25 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/search_experiment.html" %}
+		{% block searchPageBody %}
+             {% if searchForm.errors %}
+                <p style="color: red;">
+                    Please correct the error{{ searchForm.errors|pluralize }} below.
+                </p>
+             {% endif %}       
+             <form name="input" action="." method="get">
+             <table width="100%">
+             <tr valign="top">
+             <td>
+             {% for field in searchForm %}
+             {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
+             {% endfor %}
+             <input type="submit" value="Submit">
+             </td>
 
-		{% block content %}
-
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Search Experiment</a>
-				</h1>
-				<div style="padding-left: 10px">Search Experiment
-				| <form action="/search/datafile" method="GET" style="display: inline">
-                     {{ searchDatafileSelectionForm.type }}
-                     <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/>
-				<div class="entry">
-					<p>
-						{% block searchPageBody %}{% endblock %}
-					</p>
-				</div>
-			</div>
-		</div>
-
-			{% endblock %} {% block sidebar %}
-
-			<ul>
-				<li>
-					<h2>
-						Browse Experiments
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/view">Index</a>
-						</li>
-						<li>
-							<a href="/search/experiment">Search</a>
-						</li>					
-					</ul>
-					{% if user.is_authenticated %}
-					<br/>
-					<h2>
-						Controls
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/control_panel">Control Panel</a>
-						</li>					
-					</ul>
-					{% endif %}
-				</li>			
-			</ul>
-			<p>
-			{% endblock %}
+             </tr>
+             </table>
+             </form>
+		{% endblock %}
 		</p>

@@ -112,6 +112,7 @@ class Dataset_File(models.Model):
     filename = models.CharField(max_length=400)
     url = models.CharField(max_length=400)
     size = models.CharField(blank=True, max_length=400)
+    protocol = models.CharField(blank=True, max_length=10)
 
     def __unicode__(self):
         return self.filename
