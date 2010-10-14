@@ -128,7 +128,7 @@ class Dataset_File(forms.ModelForm):
 class Experiment(forms.ModelForm):
     class Meta:
         model = models.Experiment
-        exclude = ('authors',)
+        exclude = ('authors', 'handle', 'approved')
 
 
 class FullExperiment(forms.BaseForm):
