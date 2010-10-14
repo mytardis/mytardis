@@ -48,7 +48,7 @@ from django.forms.widgets import MultiWidget, TextInput
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField, MultiValueFileField
-from tardis.tardis_portal.widgets import MultiFileWidget
+from tardis.tardis_portal.widgets import MultiFileWidget, CommaSeparatedInput
 
 
 class DatafileSearchForm(forms.Form):
@@ -196,7 +196,7 @@ class FullExperiment(forms.BaseForm):
             for num, author in authors:
                 f = Author({'name': author})
                 self.authors.append(f)
-        self.fields['authors'] = MultiValueCommaSeparatedField(self.authors)
+        self.fields['authors'] = MultiValueCommaSeparatedField(self.authors, widget=CommaSeparatedInput())
 
         if not data:
             return data
