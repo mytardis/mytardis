@@ -450,8 +450,10 @@ class ExperimentFormTestCase(TestCase):
         example_post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in example_post]))
 
         f = forms.FullExperiment(example_post)
-        as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
-<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
+        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
+<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="id_authors" /></td></tr>
+<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]">first one</textarea></td></tr>
+<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>
 <tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
 <tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" value="http://www.test.com" maxlength="255" /></td></tr>
 <tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
@@ -459,12 +461,8 @@ class ExperimentFormTestCase(TestCase):
 <option value="">---------</option>
 <option value="1" selected="selected">tardis_user1</option>
 </select></td></tr>
-<tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
-<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="id_authors" /></td></tr>
 <tr><th><label for="id_file[1]_0">File[1]:</label></th><td><input type="text" name="file[1]" value="second_ds/file.py" id="id_file[1]" /></td></tr>
-<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]">first one</textarea></td></tr>
 <tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
-<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>
 <tr><th><label for="id_file[0]_0">File[0]:</label></th><td><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
 
@@ -526,19 +524,17 @@ class ExperimentFormTestCase(TestCase):
     def test_initial_form(self):
         from tardis.tardis_portal import forms
 
-        as_table = """<tr><th><label for="id_handle">Handle:</label></th><td><textarea id="id_handle" rows="10" cols="40" name="handle"></textarea></td></tr>
-<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
+        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
 <tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" maxlength="400" /></td></tr>
 <tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" maxlength="255" /></td></tr>
+<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
+<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" id="id_authors" /></td></tr>
 <tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
+<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
 <tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
 <option value="" selected="selected">---------</option>
 <option value="1">tardis_user1</option>
-</select></td></tr>
-<tr><th><label for="id_approved">Approved:</label></th><td><input type="checkbox" name="approved" id="id_approved" /></td></tr>
-<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" id="id_authors" /></td></tr>
-<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
-<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>"""
+</select></td></tr>"""
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
 
