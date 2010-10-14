@@ -538,6 +538,48 @@ class ExperimentFormTestCase(TestCase):
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
 
+    def test_initial_data(self):
+        from tardis.tardis_portal import forms
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        exp.save()
+
+        a1 = models.Author(name="steve")
+        a1.save()
+
+        a2 = models.Author(name="russell")
+        a2.save()
+
+        ae1 = models.Author_Experiment(experiment=exp, author=a1, order=0)
+        ae1.save()
+        ae2 = models.Author_Experiment(experiment=exp, author=a2, order=1)
+        ae2.save()
+        dataset = models.Dataset(description="dataset description...",
+                                 experiment=exp)
+        dataset.save()
+
+        df_file = models.Dataset_File(dataset=dataset, filename='file.txt',
+                                      url='file://path/file.txt',)
+        df_file.save()
+
+        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
+<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" value="test exp1" maxlength="400" /></td></tr>
+<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" maxlength="255" /></td></tr>
+<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
+<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="steve, russell" id="id_authors" /></td></tr>
+<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" value="monash" maxlength="400" /></td></tr>
+<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
+<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
+<option value="">---------</option>
+<option value="1" selected="selected">tardis_user1</option>
+</select></td></tr>"""
+        f = forms.FullExperiment(initial=exp)
+        print f.as_table()
+        self.assertEqual(f.as_table(), as_table)
+
     def test_field_translation(self):
         from tardis.tardis_portal import forms
         f = forms.FullExperiment()

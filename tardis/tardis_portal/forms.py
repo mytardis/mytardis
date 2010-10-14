@@ -42,7 +42,7 @@ from os.path import basename
 
 from django import forms
 from django.forms.util import ErrorDict
-from django.forms.models import ModelChoiceField
+from django.forms.models import ModelChoiceField, model_to_dict
 from django.forms.fields import MultiValueField
 from django.forms.widgets import MultiWidget, TextInput
 
@@ -167,6 +167,8 @@ class FullExperiment(forms.BaseForm):
     base_fields = {}
 
     def __init__(self, data=None, initial=None, extra=1):
+        if initial and not isinstance(initial, dict):
+            initial = self._experiment_to_initial(initial)
         super(FullExperiment, self).__init__(data=data, initial=initial)
 
         self.experiment = None
@@ -178,15 +180,16 @@ class FullExperiment(forms.BaseForm):
             self.parsed_data = self._parse_form(data)
         else:
             self._parse_form()
-            self._blank_form(extra)
+            # TODO, needs to start counting from where parse_form stops
+            for i in xrange(extra):
+                self._add_dataset_form(i, Dataset())
 
-    def _blank_form(self, extra):
-        for i in xrange(extra):
-            form = Dataset()
-            self._add_dataset_form(i, form)
+    def _experiment_to_initial(self, experiment):
+        initial = model_to_dict(experiment)
+        return initial
 
-    def _parse_form(self, data=None, initial=None):
-        experiment = Experiment(data)
+    def _parse_form(self, data=None):
+        experiment = Experiment(data=data)
         self.experiment = experiment
         self.fields.update(self.experiment.fields)
 
@@ -194,7 +197,7 @@ class FullExperiment(forms.BaseForm):
             authors = [(c, a.strip()) for c, a in
                        enumerate(data.get('authors').split(','))]
             for num, author in authors:
-                f = Author({'name': author})
+                f = Author(data={'name': author})
                 self.authors.append(f)
         self.fields['authors'] = MultiValueCommaSeparatedField(self.authors, widget=CommaSeparatedInput())
 

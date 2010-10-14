@@ -4,7 +4,8 @@ from django.utils.safestring import mark_safe
 
 class CommaSeparatedInput(TextInput):
     def render(self, name, value, attrs=None):
-        value = ', '.join(value)
+        if isinstance(value, list):
+            value = ', '.join(value)
         return super(CommaSeparatedInput, self).render(name, value, attrs)
 
 
