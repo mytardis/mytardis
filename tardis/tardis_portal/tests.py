@@ -365,6 +365,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)
         self.assertEqual(exp.public, False)
+        self.assertEqual(exp.get_absolute_url(), '/experiment/view/1/',
+                         exp.get_absolute_url() + ' != /experiment/view/1/')
 
     def test_authors(self):
         from tardis.tardis_portal import models

@@ -74,6 +74,11 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('tardis.tardis_portal.views.view_experiment', (),
+                {'experiment_id': self.id})
+
 
 class Experiment_Owner(models.Model):
 
