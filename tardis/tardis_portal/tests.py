@@ -565,20 +565,18 @@ class ExperimentFormTestCase(TestCase):
                                       url='file://path/file.txt',)
         df_file.save()
 
-        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
-<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" value="test exp1" maxlength="400" /></td></tr>
-<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" maxlength="255" /></td></tr>
-<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
-<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="steve, russell" id="id_authors" /></td></tr>
-<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" value="monash" maxlength="400" /></td></tr>
-<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
-<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
-<option value="">---------</option>
-<option value="1" selected="selected">tardis_user1</option>
-</select></td></tr>"""
         f = forms.FullExperiment(initial=exp)
-        print f.as_table()
-        self.assertEqual(f.as_table(), as_table)
+
+        value = "value=\"%s\""
+        text_area = ">%s</textarea>"
+        self.assertTrue(value % 'test exp1' in str(f['title']))
+        self.assertTrue(value % 'monash' in str(f['institution_name']))
+        self.assertTrue('selected="selected">tardis_user1</option>' in
+                        str(f['created_by']))
+        self.assertTrue(text_area % "dataset description..." in
+                        str(f['dataset_description[0]']))
+
+        self.assertTrue(value % "steve, russell" in str(f['authors']))
 
     def test_field_translation(self):
         from tardis.tardis_portal import forms
