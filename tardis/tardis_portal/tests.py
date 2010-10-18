@@ -541,6 +541,8 @@ class ExperimentFormTestCase(TestCase):
     def test_initial_data(self):
         from tardis.tardis_portal import forms
         from tardis.tardis_portal import models
+        from django.forms.models import model_to_dict
+
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
                                 created_by=self.user,
@@ -564,8 +566,10 @@ class ExperimentFormTestCase(TestCase):
         df_file = models.Dataset_File(dataset=dataset, filename='file.txt',
                                       url='file://path/file.txt',)
         df_file.save()
-
-        f = forms.FullExperiment(initial=exp)
+        initial = model_to_dict(exp)
+        for i, ds in enumerate(exp.dataset_set.all()):
+            initial['dataset_description[' + str(i) + ']'] = ds.description
+        f = forms.FullExperiment(initial=initial)
 
         value = "value=\"%s\""
         text_area = ">%s</textarea>"

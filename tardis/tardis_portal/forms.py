@@ -166,10 +166,13 @@ class FullExperiment(forms.BaseForm):
     datafile_field_translation = {"filename": "file"}
     base_fields = {}
 
-    def __init__(self, data=None, initial=None, extra=1):
-        if initial and not isinstance(initial, dict):
-            initial = self._experiment_to_initial(initial)
-        super(FullExperiment, self).__init__(data=data, initial=initial)
+    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+                 initial=None, error_class=ErrorDict, label_suffix=':',
+                 empty_permitted=False, instance=None, extra=1):
+        super(FullExperiment, self).__init__(data=data, files=files, auto_id=auto_id,
+                                             prefix=prefix, initial=initial,
+                                             error_class=error_class, label_suffix=label_suffix,
+                                             empty_permitted=False)
 
         self.experiment = None
         self.authors = []
@@ -184,12 +187,6 @@ class FullExperiment(forms.BaseForm):
             for i in xrange(extra):
                 self._add_dataset_form(i, Dataset())
 
-    def _experiment_to_initial(self, experiment):
-        initial = model_to_dict(experiment)
-        for i, ds in enumerate(experiment.dataset_set.all()):
-            initial['dataset_description[' + str(i) + ']'] = ds.description
-        return initial
-
     def _parse_form(self, data=None):
         experiment = Experiment(data=data)
         self.experiment = experiment
@@ -199,7 +196,11 @@ class FullExperiment(forms.BaseForm):
             authors = [(c, a.strip()) for c, a in
                        enumerate(data.get('authors').split(','))]
             for num, author in authors:
-                f = Author(data={'name': author})
+                try:
+                    o_author = models.Author.objects.get(name=author)
+                except models.Author.DoesNotExist:
+                    o_author = None
+                f = Author(data={'name': author}, instance=o_author)
                 self.authors.append(f)
         self.fields['authors'] = \
             MultiValueCommaSeparatedField(self.authors,
@@ -280,10 +281,7 @@ class FullExperiment(forms.BaseForm):
         dataset_files = []
 
         for num, author in enumerate(self.authors):
-            try:
-                o_author = models.Author.objects.get(name=author.data['name'])
-            except models.Author.DoesNotExist:
-                o_author = author.save()
+            o_author = author.save()
             authors.append(o_author)
 
             f = Author_Experiment({'author': o_author.pk,
