@@ -186,6 +186,8 @@ class FullExperiment(forms.BaseForm):
 
     def _experiment_to_initial(self, experiment):
         initial = model_to_dict(experiment)
+        for i, ds in enumerate(experiment.dataset_set.all()):
+            initial['dataset_description[' + str(i) + ']'] = ds.description
         return initial
 
     def _parse_form(self, data=None):
@@ -199,7 +201,9 @@ class FullExperiment(forms.BaseForm):
             for num, author in authors:
                 f = Author(data={'name': author})
                 self.authors.append(f)
-        self.fields['authors'] = MultiValueCommaSeparatedField(self.authors, widget=CommaSeparatedInput())
+        self.fields['authors'] = \
+            MultiValueCommaSeparatedField(self.authors,
+                                          widget=CommaSeparatedInput())
 
         if not data:
             return data
