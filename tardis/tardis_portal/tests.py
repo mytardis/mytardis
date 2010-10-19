@@ -433,6 +433,58 @@ class ExperimentFormTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
+    def _data_to_post(self, data=None):
+        from django.http import QueryDict
+        data = data or {'authors': 'russell, steve',
+                        'created_by': self.user.pk,
+                        'dataset_description[0]': 'first one',
+                        'dataset_description[1]': 'second',
+                        'description': 'desc.....',
+                        'file[0]': 'file/another.py',
+                        'file[1]': 'second_ds/file.py',
+                        'institution_name': 'some university',
+                        'title': 'test experiment',
+                        'url': 'http://www.test.com'}
+        data = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in data.items()]))
+        return data
+
+    def _create_experiment(self, data=None):
+        from tardis.tardis_portal import models, forms
+        from django.http import QueryDict
+        from os.path import basename
+        from django.contrib.auth.models import User
+        data = self._data_to_post(data)
+        exp = models.Experiment(title=data['title'],
+                                institution_name=data['institution_name'],
+                                created_by=User.objects.get(id=data['created_by']),
+                                )
+        exp.save()
+        for i, a in enumerate(data['authors'].split(', ')):
+            author = models.Author(name=a)
+            author.save()
+
+            ae = models.Author_Experiment(experiment=exp,
+                                          author=author,
+                                          order=i)
+            ae.save()
+
+        for k, v in data.items():
+            match = forms.FullExperiment.re_dataset.match(k)
+            if not match:
+                continue
+            number = int(match.groups()[0])
+            dataset = models.Dataset(description=v,
+                                     experiment=exp)
+            dataset.save()
+
+            datafiles = data.getlist('file[' + str(number) + ']')
+            for f in datafiles:
+                d = models.Dataset_File(url='file://' + f,
+                                         dataset=dataset,
+                                         filename=basename(f))
+                d.save()
+        return exp
+
     def test_form_printing(self):
         from tardis.tardis_portal import forms
         from django.http import QueryDict
@@ -540,49 +592,50 @@ class ExperimentFormTestCase(TestCase):
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
 
+    def test_instance(self):
+        from tardis.tardis_portal import forms
+        from tardis.tardis_portal import models
+        exp = self._create_experiment()
+        f = forms.FullExperiment(instance=exp)
+        value = "value=\"%s\""
+        text_area = ">%s</textarea>"
+        self.assertTrue(value % 'test experiment' in str(f['title']), str(f['title']))
+        self.assertTrue(value % 'some university' in str(f['institution_name']))
+        self.assertTrue('selected="selected">tardis_user1</option>' in
+                        str(f['created_by']))
+        self.assertTrue(text_area % "first one" in
+                        str(f['dataset_description[0]']))
+        self.assertTrue(text_area % "second" in
+                        str(f['dataset_description[1]']))
+
+        self.assertTrue(value % "russell, steve" in str(f['authors']), str(f['authors']))
+
+
     def test_initial_data(self):
         from tardis.tardis_portal import forms
         from tardis.tardis_portal import models
         from django.forms.models import model_to_dict
-
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
-        exp.save()
-
-        a1 = models.Author(name="steve")
-        a1.save()
-
-        a2 = models.Author(name="russell")
-        a2.save()
-
-        ae1 = models.Author_Experiment(experiment=exp, author=a1, order=0)
-        ae1.save()
-        ae2 = models.Author_Experiment(experiment=exp, author=a2, order=1)
-        ae2.save()
-        dataset = models.Dataset(description="dataset description...",
-                                 experiment=exp)
-        dataset.save()
-
-        df_file = models.Dataset_File(dataset=dataset, filename='file.txt',
-                                      url='file://path/file.txt',)
-        df_file.save()
+        exp = self._create_experiment()
         initial = model_to_dict(exp)
         for i, ds in enumerate(exp.dataset_set.all()):
             initial['dataset_description[' + str(i) + ']'] = ds.description
+
         f = forms.FullExperiment(initial=initial)
 
         value = "value=\"%s\""
         text_area = ">%s</textarea>"
-        self.assertTrue(value % 'test exp1' in str(f['title']))
-        self.assertTrue(value % 'monash' in str(f['institution_name']))
+        self.assertTrue(value % 'test experiment' in str(f['title']))
+        self.assertTrue(value % 'some university' in str(f['institution_name']))
         self.assertTrue('selected="selected">tardis_user1</option>' in
                         str(f['created_by']))
-        self.assertTrue(text_area % "dataset description..." in
+        self.assertTrue(text_area % "first one" in
                         str(f['dataset_description[0]']))
+        # TODO Currently broken, not sure if initial will be used without the
+        # data argument
+        #self.assertTrue(text_area % "second" in
+        #                str(f['dataset_description[1]']))
 
-        self.assertTrue(value % "steve, russell" in str(f['authors']))
+        self.assertTrue(value % "russell, steve" in str(f['authors']))
 
     def test_field_translation(self):
         from tardis.tardis_portal import forms
