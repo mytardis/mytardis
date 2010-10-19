@@ -169,23 +169,48 @@ class FullExperiment(forms.BaseForm):
     def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
                  initial=None, error_class=ErrorDict, label_suffix=':',
                  empty_permitted=False, instance=None, extra=1):
-        super(FullExperiment, self).__init__(data=data, files=files, auto_id=auto_id,
-                                             prefix=prefix, initial=initial,
-                                             error_class=error_class, label_suffix=label_suffix,
-                                             empty_permitted=False)
-
         self.experiment = None
         self.authors = []
         self.datasets = {}
         self.data_files = {}
         self.fields = {}
+        self.__exp_fields = {}
+        self.__ds_num = 0
+
+        if instance:
+            object_data = self._experiment_to_dict(instance)
+            if initial:
+                object_data.update(initial)
+            initial = object_data
+            self.__exp_fields = self.fields
+
+        super(FullExperiment, self).__init__(data=data,
+                                             files=files,
+                                             auto_id=auto_id,
+                                             prefix=prefix,
+                                             initial=initial,
+                                             error_class=error_class,
+                                             label_suffix=label_suffix,
+                                             empty_permitted=False)
+
+        # recover the fields from the exp before the __init__ smashed them
+        if self.__exp_fields:
+            self.fields = self.__exp_fields
+
         if data:
             self.parsed_data = self._parse_form(data)
         else:
             self._parse_form()
             # TODO, needs to start counting from where parse_form stops
-            for i in xrange(extra):
+            for i in xrange(self.__ds_num, extra):
                 self._add_dataset_form(i, Dataset())
+
+    def _experiment_to_dict(self, experiment):
+        data = model_to_dict(experiment)
+        for i, ds in enumerate(experiment.dataset_set.all()):
+            data['dataset_description[' + str(i) + ']'] = ds.description
+            self._add_dataset_form(i, Dataset())
+        return data
 
     def _parse_form(self, data=None):
         experiment = Experiment(data=data)
@@ -246,6 +271,7 @@ class FullExperiment(forms.BaseForm):
             if isinstance(field, ModelChoiceField):
                 continue
             self.fields[self._translate_dsfieldname(name, number)] = field
+        self.__ds_num = self.__ds_num + 1
 
     def _add_datafile_form(self, number, form):
         self.data_files[number].append(form)
