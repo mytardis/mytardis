@@ -140,15 +140,40 @@
 					<div class="entry">
 
 			<form action="/experiment/create/" method="POST">
+				{{ form.non_field_errors }}
 			<div class="msg_list">
 			<p class="msg_head">Experiment Information</p>
 			<div class="msg_body">
-				<p>Title: <br/><input name="title" type="text" size="90"/></p>
-				<p>Authors (comma separate): <br/><input name="authors" type="text" size="90"/></p>
-				<p>Abstract: <br/><textarea name="abstract" cols="100" rows="6"></textarea></p>
-				<p>Institution Name: <br/><input name="institution_name" type="text" size="90"/></p>
+			    <div class="fieldWrapper">
+			        {{ form.title.errors }}
+			        <label for="id_title">Title:</label>
+			        {{ form.title }}
+			    </div>
+			
+			    <div class="fieldWrapper">
+			        {{ form.authors.errors }}
+			        <label for="id_title">Authors:</label>
+			        {{ form.authors }}
+			    </div>
+			
+			    <div class="fieldWrapper">
+			        {{ form.institution_name.errors }}
+			        <label for="id_title">Institution Name:</label>
+			        {{ form.institution_name }}
+			    </div>											
+			
 				<input name="url" type="hidden" value="http://remove.me"/>
 				<input name="created_by" type="hidden" value="{{user.id}}"/>
+			
+			{# {{ form.dataset_description }} #}
+			{# {{ form.dataset_description0 }} #}
+			{# {{ form.dataset_description_0 }} #}
+			{# {{ form.dataset_description[0] }} #}
+			{#  #}
+			{# {% for d in form.dataset_description %} #}
+			{# 	{{ d }} #}
+			{# {% endfor %} #}
+			
 			</div>
 			<p class="add_new_dataset">Add New Dataset</p>
 			<p class="msg_head">My Files</p>

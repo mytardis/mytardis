@@ -522,11 +522,11 @@ def experiment_index(request):
     if request.user.is_authenticated():
         experiments = get_accessible_experiments(request.user.id)
         if experiments:
-            experiments = experiments.order_by('title')
+            experiments = experiments.order_by('-update_time')
 
     public_experiments = Experiment.objects.filter(public=True)
     if public_experiments:
-        public_experiments = public_experiments.order_by('title')
+        public_experiments = public_experiments.order_by('-update_time')
 
     c = Context({
         'experiments': experiments,
@@ -1759,17 +1759,51 @@ def traverse(path):
                 #print '---' * traverse.level + f
     return returnString
 
+def copy_files(datafiles, experiment_id):
+    import shutil, os
+    for datafile in datafiles:
+        urlpath = datafile.url.partition('//')[2]
+        todir = settings.FILE_STORE_PATH + "/" + str(experiment_id) + "/" + urlpath.rpartition("/")[0]
+        if todir:
+            if not os.path.exists(todir):
+                os.makedirs(todir)
+        
+        copyfrom = settings.STAGING_PATH + "/" + urlpath #to be url
+        #datafile.url.partition('//')[2]
+
+        copyto = settings.FILE_STORE_PATH + "/" + str(experiment_id) + "/" + urlpath
+        
+        # if todir:
+        #     copyto = copyto + todir + "/"
+
+        logger.debug("FROM: " + copyfrom)
+        logger.debug("TO: " + copyto)
+        print copyfrom, copyto
+        try:
+            datafile.size = os.path.getsize(copyfrom)
+            datafile.save()
+            shutil.copyfile(copyfrom, copyto)
+        except:
+            pass
+            
 @login_required
 def create_experiment(request):
+    import os
+
+    form = FullExperiment()
+
     if request.method == 'POST':   
     
         print request.POST
 
         form = FullExperiment(request.POST, request.FILES)
         if form.is_valid():
-            experiment = form.save()
+            full_experiment = form.save()
 
             # group/owner assignment stuff, soon to be replaced
+            experiment = full_experiment['experiment']
+            #datafiles = full_experiment['dataset_files']
+
             g = Group(name=experiment.id)
             g.save()
             exp_owner = Experiment_Owner(experiment=experiment,
@@ -1777,9 +1811,22 @@ def create_experiment(request):
             exp_owner.save()
             request.user.groups.add(g)
             
+            experiment_path = settings.FILE_STORE_PATH + "/" + str(experiment.id) + "/"
+            if not os.path.exists(experiment_path):
+                os.makedirs(experiment_path)
+
+            datafiles = Dataset_File.objects.filter(dataset__experiment__id=experiment.id)
+            
+            copy_files(datafiles, experiment.id)
+            
             return HttpResponseRedirect('/experiment/view/' + str(experiment.id))
-        else:
-            print form.errors
+    else:
+        pass
+        # exp = Experiment.objects.get(id=45)
+        # 
+        # form = FullExperiment(instance=exp)
+        # 
+        # print form            
 
     global returnString
     returnString = ""
@@ -1793,7 +1840,9 @@ def create_experiment(request):
     c = Context({'subtitle': 'Create Experiment',
                  'directory_listing': returnString,
                  'user_id': request.user.id,
+                'form': form,
               })
+    
     return HttpResponse(render_response_index(request,
                         'tardis_portal/create_experiment.html', c))
     
