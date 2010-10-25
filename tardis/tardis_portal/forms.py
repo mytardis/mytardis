@@ -153,6 +153,8 @@ def createSearchDatafileForm(searchQueryType):
 
 def createSearchExperimentForm():
 
+    from django.forms.extras.widgets import SelectDateWidget
+
     from tardis.tardis_portal.models import ParameterName
     from tardis.tardis_portal import constants
 
@@ -172,8 +174,10 @@ def createSearchExperimentForm():
             max_length=20, required=False)
     fields['institutionName'] = forms.CharField(label='Institution Name',
             max_length=20, required=False)
-    fields['creator'] = forms.CharField(label="Author's Name",
+    fields['creator'] = forms.CharField(label='Author\'s Name',
             max_length=20, required=False)
+    fields['date'] = forms.DateTimeField(label='Experiment Date',
+            widget=SelectDateWidget(), required=False)
 
     for parameterName in parameterNames:
         if parameterName.is_numeric:

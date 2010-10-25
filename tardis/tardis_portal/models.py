@@ -65,6 +65,9 @@ class Experiment(models.Model):
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
     description = models.TextField(blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(null=True, blank=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
@@ -112,6 +115,7 @@ class Dataset_File(models.Model):
     url = models.URLField(max_length=400)
     size = models.CharField(blank=True, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
+    created_time = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
         return self.filename
