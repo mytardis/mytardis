@@ -37,6 +37,7 @@ from django.db.models import Sum
 
 import urllib
 import urllib2
+import datetime
 
 from tardis.tardis_portal import ldap_auth
 
@@ -595,6 +596,7 @@ def create_placeholder_experiment(user):
         institution_name='Placeholder',
         description='Placeholder description',
         created_by=user,
+        created_time=datetime.datetime.now()
         )
 
     e.save()
@@ -713,6 +715,7 @@ def ldap_login(request):
 
 
 def register_experiment_ws_xmldata_internal(request):
+    logger.debug('def register_experiment_ws_xmldata_internal')
     if request.method == 'POST':
 
         username = request.POST['username']
@@ -729,10 +732,11 @@ def register_experiment_ws_xmldata_internal(request):
             return return_response_error(request)
 
         process_experiment = ProcessExperiment()
+        logger.debug('Processing experiment %s' % eid)
         process_experiment.register_experiment_xmldata_file(filename=filename,
                 created_by=user, expid=eid)
 
-        response = HttpResponse('Finished cataloging: ' + str(eid),
+        response = HttpResponse('Finished cataloging: %s' % eid,
                                 status=200)
         response['Location'] = request.build_absolute_uri(
             '/experiment/view/' + str(eid))
@@ -786,23 +790,16 @@ def register_experiment_ws_xmldata(request):
 
             filename = dir + '/METS.xml'
             file = open(filename, 'wb+')
-
             for chunk in xmldata.chunks():
                 file.write(chunk)
-
             file.close()
 
             class RegisterThread(threading.Thread):
-
                 def run(self):
-                    data = urllib.urlencode({
-                        'username': username,
-                        'password': password,
-                        'filename': filename,
-                        'eid': eid,
-                        })
-                    urllib.urlopen(request.build_absolute_uri(
-                            '/experiment/register/internal/'), data)
+                    process_experiment = ProcessExperiment()
+                    logger.debug('processing experiment %s' % eid)
+                    process_experiment.register_experiment_xmldata_file(
+                        filename=filename, created_by=user, expid=eid)
 
             RegisterThread().start()
 
@@ -865,6 +862,7 @@ def register_experiment_ws_xmldata(request):
                         urllib.urlopen(file_transfer_url, data)
 
                 FileTransferThread().start()
+
 
             logger.debug('returning response from main call')
 
@@ -1135,6 +1133,11 @@ def __getFilteredExperiments(request, searchFilterData):
         experiments = \
             experiments.filter(
         author_experiment__author__name__icontains=searchFilterData['creator'])
+
+    if searchFilterData['date'] != '':
+        date = searchFilterData['date']
+        experiments = \
+            experiments.filter(start_time__gt=date, end_time__lt=date)
 
     # initialise the extra experiment parameters
     parameters = []
