@@ -25,6 +25,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
 from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
+from tardis.tardis_portal.ProcessExperiment2 import ProcessExperiment2
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
@@ -728,7 +729,7 @@ def register_experiment_ws_xmldata_internal(request):
         else:
             return return_response_error(request)
 
-        process_experiment = ProcessExperiment()
+        process_experiment = ProcessExperiment2()
         process_experiment.register_experiment_xmldata_file(filename=filename,
                 created_by=user, expid=eid)
 
