@@ -52,7 +52,7 @@ class XSLT_docs(models.Model):
 
 class Author(models.Model):
 
-    name = models.CharField(max_length=255, primary_key=True)
+    name = models.CharField(max_length=255)
 
     def __unicode__(self):
         return self.name
@@ -94,6 +94,10 @@ class Author_Experiment(models.Model):
         return SafeUnicode(self.author.name) + ' | ' \
             + SafeUnicode(self.experiment.id) + ' | ' \
             + SafeUnicode(self.order)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = (('experiment', 'author'),)
 
 
 class Dataset(models.Model):
