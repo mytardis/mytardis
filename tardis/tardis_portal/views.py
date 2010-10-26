@@ -588,21 +588,6 @@ def register_experiment_ws(request):
         return return_response_error(request)
 
 
-def create_placeholder_experiment(user):
-    e = Experiment(
-        url='http://www.example.com',
-        approved=True,
-        title='Placeholder Title',
-        institution_name='Placeholder',
-        description='Placeholder description',
-        created_by=user,
-        created_time=datetime.datetime.now()
-        )
-
-    e.save()
-
-    return e.id
-
 
 # todo complete....
 
@@ -776,7 +761,14 @@ def register_experiment_ws_xmldata(request):
             else:
                 return return_response_error(request)
 
-            eid = create_placeholder_experiment(user)
+            e = Experiment(
+                approved=True,
+                created_by=user,
+                created_time=datetime.datetime.now()
+                )
+
+            e.save()
+            eid = e.id
 
             dir = settings.FILE_STORE_PATH + '/' + str(eid)
 
@@ -1134,10 +1126,10 @@ def __getFilteredExperiments(request, searchFilterData):
             experiments.filter(
         author_experiment__author__name__icontains=searchFilterData['creator'])
 
-    if searchFilterData['date'] != '':
-        date = searchFilterData['date']
+    date = searchFilterData['date']
+    if not date == None:
         experiments = \
-            experiments.filter(start_time__gt=date, end_time__lt=date)
+            experiments.filter(start_time__lt=date, end_time__gt=date)
 
     # initialise the extra experiment parameters
     parameters = []

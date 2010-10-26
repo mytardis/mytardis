@@ -353,10 +353,11 @@ class ProcessExperiment:
                             institution_name=exp['organization'],
                             description=exp['abstract'],
                             created_by=created_by,
+                            created_time=datetime.datetime.now(),
                             start_time=exp['starttime'],
                             end_time=exp['endtime']
                             )
-                        
+
                         experiment.save()
                         author_experiments = \
                             Author_Experiment.objects.all()
@@ -388,7 +389,7 @@ class ProcessExperiment:
                                         namespace__exact=xmlns)
                                 except Schema.DoesNotExist, e:
                                     logger.debug('schema not found: ' + e)
-                                    
+
                                 if schema:
                                     parameternames = \
                                         ParameterName.objects.filter(
@@ -538,7 +539,7 @@ class ProcessExperiment:
 
                         for md in datafile['metadata']:
                             xmlns = getXmlnsFromTechXMLRaw(md)
-                            
+
                             try:
                                 schema = \
                                     Schema.objects.get(namespace__exact=xmlns)
@@ -706,7 +707,7 @@ class ProcessExperiment:
                                                 'experiment parameter: ' + e)
                                 except Schema.DoesNotExist, e:
                                     logger.debug('schema not found: ' + e)
-                
+
                 exp_header = ['organization', 'title', 'starttime', 'endtime']
                 try:
                     # logger.debug('attempting to parse line: ' + line)
