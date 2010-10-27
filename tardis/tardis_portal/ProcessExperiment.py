@@ -33,7 +33,7 @@
 from __future__ import with_statement  # This isn't required in Python 2.6
 from xml.dom.minidom import parse, parseString
 from tardis.tardis_portal.models import *
-from tardis.tardis_portal.ExperimentParser import ExperimentParser
+from tardis.tardis_portal import ExperimentParser
 from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
 import datetime

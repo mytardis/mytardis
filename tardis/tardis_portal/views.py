@@ -24,8 +24,8 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
 
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
-from tardis.tardis_portal.ProcessExperiment2 import ProcessExperiment2
+from tardis.tardis_portal import ProcessExperiment
+from tardis.tardis_portal import ProcessExperiment2
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger

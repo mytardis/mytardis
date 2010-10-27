@@ -4,7 +4,7 @@ The new ProcessExperiment module.
 @author: Gerson Galang
 '''
 
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
+from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsMetadataInfoHandler
