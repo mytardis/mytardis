@@ -1,6 +1,50 @@
 '''
 The METS document parser.
 
+Experiment/Dataset/Datafile metadata of this format can be easily parsed
+by this module...
+
+<trd:saxdatafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+    <trd:countingSecs>10.0</trd:countingSecs>
+    <trd:io>274389</trd:io>
+    <trd:ioBgnd>0</trd:ioBgnd>
+    <trd:it>284</trd:it>
+    <trd:itBgnd>0</trd:itBgnd>
+    <trd:ibs>665765</trd:ibs>
+    <trd:ibsBgnd>0</trd:ibsBgnd>
+    <trd:timeStampString>Fri Apr 16 03:53:30 2010</trd:timeStampString>
+    <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+    <trd:positionerValues>24.7410 24.9764 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+</trd:saxdatafile>
+
+As you can see, the structure is quite flat. The structure above is the
+recommended way of defining metadata fields for Experiment/Dataset/Datafile.
+
+If however the metadata structure will require going down into a number of 
+descendants below the child elements of the main metadata element, you'll need
+to provide a custom METS handler for it. The MX schema is a good example of a
+schema that does not conform to the key-value pair format this parser module
+recommends.
+
+<trd:mxdatafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+    <trd:imageType>R-AXIS</trd:imageType>
+    <trd:oscillationRange>
+        <trd:start>35.0</trd:start>
+        <trd:end>35.5</trd:end>
+    </trd:oscillationRange>
+    <trd:exposureTime>3.5166667</trd:exposureTime>
+    <trd:detectorSN>N/A</trd:detectorSN>
+    <trd:xrayWavelength>1.5418</trd:xrayWavelength>
+    <trd:directBeamXPos>149.59</trd:directBeamXPos>
+    <trd:directBeamYPos>150.5</trd:directBeamYPos>
+    <trd:detectorDistance>220.0</trd:detectorDistance>
+    <trd:imageSizeX>3000.0</trd:imageSizeX>
+    <trd:imageSizeY>3000.0</trd:imageSizeY>
+    <trd:pixelSizeX>0.1</trd:pixelSizeX>
+    <trd:pixelSizeY>0.1</trd:pixelSizeY>
+    <trd:twoTheta>0.0</trd:twoTheta>
+</trd:mxdatafile>
+
 @author: Gerson Galang
 '''
 
@@ -21,7 +65,6 @@ class MetsDataHolder():
     # has been saved
     experimentDatabaseId = None
 
-    experiments = None
     metadataMap = None
     metsStructMap = None
 
@@ -36,7 +79,6 @@ class MetsExperimentStructCreator(ContentHandler):
     def __init__(self, holder):
         self.holder = holder
         self.experiment = None
-        self.experiments = []
         self.inFileGrp = False
         self.processExperimentStruct = False
         self.processDatasetStruct = False
@@ -82,7 +124,8 @@ class MetsExperimentStructCreator(ContentHandler):
                 _getAttrValueByQName(attrs, 'LOCTYPE') == 'URL':
 
             # add the URL info to the datafile
-            fileUrl = _getAttrValue(attrs, ('http://www.w3.org/1999/xlink', 'href'))
+            fileUrl = _getAttrValue(attrs,
+                ('http://www.w3.org/1999/xlink', 'href'))
             self.datafile.url = fileUrl
 
         elif elName == 'structMap':
@@ -162,7 +205,6 @@ class MetsExperimentStructCreator(ContentHandler):
             # technically, we've finished doing our first pass here.
             # at this point we can assume that we already have the experiment
             # structure available that we can use on our second pass
-            self.holder.experiments = self.experiments
             self.holder.metsStructMap = self.metsStructMap
             self.holder.metadataMap = self.metadataMap
 
@@ -179,8 +221,6 @@ class MetsExperimentStructCreator(ContentHandler):
 
         elif elName == 'div' and self.processExperimentStruct:
 
-            self.experiments.append(self.experiment)
-            self.experiment = None
             self.processExperimentStruct = False
 
     def characters(self, chars):
@@ -226,6 +266,12 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         self.institution = None
         self.grabAbstract = False
+        
+        # a flag to tell if we are now inside techMD's xmlData element
+        self.inXmlData = False
+        
+        # holds the current direct xmlData child element we are processing
+        self.xmlDataChildElement = None
 
         self.parameterName = None
 
@@ -249,6 +295,9 @@ class MetsMetadataInfoHandler(ContentHandler):
         # holds a quick lookup table of all the instantiated Dataset objects
         # that the new instantiated datafiles will be linked to
         self.datasetLookupDict = {}
+
+        # the custom parser (or handler) to use for the given metadata
+        self.customHandler = None
 
     def startElementNS(self, name, qname, attrs):
         # just get the element name without the namespace
@@ -302,15 +351,23 @@ class MetsMetadataInfoHandler(ContentHandler):
         elif elName == 'amdSec':
             # let's start processing the metadata info..
             self.inAmdSec = True
-
+    
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = True
             metadataId = _getAttrValueByQName(attrs, 'ID')
             self.metsObject = self.holder.metadataMap[metadataId]
 
             metsObjectClassName = self.metsObject.__class__.__name__
+            
+            if metsObjectClassName == 'Experiment':
+                self.processExperimentMetadata = True
 
-            if metsObjectClassName == 'Datafile':
+            elif metsObjectClassName == 'Dataset':
+                self.processDatasetMetadata = True
+
+            elif metsObjectClassName == 'Datafile':
+                self.processDatafileMetadata = True
+            
                 # this will be a good time to save the "hard" metadata of this
                 # datafile so that when we start adding "soft" metadata
                 # parameters to it, we already have an entry for it in the DB
@@ -334,37 +391,30 @@ class MetsMetadataInfoHandler(ContentHandler):
                 #       entry for files with no metadata, we'll need to
                 #       get the unaccessed datafiles from datasetLookupDict.
 
-        elif elName == 'experiment' and self.inTechMd:
-            self.processExperimentMetadata = True
 
-            # let's reset the tempMetadataHolder dictionary for this new batch
-            # of experiment metadata
-            self.tempMetadataHolder = {}
+        elif elName == 'xmlData' and self.inTechMd:
+            self.inXmlData = True
 
-            self.elementNamespace = name[0]
-
-        elif elName == 'dataset' and self.inTechMd:
-            self.processDatasetMetadata = True
-
-            # let's reset the tempMetadataHolder dictionary for this new batch
-            # of dataset metadata
-            self.tempMetadataHolder = {}
-
-            self.elementNamespace = name[0]
-
-        elif elName == 'datafile' and self.inTechMd:
-            self.processDatafileMetadata = True
-
+        elif self.xmlDataChildElement is None and self.inXmlData:
+            self.xmlDataChildElement = elName
+            
             # let's reset the tempMetadataHolder dictionary for this new batch
             # of datafile metadata
             self.tempMetadataHolder = {}
-
             self.elementNamespace = name[0]
+            
+            # let's check if there's a custom parser that we should use for
+            # this metadata block (aka parameter set)
+            from tardis.tardis_portal.metshandler import customHandlers
+            if self.elementNamespace in customHandlers:
+                self.customHandler = customHandlers[self.elementNamespace]
+                self.customHandler.resetMetadataDict()
+
+        elif self.customHandler is not None:
+            self.customHandler.startElement(elName, attrs)
 
         elif self.parameterName is None and \
-                (self.processExperimentMetadata or \
-                self.processDatasetMetadata or \
-                self.processDatafileMetadata):
+                self.xmlDataChildElement is not None:
             # let's save the metadata field name so we can handle it's value
             # when we see its closing tag...
             self.parameterName = elName
@@ -453,6 +503,7 @@ class MetsMetadataInfoHandler(ContentHandler):
         elif elName == 'agent':
             self.inInstitution = False
 
+        
         elif elName == 'amdSec':
             # we're done processing the metadata entries
             self.inAmdSec = False
@@ -463,9 +514,23 @@ class MetsMetadataInfoHandler(ContentHandler):
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = False
             self.metsObject = None
+            self.processExperimentMetadata = False
+            self.processDatasetMetadata = False
+            self.processDatafileMetadata = False
 
-        elif self.inTechMd and (elName == 'experiment' or \
-                elName == 'dataset' or elName == 'datafile'):
+
+        elif elName == 'xmlData' and self.inTechMd:
+            self.inXmlData = False
+
+        elif elName != self.xmlDataChildElement and \
+                self.customHandler is not None:
+            self.customHandler.endElement(elName)
+
+        elif elName == self.xmlDataChildElement and self.inXmlData:
+
+            if self.customHandler is not None:
+                self.tempMetadataHolder = self.customHandler.metadataDict
+
             try:
                 schema = models.Schema.objects.get(
                     namespace__exact=self.elementNamespace)
@@ -475,7 +540,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                     models.ParameterName.objects.filter(
                     schema__namespace__exact=schema.namespace).order_by('id')
 
-                if elName == 'experiment':
+                if self.processExperimentMetadata:
 
                     # create a new parameter set for the metadata
                     parameterSet = \
@@ -484,7 +549,7 @@ class MetsMetadataInfoHandler(ContentHandler):
 
                     parameterSet.save()
 
-                    # now let's process the experiment experiment parameters
+                    # now let's process the experiment parameters
                     for parameterName in parameterNames:
                         try:
                             parameterValue = self.tempMetadataHolder[
@@ -500,9 +565,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                             # document
                             pass
 
-                    self.processExperimentMetadata = False
-
-                elif elName == 'dataset':
+                elif self.processDatasetMetadata:
 
                     # create a new parameter set for the dataset metadata
                     parameterSet = \
@@ -510,7 +573,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                         schema=schema, dataset=self.modelDataset)
                     parameterSet.save()
 
-                    # now let's process the experiment parameters
+                    # now let's process the dataset parameters
                     for parameterName in parameterNames:
                         try:
                             parameterValue = self.tempMetadataHolder[
@@ -528,9 +591,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 ' is not in the tempMetadataHolder')
                             pass
 
-                    self.processDatasetMetadata = False
-
-                elif elName == 'datafile':
+                elif self.processDatafileMetadata:
 
                     # create a new parameter set for the metadata
                     parameterSet = \
@@ -538,7 +599,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                         schema=schema, dataset_file=self.modelDatafile)
                     parameterSet.save()
 
-                    # now let's process the experiment parameters
+                    # now let's process the datafile parameters
                     for parameterName in parameterNames:
                         try:
                             parameterValue = self.tempMetadataHolder[
@@ -554,16 +615,17 @@ class MetsMetadataInfoHandler(ContentHandler):
                             # document
                             pass
 
-                    self.processDatafileMetadata = False
-
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested' +
                     self.elementNamespace)
 
+            # reset the current xmlData child element so that if a new
+            # parameter set is read, we can process it again
+            self.xmlDataChildElement = None
+            self.customHandler = None
+
         elif elName == self.parameterName and \
-                (self.processExperimentMetadata or \
-                self.processDatasetMetadata or \
-                self.processDatafileMetadata):
+                self.xmlDataChildElement is not None:
 
             # reset self.parameterName to None so the next parameter can be
             # processed
@@ -577,7 +639,7 @@ class MetsMetadataInfoHandler(ContentHandler):
         http://stackoverflow.com/questions/452969/does-python-have-an-equivalent-to-java-class-forname
 
         '''
-
+        print "hello save %s %s" % (parameterName, parameterValue)
         if parameterName.is_numeric:
             parameter = \
                 getattr(models, parameterTypeClass)(
@@ -600,30 +662,32 @@ class MetsMetadataInfoHandler(ContentHandler):
             # handle the different experiment fields
             if self.grabTitle:
                 self.metsObject.title = chars
-            if self.grabExperimentUrl:
+            elif self.grabExperimentUrl:
                 self.metsObject.url = chars
-            if self.grabAbstract:
+            elif self.grabAbstract:
                 self.metsObject.description = chars
-            if self.grabMightBeAuthor:
+            elif self.grabMightBeAuthor:
                 self.mightBeAuthor = chars
 
             # if it's really an author, add the mightBeAuthor into the
             # experiment's author list
-            if self.grabRoleTerm and chars == 'author':
+            elif self.grabRoleTerm and chars == 'author':
                 self.metsObject.authors.append(self.mightBeAuthor)
 
-        if self.grabInstitution:
+        elif self.grabInstitution:
             self.institution = chars
 
-        if self.processDatasetStruct:
+        elif self.processDatasetStruct:
             if self.grabTitle:
                 self.metsObject.title = chars
 
-        if self.parameterName is not None and \
+        elif self.customHandler is not None:
+            self.customHandler.characters(chars)
+
+        elif chars.strip() != '' and self.parameterName is not None and \
                 (self.processExperimentMetadata or \
                 self.processDatasetMetadata or \
                 self.processDatafileMetadata):
-
             # save the parameter value in the temporary metadata dictionary
             self.tempMetadataHolder[self.parameterName] = chars
 
