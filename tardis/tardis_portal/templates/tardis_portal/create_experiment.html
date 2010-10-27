@@ -78,12 +78,16 @@
 		$(".msg_head").live('click', function() {
 			if($(this).next(".msg_body").is(':visible'))
 			{
-			  $(this).css('background-color', '#FFCCCC')
+			  $(this).css('background-color', '#878787');
+			  $(this).css('color', 'white');
+			
 			  $(this).next(".msg_body").hide();		
 			}
 			else
 			{
-			  $(this).css('background-color', '#ccffcc')
+			  $(this).css('background-color', '#dcdcdc');
+			  $(this).css('color', '#404040');
+			
 			  $(this).next(".msg_body").show();		
 			}
 		});
@@ -146,19 +150,19 @@
 			<div class="msg_body">
 			    <div class="fieldWrapper">
 			        {{ form.title.errors }}
-			        <label for="id_title">Title:</label>
+			        <label for="id_title">Title:</label><br/>
 			        {{ form.title }}
 			    </div>
 			
 			    <div class="fieldWrapper">
 			        {{ form.authors.errors }}
-			        <label for="id_title">Authors:</label>
+			        <label for="id_title">Authors (comma separate):</label><br/>
 			        {{ form.authors }}
 			    </div>
 			
 			    <div class="fieldWrapper">
 			        {{ form.institution_name.errors }}
-			        <label for="id_title">Institution Name:</label>
+			        <label for="id_title">Institution Name:</label><br/>
 			        {{ form.institution_name }}
 			    </div>											
 			
