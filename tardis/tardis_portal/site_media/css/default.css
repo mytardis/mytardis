@@ -1,7 +1,7 @@
 body {
 	margin: 0;
 	padding: 0;
-	background: #FFFFFF url(../images/mimg01.jpg) repeat-x left top;
+	background: #232323 url(../images/mimg01.jpg) repeat-x left top;
 	text-align: left;
 	font-family: Tahoma, Arial, Helvetica, sans-serif;
 	font-size: 12px;
@@ -118,7 +118,7 @@ img.right {
 	margin: 0 auto;
 	height: 71px;
 	letter-spacing: -1px;
-	font-family: Georgia, "Times New Roman", Times, serif;
+
 }
 
 
@@ -156,11 +156,11 @@ img.right {
 }
 
 #logo h1 {
-	background: url(../images/mimg04.jpg) no-repeat left 50%;
-	padding-left: 60px;
+	background: no-repeat left 50%;
+	padding-left: 10px;
 	text-align: center;
 	font-size: 3.2em;
-	color: #113E9E;
+
 }
 
 #logo h1 a {
@@ -170,9 +170,8 @@ img.right {
 #logo p {
 	padding-top: 24px;
 	padding-left: 10px;
-	text-transform: uppercase;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size:12px;
+	font-size:14px;
 	color: #000000;
 }
 
@@ -540,7 +539,7 @@ table.experiment-table th {
 	padding: 5px 10px;
 	cursor: pointer;
 	position: relative;
-	background-color: #ccffcc;
+	background-color: #dcdcdc;
 	
 	margin:1px;
 	font-size: 14px;
@@ -551,7 +550,8 @@ table.experiment-table th {
 	padding: 5px 10px;
 	cursor: pointer;
 	position: relative;
-	background-color: #cce5ff;
+	background-color: #878787;
+	color: white;
 	
 	margin:1px;
 	font-size: 14px;
@@ -586,4 +586,14 @@ table.experiment-table th {
 		border-style: dashed;
 		padding: 10px 30px 10px 30px;
 		width: 80%;
-	}	
+	}
+	
+    .fieldWrapper {
+        padding: 0 0 15px 0;
+
+    }	
+    
+    .fieldWrapper input {
+        width: 500px;
+
+    }	
