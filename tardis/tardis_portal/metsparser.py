@@ -53,7 +53,8 @@ from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
 from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
-
+from xml.sax.handler import feature_namespaces
+from xml.sax import make_parser
 
 class MetsDataHolder():
     '''An instance of this class is used by MetsExperimentStructCreator and
@@ -704,3 +705,46 @@ def _getAttrValueByQName(attrs, attrName):
         return attrs.getValueByQName(attrName)
     except KeyError:
         return None
+
+
+def parseMets(self, filename, createdBy, expId=None):
+    '''Parse the METS document using the SAX Parser classes provided in the
+    metsparser module.
+
+    Arguments:
+    filename -- path of the document to parse (METS or notMETS)
+    created_by -- a User instance
+    expid -- the experiment ID to use
+
+    Returns:
+    The experiment ID
+
+    '''
+
+    import time
+    startParseTime = time.time()
+
+    logger.debug('parse experiment id: ' + str(expId))
+
+    parser = make_parser(["drv_libxml2"])
+    parser.setFeature(feature_namespaces, 1)
+    dataHolder = MetsDataHolder()
+
+    # on the first pass, we'll parse the document just so we can
+    # create the experiment's structure
+    parser.setContentHandler(MetsExperimentStructCreator(dataHolder))
+    parser.parse(filename)
+
+    # on the second pass, we'll parse the document so that we can tie
+    # the metadata info with the experiment/dataset/datafile objects
+    parser.setContentHandler(
+        MetsMetadataInfoHandler(dataHolder, expId, createdBy))
+    parser.parse(filename)
+
+    endParseTime = time.time()
+
+    # time difference in seconds
+    timeDiff = endParseTime - startParseTime
+    logger.debug('time difference in seconds: %s' % (timeDiff))
+
+    return dataHolder.experimentDatabaseId
