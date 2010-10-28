@@ -1038,7 +1038,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     Arguments:
     request -- the HTTP request
-    searchQueryType -- the type of query, 'mx' or 'sax'
+    searchQueryType -- the type of query, 'mx' or 'saxs'
     searchFilterData -- the cleaned up search form data
 
     Returns:
@@ -1293,7 +1293,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'sax':
+        #if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
         #else:
@@ -1344,7 +1344,7 @@ def __getSearchDatafileForm(request, searchQueryType):
 
     Arguments:
     request -- The HTTP request object
-    searchQueryType -- The search query type: 'mx' or 'sax'
+    searchQueryType -- The search query type: 'mx' or 'saxs'
 
     Returns:
     The supported search datafile form
