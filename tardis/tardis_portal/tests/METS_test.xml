@@ -6,10 +6,10 @@
 	xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd">
 	<metsHdr CREATEDATE="2009-03-18T17:31:55" LASTMODDATE="2009-03-18T17:31:55">
 		<agent ROLE="DISSEMINATOR" TYPE="ORGANIZATION">
-			<name>Disseminator</name>
+			<name>Adelaide University</name>
 		</agent>
 		<agent ROLE="CREATOR" TYPE="OTHER">
-			<name>Creator</name>
+			<name>TARDIS DatasetPackager v1.0</name>
 		</agent>
 	</metsHdr>
 	<dmdSec ID="J-1">
@@ -18,36 +18,33 @@
 				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
 					xmlns:xlink="http://www.w3.org/1999/xlink">
 					<mods:titleInfo>
-						<mods:title>Test Title</mods:title>
+						<mods:title>SAXS Test</mods:title>
 					</mods:titleInfo>
-					<mods:identifier type="pdb">SAMPLE_PDBID</mods:identifier>
+					<mods:identifier type="pdb">2H4R</mods:identifier>
 					<mods:genre>experiment</mods:genre>
 					<mods:relatedItem type="otherVersion">
 						<mods:originInfo>
 							<mods:publisher>Primary Citation</mods:publisher>
 						</mods:originInfo>
 						<mods:location>
-							<mods:url>http://www.test.com
-							</mods:url>
+							<mods:url>http://www.blahblah.com/espanol</mods:url>
 						</mods:location>
 					</mods:relatedItem>
-					<mods:abstract>Test
-					Abstract.
-					</mods:abstract>
+					<mods:abstract>Hello world hello world</mods:abstract>
 					<mods:name type="personal">
-						<mods:namePart>Author1</mods:namePart>
+						<mods:namePart>Gerry G.</mods:namePart>
 						<mods:role>
 							<mods:roleTerm type="text">author</mods:roleTerm>
 						</mods:role>
 					</mods:name>
 					<mods:name type="personal">
-						<mods:namePart>Author2</mods:namePart>
+						<mods:namePart>Alvin K</mods:namePart>
 						<mods:role>
 							<mods:roleTerm type="text">author</mods:roleTerm>
 						</mods:role>
 					</mods:name>
 					<mods:name type="personal">
-						<mods:namePart>Author3</mods:namePart>
+						<mods:namePart>Moscatto Brothers</mods:namePart>
 						<mods:role>
 							<mods:roleTerm type="text">author</mods:roleTerm>
 						</mods:role>
@@ -62,19 +59,7 @@
 				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
 					xmlns:xlink="http://www.w3.org/1999/xlink">
 					<mods:titleInfo>
-						<mods:title>Dataset1 Title</mods:title>
-					</mods:titleInfo>
-				</mods:mods>
-			</xmlData>
-		</mdWrap>
-	</dmdSec>
-	<dmdSec ID="J-3">
-		<mdWrap MDTYPE="MODS">
-			<xmlData>
-				<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
-					xmlns:xlink="http://www.w3.org/1999/xlink">
-					<mods:titleInfo>
-						<mods:title>Dataset2 Title</mods:title>
+						<mods:title>Bluebird</mods:title>
 					</mods:titleInfo>
 				</mods:mods>
 			</xmlData>
@@ -99,11 +84,15 @@
 		<techMD ID="A-2">
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATASET">
 				<xmlData>
-					<trd:dataset xmlns:trd="http://www.tardis.edu.au/schemas/trdDataset/2">
-						<trd:resolutionLimit>2.7</trd:resolutionLimit>
-						<trd:diffractometerType>Rotating Anode</trd:diffractometerType>
-						<trd:xraySource>RIGAKU RAXIS IV</trd:xraySource>
-						<trd:crystalName>MENT WT</trd:crystalName>
+					<trd:dataset
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/dataset/2010/08/10">
+						<trd:frqimn>0.0450647</trd:frqimn>
+						<trd:frxcen>411.947</trd:frxcen>
+						<trd:frleng>554.619</trd:frleng>
+						<trd:frwlen>0.670200</trd:frwlen>
+						<trd:frqimx>2.26206</trd:frqimx>
+						<trd:frtype>PIL200K</trd:frtype>
+						<trd:frycen>559.038</trd:frycen>
 					</trd:dataset>
 				</xmlData>
 			</mdWrap>
@@ -111,23 +100,99 @@
 		<techMD ID="A-3">
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
-					<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
-						<trd:imageType>R-AXIS</trd:imageType>
-						<trd:oscillationRange>
-							<trd:start>35.0</trd:start>
-							<trd:end>35.5</trd:end>
-						</trd:oscillationRange>
-						<trd:exposureTime>3.5166667</trd:exposureTime>
-						<trd:detectorSN>N/A</trd:detectorSN>
-						<trd:xrayWavelength>1.5418</trd:xrayWavelength>
-						<trd:directBeamXPos>149.59</trd:directBeamXPos>
-						<trd:directBeamYPos>150.5</trd:directBeamYPos>
-						<trd:detectorDistance>220.0</trd:detectorDistance>
-						<trd:imageSizeX>3000.0</trd:imageSizeX>
-						<trd:imageSizeY>3000.0</trd:imageSizeY>
-						<trd:pixelSizeX>0.1</trd:pixelSizeX>
-						<trd:pixelSizeY>0.1</trd:pixelSizeY>
-						<trd:twoTheta>0.0</trd:twoTheta>
+					<trd:datafile
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						<trd:countingSecs>10.0</trd:countingSecs>
+						<trd:io>281443</trd:io>
+						<trd:ioBgnd>0</trd:ioBgnd>
+						<trd:it>290</trd:it>
+						<trd:itBgnd>0</trd:itBgnd>
+						<trd:ibs>679274</trd:ibs>
+						<trd:ibsBgnd>0</trd:ibsBgnd>
+						<trd:timeStampString>Fri Apr 16 03:15:16 2010
+						</trd:timeStampString>
+						<trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+						<trd:positionerValues>49.4420 1.2914 20.000 12.000 26.316 2.0007 1.2999</trd:positionerValues>
+					</trd:datafile>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-4">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
+				<xmlData>
+					<trd:datafile
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						<trd:countingSecs>10.0</trd:countingSecs>
+						<trd:io>312003</trd:io>
+						<trd:ioBgnd>0</trd:ioBgnd>
+						<trd:it>284</trd:it>
+						<trd:itBgnd>0</trd:itBgnd>
+						<trd:ibs>750369</trd:ibs>
+						<trd:ibsBgnd>0</trd:ibsBgnd>
+						<trd:timeStampString>Fri Apr 16 01:21:15 2010
+						</trd:timeStampString>
+						<trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+						<trd:positionerValues>2.7070 -0.7136 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+					</trd:datafile>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-5">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
+				<xmlData>
+					<trd:datafile
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						<trd:countingSecs>10.0</trd:countingSecs>
+						<trd:io>277803</trd:io>
+						<trd:ioBgnd>0</trd:ioBgnd>
+						<trd:it>288</trd:it>
+						<trd:itBgnd>0</trd:itBgnd>
+						<trd:ibs>673307</trd:ibs>
+						<trd:ibsBgnd>0</trd:ibsBgnd>
+						<trd:timeStampString>Fri Apr 16 03:36:10 2010
+						</trd:timeStampString>
+						<trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+						<trd:positionerValues>0.2460 25.6814 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+					</trd:datafile>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-6">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
+				<xmlData>
+					<trd:datafile
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						<trd:countingSecs>10.0</trd:countingSecs>
+						<trd:io>274389</trd:io>
+						<trd:ioBgnd>0</trd:ioBgnd>
+						<trd:it>284</trd:it>
+						<trd:itBgnd>0</trd:itBgnd>
+						<trd:ibs>665765</trd:ibs>
+						<trd:ibsBgnd>0</trd:ibsBgnd>
+						<trd:timeStampString>Fri Apr 16 03:53:30 2010
+						</trd:timeStampString>
+						<trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+						<trd:positionerValues>24.7410 24.9764 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+					</trd:datafile>
+				</xmlData>
+			</mdWrap>
+		</techMD>
+		<techMD ID="A-7">
+			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
+				<xmlData>
+					<trd:datafile
+						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						<trd:countingSecs>10.0</trd:countingSecs>
+						<trd:io>274321</trd:io>
+						<trd:ioBgnd>0</trd:ioBgnd>
+						<trd:it>284</trd:it>
+						<trd:itBgnd>0</trd:itBgnd>
+						<trd:ibs>655498</trd:ibs>
+						<trd:ibsBgnd>0</trd:ibsBgnd>
+						<trd:timeStampString>Fri Apr 16 03:55:30 2010
+						</trd:timeStampString>
+						<trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+						<trd:positionerValues>25.1410 25.3764 20.000 12.000 26.330 2.0007 1.2999</trd:positionerValues>
 					</trd:datafile>
 				</xmlData>
 			</mdWrap>
@@ -136,22 +201,42 @@
 	<fileSec>
 		<fileGrp USE="original">
 			<file ID="F-1" MIMETYPE="application/octet-stream" SIZE="6148"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File1">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File1" />
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID=".DS_Store">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/.DS_Store" />
 			</file>
 			<file ID="F-2" MIMETYPE="application/octet-stream" SIZE="76"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File2.bat">
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="batchrename.bat">
 				<FLocat LOCTYPE="URL" xlink:type="simple"
-					xlink:href="file://Images/File2.bat" />
+					xlink:href="file://Images/batchrename.bat" />
 			</file>
 			<file ID="F-3" MIMETYPE="application/octet-stream" SIZE="1419287050"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File3.zip">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File3.zip" />
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment.zip">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment.zip" />
 			</file>
 			<file ID="F-4" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="File4.img"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0001.osc"
 				ADMID="A-3">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/File4.img" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment0001.osc" />
+			</file>
+			<file ID="F-5" MIMETYPE="application/octet-stream" SIZE="18006000"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0002.osc"
+				ADMID="A-4">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment0002.osc" />
+			</file>
+			<file ID="F-6" MIMETYPE="application/octet-stream" SIZE="18006000"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0003.osc"
+				ADMID="A-5">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment0003.osc" />
+			</file>
+			<file ID="F-7" MIMETYPE="application/octet-stream" SIZE="18006000"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0004.osc"
+				ADMID="A-6">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment0004.osc" />
+			</file>
+			<file ID="F-8" MIMETYPE="application/octet-stream" SIZE="18006000"
+				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0005.osc"
+				ADMID="A-7">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="file://Images/ment0005.osc" />
 			</file>
 		</fileGrp>
 	</fileSec>
@@ -160,10 +245,12 @@
 			<div DMDID="J-2" ADMID="A-2" TYPE="dataset">
 				<fptr FILEID="F-1" />
 				<fptr FILEID="F-2" />
-			</div>
-			<div DMDID="J-3" TYPE="dataset">
 				<fptr FILEID="F-3" />
 				<fptr FILEID="F-4" />
+				<fptr FILEID="F-5" />
+				<fptr FILEID="F-6" />
+				<fptr FILEID="F-7" />
+				<fptr FILEID="F-8" />
 			</div>
 		</div>
 	</structMap>
