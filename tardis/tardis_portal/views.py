@@ -25,7 +25,6 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
 from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal import ProcessExperiment
-from tardis.tardis_portal import ProcessExperiment2
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
@@ -46,6 +45,7 @@ from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
 from django.db import transaction
+
 
 def getNewSearchDatafileSelectionForm():
     DatafileSelectionForm = createSearchDatafileSelectionForm()
@@ -1019,7 +1019,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     Arguments:
     request -- the HTTP request
-    searchQueryType -- the type of query, 'mx' or 'sax'
+    searchQueryType -- the type of query, 'mx' or 'saxs'
     searchFilterData -- the cleaned up search form data
 
     Returns:
@@ -1274,7 +1274,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'sax':
+        #if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
         #else:
@@ -1325,7 +1325,7 @@ def __getSearchDatafileForm(request, searchQueryType):
 
     Arguments:
     request -- The HTTP request object
-    searchQueryType -- The search query type: 'mx' or 'sax'
+    searchQueryType -- The search query type: 'mx' or 'saxs'
 
     Returns:
     The supported search datafile form

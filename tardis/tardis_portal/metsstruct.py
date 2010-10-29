@@ -1,5 +1,5 @@
 '''
-A module which holds the METS structure objects. The objects here are 
+A module which holds the METS structure objects. The objects here are
 lightweight as they only keep metadata keys (IDs) instead of the actual
 metadata values.
 

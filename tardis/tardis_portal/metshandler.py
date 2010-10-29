@@ -9,11 +9,11 @@ that do not conform to the recommended key-value pair metadata format.
 class CustomHandler():
     def __init__(self):
         self.metadataDict = {}
-    
+
     def resetMetadataDict(self):
         self.metadataDict = {}
 
-    
+
 class MxDatafileHandler(CustomHandler):
 
     def __init__(self):
@@ -48,11 +48,10 @@ class MxDatafileHandler(CustomHandler):
         if self.grabOscillationRangeStart:
             self.metadataDict['oscillationRange/start'] = chars
         elif self.grabOscillationRangeEnd:
-            self.metadataDict['oscillationRange/end'] =  chars
+            self.metadataDict['oscillationRange/end'] = chars
         else:
             self.metadataDict[self.parameterName] = chars
 
-
 # the list of custom handlers the metsparser will use
 customHandlers = {
-    'http://www.tardis.edu.au/schemas/trdDatafile/1':MxDatafileHandler(), }
+    'http://www.tardis.edu.au/schemas/trdDatafile/1': MxDatafileHandler(), }
