@@ -48,21 +48,21 @@ from os import path
 
 class SearchTestCase(TestCase):
 
-    fixtures = ['test_sax_data']
+    fixtures = ['test_saxs_data']
 
     def setUp(self):
         self.client = Client()
 
     def testSearchDatafileForm(self):
-        response = self.client.get('/search/datafile/', {'type': 'sax', })
+        response = self.client.get('/search/datafile/', {'type': 'saxs', })
 
         # check if the response is a redirect to the login page
         self.assertRedirects(response,
-            '/accounts/login/?next=/search/datafile/%3Ftype%3Dsax')
+            '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
 
         # let's try to login this time...
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/', {'type': 'sax', })
+        response = self.client.get('/search/datafile/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchForm'] is not None)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
@@ -75,7 +75,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileAuthentication(self):
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
 
         # check if the response is a redirect to the login page
         self.assertEqual(response.status_code, 302)
@@ -83,14 +83,14 @@ class SearchTestCase(TestCase):
         # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
     def testSearchDatafileResults(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': 'air_0_001.tif', })
+            {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -115,15 +115,15 @@ class SearchTestCase(TestCase):
 
         # check if searching for nothing would result to returning everything
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
         self.assertEqual(len(response.context['paginator'].object_list), 129)
 
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'io': '123', })
+            {'type': 'saxs', 'io': '123', })
         self.assertEqual(len(response.context['paginator'].object_list), 0)
 
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'frqimn': '0.0450647', })
+            {'type': 'saxs', 'frqimn': '0.0450647', })
         self.assertEqual(len(response.context['paginator'].object_list), 125)
         self.client.logout()
 
@@ -200,7 +200,7 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         urls = ['/login', '/about', '/partners', '/stats']
         urls += ['/experiment/register', '/experiment/view']
-        urls += ['/search/experiment', '/search/datafile?type=sax']
+        urls += ['/search/experiment', '/search/datafile?type=saxs']
 
         for u in urls:
             response = c.get(u)
@@ -213,7 +213,6 @@ class UserInterfaceTestCase(TestCase):
         self.client = Client()
 
         from django.contrib.auth.models import User
-        from django.conf import settings
         import os
 
         user = 'user1'

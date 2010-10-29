@@ -20,7 +20,7 @@ by this module...
 As you can see, the structure is quite flat. The structure above is the
 recommended way of defining metadata fields for Experiment/Dataset/Datafile.
 
-If however the metadata structure will require going down into a number of 
+If however the metadata structure will require going down into a number of
 descendants below the child elements of the main metadata element, you'll need
 to provide a custom METS handler for it. The MX schema is a good example of a
 schema that does not conform to the key-value pair format this parser module
@@ -55,6 +55,7 @@ from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
+
 
 class MetsDataHolder():
     '''An instance of this class is used by MetsExperimentStructCreator and
@@ -267,10 +268,10 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         self.institution = None
         self.grabAbstract = False
-        
+
         # a flag to tell if we are now inside techMD's xmlData element
         self.inXmlData = False
-        
+
         # holds the current direct xmlData child element we are processing
         self.xmlDataChildElement = None
 
@@ -352,14 +353,14 @@ class MetsMetadataInfoHandler(ContentHandler):
         elif elName == 'amdSec':
             # let's start processing the metadata info..
             self.inAmdSec = True
-    
+
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = True
             metadataId = _getAttrValueByQName(attrs, 'ID')
             self.metsObject = self.holder.metadataMap[metadataId]
 
             metsObjectClassName = self.metsObject.__class__.__name__
-            
+
             if metsObjectClassName == 'Experiment':
                 self.processExperimentMetadata = True
 
@@ -368,7 +369,7 @@ class MetsMetadataInfoHandler(ContentHandler):
 
             elif metsObjectClassName == 'Datafile':
                 self.processDatafileMetadata = True
-            
+
                 # this will be a good time to save the "hard" metadata of this
                 # datafile so that when we start adding "soft" metadata
                 # parameters to it, we already have an entry for it in the DB
@@ -392,18 +393,17 @@ class MetsMetadataInfoHandler(ContentHandler):
                 #       entry for files with no metadata, we'll need to
                 #       get the unaccessed datafiles from datasetLookupDict.
 
-
         elif elName == 'xmlData' and self.inTechMd:
             self.inXmlData = True
 
         elif self.xmlDataChildElement is None and self.inXmlData:
             self.xmlDataChildElement = elName
-            
+
             # let's reset the tempMetadataHolder dictionary for this new batch
             # of datafile metadata
             self.tempMetadataHolder = {}
             self.elementNamespace = name[0]
-            
+
             # let's check if there's a custom parser that we should use for
             # this metadata block (aka parameter set)
             from tardis.tardis_portal.metshandler import customHandlers
@@ -504,7 +504,6 @@ class MetsMetadataInfoHandler(ContentHandler):
         elif elName == 'agent':
             self.inInstitution = False
 
-        
         elif elName == 'amdSec':
             # we're done processing the metadata entries
             self.inAmdSec = False
@@ -518,7 +517,6 @@ class MetsMetadataInfoHandler(ContentHandler):
             self.processExperimentMetadata = False
             self.processDatasetMetadata = False
             self.processDatafileMetadata = False
-
 
         elif elName == 'xmlData' and self.inTechMd:
             self.inXmlData = False
