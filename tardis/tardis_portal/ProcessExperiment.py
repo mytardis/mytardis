@@ -33,7 +33,6 @@
 from __future__ import with_statement  # This isn't required in Python 2.6
 from xml.dom.minidom import parse, parseString
 from tardis.tardis_portal.models import *
-from tardis.tardis_portal import ExperimentParser
 from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
 import datetime
@@ -101,29 +100,6 @@ class ProcessExperiment:
             return None
         else:
             return string
-
-    def register_experiment_xmldata(self, xmldata, created_by):
-
-        xmlString = xmldata
-        url = 'http://www.example.com'
-        self.url = 'http://www.example.com'
-
-        ep = ExperimentParser(str(xmlString))
-
-        e = Experiment(
-            url=url,
-            approved=True,
-            title=ep.getTitle(),
-            institution_name=ep.getAgentName('DISSEMINATOR'),
-            description=ep.getAbstract(),
-            created_by=created_by,
-            )
-
-        e.save()
-
-        self.process_METS(e, ep)
-
-        return e.id
 
     # this is the worst code of all time :) -steve
     def process_simple(
