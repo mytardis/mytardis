@@ -378,13 +378,14 @@
 		                                                        <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}">
 									<strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
 								</div>
-
 								<div class="dataset_info">
 
 									<div class="dataset_description">
-									<strong>Dataset Description</strong>: {{ dataset.description|safe }}
+									<strong>Dataset Description</strong>: {{ dataset.description|safe }} <br>
+									<strong>Dataset Equipment</strong>:
+									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}">{{ eq.key }}</a>
+									{% endfor %}
 									</div>
-
 									<div class="dataset_extrainfo">
 										{% if dataset.datasetparameterset_set.count %}
 										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>

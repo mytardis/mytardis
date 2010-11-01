@@ -1727,10 +1727,3 @@ def import_params(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
 
-
-def view_equipment(request, equipment_id):
-
-    eq = get_object_or_404(Equipment, pk=equipment_id)
-
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/view_equipment.html', c))
