@@ -258,6 +258,7 @@ class Equipment(models.Model):
     description = models.TextField(blank=True)
     make = models.CharField(max_length=60, blank=True)
     model = models.CharField(max_length=60, blank=True)
+    type = models.CharField(max_length=60, blank=True)
     serial = models.CharField(max_length=60, blank=True)
     comm = models.DateField(null=True, blank=True)
     decomm = models.DateField(null=True, blank=True)

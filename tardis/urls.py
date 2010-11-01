@@ -3,9 +3,10 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib.auth.views import login, logout
+from django.views.generic import list_detail
 from registration.forms import RegistrationFormUniqueEmail
 
-# Uncomment the next two lines to enable the admin:
+from tardis.tardis_portal.models import *
 
 from django.contrib import admin
 admin.autodiscover()
@@ -23,6 +24,14 @@ urlpatterns = patterns(
     (r'^partners/$', 'tardis.tardis_portal.views.partners'),
     (r'^stats/$', 'tardis.tardis_portal.views.stats'),
     (r'^import_params/$', 'tardis.tardis_portal.views.import_params'),
+    (r'^equipment/$', list_detail.object_list, {
+            "queryset" : Equipment.objects.all(),
+            }
+     ),
+    (r'^equipment/(?P<object_id>\d+)/$', list_detail.object_detail, {
+              "queryset" : Equipment.objects.all(),
+            }
+     ),
     (r'^experiment/view/(?P<experiment_id>\d+)/$',
      'tardis.tardis_portal.views.view_experiment'),
     (r'^experiment/view/$',
