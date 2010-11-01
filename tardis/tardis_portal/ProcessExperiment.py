@@ -317,7 +317,6 @@ class ProcessExperiment:
     # this is the worst code of all time :) -steve
     def process_simple(self, filename, created_by, eid):
 
-        url = 'http://www.example.com'
         self.url = 'http://www.example.com'
 
         with open(filename) as f:
@@ -334,10 +333,16 @@ class ProcessExperiment:
                 #logger.debug("LINE: %s, CURRENT: %s"  % (line, current))
                 if line.startswith('<experiment>'):
                     current = 'experiment'
-                    e = e + 1
+                    e += 1
                     ds = 0
                     df = 0
-                    exp = dict()
+                    exp_tags = ['organization', 'title', 'starttime',
+                                'endtime', 'url']
+                    exp = {}
+                    # initialize with empty strings to avoid key errors
+                    exp['abstract'] = ''
+                    for tag in exp_tags:
+                        exp[tag] = ''
                     authors = list()
 
                 elif line.startswith('<dataset>'):
@@ -347,7 +352,7 @@ class ProcessExperiment:
 
                         experiment = Experiment(
                             id=eid,
-                            url=url,
+                            url=exp['url'],
                             approved=True,
                             title=exp['title'],
                             institution_name=exp['organization'],
@@ -708,7 +713,6 @@ class ProcessExperiment:
                                 except Schema.DoesNotExist, e:
                                     logger.debug('schema not found: ' + e)
 
-                exp_header = ['organization', 'title', 'starttime', 'endtime']
                 try:
                     # logger.debug('attempting to parse line: ' + line)
                     dom = parseString(line)
@@ -717,7 +721,7 @@ class ProcessExperiment:
                     tag_name = doc.tagName
                     logger.debug(tag_name + ' discovered')
                     if current == 'experiment':
-                        if tag_name in exp_header:
+                        if tag_name in exp_tags:
                             contents = doc.childNodes
                             exp[tag_name] = getText(contents)
                         if tag_name == 'author':

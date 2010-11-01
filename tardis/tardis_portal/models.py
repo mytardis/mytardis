@@ -250,3 +250,17 @@ class XML_data(models.Model):
 
     def __unicode__(self):
         return self.xmlns
+
+
+class Equipment(models.Model):
+    key = models.CharField(primary_key=True, max_length=30)
+    dataset = models.ManyToManyField(Dataset, null=True, blank=True)
+    description = models.TextField(blank=True)
+    make = models.CharField(max_length=60, blank=True)
+    model = models.CharField(max_length=60, blank=True)
+    serial = models.CharField(max_length=60, blank=True)
+    comm = models.DateField(blank=True)
+    decomm = models.DateField(blank=True)
+
+    def __unicode__(self):
+        return self.key
