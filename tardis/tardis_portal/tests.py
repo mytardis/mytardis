@@ -29,6 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tardis.tardis_portal.models import Experiment
 
 """
 tests.py
@@ -247,7 +248,7 @@ class UserInterfaceTestCase(TestCase):
                              password=pwd), True)
 
 
-class MetsExperimentStructCreatorTestCase(unittest.TestCase):
+class MetsExperimentStructCreatorTestCase(TestCase):
 
     def setUp(self):
         import os
@@ -311,7 +312,9 @@ class MetsExperimentStructCreatorTestCase(unittest.TestCase):
             'metadata A-2 should have metadata Id A-2')
 
 
-class MetsMetadataInfoHandlerTestCase(unittest.TestCase):
+class MetsMetadataInfoHandlerTestCase(TestCase):
+
+    fixtures = ['test_saxs_data']
 
     def setUp(self):
         import os
@@ -325,23 +328,71 @@ class MetsMetadataInfoHandlerTestCase(unittest.TestCase):
             MetsExperimentStructCreator(self.dataHolder))
         parser.parse(metsFile)
 
-        # TODO: write a test which checks if the ingested data reflects the data
-        #       that was read from the METS document
-        #from django.contrib.auth.models import User
-        #user = User.objects.get(email='gerson.galang@versi.edu.au')
-        #parser.setContentHandler(
-        #    MetsMetadataInfoHandler(self.dataHolder, expId=None, user))
-        #parser.parse(metsFile)
+        from django.contrib.auth.models import User
+        self.user = User.objects.get(username='test')
+        parser.setContentHandler(
+            MetsMetadataInfoHandler(holder=self.dataHolder,
+            tardisExpId=None,
+            createdBy=self.user))
+        parser.parse(metsFile)
+
+    def testIngestedExperimentFields(self):
+        self.assertTrue(self.dataHolder.experimentDatabaseId == 4,
+            'Experiment ID should be 4')
+        from tardis.tardis_portal import models
+        experiment = models.Experiment.objects.get(id=4)
+        self.assertTrue(experiment.title == 'SAXS Test',
+            'wrong experiment title')
+        self.assertTrue(experiment.institution_name ==
+            'Adelaide University',
+            'wrong experiment institution')
+        self.assertTrue(experiment.description ==
+            'Hello world hello world',
+            'wrong experiment abstract')
+        self.assertTrue(experiment.created_by == self.user,
+            'wrong experiment creator')
+        self.assertTrue(experiment.url ==
+            'http://www.blahblah.com/espanol',
+            'wrong experiment url')
+    
+    def testIngestedDatasetFields(self):
+        from tardis.tardis_portal import models
+        experiment = models.Experiment.objects.get(id=4)
+        datasets = models.Dataset.objects.filter(
+            experiment=experiment)
+        self.assertTrue(len(datasets) == 1,
+            'there should only be one dataset for the experiment')
+        dataset = datasets[0]
+        self.assertTrue(dataset.description == 'Bluebird',
+            'dataset description should be Bluebird')
+        self.assertTrue(dataset.description == 'Bluebird',
+            'dataset description should be Bluebird')
+
+
+    def testIngestedDatafileFields(self):
+        from tardis.tardis_portal import models
+        dataset = models.Dataset.objects.get(description='Bluebird')
+        datafiles = dataset.dataset_file_set.all()
+        self.assertTrue(len(datafiles) == 5,
+            'there should be 5 datafiles for the given dataset')
+        datafile = datafiles.get(filename='ment0003.osc')
+        self.assertTrue(datafile is not None,
+            'datafile should not be none')
+        self.assertTrue(datafile.size == '18006000',
+            'wrong file size for ment0003.osc')
 
 
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
-    parserSuite = \
+    parserSuite1 = \
         unittest.TestLoader().loadTestsFromTestCase(
         MetsExperimentStructCreatorTestCase)
+    parserSuite2 = \
+        unittest.TestLoader().loadTestsFromTestCase(
+        MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     allTests = unittest.TestSuite(
-        [parserSuite, userInterfaceSuite, searchSuite])
+        [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
     return allTests
