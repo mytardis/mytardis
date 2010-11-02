@@ -210,6 +210,13 @@ class FullExperiment(forms.BaseForm):
         for i, ds in enumerate(experiment.dataset_set.all()):
             data['dataset_description[' + str(i) + ']'] = ds.description
             self._add_dataset_form(i, Dataset())
+            for file in ds.dataset_file_set.all():
+                if not 'file[' + str(i) + ']' in data:
+                    data['file[' + str(i) + ']'] = []
+                if not i in self.data_files:
+                    self.data_files[i] = []
+                data['file[' + str(i) + ']'].append(file.filename)
+                self._add_datafile_form(i, Dataset_File())
         return data
 
     def _parse_form(self, data=None):
