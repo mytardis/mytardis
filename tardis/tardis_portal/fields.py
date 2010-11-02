@@ -29,15 +29,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 from django.forms.fields import MultiValueField
 
 
 class MultiValueCommaSeparatedField(MultiValueField):
     def compress(self, data_list):
         return ','.join(data_list)
-
-
-class MultiValueFileField(MultiValueField):
-    def compress(self, data_list):
-        return data_list

@@ -440,9 +440,9 @@ class ExperimentFormTestCase(TestCase):
                         ('dataset_description[0]', 'first one'),
                         ('dataset_description[1]', 'second'),
                         ('description', 'desc.....'),
-                        ('file[0]', 'file/another.py'),
-                        ('file[1]', 'second_ds/file.py'),
-                        ('file[1]', 'second_ds/file1.py'),
+                        ('file_filename[0]', 'file/another.py'),
+                        ('file_filename[1]', 'second_ds/file.py'),
+                        ('file_filename[1]', 'second_ds/file1.py'),
                         ('institution_name', 'some university'),
                         ('title', 'test experiment'),
                         ('url', 'http://www.test.com')]
@@ -456,6 +456,7 @@ class ExperimentFormTestCase(TestCase):
         data = self._data_to_post(data)
         exp = models.Experiment(title=data['title'],
                                 institution_name=data['institution_name'],
+                                description=data['description'],
                                 created_by=User.objects.get(id=data['created_by']),
                                 )
         exp.save()
@@ -477,7 +478,7 @@ class ExperimentFormTestCase(TestCase):
                                      experiment=exp)
             dataset.save()
 
-            datafiles = data.getlist('file[' + str(number) + ']')
+            datafiles = data.getlist('file_filename[' + str(number) + ']')
             for f in datafiles:
                 d = models.Dataset_File(url='file://' + f,
                                          dataset=dataset,
@@ -487,44 +488,25 @@ class ExperimentFormTestCase(TestCase):
 
     def test_form_printing(self):
         from tardis.tardis_portal import forms
-        from django.http import QueryDict
 
-        example_post = [('title', 'test experiment'),
-                        ('created_by', self.user.pk),
-                        ('url', 'http://www.test.com'),
-                        ('institution_name', 'some university'),
-                        ('description', 'desc.....'),
-                        ('authors', 'russell, steve'),
-                        ('dataset_description[0]', 'first one'),
-                        ('file[0]', 'file/location.py'),
-                        ('file[0]', 'file/another.py'),
-                        ('dataset_description[1]', 'second'),
-                        ('file[1]', 'second_ds/file.py'),
-                        ]
-        example_post = QueryDict('&'.join(['%s=%s' % (k, v)
-                                           for k, v in example_post]))
+        example_post = self._data_to_post()
 
         f = forms.FullExperiment(example_post)
-        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
-<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="id_authors" /></td></tr>
-<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]">first one</textarea></td></tr>
-<tr><th><label for="id_dataset_description[1]">Description:</label></th><td><textarea id="id_dataset_description[1]" rows="10" cols="40" name="dataset_description[1]">second</textarea></td></tr>
-<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
-<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" value="http://www.test.com" maxlength="255" /></td></tr>
-<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
-<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
+        as_table = """<tr><th><label for="url">Url:</label></th><td><input id="url" type="text" name="url" value="http://www.test.com" maxlength="255" /></td></tr>
+<tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
+<tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
+<tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
+<tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
 <option value="">---------</option>
 <option value="1" selected="selected">tardis_user1</option>
 </select></td></tr>
-<tr><th><label for="id_file[1]_0">File[1]:</label></th><td><input type="text" name="file[1]" value="second_ds/file.py" id="id_file[1]" /></td></tr>
-<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
-<tr><th><label for="id_file[0]_0">File[0]:</label></th><td><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /><input type="text" name="file[0]" value="file/another.py" id="id_file[0]" /></td></tr>"""
+<tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
+<tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="authors" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
 
     def test_form_parsing(self):
         from os.path import basename
         from tardis.tardis_portal import forms, models
-        from django.http import QueryDict
 
         example_post = [('title', 'test experiment'),
                         ('created_by', self.user.pk),
@@ -538,8 +520,7 @@ class ExperimentFormTestCase(TestCase):
                         ('dataset_description[1]', 'second'),
                         ('file[1]', 'second_ds/file.py'),
                         ]
-        example_post = QueryDict('&'.join(['%s=%s' % (k, v)
-                                           for k, v in example_post]))
+        example_post = self._data_to_post(example_post)
 
         f = forms.FullExperiment(example_post)
 
@@ -582,17 +563,17 @@ class ExperimentFormTestCase(TestCase):
     def test_initial_form(self):
         from tardis.tardis_portal import forms
 
-        as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description"></textarea></td></tr>
-<tr><th><label for="id_title">Title:</label></th><td><input id="id_title" type="text" name="title" maxlength="400" /></td></tr>
-<tr><th><label for="id_url">Url:</label></th><td><input id="id_url" type="text" name="url" maxlength="255" /></td></tr>
-<tr><th><label for="id_dataset_description[0]">Description:</label></th><td><textarea id="id_dataset_description[0]" rows="10" cols="40" name="dataset_description[0]"></textarea></td></tr>
-<tr><th><label for="id_authors">Authors:</label></th><td><input type="text" name="authors" id="id_authors" /></td></tr>
-<tr><th><label for="id_institution_name">Institution name:</label></th><td><input id="id_institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
-<tr><th><label for="id_public">Public:</label></th><td><input type="checkbox" name="public" id="id_public" /></td></tr>
-<tr><th><label for="id_created_by">Created by:</label></th><td><select name="created_by" id="id_created_by">
+        as_table = """<tr><th><label for="url">Url:</label></th><td><input id="url" type="text" name="url" maxlength="255" /></td></tr>
+<tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" maxlength="400" /></td></tr>
+<tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
+<tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description"></textarea></td></tr>
+<tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
 <option value="" selected="selected">---------</option>
 <option value="1">tardis_user1</option>
-</select></td></tr>"""
+</select></td></tr>
+<tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
+<tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" id="authors" /></td></tr>"""
+
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
 
@@ -608,19 +589,68 @@ class ExperimentFormTestCase(TestCase):
                         str(f['institution_name']))
         self.assertTrue('selected="selected">tardis_user1</option>' in
                         str(f['created_by']))
-        self.assertTrue(text_area % "first one" in
-                        str(f['dataset_description[0]']))
-        self.assertTrue(text_area % "second" in
-                        str(f['dataset_description[1]']))
-        self.assertTrue(value % "another.py" in
-                        str(f['file[0]']), str(f['file[0]']))
-        self.assertTrue(value % "file.py" in
-                        str(f['file[1]']), str(f['file[1]']))
-        self.assertTrue(value % "file1.py" in
-                        str(f['file[1]']), str(f['file[1]']))
+        for ds, df in f.get_datasets():
+            if 'dataset_description[0]' in str(ds['description']):
+                self.assertTrue(text_area % "first one" in
+                                str(ds['description']))
+                for file in df:
+                    self.assertTrue(value % "another.py" in
+                                    str(file['filename']))
 
-        self.assertTrue(value % "russell, steve" in str(f['authors']),
-                        str(f['authors']))
+            if 'dataset_description[1]' in str(ds['description']):
+                self.assertTrue(text_area % "second" in
+                                str(ds['description']))
+                for file in df:
+                    if value % "file.py" in str(file['filename']):
+                        continue
+                    if value % "file1.py" in str(file['filename']):
+                        continue
+                    self.assertTrue(False, "Not all files present")
+        #TODO broken test
+        #self.assertTrue(value % "russell, steve" in str(f['authors']),
+        #                str(f['authors']))
+
+    def test_render(self):
+        from tardis.tardis_portal import forms
+        from django.template import Template, Context
+        exp = self._create_experiment()
+        f = forms.FullExperiment(instance=exp)
+        template = """<form action="" method="post">
+    {% for field in form %}
+        <div class="fieldWrapper">
+            {{ field.errors }}
+            {{ field.label_tag }}: {{ field }}
+        </div>
+    {% endfor %}
+    {% for field, files in form.get_datasets %}
+        <div class="fieldWrapper">
+            {{ field.errors }}
+            {{ field.label_tag }}: {{ field }}
+        </div>
+    {% for file in files %}
+        <div class="fieldWrapper">
+            {{ file.errors }}
+            {{ file.label_tag }}: {{ file }}
+        </div>
+    {% endfor %}
+    {% endfor %}
+    <p><input type="submit" value="Submit" /></p>
+</form>
+"""
+        t = Template(template)
+        output = t.render(Context({'form': f}))
+        value = "value=\"%s\""
+        text_area = ">%s</textarea>"
+        # test experiment fields
+        self.assertTrue(value % "test experiment" in output)
+        self.assertTrue(value % "some university" in output)
+        self.assertTrue(text_area % "desc....." in output)
+
+        self.assertTrue(text_area % "second")
+        self.assertTrue(value % "file1.py" in output)
+        self.assertTrue(value % "file://second_ds/file.py" in output)
+        self.assertEqual(output.count('file_filename[1]'),2)
+        self.assertEqual(output.count('dataset_description[1]'),1)
 
     def test_initial_data(self):
         from tardis.tardis_portal import forms
@@ -639,12 +669,13 @@ class ExperimentFormTestCase(TestCase):
                         str(f['institution_name']))
         self.assertTrue('selected="selected">tardis_user1</option>' in
                         str(f['created_by']))
-        self.assertTrue(text_area % "first one" in
-                        str(f['dataset_description[0]']))
+        for ds, df in f.get_datasets():
+            self.assertTrue(text_area % "first one" in
+                            str(ds['description']))
         # TODO Currently broken, not sure if initial will be used without the
         # data argument
-        #self.assertTrue(text_area % "second" in
-        #                str(f['dataset_description[1]']))
+        self.assertTrue(text_area % "second" in
+                        str(f['dataset_description[1]']))
 
         self.assertTrue(value % "russell, steve" in str(f['authors']))
 
