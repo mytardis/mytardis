@@ -41,14 +41,16 @@ import re
 from os.path import basename
 
 from django import forms
+from django.utils.html import conditional_escape
+from django.utils.encoding import force_unicode
+from django.utils.safestring import mark_safe
 from django.forms.util import ErrorDict
-from django.forms.models import ModelChoiceField, model_to_dict
-from django.forms.fields import MultiValueField
-from django.forms.widgets import MultiWidget, TextInput
+from django.forms.models import ModelChoiceField
+from django.forms.forms import BoundField
 
 from tardis.tardis_portal import models
-from tardis.tardis_portal.fields import MultiValueCommaSeparatedField, MultiValueFileField
-from tardis.tardis_portal.widgets import MultiFileWidget, CommaSeparatedInput
+from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
+from tardis.tardis_portal.widgets import CommaSeparatedInput
 
 
 class DatafileSearchForm(forms.Form):
@@ -103,6 +105,108 @@ class RegisterExperimentForm(forms.Form):
     originid = forms.CharField(max_length=400, required=False)
 
 
+class PostfixedBoundField(BoundField):
+    def __unicode__(self):
+        """Renders this field as an HTML widget."""
+        if self.field.show_hidden_initial:
+            return self.as_widget() + self.as_hidden(only_initial=True)
+        if hasattr(self.form, 'postfix'):
+            attrs = {'id': self.form.auto_id % self.name +
+                     getattr(self.form, 'postfix')}
+        else:
+            attrs = None
+        return self.as_widget(attrs=attrs)
+
+    def __str__(self):
+        return self.__unicode__().encode('utf-8')
+
+
+class PostfixedForm:
+    def __iter__(self):
+        for name, field in self.fields.items():
+            yield PostfixedBoundField(self, field, name)
+
+    def __getitem__(self, name):
+        "Returns a BoundField with the given name."
+        try:
+            field = self.fields[name]
+        except KeyError:
+            raise KeyError('Key %r not found in Form' % name)
+        return PostfixedBoundField(self, field, name)
+
+    def _html_output(self, normal_row, error_row, row_ender, help_text_html, errors_on_separate_row):
+        "Helper function for outputting HTML. Used by as_table(), as_ul(), as_p()."
+        top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
+        output, hidden_fields = [], []
+
+        for name, field in self.fields.items():
+            html_class_attr = ''
+            bf = PostfixedBoundField(self, field, name)
+            bf_errors = self.error_class([conditional_escape(error) for error in bf.errors]) # Escape and cache in local variable.
+            if bf.is_hidden:
+                if bf_errors:
+                    top_errors.extend([u'(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
+                hidden_fields.append(unicode(bf))
+            else:
+                # Create a 'class="..."' atribute if the row should have any
+                # CSS classes applied.
+                css_classes = bf.css_classes()
+                if css_classes:
+                    html_class_attr = ' class="%s"' % css_classes
+
+                if errors_on_separate_row and bf_errors:
+                    output.append(error_row % force_unicode(bf_errors))
+
+                if bf.label:
+                    label = conditional_escape(force_unicode(bf.label))
+                    # Only add the suffix if the label does not end in
+                    # punctuation.
+                    if self.label_suffix:
+                        if label[-1] not in ':?.!':
+                            label += self.label_suffix
+                    label = bf.label_tag(label) or ''
+                else:
+                    label = ''
+
+                if field.help_text:
+                    help_text = help_text_html % force_unicode(field.help_text)
+                else:
+                    help_text = u''
+
+                output.append(normal_row % {
+                    'errors': force_unicode(bf_errors),
+                    'label': force_unicode(label),
+                    'field': unicode(bf),
+                    'help_text': help_text,
+                    'html_class_attr': html_class_attr
+                })
+
+        if top_errors:
+            output.insert(0, error_row % force_unicode(top_errors))
+
+        if hidden_fields: # Insert any hidden fields in the last row.
+            str_hidden = u''.join(hidden_fields)
+            if output:
+                last_row = output[-1]
+                # Chop off the trailing row_ender (e.g. '</td></tr>') and
+                # insert the hidden fields.
+                if not last_row.endswith(row_ender):
+                    # This can happen in the as_p() case (and possibly others
+                    # that users write): if there are only top errors, we may
+                    # not be able to conscript the last row for our purposes,
+                    # so insert a new, empty row.
+                    last_row = (normal_row % {'errors': '', 'label': '',
+                                              'field': '', 'help_text':'',
+                                              'html_class_attr': html_class_attr})
+                    output.append(last_row)
+                output[-1] = last_row[:-len(row_ender)] + str_hidden + row_ender
+            else:
+                # If there aren't any rows in the output, just append the
+                # hidden fields.
+                output.append(str_hidden)
+        return mark_safe(u'\n'.join(output))
+
+
 class Author_Experiment(forms.ModelForm):
     class Meta:
         model = models.Author_Experiment
@@ -113,12 +217,22 @@ class Author(forms.ModelForm):
         model = models.Author
 
 
-class Dataset(forms.ModelForm):
+class Dataset(PostfixedForm, forms.ModelForm):
+    id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    # XXX Probably should be an InlineForignKeyField
+    experiment = forms.ModelChoiceField(
+        queryset=models.Experiment.objects.all(),
+        widget=forms.HiddenInput())
+
     class Meta:
         model = models.Dataset
 
 
-class Dataset_File(forms.ModelForm):
+class Dataset_File(PostfixedForm, forms.ModelForm):
+    id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    # XXX Probably should be an InlineForignKeyField
+    dataset = forms.ModelChoiceField(queryset=models.Dataset.objects.all(),
+                                     widget=forms.HiddenInput())
     url = forms.CharField(max_length=400, required=True)
 
     class Meta:
@@ -131,9 +245,9 @@ class Experiment(forms.ModelForm):
         exclude = ('authors', 'handle', 'approved')
 
 
-class FullExperiment(forms.BaseForm):
+class FullExperiment(Experiment):
     """
-    This handles the complex experiemnt forms.
+    This handles the complex experiment forms.
 
     The post format is expected to be like::
 
@@ -142,96 +256,75 @@ class FullExperiment(forms.BaseForm):
         dataset_description[0] 1
         dataset_description[2] 2
         dataset_description[3] 3
-        file[0] 2R9Y/downloadFiles.py
-        file[0] 2R9Y/Images/0510060001.osc
-        file[0] 2R9Y/Images/0510060002.osc
-        file[0] 2R9Y/Images/0510060003.osc
-        file[0] 2R9Y/Images/0510060004.osc
-        file[0] 2R9Y/Images/0510060005.osc
-        file[0] 2R9Y/Images/0510060006.osc
-        file[0] 2R9Y/Images/0510060007.osc
-        file[0] 2R9Y/Images/0510060008.osc
-        file[0] 2R9Y/Images/0510060009.osc
-        file[0] 2R9Y/Images/0510060010.osc
-        file[0] 2R9Y/Images/traverseScript/traverse.py
-        file[0] 2R9Y/toplevel.log
-        file[2] 2R9Y/downloadFiles.py
-        file[3] 2R9Y/downloadFiles.py
-        file[3] 2R9Y/toplevel.log
+        file_filename[0] 2R9Y/downloadFiles.py
+        file_filename[0] 2R9Y/Images/0510060001.osc
+        file_filename[0] 2R9Y/Images/0510060002.osc
+        file_filename[2] 2R9Y/downloadFiles.py
+        file_filename[3] 2R9Y/downloadFiles.py
+        file_filename[3] 2R9Y/toplevel.log
         title Test Title
+
+    All internal datasets forms are prefixed with `dataset_`, and all
+    internal dataset file fields are prefixed with `file_`. These
+    are parsed out of the post data and added to the form as internal
+    lists.
 
     """
     re_dataset = re.compile('dataset_description\[([\d]+)\]$')
     dataset_field_translation = {"description": "dataset_description"}
-    datafile_field_translation = {"filename": "file"}
     base_fields = {}
 
-    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
+    def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorDict, label_suffix=':',
                  empty_permitted=False, instance=None, extra=1):
-        self.experiment = None
         self.authors = []
         self.datasets = {}
-        self.data_files = {}
-        self.fields = {}
+        self.dataset_files = {}
         self.__exp_fields = {}
         self.__ds_num = 0
-
-        if instance:
-            object_data = self._experiment_to_dict(instance)
-            if initial:
-                object_data.update(initial)
-            initial = object_data
-            self.__exp_fields = self.fields
 
         super(FullExperiment, self).__init__(data=data,
                                              files=files,
                                              auto_id=auto_id,
                                              prefix=prefix,
                                              initial=initial,
+                                             instance=instance,
                                              error_class=error_class,
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
-        # recover the fields from the exp before the __init__ smashed them
-        if self.__exp_fields:
-            self.fields = self.__exp_fields
-
         if data:
-            self.parsed_data = self._parse_form(data)
+            self.parsed_data = self._parse_post(data)
         else:
-            self._parse_form()
+            self._parse_post()
+            self._initialise_from_instance(instance)
             # TODO, needs to start counting from where parse_form stops
-            for i in xrange(self.__ds_num, extra):
-                self._add_dataset_form(i, Dataset())
+            if not self.datasets:
+                for i in xrange(self.__ds_num, extra):
+                    self._add_dataset_form(i, Dataset(auto_id='dataset_%s'))
 
-    def _experiment_to_dict(self, experiment):
+    def _initialise_from_instance(self, experiment):
         """
         Format an instance of an
-        :class:`~tardis.tardis_portal.models.Experiment` model as a dictionary
+        :class:`~tardis.tardis_portal.models.Experiment` model initialise
+        the internal form variables.
 
         :param experiment: maximum number of stack frames to show
         :type experiment: `tardis.tardis_portal.models.Experiment`
-        :rtype: dictionary of strings and lists of strings
+        :rtype: dictionary containing strings and lists of strings
         """
-        data = model_to_dict(experiment)
+        if not experiment:
+            return
         for i, ds in enumerate(experiment.dataset_set.all()):
-            data['dataset_description[' + str(i) + ']'] = ds.description
-            self._add_dataset_form(i, Dataset())
+            form = Dataset(instance=ds, auto_id='dataset_%s')
+            self._add_dataset_form(i, form)
+
+            self.dataset_files[i] = []
             for file in ds.dataset_file_set.all():
-                if not 'file[' + str(i) + ']' in data:
-                    data['file[' + str(i) + ']'] = []
-                if not i in self.data_files:
-                    self.data_files[i] = []
-                data['file[' + str(i) + ']'].append(file.filename)
-                self._add_datafile_form(i, Dataset_File())
-        return data
+                self._add_datafile_form(i, Dataset_File(instance=file,
+                                                        auto_id='file_%s'))
 
-    def _parse_form(self, data=None):
-        experiment = Experiment(data=data)
-        self.experiment = experiment
-        self.fields.update(self.experiment.fields)
-
+    def _parse_post(self, data=None, instance=None):
         if data and 'authors' in data:
             authors = [(c, a.strip()) for c, a in
                        enumerate(data.get('authors').split(','))]
@@ -242,8 +335,9 @@ class FullExperiment(forms.BaseForm):
                     o_author = None
                 f = Author(data={'name': author}, instance=o_author)
                 self.authors.append(f)
+
         self.fields['authors'] = \
-            MultiValueCommaSeparatedField(self.authors,
+            MultiValueCommaSeparatedField([author.fields['name'] for author in self.authors],
                                           widget=CommaSeparatedInput())
 
         if not data:
@@ -254,16 +348,32 @@ class FullExperiment(forms.BaseForm):
             if not match:
                 continue
             number = int(match.groups()[0])
-            form = Dataset({'description': v})
+            # TODO to get all fields from the post we should be looking
+            # for all fields starting with dataset_
+            ds_pk = data.get('dataset_id[' + str(number) + ']')
+            try:
+                ds_inst = models.Dataset.objects.get(id=ds_pk)
+            except models.Dataset.DoesNotExist:
+                ds_inst = None
+            form = Dataset(data={'description': v},
+                           instance=ds_inst,
+                           auto_id='dataset_%s')
             self._add_dataset_form(number, form)
 
-            self.data_files[number] = []
-
-            datafiles = data.getlist('file[' + str(number) + ']')
+            self.dataset_files[number] = []
+            # TODO to cover extra fields we should be looking for all fields
+            # starting with file_
+            datafiles = data.getlist('file_filename[' + str(number) + ']')
 
             for f in datafiles:
-                d = Dataset_File({'url': 'file://' + f,
-                                  'filename': basename(f)})
+                df_pk = data.get('file_id[' + str(number) + ']')
+                try:
+                    df_inst = models.Dataset_File.objects.get(id=df_pk)
+                except models.Dataset_File.DoesNotExist:
+                    df_inst = None
+                d = Dataset_File(data={'url': 'file://' + f,
+                                  'filename': basename(f)},
+                                 instance=df_inst, auto_id='file_%s')
                 self._add_datafile_form(number, d)
 
         return data
@@ -274,48 +384,44 @@ class FullExperiment(forms.BaseForm):
         """
         return self.dataset_field_translation[name] + '[' + str(number) + ']'
 
-    def _translate_dffieldname(self, name, number):
-        """
-        return the datafile forms translated field name
-        """
-        return self.datafile_field_translation[name] + '[' + str(number) + ']'
-
     def _add_dataset_form(self, number, form):
         self.datasets[number] = form
-        for name, field in self.datasets[number].fields.items():
-            if isinstance(field, ModelChoiceField):
-                continue
-            self.fields[self._translate_dsfieldname(name, number)] = field
+        setattr(form, 'postfix', '[%s]' % number)
         self.__ds_num = self.__ds_num + 1
 
     def _add_datafile_form(self, number, form):
-        self.data_files[number].append(form)
-        forms = self.data_files[number]
-        for field_name, form_name in self.datafile_field_translation.items():
-            self.fields[form_name + '[' + str(number) + ']'] = MultiValueFileField(
-                [f.fields[field_name] for f in forms], widget=MultiFileWidget([TextInput for f in forms]))
+        setattr(form, 'postfix', '[%s]' % number)
+        self.dataset_files[number].append(form)
 
-    def _get_errors(self):
-        errors = ErrorDict()
-        errors.update(self.experiment.errors)
+    def get_dataset_files(self, number):
+        """
+        Return a list of datafiles from a dataset
 
-        # TODO since this is a compound field, this should merge the errors
-        for author in self.authors:
-            errors.update(author.errors)
+        :param number: the dataset number as identified in the form.
+        :type number: integer
+        :rtype: list of :class:`~tardis.tardis_portal.models.Dataset_File`
+        """
+        if number in self.dataset_files:
+            return self.dataset_files[number]
+        return []
 
-        for number, dataset in self.datasets.items():
-            for name, error in dataset.errors.items():
-                if isinstance(dataset.fields[name], ModelChoiceField):
-                    continue
-                errors[self._translate_dsfieldname(name, number)] = \
-                    dataset.errors[name]
+    def get_datasets(self):
+        """
+        Return a tuple of datasets and associated dataset files.
 
-        return errors
-
-    errors = property(_get_errors)
+        :rtype: tuple containing
+         a :class:`~tardis.tardis_portal.models.Dataset`and a
+         list of :class:`~tardis.tardis_portal.models.Dataset_File`
+        """
+        for number, form in self.datasets.items():
+            yield (form, self.get_dataset_files(number))
 
     def save(self, commit=True):
-        experiment = self.experiment.save()
+        # remove m2m field before saving
+        del self.cleaned_data['authors']
+
+        experiment = super(FullExperiment, self).save()
+
         authors = []
         author_experiments = []
         datasets = []
@@ -337,8 +443,8 @@ class FullExperiment(forms.BaseForm):
             o_dataset = dataset.save()
             datasets.append(o_dataset)
             # save any datafiles if the data set has any
-            if key in self.data_files:
-                for df in self.data_files[key]:
+            if key in self.dataset_files:
+                for df in self.dataset_files[key]:
                     df.data['dataset'] = o_dataset.pk
                     dataset_file = Dataset_File(df.data)
                     ds = dataset_file.save(commit)
@@ -348,9 +454,33 @@ class FullExperiment(forms.BaseForm):
                 'author_experiments': author_experiments,
                 'authors': authors,
                 'datasets': datasets,
-                'dataset_files': dataset_file}
+                'dataset_files': dataset_files}
 
     def is_valid(self):
+        """
+        Test the validity of the form, the form may be invalid even if the
+        error attribute has no contents. This is because the returnd value
+        is dependent on the validity of the nested forms.
+
+        This validity also takes into account forign keys that might be
+        dependent on an unsaved model.
+
+        :rtype: bool
+        """
+        errors = ErrorDict()
+        errors.update(self.errors)
+
+        # TODO since this is a compound field, this should merge the errors
+        for author in self.authors:
+            errors.update(author.errors)
+
+        for number, dataset in self.datasets.items():
+            for name, error in dataset.errors.items():
+                if isinstance(dataset.fields[name], ModelChoiceField):
+                    continue
+                errors[self._translate_dsfieldname(name, number)] = \
+                    dataset.errors[name]
+
         return not bool(self.errors)
 
 
@@ -515,3 +645,4 @@ def createSearchDatafileSelectionForm():
 
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
+           
