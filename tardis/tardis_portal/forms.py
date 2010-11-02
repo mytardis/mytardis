@@ -206,6 +206,14 @@ class FullExperiment(forms.BaseForm):
                 self._add_dataset_form(i, Dataset())
 
     def _experiment_to_dict(self, experiment):
+        """
+        Format an instance of an
+        :class:`~tardis.tardis_portal.models.Experiment` model as a dictionary
+
+        :param experiment: maximum number of stack frames to show
+        :type experiment: `tardis.tardis_portal.models.Experiment`
+        :rtype: dictionary of strings and lists of strings
+        """
         data = model_to_dict(experiment)
         for i, ds in enumerate(experiment.dataset_set.all()):
             data['dataset_description[' + str(i) + ']'] = ds.description
