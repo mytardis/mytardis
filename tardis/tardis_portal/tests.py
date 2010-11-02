@@ -451,7 +451,6 @@ class ExperimentFormTestCase(TestCase):
 
     def _create_experiment(self, data=None):
         from tardis.tardis_portal import models, forms
-        from django.http import QueryDict
         from os.path import basename
         from django.contrib.auth.models import User
         data = self._data_to_post(data)
@@ -502,7 +501,8 @@ class ExperimentFormTestCase(TestCase):
                         ('dataset_description[1]', 'second'),
                         ('file[1]', 'second_ds/file.py'),
                         ]
-        example_post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in example_post]))
+        example_post = QueryDict('&'.join(['%s=%s' % (k, v)
+                                           for k, v in example_post]))
 
         f = forms.FullExperiment(example_post)
         as_table = """<tr><th><label for="id_description">Description:</label></th><td><textarea id="id_description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
@@ -538,7 +538,8 @@ class ExperimentFormTestCase(TestCase):
                         ('dataset_description[1]', 'second'),
                         ('file[1]', 'second_ds/file.py'),
                         ]
-        example_post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in example_post]))
+        example_post = QueryDict('&'.join(['%s=%s' % (k, v)
+                                           for k, v in example_post]))
 
         f = forms.FullExperiment(example_post)
 
@@ -573,8 +574,10 @@ class ExperimentFormTestCase(TestCase):
             v_files = [basename(f) for f in check_files[d.description]]
             v_urls = ['file://' + f for f in check_files[d.description]]
             for f in files:
-                self.assertTrue(f.filename in v_files, "%s not in %s" % (f.filename, v_files))
-                self.assertTrue(f.url in v_urls, "%s not in %s" % (f.url, v_urls))
+                self.assertTrue(f.filename in v_files,
+                                "%s not in %s" % (f.filename, v_files))
+                self.assertTrue(f.url in v_urls,
+                                "%s not in %s" % (f.url, v_urls))
 
     def test_initial_form(self):
         from tardis.tardis_portal import forms
@@ -595,13 +598,14 @@ class ExperimentFormTestCase(TestCase):
 
     def test_instance(self):
         from tardis.tardis_portal import forms
-        from tardis.tardis_portal import models
         exp = self._create_experiment()
         f = forms.FullExperiment(instance=exp)
         value = "value=\"%s\""
         text_area = ">%s</textarea>"
-        self.assertTrue(value % 'test experiment' in str(f['title']), str(f['title']))
-        self.assertTrue(value % 'some university' in str(f['institution_name']))
+        self.assertTrue(value % 'test experiment' in
+                        str(f['title']), str(f['title']))
+        self.assertTrue(value % 'some university' in
+                        str(f['institution_name']))
         self.assertTrue('selected="selected">tardis_user1</option>' in
                         str(f['created_by']))
         self.assertTrue(text_area % "first one" in
@@ -615,12 +619,11 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(value % "file1.py" in
                         str(f['file[1]']), str(f['file[1]']))
 
-        self.assertTrue(value % "russell, steve" in str(f['authors']), str(f['authors']))
-
+        self.assertTrue(value % "russell, steve" in str(f['authors']),
+                        str(f['authors']))
 
     def test_initial_data(self):
         from tardis.tardis_portal import forms
-        from tardis.tardis_portal import models
         from django.forms.models import model_to_dict
         exp = self._create_experiment()
         initial = model_to_dict(exp)
@@ -632,7 +635,8 @@ class ExperimentFormTestCase(TestCase):
         value = "value=\"%s\""
         text_area = ">%s</textarea>"
         self.assertTrue(value % 'test experiment' in str(f['title']))
-        self.assertTrue(value % 'some university' in str(f['institution_name']))
+        self.assertTrue(value % 'some university' in
+                        str(f['institution_name']))
         self.assertTrue('selected="selected">tardis_user1</option>' in
                         str(f['created_by']))
         self.assertTrue(text_area % "first one" in
