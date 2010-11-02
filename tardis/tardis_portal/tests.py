@@ -435,17 +435,18 @@ class ExperimentFormTestCase(TestCase):
 
     def _data_to_post(self, data=None):
         from django.http import QueryDict
-        data = data or {'authors': 'russell, steve',
-                        'created_by': self.user.pk,
-                        'dataset_description[0]': 'first one',
-                        'dataset_description[1]': 'second',
-                        'description': 'desc.....',
-                        'file[0]': 'file/another.py',
-                        'file[1]': 'second_ds/file.py',
-                        'institution_name': 'some university',
-                        'title': 'test experiment',
-                        'url': 'http://www.test.com'}
-        data = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in data.items()]))
+        data = data or [('authors', 'russell, steve'),
+                        ('created_by', self.user.pk),
+                        ('dataset_description[0]', 'first one'),
+                        ('dataset_description[1]', 'second'),
+                        ('description', 'desc.....'),
+                        ('file[0]', 'file/another.py'),
+                        ('file[1]', 'second_ds/file.py'),
+                        ('file[1]', 'second_ds/file1.py'),
+                        ('institution_name', 'some university'),
+                        ('title', 'test experiment'),
+                        ('url', 'http://www.test.com')]
+        data = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in data]))
         return data
 
     def _create_experiment(self, data=None):
@@ -610,6 +611,8 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(value % "another.py" in
                         str(f['file[0]']), str(f['file[0]']))
         self.assertTrue(value % "file.py" in
+                        str(f['file[1]']), str(f['file[1]']))
+        self.assertTrue(value % "file1.py" in
                         str(f['file[1]']), str(f['file[1]']))
 
         self.assertTrue(value % "russell, steve" in str(f['authors']), str(f['authors']))
