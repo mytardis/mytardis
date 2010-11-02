@@ -607,6 +607,10 @@ class ExperimentFormTestCase(TestCase):
                         str(f['dataset_description[0]']))
         self.assertTrue(text_area % "second" in
                         str(f['dataset_description[1]']))
+        self.assertTrue(value % "another.py" in
+                        str(f['file[0]']), str(f['file[0]']))
+        self.assertTrue(value % "file.py" in
+                        str(f['file[1]']), str(f['file[1]']))
 
         self.assertTrue(value % "russell, steve" in str(f['authors']), str(f['authors']))
 
