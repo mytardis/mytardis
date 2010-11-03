@@ -107,7 +107,6 @@ class MetsExperimentStructCreator(ContentHandler):
             self.datafilesMap = {}
 
         elif elName == 'file' and self.inFileGrp:
-            #print attrs.getNames()
             fileName = _getAttrValueByQName(attrs, 'OWNERID')
             fileId = _getAttrValueByQName(attrs, 'ID')
             fileSize = _getAttrValueByQName(attrs, 'SIZE')
@@ -405,7 +404,7 @@ class MetsMetadataInfoHandler(ContentHandler):
             self.elementNamespace = name[0]
 
             # let's check if there's a custom parser that we should use for
-            # this metadata block (aka parameter set)
+            # this metadata block (aka parameter set). if there is, use it!
             from tardis.tardis_portal.metshandler import customHandlers
             if self.elementNamespace in customHandlers:
                 self.customHandler = customHandlers[self.elementNamespace]
@@ -638,7 +637,8 @@ class MetsMetadataInfoHandler(ContentHandler):
         http://stackoverflow.com/questions/452969/does-python-have-an-equivalent-to-java-class-forname
 
         '''
-        print "hello save %s %s" % (parameterName, parameterValue)
+        logger.debug('saving parameter %s: %s' %
+            (parameterName, parameterValue))
         if parameterName.is_numeric:
             parameter = \
                 getattr(models, parameterTypeClass)(
@@ -705,7 +705,7 @@ def _getAttrValueByQName(attrs, attrName):
         return None
 
 
-def parseMets(self, filename, createdBy, expId=None):
+def parseMets(filename, createdBy, expId=None):
     '''Parse the METS document using the SAX Parser classes provided in the
     metsparser module.
 

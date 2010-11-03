@@ -44,7 +44,6 @@ class MxDatafileHandler(CustomHandler):
             self.parameterName = None
 
     def characters(self, chars):
-        print "start %s %s" % (self.parameterName, chars)
         if self.grabOscillationRangeStart:
             self.metadataDict['oscillationRange/start'] = chars
         elif self.grabOscillationRangeEnd:

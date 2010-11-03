@@ -354,7 +354,13 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         self.assertTrue(experiment.url ==
             'http://www.blahblah.com/espanol',
             'wrong experiment url')
-    
+
+        authors = models.Author_Experiment.objects.filter(
+            experiment=experiment)
+        self.assertTrue(len(authors) == 3)
+        authorNames = [author.author.name for author in authors]
+        self.assertTrue('Moscatto Brothers' in authorNames)
+
     def testIngestedDatasetFields(self):
         from tardis.tardis_portal import models
         experiment = models.Experiment.objects.get(id=4)
@@ -368,6 +374,17 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         self.assertTrue(dataset.description == 'Bluebird',
             'dataset description should be Bluebird')
 
+        datasetParams = models.DatasetParameter.objects.filter(
+            parameterset__dataset=dataset)
+
+        frlengParam = datasetParams.get(name__name='frleng')
+        self.assertTrue(frlengParam.numerical_value == 554.619)
+
+        frxcenParam = datasetParams.get(name__name='frxcen')
+        self.assertTrue(frxcenParam.numerical_value == 411.947)
+
+        frtypeParam = datasetParams.get(name__name='frtype')
+        self.assertTrue(frtypeParam.string_value == 'PIL200K')
 
     def testIngestedDatafileFields(self):
         from tardis.tardis_portal import models
@@ -380,6 +397,19 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             'datafile should not be none')
         self.assertTrue(datafile.size == '18006000',
             'wrong file size for ment0003.osc')
+
+        datafileParams = models.DatafileParameter.objects.filter(
+            parameterset__dataset_file=datafile)
+
+        ioBgndParam = datafileParams.get(name__name='ioBgnd')
+        self.assertTrue(ioBgndParam.numerical_value == 0)
+
+        itParam = datafileParams.get(name__name='it')
+        self.assertTrue(itParam.numerical_value == 288)
+
+        positionerStrParam = datafileParams.get(name__name='positionerString')
+        self.assertTrue(
+            positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
 def suite():

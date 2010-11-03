@@ -208,7 +208,10 @@ class DatafileParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Datafile Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Datafile Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -222,7 +225,10 @@ class DatasetParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Dataset Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Dataset Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -235,7 +241,10 @@ class ExperimentParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Experiment Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Experiment Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
