@@ -270,7 +270,7 @@ class FullExperiment(Experiment):
     lists.
 
     """
-    re_dataset = re.compile('dataset_description\[([\d]+)\]$')
+    re_post_data = re.compile('(?P<form>[^_]*)_(?P<field>.*)\[(?P<number>[\d]+)\]$')
     dataset_field_translation = {"description": "dataset_description"}
     base_fields = {}
 
@@ -293,10 +293,13 @@ class FullExperiment(Experiment):
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
+        initial = self._parse_initial(initial)
+        post_data = self._parse_post(data)
+
         if data:
-            self.parsed_data = self._parse_post(data)
+            self._fill_forms(post_data, initial)
         else:
-            self._parse_post()
+            self._fill_forms(post_data, initial)
             self._initialise_from_instance(instance)
             # TODO, needs to start counting from where parse_form stops
             if not self.datasets:
@@ -324,11 +327,57 @@ class FullExperiment(Experiment):
                 self._add_datafile_form(i, Dataset_File(instance=file,
                                                         auto_id='file_%s'))
 
-    def _parse_post(self, data=None, instance=None):
+    def _parse_initial(self, initial=None):
+        """
+        create a dictionary containing each of the sub form types.
+        """
+        parsed = {'experiment': {}, 'authors': {},
+                  'dataset': {}, 'file': {}}
+        if not initial:
+            return parsed
+        if 'authors' in initial:
+            parsed['authors'] = initial['authors']
+        for k, v in initial.items():
+            m = self.re_post_data.match(k)
+            if m:
+                item = m.groupdict()
+                field = item['field']
+                if not item['number'] in parsed[item['form']]:
+                    parsed[item['form']][item['number']] = {}
+                parsed[item['form']][item['number']][field] = v
+            else:
+                parsed['experiment'][k] = v
+        return parsed
+
+    def _parse_post(self, data=None):
+        """
+        create a dictionary containing each of the sub form types.
+        """
+        parsed = {'experiment': {}, 'authors': [],
+                  'dataset': {}, 'file': {}}
+        if not data:
+            return parsed
+        if 'authors' in data:
+            parsed['authors'] = [a.strip() for a in
+                                 data.get('authors').split(',')]
+        for k in data:
+            v = data.getlist(k)
+            if len(v) == 1:
+                v = v[0]
+            m = self.re_post_data.match(k)
+            if m:
+                item = m.groupdict()
+                field = item['field']
+                if not item['number'] in parsed[item['form']]:
+                    parsed[item['form']][item['number']] = {}
+                parsed[item['form']][item['number']][field] = v
+            else:
+                parsed['experiment'][k] = v
+        return parsed
+
+    def _fill_forms(self, data=None, initial=None, instance=None):
         if data and 'authors' in data:
-            authors = [(c, a.strip()) for c, a in
-                       enumerate(data.get('authors').split(','))]
-            for num, author in authors:
+            for num, author in enumerate(data['authors']):
                 try:
                     o_author = models.Author.objects.get(name=author)
                 except models.Author.DoesNotExist:
@@ -343,36 +392,36 @@ class FullExperiment(Experiment):
         if not data:
             return data
 
-        for k, v in data.items():
-            match = self.re_dataset.match(k)
-            if not match:
-                continue
-            number = int(match.groups()[0])
-            # TODO to get all fields from the post we should be looking
-            # for all fields starting with dataset_
-            ds_pk = data.get('dataset_id[' + str(number) + ']')
+        for number, dataset in data['dataset'].items():
+
+            ds_pk = dataset.get('id')
             try:
                 ds_inst = models.Dataset.objects.get(id=ds_pk)
             except models.Dataset.DoesNotExist:
                 ds_inst = None
-            form = Dataset(data={'description': v},
+            form = Dataset(data=dataset,
                            instance=ds_inst,
                            auto_id='dataset_%s')
             self._add_dataset_form(number, form)
-
             self.dataset_files[number] = []
+
+        for number, files in data['file'].items():
             # TODO to cover extra fields we should be looking for all fields
             # starting with file_
-            datafiles = data.getlist('file_filename[' + str(number) + ']')
 
-            for f in datafiles:
-                df_pk = data.get('file_id[' + str(number) + ']')
+            for i in xrange(len(files['filename'])):
                 try:
-                    df_inst = models.Dataset_File.objects.get(id=df_pk)
-                except models.Dataset_File.DoesNotExist:
+                    df_pk = data.get('id', [])[i]
+                except IndexError:
                     df_inst = None
-                d = Dataset_File(data={'url': 'file://' + f,
-                                  'filename': basename(f)},
+                else:
+                    try:
+                        df_inst = models.Dataset_File.objects.get(id=df_pk)
+                    except models.Dataset_File.DoesNotExist:
+                        df_inst = None
+
+                d = Dataset_File(data={'url': 'file://' + files['filename'][i],
+                                  'filename': basename(files['filename'][i])},
                                  instance=df_inst, auto_id='file_%s')
                 self._add_datafile_form(number, d)
 
