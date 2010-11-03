@@ -622,16 +622,20 @@ class ExperimentFormTestCase(TestCase):
             {{ field.label_tag }}: {{ field }}
         </div>
     {% endfor %}
-    {% for field, files in form.get_datasets %}
+    {% for dataset_form, file_forms in form.get_datasets %}
+        {% for field in dataset_form %}
         <div class="fieldWrapper">
             {{ field.errors }}
             {{ field.label_tag }}: {{ field }}
         </div>
-    {% for file in files %}
+        {% endfor %}
+    {% for file_form in file_forms %}
+        {% for field in file_form %}
         <div class="fieldWrapper">
-            {{ file.errors }}
-            {{ file.label_tag }}: {{ file }}
+            {{ field.errors }}
+            {{ field.label_tag }}: {{ field }}
         </div>
+        {% endfor %}
     {% endfor %}
     {% endfor %}
     <p><input type="submit" value="Submit" /></p>
