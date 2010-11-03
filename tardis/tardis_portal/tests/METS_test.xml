@@ -85,7 +85,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATASET">
 				<xmlData>
 					<trd:dataset
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/dataset/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10">
 						<trd:frqimn>0.0450647</trd:frqimn>
 						<trd:frxcen>411.947</trd:frxcen>
 						<trd:frleng>554.619</trd:frleng>
@@ -101,7 +101,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
 					<trd:datafile
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
 						<trd:countingSecs>10.0</trd:countingSecs>
 						<trd:io>281443</trd:io>
 						<trd:ioBgnd>0</trd:ioBgnd>
@@ -121,7 +121,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
 					<trd:datafile
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
 						<trd:countingSecs>10.0</trd:countingSecs>
 						<trd:io>312003</trd:io>
 						<trd:ioBgnd>0</trd:ioBgnd>
@@ -141,7 +141,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
 					<trd:datafile
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
 						<trd:countingSecs>10.0</trd:countingSecs>
 						<trd:io>277803</trd:io>
 						<trd:ioBgnd>0</trd:ioBgnd>
@@ -161,7 +161,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
 					<trd:datafile
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
 						<trd:countingSecs>10.0</trd:countingSecs>
 						<trd:io>274389</trd:io>
 						<trd:ioBgnd>0</trd:ioBgnd>
@@ -181,7 +181,7 @@
 			<mdWrap MDTYPE="OTHER" OTHERMDTYPE="TARDISDATAFILE">
 				<xmlData>
 					<trd:datafile
-						xmlns:trd="http://www.tardis.edu.au/schemas/sax/datafile/2010/08/10">
+						xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
 						<trd:countingSecs>10.0</trd:countingSecs>
 						<trd:io>274321</trd:io>
 						<trd:ioBgnd>0</trd:ioBgnd>
