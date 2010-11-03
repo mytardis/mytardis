@@ -4,22 +4,36 @@
 
     <h2>{{ object.key }}</h2>
     <table border="0" cellspacing="0" cellpadding="0">
+      {% if object.type %}
+      <tr>
+	<td>Type:</td>
+	<td>{{ object.type }}</td>
+      </tr>
+      {% endif %}
+      {% if object.make %}
       <tr>
 	<td>Make:</td>
 	<td>{{ object.make }}</td>
       </tr>
+      {% endif %}
+      {% if object.model %}
       <tr>
 	<td>Model:</td>
 	<td>{{ object.model }}</td>
       </tr>
+      {% endif %}
+      {% if object.serial %}
       <tr>
 	<td>Serial:</td>
 	<td>{{ object.serial }}</td>
       </tr>
+      {% endif %}
+      {% if object.description %}
       <tr>
 	<td valign="top">Description:</td>
 	<td>{{ object.description|linebreaks }}</td>
       </tr>
+      {% endif %}
       {% if object.comm %}
       <tr>
 	<td>Commissioned:</td>

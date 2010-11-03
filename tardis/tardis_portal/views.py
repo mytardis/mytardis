@@ -11,14 +11,14 @@ views.py
 
 from base64 import b64decode
 
-from django.template import Context, loader
+from django.template import Context
 from django.http import HttpResponse
 
 from django.conf import settings
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
@@ -33,7 +33,6 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
-from django.db.models import Sum
 
 import urllib
 import urllib2
@@ -545,7 +544,6 @@ def register_experiment_ws(request):
     import sys
 
     process_experiment = ProcessExperiment()
-    status = ''
     if request.method == 'POST':  # If the form has been submitted...
 
         url = request.POST['url']
@@ -588,10 +586,7 @@ def register_experiment_ws(request):
         return return_response_error(request)
 
 
-
 # todo complete....
-
-
 def ldap_login(request):
     from django.contrib.auth import authenticate, login
 
@@ -733,7 +728,6 @@ def register_experiment_ws_xmldata_internal(request):
 
 
 def register_experiment_ws_xmldata(request):
-    import sys
     import threading
 
     status = ''
@@ -855,7 +849,6 @@ def register_experiment_ws_xmldata(request):
 
                 FileTransferThread().start()
 
-
             logger.debug('returning response from main call')
 
             response = HttpResponse(str(eid), status=200)
@@ -891,7 +884,6 @@ def retrieve_xml_data(request, dataset_file_id):
     from pygments import highlight
     from pygments.lexers import XmlLexer
     from pygments.formatters import HtmlFormatter
-    from pygments.styles import get_style_by_name
 
     xml_data = XML_data.objects.get(datafile__pk=dataset_file_id)
 
@@ -906,7 +898,6 @@ def retrieve_xml_data(request, dataset_file_id):
 
 @dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
-    from django.db.models import Count
 
     dataset_results = \
         Dataset_File.objects.filter(
@@ -1727,3 +1718,28 @@ def import_params(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
 
+
+def search_equipment(request):
+    if request.method == 'POST':
+        form = EquipmentSearchForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            q = Equipment.objects.all()
+            if data['key']:
+                q = q.filter(key__icontains=data['key'])
+            if data['description']:
+                q = q.filter(description__icontains=data['description'])
+            if data['make']:
+                q = q.filter(make__icontains=data['make'])
+            if data['serial']:
+                q = q.filter(serial__icontains=data['serial'])
+            if data['type']:
+                q = q.filter(type__icontains=data['type'])
+
+            c = Context({'object_list': q})
+            return render_to_response('tardis_portal/equipment_list.html', c)
+    else:
+        form = EquipmentSearchForm()
+
+    return render_to_response('tardis_portal/search_equipment.html',
+                              {'form': form})
