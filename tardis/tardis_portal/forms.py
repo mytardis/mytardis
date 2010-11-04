@@ -112,6 +112,8 @@ class PostfixedBoundField(BoundField):
             return self.as_widget() + self.as_hidden(only_initial=True)
         if hasattr(self.form, 'postfix'):
             attrs = {'id': self.form.auto_id % self.name +
+                     getattr(self.form, 'postfix'),
+                     'name': self.form.auto_id % self.name +
                      getattr(self.form, 'postfix')}
         else:
             attrs = None
