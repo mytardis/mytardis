@@ -393,16 +393,23 @@ class FullExperiment(Experiment):
             parsed['authors'] = [a.strip() for a in
                                  data.get('authors').split(',')]
         for k in data:
-            v = data.getlist(k)
-            if len(v) == 1:
-                v = v[0]
+            v = data.get(k)
             m = self.re_post_data.match(k)
             if m:
                 item = m.groupdict()
                 field = item['field']
                 if not item['number'] in parsed[item['form']]:
                     parsed[item['form']][item['number']] = {}
-                parsed[item['form']][item['number']][field] = v
+                if item['form'] == u'file':
+                    v = data.getlist(k)
+                    for i in xrange(len(v)):
+                        form_list = parsed[item['form']][item['number']]
+                        if not form_list:
+                            form_list = [{} for v1 in v]
+                        form_list[i][field] = v[i]
+                        parsed[item['form']][item['number']] = form_list
+                else:
+                    parsed[item['form']][item['number']][field] = v
             else:
                 parsed['experiment'][k] = v
         return parsed
@@ -441,19 +448,14 @@ class FullExperiment(Experiment):
             # TODO to cover extra fields we should be looking for all fields
             # starting with file_
 
-            for i in xrange(len(files['filename'])):
+            for f in files:
+                df_pk = f.get('id')
                 try:
-                    df_pk = data.get('id', [])[i]
-                except IndexError:
+                    df_inst = models.Dataset_File.objects.get(id=df_pk)
+                except models.Dataset_File.DoesNotExist:
                     df_inst = None
-                else:
-                    try:
-                        df_inst = models.Dataset_File.objects.get(id=df_pk)
-                    except models.Dataset_File.DoesNotExist:
-                        df_inst = None
 
-                d = Dataset_File(data={'url': 'file://' + files['filename'][i],
-                                  'filename': basename(files['filename'][i])},
+                d = Dataset_File(data=f,
                                  instance=df_inst, auto_id='file_%s')
                 self._add_datafile_form(number, d)
 

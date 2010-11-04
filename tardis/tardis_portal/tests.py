@@ -515,10 +515,13 @@ class ExperimentFormTestCase(TestCase):
                         ('description', 'desc.....'),
                         ('authors', 'russell, steve'),
                         ('dataset_description[0]', 'first one'),
-                        ('file[0]', 'file/location.py'),
-                        ('file[0]', 'file/another.py'),
+                        ('file_filename[0]', 'location.py'),
+                        ('file_filename[0]', 'another.py'),
+                        ('file_url[0]', 'file://file/location.py'),
+                        ('file_url[0]', 'file://file/another.py'),
                         ('dataset_description[1]', 'second'),
-                        ('file[1]', 'second_ds/file.py'),
+                        ('file_filename[1]', 'file.py'),
+                        ('file_url[1]', 'file://second_ds/file.py'),
                         ]
         example_post = self._data_to_post(example_post)
 
