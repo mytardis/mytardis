@@ -50,7 +50,7 @@ from django.forms.forms import BoundField
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
-from tardis.tardis_portal.widgets import CommaSeparatedInput
+from tardis.tardis_portal.widgets import CommaSeparatedInput, Label, Span
 
 
 class DatafileSearchForm(forms.Form):
@@ -106,21 +106,51 @@ class RegisterExperimentForm(forms.Form):
 
 
 class PostfixedBoundField(BoundField):
+    def _auto_attrs(self, attrs=None):
+        if not hasattr(self.form, 'postfix'):
+            return attrs
+
+        if not attrs:
+            attrs = {}
+
+        attrs.update({'id': self.form.auto_id % self.name +
+                      getattr(self.form, 'postfix'),
+                      'name': self.form.auto_id % self.name +
+                      getattr(self.form, 'postfix')})
+
+        return attrs
+
+    def as_widget(self, widget=None, attrs=None, only_initial=False):
+        """
+        Renders the field by rendering the passed widget, adding any HTML
+        attributes passed as attrs.  If no widget is specified, then the
+        field's default widget will be used.
+        """
+        return super(PostfixedBoundField, self).as_widget(
+            widget=widget,
+            attrs=self._auto_attrs(attrs),
+            only_initial=only_initial)
+
     def __unicode__(self):
         """Renders this field as an HTML widget."""
         if self.field.show_hidden_initial:
             return self.as_widget() + self.as_hidden(only_initial=True)
-        if hasattr(self.form, 'postfix'):
-            attrs = {'id': self.form.auto_id % self.name +
-                     getattr(self.form, 'postfix'),
-                     'name': self.form.auto_id % self.name +
-                     getattr(self.form, 'postfix')}
-        else:
-            attrs = None
-        return self.as_widget(attrs=attrs)
+        return self.as_widget(attrs=self._auto_attrs())
 
     def __str__(self):
         return self.__unicode__().encode('utf-8')
+
+    def as_label(self, attrs=None, **kwargs):
+        """
+        Returns a string of HTML for representing this as an <label></label>.
+        """
+        return self.as_widget(Label(), attrs=self._auto_attrs(attrs), **kwargs)
+
+    def as_span(self, attrs=None, **kwargs):
+        """
+        Returns a string of HTML for representing this as an <span></span>.
+        """
+        return self.as_widget(Span(), attrs=self._auto_attrs(attrs), **kwargs)
 
 
 class PostfixedForm:
