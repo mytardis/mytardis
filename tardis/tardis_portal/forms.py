@@ -44,7 +44,7 @@ from django import forms
 from django.utils.html import conditional_escape
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
-from django.forms.util import ErrorDict
+from django.forms.util import ErrorDict, ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.forms import BoundField
 
@@ -265,7 +265,6 @@ class Dataset_File(PostfixedForm, forms.ModelForm):
     # XXX Probably should be an InlineForignKeyField
     dataset = forms.ModelChoiceField(queryset=models.Dataset.objects.all(),
                                      widget=forms.HiddenInput())
-    url = forms.CharField(max_length=400, required=True)
 
     class Meta:
         model = models.Dataset_File
@@ -307,7 +306,7 @@ class FullExperiment(Experiment):
     base_fields = {}
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
-                 initial=None, error_class=ErrorDict, label_suffix=':',
+                 initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=1):
         self.authors = []
         self.datasets = {}
@@ -550,21 +549,25 @@ class FullExperiment(Experiment):
 
         :rtype: bool
         """
-        errors = ErrorDict()
-        errors.update(self.errors)
+        if self.is_bound and bool(self.errors):
+            return not bool(self.errors)
 
         # TODO since this is a compound field, this should merge the errors
         for author in self.authors:
-            errors.update(author.errors)
+            for name, error in author.errors.items():
+                if isinstance(author.fields[name], ModelChoiceField):
+                    continue
+                if author.is_bound and bool(author.errors[name]):
+                    return False
 
-        for number, dataset in self.datasets.items():
+        for dataset, files in self.get_datasets():
             for name, error in dataset.errors.items():
                 if isinstance(dataset.fields[name], ModelChoiceField):
                     continue
-                errors[self._translate_dsfieldname(name, number)] = \
-                    dataset.errors[name]
-
-        return not bool(self.errors)
+                print dataset.errors[name]
+                if dataset.is_bound and bool(dataset.errors[name]):
+                    return False
+        return True
 
 
 def createSearchDatafileForm(searchQueryType):
