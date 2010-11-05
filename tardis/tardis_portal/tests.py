@@ -601,6 +601,10 @@ class ExperimentFormTestCase(TestCase):
         f = forms.FullExperiment(data=post)
         self.assertFalse(f.is_valid())
 
+        # test a valid form
+        example_post = self._data_to_post()
+        f = forms.FullExperiment(example_post)
+        self.assertTrue(f.is_valid())
 
     def test_instance(self):
         from tardis.tardis_portal import forms
