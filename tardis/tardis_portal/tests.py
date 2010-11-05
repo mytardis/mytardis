@@ -656,8 +656,8 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(text_area % "second")
         self.assertTrue(value % "file1.py" in output)
         self.assertTrue(value % "file://second_ds/file.py" in output)
-        self.assertEqual(output.count('file_filename[1]'),2)
-        self.assertEqual(output.count('dataset_description[1]'),1)
+        self.assertEqual(output.count('file_filename[1]'), 4)
+        self.assertEqual(output.count('dataset_description[1]'), 2)
 
     def test_initial_data(self):
         from tardis.tardis_portal import forms
