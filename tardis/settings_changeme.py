@@ -82,7 +82,8 @@ SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'tardis.tardis_portal.minidetector.Middleware')
+    'tardis.tardis_portal.minidetector.Middleware',
+    'django.middleware.transaction.TransactionMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
 
@@ -107,6 +108,10 @@ LDAP_ENABLE = False
 LDAP_URL = 'directory.example.com'
 BASE_DN = 'o=Organisation, c=X'
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
+
+# Temporarily disable transaction management until everyone agrees that
+# we should start handling transactions
+DISABLE_TRANSACTION_MANAGEMENT = False
 
 STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')

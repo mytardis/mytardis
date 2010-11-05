@@ -52,7 +52,7 @@ class XSLT_docs(models.Model):
 
 class Author(models.Model):
 
-    name = models.CharField(max_length=255, primary_key=True)
+    name = models.CharField(max_length=255)
 
     def __unicode__(self):
         return self.name
@@ -94,6 +94,10 @@ class Author_Experiment(models.Model):
         return SafeUnicode(self.author.name) + ' | ' \
             + SafeUnicode(self.experiment.id) + ' | ' \
             + SafeUnicode(self.order)
+
+    class Meta:
+        ordering = ['order']
+        unique_together = (('experiment', 'author'),)
 
 
 class Dataset(models.Model):
@@ -204,7 +208,10 @@ class DatafileParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Datafile Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Datafile Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -218,7 +225,10 @@ class DatasetParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Dataset Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Dataset Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -231,7 +241,10 @@ class ExperimentParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Experiment Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Experiment Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
