@@ -580,6 +580,28 @@ class ExperimentFormTestCase(TestCase):
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
 
+    def test_validation(self):
+        from tardis.tardis_portal import forms
+
+        # test empty form
+        f = forms.FullExperiment()
+        self.assertTrue(f.is_valid())
+
+        # test blank post data
+        post = self._data_to_post([('authors', ''),
+                                   ('created_by', ''),
+                                   ('dataset_description[0]', ''),
+                                   ('dataset_description[1]', ''),
+                                   ('description', ''),
+                                   ('file_filename[0]', ''),
+                                   ('file_filename[1]', ''),
+                                   ('institution_name', ''),
+                                   ('title', ''),
+                                   ('url', '')])
+        f = forms.FullExperiment(data=post)
+        self.assertFalse(f.is_valid())
+
+
     def test_instance(self):
         from tardis.tardis_portal import forms
         exp = self._create_experiment()
