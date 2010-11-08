@@ -24,7 +24,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
 
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
+from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
@@ -41,6 +41,10 @@ import datetime
 from tardis.tardis_portal import ldap_auth
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
+
+from tardis.tardis_portal.metsparser import parseMets
+
+from django.db import transaction
 
 
 def getNewSearchDatafileSelectionForm():
@@ -536,56 +540,6 @@ def experiment_index(request):
                         'tardis_portal/experiment_index.html', c))
 
 
-# web service, depreciated
-def register_experiment_ws(request):
-
-    # from java.lang import Exception
-
-    import sys
-
-    process_experiment = ProcessExperiment()
-    if request.method == 'POST':  # If the form has been submitted...
-
-        url = request.POST['url']
-        username = request.POST['username']
-        password = request.POST['password']
-
-        from django.contrib.auth import authenticate
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if not user.is_active:
-                return return_response_error(request)
-        else:
-            return return_response_error(request)
-
-        try:
-            experiments = Experiment.objects.all()
-            experiments = experiments.filter(url__iexact=url)
-            if not experiments:
-                eid = process_experiment.register_experiment(url=url,
-                        created_by=user)
-            else:
-                return return_response_error_message(request,
-                        'tardis_portal/blank_status.html',
-                        'Error: Experiment already exists')
-        except IOError, i:
-            return return_response_error_message(request,
-                    'tardis_portal/blank_status.html',
-                    'Error reading file. Perhaps an incorrect URL?')
-        except:
-            return return_response_error_message(request,
-                    'tardis_portal/blank_status.html',
-                    'Unexpected Error - ', sys.exc_info()[0])
-
-        response = HttpResponse(status=200)
-        response['Location'] = request.build_absolute_uri(
-            '/experiment/view/' + str(eid))
-
-        return response
-    else:
-        return return_response_error(request)
-
-
 # todo complete....
 def ldap_login(request):
     from django.contrib.auth import authenticate, login
@@ -694,6 +648,7 @@ def ldap_login(request):
                         'tardis_portal/login.html', c))
 
 
+@transaction.commit_on_success()
 def register_experiment_ws_xmldata_internal(request):
     logger.debug('def register_experiment_ws_xmldata_internal')
     if request.method == 'POST':
@@ -711,10 +666,8 @@ def register_experiment_ws_xmldata_internal(request):
         else:
             return return_response_error(request)
 
-        process_experiment = ProcessExperiment()
-        logger.debug('Processing experiment %s' % eid)
-        process_experiment.register_experiment_xmldata_file(filename=filename,
-                created_by=user, expid=eid)
+        _registerExperimentDocument(filename=filename,
+                                    created_by=user, expid=eid)
 
         response = HttpResponse('Finished cataloging: %s' % eid,
                                 status=200)
@@ -724,9 +677,38 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
+def _registerExperimentDocument(filename, created_by, expid=None):
+    '''
+    Register the experiment document.
+
+    Arguments:
+    filename -- path of the document to parse (METS or notMETS)
+    created_by -- a User instance
+    expid -- the experiment ID to use
+
+    Returns:
+    The experiment ID
+
+    '''
+
+    f = open(filename)
+
+    firstline = f.readline()
+
+    f.close()
+
+    if firstline.startswith('<experiment'):
+        logger.debug('processing simple xml')
+        processExperiment = ProcessExperiment()
+        eid = processExperiment.process_simple(filename, created_by, expid)
+    else:
+        logger.debug('processing METS')
+        eid = parseMets(filename, created_by, expid)
+
+    return eid
+
+
 # web service
-
-
 def register_experiment_ws_xmldata(request):
     import threading
 
@@ -1019,7 +1001,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     Arguments:
     request -- the HTTP request
-    searchQueryType -- the type of query, 'mx' or 'sax'
+    searchQueryType -- the type of query, 'mx' or 'saxs'
     searchFilterData -- the cleaned up search form data
 
     Returns:
@@ -1279,7 +1261,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'sax':
+        #if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
         #else:
@@ -1330,7 +1312,7 @@ def __getSearchDatafileForm(request, searchQueryType):
 
     Arguments:
     request -- The HTTP request object
-    searchQueryType -- The search query type: 'mx' or 'sax'
+    searchQueryType -- The search query type: 'mx' or 'saxs'
 
     Returns:
     The supported search datafile form

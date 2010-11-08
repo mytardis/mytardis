@@ -29,6 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tardis.tardis_portal.models import Experiment
 
 """
 tests.py
@@ -39,30 +40,34 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 
+from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
+from tardis.tardis_portal.metsparser import MetsDataHolder
+from tardis.tardis_portal.metsparser import MetsMetadataInfoHandler
 from django.test import TestCase
 from django.test.client import Client
-from tardis.tardis_portal.logger import logger
 import unittest
 from os import path
+from xml.sax.handler import feature_namespaces
+from xml.sax import make_parser
 
 
 class SearchTestCase(TestCase):
 
-    fixtures = ['test_sax_data']
+    fixtures = ['test_saxs_data']
 
     def setUp(self):
         self.client = Client()
 
     def testSearchDatafileForm(self):
-        response = self.client.get('/search/datafile/', {'type': 'sax', })
+        response = self.client.get('/search/datafile/', {'type': 'saxs', })
 
         # check if the response is a redirect to the login page
         self.assertRedirects(response,
-            '/accounts/login/?next=/search/datafile/%3Ftype%3Dsax')
+            '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
 
         # let's try to login this time...
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/', {'type': 'sax', })
+        response = self.client.get('/search/datafile/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchForm'] is not None)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
@@ -75,7 +80,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileAuthentication(self):
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
 
         # check if the response is a redirect to the login page
         self.assertEqual(response.status_code, 302)
@@ -83,14 +88,14 @@ class SearchTestCase(TestCase):
         # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
     def testSearchDatafileResults(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': 'air_0_001.tif', })
+            {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -115,15 +120,15 @@ class SearchTestCase(TestCase):
 
         # check if searching for nothing would result to returning everything
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'filename': '', })
+            {'type': 'saxs', 'filename': '', })
         self.assertEqual(len(response.context['paginator'].object_list), 129)
 
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'io': '123', })
+            {'type': 'saxs', 'io': '123', })
         self.assertEqual(len(response.context['paginator'].object_list), 0)
 
         response = self.client.get('/search/datafile/',
-            {'type': 'sax', 'frqimn': '0.0450647', })
+            {'type': 'saxs', 'frqimn': '0.0450647', })
         self.assertEqual(len(response.context['paginator'].object_list), 125)
         self.client.logout()
 
@@ -200,7 +205,7 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         urls = ['/login', '/about', '/partners', '/stats']
         urls += ['/experiment/register', '/experiment/view']
-        urls += ['/search/experiment', '/search/datafile?type=sax']
+        urls += ['/search/experiment', '/search/datafile?type=saxs']
 
         for u in urls:
             response = c.get(u)
@@ -210,7 +215,6 @@ class UserInterfaceTestCase(TestCase):
         self.client = Client()
 
         from django.contrib.auth.models import User
-        from django.conf import settings
         import os
 
         user = 'user1'
@@ -239,111 +243,181 @@ class UserInterfaceTestCase(TestCase):
                              password=pwd), True)
 
 
-class ExperimentParserTestCase(unittest.TestCase):
+class MetsExperimentStructCreatorTestCase(TestCase):
 
     def setUp(self):
-        from django.conf import settings
         import os
-        f = open(os.path.join(path.abspath(path.dirname(__file__)),
-                 'tests/METS_test.xml'), 'r')
-        xmlString = f.read()
-        f.close()
-        from tardis.tardis_portal.ExperimentParser import ExperimentParser
-        self.experimentParser = ExperimentParser(str(xmlString))
+        metsFile = os.path.join(path.abspath(path.dirname(__file__)),
+            'tests/METS_test.xml')
+        parser = make_parser(["drv_libxml2"])
+        parser.setFeature(feature_namespaces, 1)
+        self.dataHolder = MetsDataHolder()
 
-    def testGetTitle(self):
-        self.assertTrue(self.experimentParser.getTitle() == 'Test Title',
-            'title is not the same')
+        parser.setContentHandler(
+            MetsExperimentStructCreator(self.dataHolder))
+        parser.parse(metsFile)
 
-    def testGetAuthors(self):
-        self.assertTrue(len(self.experimentParser.getAuthors()) == 3,
-            'number of authors should be 3')
-        self.assertTrue('Author2' in self.experimentParser.getAuthors(),
-            '"Author2 should be in the authors list"')
+    def testMetsStructMapContents(self):
+        self.assertTrue(self.dataHolder.experimentDatabaseId == None,
+            "experiment id shouldn't be set")
+        self.assertTrue(len(self.dataHolder.metsStructMap) == 2,
+            'metsStructMap size should be 2')
 
-    def testGetAbstract(self):
-        self.assertTrue(self.experimentParser.getAbstract() ==
-            'Test Abstract.', 'abstract is not the same')
+    def testMetsMetadataMapContents(self):
+        self.assertTrue(len(self.dataHolder.metadataMap) == 7,
+            'metadataMap size should be 7')
+        self.assertTrue(self.dataHolder.metadataMap['A-2'].id == 'J-2',
+            'id for metadata A-2 should be J-2')
+        self.assertTrue(len(self.dataHolder.metadataMap['A-2'].datafiles) == 8,
+            'there should be 8 datafiles within dataset A-2')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-2'].experiment.id == 'J-1',
+            'id for dataset A-2 parent experiment should be J-1')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-2'].__class__.__name__ == 'Dataset',
+            'metadata A-2 should be a Dataset type')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-1'].__class__.__name__ == 'Experiment',
+            'metadata A-1 should be an Experiment type')
+        self.assertTrue(len(self.dataHolder.metadataMap[
+            'A-1'].datasets) == 1,
+            'there should be 1 dataset under experiment A-1')
+        self.assertTrue(self.dataHolder.metadataMap['A-7'].id == 'F-8',
+            'metadata A-7 does not have F-8 as the Id')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-7'].name == 'ment0005.osc',
+            'metadata A-7 should have ment0005.osc as the name')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-7'].url == 'file://Images/ment0005.osc',
+            'metadata A-7 should have file://Images/ment0005.osc as the url')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-7'].dataset.id == 'J-2',
+            'metadata A-7 should have dataset id J-2')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-7'].__class__.__name__ == 'Datafile',
+            'metadata A-7 should be a Datafile type')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-7'].metadataId == 'A-7',
+            'metadata A-7 should have metadata Id A-7')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-1'].metadataId == 'A-1',
+            'metadata A-1 should have metadata Id A-1')
+        self.assertTrue(self.dataHolder.metadataMap[
+            'A-2'].metadataId == 'A-2',
+            'metadata A-2 should have metadata Id A-2')
 
-    def testGetRelationURLs(self):
-        self.assertTrue('http://www.test.com' in
-            self.experimentParser.getRelationURLs(),
-            'missing url from relationsURLs')
-        self.assertTrue(len(self.experimentParser.getRelationURLs()) == 1,
-            'there should only be 1 relationsURL')
 
-    def testGetAgentName(self):
-        self.assertTrue(self.experimentParser.getAgentName('CREATOR') ==
-            'Creator', 'agent should be "Creator"')
-        self.assertTrue(self.experimentParser.getAgentName('PAINTER') == None,
-            'there is no "Painter" agent')
+class MetsMetadataInfoHandlerTestCase(TestCase):
 
-    def testGetDatasetTitle(self):
-        self.assertTrue(self.experimentParser.getDatasetTitle('J-2') ==
-            'Dataset1 Title', 'dataset title should be "J-2"')
-        self.assertTrue(self.experimentParser.getDatasetTitle('J-4') == None,
-            'there is no dataset with id "J-4"')
+    fixtures = ['test_saxs_data']
 
-    def testGetDatasetDMDIDs(self):
-        self.assertTrue(len(self.experimentParser.getDatasetDMDIDs()) == 2,
-            'total number of datasets is wrong')
-        self.assertTrue('J-2' in self.experimentParser.getDatasetDMDIDs(),
-            'J-2 is not in the dataset')
-        self.assertTrue('J-1' not in self.experimentParser.getDatasetDMDIDs(),
-            "J-1 shouldn't be in the dataset")
+    def setUp(self):
+        import os
+        metsFile = os.path.join(path.abspath(path.dirname(__file__)),
+            'tests/METS_test.xml')
+        parser = make_parser(["drv_libxml2"])
+        parser.setFeature(feature_namespaces, 1)
+        self.dataHolder = MetsDataHolder()
 
-    def testGetDatasetADMIDs(self):
-        # get metadata ids for this dataset...
+        parser.setContentHandler(
+            MetsExperimentStructCreator(self.dataHolder))
+        parser.parse(metsFile)
 
-        pass
+        from django.contrib.auth.models import User
+        self.user = User.objects.get(username='test')
+        parser.setContentHandler(
+            MetsMetadataInfoHandler(holder=self.dataHolder,
+            tardisExpId=None,
+            createdBy=self.user))
+        parser.parse(metsFile)
 
-    def testGetFileIDs(self):
-        self.assertTrue('F-3' in self.experimentParser.getFileIDs('J-3'),
-            'F-3 is missing from the file IDs')
-        self.assertTrue(len(self.experimentParser.getFileIDs('J-3')) == 2,
-            'there should only be 2 files for the J-3 dataset')
-        self.assertTrue('F-5' not in self.experimentParser.getFileIDs('J-3'),
-            'F-3 is missing from the file IDs')
+    def testIngestedExperimentFields(self):
+        self.assertTrue(self.dataHolder.experimentDatabaseId == 4,
+            'Experiment ID should be 4')
+        from tardis.tardis_portal import models
+        experiment = models.Experiment.objects.get(id=4)
+        self.assertTrue(experiment.title == 'SAXS Test',
+            'wrong experiment title')
+        self.assertTrue(experiment.institution_name ==
+            'Adelaide University',
+            'wrong experiment institution')
+        self.assertTrue(experiment.description ==
+            'Hello world hello world',
+            'wrong experiment abstract')
+        self.assertTrue(experiment.created_by == self.user,
+            'wrong experiment creator')
+        self.assertTrue(experiment.url ==
+            'http://www.blahblah.com/espanol',
+            'wrong experiment url')
 
-    def testGetFileLocation(self):
-        self.assertTrue(self.experimentParser.getFileLocation('F-1') ==
-            'file://Images/File1', "file F-1's location is wrong")
+        authors = models.Author_Experiment.objects.filter(
+            experiment=experiment)
+        self.assertTrue(len(authors) == 3)
+        authorNames = [author.author.name for author in authors]
+        self.assertTrue('Moscatto Brothers' in authorNames)
 
-    def testGetFileADMIDs(self):
-        # get metadata ids for this file...
+    def testIngestedDatasetFields(self):
+        from tardis.tardis_portal import models
+        experiment = models.Experiment.objects.get(id=4)
+        datasets = models.Dataset.objects.filter(
+            experiment=experiment)
+        self.assertTrue(len(datasets) == 1,
+            'there should only be one dataset for the experiment')
+        dataset = datasets[0]
+        self.assertTrue(dataset.description == 'Bluebird',
+            'dataset description should be Bluebird')
+        self.assertTrue(dataset.description == 'Bluebird',
+            'dataset description should be Bluebird')
 
-        self.assertTrue('A-3' in self.experimentParser.getFileADMIDs('F-4'),
-            'wrong file metadata id')
-        self.assertTrue(len(self.experimentParser.getFileADMIDs('F-4')) == 1,
-            'there should only be 1 metadata ID for the file')
+        datasetParams = models.DatasetParameter.objects.filter(
+            parameterset__dataset=dataset)
 
-    def testGetFileName(self):
-        self.assertTrue(self.experimentParser.getFileName('F-1') == 'File1',
-            'wrong file name for file "F-1"')
+        frlengParam = datasetParams.get(name__name='frleng')
+        self.assertTrue(frlengParam.numerical_value == 554.619)
 
-    def testGetFileSize(self):
-        self.assertTrue(self.experimentParser.getFileSize('F-1') == '6148',
-            'wrong file size for file "F-1"')
+        frxcenParam = datasetParams.get(name__name='frxcen')
+        self.assertTrue(frxcenParam.numerical_value == 411.947)
 
-    def testGetTechXML(self):
-        # check if the root of the returned element is datafile or
-        # something else
+        frtypeParam = datasetParams.get(name__name='frtype')
+        self.assertTrue(frtypeParam.string_value == 'PIL200K')
 
-        self.assertTrue(self.experimentParser.getTechXML('A-3').getroot().\
-            tag == '{http://www.tardis.edu.au/schemas/trdDatafile/1}datafile',
-            'element has wrong tag')
+    def testIngestedDatafileFields(self):
+        from tardis.tardis_portal import models
+        dataset = models.Dataset.objects.get(description='Bluebird')
+        datafiles = dataset.dataset_file_set.all()
+        self.assertTrue(len(datafiles) == 5,
+            'there should be 5 datafiles for the given dataset')
+        datafile = datafiles.get(filename='ment0003.osc')
+        self.assertTrue(datafile is not None,
+            'datafile should not be none')
+        self.assertTrue(datafile.size == '18006000',
+            'wrong file size for ment0003.osc')
 
-    def testGetParameterFromTechXML(self):
-        pass
+        datafileParams = models.DatafileParameter.objects.filter(
+            parameterset__dataset_file=datafile)
+
+        ioBgndParam = datafileParams.get(name__name='ioBgnd')
+        self.assertTrue(ioBgndParam.numerical_value == 0)
+
+        itParam = datafileParams.get(name__name='it')
+        self.assertTrue(itParam.numerical_value == 288)
+
+        positionerStrParam = datafileParams.get(name__name='positionerString')
+        self.assertTrue(
+            positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
-    parserSuite = \
-        unittest.TestLoader().loadTestsFromTestCase(ExperimentParserTestCase)
+    parserSuite1 = \
+        unittest.TestLoader().loadTestsFromTestCase(
+        MetsExperimentStructCreatorTestCase)
+    parserSuite2 = \
+        unittest.TestLoader().loadTestsFromTestCase(
+        MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     allTests = unittest.TestSuite(
-        [parserSuite, userInterfaceSuite, searchSuite])
+        [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
     return allTests
