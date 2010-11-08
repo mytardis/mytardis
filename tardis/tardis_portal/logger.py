@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -31,10 +31,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-$Date$
-$Revision$
-$Author$
-$HeadURL$
+# $Author$
+# $Revision$
+# $Date$
 
 
 import logging.handlers
