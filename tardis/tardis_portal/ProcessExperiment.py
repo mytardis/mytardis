@@ -117,7 +117,7 @@ class ProcessExperiment:
             for line in f:
                 line = line.strip()
 
-                logger.debug("LINE: %s, CURRENT: %s"  % (line, current))
+                # logger.debug("LINE: %s, CURRENT: %s"  % (line, current))
                 if line.startswith('<experiment>'):
                     current = 'experiment'
                     e += 1
@@ -509,7 +509,8 @@ class ProcessExperiment:
                     tag_name = doc.tagName
                     logger.debug(tag_name + ' discovered')
                     if current == 'experiment':
-                        if tag_name in exp_tags:
+                        if tag_name in ['title', 'organization',
+                                        'starttime', 'endtime']:
                             contents = doc.childNodes
                             exp[tag_name] = getText(contents)
                         if tag_name == 'author':
@@ -526,7 +527,5 @@ class ProcessExperiment:
                             datafile[tag_name] = getText(contents)
                 except:
                     pass
-
-        logger.debug('DONE EXP: ' + str(experiment.id))
 
         return experiment.id
