@@ -804,16 +804,16 @@ def register_experiment_ws_xmldata(request):
                 g.save()
 
                 for owner in request.POST.getlist('experiment_owner'):
-
                     owner = urllib.unquote_plus(owner)
-
-                    logger.debug('registering owner: ' + owner)
                     u = None
-
                     # try get user from email
-
                     if settings.LDAP_ENABLE:
                         u = ldap_auth.get_or_create_user_ldap(owner)
+                    else:
+                        u = User.objects.get(username=username)
+
+                    if u:
+                        logger.debug('registering owner: ' + owner)
                         e = Experiment.objects.get(pk=eid)
                         exp_owner = Experiment_Owner(experiment=e,
                                 user=u)

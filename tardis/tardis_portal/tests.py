@@ -204,9 +204,6 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-
-            # print u, response.status_code
-
             self.failUnlessEqual(response.status_code, 301)
 
     def test_register(self):
@@ -226,9 +223,7 @@ class UserInterfaceTestCase(TestCase):
         response = self.client.post('/experiment/register/', {
             'username': user,
             'password': pwd,
-            'xmldata': f,
-            'originid': '286',
-            'experiment_owner': user,
+            'xmldata': f
             })
         f.close()
         self.failUnlessEqual(response.status_code, 200)

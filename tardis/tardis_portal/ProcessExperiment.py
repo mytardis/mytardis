@@ -175,6 +175,9 @@ class ProcessExperiment:
             institution_name=ep.getAgentName('DISSEMINATOR'),
             description=ep.getAbstract(),
             created_by=created_by,
+            created_time=datetime.datetime.now(),
+            start_time=None,
+            end_time=None
             )
 
         e.save()
@@ -330,19 +333,20 @@ class ProcessExperiment:
             for line in f:
                 line = line.strip()
 
-                #logger.debug("LINE: %s, CURRENT: %s"  % (line, current))
+                logger.debug("LINE: %s, CURRENT: %s"  % (line, current))
                 if line.startswith('<experiment>'):
                     current = 'experiment'
                     e += 1
                     ds = 0
                     df = 0
-                    exp_tags = ['organization', 'title', 'starttime',
-                                'endtime', 'url']
-                    exp = {}
                     # initialize with empty strings to avoid key errors
+                    exp = {}
                     exp['abstract'] = ''
-                    for tag in exp_tags:
-                        exp[tag] = ''
+                    exp['organization'] = ''
+                    exp['title'] = ''
+                    exp['url'] = ''
+                    exp['starttime'] = None
+                    exp['endtime'] = None
                     authors = list()
 
                 elif line.startswith('<dataset>'):
@@ -364,6 +368,7 @@ class ProcessExperiment:
                             )
 
                         experiment.save()
+
                         author_experiments = \
                             Author_Experiment.objects.all()
                         author_experiments = \
@@ -386,7 +391,6 @@ class ProcessExperiment:
                         if 'metadata' in exp:
                             for md in exp['metadata']:
                                 xmlns = getXmlnsFromTechXMLRaw(md)
-
                                 logger.debug('schema %s' % xmlns)
                                 schema = None
                                 try:
