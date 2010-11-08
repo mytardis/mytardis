@@ -9,6 +9,8 @@ views.py
 
 """
 
+from base64 import b64decode
+
 from django.template import Context, loader
 from django.http import HttpResponse
 
@@ -22,7 +24,7 @@ from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
 
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
+from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
@@ -39,6 +41,10 @@ import urllib2
 from tardis.tardis_portal import ldap_auth, localdb_auth
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
+
+from tardis.tardis_portal.metsparser import parseMets
+
+from django.db import transaction
 
 
 def getNewSearchDatafileSelectionForm():
@@ -150,8 +156,6 @@ def has_experiment_ownership(experiment_id, user_id):
 
 
 # custom decorator
-
-
 def experiment_ownership_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -170,8 +174,6 @@ def experiment_ownership_required(f):
 
 
 # custom decorator
-
-
 def experiment_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -193,8 +195,6 @@ def experiment_access_required(f):
 
 
 # custom decorator
-
-
 def dataset_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -214,8 +214,6 @@ def dataset_access_required(f):
 
 
 # custom decorator
-
-
 def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -238,7 +236,6 @@ def datafile_access_required(f):
 def has_experiment_access(experiment_id, user):
 
     # public route
-
     try:
         e = Experiment.objects.get(id=experiment_id)
 
@@ -367,135 +364,23 @@ def site_settings(request):
         return return_response_error(request)
 
 
-def download(request, experiment_id):
+def display_experiment_image(
+    request,
+    experiment_id,
+    parameterset_id,
+    parameter_name,
+    ):
 
-    # todo handle missing file, general error
+    # todo handle not exist
 
-    if 'dfid' in request.GET and len(request.GET['dfid']) > 0:
-        datafile = Dataset_File.objects.get(pk=request.GET['dfid'])
-    elif 'url' in request.GET and len(request.GET['url']) > 0:
-        datafile = \
-            Dataset_File.objects.get(url=urllib.unquote(request.GET['url']),
-            dataset__experiment__id=experiment_id)
-    else:
+    experiment = Experiment.objects.get(pk=experiment_id)
+    if not has_experiment_access(experiment.id, request.user):
         return return_response_error(request)
 
-    if has_datafile_access(datafile.id, request.user):
-        url = datafile.url
+    image = ExperimentParameter.objects.get(name__name=parameter_name,
+                                            parameterset=parameterset_id)
 
-        if url.startswith('http://') or url.startswith('https://') \
-            or url.startswith('ftp://'):
-            return HttpResponseRedirect(datafile.url)
-        else:
-            file_path = settings.FILE_STORE_PATH + '/' \
-                + str(datafile.dataset.experiment.id) + '/' \
-                + datafile.url.partition('//')[2]
-
-            try:
-                logger.debug(file_path)
-                from django.core.servers.basehttp import FileWrapper
-                wrapper = FileWrapper(file(file_path))
-
-                response = HttpResponse(wrapper,
-                        mimetype='application/octet-stream')
-                response['Content-Disposition'] = \
-                    'attachment; filename=' + datafile.filename
-
-                # import os
-                # response['Content-Length'] = os.path.getsize(file_path)
-
-                return response
-            except IOError, io:
-
-                return return_response_not_found(request)
-    else:
-
-        return return_response_error(request)
-
-
-def downloadTar(request):
-
-    # Create the HttpResponse object with the appropriate headers.
-    # TODO: handle no datafile, invalid filename, all http links
-    # (tarfile count?)
-
-    if 'datafile' in request.POST:
-
-        if not len(request.POST.getlist('datafile')) == 0:
-            from django.utils.safestring import SafeUnicode
-            from django.core.servers.basehttp import FileWrapper
-
-            fileString = ''
-            fileSize = 0
-            for dfid in request.POST.getlist('datafile'):
-                datafile = Dataset_File.objects.get(pk=dfid)
-                if has_datafile_access(dfid, request.user):
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString = fileString + request.POST['expid'] \
-                            + '/' + absolute_filename + ' '
-                        fileSize = fileSize + long(datafile.size)
-
-            # tarfile class doesn't work on large files being added and
-            # streamed on the fly, so going command-line-o
-
-            tar_command = 'tar -C ' + settings.FILE_STORE_PATH + ' -c ' \
-                + fileString
-
-            import shlex
-            import subprocess
-
-            response = \
-                HttpResponse(FileWrapper(subprocess.Popen(tar_command,
-                             stdout=subprocess.PIPE,
-                             shell=True).stdout),
-                             mimetype='application/x-tar')
-            response['Content-Disposition'] = \
-                'attachment; filename=experiment' + \
-                request.POST['expid'] + '.tar'
-            response['Content-Length'] = fileSize + 5120
-
-            return response
-    elif 'url' in request.POST:
-
-        if not len(request.POST.getlist('url')) == 0:
-            from django.utils.safestring import SafeUnicode
-            from django.core.servers.basehttp import FileWrapper
-
-            fileString = ''
-            fileSize = 0
-            for url in request.POST.getlist('url'):
-                datafile = \
-                    Dataset_File.objects.get(url=urllib.unquote(url),
-                        dataset__experiment__id=request.POST['expid'])
-                if has_datafile_access(datafile.id, request.user):
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString = fileString + request.POST['expid'] \
-                            + '/' + absolute_filename + ' '
-                        fileSize = fileSize + long(datafile.size)
-
-            # tarfile class doesn't work on large files being added and
-            # streamed on the fly, so going command-line-o
-
-            tar_command = 'tar -C ' + settings.FILE_STORE_PATH + ' -c ' + \
-                fileString
-
-            response = \
-                HttpResponse(FileWrapper(subprocess.Popen(tar_command,
-                             stdout=subprocess.PIPE,
-                             shell=True).stdout),
-                             mimetype='application/x-tar')
-            response['Content-Disposition'] = \
-                'attachment; filename=experiment' + request.POST['expid'] + \
-                '.tar'
-            response['Content-Length'] = fileSize + 5120
-
-            return response
-        else:
-            return return_response_not_found(request)
-    else:
-        return return_response_not_found(request)
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
 def display_dataset_image(
@@ -550,39 +435,12 @@ def display_datafile_image(
         return return_response_error(request)
 
 
-@experiment_access_required
-def downloadExperiment(request, experiment_id):
-
-    # Create the HttpResponse object with the appropriate headers.
-    # TODO: handle no datafile, invalid filename, all http links
-    # (tarfile count?)
-
-    from django.core.servers.basehttp import FileWrapper
-
-    experiment = Experiment.objects.get(pk=experiment_id)
-
-    tar_command = 'tar -C ' + settings.FILE_STORE_PATH + ' -c ' + \
-        str(experiment.id) + '/'
-    logger.debug('TAR COMMAND: ' + tar_command)
-
-    import subprocess
-
-    response = HttpResponse(FileWrapper(subprocess.Popen(tar_command,
-                            stdout=subprocess.PIPE,
-                            shell=True).stdout),
-                            mimetype='application/x-tar')
-    response['Content-Disposition'] = 'attachment; filename=experiment' \
-        + str(experiment.id) + '-complete.tar'
-
-    # response['Content-Length'] = fileSize + 5120
-
-    return response
-
-
 def about(request):
 
     c = Context({'subtitle': 'About', 'about_pressed': True,
-                'nav': [{'name': 'About', 'link': '/about/'}]})
+                'nav': [{'name': 'About', 'link': '/about/'}],
+                'searchDatafileSelectionForm':
+                getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -624,6 +482,9 @@ def view_experiment(request, experiment_id):
         except ExperimentACL.DoesNotExist, eo:
             pass
 
+        protocols = [df['protocol'] for df in datafiles.values(
+            'protocol').distinct()]
+
         c = Context({
             # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
             'experiment': experiment,
@@ -632,6 +493,7 @@ def view_experiment(request, experiment_id):
             'subtitle': experiment.title,
             'owners': owners,
             'size': size,
+            'protocols': protocols,
             'nav': [{'name': 'Data', 'link': '/experiment/view/'},
                     {'name': experiment.title, 'link': '/experiment/view/' +
                      str(experiment.id) + '/'}],
@@ -665,60 +527,10 @@ def experiment_index(request):
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'data_pressed': True,
-        })
+        'searchDatafileSelectionForm':
+            getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/experiment_index.html', c))
-
-
-# web service, depreciated
-def register_experiment_ws(request):
-
-    # from java.lang import Exception
-
-    import sys
-
-    process_experiment = ProcessExperiment()
-    status = ''
-    if request.method == 'POST':  # If the form has been submitted...
-
-        url = request.POST['url']
-        username = request.POST['username']
-        password = request.POST['password']
-
-        from django.contrib.auth import authenticate
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if not user.is_active:
-                return return_response_error(request)
-        else:
-            return return_response_error(request)
-
-        try:
-            experiments = Experiment.objects.all()
-            experiments = experiments.filter(url__iexact=url)
-            if not experiments:
-                eid = process_experiment.register_experiment(url=url,
-                        created_by=user)
-            else:
-                return return_response_error_message(request,
-                        'tardis_portal/blank_status.html',
-                        'Error: Experiment already exists')
-        except IOError, i:
-            return return_response_error_message(request,
-                    'tardis_portal/blank_status.html',
-                    'Error reading file. Perhaps an incorrect URL?')
-        except:
-            return return_response_error_message(request,
-                    'tardis_portal/blank_status.html',
-                    'Unexpected Error - ', sys.exc_info()[0])
-
-        response = HttpResponse(status=200)
-        response['Location'] = request.build_absolute_uri(
-            '/experiment/view/' + str(eid))
-
-        return response
-    else:
-        return return_response_error(request)
 
 
 def create_placeholder_experiment(user):
@@ -846,6 +658,7 @@ def ldap_login(request):
                         'tardis_portal/login.html', c))
 
 
+@transaction.commit_on_success()
 def register_experiment_ws_xmldata_internal(request):
     if request.method == 'POST':
 
@@ -862,8 +675,7 @@ def register_experiment_ws_xmldata_internal(request):
         else:
             return return_response_error(request)
 
-        process_experiment = ProcessExperiment()
-        process_experiment.register_experiment_xmldata_file(filename=filename,
+        _registerExperimentDocument(filename=filename,
                 created_by=user, expid=eid)
 
         response = HttpResponse('Finished cataloging: ' + str(eid),
@@ -874,11 +686,39 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
+def _registerExperimentDocument(filename, created_by, expid=None):
+    '''
+    Register the experiment document.
+
+    Arguments:
+    filename -- path of the document to parse (METS or notMETS)
+    created_by -- a User instance
+    expid -- the experiment ID to use
+
+    Returns:
+    The experiment ID
+
+    '''
+
+    f = open(filename)
+
+    firstline = f.readline()
+
+    f.close()
+
+    if firstline.startswith('<experiment'):
+        logger.debug('processing simple xml')
+        processExperiment = ProcessExperiment()
+        eid = processExperiment.process_simple(filename, created_by, expid)
+    else:
+        logger.debug('processing METS')
+        eid = parseMets(filename, created_by, expid)
+
+    return eid
+
+
 # web service
-
-
 def register_experiment_ws_xmldata(request):
-    import sys
     import threading
 
     status = ''
@@ -1111,52 +951,29 @@ def control_panel(request):
 
 @login_required()
 def search_experiment(request):
-    get = False
-    experiments = get_accessible_experiments(request.user.id)
-    if experiments:
-        experiments = experiments.order_by('title')
+    """Either show the search experiment form or the result of the search
+    experiment query.
 
-        if 'results' in request.GET:
-            get = True
-            if 'title' in request.GET and len(request.GET['title']) > 0:
-                experiments = \
-                    experiments.filter(title__icontains=request.GET['title'])
+    """
 
-            if 'description' in request.GET and \
-                    len(request.GET['description']) > 0:
-                experiments = \
-                    experiments.filter(
-                    description__icontains=request.GET['description'])
+    if len(request.GET) == 0:
+        return __forwardToSearchExperimentFormPage(request)
 
-            if 'institution_name' in request.GET \
-                    and len(request.GET['institution_name']) > 0:
-                experiments = \
-                    experiments.filter(
-                    institution_name__icontains=request.GET[
-                    'institution_name'])
+    form = __getSearchExperimentForm(request)
+    experiments = __processExperimentParameters(request, form)
 
-            if 'creator' in request.GET and \
-                    len(request.GET['creator']) > 0:
-                experiments = \
-                    experiments.filter(
-                    author_experiment__author__name__icontains=request.GET[
-                    'creator'])
-
-    bodyclass = None
-    if get:
+    # check if the submitted form is valid
+    if experiments is not None:
         bodyclass = 'list'
+    else:
+        return __forwardToSearchExperimentFormPage(request)
 
     c = Context({
-        'submitted': get,
         'experiments': experiments,
-        'subtitle': 'Search Experiments',
-        'nav': [{'name': 'Search Experiment',
-            'link': '/search/experiment/'}],
         'bodyclass': bodyclass,
-        'search_pressed': True,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/search_experiment.html', c))
+    url = 'tardis_portal/search_experiment_results.html'
+    return HttpResponse(render_response_index(request, url, c))
 
 
 @login_required()
@@ -1197,7 +1014,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     Arguments:
     request -- the HTTP request
-    searchQueryType -- the type of query, 'mx' or 'sax'
+    searchQueryType -- the type of query, 'mx' or 'saxs'
     searchFilterData -- the cleaned up search form data
 
     Returns:
@@ -1230,7 +1047,6 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # TODO: might need to cache the result of this later on
 
     # get all the datafile parameters for the given schema
-    # TODO: if p is searchable
     parameters = [p for p in
         ParameterName.objects.filter(
         schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
@@ -1240,7 +1056,6 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
             searchFilterData, 'datafileparameterset__datafileparameter')
 
     # get all the dataset parameters for given schema
-    # TODO: if p is searchable
     parameters = [p for p in
         ParameterName.objects.filter(
         schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
@@ -1254,6 +1069,65 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
         datafile_results = datafile_results.order_by('filename')
 
     return datafile_results
+
+
+@login_required()
+def __getFilteredExperiments(request, searchFilterData):
+    """Filter the list of experiments using the cleaned up searchFilterData.
+
+    Arguments:
+    request -- the HTTP request
+    searchFilterData -- the cleaned up search experiment form data
+
+    Returns:
+    A list of experiments as a result of the query or None if the provided
+      search request is invalid
+
+    """
+
+    #from django.db.models import Q
+
+    experiments = get_accessible_experiments(request.user.id)
+
+    if experiments is None:
+        return []
+
+    # search for the default experiment fields
+    if searchFilterData['title'] != '':
+        experiments = \
+            experiments.filter(title__icontains=searchFilterData['title'])
+
+    if searchFilterData['description'] != '':
+        experiments = \
+            experiments.filter(
+            description__icontains=searchFilterData['description'])
+
+    if searchFilterData['institutionName'] != '':
+        experiments = \
+            experiments.filter(
+            institution_name__icontains=searchFilterData['institutionName'])
+
+    if searchFilterData['creator'] != '':
+        experiments = \
+            experiments.filter(
+        author_experiment__author__name__icontains=searchFilterData['creator'])
+
+    # initialise the extra experiment parameters
+    parameters = []
+
+    # get all the experiment parameters
+    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+        parameters += ParameterName.objects.filter(
+            schema__namespace__exact=experimentSchema)
+
+    experiments = __filterParameters(parameters, experiments,
+            searchFilterData, 'experimentparameterset__experimentparameter')
+
+    # let's sort it in the end
+    if experiments:
+        experiments = experiments.order_by('title')
+
+    return experiments
 
 
 def __filterParameters(
@@ -1302,9 +1176,10 @@ def __filterParameters(
                             kwargs[paramType + '__string_value__icontains'] = \
                                 searchFilterData[parameter.name]
                         else:
-                            # if comparison_type on a string is a comparison type
-                            # that can only be applied to a numeric value, we'll
-                            # default to just using 'icontains' comparison
+                            # if comparison_type on a string is a comparison
+                            # type that can only be applied to a numeric value,
+                            # we'll default to just using 'icontains'
+                            # comparison
                             kwargs[paramType + '__string_value__icontains'] = \
                                 searchFilterData[parameter.name]
                 else:
@@ -1394,7 +1269,7 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'sax':
+        #if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
         #else:
@@ -1420,22 +1295,35 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    return render_to_response(url, {'username': request.user.username,
-                              'searchForm': searchForm,
-                              'modifiedSearchForm': modifiedSearchForm,
-                              'searchDatafileSelectionForm':
-                              getNewSearchDatafileSelectionForm()})
+    c = Context({
+        'searchForm': searchForm,
+        'modifiedSearchForm': modifiedSearchForm,
+        'searchDatafileSelectionForm':
+        getNewSearchDatafileSelectionForm()})
+    return HttpResponse(render_response_index(request, url, c))
 
 
-def __getSearchForm(request, searchQueryType):
-    """Create the search form based on the HTTP GET request.
+def __forwardToSearchExperimentFormPage(request):
+    """Forward to the search experiment form page."""
+
+    searchForm = __getSearchExperimentForm(request)
+
+    c = Context({
+        'searchForm': searchForm,
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/search_experiment_form.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def __getSearchDatafileForm(request, searchQueryType):
+    """Create the search datafile form based on the HTTP GET request.
 
     Arguments:
     request -- The HTTP request object
-    searchQueryType -- The search query type: 'mx' or 'sax'
+    searchQueryType -- The search query type: 'mx' or 'saxs'
 
     Returns:
-    The supported search form
+    The supported search datafile form
 
     Throws:
     UnsupportedSearchQueryTypeError is the provided searchQueryType is not
@@ -1451,7 +1339,23 @@ def __getSearchForm(request, searchQueryType):
         raise e
 
 
-def __processParameters(request, searchQueryType, form):
+def __getSearchExperimentForm(request):
+    """Create the search experiment form.
+
+    Arguments:
+    request -- The HTTP request object
+
+    Returns:
+    The search experiment form
+
+    """
+
+    SearchExperimentForm = createSearchExperimentForm()
+    form = SearchExperimentForm(request.GET)
+    return form
+
+
+def __processDatafileParameters(request, searchQueryType, form):
     """Validate the provided datafile search request and return search results.
 
     Arguments:
@@ -1485,8 +1389,39 @@ def __processParameters(request, searchQueryType, form):
         return None
 
 
+def __processExperimentParameters(request, form):
+    """Validate the provided experiment search request and return search
+    results.
+
+    Arguments:
+    request -- The HTTP request object
+    form -- The search form to use
+
+    Returns:
+    A list of experiments as a result of the query or None if the provided
+      search request is invalid
+
+    """
+
+    if form.is_valid():
+
+        experiments = __getFilteredExperiments(request, form.cleaned_data)
+
+        # let's cache the query with all the filters in the session so
+        # we won't have to keep running the query all the time it is needed
+        # by the paginator
+        request.session['experiments'] = experiments
+        return experiments
+    else:
+        return None
+
+
 @login_required()
 def search_datafile(request):
+    """Either show the search datafile form or the result of the search
+    datafile query.
+
+    """
 
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
@@ -1503,8 +1438,9 @@ def search_datafile(request):
             len(request.GET) > 1:
         # display the 1st page of the results
 
-        form = __getSearchForm(request, searchQueryType)
-        datafile_results = __processParameters(request, searchQueryType, form)
+        form = __getSearchDatafileForm(request, searchQueryType)
+        datafile_results = __processDatafileParameters(
+            request, searchQueryType, form)
         if datafile_results is not None:
             bodyclass = 'list'
         else:
@@ -1517,8 +1453,8 @@ def search_datafile(request):
             if 'datafileResults' in request.session:
                 datafile_results = request.session['datafileResults']
             else:
-                form = __getSearchForm(request, searchQueryType)
-                datafile_results = __processParameters(request,
+                form = __getSearchDatafileForm(request, searchQueryType)
+                datafile_results = __processDatafileParameters(request,
                     searchQueryType, form)
                 if datafile_results is not None:
                     bodyclass = 'list'
