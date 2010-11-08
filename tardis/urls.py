@@ -31,23 +31,29 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.register_experiment_ws_xmldata'),
     (r'^experiment/register/internal/$',
      'tardis.tardis_portal.views.register_experiment_ws_xmldata_internal'),
-    (r'^experiment/view/(\d+)/download/$',
-     'tardis.tardis_portal.views.download'),
     (r'^experiment/view/(?P<experiment_id>\d+)/publish/$',
      'tardis.tardis_portal.views.publish_experiment'),
     (r'^search/experiment/$',
      'tardis.tardis_portal.views.search_experiment'),
     (r'^search/datafile/$',
      'tardis.tardis_portal.views.search_datafile'),
-    (r'^downloadTar/$', 'tardis.tardis_portal.views.downloadTar'),
+    (r'^download/datafile/(?P<datafile_id>\d+)/$',
+     'tardis.tardis_portal.download.download_datafile'),
+    #(r'^download/dataset/(?P<dataset_id>\d+)/$',
+    # 'tardis.tardis_portal.download.download_dataset'),
+    (r'^download/experiment/(?P<experiment_id>\d+)/$',
+     'tardis.tardis_portal.download.download_experiment'),
+    (r'^download/datafiles/$',
+     'tardis.tardis_portal.download.download_datafiles'),
+    (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'tardis.tardis_portal.views.display_experiment_image'),
     (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
      '(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_dataset_image'),
     (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_datafile_image'),
-    (r'^experiment/view/(?P<experiment_id>\d+)/downloadExperiment/$',
-     'tardis.tardis_portal.views.downloadExperiment'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/'
      '(?P<username>\w+)$', 'tardis.tardis_portal.views.add_access_experiment'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/'
@@ -76,4 +82,4 @@ urlpatterns = patterns(
     (r'media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
     (r'^admin/(.*)', admin.site.root),
-    )
+)

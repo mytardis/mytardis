@@ -271,7 +271,7 @@
 													{% if parameter.name.is_numeric %}
 														{{ parameter.numerical_value }} {{ parameter.name.units }}
 													{% else %}
-														{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
+														{{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
 													{% endif %}
 												</li>
 											{% endfor %}

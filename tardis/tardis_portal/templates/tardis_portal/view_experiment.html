@@ -304,7 +304,7 @@
                                                     {% if parameter.name.is_numeric %}
                                                         {{ parameter.numerical_value }} {{ parameter.name.units }}
                                                     {% else %}
-                                                        {{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
+                                                        {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
                                                     {% endif %}
                                                 </li>
                                             {% endfor %}
@@ -334,11 +334,15 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
 							</p>		
-							
+							{% for p in protocols %}
 							<p>
-							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
-							</p>							
-							
+							{% if p %}
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							{% else %}
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							{% endif %}
+							</p>		
+							{% endfor %}
                             <p align="right">
 							<br/>
                             <strong>Experiment Administrators </strong><br/>
@@ -349,10 +353,16 @@
 							
 						</div>
 						<div id="tabs-2">
+							{% for p in protocols %}
 							<p>
-							<strong><a href="downloadExperiment/">Download Entire Experiment</a></strong><br/>
-							</p>
-							<form method="POST" action="/downloadTar/" target="_blank">
+							{% if p %}
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							{% else %}
+							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							{% endif %}
+							</p>		
+							{% endfor %}
+							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">							
 							<div id="datasets">
 							{% for dataset in experiment.dataset_set.all %}
