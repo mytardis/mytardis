@@ -232,7 +232,7 @@ class UserInterfaceTestCase(TestCase):
             'password': pwd,
             'xmldata': f,
             'originid': '286',
-            'experiment_owner': user,
+            'experiment_owner': 'gerson.galang@versi.edu.au',
             })
         f.close()
         self.failUnlessEqual(response.status_code, 200)
