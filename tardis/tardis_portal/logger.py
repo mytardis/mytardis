@@ -66,7 +66,7 @@ def init_logging():
         hd = \
             logging.handlers.RotatingFileHandler(settings.LOG_FILENAME,
                 maxBytes=1000000, backupCount=5)
-    except AttributeError:
+    except:
         hd = logging.StreamHandler()
 
     fm = None

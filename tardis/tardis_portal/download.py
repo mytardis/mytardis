@@ -52,7 +52,7 @@ def download_datafile(request, datafile_id):
 
                 return response
 
-            except IOError, io:
+            except IOError:
                 return return_response_not_found(request)
     else:
 
@@ -125,7 +125,6 @@ def download_datafiles(request):
                         absolute_filename = datafile.url.partition('//')[2]
                         fileString += expid + '/' + absolute_filename + ' '
                         fileSize += long(datafile.size)
-
 
         else:
             return return_response_not_found(request)

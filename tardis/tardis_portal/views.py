@@ -324,8 +324,8 @@ def in_group(user, group):
     for group in user.groups.all():
         user_groups.append(str(group.name))
 
-    logger.debug(group_list)
-    logger.debug(user_groups)
+    #logger.debug(group_list)
+    #logger.debug(user_groups)
 
     if filter(lambda x: x in user_groups, group_list):
         return True
@@ -738,6 +738,7 @@ def register_experiment_ws_xmldata(request):
                 return return_response_error(request)
 
             e = Experiment(
+                title='Placeholder Title',
                 approved=True,
                 created_by=user,
                 created_time=datetime.datetime.now()
@@ -764,10 +765,10 @@ def register_experiment_ws_xmldata(request):
 
             class RegisterThread(threading.Thread):
                 def run(self):
-                    process_experiment = ProcessExperiment()
-                    logger.debug('processing experiment %s' % eid)
-                    process_experiment.register_experiment_xmldata_file(
-                        filename=filename, created_by=user, expid=eid)
+                    logger.debug('Processing experiment %s: START' % eid)
+                    _registerExperimentDocument(filename=filename,
+                                                created_by=user, expid=eid)
+                    logger.debug('Processing experiment %s: DONE' % eid)
 
             RegisterThread().start()
 
