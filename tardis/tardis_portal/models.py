@@ -97,16 +97,6 @@ class Experiment(models.Model):
         return self.title
 
 
-class Experiment_Owner(models.Model):
-
-    experiment = models.ForeignKey(Experiment)
-    user = models.ForeignKey(User)
-
-    def __unicode__(self):
-        return SafeUnicode(self.experiment.id) + ' | ' \
-            + SafeUnicode(self.user.username)
-
-
 class Author_Experiment(models.Model):
 
     experiment = models.ForeignKey(Experiment)
@@ -270,11 +260,14 @@ class XML_data(models.Model):
         return self.xmlns
 
 
-class ACL(models.Model):
-    aclowner = models.ManyToManyField(User)
+class ExperimentACL(models.Model):
+    OWNER_OWNED = 1
+    SYSTEM_OWNED = 2
+    __COMPARISON_CHOICES = (
+        (OWNER_OWNED, 'Owner-owned'),
+        (SYSTEM_OWNED, 'System-owned'),
+    )
 
-
-class ExperimentUserAndGroupAttributeACL(ACL):
     isUser = models.BooleanField(default=True)
     userOrGroupID = models.PositiveIntegerField()
     experiment = models.ForeignKey(Experiment)
@@ -282,28 +275,14 @@ class ExperimentUserAndGroupAttributeACL(ACL):
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)
-    parentACL = models.OneToOneField(ACL, parent_link=True)
 
+    # this usually is the end of the embargo period when the experiment
+    # becomes eligible to be made public
+    # TODO: remove null default value once we've fully implemented embargo!
+    effectiveDate = models.DateField(null=True)
 
-class ExperimentLocationACL(ACL):
-    experiment = models.ForeignKey(Experiment)
-    # location is the IP Address ACL
-    location = models.TextField(max_length=31)
-    parentACL = models.OneToOneField(ACL, parent_link=True)
-
-
-class ExperimentAttributeACL(ACL):
-    experimentParameterName = models.ForeignKey(ParameterName)
-    # TODO: properly declare the comparisonType with the correct
-    # comparison type choices
-    comparisonType = models.IntegerField()
-    comparisonValue = models.TextField(blank=True)
-    parentACL = models.OneToOneField(ACL, parent_link=True)
-
-
-class ExperimentDateACL(ACL):
-    isUser = models.BooleanField(default=True)
-    userOrGroupID = models.PositiveIntegerField()
-    experiment = models.ForeignKey(Experiment)
-    date = models.DateField()
-    parentACL = models.OneToOneField(ACL, parent_link=True)
+    # if expiryDate is not set, the experiment will be publicly available
+    # as long as the effectiveDate is met
+    expiryDate = models.DateField(null=True)
+    aclOwnershipType = models.IntegerField(
+        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
