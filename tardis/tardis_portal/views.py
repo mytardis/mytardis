@@ -36,7 +36,7 @@ from django.db.models import Sum
 import urllib
 import urllib2
 
-from tardis.tardis_portal import ldap_auth
+from tardis.tardis_portal import ldap_auth, localdb_auth
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
@@ -100,10 +100,8 @@ def logout(request):
 def get_accessible_experiments(user_id):
 
     experiments = \
-        Experiment.objects.filter(
-        experimentuserandgroupattributeacl__isUser=True,
-        experimentuserandgroupattributeacl__userOrGroupID=user_id,
-        experimentuserandgroupattributeacl__canRead=True)
+        Experiment.objects.filter(experimentacl__isUser=True,
+        experimentacl__userOrGroupID=user_id, experimentacl__canRead=True)
 
     return experiments
 
@@ -134,7 +132,8 @@ def get_accessible_datafiles_for_user(experiments):
 def get_owned_experiments(user_id):
 
     experiments = \
-        Experiment.objects.filter(experiment_owner__user__pk=user_id)
+        Experiment.objects.filter(experimentacl__isUser=True,
+        experimentacl__userOrGroupID=user_id, experimentacl__isOwner=True)
 
     return experiments
 
@@ -142,14 +141,12 @@ def get_owned_experiments(user_id):
 def has_experiment_ownership(experiment_id, user_id):
 
     experiment = Experiment.objects.get(pk=experiment_id)
+    acl = ExperimentACL.objects.get(isUser=True, userOrGroupID=user_id,
+        experiment=experiment, isOwner=True)
 
-    eo = Experiment_Owner.objects.filter(experiment=experiment,
-            user=user_id)
-
-    if eo:
+    if acl:
         return True
-    else:
-        return False
+    return False
 
 
 # custom decorator
@@ -253,8 +250,8 @@ def has_experiment_access(experiment_id, user):
     if not user.is_authenticated():
         return False
 
-    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
-        userOrGroupID=user.pk, experiment__id=experiment_id, canRead=True)
+    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
+        experiment__id=experiment_id, canRead=True)
 
     if results:
         return True
@@ -272,8 +269,8 @@ def has_dataset_access(dataset_id, user):
     if not user.is_authenticated():
         return False
 
-    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
-        userOrGroupID=user.pk, experiment__id=experiment.id, canRead=True)
+    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
+        experiment__id=experiment.id, canRead=True)
 
     if results:
         return True
@@ -291,9 +288,8 @@ def has_datafile_access(dataset_file_id, user):
     if not user.is_authenticated():
         return False
 
-    results = ExperimentUserAndGroupAttributeACL.objects.filter(isUser=True,
-        userOrGroupID=user.pk, experiment__id=df.dataset.experiment.id,
-        canRead=True)
+    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
+        experiment__id=df.dataset.experiment.id, canRead=True)
 
     if results:
         return True
@@ -618,10 +614,14 @@ def view_experiment(request, experiment_id):
                 size = size + long(df.size)
 
         owners = None
-        try:
-            owners = \
-                Experiment_Owner.objects.filter(experiment=experiment)
-        except Experiment_Owner.DoesNotExist, eo:
+        try:           
+            ownerIDs = \
+                [acl.userOrGroupID for acl in ExperimentACL.objects.filter(
+                isUser=True, experiment=experiment, isOwner=True)]
+            owners = User.objects.extra(where=['id IN ' + str(
+                tuple(ownerIDs)).replace(',)', ')')]).order_by('username')
+        
+        except ExperimentACL.DoesNotExist, eo:
             pass
 
         c = Context({
@@ -953,9 +953,6 @@ def register_experiment_ws_xmldata(request):
             # TODO: this bit will need to be updated to reflect the new
             #       user authentication requirements
             if not len(request.POST.getlist('experiment_owner')) == 0:
-                g = Group(name=eid)
-                g.save()
-
                 for owner in request.POST.getlist('experiment_owner'):
 
                     owner = urllib.unquote_plus(owner)
@@ -963,15 +960,18 @@ def register_experiment_ws_xmldata(request):
                     logger.debug('registering owner: ' + owner)
                     u = None
 
-                    # try get user from email
-
+                    # try to get user object using his/her email as a key
+                    # from the LDAP DB
                     if settings.LDAP_ENABLE:
                         u = ldap_auth.get_or_create_user_ldap(owner)
-                        e = Experiment.objects.get(pk=eid)
-                        exp_owner = Experiment_Owner(experiment=e,
-                                user=u)
-                        exp_owner.save()
-                        u.groups.add(g)
+                    else:  # use local DB lookup
+                        u = localdb_auth.get_or_create_user(owner)
+                        
+                    e = Experiment.objects.get(pk=eid)
+                    acl = ExperimentACL(userOrGroupID=u.id, experiment=e,
+                        canRead=True, canWrite=True, canDelete=True,
+                        isOwner=True)
+                    acl.save()
 
             logger.debug('Sending file request')
 
@@ -1576,8 +1576,16 @@ def retrieve_user_list(request):
 @experiment_ownership_required
 def retrieve_access_list(request, experiment_id):
 
-    users = \
-        User.objects.filter(groups__name=experiment_id).order_by('username')
+    e = Experiment.objects.get(id=experiment_id)
+    
+    # TODO: decide if we are to also show system-owned ACLs
+    # TODO: we'll need to also add groups in here later
+    userIDs = [acl.userOrGroupID for acl in ExperimentACL.objects.filter(
+        isUser=True, experiment=e, canRead=True,
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)]
+
+    users = User.objects.extra(where=['id IN ' + str(tuple(userIDs)).replace(
+        ',)', ')')]).order_by('username')
 
     c = Context({'users': users, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
@@ -1592,10 +1600,9 @@ def add_access_experiment(request, experiment_id, username):
         if not has_experiment_access(experiment_id, u):
 
             e = Experiment.objects.get(id=experiment_id)
-            owner = ACLOwner.objects.get(user=request.user)
 
-            acl = ExperimentUserAndGroupAttributeACL(userOrGroupID=u.id,
-                experiment=e, canRead=True, aclOwner=owner)
+            acl = ExperimentACL(userOrGroupID=u.id,
+                experiment=e, canRead=True)
             acl.save()
 
             c = Context({'user': u, 'experiment_id': experiment_id})
@@ -1606,7 +1613,7 @@ def add_access_experiment(request, experiment_id, username):
     except User.DoesNotExist, ue:
 
         return return_response_not_found(request)
-    except Group.DoesNotExist, ge:
+    except Experiment.DoesNotExist, ge:
         return return_response_not_found(request)
 
     return return_response_error(request)
@@ -1619,8 +1626,8 @@ def remove_access_experiment(request, experiment_id, username):
         u = User.objects.get(username=username)
         e = Experiment.objects.get(pk=experiment_id)
 
-        acl = ExperimentUserAndGroupAttributeACL.objects.filter(
-            isUser=True, userOrGroupID=u.id, experiment=e)
+        acl = ExperimentACL.objects.filter(isUser=True, userOrGroupID=u.id,
+            experiment=e)
 
         if acl:
             acl.delete()
