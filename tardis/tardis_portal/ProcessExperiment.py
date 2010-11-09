@@ -31,7 +31,7 @@
 #
 
 from __future__ import with_statement  # This isn't required in Python 2.6
-from xml.dom.minidom import parse, parseString
+from xml.dom.minidom import parseString
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.logger import logger
 from django.utils.safestring import SafeUnicode
@@ -148,8 +148,7 @@ class ProcessExperiment:
                             created_by=created_by,
                             created_time=datetime.datetime.now(),
                             start_time=exp['starttime'],
-                            end_time=exp['endtime']
-                            )
+                            end_time=exp['endtime'])
 
                         experiment.save()
 

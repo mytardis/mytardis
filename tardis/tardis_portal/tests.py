@@ -65,6 +65,9 @@ class SearchTestCase(TestCase):
             user = User.objects.create(username='test',
                                        email='')
         user.password = 'test'
+        groups = Group.objects.all
+        for g in groups:
+            user.groups.add(g)
         user.save()
 
     def testSearchDatafileForm(self):
