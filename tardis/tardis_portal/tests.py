@@ -58,18 +58,6 @@ class SearchTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-        from django.contrib.auth.models import User, Group
-        try:
-            user = User.objects.get(username='test')
-        except User.DoesNotExist:
-            user = User.objects.create(username='test',
-                                       email='')
-        user.password = 'test'
-        groups = Group.objects.all()
-        for g in groups:
-            user.groups.add(g)
-        user.save()
-
     def testSearchDatafileForm(self):
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
 
@@ -413,6 +401,8 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
-    allTests = unittest.TestSuite(
-        [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
+    #allTests = unittest.TestSuite(
+    #   [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
+    allTests = [searchSuite]
     return allTests
+
