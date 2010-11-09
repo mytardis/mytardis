@@ -58,14 +58,14 @@ class SearchTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-        from django.contrib.auth.models import User
+        from django.contrib.auth.models import User, Group
         try:
             user = User.objects.get(username='test')
         except User.DoesNotExist:
             user = User.objects.create(username='test',
                                        email='')
         user.password = 'test'
-        groups = Group.objects.all
+        groups = Group.objects.all()
         for g in groups:
             user.groups.add(g)
         user.save()
