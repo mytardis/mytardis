@@ -58,6 +58,15 @@ class SearchTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
+        from django.contrib.auth.models import User
+        try:
+            user = User.objects.get(username='test')
+        except User.DoesNotExist:
+            user = User.objects.create(username='test',
+                                       email='')
+        user.password = 'test'
+        user.save()
+
     def testSearchDatafileForm(self):
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
 
@@ -80,7 +89,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileAuthentication(self):
         response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+                                   {'type': 'saxs', 'filename': '', })
 
         # check if the response is a redirect to the login page
         self.assertEqual(response.status_code, 302)
@@ -211,27 +220,6 @@ class UserInterfaceTestCase(TestCase):
             response = c.get(u)
             self.failUnlessEqual(response.status_code, 301)
 
-    def test_register(self):
-        self.client = Client()
-
-        from django.contrib.auth.models import User
-        import os
-
-        user = 'user1'
-        pwd = 'test'
-        email = ''
-        User.objects.create_user(user, email, pwd)
-
-        f = open(os.path.join(path.abspath(path.dirname(__file__)),
-                 'tests/notMETS_test.xml'), 'r')
-        response = self.client.post('/experiment/register/', {
-            'username': user,
-            'password': pwd,
-            'xmldata': f
-            })
-        f.close()
-        self.failUnlessEqual(response.status_code, 200)
-
     def test_login(self):
         from django.contrib.auth.models import User
         user = 'user2'
@@ -324,7 +312,11 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         parser.parse(metsFile)
 
         from django.contrib.auth.models import User
-        self.user = User.objects.get(username='test')
+        try:
+            self.user = User.objects.get(username='test')
+        except User.DoesNotExist:
+            self.user = User.objects.create(username='test',
+                                            email='')
         parser.setContentHandler(
             MetsMetadataInfoHandler(holder=self.dataHolder,
             tardisExpId=None,
