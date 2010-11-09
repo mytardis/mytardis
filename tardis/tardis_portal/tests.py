@@ -401,8 +401,7 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
-    #allTests = unittest.TestSuite(
-    #   [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
-    allTests = [searchSuite]
+    allTests = unittest.TestSuite(
+       [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
     return allTests
 
