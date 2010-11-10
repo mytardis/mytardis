@@ -1727,4 +1727,3 @@ def search_equipment(request):
     c = Context({'form': form,
                  'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
-
