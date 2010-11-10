@@ -404,7 +404,7 @@ class EquipmentTestCase(TestCase):
         self.assertTrue(response.context['form'] is not None)
 
     def testSearchEquipmentResult(self):
-        response = self.client.post('/search/equipment/', { 'key' : 'PIL', })
+        response = self.client.post('/search/equipment/', {'key': 'PIL', })
         self.assertEqual(len(response.context['object_list']), 2)
 
     def testEquipmentDetail(self):
@@ -432,6 +432,9 @@ def suite():
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     equipmentSuite = \
         unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
-    allTests = unittest.TestSuite(
-       [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite, equipmentSuite])
+    allTests = unittest.TestSuite([parserSuite1,
+                                   parserSuite2,
+                                   userInterfaceSuite,
+                                   searchSuite,
+                                   equipmentSuite])
     return allTests
