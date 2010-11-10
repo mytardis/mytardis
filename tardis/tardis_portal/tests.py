@@ -29,7 +29,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.models import Experiment
 
 """
 tests.py
@@ -39,12 +38,14 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 @author Gerson Galang
 
 """
+from django.test import TestCase
+from django.test.client import Client
 
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
 from tardis.tardis_portal.metsparser import MetsMetadataInfoHandler
-from django.test import TestCase
-from django.test.client import Client
+
 import unittest
 from os import path
 from xml.sax.handler import feature_namespaces
@@ -390,6 +391,34 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
+class EquipmentTestCase(TestCase):
+
+    fixtures = ['AS_Equipment.json']
+
+    def setUp(self):
+        self.client = Client()
+
+    def testSearchEquipmentForm(self):
+        response = self.client.get('/search/equipment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'] is not None)
+
+    def testSearchEquipmentResult(self):
+        response = self.client.post('/search/equipment/', { 'key' : 'PIL', })
+        self.assertEqual(len(response.context['object_list']), 2)
+
+    def testEquipmentDetail(self):
+        response = self.client.get('/equipment/1/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['object'].make, 'Dectris')
+        self.assertEqual(response.context['object'].type, 'X-ray detector')
+
+    def testEquipmentList(self):
+        response = self.client.get('/equipment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['object_list']), 2)
+
+
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
@@ -401,7 +430,8 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
+    equipmentSuite = \
+        unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
     allTests = unittest.TestSuite(
-       [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
+       [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite, equipmentSuite])
     return allTests
-
