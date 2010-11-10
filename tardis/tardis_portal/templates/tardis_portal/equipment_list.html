@@ -6,14 +6,14 @@
     {% else %}
     No equipment found
     {% endif %}
-    <table border="0" cellspacing="0" cellpadding="0">
+    <table border="0" cellspacing="10" cellpadding="10">
         {% for eq in object_list %}
 	<tr>
-	  <td><a href="/equipment/{{ eq.id }}">{{ eq.key }}</a></td>
-	  <td>{{ eq.type }}</td>
-	  <td>{{ eq.make }}</td>
-	  <td>{{ eq.model }}</td>
-	  <td>{{ eq.serial }}</td>
+	  <td align="left"><a href="/equipment/{{ eq.id }}">{{ eq.key }}</a></td>
+	  <td align="left">{{ eq.type }}</td>
+	  <td align="left">{{ eq.make }}</td>
+	  <td align="left">{{ eq.model }}</td>
+	  <td align="left">{{ eq.serial }}</td>
         </tr>
 	{% endfor %}
     </table>

@@ -339,7 +339,7 @@ def index(request):
 
     c = Context(
         {'status': status,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -1724,5 +1724,7 @@ def search_equipment(request):
     else:
         form = EquipmentSearchForm()
 
-    return render_to_response('tardis_portal/search_equipment.html',
-                              {'form': form})
+    c = Context({'form': form,
+                 'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    return render_to_response('tardis_portal/search_equipment.html', c)
+
