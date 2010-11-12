@@ -540,7 +540,7 @@ table.experiment-table th {
 	cursor: pointer;
 	position: relative;
 	background-color: #dcdcdc;
-	
+    color: #404040;
 	margin:1px;
 	font-size: 14px;
 	font-weight: bold;
@@ -597,3 +597,8 @@ table.experiment-table th {
         width: 500px;
 
     }	
+    
+    .fieldWrapper textarea {
+        width: 500px;
+
+    }    
