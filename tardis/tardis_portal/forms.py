@@ -349,6 +349,13 @@ class FullExperiment(Experiment):
         """
         if not experiment:
             return
+        authors = experiment.authors.all()
+        self.authors = [Author(instance=a) for a in authors]
+        self.initial['authors'] = ', '.join([a.name for a in authors])
+        self.fields['authors'] = \
+            MultiValueCommaSeparatedField([author.fields['name'] for author in self.authors],
+                                          widget=CommaSeparatedInput())
+
         for i, ds in enumerate(experiment.dataset_set.all()):
             form = Dataset(instance=ds, auto_id='dataset_%s')
             self._add_dataset_form(i, form)
