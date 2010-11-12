@@ -635,9 +635,9 @@ class ExperimentFormTestCase(TestCase):
                     if value % "file1.py" in str(file['filename']):
                         continue
                     self.assertTrue(False, "Not all files present")
-        #TODO broken test
-        #self.assertTrue(value % "russell, steve" in str(f['authors']),
-        #                str(f['authors']))
+
+        self.assertTrue(value % "russell, steve" in str(f['authors']),
+                        str(f['authors']))
 
     def test_render(self):
         from tardis.tardis_portal import forms
