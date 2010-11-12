@@ -136,7 +136,11 @@ class ProcessExperiment:
                     # commit any experiment if current = experiment
                     if current == 'experiment':
 
-                        experiment = Experiment.objects.get(pk=eid)
+                        if not eid is None:
+                            experiment = Experiment.objects.get(pk=eid)
+                        else:
+                            experiment = Experiment()
+
                         experiment.url = exp['url']
                         experiment.title = exp['title']
                         experiment.institution_name = exp['organization']
