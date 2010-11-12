@@ -67,7 +67,7 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    created_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
@@ -275,7 +275,7 @@ class Equipment(models.Model):
     serial = models.CharField(max_length=60, blank=True)
     comm = models.DateField(null=True, blank=True)
     decomm = models.DateField(null=True, blank=True)
-    url = models.URLField(blank=True, verify_exists=False, max_length=255)
+    url = models.URLField(null=True, blank=True, verify_exists=False, max_length=255)
 
     def __unicode__(self):
         return self.key
