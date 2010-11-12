@@ -344,7 +344,7 @@ class FullExperiment(Experiment):
         the internal form variables.
 
         :param experiment: maximum number of stack frames to show
-        :type experiment: `tardis.tardis_portal.models.Experiment`
+        :type experiment: :class:`tardis.tardis_portal.models.Experiment`
         :rtype: dictionary containing strings and lists of strings
         """
         if not experiment:
