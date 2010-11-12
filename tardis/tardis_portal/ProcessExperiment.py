@@ -104,8 +104,6 @@ class ProcessExperiment:
     # this is the worst code of all time :) -steve
     def process_simple(self, filename, created_by, eid):
 
-        self.url = 'http://www.example.com'
-
         with open(filename) as f:
             e = 0
             ds = 0
@@ -138,18 +136,14 @@ class ProcessExperiment:
                     # commit any experiment if current = experiment
                     if current == 'experiment':
 
-                        experiment = Experiment(
-                            id=eid,
-                            url=exp['url'],
-                            approved=True,
-                            title=exp['title'],
-                            institution_name=exp['organization'],
-                            description=exp['abstract'],
-                            created_by=created_by,
-                            created_time=datetime.datetime.now(),
-                            start_time=exp['starttime'],
-                            end_time=exp['endtime'])
-
+                        experiment = Experiment.objects.get(pk=eid)
+                        experiment.url = exp['url']
+                        experiment.title = exp['title']
+                        experiment.institution_name = exp['organization']
+                        experiment.description = exp['abstract']
+                        experiment.created_by = created_by
+                        experiment.start_time = exp['starttime']
+                        experiment.end_time = exp['endtime']
                         experiment.save()
 
                         author_experiments = \

@@ -692,9 +692,7 @@ def _registerExperimentDocument(filename, created_by, expid=None):
     '''
 
     f = open(filename)
-
     firstline = f.readline()
-
     f.close()
 
     if firstline.startswith('<experiment'):
@@ -741,7 +739,6 @@ def register_experiment_ws_xmldata(request):
                 title='Placeholder Title',
                 approved=True,
                 created_by=user,
-                created_time=datetime.datetime.now()
                 )
 
             e.save()
@@ -765,10 +762,13 @@ def register_experiment_ws_xmldata(request):
 
             class RegisterThread(threading.Thread):
                 def run(self):
-                    logger.debug('Processing experiment %s: START' % eid)
-                    _registerExperimentDocument(filename=filename,
-                                                created_by=user, expid=eid)
-                    logger.debug('Processing experiment %s: DONE' % eid)
+                    logger.info('=== processing experiment %s: START' % eid)
+                    try:
+                        _registerExperimentDocument(filename=filename,
+                                                    created_by=user, expid=eid)
+                        logger.info('=== processing experiment %s: DONE' % eid)
+                    except:
+                        logger.exception('=== processing experiment %s: FAILED!' % eid)
 
             RegisterThread().start()
 
