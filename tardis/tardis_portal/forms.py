@@ -439,11 +439,13 @@ class FullExperiment(Experiment):
 
         for number, dataset in data['dataset'].items():
 
-            ds_pk = dataset.get('id')
-            try:
-                ds_inst = models.Dataset.objects.get(id=ds_pk)
-            except models.Dataset.DoesNotExist:
-                ds_inst = None
+            ds_inst = None
+            if 'id' in dataset:
+                ds_pk = dataset.get('id')
+                try:
+                    ds_inst = models.Dataset.objects.get(id=ds_pk)
+                except models.Dataset.DoesNotExist:
+                    pass
             form = Dataset(data=dataset,
                            instance=ds_inst,
                            auto_id='dataset_%s')
@@ -455,11 +457,13 @@ class FullExperiment(Experiment):
             # starting with file_
 
             for f in files:
-                df_pk = f.get('id')
-                try:
-                    df_inst = models.Dataset_File.objects.get(id=df_pk)
-                except models.Dataset_File.DoesNotExist:
-                    df_inst = None
+                df_inst = None
+                if 'id' in f:
+                    df_pk = f.get('id')
+                    try:
+                        df_inst = models.Dataset_File.objects.get(id=df_pk)
+                    except models.Dataset_File.DoesNotExist:
+                        pass
 
                 d = Dataset_File(data=f,
                                  instance=df_inst, auto_id='file_%s')
