@@ -1797,6 +1797,11 @@ def create_experiment(request):
         print request.POST
 
         form = FullExperiment(request.POST, request.FILES)
+        
+        # sanitize stuff
+        # 
+        # basename(files['filename'][i]
+        
         if form.is_valid():
             full_experiment = form.save()
 
@@ -1821,8 +1826,9 @@ def create_experiment(request):
             
             return HttpResponseRedirect('/experiment/view/' + str(experiment.id))
     else:
+
         pass
-        # exp = Experiment.objects.get(id=45)
+        # exp = Experiment.objects.get(id=52)
         # 
         # form = FullExperiment(instance=exp)
         # 

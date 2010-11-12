@@ -58,7 +58,7 @@
 						if(!exists)
 						{
 							
-							file_list.append("<input type=\"hidden\" name=\"file[" + local_id + "]\" value=\"" + id + "\"/> <li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
+							file_list.append("<input type=\"hidden\" name=\"file_filename[" + local_id + "]\" value=\"" + id + "\"/> <li><span class=\"file\">" + id + "</span> <span class=\"remove_file\">[x]</span></li>");
 						}						
 				      	
 					   });
@@ -142,6 +142,33 @@
 				<div class="post">
 					<h1 class="title"><a name="abouttardis">Create Experiment</a></h1>
 					<div class="entry">
+				{# 		<h1>TEST</h1> #}
+				{# 		<form action="" method="post"> #}
+				{#     {% for field in form %} #}
+				{#         <div class="fieldWrapper"> #}
+				{#             {{ field.errors }} #}
+				{#             {{ field.label_tag }}: {{ field }} #}
+				{#         </div> #}
+				{#     {% endfor %} #}
+				{#     {% for dataset_form, file_forms in form.get_datasets %} #}
+				{#         {% for field in dataset_form %} #}
+				{#         <div class="fieldWrapper"> #}
+				{#             {{ field.errors }} #}
+				{#             {{ field.label_tag }}: {{ field }} #}
+				{#         </div> #}
+				{#         {% endfor %} #}
+				{#     {% for file_form in file_forms %} #}
+				{#         {% for field in file_form %} #}
+				{#         <div class="fieldWrapper"> #}
+				{#             {{ field.errors }} #}
+				{#             {{ field.label_tag }}: {{ field }} #}
+				{#         </div> #}
+				{#         {% endfor %} #}
+				{#     {% endfor %} #}
+				{#     {% endfor %} #}
+				{#     <p><input type="submit" value="Submit" /></p> #}
+				{# </form>						 #}
+				{# 		<h1>TEST</h1>	 #}		
 
 			<form action="/experiment/create/" method="POST">
 				{{ form.non_field_errors }}
@@ -164,6 +191,12 @@
 			        {{ form.institution_name.errors }}
 			        <label for="id_title">Institution Name:</label><br/>
 			        {{ form.institution_name }}
+			    </div>			
+			
+			    <div class="fieldWrapper">
+			        {{ form.description.errors }}
+			        <label for="id_description">Description:</label><br/>
+			        {{ form.description }}
 			    </div>											
 			
 				<input name="url" type="hidden" value="http://remove.me"/>
@@ -191,21 +224,33 @@
 				<br/>
 			</div>
 			<div class="datasets">
-			<div class="dataset_container" id="0">
-				<p class="msg_head">Dataset</p>
-				<div class="msg_body">
-					<p>Dataset Description: <br/><textarea name="dataset_description[0]" cols="80" rows="2"></textarea></p>
-					<p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
-					<p><strong>Files</strong></p>
-					<div>
+			{% for dataset_form, file_forms in form.get_datasets %}
+					<div class="dataset_container" id="0">
+						<p class="msg_head">Dataset</p>
+						<div class="msg_body">
+							<div class="fieldWrapper">
+								{{ dataset_form.description.errors }}
+							<p>Dataset Description: <br/>
+								{% if dataset_form.is_bound %}{{dataset_form.id}}{% endif %}
+								{{dataset_form.description}}	
+							</p>
+							</div>
+							<p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+							<p><strong>Files</strong></p>
+							<div>
 
-						<ul class="dataset">
-						
-						</ul>
-					</div>				
-					<div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
-				</div>
-			</div>
+								<ul class="dataset">
+									 {% for file_form in file_forms %}
+											{{file_form.url.as_hidden}}
+											<span class="file">{{file_form.url.as_label}}</span>
+											<span class="remove_file">[x]</span><br/>
+									 {% endfor %}
+								</ul>
+							</div>				
+							<div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
+						</div>
+					</div>
+			{% endfor %}
 			</div>
 			<br/>
 			<input id="button" type="submit" value="Create Experiment"/>
