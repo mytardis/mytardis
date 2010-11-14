@@ -723,6 +723,51 @@ class ExperimentFormTestCase(TestCase):
                          'dataset_description[1]')
 
 
+class TraverseTestCase(TestCase):
+    dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
+    files = [['dir1', 'file1'],
+             ['dir2', 'file2'],
+             ['dir2', 'file3'],
+             ['dir2', 'subdir', 'file4']]
+
+    def setUp(self):
+        from django.conf import settings
+        staging = settings.STAGING_PATH
+        import os
+        from os import path
+        for dir in self.dirs:
+            os.mkdir(path.join(staging, dir))
+        for file in self.files:
+            f = open(path.join(staging, *file), 'w')
+            f.close()
+
+    def tearDown(self):
+        from django.conf import settings
+        staging = settings.STAGING_PATH
+        import os
+        from os import path
+        for file in self.files:
+            os.remove(path.join(staging, *file))
+        self.dirs.reverse()
+        for dir in self.dirs:
+            os.rmdir(path.join(staging, dir))
+
+    def test_traversal(self):
+        from tardis.tardis_portal import views
+        result = '<ul><li id="phtml_1"><a>My Files</a><ul>\
+<li id="dir1"><a>dir1</a><ul><li id="dir1/file1"><a>file1</a>\
+</li></ul></li><li id="dir2"><a>dir2</a><ul><li id="dir2/file2">\
+<a>file2</a></li><li id="dir2/file3"><a>file3</a></li><li id="dir2/subdir">\
+<a>subdir</a><ul><li id="dir2/subdir/file4"><a>file4</a></li></ul></li></ul>\
+</li><li id="dir3"><a>dir3</a><ul></ul></li><li id="directory"><a>directory\
+</a><ul><li id="directory/t"><a>t</a></li><li id="directory/testfile"><a>\
+testfile</a></li><li id="directory/tt"><a>tt</a></li></ul></li>\
+<li id="site.db"><a>site.db</a></li><li id="site1"><a>site1</a></li>\
+<li id="site2"><a>site2</a></li><li id="site3"><a>site3</a></li>\
+<li id="site4"><a>site4</a></li></ul></li></ul>'
+        self.assertEqual(views.staging_traverse(), result)
+
+
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
