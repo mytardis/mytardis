@@ -39,6 +39,7 @@ import urllib
 import urllib2
 
 import os
+from os import path
 
 from tardis.tardis_portal import ldap_auth
 
@@ -1737,27 +1738,30 @@ def import_params(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
 
-returnString = ""
-import os
-def traverse(path):
-    # print ' ' * traverse.level + data['text']
-    global returnString
-    dir_list = os.listdir(path)
-    for f in dir_list:
-        if not (f.startswith('.')):
-            if os.path.isdir(f):
-                #print '---' * traverse.level + '/' + f
-                os.chdir(f)
-                
-                returnString = returnString + "<li id=\"" + os.path.abspath(f).rpartition('/')[0][len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a><ul>"
-                returnString = traverse(".")
-                returnString = returnString + "</ul></li>"
 
-                os.chdir("..")
-            else:
-                returnString = returnString + "<li id=\"" + os.path.abspath(f)[len(settings.STAGING_PATH)+1:] + "\"><a>" + f + "</a></li>"
-                #print '---' * traverse.level + f
-    return returnString
+def staging_traverse():
+    """
+    recurse through directories and form html list tree for jtree
+    """
+    pathname = settings.STAGING_PATH
+    ul = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>"
+    for f in os.listdir(pathname):
+        ul = ul + traverse(path.join(pathname, f))
+    return  ul + "</ul></li></ul>"
+
+
+def traverse(pathname, dirname=settings.STAGING_PATH):
+    li = "<li id=\"%s\"><a>%s</a>" % (path.relpath(pathname, dirname),
+                                      path.basename(pathname))
+    if path.isfile(pathname):
+        return  li + "</li>\n"
+    if path.isdir(pathname):
+        ul = "<ul>\n"
+        for f in os.listdir(pathname):
+            ul = ul + traverse(path.join(pathname, f))
+        return  li + ul + "</ul></li>"
+    return ''
+
 
 def copy_files(datafiles, experiment_id):
     import shutil, os
@@ -1831,20 +1835,10 @@ def create_experiment(request):
         # exp = Experiment.objects.get(id=52)
         # 
         # form = FullExperiment(instance=exp)
-        # 
-        # print form            
-
-    global returnString
-    returnString = ""
-    os.chdir(settings.STAGING_PATH)
-
-    #recurse through directories and form html list tree for jtree
-    returnString = ""
-    returnString = traverse(settings.STAGING_PATH)
-    returnString = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>" + returnString + "</ul></li></ul>" 
+        #
 
     c = Context({'subtitle': 'Create Experiment',
-                 'directory_listing': returnString,
+                 'directory_listing': staging_traverse(),
                  'user_id': request.user.id,
                 'form': form,
               })
