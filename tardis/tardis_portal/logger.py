@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -31,6 +31,11 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# $Author$
+# $Revision$
+# $Date$
+
+
 import logging.handlers
 
 from django.conf import settings
@@ -44,14 +49,17 @@ def init_logging():
     fallback on console if disk log file cannot be openend
 
     http://docs.python.org/library/logging.html
-    logg
+
     >>> from tardis.tardis_portal.logger import logger
     >>> logger.info('Hello world.')
 
     """
 
     logger = logging.getLogger(__name__)
-    logger.setLevel(settings.LOG_LEVEL)
+    try:
+        logger.setLevel(settings.LOG_LEVEL)
+    except AttributeError:
+        logger.setLevel(logging.DEBUG)
 
     hd = None
     try:
@@ -61,7 +69,12 @@ def init_logging():
     except:
         hd = logging.StreamHandler()
 
-    fm = logging.Formatter(settings.LOG_FORMAT)
+    fm = None
+    try:
+        fm = logging.Formatter(settings.LOG_FORMAT)
+    except AttributeError:
+        fm = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
     hd.setFormatter(fm)
     logger.addHandler(hd)
     return logger

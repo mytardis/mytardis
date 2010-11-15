@@ -11,14 +11,11 @@ STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
 # LDAP configuration
 LDAP_ENABLE = False
 
-FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
-    '../var/store/'))
 ADMIN_MEDIA_STATIC_DOC_ROOT = ''
 HANDLEURL = ''
 SITE_ID = '1'
 MEDIA_URL = '/site_media/'
 TEMPLATE_DIRS = ['.']
-#TEMPLATE_DIRS = ['.', 'tardis_portal/']
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
@@ -42,9 +39,9 @@ INSTALLED_APPS = (
 
 TEST_RUNNER = 'django_nose.run_tests'
 
-LOG_FILENAME = '/dev/stderr'
+# LOG_FILENAME = '/var/log/tardis/tardis.log'
 
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.ERROR

@@ -65,6 +65,9 @@ class Experiment(models.Model):
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
     description = models.TextField(blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
@@ -116,6 +119,7 @@ class Dataset_File(models.Model):
     url = models.URLField(max_length=400)
     size = models.CharField(blank=True, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
+    created_time = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
         return self.filename
@@ -259,3 +263,19 @@ class XML_data(models.Model):
 
     def __unicode__(self):
         return self.xmlns
+
+
+class Equipment(models.Model):
+    key = models.CharField(unique=True, max_length=30)
+    dataset = models.ManyToManyField(Dataset, null=True, blank=True)
+    description = models.TextField(blank=True)
+    make = models.CharField(max_length=60, blank=True)
+    model = models.CharField(max_length=60, blank=True)
+    type = models.CharField(max_length=60, blank=True)
+    serial = models.CharField(max_length=60, blank=True)
+    comm = models.DateField(null=True, blank=True)
+    decomm = models.DateField(null=True, blank=True)
+    url = models.URLField(null=True, blank=True, verify_exists=False, max_length=255)
+
+    def __unicode__(self):
+        return self.key
