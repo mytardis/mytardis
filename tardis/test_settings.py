@@ -13,6 +13,9 @@ LDAP_ENABLE = False
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/'))
+STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
+    "../var/staging/"))
+
 ADMIN_MEDIA_STATIC_DOC_ROOT = ''
 HANDLEURL = ''
 SITE_ID = '1'
