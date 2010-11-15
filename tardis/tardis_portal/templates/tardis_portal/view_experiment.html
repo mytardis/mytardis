@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,24 +30,24 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load parametertypecheck %}
-		
+
 		{% block script %}
-		
+
 		<script language="JavaScript">
 
 		function disableEnterKey(e)
 		{
-		     var key;     
+		     var key;
 		     if(window.event)
 		          key = window.event.keyCode; //IE
 		     else
-		          key = e.which; //firefox     
+		          key = e.which; //firefox
 
 		     return (key != 13);
 		}
 
-		</script>		
-		
+		</script>
+
 		<script type="text/javascript">
 			$(function() {
 				$("#tabs").tabs();
@@ -55,8 +55,8 @@
 		</script>
 
 		<script type="text/javascript">
-			$(document).ready(function() {	
-				
+			$(document).ready(function() {
+
 				$('.filename_search').live('keyup', function(e) {
 					e.preventDefault();
 					if(e.keyCode == 13) {
@@ -64,6 +64,7 @@
 
 						$(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + $(this).val(), function(){
 								$(document).ready(function(){
+
 										// datafile metadata
 										$(".datafile_info_toggle").unbind('click');
 										$(document).find('.datafile_info_toggle').text("[Show Metadata]");
@@ -75,7 +76,7 @@
 
 											//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 											//{
-												$(this).next().html(loadingHTML);									
+												$(this).next().html(loadingHTML);
 											//}
 											$(this).next().load(href);
 
@@ -83,36 +84,37 @@
 											$(this).text("[Show Metadata]");
 											$(this).next().hide();
 										 });
-										
+
 										$(".dataset_selector_all").unbind('click');
 										$(".dataset_selector_none").unbind('click');
+
 										// file selectors
-										$(document).find('.dataset_selector_all').click(function() {	
-											$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+										$(document).find('.dataset_selector_all').click(function() {
+			                                                             $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
 									   });
 
-										$(document).find('.dataset_selector_none').click(function() {	
+										$(document).find('.dataset_selector_none').click(function() {
 											$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
-									   });											
+									   });
 									});
-						
+
 								});
 						}
 
 					});
-						
-				
+
+
 				// show hide various metadata divs
-				
+
 			   $('#datasets').find('.dataset_info').end().find('h2').click(function() {
 			     $(this).next().toggle();
 			   });
 
 			   $('.dataset_info').find('.datafile_list').hide().end().find('.datafile_list_toggle').click(function() {
 			     $(this).next().toggle();
-			   });	
+			   });
 
 
 				$('.pagelink').live('click', function( event ){
@@ -132,7 +134,7 @@
 
 												//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 												//{
-													$(this).next().html(loadingHTML);									
+													$(this).next().html(loadingHTML);
 												//}
 												$(this).next().load(href);
 
@@ -140,32 +142,32 @@
 												$(this).text("[Show Metadata]");
 												$(this).next().hide();
 											 });
-											
+
 											$(".dataset_selector_all").unbind('click');
 											$(".dataset_selector_none").unbind('click');
 											// file selectors
-											$(document).find('.dataset_selector_all').click(function() {	
+											$(document).find('.dataset_selector_all').click(function() {
 												$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
 										   });
 
-											$(document).find('.dataset_selector_none').click(function() {	
+											$(document).find('.dataset_selector_none').click(function() {
 												$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
-										   });											
+										   });
 										});
-														
+
 							//$(this).html(html);
-							
+
 						})
 						return false;
 					});
-			
+
 			// default text set
 
-			$(".dataset_metadata_toggle").text("[Show]");	
+			$(".dataset_metadata_toggle").text("[Show]");
 			$(".dataset_metadata_toggle").next().hide();
-			$(".datafile_list_toggle").text("[Show]");		
+			$(".datafile_list_toggle").text("[Show]");
 
 			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
@@ -175,83 +177,93 @@
 			 $(".dataset_metadata_toggle").toggle(function(){
 			   $(this).text("[Hide]");
 			    var href= $(this).attr("href");
-				$(href).show();				
+				$(href).show();
 
 			 },function(){
 			   $(this).text("[Show]");
 			    var href= $(this).attr("href");
 				$(href).hide();
 			 });
-			
+
 			// datafile list
 			 $(".datafile_list_toggle").toggle(function(){
 			   $(this).text("[Hide]");
 				var href = $(this).attr("href");
 
-				$(this).next().html(loadingHTML + "</br>");									
-				
+				$(this).next().html(loadingHTML + "</br>");
+
 				var datafile_info_container = $(this).next();
-				
+
 				// add initialisation for new datafile handlers as callback once ajax has loaded
 				// damn I love jQuery
-				$(this).next().load(href,function(){
-						$(document).ready(function(){						
-							
-							var datafile_info_selectors = 	
+				$(this).next().load(href,function() {
+						$(document).ready(function(){
+
+			                                var datafile_info_selectors =
 								datafile_info_container.find('.datafile_info').hide().end().find('.datafile_info_toggle');
-							
 							datafile_info_selectors.text("[Show Metadata]");
 
 							// datafile metadata
-							 datafile_info_selectors.toggle(function(){
+						        datafile_info_selectors.toggle(function(){
 				 				$(this).text("[Hide Metadata]");
 								var href = $(this).attr("href");
 
 								//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 								//{
-									$(this).next().html(loadingHTML);									
+									$(this).next().html(loadingHTML);
 								//}
 								$(this).next().load(href);
-															
-							 },function(){
+
+						         },function(){
 								$(this).text("[Show Metadata]");
-							 });	
-							
+							 });
+
 							   datafile_info_selectors.click(function() {
-								$(this).next().toggle();				
-							   });		
-							
+								$(this).next().toggle();
+							   });
 								// file selectors
-								datafile_info_container.find('.dataset_selector_all').click(function() {	
+								datafile_info_container.find('.dataset_selector_all').click(function() {
 									$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
 							   });
-							
-								datafile_info_container.find('.dataset_selector_none').click(function() {	
+
+								datafile_info_container.find('.dataset_selector_none').click(function() {
 									$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
-							   });	
-							
+							   });
+
 						});
-					 });			
+					 });
+
 			 },function(){
 			   $(this).text("[Show]");
 			 });
 
+			$('.dataset_checkbox').live('click', function( event ) {
+			   if ($(this).is(':checked')) {
+			        $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
+			        $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
+			   } else {
+			        $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
+			        $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
+			   }
 			});
-		</script>		
-		
+
+			});
+
+		</script>
+
 		{% endblock %}
-		
+
 		{% block fullpage %}
 
 		<div id="fullpage">
 			<div class="post">
 				<h1 class="title">
-					{{ experiment.title }} 
-					
+					{{ experiment.title }}
+
 				</h1>
-				
+
 
 
 					<div class="demo">
@@ -259,11 +271,11 @@
 					<div id="tabs">
 						<ul>
 							<li><a href="#tabs-1">Description</a></li>
-							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>						
+							<li><a href="#tabs-2">Datasets ({{ experiment.dataset_set.count }})</a></li>
 							{% if experiment.ftp_location %}<li><a href="/ajax/ftp/{{experiment.id}}">FTP Download</a></li>{% endif %}
 						</ul>
-						<div id="tabs-1">							
-							
+						<div id="tabs-1">
+
                             <p>
                             <strong>Authors: </strong><br/>
                             {% for author in authors %}
@@ -274,31 +286,38 @@
 							<p>
 							<strong>Abstract: </strong>
 							<div class="abstract">
-							{{ experiment.description|safe }}					
+							{{ experiment.description|safe }}
 							</div>
 							</p>
-							
+
 							{% if experiment.handle %}
 							<p>
 							<strong>Persistent Handle:</strong>
-							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>							
-							</p>							
+							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>
+							</p>
 							{% endif %}
-							
+
 							<p>
 							<strong>Institution:</strong>
-							{{experiment.institution_name}}<br/>							
+							{{experiment.institution_name}}<br/>
 							</p>
-							
+
+							{% if experiment.start_time and experiment.end_time %}
+							<p>
+							<strong>Date:</strong>
+							{{ experiment.start_time|date:"jS F Y H:i" }} - {{ experiment.end_time|date:"jS F Y H:i" }}<br/>
+							</p>
+							{% endif %}
+
 							<p>
                                     {% if experiment.experimentparameterset_set.count %}
                                     <div class="dataset_extrainfo">
-                                    <strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>    
+                                    <strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
                                     <div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
                                     <ul>
                                             {% for parameterset in experiment.experimentparameterset_set.all %}
                                             <p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-                                            
+
                                             {% for parameter in parameterset.experimentparameter_set.all %}
                                                 <li><strong>{{ parameter.name.full_name }}: </strong>
                                                     {% if parameter.name.is_numeric %}
@@ -309,13 +328,13 @@
                                                 </li>
                                             {% endfor %}
                                             <br/><br/>
-                                            {% endfor %}                                    
-                                    </ul>   
+                                            {% endfor %}
+                                    </ul>
 									</div>
 									</div>
-									{% endif %}								
-							</p>	
-							
+									{% endif %}
+							</p>
+
 							<p>
 								<strong>Dataset Information:</strong>
 								<div>
@@ -325,15 +344,15 @@
 												<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
 												<li><strong>Files:</strong> {{datafiles.count}}</li>
 												<li><strong>Size:</strong> {{size|filesizeformat}}</li>
-										</ul>										
-									</div>								
+										</ul>
+									</div>
 								</div>
-							</p>							
+							</p>
 
 							<p>
 							<strong>Experiment Last Updated:</strong>
-							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
-							</p>		
+							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>
+							</p>
 							{% for p in protocols %}
 							<p>
 							{% if p %}
@@ -341,7 +360,7 @@
 							{% else %}
 							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
 							{% endif %}
-							</p>		
+							</p>
 							{% endfor %}
                             <p align="right">
 							<br/>
@@ -349,8 +368,8 @@
                             {% for owner in owners %}
                                     {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
-                            </p>																			
-							
+                            </p>
+
 						</div>
 						<div id="tabs-2">
 							{% for p in protocols %}
@@ -360,31 +379,33 @@
 							{% else %}
 							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
 							{% endif %}
-							</p>		
+							</p>
 							{% endfor %}
 							<form method="POST" action="/download/datafiles/" target="_blank">
-							<input type="hidden" name="expid" value="{{experiment.id}}">							
+							<input type="hidden" name="expid" value="{{experiment.id}}">
 							<div id="datasets">
 							{% for dataset in experiment.dataset_set.all %}
-								
+							<div class="dataset">
 								<div class="dataset_title">
+		                                                        <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" >
 									<strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
 								</div>
-								 
 								<div class="dataset_info">
-									
+
 									<div class="dataset_description">
-									<strong>Dataset Description</strong>: {{ dataset.description|safe }}	
+									<strong>Dataset Description</strong>: {{ dataset.description|safe }} <br>
+									<strong>Dataset Equipment</strong>:
+									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}">{{ eq.key }}</a>
+									{% endfor %}
 									</div>
-									
 									<div class="dataset_extrainfo">
 										{% if dataset.datasetparameterset_set.count %}
-										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
+										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
 												{% for parameterset in dataset.datasetparameterset_set.all %}
 												<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-												
+
 												{% for parameter in parameterset.datasetparameter_set.all %}
 													<li><strong>{{ parameter.name.full_name }}: </strong>
 														{% if parameter.name.is_numeric %}
@@ -396,36 +417,37 @@
 												{% endfor %}
 												<br/><br/>
 												{% endfor %}
-										</ul>	
+										</ul>
 										</div>
-										{% endif %}				
-								
-										<div>	
+										{% endif %}
+
+										<div>
 											<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
-											<a {% if dataset.dataset_file_set.count|lt:"1000000" %}class="datafile_list_toggle"{% else %}target="_blank"{% endif %} href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>					
+											<a {% if dataset.dataset_file_set.count|lt:"1000000" %}class="datafile_list_toggle"{% else %}target="_blank"{% endif %} href="/ajax/datafile_list/{{ dataset.id }}">[Show]</a>
 											{% if dataset.dataset_file_set.count|gt:"1000000" %}
 											<br/>
 											<p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
-											{% endif %}	
-											
+											{% endif %}
+
 											<ul class="datafile_list">
-									
+
 											</ul>
-											
+
 										</div>
 									</div>
 								</div>
+							</div>
 							{% endfor %}
-							</div>		
+							</div>
 							<input type="submit" value="Download Selected Files" />
-							</form>												
-						</div>		
-																		
+							</form>
+						</div>
+
 					</div>
 
-					</div><!-- End demo -->		
+					</div><!-- End demo -->
 
 			</div>
 			</div>
 
-			{% endblock %}	
+			{% endblock %}

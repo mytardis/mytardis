@@ -1,21 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import *
-from django.conf import settings
-from django.contrib.auth.views import login, logout
-from registration.forms import RegistrationFormUniqueEmail
-
-# Uncomment the next two lines to enable the admin:
-
 from django.contrib import admin
 admin.autodiscover()
+from django.contrib.auth.views import logout
+
+from django.conf.urls.defaults import *
+from django.conf import settings
+from django.views.generic import list_detail
+
+from tardis.tardis_portal.models import Equipment
+from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
+
+from registration.forms import RegistrationFormUniqueEmail
+
 
 urlpatterns = patterns(
     # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
     # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    # Uncomment the next line to enable the admin:
     '',
     (r'^$', 'tardis.tardis_portal.views.index'),
     (r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'),
@@ -23,6 +26,15 @@ urlpatterns = patterns(
     (r'^partners/$', 'tardis.tardis_portal.views.partners'),
     (r'^stats/$', 'tardis.tardis_portal.views.stats'),
     (r'^import_params/$', 'tardis.tardis_portal.views.import_params'),
+    (r'^equipment/$', list_detail.object_list,
+     {'queryset': Equipment.objects.all(),
+      'paginate_by': 15,
+      'extra_context':
+      {'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()}}),
+    (r'^equipment/(?P<object_id>\d+)/$', list_detail.object_detail,
+     {'queryset': Equipment.objects.all()}),
+    (r'^search/equipment/$',
+     'tardis.tardis_portal.views.search_equipment'),
     (r'^experiment/view/(?P<experiment_id>\d+)/$',
      'tardis.tardis_portal.views.view_experiment'),
     (r'^experiment/view/$',
