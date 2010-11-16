@@ -658,7 +658,6 @@ def ldap_login(request):
                         'tardis_portal/login.html', c))
 
 
-@transaction.commit_on_success()
 def register_experiment_ws_xmldata_internal(request):
     if request.method == 'POST':
 
@@ -686,6 +685,7 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
+@transaction.commit_manually
 def _registerExperimentDocument(filename, created_by, expid=None):
     '''
     Register the experiment document.
@@ -706,15 +706,25 @@ def _registerExperimentDocument(filename, created_by, expid=None):
 
     f.close()
 
-    if firstline.startswith('<experiment'):
-        logger.debug('processing simple xml')
-        processExperiment = ProcessExperiment()
-        eid = processExperiment.process_simple(filename, created_by, expid)
+    try:
+        if firstline.startswith('<experiment'):
+            logger.debug('processing simple xml')
+            processExperiment = ProcessExperiment()
+            eid = processExperiment.process_simple(filename, created_by, expid)
+        else:
+            logger.debug('processing METS')
+            eid = parseMets(filename, created_by, expid)
+    except:
+        logger.debug('rolling back ingestion')
+        transaction.rollback()
+        # TODO: uncomment this bit if we hear back from Steve that returning
+        #       the experiment ID won't be needed anymore
+        #Experiment.objects.get(id=expid).delete()
+        return expid
     else:
-        logger.debug('processing METS')
-        eid = parseMets(filename, created_by, expid)
-
-    return eid
+        logger.debug('committing ingestion')
+        transaction.commit()
+        return eid
 
 
 # web service
@@ -1031,7 +1041,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
-    if len(datafile_results) == 0:
+    if datafile_results.count() == 0:
         return datafile_results
 
     datafile_results = \
@@ -1645,8 +1655,9 @@ def stats(request):
 
     public_datafile_size = size
 
-    c = Context({'public_datafiles': len(public_datafiles),
-                'public_experiments': len(public_experiments),
+    # using count() is more efficient than using len() on a query set
+    c = Context({'public_datafiles': public_datafiles.count(),
+                'public_experiments': public_experiments.count(),
                 'public_datafile_size': public_datafile_size})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
