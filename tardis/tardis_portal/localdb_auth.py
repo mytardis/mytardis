@@ -21,14 +21,13 @@ def get_email_for_user(username):
 
 
 def get_or_create_user(email):
-    # try and find a user using the email provided
-    try:
-        u = User.objects.get(email=email)
-    except User.DoesNotExist:
-        username = email.split('@')[0]
-        u = User.objects.create_user(username, email,
-            generateRandomPassword(constants.RANDOM_PASSWORD_LENGTH))
-    
+    u, created = User.objects.get_or_create(email=email,
+        defaults={'username': email.split('@')[0],
+        'password': generateRandomPassword(constants.RANDOM_PASSWORD_LENGTH)})
+    if created:
+        logger.debug("new user account created")
+    else:
+        logger.debug("user found in DB")
     return u
 
 
