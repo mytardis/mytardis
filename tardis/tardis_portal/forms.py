@@ -72,8 +72,19 @@ class MXDatafileSearchForm(DatafileSearchForm):
 
 # infrared
 class IRDatafileSearchForm(DatafileSearchForm):
-
     pass
+
+
+class EquipmentSearchForm(forms.Form):
+
+    key = forms.CharField(label='Short Name',
+        max_length=30, required=False)
+    description = forms.CharField(label='Description',
+        required=False)
+    make = forms.CharField(label='Make', max_length=60, required=False)
+    model = forms.CharField(label='Model', max_length=60, required=False)
+    type = forms.CharField(label='Type', max_length=60, required=False)
+    serial = forms.CharField(label='Serial No', max_length=60, required=False)
 
 
 class ImportParamsForm(forms.Form):
@@ -103,7 +114,7 @@ def createSearchDatafileForm(searchQueryType):
     if searchQueryType in constants.SCHEMA_DICT:
         parameterNames = \
             ParameterName.objects.filter(
-            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType] \
+            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType]\
             ['datafile'], constants.SCHEMA_DICT[searchQueryType]['dataset']],
             is_searchable='True')
 
@@ -153,6 +164,7 @@ def createSearchDatafileForm(searchQueryType):
 
 def createSearchExperimentForm():
 
+    from django.forms.extras.widgets import SelectDateWidget
     from tardis.tardis_portal.models import ParameterName
     from tardis.tardis_portal import constants
 
@@ -172,8 +184,10 @@ def createSearchExperimentForm():
             max_length=20, required=False)
     fields['institutionName'] = forms.CharField(label='Institution Name',
             max_length=20, required=False)
-    fields['creator'] = forms.CharField(label="Author's Name",
+    fields['creator'] = forms.CharField(label='Author\'s Name',
             max_length=20, required=False)
+    fields['date'] = forms.DateTimeField(label='Experiment Date',
+            widget=SelectDateWidget(), required=False)
 
     for parameterName in parameterNames:
         if parameterName.is_numeric:

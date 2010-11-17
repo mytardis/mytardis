@@ -39,14 +39,15 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 @author Gerson Galang
 
 """
+from django.test import TestCase
+from django.test.client import Client
 
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
 from tardis.tardis_portal.metsparser import MetsMetadataInfoHandler
-from django.test import TestCase
-from django.test.client import Client
-import unittest
+
 from os import path
+import unittest
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
@@ -80,7 +81,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileAuthentication(self):
         response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+                                   {'type': 'saxs', 'filename': '', })
 
         # check if the response is a redirect to the login page
         self.assertEqual(response.status_code, 302)
@@ -209,33 +210,7 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-
-            # print u, response.status_code
-
             self.failUnlessEqual(response.status_code, 301)
-
-    def test_register(self):
-        self.client = Client()
-
-        from django.contrib.auth.models import User
-        import os
-
-        user = 'user1'
-        pwd = 'test'
-        email = ''
-        User.objects.create_user(user, email, pwd)
-
-        f = open(os.path.join(path.abspath(path.dirname(__file__)),
-                 'tests/notMETS_test.xml'), 'r')
-        response = self.client.post('/experiment/register/', {
-            'username': user,
-            'password': pwd,
-            'xmldata': f,
-            'originid': '286',
-            'experiment_owner': 'gerson.galang@versi.edu.au',
-            })
-        f.close()
-        self.failUnlessEqual(response.status_code, 200)
 
     def test_login(self):
         from django.contrib.auth.models import User
@@ -412,6 +387,34 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
+class EquipmentTestCase(TestCase):
+
+    fixtures = ['AS_Equipment.json']
+
+    def setUp(self):
+        self.client = Client()
+
+    def testSearchEquipmentForm(self):
+        response = self.client.get('/search/equipment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'] is not None)
+
+    def testSearchEquipmentResult(self):
+        response = self.client.post('/search/equipment/', {'key': 'PIL', })
+        self.assertEqual(len(response.context['object_list']), 2)
+
+    def testEquipmentDetail(self):
+        response = self.client.get('/equipment/1/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['object'].make, 'Dectris')
+        self.assertEqual(response.context['object'].type, 'X-ray detector')
+
+    def testEquipmentList(self):
+        response = self.client.get('/equipment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['object_list']), 2)
+
+
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
@@ -423,6 +426,11 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
-    allTests = unittest.TestSuite(
-        [parserSuite1, parserSuite2, userInterfaceSuite, searchSuite])
+    equipmentSuite = \
+        unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
+    allTests = unittest.TestSuite([parserSuite1,
+                                   parserSuite2,
+                                   userInterfaceSuite,
+                                   searchSuite,
+                                   equipmentSuite])
     return allTests
