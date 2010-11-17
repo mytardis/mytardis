@@ -9,7 +9,8 @@ download.py
 
 """
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.conf import settings
 
 from tardis.tardis_portal.models import *
