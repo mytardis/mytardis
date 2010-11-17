@@ -11,14 +11,14 @@ views.py
 
 from base64 import b64decode
 
-from django.template import Context, loader
+from django.template import Context
 from django.http import HttpResponse
 
 from django.conf import settings
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
@@ -33,10 +33,10 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
-from django.db.models import Sum
 
 import urllib
 import urllib2
+import datetime
 
 from tardis.tardis_portal import ldap_auth, localdb_auth
 
@@ -313,8 +313,8 @@ def in_group(user, group):
     for group in user.groups.all():
         user_groups.append(str(group.name))
 
-    logger.debug(group_list)
-    logger.debug(user_groups)
+    #logger.debug(group_list)
+    #logger.debug(user_groups)
 
     if filter(lambda x: x in user_groups, group_list):
         return True
@@ -328,7 +328,7 @@ def index(request):
 
     c = Context(
         {'status': status,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -533,24 +533,7 @@ def experiment_index(request):
                         'tardis_portal/experiment_index.html', c))
 
 
-def create_placeholder_experiment(user):
-    e = Experiment(
-        url='http://www.example.com',
-        approved=True,
-        title='Placeholder Title',
-        institution_name='Placeholder',
-        description='Placeholder description',
-        created_by=user,
-        )
-
-    e.save()
-
-    return e.id
-
-
 # todo complete....
-
-
 def ldap_login(request):
     from django.contrib.auth import authenticate, login
 
@@ -659,6 +642,7 @@ def ldap_login(request):
 
 
 def register_experiment_ws_xmldata_internal(request):
+    logger.debug('def register_experiment_ws_xmldata_internal')
     if request.method == 'POST':
 
         username = request.POST['username']
@@ -677,7 +661,7 @@ def register_experiment_ws_xmldata_internal(request):
         _registerExperimentDocument(filename=filename,
                 created_by=user, expid=eid)
 
-        response = HttpResponse('Finished cataloging: ' + str(eid),
+        response = HttpResponse('Finished cataloging: %s' % eid,
                                 status=200)
         response['Location'] = request.build_absolute_uri(
             '/experiment/view/' + str(eid))
@@ -701,9 +685,7 @@ def _registerExperimentDocument(filename, created_by, expid=None):
     '''
 
     f = open(filename)
-
     firstline = f.readline()
-
     f.close()
 
     try:
@@ -756,7 +738,14 @@ def register_experiment_ws_xmldata(request):
             else:
                 return return_response_error(request)
 
-            eid = create_placeholder_experiment(user)
+            e = Experiment(
+                title='Placeholder Title',
+                approved=True,
+                created_by=user,
+                )
+
+            e.save()
+            eid = e.id
 
             dir = settings.FILE_STORE_PATH + '/' + str(eid)
 
@@ -770,23 +759,19 @@ def register_experiment_ws_xmldata(request):
 
             filename = dir + '/METS.xml'
             file = open(filename, 'wb+')
-
             for chunk in xmldata.chunks():
                 file.write(chunk)
-
             file.close()
 
             class RegisterThread(threading.Thread):
-
                 def run(self):
-                    data = urllib.urlencode({
-                        'username': username,
-                        'password': password,
-                        'filename': filename,
-                        'eid': eid,
-                        })
-                    urllib.urlopen(request.build_absolute_uri(
-                            '/experiment/register/internal/'), data)
+                    logger.info('=== processing experiment %s: START' % eid)
+                    try:
+                        _registerExperimentDocument(filename=filename,
+                                                    created_by=user, expid=eid)
+                        logger.info('=== processing experiment %s: DONE' % eid)
+                    except:
+                        logger.exception('=== processing experiment %s: FAILED!' % eid)
 
             RegisterThread().start()
 
@@ -804,12 +789,8 @@ def register_experiment_ws_xmldata(request):
             #       user authentication requirements
             if not len(request.POST.getlist('experiment_owner')) == 0:
                 for owner in request.POST.getlist('experiment_owner'):
-
                     owner = urllib.unquote_plus(owner)
-
-                    logger.debug('registering owner: ' + owner)
                     u = None
-
                     # try to get user object using his/her email as a key
                     # from the LDAP DB
                     if settings.LDAP_ENABLE:
@@ -830,11 +811,8 @@ def register_experiment_ws_xmldata(request):
                 class FileTransferThread(threading.Thread):
 
                     def run(self):
-
                         # todo remove hard coded u/p for sync transfer....
-
                         logger.debug('started transfer thread')
-
                         file_transfer_url = from_url + '/file_transfer/'
                         data = urllib.urlencode({
                             'originid': str(originid),
@@ -844,23 +822,16 @@ def register_experiment_ws_xmldata(request):
                             'username': str('synchrotron'),
                             'password': str('tardis'),
                             })
-
-                        logger.debug(file_transfer_url)
-                        logger.debug(data)
-
                         urllib.urlopen(file_transfer_url, data)
 
                 FileTransferThread().start()
 
             logger.debug('returning response from main call')
-
             response = HttpResponse(str(eid), status=200)
             response['Location'] = request.build_absolute_uri(
                 '/experiment/view/' + str(eid))
-
             return response
     else:
-
         form = RegisterExperimentForm()  # An unbound form
 
     c = Context({'form': form, 'status': status,
@@ -887,7 +858,6 @@ def retrieve_xml_data(request, dataset_file_id):
     from pygments import highlight
     from pygments.lexers import XmlLexer
     from pygments.formatters import HtmlFormatter
-    from pygments.styles import get_style_by_name
 
     xml_data = XML_data.objects.get(datafile__pk=dataset_file_id)
 
@@ -902,7 +872,6 @@ def retrieve_xml_data(request, dataset_file_id):
 
 @dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
-    from django.db.models import Count
 
     dataset_results = \
         Dataset_File.objects.filter(
@@ -1121,6 +1090,11 @@ def __getFilteredExperiments(request, searchFilterData):
         experiments = \
             experiments.filter(
         author_experiment__author__name__icontains=searchFilterData['creator'])
+
+    date = searchFilterData['date']
+    if not date == None:
+        experiments = \
+            experiments.filter(start_time__lt=date, end_time__gt=date)
 
     # initialise the extra experiment parameters
     parameters = []
@@ -1719,3 +1693,31 @@ def import_params(request):
     c = Context({'form': form, 'subtitle': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/import_params.html', c))
+
+
+def search_equipment(request):
+    if request.method == 'POST':
+        form = EquipmentSearchForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            q = Equipment.objects.all()
+            if data['key']:
+                q = q.filter(key__icontains=data['key'])
+            if data['description']:
+                q = q.filter(description__icontains=data['description'])
+            if data['make']:
+                q = q.filter(make__icontains=data['make'])
+            if data['serial']:
+                q = q.filter(serial__icontains=data['serial'])
+            if data['type']:
+                q = q.filter(type__icontains=data['type'])
+
+            c = Context({'object_list': q,
+                         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+            return render_to_response('tardis_portal/equipment_list.html', c)
+    else:
+        form = EquipmentSearchForm()
+
+    c = Context({'form': form,
+                 'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    return render_to_response('tardis_portal/search_equipment.html', c)

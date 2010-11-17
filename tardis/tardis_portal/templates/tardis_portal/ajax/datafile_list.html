@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -32,7 +32,7 @@
         {% if dataset.has_previous %}
             <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
         {% endif %}
-		
+
 		{% for pagenum in dataset.paginator.page_range %}
 				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
 		{% endfor %}
@@ -65,13 +65,13 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 
 	</ul>
 	{% endif %}
-	
+
 	{% if datafile.xml_data_set.count %}
 	<a class="datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
 	<ul class="datafile_info" style="width: 95%; overflow:auto; padding: 5px; font-size: 12px">
 	</ul>
 	{% endif %}
-	
+
 </li>
 {% endfor %}
 <br/>
@@ -80,7 +80,7 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
         {% if dataset.has_previous %}
             <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
         {% endif %}
-		
+
 		{% for pagenum in dataset.paginator.page_range %}
 				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
 		{% endfor %}
