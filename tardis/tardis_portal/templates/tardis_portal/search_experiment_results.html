@@ -30,39 +30,48 @@
 {% extends "tardis_portal/search_experiment.html" %}
 {% load experimentstats %}
 
-		{% block searchPageBody %}
-						{% if experiments.count %}<em><strong>{{ experiments.count }}</strong> result(s) found..</em>
-						{% else %}
-						No experiments found
-						{% endif %}
-							<table class="experiment-table">
-							{% for experiment in experiments %}
-								<tr>
-									<th>
-										<a href="../../experiment/view/{{ experiment.id }}">{{ experiment.title }}
-
-											</a>
-									</th>
-
-								</tr>
-
-								<tr>
-
-										<td>From <strong>{{experiment.institution_name}}</strong>, deposited <strong>{{ experiment.created_time|date:"jS F Y" }}</strong>, modified <strong>{{ experiment.update_time|date:"jS F Y" }}</strong></td>
-								</tr>
-								{% if experiment.start_time and experiment.end_time %}
-								<tr>
-								<td><strong>{{experiment.start_time|date:"jS F Y H:i"}}</strong> - <strong>{{experiment.end_time|date:"jS F Y H:i"}}</srong></td>
+{% block searchPageBody %}
+{% if experiments.count %}
+<em>
+  <strong>{{ experiments.count }}</strong>
+  experiment{{ experiments.count|pluralize }} found.
+</em>
+{% else %}
+No experiments found
 {% endif %}
-								</tr>
-
-								<tr>
-
-										<td class="experiment-table-stats"><strong>{{ experiment.dataset_set.all.count }}</strong> dataset(s), containing <strong>{{ experiment.id|experiment_file_count }}</strong> files
-											<br/><br/>
-
-								</tr>
-
-							{%endfor %}
-						</table>
-		{% endblock %}
+<table class="experiment-table">
+  {% for experiment in experiments %}
+  <tr>
+    <th>
+      <a href="/experiment/view/{{ experiment.id }}">{{ experiment.title }}</a>
+    </th>
+  </tr>
+  <tr>
+    <td>
+      From <strong>{{ experiment.institution_name }}</strong>,
+      deposited <strong>{{ experiment.created_time|date:"jS F Y" }}</strong>,
+      modified <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+    </td>
+  </tr>
+  {% if experiment.start_time and experiment.end_time %}
+  <tr>
+    <td>
+      <strong>{{ experiment.start_time|date:"jS F Y H:i" }}</strong>
+      - <strong>{{ experiment.end_time|date:"jS F Y H:i" }}</srong>
+    </td>
+  </tr>
+  {% endif %}
+  <tr>
+    <td class="experiment-table-stats">
+      <strong>{{ experiment.dataset_set.all.count }}</strong>
+      dataset{{ experiment.dataset_set.all.count|pluralize }},
+      containing
+      <strong>{{ experiment.id|experiment_file_count }}</strong>
+      file{{ experiment.id|experiment_file_count|pluralize }}
+      <br/>
+      <br/>
+    </td>
+  </tr>
+{%endfor %}
+</table>
+{% endblock %}
