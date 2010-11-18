@@ -517,11 +517,11 @@ class ExperimentFormTestCase(TestCase):
                         ('dataset_description[0]', 'first one'),
                         ('file_filename[0]', 'location.py'),
                         ('file_filename[0]', 'another.py'),
-                        ('file_url[0]', 'file://file/location.py'),
-                        ('file_url[0]', 'file://file/another.py'),
+                        ('file_url[0]', 'file/location.py'),
+                        ('file_url[0]', 'file/another.py'),
                         ('dataset_description[1]', 'second'),
                         ('file_filename[1]', 'file.py'),
-                        ('file_url[1]', 'file://second_ds/file.py'),
+                        ('file_url[1]', 'second_ds/file.py'),
                         ]
         example_post = self._data_to_post(example_post)
 
@@ -556,7 +556,7 @@ class ExperimentFormTestCase(TestCase):
         for d in ds:
             files = models.Dataset_File.objects.filter(dataset=d.pk)
             v_files = [basename(f) for f in check_files[d.description]]
-            v_urls = ['file://' + f for f in check_files[d.description]]
+            v_urls = check_files[d.description]
             for f in files:
                 self.assertTrue(f.filename in v_files,
                                 "%s not in %s" % (f.filename, v_files))
