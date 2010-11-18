@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,69 +29,85 @@
 -->
 {% extends "tardis_portal/portal_template.html" %}
 
-		{% block content %}
+{% block content %}
 
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Welcome</a>
-				</h1>
-				<div class="entry">
-					<p>
-									
-						<strong>TARDIS</strong> is a multi-institutional collaborative venture that aims to facilitate the archiving and sharing of raw X-ray diffraction images (collectively known as a 'dataset') from the protein crystallography community. Whereas the model coordinates and (less often) the structure factors (processed experimental data) are stored in the <a href="http://www.rcsb.org/pdb/home/home.do">PDB</a> the raw diffraction data is often not available. Addressing this shortcoming is the central aim of TARDIS. There are several reasons why we feel this is important (see <a href="/about">about</a>), which can be summarised as:
-					</p>
-					<ul>
-						<li>The availability of raw data is extremely useful for the development of improved methods of image analysis and data processing.
-						</li>
-						<li>Fostering the archival of raw data at an institutional level is one the best ways of ensuring that this data is not lost (laboratory archives are typically volatile)
-						</li>
-					</ul>
-					<br/>
-					<p>
-						For more information on the TARDIS project please contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate Professor Ashley Buckle</a>.
-						</p>
-						
-				</div>
-			</div>
-		</div>
+<div id="content">
+  <div class="post">
+    <h1 class="title">
+      <a href="#">Welcome</a>
+    </h1>
+    <div class="entry">
+      <p>
+	<strong>TARDIS</strong> is a multi-institutional collaborative
+	venture that aims to facilitate the archiving and sharing of
+	raw X-ray diffraction images (collectively known as a
+	'dataset') from the protein crystallography community.
+	Whereas the model coordinates and (less often) the structure
+	factors (processed experimental data) are stored in
+	the <a href="http://www.rcsb.org/pdb/home/home.do">PDB</a> the
+	raw diffraction data is often not available. Addressing this
+	shortcoming is the central aim of TARDIS. There are several
+	reasons why we feel this is important
+	(see <a href="/about">about</a>), which can be summarised as:
+      </p>
+      <ul>
+	<li>
+	  The availability of raw data is extremely useful for the
+	  development of improved methods of image analysis and data
+	  processing.
+	</li>
+	<li>
+	  Fostering the archival of raw data at an institutional level
+	  is one the best ways of ensuring that this data is not lost
+	  (laboratory archives are typically volatile)
+	</li>
+      </ul>
+      <br/>
+      <p>
+	For more information on the TARDIS project please
+	contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate
+	Professor Ashley Buckle</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-			{% endblock %} {% block sidebar %}
+{% block sidebar %}
 
-		<!--		
-		<ul>
-			<li>
-				<h2>
-					Recent News
-				</h2>
-				<ul>
-					{% for entry in entries %}
-						<li>
-							<a href="/news/#{{entry.updated}}">{{ entry.title }}</a>
-						</li>
-					{% endfor %}					
+<!--
+    <ul>
+      <li>
+	<h2>
+	  Recent News
+	</h2>
+	<ul>
+	  {% for entry in entries %}
+	  <li>
+	    <a href="/news/#{{entry.updated}}">{{ entry.title }}</a>
+	  </li>
+	  {% endfor %}
 
-				</ul>
-			</li>
-		
-		</ul>
-		<p>
-		-->
+	</ul>
+      </li>
 
-                                <ul>
-                                        <li>
-                                                <h2>Welcome</h2>
+    </ul>
+<p>
+  -->
 
-                                                        <ul>
-                                                                <li><a href="#intro">Introduction</a></li>
-                                                        </ul>
-                                        </li>
-                                </ul>
+<ul>
+  <li>
+    <h2>Welcome</h2>
+    <ul>
+      <li><a href="#intro">Introduction</a></li>
+    </ul>
+  </li>
+</ul>
 
-                <p>
-
-			{% endblock %} {% block bottom %}
-		</p>
-		<p>
-			{% endblock %}
-		</p>
+<p>
+  {% endblock %}
+  {% block bottom %}
+</p>
+<p>
+  {% endblock %}
+</p>

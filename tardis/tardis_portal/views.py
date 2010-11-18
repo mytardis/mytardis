@@ -336,7 +336,6 @@ def in_group(user, group):
 def index(request):
 
     status = ''
-
     c = Context(
         {'status': status,
          'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
