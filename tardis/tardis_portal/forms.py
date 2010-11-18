@@ -261,6 +261,7 @@ class Dataset(PostfixedForm, forms.ModelForm):
 
 class Dataset_File(PostfixedForm, forms.ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    url = forms.CharField(required=False)
 
     class Meta:
         model = models.Dataset_File
@@ -552,12 +553,12 @@ class FullExperiment(Experiment):
         for num, author in enumerate(self.authors):
             o_author = author.save(commit=commit)
             authors.append(o_author)
-            ae = models.Author_Experiment()
-            ae.experiment = experiment
-            ae.author = o_author
-            f = Author_Experiment(data={'order': num}, instance=ae)
-            author = f.save(commit=commit)
-            author_experiments.append(author)
+            o_ae = models.Author_Experiment()
+            o_ae.experiment = experiment
+            o_ae.author = o_author
+            ae = Author_Experiment(data={'order': num}, instance=o_ae)
+            o_ae = ae.save(commit=commit)
+            author_experiments.append(o_ae)
 
         for key, dataset in self.datasets.items():
             # XXX for some random reason the link between the instance needs
