@@ -1785,11 +1785,12 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     return ''
 
 
-def stage_files(datafiles, experiment_id, staging=settings.STAGING_PATH, store=settings.FILE_STORE_PATH):
+def stage_files(datafiles, experiment_id,
+                staging=settings.STAGING_PATH, store=settings.FILE_STORE_PATH):
     """
     move files from the staging area to the dataset.
     """
-    experiment_path = path.join(store, str(experiment.id))
+    experiment_path = path.join(store, str(experiment_id))
     if not os.path.exists(experiment_path):
         os.makedirs(experiment_path)
 
@@ -1799,7 +1800,7 @@ def stage_files(datafiles, experiment_id, staging=settings.STAGING_PATH, store=s
         if not os.path.exists(todir):
             os.makedirs(todir)
 
-        copyfrom = path.join(staging, urlpath) #to be url
+        copyfrom = path.join(staging, urlpath)  # to be url
         copyto = path.join(experiment_path, urlpath)
         if path.exists(copyto):
             logger.error("can't stage %s destination exists" % (copyto))
@@ -1807,17 +1808,14 @@ def stage_files(datafiles, experiment_id, staging=settings.STAGING_PATH, store=s
             continue
 
         logger.debug("staging file: %s to %s" % (copyfrom, copyto))
-        print copyfrom, copyto
-        try:
-            datafile.size = os.path.getsize(copyfrom)
-            datafile.save()
-            shutil.movefile(copyfrom, copyto)
-        except:
-            pass
+        datafile.size = os.path.getsize(copyfrom)
+        datafile.save()
+        shutil.move(copyfrom, copyto)
 
 
 @login_required
-def create_experiment(request, template="tardis_portal/create_experiment.html"):
+def create_experiment(request,
+                      template="tardis_portal/create_experiment.html"):
     form = FullExperiment()
 
         form = FullExperiment(request.POST, request.FILES)
@@ -1849,7 +1847,7 @@ def create_experiment(request, template="tardis_portal/create_experiment.html"):
             datafiles = full_experiment['dataset_files']
             stage_files(datafiles, experiment.id)
 
-            return HttpResponseRedirect('/experiment/view/' + str(experiment.id))
+            return HttpResponseRedirect(experiment.get_absolute_url())
     else:
 
         pass
