@@ -1827,11 +1827,17 @@ def create_experiment(request, template="tardis_portal/create_experiment.html"):
         # basename(files['filename'][i]
         
         if form.is_valid():
-            full_experiment = form.save()
+            full_experiment = form.save(commit=False)
 
+            for ds_f in full_experiment['dataset_files']:
+                filepath = ds_f.filename
+                ds_f.url = filepath
+                ds_f.filename = os.path.basename(filepath)
+                ds_f.size = 0
+                ds_f.protocol = "file"
             # group/owner assignment stuff, soon to be replaced
             experiment = full_experiment['experiment']
-            #datafiles = full_experiment['dataset_files']
+            full_experiment.save_m2m()
 
             g = Group(name=experiment.id)
             g.save()

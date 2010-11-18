@@ -39,6 +39,7 @@ forms module
 
 import re
 from os.path import basename
+from UserDict import UserDict
 
 from django import forms
 from django.utils.html import conditional_escape
@@ -242,6 +243,7 @@ class PostfixedForm:
 class Author_Experiment(forms.ModelForm):
     class Meta:
         model = models.Author_Experiment
+        fields = ('order',)
 
 
 class Author(forms.ModelForm):
@@ -251,29 +253,52 @@ class Author(forms.ModelForm):
 
 class Dataset(PostfixedForm, forms.ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-    # XXX Probably should be an InlineForignKeyField
-    experiment = forms.ModelChoiceField(
-        queryset=models.Experiment.objects.all(),
-        widget=forms.HiddenInput())
 
     class Meta:
         model = models.Dataset
+        exclude = ('experiment',)
 
 
 class Dataset_File(PostfixedForm, forms.ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-    # XXX Probably should be an InlineForignKeyField
-    dataset = forms.ModelChoiceField(queryset=models.Dataset.objects.all(),
-                                     widget=forms.HiddenInput())
 
     class Meta:
         model = models.Dataset_File
+        fields = ('filename', 'url', 'protocol')
 
 
 class Experiment(forms.ModelForm):
     class Meta:
         model = models.Experiment
         exclude = ('authors', 'handle', 'approved')
+
+
+class FullExperimentModel(UserDict):
+    """
+    This is a dict wrapper that store the values returned from
+    the :func:`tardis.tardis_portal.forms.FullExperiment.save` function.
+    It provides a convience method for saving the model objects.
+    """
+    def save_m2m(self):
+        """
+        {'experiment': experiment,
+        'author_experiments': author_experiments,
+        'authors': authors,
+        'datasets': datasets,
+        'dataset_files': dataset_files}
+        """
+        self.data['experiment'].save()
+        for a in self.data['authors']:
+            a.save()
+        for ae in self.data['author_experiments']:
+            ae.experiment = ae.experiment
+            ae.save()
+        for ds in self.data['datasets']:
+            ds.experiment = ds.experiment
+            ds.save()
+        for ds_f in self.data['dataset_files']:
+            ds_f.dataset = ds_f.dataset
+            ds_f.save()
 
 
 class FullExperiment(Experiment):
@@ -335,7 +360,9 @@ class FullExperiment(Experiment):
             # TODO, needs to start counting from where parse_form stops
             if not self.datasets:
                 for i in xrange(self.__ds_num, extra):
-                    self._add_dataset_form(i, Dataset(auto_id='dataset_%s'))
+                    form = Dataset(auto_id='dataset_%s')
+                    del form.fields['id']
+                    self._add_dataset_form(i, form)
 
     def _initialise_from_instance(self, experiment):
         """
@@ -439,7 +466,8 @@ class FullExperiment(Experiment):
 
         for number, dataset in data['dataset'].items():
 
-            ds_inst = None
+            ds_inst = models.Dataset()
+            ds_inst.experiment = self.instance
             if 'id' in dataset:
                 ds_pk = dataset.get('id')
                 try:
@@ -457,7 +485,8 @@ class FullExperiment(Experiment):
             # starting with file_
 
             for f in files:
-                df_inst = None
+                df_inst = models.Dataset_File()
+                df_inst.dataset = self.datasets[number].instance
                 if 'id' in f:
                     df_pk = f.get('id')
                     try:
@@ -513,7 +542,7 @@ class FullExperiment(Experiment):
         # remove m2m field before saving
         del self.cleaned_data['authors']
 
-        experiment = super(FullExperiment, self).save()
+        experiment = super(FullExperiment, self).save(commit)
 
         authors = []
         author_experiments = []
@@ -521,33 +550,36 @@ class FullExperiment(Experiment):
         dataset_files = []
 
         for num, author in enumerate(self.authors):
-            o_author = author.save()
+            o_author = author.save(commit=commit)
             authors.append(o_author)
-
-            f = Author_Experiment({'author': o_author.pk,
-                                   'order': num,
-                                   'experiment': experiment.pk})
-            author = f.save()
+            ae = models.Author_Experiment()
+            ae.experiment = experiment
+            ae.author = o_author
+            f = Author_Experiment(data={'order': num}, instance=ae)
+            author = f.save(commit=commit)
             author_experiments.append(author)
 
         for key, dataset in self.datasets.items():
-            dataset.data['experiment'] = experiment.pk
-            dataset = Dataset(dataset.data)
-            o_dataset = dataset.save()
+            # XXX for some random reason the link between the instance needs
+            # to be reinitialised
+            dataset.instance.experiment = dataset.instance.experiment
+            o_dataset = dataset.save(commit)
             datasets.append(o_dataset)
             # save any datafiles if the data set has any
             if key in self.dataset_files:
                 for df in self.dataset_files[key]:
-                    df.data['dataset'] = o_dataset.pk
-                    dataset_file = Dataset_File(df.data)
-                    ds = dataset_file.save(commit)
-                    dataset_files.append(ds)
+                    # XXX for some random reason the link between the instance
+                    # needs to be reinitialised
+                    df.instance.dataset = df.instance.dataset
+                    print df.errors
+                    o_df = df.save(commit)
+                    dataset_files.append(o_df)
 
-        return {'experiment': experiment,
-                'author_experiments': author_experiments,
-                'authors': authors,
-                'datasets': datasets,
-                'dataset_files': dataset_files}
+        return FullExperimentModel({'experiment': experiment,
+                                    'author_experiments': author_experiments,
+                                    'authors': authors,
+                                    'datasets': datasets,
+                                    'dataset_files': dataset_files})
 
     def is_valid(self):
         """
