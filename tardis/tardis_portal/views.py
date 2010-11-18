@@ -1739,26 +1739,47 @@ def import_params(request):
                         'tardis_portal/import_params.html', c))
 
 
-def staging_traverse():
+def staging_traverse(staging=settings.STAGING_PATH):
     """
-    recurse through directories and form html list tree for jtree
+    recurse through directories and form HTML list tree for jtree
+    :param staging: the path to begin traversing
+    :type staging: string
+    :rtype: string
     """
-    pathname = settings.STAGING_PATH
     ul = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>"
-    for f in os.listdir(pathname):
-        ul = ul + traverse(path.join(pathname, f))
+    for f in os.listdir(staging):
+        ul = ul + traverse(path.join(staging, f), staging)
     return  ul + "</ul></li></ul>"
 
 
 def traverse(pathname, dirname=settings.STAGING_PATH):
+    """
+    Traverse a path and return a nested group of unordered list HTML tags::
+
+       <ul>
+         <li id="dir2/file2"><a>file2</a></li>
+         <li id="dir2/file3"><a>file3</a></li>
+         <li id="dir2/subdir"><a>subdir</a>
+           <ul>
+             <li id="dir2/subdir/file4"><a>file4</a></li>
+           </ul>
+         </li>
+       </ul>
+
+    :param pathname: the directory to traverse
+    :type pathname: string
+    :param dirname: the root directory of the traversal
+    :typr dirname: string
+    :rtype: string
+    """
     li = "<li id=\"%s\"><a>%s</a>" % (path.relpath(pathname, dirname),
                                       path.basename(pathname))
     if path.isfile(pathname):
-        return  li + "</li>\n"
+        return  li + "</li>"
     if path.isdir(pathname):
-        ul = "<ul>\n"
+        ul = "<ul>"
         for f in os.listdir(pathname):
-            ul = ul + traverse(path.join(pathname, f))
+            ul = ul + traverse(path.join(pathname, f), dirname)
         return  li + ul + "</ul></li>"
     return ''
 
