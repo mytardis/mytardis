@@ -1814,16 +1814,11 @@ def stage_files(datafiles, experiment_id, staging=settings.STAGING_PATH, store=s
             shutil.movefile(copyfrom, copyto)
         except:
             pass
-            
+
+
 @login_required
-def create_experiment(request):
-    import os
-
+def create_experiment(request, template="tardis_portal/create_experiment.html"):
     form = FullExperiment()
-
-    if request.method == 'POST':   
-    
-        print request.POST
 
         form = FullExperiment(request.POST, request.FILES)
         
@@ -1864,5 +1859,4 @@ def create_experiment(request):
               })
     
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/create_experiment.html', c))
-    
+                        template, c))
