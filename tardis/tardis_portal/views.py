@@ -9,6 +9,7 @@ views.py
 
 """
 
+import shutil
 from base64 import b64decode
 
 from django.template import Context, loader
@@ -1784,30 +1785,33 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     return ''
 
 
-def copy_files(datafiles, experiment_id):
-    import shutil, os
+def stage_files(datafiles, experiment_id, staging=settings.STAGING_PATH, store=settings.FILE_STORE_PATH):
+    """
+    move files from the staging area to the dataset.
+    """
+    experiment_path = path.join(store, str(experiment.id))
+    if not os.path.exists(experiment_path):
+        os.makedirs(experiment_path)
+
     for datafile in datafiles:
-        urlpath = datafile.url.partition('//')[2]
-        todir = settings.FILE_STORE_PATH + "/" + str(experiment_id) + "/" + urlpath.rpartition("/")[0]
-        if todir:
-            if not os.path.exists(todir):
-                os.makedirs(todir)
-        
-        copyfrom = settings.STAGING_PATH + "/" + urlpath #to be url
-        #datafile.url.partition('//')[2]
+        urlpath = datafile.url
+        todir = path.join(experiment_path, path.split(urlpath)[0])
+        if not os.path.exists(todir):
+            os.makedirs(todir)
 
-        copyto = settings.FILE_STORE_PATH + "/" + str(experiment_id) + "/" + urlpath
-        
-        # if todir:
-        #     copyto = copyto + todir + "/"
+        copyfrom = path.join(staging, urlpath) #to be url
+        copyto = path.join(experiment_path, urlpath)
+        if path.exists(copyto):
+            logger.error("can't stage %s destination exists" % (copyto))
+            # TODO raise error
+            continue
 
-        logger.debug("FROM: " + copyfrom)
-        logger.debug("TO: " + copyto)
+        logger.debug("staging file: %s to %s" % (copyfrom, copyto))
         print copyfrom, copyto
         try:
             datafile.size = os.path.getsize(copyfrom)
             datafile.save()
-            shutil.copyfile(copyfrom, copyto)
+            shutil.movefile(copyfrom, copyto)
         except:
             pass
             
@@ -1840,15 +1844,10 @@ def create_experiment(request):
                     user=request.user)
             exp_owner.save()
             request.user.groups.add(g)
-            
-            experiment_path = settings.FILE_STORE_PATH + "/" + str(experiment.id) + "/"
-            if not os.path.exists(experiment_path):
-                os.makedirs(experiment_path)
 
-            datafiles = Dataset_File.objects.filter(dataset__experiment__id=experiment.id)
-            
-            copy_files(datafiles, experiment.id)
-            
+            datafiles = full_experiment['dataset_files']
+            stage_files(datafiles, experiment.id)
+
             return HttpResponseRedirect('/experiment/view/' + str(experiment.id))
     else:
 
