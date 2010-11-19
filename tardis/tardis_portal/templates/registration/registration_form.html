@@ -32,14 +32,19 @@
 {% block content %}
 <div id="content">
   <div class="post">
-    <h1 class="title">
-      <a href="#">User Registration</a>
-    </h1>
+    <h1 class="title"><a href="#">User Registration</a> </h1>
     <div class="entry">
       <p>Users must register before creating new experiments in TARDIS.
 	<form action="." method="POST">
-	  {{ form.as_p }}
-	  <br/>
+	  <table width="100%">
+            <tr valign="top">
+              <td>
+		{% for field in form %}
+                {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
+		{% endfor %}
+              </td>
+            </tr>
+          </table>
 	  <input type="submit" value="Submit" />
 	</form>
       </p>

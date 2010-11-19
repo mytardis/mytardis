@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -29,54 +29,43 @@
 -->
 {% extends "tardis_portal/portal_template.html" %}
 
-		{% block content %}
+{% block content %}
+<div id="content">
+  <div class="post">
+    <h1 class="title"><a href="#">Search Datafile</a></h1>
+    <div sclass="searchmenu" style="padding-left: 10px">Search <a href="../experiment/">Experiment</a>
+      | <form action="/search/datafile" method="GET" style="display: inline">
+        {{ searchDatafileSelectionForm.type }}
+        <noscript><input type="submit" value="Submit"></noscript>
+      </form>
+      | <span style="display: inline">
+      <a href="/search/equipment/">Equipment</a></span>
+    </div> <!-- searchmenu -->
+    <br/>
+    <div class="entry">
+      <p>
+	{% block searchPageBody %}{% endblock %}
+      </p>
+    </div> <!-- entry -->
+  </div> <!-- post -->
+</div> <!-- content -->
+{% endblock content%}
 
-		<div id="content">
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Search Datafile</a>
-				</h1>
-				<div style="padding-left: 10px">Search <a href="../experiment/">Experiment</a>
-				| <form action="/search/datafile" method="GET" style="display: inline">
-                     {{ searchDatafileSelectionForm.type }}
-                     <noscript><input type="submit" value="Submit"></noscript>
-                  </form></div><br/>
-				<div class="entry">					
-					<p>
-						{% block searchPageBody %}{% endblock %}
-					</p>
-				</div>
-			</div>
-		</div>
-
-			{% endblock %} {% block sidebar %}
-
-			<ul>
-				<li>
-					<h2>
-						Browse Experiments
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/view">Index</a>
-						</li>
-						<li>
-							<a href="/search/experiment">Search</a>
-						</li>					
-					</ul>
-					{% if user.is_authenticated %}
-					<br/>
-					<h2>
-						Controls
-					</h2>
-					<ul>
-						<li>
-							<a href="/experiment/control_panel">Control Panel</a>
-						</li>					
-					</ul>
-					{% endif %}
-				</li>			
-			</ul>
-			<p>
-			{% endblock %}
-		</p>
+{% block sidebar %}
+<ul>
+  <li>
+    <h2>Browse Experiments</h2>
+    <ul>
+      <li><a href="/experiment/view">Index</a></li>
+      <li><a href="/search/experiment">Search</a> </li>
+    </ul>
+    {% if user.is_authenticated %}
+    <br/>
+    <h2>Controls</h2>
+    <ul>
+      <li><a href="/experiment/control_panel">Control Panel</a></li>
+    </ul>
+    {% endif %}
+  </li>
+</ul>
+{% endblock %}
