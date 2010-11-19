@@ -33,16 +33,14 @@
 <div id="content">
   <div class="post">
     <h1 class="title"><a href="#">Search Experiment</a></h1>
-    <div class="searchmenu">
-      <div style="padding-left: 10px">Search Experiment |
-	<form action="/search/datafile" method="GET" style="display: inline">
-          {{ searchDatafileSelectionForm.type }}
-	  <noscript><input type="submit" value="Submit"></noscript>
-        </form>
-	| <span style="display: inline">
-	<a style="color: #3C7BCF" href="/search/equipment/">Equipment</a></span>
-      </div> <!-- searchmenu -->
-    </div> <!-- title -->
+    <div class="searchmenu" style="padding-left: 10px">Search Experiment |
+      <form action="/search/datafile" method="GET" style="display: inline">
+        {{ searchDatafileSelectionForm.type }}
+	<noscript><input type="submit" value="Submit"></noscript>
+      </form>
+      | <span style="display: inline">
+	<a href="/search/equipment/">Equipment</a></span>
+    </div> <!-- searchmenu -->
     <br/>
     <div class="entry">
       <p>
