@@ -348,13 +348,12 @@ class FullExperiment(Experiment):
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
-        initial = self._parse_initial(initial)
         post_data = self._parse_post(data)
 
         if data:
-            self._fill_forms(post_data, initial)
+            self._fill_forms(post_data)
         else:
-            self._fill_forms(post_data, initial)
+            self._fill_forms(post_data)
             self._initialise_from_instance(instance)
             # TODO, needs to start counting from where parse_form stops
             if not self.datasets:
@@ -446,7 +445,7 @@ class FullExperiment(Experiment):
                 parsed['experiment'][k] = v
         return parsed
 
-    def _fill_forms(self, data=None, initial=None, instance=None):
+    def _fill_forms(self, data=None):
         if data and 'authors' in data:
             for num, author in enumerate(data['authors']):
                 try:
