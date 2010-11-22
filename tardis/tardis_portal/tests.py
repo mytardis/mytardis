@@ -714,14 +714,6 @@ class ExperimentFormTestCase(TestCase):
 
         self.assertTrue(value % "russell, steve" in str(f['authors']))
 
-    def test_field_translation(self):
-        from tardis.tardis_portal import forms
-        f = forms.FullExperiment()
-        self.assertEqual(f._translate_dsfieldname('description', 10),
-                         'dataset_description[10]')
-        self.assertEqual(f._translate_dsfieldname('description', '1'),
-                         'dataset_description[1]')
-
 
 class TraverseTestCase(TestCase):
     dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']

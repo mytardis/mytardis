@@ -325,10 +325,8 @@ class FullExperiment(Experiment):
     internal dataset file fields are prefixed with `file_`. These
     are parsed out of the post data and added to the form as internal
     lists.
-
     """
     re_post_data = re.compile('(?P<form>[^_]*)_(?P<field>.*)\[(?P<number>[\d]+)\]$')
-    dataset_field_translation = {"description": "dataset_description"}
     base_fields = {}
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
@@ -500,12 +498,6 @@ class FullExperiment(Experiment):
                 self._add_datafile_form(number, d)
 
         return data
-
-    def _translate_dsfieldname(self, name, number):
-        """
-        return the dataset forms translated field name
-        """
-        return self.dataset_field_translation[name] + '[' + str(number) + ']'
 
     def _add_dataset_form(self, number, form):
         self.datasets[number] = form
