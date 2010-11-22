@@ -112,6 +112,14 @@ class Dataset(models.Model):
 
 
 class Dataset_File(models.Model):
+    """
+    :attribute: dataset: the forign key to the
+       :class:`tardis.tardis_portal.models.Dataset`
+    :attribute: filename: the name of the file, excluding the path.
+    :attribute: url: the url that the datafile is located at
+    :attribute: size: the size of the file.
+    :attribute: protocol: the protocol used to access the file.
+    """
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
