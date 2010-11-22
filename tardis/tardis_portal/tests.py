@@ -415,13 +415,28 @@ class ModelTestCase(TestCase):
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file.txt',
-                                      url='file://path/file.txt',
+                                      url='path/file.txt',
                                       )
         df_file.save()
         self.assertEqual(df_file.filename, 'file.txt')
-        self.assertEqual(df_file.url, 'file://path/file.txt')
+        self.assertEqual(df_file.url, 'path/file.txt')
+        self.assertEqual(df_file.protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
+        self.assertEqual(df_file.get_download_url(), '/download/datafile/1/')
+
+        df_file = models.Dataset_File(dataset=dataset,
+                                      filename='file1.txt',
+                                      url='path/file1.txt',
+                                      protocol='http://',
+                                      )
+        df_file.save()
+        self.assertEqual(df_file.filename, 'file1.txt')
+        self.assertEqual(df_file.url, 'http://localhost/path/file1.txt')
+        self.assertEqual(df_file.protocol, 'http://')
+        self.assertEqual(df_file.dataset, dataset)
+        self.assertEqual(df_file.size, '')
+        self.assertEqual(df_file.get_download_url(), 'http://localhost/path/file1.txt')
 
 
 class ExperimentFormTestCase(TestCase):

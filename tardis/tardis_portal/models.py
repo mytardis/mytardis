@@ -130,6 +130,13 @@ class Dataset_File(models.Model):
     def __unicode__(self):
         return self.filename
 
+    def get_download_url(self):
+        from django.core.urlresolvers import reverse
+        if self.protocol:
+            return self.url
+        return reverse('tardis.tardis_portal.download.download_datafile',
+                       None, (), {'datafile_id': self.id})
+
 
 class Schema(models.Model):
 
