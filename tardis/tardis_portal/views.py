@@ -1816,23 +1816,17 @@ def stage_files(datafiles, experiment_id,
 @login_required
 def create_experiment(request,
                       template="tardis_portal/create_experiment.html"):
-    form = FullExperiment()
-
+    if request.method == 'POST':
         form = FullExperiment(request.POST, request.FILES)
-        
-        # sanitize stuff
-        # 
-        # basename(files['filename'][i]
-        
         if form.is_valid():
             full_experiment = form.save(commit=False)
 
             for ds_f in full_experiment['dataset_files']:
                 filepath = ds_f.filename
-                ds_f.url = filepath
+                ds_f.url = 'file://' + filepath
                 ds_f.filename = os.path.basename(filepath)
                 ds_f.size = 0
-                ds_f.protocol = "file"
+                ds_f.protocol = ""
             # group/owner assignment stuff, soon to be replaced
             experiment = full_experiment['experiment']
             full_experiment.save_m2m()
@@ -1844,23 +1838,17 @@ def create_experiment(request,
             exp_owner.save()
             request.user.groups.add(g)
 
-            datafiles = full_experiment['dataset_files']
-            stage_files(datafiles, experiment.id)
+            stage_files(full_experiment['dataset_files'], experiment.id)
 
             return HttpResponseRedirect(experiment.get_absolute_url())
     else:
-
-        pass
-        # exp = Experiment.objects.get(id=52)
-        # 
-        # form = FullExperiment(instance=exp)
-        #
+        form = FullExperiment()
 
     c = Context({'subtitle': 'Create Experiment',
                  'directory_listing': staging_traverse(),
                  'user_id': request.user.id,
                 'form': form,
               })
-    
+
     return HttpResponse(render_response_index(request,
                         template, c))
