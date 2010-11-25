@@ -38,7 +38,7 @@ import urllib
 import urllib2
 import datetime
 
-from tardis.tardis_portal import ldap_auth, localdb_auth
+from tardis.tardis_portal.auth import ldap_auth, localdb_auth
 
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
