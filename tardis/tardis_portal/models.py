@@ -30,6 +30,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from urlparse import urljoin, urlparse
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.safestring import SafeUnicode
@@ -113,12 +115,16 @@ class Dataset(models.Model):
 
 class Dataset_File(models.Model):
     """
-    :attribute: dataset: the forign key to the
+    :attribute: dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset`
     :attribute: filename: the name of the file, excluding the path.
     :attribute: url: the url that the datafile is located at
     :attribute: size: the size of the file.
     :attribute: protocol: the protocol used to access the file.
+
+    The `protocol` field is only used for rendering the download link, this
+    done by insterting the protocol into the url generated to the download
+    location.
     """
 
     dataset = models.ForeignKey(Dataset)
@@ -131,11 +137,20 @@ class Dataset_File(models.Model):
         return self.filename
 
     def get_download_url(self):
-        from django.core.urlresolvers import reverse
-        if self.protocol:
+        from django.core.urlresolvers import reverse, get_script_prefix
+
+        if urlparse(self.url).scheme:
             return self.url
-        return reverse('tardis.tardis_portal.download.download_datafile',
-                       None, (), {'datafile_id': self.id})
+
+        url = reverse('tardis.tardis_portal.download.download_datafile',
+                      None, (), {'datafile_id': self.id})
+
+        if self.protocol:
+            prefix_len = len(get_script_prefix())
+            url = '/'.join(s.strip('/') for s in [url[:prefix_len],
+                                                  self.protocol,
+                                                  url[prefix_len:]])
+        return url
 
 
 class Schema(models.Model):
