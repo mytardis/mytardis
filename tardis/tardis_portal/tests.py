@@ -428,15 +428,31 @@ class ModelTestCase(TestCase):
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
                                       url='path/file1.txt',
-                                      protocol='http://',
+                                      protocol='vbl',
                                       )
         df_file.save()
         self.assertEqual(df_file.filename, 'file1.txt')
-        self.assertEqual(df_file.url, 'http://localhost/path/file1.txt')
-        self.assertEqual(df_file.protocol, 'http://')
+        self.assertEqual(df_file.url, 'path/file1.txt')
+        self.assertEqual(df_file.protocol, 'vbl')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(), 'http://localhost/path/file1.txt')
+        self.assertEqual(df_file.get_download_url(),
+                         '/vbl/download/datafile/2')
+
+        df_file = models.Dataset_File(dataset=dataset,
+                                      filename='file1.txt',
+                                      url='http://localhost:8080/filestore/file1.txt',
+                                      protocol='',
+                                      )
+        df_file.save()
+        self.assertEqual(df_file.filename, 'file1.txt')
+        self.assertEqual(df_file.url,
+                         'http://localhost:8080/filestore/file1.txt')
+        self.assertEqual(df_file.protocol, '')
+        self.assertEqual(df_file.dataset, dataset)
+        self.assertEqual(df_file.size, '')
+        self.assertEqual(df_file.get_download_url(),
+                         'http://localhost:8080/filestore/file1.txt')
 
 
 class ExperimentFormTestCase(TestCase):
