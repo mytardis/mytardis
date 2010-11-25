@@ -86,8 +86,8 @@ urlpatterns = patterns(
     (r'^login/$', 'tardis.tardis_portal.views.ldap_login'),
     (r'^accounts/login/$', 'tardis.tardis_portal.views.ldap_login'),
     (r'^logout/$', logout, {'next_page': '/'}),
-    (r'^accounts/register/', include('registration.urls'), {'form_class':
-     RegistrationFormUniqueEmail}),
+    (r'^accounts/register/', include('registration.urls'),
+     {'form_class': RegistrationFormUniqueEmail}),
     (r'^accounts/', include('registration.urls')),
     (r'site_media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.STATIC_DOC_ROOT}),
