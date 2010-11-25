@@ -44,6 +44,7 @@ class GroupProvider:
         """
         return the group associated with the id
         """
+        raise NotImplemented()
 
     def searchGroups(self, filter):
         """
