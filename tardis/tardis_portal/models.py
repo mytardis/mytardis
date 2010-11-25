@@ -52,14 +52,6 @@ class XSLT_docs(models.Model):
         return self.xmlns
 
 
-class Author(models.Model):
-
-    name = models.CharField(max_length=255, primary_key=True)
-
-    def __unicode__(self):
-        return self.name
-
-
 class Experiment(models.Model):
 
     url = models.URLField(verify_exists=False, max_length=255)
@@ -71,7 +63,6 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
-    authors = models.ManyToManyField(Author, through='Author_Experiment')
 
     def __unicode__(self):
         return self.title
@@ -95,8 +86,11 @@ class Experiment_Owner(models.Model):
 class Author_Experiment(models.Model):
 
     experiment = models.ForeignKey(Experiment)
-    author = models.ForeignKey(Author)
+    author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ('order', )
 
     def __unicode__(self):
         return SafeUnicode(self.author.name) + ' | ' \

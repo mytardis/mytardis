@@ -246,11 +246,6 @@ class Author_Experiment(forms.ModelForm):
         fields = ('order',)
 
 
-class Author(forms.ModelForm):
-    class Meta:
-        model = models.Author
-
-
 class Dataset(PostfixedForm, forms.ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput())
 
