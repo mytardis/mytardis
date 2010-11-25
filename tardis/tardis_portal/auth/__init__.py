@@ -33,6 +33,13 @@ class AuthService:
         """
         pass
 
+    def getGroupsForEntity(self, entity):
+        """
+        Look in UserAuthentation, pull auth sources and query approprate
+        auth plugins.
+        """
+        pass
+
     def getUser(self, user_dict):
         """
         return a user model based on the user dict.
