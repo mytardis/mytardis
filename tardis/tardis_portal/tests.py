@@ -370,34 +370,44 @@ class ModelTestCase(TestCase):
 
     def test_authors(self):
         from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp2',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        exp.save()
+
+        models.Author_Experiment(experiment=exp,
+                                 author='nigel',
+                                 order=0).save()
+
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
                                 created_by=self.user,
                                 )
         exp.save()
 
-        a1 = models.Author(name="steve")
-        a1.save()
-
-        a2 = models.Author(name="russell")
-        a2.save()
-
         ae1 = models.Author_Experiment(experiment=exp,
-                                       author=a1,
-                                       order=0)
+                                       author='steve',
+                                       order=100)
         ae1.save()
 
         ae2 = models.Author_Experiment(experiment=exp,
-                                       author=a2,
+                                       author='russell',
                                        order=1)
         ae2.save()
 
-        authors = exp.authors.all()
+        ae3 = models.Author_Experiment(experiment=exp,
+                                       author='uli',
+                                       order=50)
+        ae3.save()
+
+        authors = exp.author_experiment_set.all()
 
         # confirm that there are 2 authors
-        self.assertEqual(len(authors), 2)
-        self.assertTrue(a1 in authors)
-        self.assertTrue(a2 in authors)
+        self.assertEqual(len(authors), 3)
+        self.assertTrue(ae1 in authors)
+        self.assertTrue(ae2 in authors)
+        self.assertTrue(ae3 == authors[1])
 
     def test_datafile(self):
         from tardis.tardis_portal import models
