@@ -36,7 +36,7 @@ class UserProvider:
 class GroupProvider:
     def getGroups(self, request):
         """
-        return an interation of the available groups.
+        return an iteration of the available groups.
         """
         raise NotImplemented()
 
