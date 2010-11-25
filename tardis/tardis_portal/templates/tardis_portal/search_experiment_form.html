@@ -34,18 +34,16 @@
   Please correct the error{{ searchForm.errors|pluralize }} below.
 </p>
 {% endif %}
-<p>
-  <form name="input" action="." method="get">
-    <table width="100%">
-      <tr valign="top">
-	<td>
-          {% for field in searchForm %}
-          {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
-          {% endfor %}
-          <input type="submit" value="Submit">
-	</td>
-      </tr>
-    </table>
-  </form>
-</p>
+<form name="input" action="." method="get">
+  <table>
+    <tr>
+      <td>
+        {% for field in searchForm %}
+        {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
+        {% endfor %}
+        <input type="submit" value="Submit">
+      </td>
+    </tr>
+  </table>
+</form>
 {% endblock %}
