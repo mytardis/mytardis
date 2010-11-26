@@ -368,11 +368,11 @@ class FullExperiment(Experiment):
         """
         if not experiment:
             return
-        authors = experiment.author_experiment.all()
+        authors = experiment.author_experiment_set.all()
         self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
-        self.initial['authors'] = ', '.join([a.name for a in authors])
+        self.initial['authors'] = ', '.join([a.author for a in authors])
         self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['name'] for author in self.authors],
+            MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
                                           widget=CommaSeparatedInput())
 
         for i, ds in enumerate(experiment.dataset_set.all()):

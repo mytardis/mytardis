@@ -502,11 +502,8 @@ class ExperimentFormTestCase(TestCase):
                                 )
         exp.save()
         for i, a in enumerate(data['authors'].split(', ')):
-            author = models.Author(name=a)
-            author.save()
-
             ae = models.Author_Experiment(experiment=exp,
-                                          author=author,
+                                          author=a,
                                           order=i)
             ae.save()
 
