@@ -582,10 +582,11 @@ class ExperimentFormTestCase(TestCase):
         self.assertEqual(e.description, example_post['description'])
 
         # test there are 2 authors
-        self.assertEqual(len(e.authors.all()), 2)
+        self.assertEqual(len(e.author_experiment_set.all()), 2)
 
         # check we can get one of the authors back
-        self.assertEqual(e.authors.get(name='steve').name, 'steve')
+        self.assertEqual(e.author_experiment_set.get(author='steve').author,
+                         'steve')
 
         # check both datasets have been saved
         ds = models.Dataset.objects.filter(experiment=exp['experiment'].pk)
