@@ -1792,7 +1792,7 @@ def stage_files(datafiles, experiment_id,
         os.makedirs(experiment_path)
 
     for datafile in datafiles:
-        urlpath = datafile.url
+        urlpath = datafile.url.partition('//')[2]
         todir = path.join(experiment_path, path.split(urlpath)[0])
         if not os.path.exists(todir):
             os.makedirs(todir)
