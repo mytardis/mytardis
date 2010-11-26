@@ -241,9 +241,10 @@ class PostfixedForm:
 
 
 class Author_Experiment(forms.ModelForm):
+
     class Meta:
         model = models.Author_Experiment
-        fields = ('order',)
+        exclude = ('experiment',)
 
 
 class Dataset(PostfixedForm, forms.ModelForm):
@@ -284,8 +285,6 @@ class FullExperimentModel(UserDict):
         'dataset_files': dataset_files}
         """
         self.data['experiment'].save()
-        for a in self.data['authors']:
-            a.save()
         for ae in self.data['author_experiments']:
             ae.experiment = ae.experiment
             ae.save()
@@ -327,7 +326,7 @@ class FullExperiment(Experiment):
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=1):
-        self.authors = []
+        self.author_experiments = []
         self.datasets = {}
         self.dataset_files = {}
         self.__exp_fields = {}
@@ -369,8 +368,8 @@ class FullExperiment(Experiment):
         """
         if not experiment:
             return
-        authors = experiment.authors.all()
-        self.authors = [Author(instance=a) for a in authors]
+        authors = experiment.author_experiment.all()
+        self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
         self.initial['authors'] = ', '.join([a.name for a in authors])
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['name'] for author in self.authors],
@@ -442,16 +441,24 @@ class FullExperiment(Experiment):
 
     def _fill_forms(self, data=None):
         if data and 'authors' in data:
+            if self.instance:
+                o_author_experiments = \
+                    self.instance.author_experiment_set.all()
+            else:
+                o_author_experiments = []
             for num, author in enumerate(data['authors']):
                 try:
-                    o_author = models.Author.objects.get(name=author)
-                except models.Author.DoesNotExist:
-                    o_author = None
-                f = Author(data={'name': author}, instance=o_author)
-                self.authors.append(f)
+                    o_ae = o_author_experiments[num]
+                except IndexError:
+                    o_ae = models.Author_Experiment()
+                    o_ae.experiment = self.instance
+                f = Author_Experiment(data={'author': author,
+                                            'order': num},
+                                      instance=o_ae)
+                self.author_experiments.append(f)
 
         self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['name'] for author in self.authors],
+            MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
                                           widget=CommaSeparatedInput())
 
         if not data:
@@ -536,13 +543,8 @@ class FullExperiment(Experiment):
         datasets = []
         dataset_files = []
 
-        for num, author in enumerate(self.authors):
-            o_author = author.save(commit=commit)
-            authors.append(o_author)
-            o_ae = models.Author_Experiment()
-            o_ae.experiment = experiment
-            o_ae.author = o_author
-            ae = Author_Experiment(data={'order': num}, instance=o_ae)
+        for ae in self.author_experiments:
+            ae.instance.experiment = ae.instance.experiment
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
 
@@ -583,11 +585,11 @@ class FullExperiment(Experiment):
             return not bool(self.errors)
 
         # TODO since this is a compound field, this should merge the errors
-        for author in self.authors:
-            for name, error in author.errors.items():
-                if isinstance(author.fields[name], ModelChoiceField):
+        for ae in self.author_experiments:
+            for name, error in ae.errors.items():
+                if isinstance(ae.fields[name], ModelChoiceField):
                     continue
-                if author.is_bound and bool(author.errors[name]):
+                if ae.is_bound and bool(ae.errors[name]):
                     return False
 
         for dataset, files in self.get_datasets():
