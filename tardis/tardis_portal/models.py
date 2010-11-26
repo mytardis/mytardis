@@ -133,7 +133,7 @@ class Dataset_File(models.Model):
     def get_download_url(self):
         from django.core.urlresolvers import reverse, get_script_prefix
 
-        if urlparse(self.url).scheme:
+        if urlparse(self.url).scheme and not self.url.startswith('file://'):
             return self.url
 
         url = reverse('tardis.tardis_portal.download.download_datafile',
