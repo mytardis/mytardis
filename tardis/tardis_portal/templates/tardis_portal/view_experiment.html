@@ -267,7 +267,7 @@
                             <p>
                             <strong>Authors: </strong><br/>
                             {% for author in authors %}
-                                    {{ author.author.name }}{% if not forloop.last %},{% endif %}
+                                    {{ author.author }}{% if not forloop.last %},{% endif %}
                             {% endfor %}
                             </p>
 

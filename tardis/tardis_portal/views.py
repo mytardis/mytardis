@@ -469,10 +469,7 @@ def view_experiment(request, experiment_id):
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
-        author_experiments = Author_Experiment.objects.all()
-        author_experiments = \
-            author_experiments.filter(experiment=experiment)
-        author_experiments = author_experiments.order_by('order')
+        author_experiments = experiment.author_experiment_set.all()
 
         datafiles = \
             Dataset_File.objects.filter(dataset__experiment=experiment_id)
