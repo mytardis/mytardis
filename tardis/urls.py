@@ -84,4 +84,8 @@ urlpatterns = patterns(
     (r'media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
     (r'^admin/(.*)', admin.site.root),
+    (r'^upload_complete/(?P<experiment_id>\d+)/$',
+     'tardis.tardis_portal.views.upload_complete'), 
+    (r'upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),  
+    (r'ajax/select_files/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.select_files'), 
 )

@@ -501,6 +501,8 @@ def view_experiment(request, experiment_id):
             'owners': owners,
             'size': size,
             'protocols': protocols,
+            'upload_complete_url': '/upload_complete/' +\
+                experiment_id + "/",            
             'nav': [{'name': 'Data', 'link': '/experiment/view/'},
                     {'name': experiment.title, 'link': '/experiment/view/' +
                      str(experiment.id) + '/'}],
@@ -1849,3 +1851,91 @@ def create_experiment(request,
 
     return HttpResponse(render_response_index(request,
                         template, c))
+
+def upload_complete(request, experiment_id):
+    
+    print request.POST
+    
+    cont = {
+        'numberOfFiles': request.POST['filesUploaded'],
+        'bytes': request.POST['allBytesLoaded'],
+        'speed': request.POST['speed'],
+        'errorCount': request.POST['errorCount'],
+        }
+    c = Context(cont)
+    return render_to_response("tardis_portal/upload_complete.html", c)
+    
+def upload(request, dataset_id, *args, **kwargs):
+
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    logger.debug("called upload")
+    if request.method == 'POST':
+        logger.debug("got POST")
+        if request.FILES:
+
+            uploaded_file_post = request.FILES['Filedata']
+
+            filename = uploaded_file_post.name
+
+            """
+            move files from the staging area to the dataset.
+            """
+
+            experiment_path = path.join(settings.FILE_STORE_PATH, str(dataset.experiment.id))
+            dataset_path = path.join(experiment_path, str(dataset.id))
+
+            if not os.path.exists(dataset_path):
+                os.makedirs(dataset_path)
+
+            copyto = dataset_path + "/" + filename
+            
+            orig_copyto = copyto
+            i = 1
+            
+            while path.exists(copyto):
+                logger.error("%s destination exists" % (copyto))   
+       
+                copyto_split = orig_copyto.rpartition(".")
+                
+                if copyto_split[0] == "":
+                    copyto = copyto_split[2] + "_" + str(i)
+                else:
+                    copyto = copyto_split[0] + "_" + str(i) + "." + copyto_split[2]
+                
+                i = i + 1
+                
+                
+            urlpath = "file:/" + copyto[len(experiment_path):]
+            filename = urlpath.rpartition("/")[2]
+                # TODO raise error
+
+            logger.debug("uploading file to %s" % (copyto))
+
+            datafile = Dataset_File(dataset=dataset,
+                                    filename=filename,
+                                    url=urlpath,
+                                    size=uploaded_file_post.size,
+                                    protocol="")       
+                                           
+
+            datafile.save()
+            
+            uploaded_file = open(copyto, 'wb+')
+
+            for chunk in uploaded_file_post.chunks():
+                uploaded_file.write(chunk)
+
+            uploaded_file.close()
+
+    return HttpResponse('True')   
+
+def select_files(request, dataset_id):
+
+    cont = {
+        'upload_complete_url': '/upload_complete/' +\
+        dataset_id + "/",
+        'dataset_id': dataset_id,
+        }
+    c = Context(cont)
+    return render_to_response("tardis_portal/ajax/select_files.html", c)        
