@@ -30,8 +30,28 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load parametertypecheck %}
-		
+{% load uploadify_tags %}
+
 		{% block script %}
+
+		<script type="text/javascript">
+
+		$(".uploadify").bind("allUploadsComplete", function(e, data){
+		    echo("bound");
+		});
+
+		</script>		
+		
+		{# <script> #}
+		{# 	$(function() { #}
+		{# 		$( "#upload_dialog_box" ).dialog({ autoOpen: false }) #}
+		{# 	 #}
+		{# 	$(".upload_dialog_box_link").click(function() {	 #}
+		{# 		$("#upload_dialog_box" ).dialog('open'); #}
+		{# 	}); #}
+		{#  #}
+		{#    }); #}
+		{# </script> #}
 		
 		<script language="JavaScript">
 
@@ -50,12 +70,23 @@
 		
 		<script type="text/javascript">
 			$(function() {
-				$("#tabs").tabs();
+				
+				$("#tabs").tabs();	
 			});
 		</script>
 
 		<script type="text/javascript">
 			$(document).ready(function() {	
+				
+				$("#select_files_container").load("/ajax/select_files/1/");
+				
+				$('#upload_dataset_select').change(function() {
+				
+					upload_dataset_select_id = $("#upload_dataset_select").val();
+				
+					$("#select_files_container").load("/ajax/select_files/" + upload_dataset_select_id + "/");
+				});
+				
 				
 				$('.filename_search').live('keyup', function(e) {
 					e.preventDefault();
@@ -111,7 +142,7 @@
 			   });
 
 			   $('.dataset_info').find('.datafile_list').hide().end().find('.datafile_list_toggle').click(function() {
-			     $(this).next().toggle();
+			     $(this).next().toggle();		
 			   });	
 
 
@@ -252,9 +283,15 @@
 					
 				</h1>
 				
+				{# <div class="upload_dialog_box_link">Upload File</div> #}
+				{# <div id="upload_dialog_box" title="Upload"> #}
+				
 
+				
+				
+				{# </div> #}
 
-					<div class="demo">
+					<div class="tabcontainer">
 
 					<div id="tabs">
 						<ul>
@@ -414,6 +451,7 @@
 											
 										</div>
 									</div>
+									
 								</div>
 							{% endfor %}
 							</div>		
@@ -422,8 +460,30 @@
 						</div>		
 																		
 					</div>
+					
+					<div align="right">
+						</br>
+						Add files to dataset:
+						<select id="upload_dataset_select" name="upload_dataset_select">
+							
+						{% for dataset in experiment.dataset_set.all %}
 
-					</div><!-- End demo -->		
+							<option value="{{forloop.counter}}">{{forloop.counter}} - {{dataset.description}}</option>
+
+
+						{% endfor %}
+						
+						</select>
+						</br>
+						<br/>
+						<div id="select_files_container" style="padding: 0 10px 10px 0">
+
+						</div>
+
+						<strong><a id="upload_go" href="javascript:$('#fileInput').uploadifyUpload();">Go</a></strong>
+					</div>
+
+					</div><!-- End tab container -->		
 
 			</div>
 			</div>

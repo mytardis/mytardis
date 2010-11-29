@@ -158,3 +158,9 @@ LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 LOG_LEVEL = logging.DEBUG
+
+# Uploadify root folder path, relative to MEDIA_ROOT
+UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
+
+# Upload path that files are sent to
+UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
