@@ -4,8 +4,8 @@
 """
 views.py
 
-@author Steve Androulakis
-@author Gerson Galang
+.. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 """
 
@@ -308,10 +308,12 @@ def has_datafile_access(dataset_file_id, user):
 def in_group(user, group):
     """Returns True/False if the user is in the given group(s).
     Usage::
+
         {% if user|in_group:"Friends" %}
         or
         {% if user|in_group:"Friends,Enemies" %}
         {% endif %}
+
     You can specify a single group or comma-delimited list.
     No white space allowed.
 

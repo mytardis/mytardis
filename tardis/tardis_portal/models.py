@@ -36,6 +36,12 @@ from django.utils.safestring import SafeUnicode
 
 
 class UserProfile(models.Model):
+    """
+    UserProfile class is an extension to the Django standard user model.
+
+    :attribute authcate_user: is the user an external user
+    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    """
 
     authcate_user = models.BooleanField()
     user = models.ForeignKey(User, unique=True)

@@ -34,7 +34,8 @@
 '''
 forms module
 
-@author: Gerson Galang
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+
 '''
 
 from django import forms

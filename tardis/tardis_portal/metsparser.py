@@ -45,7 +45,8 @@ recommends.
     <trd:twoTheta>0.0</trd:twoTheta>
 </trd:mxdatafile>
 
-@author: Gerson Galang
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+
 '''
 
 from xml.sax import SAXParseException, ContentHandler
