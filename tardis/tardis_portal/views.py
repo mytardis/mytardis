@@ -169,10 +169,14 @@ def has_experiment_ownership(experiment_id, user_id):
 
 
 # custom decorator
+
+
 def experiment_ownership_required(f):
 
     def wrap(request, *args, **kwargs):
+
         # if user isn't logged in it will redirect to login page
+
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login')
         if not has_experiment_ownership(kwargs['experiment_id'],
@@ -187,6 +191,8 @@ def experiment_ownership_required(f):
 
 
 # custom decorator
+
+
 def experiment_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -195,6 +201,7 @@ def experiment_access_required(f):
                 request.user):
 
             # if user isn't logged in it will redirect to login page
+
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login')
             else:
@@ -208,12 +215,15 @@ def experiment_access_required(f):
 
 
 # custom decorator
+
+
 def dataset_access_required(f):
 
     def wrap(request, *args, **kwargs):
         if not has_dataset_access(kwargs['dataset_id'], request.user):
 
             # if user isn't logged in it will redirect to login page
+
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login')
             else:
@@ -227,6 +237,8 @@ def dataset_access_required(f):
 
 
 # custom decorator
+
+
 def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -234,6 +246,7 @@ def datafile_access_required(f):
                                    request.user):
 
             # if user isn't logged in it will redirect to login page
+
             if not request.user.is_authenticated():
                 return HttpResponseRedirect('/login')
             else:
@@ -249,6 +262,7 @@ def datafile_access_required(f):
 def has_experiment_access(experiment_id, user):
 
     # public route
+
     try:
         e = Experiment.objects.get(id=experiment_id)
 
@@ -337,9 +351,8 @@ def index(request):
 
     status = ''
 
-    c = Context(
-        {'status': status,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'status': status, 'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -347,8 +360,7 @@ def index(request):
 def site_settings(request):
 
     if request.method == 'POST':  # If the form has been submitted...
-        if 'username' in request.POST and \
-                'password' in request.POST:
+        if 'username' in request.POST and 'password' in request.POST:
 
             username = request.POST['username']
             password = request.POST['password']
@@ -359,9 +371,10 @@ def site_settings(request):
 
                     x509 = open(settings.GRID_PROXY_FILE, 'r')
 
-                    c = Context({'baseurl': request.build_absolute_uri('/'),
-                        'proxy': x509.read(), 'filestorepath':
-                        settings.FILE_STORE_PATH})
+                    c = Context({'baseurl'
+                                : request.build_absolute_uri('/'),
+                                'proxy': x509.read(), 'filestorepath'
+                                : settings.FILE_STORE_PATH})
                     return HttpResponse(render_response_index(request,
                             'tardis_portal/site_settings.xml', c),
                             mimetype='application/xml')
@@ -389,9 +402,10 @@ def display_experiment_image(
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
-                                            parameterset=parameterset_id)
+            parameterset=parameterset_id)
 
-    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+    return HttpResponse(b64decode(image.string_value),
+                        mimetype='image/jpeg')
 
 
 def display_dataset_image(
@@ -430,7 +444,8 @@ def display_datafile_image(
     # todo handle not exist
 
     datafile = Dataset_File.objects.get(pk=dataset_file_id)
-    if has_experiment_access(datafile.dataset.experiment.id, request.user):
+    if has_experiment_access(datafile.dataset.experiment.id,
+                             request.user):
         image = \
             DatafileParameter.objects.get(name__name=parameter_name,
                 parameterset=parameterset_id)
@@ -448,10 +463,13 @@ def display_datafile_image(
 
 def about(request):
 
-    c = Context({'subtitle': 'About', 'about_pressed': True,
-                'nav': [{'name': 'About', 'link': '/about/'}],
-                'searchDatafileSelectionForm':
-                getNewSearchDatafileSelectionForm()})
+    c = Context({
+        'subtitle': 'About',
+        'about_pressed': True,
+        'nav': [{'name': 'About', 'link': '/about/'}],
+        'searchDatafileSelectionForm'
+            : getNewSearchDatafileSelectionForm(),
+        })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -489,11 +507,10 @@ def view_experiment(request, experiment_id):
         except Experiment_Owner.DoesNotExist, eo:
             pass
 
-        protocols = [df['protocol'] for df in datafiles.values(
-            'protocol').distinct()]
+        protocols = [df['protocol'] for df in
+                     datafiles.values('protocol').distinct()]
 
-        c = Context({
-            # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
+        c = Context({  # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
             'experiment': experiment,
             'authors': author_experiments,
             'datafiles': datafiles,
@@ -501,13 +518,14 @@ def view_experiment(request, experiment_id):
             'owners': owners,
             'size': size,
             'protocols': protocols,
-            'upload_complete_url': '/upload_complete/' +\
-                experiment_id + "/",            
+            'upload_complete_url': '/upload_complete/' + experiment_id
+                + '/',
             'nav': [{'name': 'Data', 'link': '/experiment/view/'},
-                    {'name': experiment.title, 'link': '/experiment/view/' +
-                     str(experiment.id) + '/'}],
-            'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+                    {'name': experiment.title, 'link'
+                    : '/experiment/view/' + str(experiment.id) + '/'}],
+            'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm(),
+            })
     except Experiment.DoesNotExist, de:
         return return_response_not_found(request)
 
@@ -520,6 +538,7 @@ def experiment_index(request):
     experiments = None
 
     # if logged in
+
     if request.user.is_authenticated():
         experiments = get_accessible_experiments(request.user.id)
         if experiments:
@@ -536,13 +555,16 @@ def experiment_index(request):
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'data_pressed': True,
-        'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+        'searchDatafileSelectionForm'
+            : getNewSearchDatafileSelectionForm(),
+        })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/experiment_index.html', c))
 
 
 # web service, depreciated
+
+
 def register_experiment_ws(request):
 
     # from java.lang import Exception
@@ -585,8 +607,8 @@ def register_experiment_ws(request):
                     'Unexpected Error - ', sys.exc_info()[0])
 
         response = HttpResponse(status=200)
-        response['Location'] = request.build_absolute_uri(
-            '/experiment/view/' + str(eid))
+        response['Location'] = \
+            request.build_absolute_uri('/experiment/view/' + str(eid))
 
         return response
     else:
@@ -618,19 +640,21 @@ def ldap_login(request):
     # in usual way, either way login
 
     # TODO: put me in SETTINGS
-    if 'username' in request.POST and \
-            'password' in request.POST:
+
+    if 'username' in request.POST and 'password' in request.POST:
         username = request.POST['username']
         password = request.POST['password']
 
         next = '/'
+
         # TODO: this block will need fixing later as the expected functionality
         #       this condition is supposed to provide does not work
+
         if 'next' in request.POST:
             next = request.POST['next']
 
-        c = Context({'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+        c = Context({'searchDatafileSelectionForm'
+                    : getNewSearchDatafileSelectionForm()})
 
         error_template_redirect = 'tardis_portal/login.html'
 
@@ -648,8 +672,9 @@ def ldap_login(request):
                             return HttpResponseRedirect(next)
                         else:
                             return return_response_error_message(request,
-                                error_template_redirect,
-                                "Sorry, username and password don't match")
+                                    error_template_redirect,
+                                    "Sorry, username and password don't match"
+                                    )
                     else:
                         if authenticate(username=username,
                                 password=password):
@@ -660,7 +685,8 @@ def ldap_login(request):
                         else:
                             return return_response_error_message(request,
                                     error_template_redirect,
-                                    "Sorry, username and password don't match")
+                                    "Sorry, username and password don't match"
+                                    )
                 except UserProfile.DoesNotExist, ue:
                     if authenticate(username=username,
                                     password=password):
@@ -671,7 +697,8 @@ def ldap_login(request):
                     else:
                         return return_response_error_message(request,
                                 error_template_redirect,
-                                "Sorry, username and password don't match")
+                                "Sorry, username and password don't match"
+                                )
             except User.DoesNotExist, ue:
                 if ldap_auth.authenticate_user_ldap(username, password):
                     email = ldap_auth.get_ldap_email_for_user(username)
@@ -695,7 +722,9 @@ def ldap_login(request):
 
                     u.backend = \
                         'django.contrib.auth.backends.ModelBackend'
+
                     # TODO: consolidate
+
                     login(request, u)
                     return HttpResponseRedirect(next)
                 else:
@@ -712,8 +741,8 @@ def ldap_login(request):
                     error_template_redirect,
                     "Sorry, username and password don't match")
 
-    c = Context({'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+    c = Context({'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
@@ -740,8 +769,8 @@ def register_experiment_ws_xmldata_internal(request):
 
         response = HttpResponse('Finished cataloging: ' + str(eid),
                                 status=200)
-        response['Location'] = request.build_absolute_uri(
-            '/experiment/view/' + str(eid))
+        response['Location'] = \
+            request.build_absolute_uri('/experiment/view/' + str(eid))
 
         return response
 
@@ -757,6 +786,7 @@ def register_experiment_ws_xmldata(request):
     if request.method == 'POST':  # If the form has been submitted...
 
         # A form bound to the POST data
+
         form = RegisterExperimentForm(request.POST, request.FILES)
         if form.is_valid():  # All validation rules pass
 
@@ -798,6 +828,7 @@ def register_experiment_ws_xmldata(request):
 
             file.close()
 
+
             class RegisterThread(threading.Thread):
 
                 def run(self):
@@ -807,8 +838,9 @@ def register_experiment_ws_xmldata(request):
                         'filename': filename,
                         'eid': eid,
                         })
-                    urllib.urlopen(request.build_absolute_uri(
-                            '/experiment/register/internal/'), data)
+                    urllib.urlopen(request.build_absolute_uri('/experiment/register/internal/'
+                                   ), data)
+
 
             RegisterThread().start()
 
@@ -847,6 +879,7 @@ def register_experiment_ws_xmldata(request):
 
             if from_url:
 
+
                 class FileTransferThread(threading.Thread):
 
                     def run(self):
@@ -859,8 +892,9 @@ def register_experiment_ws_xmldata(request):
                         data = urllib.urlencode({
                             'originid': str(originid),
                             'eid': str(eid),
-                            'site_settings_url': request.build_absolute_uri(
-                                    '/site-settings.xml/'),
+                            'site_settings_url'
+                                : request.build_absolute_uri('/site-settings.xml/'
+                                    ),
                             'username': str('synchrotron'),
                             'password': str('tardis'),
                             })
@@ -870,22 +904,28 @@ def register_experiment_ws_xmldata(request):
 
                         urllib.urlopen(file_transfer_url, data)
 
+
                 FileTransferThread().start()
 
             logger.debug('returning response from main call')
 
             response = HttpResponse(str(eid), status=200)
-            response['Location'] = request.build_absolute_uri(
-                '/experiment/view/' + str(eid))
+            response['Location'] = \
+                request.build_absolute_uri('/experiment/view/'
+                    + str(eid))
 
             return response
     else:
 
         form = RegisterExperimentForm()  # An unbound form
 
-    c = Context({'form': form, 'status': status,
+    c = Context({
+        'form': form,
+        'status': status,
         'subtitle': 'Register Experiment',
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+        'searchDatafileSelectionForm'
+            : getNewSearchDatafileSelectionForm(),
+        })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/register_experiment.html', c))
 
@@ -894,7 +934,8 @@ def register_experiment_ws_xmldata(request):
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
-    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
+    parametersets = \
+        parametersets.filter(dataset_file__pk=dataset_file_id)
 
     c = Context({'parametersets': parametersets})
 
@@ -925,13 +966,12 @@ def retrieve_datafile_list(request, dataset_id):
     from django.db.models import Count
 
     dataset_results = \
-        Dataset_File.objects.filter(
-        dataset__pk=dataset_id).order_by('filename')
+        Dataset_File.objects.filter(dataset__pk=dataset_id).order_by('filename'
+            )
 
     filename_search = None
 
-    if 'filename' in request.GET and len(request.GET['filename']) \
-        > 0:
+    if 'filename' in request.GET and len(request.GET['filename']) > 0:
         filename_search = request.GET['filename']
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
@@ -973,8 +1013,8 @@ def control_panel(request):
     if experiments:
         experiments = experiments.order_by('title')
 
-    c = Context({'experiments': experiments,
-        'subtitle': 'Experiment Control Panel'})
+    c = Context({'experiments': experiments, 'subtitle'
+                : 'Experiment Control Panel'})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
 
@@ -993,15 +1033,15 @@ def search_experiment(request):
     experiments = __processExperimentParameters(request, form)
 
     # check if the submitted form is valid
+
     if experiments is not None:
         bodyclass = 'list'
     else:
         return __forwardToSearchExperimentFormPage(request)
 
-    c = Context({
-        'experiments': experiments,
-        'bodyclass': bodyclass,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'experiments': experiments, 'bodyclass': bodyclass,
+                'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_experiment_results.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -1017,15 +1057,14 @@ def search_quick(request):
         if 'quicksearch' in request.GET \
             and len(request.GET['quicksearch']) > 0:
             experiments = \
-                experiments.filter(
-                title__icontains=request.GET['quicksearch']) | \
-                experiments.filter(
-                institution_name__icontains=request.GET['quicksearch']) | \
-                experiments.filter(
-                author_experiment__author__name__icontains=request.GET[
-                'quicksearch']) | \
-                experiments.filter(
-                pdbid__pdbid__icontains=request.GET['quicksearch'])
+                experiments.filter(title__icontains=request.GET['quicksearch'
+                                   ]) \
+                | experiments.filter(institution_name__icontains=request.GET['quicksearch'
+                    ]) \
+                | experiments.filter(author_experiment__author__name__icontains=request.GET['quicksearch'
+                    ]) \
+                | experiments.filter(pdbid__pdbid__icontains=request.GET['quicksearch'
+                    ])
 
             experiments = experiments.distinct()
 
@@ -1053,48 +1092,51 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     """
 
-    #from django.db.models import Q
+    # from django.db.models import Q
 
     datafile_results = \
-        get_accessible_datafiles_for_user(
-        get_accessible_experiments(request.user.id))
+        get_accessible_datafiles_for_user(get_accessible_experiments(request.user.id))
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
+
     if len(datafile_results) == 0:
         return datafile_results
 
     datafile_results = \
-        datafile_results.filter(
-datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[
-        searchQueryType]['datafile']).distinct()
+        datafile_results.filter(datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['datafile'
+                                ]).distinct()
 
     # if filename is searchable which i think will always be the case...
+
     if searchFilterData['filename'] != '':
         datafile_results = \
-            datafile_results.filter(
-            filename__icontains=searchFilterData['filename'])
+            datafile_results.filter(filename__icontains=searchFilterData['filename'
+                                    ])
+
     # TODO: might need to cache the result of this later on
 
     # get all the datafile parameters for the given schema
+
     parameters = [p for p in
-        ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['datafile'])]
+                  ParameterName.objects.filter(schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['datafile'
+                  ])]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'datafileparameterset__datafileparameter')
 
     # get all the dataset parameters for given schema
+
     parameters = [p for p in
-        ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['dataset'])]
+                  ParameterName.objects.filter(schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['dataset'
+                  ])]
 
     datafile_results = __filterParameters(parameters, datafile_results,
-            searchFilterData, 'dataset__datasetparameterset__datasetparameter')
+            searchFilterData,
+            'dataset__datasetparameterset__datasetparameter')
 
     # let's sort it in the end
+
     if datafile_results:
         datafile_results = datafile_results.order_by('filename')
 
@@ -1115,7 +1157,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     """
 
-    #from django.db.models import Q
+    # from django.db.models import Q
 
     experiments = get_accessible_experiments(request.user.id)
 
@@ -1123,37 +1165,43 @@ def __getFilteredExperiments(request, searchFilterData):
         return []
 
     # search for the default experiment fields
+
     if searchFilterData['title'] != '':
         experiments = \
-            experiments.filter(title__icontains=searchFilterData['title'])
+            experiments.filter(title__icontains=searchFilterData['title'
+                               ])
 
     if searchFilterData['description'] != '':
         experiments = \
-            experiments.filter(
-            description__icontains=searchFilterData['description'])
+            experiments.filter(description__icontains=searchFilterData['description'
+                               ])
 
     if searchFilterData['institutionName'] != '':
         experiments = \
-            experiments.filter(
-            institution_name__icontains=searchFilterData['institutionName'])
+            experiments.filter(institution_name__icontains=searchFilterData['institutionName'
+                               ])
 
     if searchFilterData['creator'] != '':
         experiments = \
-            experiments.filter(
-        author_experiment__author__name__icontains=searchFilterData['creator'])
+            experiments.filter(author_experiment__author__name__icontains=searchFilterData['creator'
+                               ])
 
     # initialise the extra experiment parameters
+
     parameters = []
 
     # get all the experiment parameters
+
     for experimentSchema in constants.EXPERIMENT_SCHEMAS:
-        parameters += ParameterName.objects.filter(
-            schema__namespace__exact=experimentSchema)
+        parameters += \
+            ParameterName.objects.filter(schema__namespace__exact=experimentSchema)
 
     experiments = __filterParameters(parameters, experiments,
-            searchFilterData, 'experimentparameterset__experimentparameter')
+            searchFilterData,
+            'experimentparameterset__experimentparameter')
 
     # let's sort it in the end
+
     if experiments:
         experiments = experiments.order_by('title')
 
@@ -1186,42 +1234,56 @@ def __filterParameters(
         try:
 
             # if parameter is a string...
+
             if not parameter.is_numeric:
                 if searchFilterData[parameter.name] != '':
+
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
+
                     if parameter.choices != '':
                         if searchFilterData[parameter.name] != '-':
-                            kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
+                            kwargs[paramType + '__string_value__iexact'
+                                   ] = searchFilterData[parameter.name]
                     else:
-                        if parameter.comparison_type == \
-                                ParameterName.EXACT_VALUE_COMPARISON:
-                            kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
-                        elif parameter.comparison_type == \
-                                ParameterName.CONTAINS_COMPARISON:
+                        if parameter.comparison_type \
+                            == ParameterName.EXACT_VALUE_COMPARISON:
+                            kwargs[paramType + '__string_value__iexact'
+                                   ] = searchFilterData[parameter.name]
+                        elif parameter.comparison_type \
+                            == ParameterName.CONTAINS_COMPARISON:
+
                             # we'll implement exact comparison as 'icontains'
                             # for now
-                            kwargs[paramType + '__string_value__icontains'] = \
+
+                            kwargs[paramType
+                                   + '__string_value__icontains'] = \
                                 searchFilterData[parameter.name]
                         else:
+
                             # if comparison_type on a string is a comparison
                             # type that can only be applied to a numeric value,
                             # we'll default to just using 'icontains'
                             # comparison
-                            kwargs[paramType + '__string_value__icontains'] = \
+
+                            kwargs[paramType
+                                   + '__string_value__icontains'] = \
                                 searchFilterData[parameter.name]
                 else:
                     pass
-            else:  # parameter.is_numeric:
-                if parameter.comparison_type == \
-                        ParameterName.RANGE_COMPARISON:
-                    fromParam = searchFilterData[parameter.name + 'From']
+            else:
+
+                   # parameter.is_numeric:
+
+                if parameter.comparison_type \
+                    == ParameterName.RANGE_COMPARISON:
+                    fromParam = searchFilterData[parameter.name + 'From'
+                            ]
                     toParam = searchFilterData[parameter.name + 'To']
                     if fromParam is None and toParam is None:
                         pass
                     else:
+
                         # if parameters are provided and we want to do a range
                         # comparison
                         # note that we're using '1' as the lower range as using
@@ -1230,23 +1292,27 @@ def __filterParameters(
                         #       happening
                         # TODO: we should probably move the static value here
                         #       to the constants module
-                        kwargs[paramType + '__numerical_value__range'] = \
-                            (fromParam is None and
-                             constants.FORM_RANGE_LOWEST_NUM or fromParam,
-                             toParam is not None and toParam or
-                             constants.FORM_RANGE_HIGHEST_NUM)
 
+                        kwargs[paramType + '__numerical_value__range'
+                               ] = (fromParam is None
+                                    and constants.FORM_RANGE_LOWEST_NUM
+                                    or fromParam, toParam is not None
+                                    and toParam
+                                    or constants.FORM_RANGE_HIGHEST_NUM)
                 elif searchFilterData[parameter.name] is not None:
 
                     # if parameter is an number and we want to handle other
                     # type of number comparisons
-                    if parameter.comparison_type == \
-                            ParameterName.EXACT_VALUE_COMPARISON:
-                        kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+
+                    if parameter.comparison_type \
+                        == ParameterName.EXACT_VALUE_COMPARISON:
+                        kwargs[paramType + '__numerical_value__exact'
+                               ] = searchFilterData[parameter.name]
+                    elif parameter.comparison_type \
+                        == ParameterName.GREATER_THAN_COMPARISON:
 
                     # TODO: is this really how not equal should be declared?
-                    #elif parameter.comparison_type ==
+                    # elif parameter.comparison_type ==
                     #       ParameterName.NOT_EQUAL_COMPARISON:
                     #   datafile_results = \
                     #       datafile_results.filter(
@@ -1255,35 +1321,38 @@ def __filterParameters(
                     #  ~Q(datafileparameter__numerical_value=searchFilterData[
                     #       parameter.name]))
 
-                    elif parameter.comparison_type == \
-                            ParameterName.GREATER_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__gt'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type == \
-                            ParameterName.GREATER_THAN_EQUAL_COMPARISON:
+                    elif parameter.comparison_type \
+                        == ParameterName.GREATER_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__gte'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type == \
-                            ParameterName.LESS_THAN_COMPARISON:
+                    elif parameter.comparison_type \
+                        == ParameterName.LESS_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__lt'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type == \
-                            ParameterName.LESS_THAN_EQUAL_COMPARISON:
+                    elif parameter.comparison_type \
+                        == ParameterName.LESS_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__lte'] = \
                             searchFilterData[parameter.name]
                     else:
+
                         # if comparison_type on a numeric is a comparison type
                         # that can only be applied to a string value, we'll
                         # default to just using 'exact' comparison
-                        kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+
+                        kwargs[paramType + '__numerical_value__exact'
+                               ] = searchFilterData[parameter.name]
                 else:
+
                     # ignore...
+
                     pass
 
             # we will only update datafile_results if we have an additional
             # filter (based on the 'passed' condition) in addition to the
             # initial value of kwargs
+
             if len(kwargs) > 1:
                 logger.debug(kwargs)
                 datafile_results = datafile_results.filter(**kwargs)
@@ -1299,15 +1368,19 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'sax':
+
+        # if searchQueryType == 'sax':
+
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
-        #else:
+
+        # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
 
     # TODO: remove this later on when we have a more generic search form
+
     if searchQueryType == 'mx':
         url = 'tardis_portal/search_datafile_form_mx.html'
 
@@ -1315,21 +1388,24 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     # sort the fields in the form as it will make grouping the related fields
     # together in the next step easier
-    sortedSearchForm = sorted(searchForm, lambda x, y: cmp(x.name, y.name))
+
+    sortedSearchForm = sorted(searchForm, lambda x, y: cmp(x.name,
+                              y.name))
 
     # modifiedSearchForm will be used to customise how the range type of fields
     # will be displayed. range type of fields will be displayed side by side.
-    modifiedSearchForm = [list(g) for k, g in groupby(
-        sortedSearchForm, lambda x: x.name.rsplit('To')[0].rsplit('From')[0])]
+
+    modifiedSearchForm = [list(g) for (k, g) in
+                          groupby(sortedSearchForm, lambda x: \
+                          x.name.rsplit('To')[0].rsplit('From')[0])]
 
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    c = Context({
-        'searchForm': searchForm,
-        'modifiedSearchForm': modifiedSearchForm,
-        'searchDatafileSelectionForm':
-        getNewSearchDatafileSelectionForm()})
+
+    c = Context({'searchForm': searchForm, 'modifiedSearchForm'
+                : modifiedSearchForm, 'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request, url, c))
 
 
@@ -1338,9 +1414,8 @@ def __forwardToSearchExperimentFormPage(request):
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({
-        'searchForm': searchForm,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'searchForm': searchForm, 'searchDatafileSelectionForm'
+                : getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_experiment_form.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -1365,7 +1440,7 @@ def __getSearchDatafileForm(request, searchQueryType):
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         form = SearchDatafileForm(request.GET)
         return form
-    except UnsupportedSearchQueryTypeError as e:
+    except UnsupportedSearchQueryTypeError, e:
         raise e
 
 
@@ -1408,11 +1483,12 @@ def __processDatafileParameters(request, searchQueryType, form):
     if form.is_valid():
 
         datafile_results = __getFilteredDatafiles(request,
-            searchQueryType, form.cleaned_data)
+                searchQueryType, form.cleaned_data)
 
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
         # by the paginator
+
         request.session['datafileResults'] = datafile_results
         return datafile_results
     else:
@@ -1435,11 +1511,13 @@ def __processExperimentParameters(request, form):
 
     if form.is_valid():
 
-        experiments = __getFilteredExperiments(request, form.cleaned_data)
+        experiments = __getFilteredExperiments(request,
+                form.cleaned_data)
 
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
         # by the paginator
+
         request.session['experiments'] = experiments
         return experiments
     else:
@@ -1456,48 +1534,58 @@ def search_datafile(request):
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
     else:
+
         # for now we'll default to MX if nothing is provided
         # TODO: should we forward the page to experiment search page if
         #       nothing is provided in the future?
+
         searchQueryType = 'mx'
 
     # TODO: check if going to /search/datafile will flag an error in unit test
+
     bodyclass = None
 
-    if 'page' not in request.GET and 'type' in request.GET and \
-            len(request.GET) > 1:
+    if 'page' not in request.GET and 'type' in request.GET \
+        and len(request.GET) > 1:
+
         # display the 1st page of the results
 
         form = __getSearchDatafileForm(request, searchQueryType)
-        datafile_results = __processDatafileParameters(
-            request, searchQueryType, form)
+        datafile_results = __processDatafileParameters(request,
+                searchQueryType, form)
         if datafile_results is not None:
             bodyclass = 'list'
         else:
-            return __forwardToSearchDatafileFormPage(
-                request, searchQueryType, form)
-
+            return __forwardToSearchDatafileFormPage(request,
+                    searchQueryType, form)
     else:
+
         if 'page' in request.GET:
+
             # succeeding pages of pagination
+
             if 'datafileResults' in request.session:
                 datafile_results = request.session['datafileResults']
             else:
                 form = __getSearchDatafileForm(request, searchQueryType)
                 datafile_results = __processDatafileParameters(request,
-                    searchQueryType, form)
+                        searchQueryType, form)
                 if datafile_results is not None:
                     bodyclass = 'list'
                 else:
                     return __forwardToSearchDatafileFormPage(request,
-                        searchQueryType, form)
+                            searchQueryType, form)
         else:
+
             # display the form
+
             if 'datafileResults' in request.session:
                 del request.session['datafileResults']
-            return __forwardToSearchDatafileFormPage(request, searchQueryType)
+            return __forwardToSearchDatafileFormPage(request,
+                    searchQueryType)
 
     # process the files to be displayed by the paginator...
+
     paginator = Paginator(datafile_results,
                           constants.DATAFILE_RESULTS_PER_PAGE)
 
@@ -1507,6 +1595,7 @@ def search_datafile(request):
         page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
+
     try:
         datafiles = paginator.page(page)
     except (EmptyPage, InvalidPage):
@@ -1514,17 +1603,20 @@ def search_datafile(request):
 
     import re
     cleanedUpQueryString = re.sub('&page=\d+', '',
-        request.META['QUERY_STRING'])
+                                  request.META['QUERY_STRING'])
 
     c = Context({
         'datafiles': datafiles,
         'paginator': paginator,
         'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
-        'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
+        'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'
+                }],
         'bodyclass': bodyclass,
         'search_pressed': True,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+        'searchDatafileSelectionForm'
+            : getNewSearchDatafileSelectionForm(),
+        })
     url = 'tardis_portal/search_datafile_results.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -1543,7 +1635,8 @@ def retrieve_user_list(request):
 def retrieve_access_list(request, experiment_id):
 
     users = \
-        User.objects.filter(groups__name=experiment_id).order_by('username')
+        User.objects.filter(groups__name=experiment_id).order_by('username'
+            )
 
     c = Context({'users': users, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
@@ -1562,7 +1655,8 @@ def add_access_experiment(request, experiment_id, username):
 
             c = Context({'user': u, 'experiment_id': experiment_id})
             return HttpResponse(render_response_index(request,
-                                'tardis_portal/ajax/add_user_result.html', c))
+                                'tardis_portal/ajax/add_user_result.html'
+                                , c))
         else:
             return return_response_error(request)
     except User.DoesNotExist, ue:
@@ -1596,7 +1690,8 @@ def remove_access_experiment(request, experiment_id, username):
 
             c = Context({})
             return HttpResponse(render_response_index(request,
-                'tardis_portal/ajax/remove_user_result.html', c))
+                                'tardis_portal/ajax/remove_user_result.html'
+                                , c))
         else:
             return return_response_error(request)
     except User.DoesNotExist, ue:
@@ -1616,8 +1711,8 @@ def publish_experiment(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
 
     if not experiment.public:
-        filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
-            '/METS.XML'
+        filename = settings.FILE_STORE_PATH + '/' + experiment_id \
+            + '/METS.XML'
 
         mpform = MultiPartForm()
         mpform.add_field('username', settings.TARDIS_USERNAME)
@@ -1637,7 +1732,8 @@ def publish_experiment(request, experiment_id):
 
         requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
         requestmp.add_header('User-agent',
-                             'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+                             'PyMOTW (http://www.doughellmann.com/PyMOTW/)'
+                             )
         body = str(mpform)
         requestmp.add_header('Content-type', mpform.get_content_type())
         requestmp.add_header('Content-length', len(body))
@@ -1685,6 +1781,7 @@ def import_params(request):
     if request.method == 'POST':  # If the form has been submitted...
 
         # A form bound to the POST data
+
         form = ImportParamsForm(request.POST, request.FILES)
         if form.is_valid():  # All validation rules pass
 
@@ -1746,10 +1843,11 @@ def staging_traverse(staging=settings.STAGING_PATH):
     :type staging: string
     :rtype: string
     """
-    ul = "<ul><li id=\"phtml_1\"><a>My Files</a><ul>"
+
+    ul = '<ul><li id="phtml_1"><a>My Files</a><ul>'
     for f in os.listdir(staging):
         ul = ul + traverse(path.join(staging, f), staging)
-    return  ul + "</ul></li></ul>"
+    return ul + '</ul></li></ul>'
 
 
 def traverse(pathname, dirname=settings.STAGING_PATH):
@@ -1772,23 +1870,29 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     :typr dirname: string
     :rtype: string
     """
-    li = "<li id=\"%s\"><a>%s</a>" % (path.relpath(pathname, dirname),
-                                      path.basename(pathname))
+
+    li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
+                                    path.basename(pathname))
     if path.isfile(pathname):
-        return  li + "</li>"
+        return li + '</li>'
     if path.isdir(pathname):
-        ul = "<ul>"
+        ul = '<ul>'
         for f in os.listdir(pathname):
             ul = ul + traverse(path.join(pathname, f), dirname)
-        return  li + ul + "</ul></li>"
+        return li + ul + '</ul></li>'
     return ''
 
 
-def stage_files(datafiles, experiment_id,
-                staging=settings.STAGING_PATH, store=settings.FILE_STORE_PATH):
+def stage_files(
+    datafiles,
+    experiment_id,
+    staging=settings.STAGING_PATH,
+    store=settings.FILE_STORE_PATH,
+    ):
     """
     move files from the staging area to the dataset.
     """
+
     experiment_path = path.join(store, str(experiment_id))
     if not os.path.exists(experiment_path):
         os.makedirs(experiment_path)
@@ -1802,11 +1906,13 @@ def stage_files(datafiles, experiment_id,
         copyfrom = path.join(staging, urlpath)  # to be url
         copyto = path.join(experiment_path, urlpath)
         if path.exists(copyto):
-            logger.error("can't stage %s destination exists" % (copyto))
+            logger.error("can't stage %s destination exists" % copyto)
+
             # TODO raise error
+
             continue
 
-        logger.debug("staging file: %s to %s" % (copyfrom, copyto))
+        logger.debug('staging file: %s to %s' % (copyfrom, copyto))
         datafile.size = os.path.getsize(copyfrom)
         datafile.save()
         shutil.move(copyfrom, copyto)
@@ -1814,7 +1920,7 @@ def stage_files(datafiles, experiment_id,
 
 @login_required
 def create_experiment(request,
-                      template="tardis_portal/create_experiment.html"):
+                      template='tardis_portal/create_experiment.html'):
     if request.method == 'POST':
         form = FullExperiment(request.POST, request.FILES)
         if form.is_valid():
@@ -1825,8 +1931,10 @@ def create_experiment(request,
                 ds_f.url = 'file://' + filepath
                 ds_f.filename = os.path.basename(filepath)
                 ds_f.size = 0
-                ds_f.protocol = ""
+                ds_f.protocol = ''
+
             # group/owner assignment stuff, soon to be replaced
+
             experiment = full_experiment['experiment']
             full_experiment.save_m2m()
 
@@ -1843,19 +1951,26 @@ def create_experiment(request,
     else:
         form = FullExperiment()
 
-    c = Context({'subtitle': 'Create Experiment',
-                 'directory_listing': staging_traverse(),
-                 'user_id': request.user.id,
-                'form': form,
-              })
+    c = Context({
+        'subtitle': 'Create Experiment',
+        'directory_listing': staging_traverse(),
+        'user_id': request.user.id,
+        'form': form,
+        })
 
-    return HttpResponse(render_response_index(request,
-                        template, c))
+    return HttpResponse(render_response_index(request, template, c))
+
 
 def upload_complete(request, experiment_id):
-    
+    """
+    The ajax-loaded result of a file being uploaded
+    :param experiment_id: the ID of the experiment uploaded to
+    :type experiment_id: integer
+    :rtype: view
+    """
+
     print request.POST
-    
+
     cont = {
         'numberOfFiles': request.POST['filesUploaded'],
         'bytes': request.POST['allBytesLoaded'],
@@ -1863,79 +1978,145 @@ def upload_complete(request, experiment_id):
         'errorCount': request.POST['errorCount'],
         }
     c = Context(cont)
-    return render_to_response("tardis_portal/upload_complete.html", c)
-    
-def upload(request, dataset_id, *args, **kwargs):
+    return render_to_response('tardis_portal/upload_complete.html', c)
+
+
+def upload(
+    request,
+    dataset_id,
+    *args,
+    **kwargs
+    ):
+    """
+    Uploads a datafile to the store and datafile metadata
+    :param dataset_id: the dataset_id
+    :type dataset_id: integer
+    :rtype: boolean true if successful
+    """
 
     dataset = Dataset.objects.get(id=dataset_id)
 
-    logger.debug("called upload")
+    logger.debug('called upload')
     if request.method == 'POST':
-        logger.debug("got POST")
+        logger.debug('got POST')
         if request.FILES:
 
             uploaded_file_post = request.FILES['Filedata']
 
-            filename = uploaded_file_post.name
+            print 'about to write uploaded file'
+            filepath = write_uploaded_file_to_dataset(dataset,
+                    uploaded_file_post)
+            print filepath
 
-            """
-            move files from the staging area to the dataset.
-            """
+            add_datafile_to_dataset(dataset, filepath,
+                                    uploaded_file_post.size)
+            print 'added datafile to dataset'
 
-            experiment_path = path.join(settings.FILE_STORE_PATH, str(dataset.experiment.id))
-            dataset_path = path.join(experiment_path, str(dataset.id))
+    return HttpResponse('True')
 
-            if not os.path.exists(dataset_path):
-                os.makedirs(dataset_path)
 
-            copyto = dataset_path + "/" + filename
-            
-            orig_copyto = copyto
-            i = 1
-            
-            while path.exists(copyto):
-                logger.error("%s destination exists" % (copyto))   
-       
-                copyto_split = orig_copyto.rpartition(".")
-                
-                if copyto_split[0] == "":
-                    copyto = copyto_split[2] + "_" + str(i)
-                else:
-                    copyto = copyto_split[0] + "_" + str(i) + "." + copyto_split[2]
-                
-                i = i + 1
-                
-                
-            urlpath = "file:/" + copyto[len(experiment_path):]
-            filename = urlpath.rpartition("/")[2]
-                # TODO raise error
+def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
+    """
+    Writes file POST data to the dataset directory in the file store
+    :param dataset_id: dataset who's directory to be written to
+    :type dataset: models.Model
+    :rtype: the path of the file written to
+    """
 
-            logger.debug("uploading file to %s" % (copyto))
+    filename = uploaded_file_post.name
 
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=filename,
-                                    url=urlpath,
-                                    size=uploaded_file_post.size,
-                                    protocol="")       
-                                           
+    experiment_path = path.join(settings.FILE_STORE_PATH,
+                                str(dataset.experiment.id))
 
-            datafile.save()
-            
-            uploaded_file = open(copyto, 'wb+')
+    dataset_path = path.join(experiment_path, str(dataset.id))
 
-            for chunk in uploaded_file_post.chunks():
-                uploaded_file.write(chunk)
+    if not os.path.exists(dataset_path):
+        os.makedirs(dataset_path)
 
-            uploaded_file.close()
+    copyto = dataset_path + '/' + filename
 
-    return HttpResponse('True')   
+    copyto = duplicate_file_check_rename(copyto)
+
+    uploaded_file = open(copyto, 'wb+')
+
+    for chunk in uploaded_file_post.chunks():
+        uploaded_file.write(chunk)
+
+    uploaded_file.close()
+
+    return copyto
+
+
+def duplicate_file_check_rename(copyto):
+    """
+    Checks if the destination for the file already exists and returns 
+    a non-conflicting name
+    :param copyto: The destination path to check
+    :type copyto: string
+    :rtype: The new non-conflicting path (the original path if no conflicts)
+    """
+
+    orig_copyto = copyto
+    i = 1
+
+    while path.exists(copyto):
+        logger.error('%s destination exists' % copyto)
+
+        copyto_split = orig_copyto.rpartition('.')
+
+        if copyto_split[0] == '':
+            copyto = copyto_split[2] + '_' + str(i)
+        else:
+            copyto = copyto_split[0] + '_' + str(i) + '.' \
+                + copyto_split[2]
+
+        i = i + 1
+
+    return copyto
+
+
+def add_datafile_to_dataset(dataset, filepath, size):
+    """
+    Adds datafile metadata to a dataset
+    :param dataset_id: dataset who's directory to be written to
+    :type dataset: models.Model   
+    :param filepath: The full os path to the file
+    :type filepath: string
+    :param size: The file size in bytes
+    :type size: string    
+    :rtype: The new datafile object
+    """
+
+    experiment_path = path.join(settings.FILE_STORE_PATH,
+                                str(dataset.experiment.id))
+
+    dataset_path = path.join(experiment_path, str(dataset.id))
+
+    urlpath = 'file:/' + filepath[len(experiment_path):]
+    filename = urlpath.rpartition('/')[2]
+
+    datafile = Dataset_File(dataset=dataset, filename=filename,
+                            url=urlpath, size=size, protocol='')
+
+    datafile.save()
+
+    return datafile
+
 
 def select_files(request, dataset_id):
+    """
+    Creates an Uploadify 'create files' button with a dataset
+    destination. A workaround for a JQuery Dialog conflict
+    See: http://www.uploadify.com/forums/discussion ...
+    /3348/uploadify-in-jquery-ui-dialog-modal-causes-double-queue-item/p1
+    :param dataset_id: the dataset_id
+    :type dataset_id: integer
+    :rtype: A view containing an Uploadify 'create files' button
+    """
 
-    cont = {
-        'upload_complete_url': '/upload_complete/' +\
-        dataset_id + "/",
-        'dataset_id': dataset_id,
-        }
+    cont = {'upload_complete_url': '/upload_complete/' + dataset_id \
+            + '/', 'dataset_id': dataset_id}
     c = Context(cont)
-    return render_to_response("tardis_portal/ajax/select_files.html", c)        
+    return render_to_response('tardis_portal/ajax/select_files.html', c)
+
+
