@@ -4,8 +4,8 @@
 """
 download.py
 
-@author Steve Androulakis
-@author Ulrich Felzmann
+.. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
 
 """
 from django.core.servers.basehttp import FileWrapper

@@ -1,7 +1,7 @@
 '''
 Created on 02/09/2010
 
-@author: gerson
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
 

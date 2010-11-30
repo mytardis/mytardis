@@ -35,8 +35,8 @@ from tardis.tardis_portal.models import Experiment
 tests.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
-@author Ulrich Felzmann
-@author Gerson Galang
+.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 """
 from django.test import TestCase

@@ -3,7 +3,7 @@ A module which holds the METS structure objects. The objects here are
 lightweight as they only keep metadata keys (IDs) instead of the actual
 metadata values.
 
-@author: Gerson Galang
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
 from tardis.tardis_portal.logger import logger

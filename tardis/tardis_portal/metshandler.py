@@ -2,7 +2,7 @@
 A module to hold custom handlers for experiment/dataset/datafile schemas
 that do not conform to the recommended key-value pair metadata format.
 
-@author: Gerson Galang
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
 
