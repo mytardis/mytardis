@@ -17,6 +17,9 @@ SITE_ID = '1'
 MEDIA_URL = '/site_media/'
 TEMPLATE_DIRS = ['.']
 
+GROUP_PROVIDERS = ()
+USER_PROVIDERS = ()
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
