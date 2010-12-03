@@ -46,7 +46,9 @@ class AuthService:
         """
         return a list of tuples containing pluginname and group id
         """
-        pass
+        for gp in self._group_providers:
+            for group in gp.getGroups(request):
+                yield (gp.name, group)
 
     def searchEntities(self, filter):
         """
@@ -83,3 +85,18 @@ class AuthService:
         """
         pass
 
+auth_service = AuthService()
+
+
+class LazyGroups(object):
+    def __get__(self, request, obj_type=None):
+        if not hasattr(request, '_cached_groups'):
+            request._cached_groups = auth_service.getGroups(request)
+        return request._cached_groups
+
+
+class AuthorizationMiddleware(object):
+    def process_request(self, request):
+        assert hasattr(request, 'session'), "The Django authorization middleware requires session middleware to be installed. Edit your MIDDLEWARE_CLASSES setting to insert 'django.contrib.sessions.middleware.SessionMiddleware'."
+        request.__class__.groups = LazyGroups()
+        return None

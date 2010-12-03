@@ -43,7 +43,8 @@ def generateRandomPassword(length):
 
 
 class DjangoGroupProvider(GroupProvider):
-    
+    name = u'localdb'
+
     def getGroups(self, request):
         """
         return an iteration of the available groups.
@@ -56,7 +57,7 @@ class DjangoGroupProvider(GroupProvider):
 
             {"id": 123,
             "display": "Group Name",}
-            
+
         """
         groupObj = Group.objects.get(id=id)
         if groupObj:
@@ -65,6 +66,7 @@ class DjangoGroupProvider(GroupProvider):
 
 
 class DjangoUserProvider(UserProvider):
+    name = u'localdb'
 
     def getUserById(self, id):
         """
