@@ -13,22 +13,29 @@ class MockSettings(object):
 class MockGroupProvider(GroupProvider):
     def __init__(self):
         self.name = u'mockdb'
-        self.groups = {u'1': {"display": "Group 123",
-                             "members": [u'user1', u'user2']},
-                       u'2': {"display": 'Group 456',
-                             'members': [u'user1', u'user3']},
-                       }
+        self.groups = [{"name": "Group 456", 'id': '2',
+                        "members": [u'user1', u'user3']},
+                       {"name": 'Group 123', 'id': '1',
+                        'members': [u'user1', u'user2']},
+                       ]
 
     def getGroups(self, request):
-        for k, v in self.groups.items():
-            if str(request.user) in v['members']:
-                yield k
+        for i in self.groups:
+            if str(request.user) in i['members']:
+                yield i['id']
 
     def getGroupById(self, id):
-        return self.group[id]
-
-    def searchGroups(self, filter):
         pass
+
+    def searchGroups(self, **filter):
+        for g in self.groups:
+            for s, t in filter.items():
+                if not s in g:
+                    continue
+                if t in g[s]:
+                    group = g.copy()
+                    del group['members']
+                    yield group
 
     def getGroupsForEntity(self, id):
         pass
@@ -82,3 +89,26 @@ class AuthServiceTestCase(TestCase):
         r = str(c.get('/groups/'))
         self.assertEqual(r.count('mockdb'), 1, r)
         self.assertTrue('1' in r)
+
+    def testGroupSearch(self):
+        from tardis.tardis_portal.auth import AuthService
+        s = MockSettings()
+        s.USER_PROVIDERS = ()
+        s.GROUP_PROVIDERS = ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+        a = AuthService(settings=s)
+
+        # check the correct group provider is registered
+        self.assertEqual(len(a._group_providers), 1)
+
+        # test searching for groups by substring
+        self.assertEqual(len(a.searchGroups(name='Group')), 2)
+        self.assertEqual(len(a.searchGroups(name='123')), 1)
+        self.assertEqual(a.searchGroups(name='123')[0]['id'], '1')
+        self.assertEqual(a.searchGroups(name='123')[0]['pluginname'], 'mockdb')
+
+        # test limiting the number of results
+        self.assertEqual(len(a.searchGroups(name='Group', max_results=1)), 1)
+
+        # test sorting the result
+        self.assertEqual(a.searchGroups(name='Group', sort_by='name')[0]['id'],
+                         '1')
