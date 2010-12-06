@@ -17,6 +17,8 @@ class MockGroupProvider(GroupProvider):
                         "members": [u'user1', u'user3']},
                        {"name": 'Group 123', 'id': '1',
                         'members': [u'user1', u'user2']},
+                       {"name": 'Super Group', 'id': '3',
+                        'members': [u'Group 123', u'user2']},
                        ]
 
     def getGroups(self, request):
@@ -38,7 +40,12 @@ class MockGroupProvider(GroupProvider):
                     yield group
 
     def getGroupsForEntity(self, id):
-        pass
+        for g in self.groups:
+            if not id in g['members']:
+                continue
+            group = g.copy()
+            del group['members']
+            yield group
 
 
 class AuthServiceTestCase(TestCase):
@@ -80,15 +87,16 @@ class AuthServiceTestCase(TestCase):
 
         r = str(c.get('/groups/'))
         self.assertEqual(r.count('mockdb'), 2)
-        self.assertTrue('1' in r)
-        self.assertTrue('2' in r)
+        self.assertTrue(',1)' in r)
+        self.assertTrue(',2)' in r)
 
         c.login(username='user2', password='secret')
         self.assert_(SESSION_KEY in c.session)
 
         r = str(c.get('/groups/'))
-        self.assertEqual(r.count('mockdb'), 1, r)
-        self.assertTrue('1' in r)
+        self.assertEqual(r.count('mockdb'), 2, r)
+        self.assertTrue(',1)' in r)
+        self.assertTrue(',3)' in r)
 
     def testGroupSearch(self):
         from tardis.tardis_portal.auth import AuthService
@@ -101,7 +109,7 @@ class AuthServiceTestCase(TestCase):
         self.assertEqual(len(a._group_providers), 1)
 
         # test searching for groups by substring
-        self.assertEqual(len(a.searchGroups(name='Group')), 2)
+        self.assertEqual(len(a.searchGroups(name='Group')), 3)
         self.assertEqual(len(a.searchGroups(name='123')), 1)
         self.assertEqual(a.searchGroups(name='123')[0]['id'], '1')
         self.assertEqual(a.searchGroups(name='123')[0]['pluginname'], 'mockdb')
@@ -112,3 +120,16 @@ class AuthServiceTestCase(TestCase):
         # test sorting the result
         self.assertEqual(a.searchGroups(name='Group', sort_by='name')[0]['id'],
                          '1')
+
+    def testGetGroupsForEntity(self):
+        from tardis.tardis_portal.auth import AuthService
+        s = MockSettings()
+        s.USER_PROVIDERS = ()
+        s.GROUP_PROVIDERS = ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+        a = AuthService(settings=s)
+
+        # check the correct group provider is registered
+        self.assertEqual(len(a._group_providers), 1)
+
+        self.assertEqual(len([g for g in a.getGroupsForEntity('user1')]), 2)
+        self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]), 1)

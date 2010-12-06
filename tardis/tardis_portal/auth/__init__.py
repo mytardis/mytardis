@@ -102,10 +102,16 @@ class AuthService:
 
     def getGroupsForEntity(self, entity):
         """
-        Look in UserAuthentation, pull auth sources and query approprate
-        auth plugins.
+        return a list of the groups an entity belongs to::
+
+           [{'name': 'Group 456', 'id': '2'},
+           {'name': 'Group 123', 'id': '1'}]
+
         """
-        pass
+        for gp in self._group_providers:
+            for group in gp.getGroupsForEntity(entity):
+                group["pluginname"] = gp.name
+                yield group
 
     def getUser(self, user_dict):
         """
