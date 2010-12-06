@@ -62,11 +62,43 @@ class AuthService:
         """
         pass
 
-    def searchGroups(self, filter):
+    def searchGroups(self, **kw):
         """
         return a list of users and/or groups
+        :param id: the value of the id to search for
+        :param name: the value of the displayname to search for
+        :param max_results: the maximum number of elements to return
+        :param sory_by: the attribute the users should be sortd on
         """
-        pass
+
+        result = []
+        max_results = kw.get('max_results', '')
+        sort_by = kw.get('sort_by', '')
+
+        # We apply sorting and slicing here across all sets, so don't
+        # make the plugin do it
+        if sort_by:
+            del kw['sort_by']
+        if max_results:
+            del kw['max_results']
+
+        for gp in self._group_providers:
+            for group in gp.searchGroups(**kw):
+                group["pluginname"] = gp.name
+                result.append(group)
+
+        if sort_by:
+            result.sort(lambda a, b: cmp(a.get(sort_by, '').lower(),
+                                         b.get(sort_by, '').lower()))
+
+        if max_results:
+            try:
+                max_results = int(max_results)
+                result = result[:max_results]
+            except ValueError:
+                pass
+
+        return result
 
     def getGroupsForEntity(self, entity):
         """
