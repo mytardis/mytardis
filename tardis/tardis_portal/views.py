@@ -344,6 +344,16 @@ def index(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
+def index_ansto(request):
+
+    status = ''
+
+    c = Context(
+        {'status': status,
+         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/index_ansto.html', c))
+
 
 def site_settings(request):
 

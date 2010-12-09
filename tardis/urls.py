@@ -21,6 +21,7 @@ urlpatterns = patterns(
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     '',
     (r'^$', 'tardis.tardis_portal.views.index'),
+    (r'^ansto/$', 'tardis.tardis_portal.views.index_ansto'),
     (r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'),
     (r'^about/$', 'tardis.tardis_portal.views.about'),
     (r'^partners/$', 'tardis.tardis_portal.views.partners'),
