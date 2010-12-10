@@ -286,8 +286,8 @@ class ExperimentACL(models.Model):
         (SYSTEM_OWNED, 'System-owned'),
     )
 
-    isUser = models.BooleanField(default=True)
-    userOrGroupID = models.PositiveIntegerField()
+    pluginId = models.CharField(null=False, blank=False)
+    entityId = models.CharField(null=False, blank=False)
     experiment = models.ForeignKey(Experiment)
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
