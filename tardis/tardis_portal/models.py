@@ -81,6 +81,41 @@ class Author(models.Model):
         return self.name
 
 
+class ExperimentManager(models.Manager):
+    def all(self, request):
+        from django.db.models import Q
+        queries = [Q(pluginId=pluginId, entityId=entityId)
+                   for pluginId, entityId in request.groups.iteritems()]
+        if queries:
+            query = queries.pop()
+            for item in queries:
+                query |= item
+            acl = ExperimentACL.objects.filter(query)
+            if acl:
+                exp_queries = [Q(pk=a.experiment) for a in acl]
+                query = Q(public=True)
+                for item in queries:
+                    query |= item
+                    experiment = super(ExperimentManager, self).get_query_set()
+                    return experiment.filter(query)
+        return None
+
+    def get(request, experiment_id):
+        experiment = super(ExperimentManager, self).get(pk=experiment_id)
+        if experiment.public:
+            return experiment
+        from django.db.models import Q
+        acl = ExperimentACL.objects.get(experiment=experiment)
+        queries = [Q(pluginId=pluginId, entityId=entityId)
+                   for pluginId, entityId in request.groups.iteritems()]
+        if queries:
+            query = queries.pop()
+            for item in queries:
+                query |= item
+            if not acl.filter(query) None:
+                return experiment
+        return None
+
 class Experiment(models.Model):
 
     url = models.URLField(verify_exists=False, max_length=255)
@@ -95,6 +130,9 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
+
+    objects = models.Manager() # The default manager.
+    safe = ExperimentManager() # The Dahl-specific manager.
 
     def __unicode__(self):
         return self.title
