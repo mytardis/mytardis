@@ -83,8 +83,8 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.retrieve_datafile_list'),
     (r'^ajax/user_list/$',
      'tardis.tardis_portal.views.retrieve_user_list'),
-    (r'^login/$', 'tardis.tardis_portal.views.ldap_login'),
-    (r'^accounts/login/$', 'tardis.tardis_portal.views.ldap_login'),
+    (r'^login/$', 'tardis.tardis_portal.views.login'),
+    (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),
     (r'^logout/$', logout, {'next_page': '/'}),
     (r'^accounts/register/', include('registration.urls'), {'form_class':
      RegistrationFormUniqueEmail}),
