@@ -25,51 +25,8 @@ import urllib2
 
 import ldap
 
-
-def authenticate_user_ldap(username, password):
-    # return true if username and password correct
-
-    l = None
-    l_bind = None
-    try:
-        l = ldap.open(settings.LDAP_URL)
-
-        searchScope = ldap.SCOPE_SUBTREE
-
-        # retrieve all attributes - again adjust to your needs
-        # see documentation for more options
-        retrieveAttributes = None
-        searchFilter = 'uid=' + username
-
-        l.protocol_version = ldap.VERSION3
-
-        result = l.search_s(settings.BASE_DN, searchScope,
-                            searchFilter, retrieveAttributes)
-
-        DN = result[0][0]
-
-        l_bind = ldap.open('directory.monash.edu.au')
-
-        l_bind.simple_bind_s(DN, password)
-
-        return True
-    except ldap.LDAPError, e:
-
-        return False
-    except IndexError, i:
-
-        return ''
-    finally:
-
-        if l:
-            l.unbind_s()
-        if l_bind:
-            l_bind.unbind_s()
-
-
 def get_ldap_username_for_email(email):
     # return username if found, otherwise return none
-
     l = None
     try:
         l = ldap.open(settings.LDAP_URL)
@@ -111,7 +68,6 @@ def get_ldap_email_for_user(username):
 
         # retrieve all attributes - again adjust to your needs
         # see documentation for more options
-
         retrieveAttributes = ['mail']
         searchFilter = 'uid=' + username
 
@@ -133,52 +89,72 @@ def get_ldap_email_for_user(username):
             l.unbind_s()
 
 
-# todo complete
-
-
-def get_or_create_user_ldap(email):
-    # ignore the 'authcate' model fieldname.. adapted from monash auth
-
-    authcate_user = None
+def get_or_create_user(email):
     username = get_ldap_username_for_email(email)
+    return _get_or_create_user_with_username(username)
+
+
+def _get_or_create_user_with_username(username):
+    user = None
     try:
+        user = UserAuthentication.objects.get(username=username,
+            authenticationMethod=UserAuthentication.LDAP_METHOD).userProfile.user
+    except UserAuthentication.DoesNotExist:
+        # else, create a new user with a random password
+        name = 'ldap_%s' % username[0:25]
+        user = User(username=name,
+            password=User.objects.make_random_password(),
+            email=username)
+        user.is_staff = True
+        user.save()
+        
+        userProfile = UserProfile(authcate_user=True, user=user)
+        userProfile.save()
+        
+        userAuth = UserAuthentication(userProfile=userProfile,
+            username=username, authenticationMethod=UserAuthentication.LDAP_METHOD)
+        userAuth.save()
+    return user
 
-        u = User.objects.get(username=username)
-        logger.debug(u.get_profile())
 
-        # if, somehow someone else has created a user manually that has this
-        # username
-        if not u.get_profile().authcate_user:
+class LdapBackend():
+    def authenticate(self, username=None, password=None):
+        l = None
+        l_bind = None
+        try:
+            l = ldap.open(settings.LDAP_URL)
+    
+            searchScope = ldap.SCOPE_SUBTREE
+    
+            # retrieve all attributes - again adjust to your needs
+            # see documentation for more options
+            retrieveAttributes = None
+            searchFilter = 'uid=' + username
+    
+            l.protocol_version = ldap.VERSION3
+    
+            result = l.search_s(settings.BASE_DN, searchScope,
+                                searchFilter, retrieveAttributes)
+    
+            DN = result[0][0]
+    
+            l_bind = ldap.open('directory.monash.edu.au')
+    
+            l_bind.simple_bind_s(DN, password)
 
-            # see if this has already happened and a new user was assigned with
-            # a diff username
-            try:
-                u_email = User.objects.get(email__exact=email,
-                        username=username)
-                authcate_user = u_email
-            except User.DoesNotExist, ue:
+            # check if the given username in combination with the VBL
+            # auth method is already in the UserAuthentication table
+            return _get_or_create_user_with_username(username)
+        
+        except ldap.LDAPError, e:
+            return None
+        except IndexError, i:
+            return None
+        finally:
+            if l:
+                l.unbind_s()
+            if l_bind:
+                l_bind.unbind_s()
 
-                pass  # this is a rare case and will have to be handled later
-        else:
-            # create user somehow and email? (auto_gen username?)
-            authcate_user = u
-    except User.DoesNotExist, ue:
-
-        from random import choice
-        import string
-
-        # random password todo make function
-        random_password = ''
-        chars = string.letters + string.digits
-
-        for i in range(8):
-            random_password = random_password + choice(chars)
-
-        authcate_user = User.objects.create_user(username, email,
-                random_password)
-        up = UserProfile(authcate_user=True, user=authcate_user)
-        up.save()
-
-        # todo :send email with notification
-
-    return authcate_user
+    def get_user(self, user_id):
+        raise NotImplemented()

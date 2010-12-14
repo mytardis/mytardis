@@ -44,8 +44,10 @@ from django.utils.safestring import SafeUnicode
 
 
 class UserProfile(models.Model):
-    authcate_user = models.BooleanField()
     user = models.ForeignKey(User, unique=True)
+
+    def getUserAuthentications(self):
+        return self.userAuthentication_set.all()
 
 
 class GroupAdmin(models.Model):
@@ -55,11 +57,15 @@ class GroupAdmin(models.Model):
 
 class UserAuthentication(models.Model):
     LOCALDB_METHOD = 1
+    VBL_METHOD = 2
+    LDAP_METHOD = 3
     __COMPARISON_CHOICES = (
         (LOCALDB_METHOD, 'Local DB'),
+        (VBL_METHOD, 'VBL'),
+#        (LDAP_METHOD, 'LDAP')
     )
-
-    username = models.TextField()
+    userProfile = models.ForeignKey(UserProfile)
+    username = models.CharField(max_length=50)
     authenticationMethod = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=LOCALDB_METHOD)
 
@@ -100,7 +106,7 @@ class ExperimentManager(models.Manager):
                     return experiment.filter(query)
         return None
 
-    def get(request, experiment_id):
+    def get(self, request, experiment_id):
         experiment = super(ExperimentManager, self).get(pk=experiment_id)
         if experiment.public:
             return experiment
@@ -112,7 +118,7 @@ class ExperimentManager(models.Manager):
             query = queries.pop()
             for item in queries:
                 query |= item
-            if not acl.filter(query) None:
+            if acl.filter(query) is not None:
                 return experiment
         return None
 
@@ -324,8 +330,8 @@ class ExperimentACL(models.Model):
         (SYSTEM_OWNED, 'System-owned'),
     )
 
-    pluginId = models.CharField(null=False, blank=False)
-    entityId = models.CharField(null=False, blank=False)
+    pluginId = models.CharField(max_length=30, null=False, blank=False)
+    entityId = models.CharField(max_length=50, null=False, blank=False)
     experiment = models.ForeignKey(Experiment)
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)

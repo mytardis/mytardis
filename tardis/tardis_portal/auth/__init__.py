@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-
+from django.contrib import auth
 from tardis.tardis_portal.auth.interfaces import AuthProvider, UserProvider, GroupProvider
 
 
@@ -9,11 +9,15 @@ class AuthService:
     def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []
+        self._authentication_backends = {}
 
         for gp in settings.GROUP_PROVIDERS:
             self._group_providers.append(self._safe_import(gp))
         for up in settings.USER_PROVIDERS:
             self._user_providers.append(self._safe_import(up))
+        for authenticationBackend in settings.AUTH_PROVIDERS:
+            self._authentication_backends[authenticationBackend[0]] = \
+                self._safe_import(authenticationBackend[2])
 
     def _safe_import(self, path):
         try:
@@ -35,12 +39,23 @@ class AuthService:
         auth_instance = auth_class()
         return auth_instance
 
-    def authenticate(self, request):
+    def authenticate(self, authMethod, **credentials):
         """
-        Try and authenticate the user first using Django auth backends,
-        then try each AuthProvider.
+        Try and authenticate the user using the auth type he/she specified to
+        use and if authentication didn't work using that method, try each
+        Django AuthProvider.
         """
-        pass
+        if authMethod:
+            if authMethod in self._authentication_backends:
+                # note that it's the backend's job to create a user entry
+                # for a user in the DB if he has successfully logged in using 
+                # the auth method he has picked and he doesn't exist in the DB
+                return self._authentication_backends[
+                    authMethod].authenticate(**credentials)
+            else:
+                return None
+        else:
+            return auth.authenticate(**credentials)
 
     def getGroups(self, request):
         """
@@ -68,7 +83,7 @@ class AuthService:
         :param id: the value of the id to search for
         :param name: the value of the displayname to search for
         :param max_results: the maximum number of elements to return
-        :param sory_by: the attribute the users should be sortd on
+        :param sort_by: the attribute the users should be sorted on
         """
 
         result = []

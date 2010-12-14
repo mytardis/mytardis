@@ -38,7 +38,23 @@ forms module
 '''
 
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+from tardis import settings
 
+
+class LoginForm(AuthenticationForm):
+    authMethod = forms.CharField()
+    next = forms.CharField(widget=forms.HiddenInput, initial="/")
+    
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        authMethodChoices = ()
+        
+        for authMethods in settings.AUTH_PROVIDERS:
+            authMethodChoices += ((authMethods[0], authMethods[1]),)
+            
+        self.fields['authMethod'] = forms.CharField(widget=forms.Select(choices=authMethodChoices),
+            label='Authentication Method')
 
 class DatafileSearchForm(forms.Form):
 

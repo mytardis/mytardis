@@ -28,6 +28,7 @@ from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
+from tardis.tardis_portal.auth import AuthService
 
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
@@ -534,7 +535,7 @@ def experiment_index(request):
 
 
 # todo complete....
-def ldap_login(request):
+def login(request):
     from django.contrib.auth import authenticate, login
 
     # if user exists then check if ldap: try log in through ldap, else try log
@@ -545,8 +546,8 @@ def ldap_login(request):
             'password' in request.POST:
         username = request.POST['username']
         password = request.POST['password']
-
-        next = '/'
+        authMethod = request.POST['authMethod']
+        next = request.POST['next']
         # TODO: this block will need fixing later as the expected functionality
         #       this condition is supposed to provide does not work
         if 'next' in request.POST:
@@ -557,86 +558,20 @@ def ldap_login(request):
 
         error_template_redirect = 'tardis_portal/login.html'
 
-        if settings.LDAP_ENABLE:
-            try:
-                u = User.objects.get(username=username)
+        authService = AuthService()
+        user = authService.authenticate(
+            authMethod=authMethod, username=username, password=password)
 
-                try:
-                    if u.get_profile().authcate_user:
-                        if ldap_auth.authenticate_user_ldap(username,
-                                password):
-                            u.backend = \
-                                'django.contrib.auth.backends.ModelBackend'
-                            login(request, u)
-                            return HttpResponseRedirect(next)
-                        else:
-                            return return_response_error_message(request,
-                                error_template_redirect,
-                                "Sorry, username and password don't match")
-                    else:
-                        if authenticate(username=username,
-                                password=password):
-                            u.backend = \
-                                'django.contrib.auth.backends.ModelBackend'
-                            login(request, u)
-                            return HttpResponseRedirect(next)
-                        else:
-                            return return_response_error_message(request,
-                                    error_template_redirect,
-                                    "Sorry, username and password don't match")
-                except UserProfile.DoesNotExist, ue:
-                    if authenticate(username=username,
-                                    password=password):
-                        u.backend = \
-                            'django.contrib.auth.backends.ModelBackend'
-                        login(request, u)
-                        return HttpResponseRedirect(next)
-                    else:
-                        return return_response_error_message(request,
-                                error_template_redirect,
-                                "Sorry, username and password don't match")
-            except User.DoesNotExist, ue:
-                if ldap_auth.authenticate_user_ldap(username, password):
-                    email = ldap_auth.get_ldap_email_for_user(username)
-
-                    from random import choice
-                    import string
-
-                    # random password todo make function
-
-                    random_password = ''
-                    chars = string.letters + string.digits
-
-                    for i in range(8):
-                        random_password = random_password \
-                            + choice(chars)
-
-                    u = User.objects.create_user(username, email,
-                            random_password)
-                    up = UserProfile(authcate_user=True, user=u)
-                    up.save()
-
-                    u.backend = \
-                        'django.contrib.auth.backends.ModelBackend'
-                    # TODO: consolidate
-                    login(request, u)
-                    return HttpResponseRedirect(next)
-                else:
-                    return return_response_error_message(request,
-                            error_template_redirect,
-                            "Sorry, username and password don't match")
-        u = authenticate(username=username, password=password)
-        if u:
-            u.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, u)
+        if user:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
             return HttpResponseRedirect(next)
-        else:
-            return return_response_error_message(request,
-                    error_template_redirect,
-                    "Sorry, username and password don't match")
+        return return_response_error_message(
+            request, error_template_redirect,
+            "Sorry, username and password don't match")
 
     c = Context({'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+            getNewSearchDatafileSelectionForm(), 'loginForm': LoginForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 

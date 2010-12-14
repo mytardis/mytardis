@@ -145,6 +145,23 @@ INSTALLED_APPS = (
     'tardis.tardis_portal.templatetags',
     )
 
+USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
+GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',)
+
+# AUTH_PROVIDERS entry format:
+#('name', 'display name', 'backend implementation')
+#   name - used as the key for the entry
+#   display name - used as the displayed value in the login form
+#   backend implementation points to the actual backend implementation
+# We will assumem that localdb will always be a default AUTH_PROVIDERS entry
+AUTH_PROVIDERS = (
+    ('localdb', 'Local DB', 'django.contrib.auth.backends.ModelBackend'),
+    ('vbl', 'VBL', 'tardis.tardis_portal.auth.vbl_auth.Backend'),
+    )
+
+VBLSTORAGEGATEWAY = \
+'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
+
 ACCOUNT_ACTIVATION_DAYS = 3
 
 EMAIL_PORT = 587
