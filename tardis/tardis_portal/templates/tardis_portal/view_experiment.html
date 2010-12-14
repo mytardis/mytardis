@@ -364,11 +364,13 @@
 							{% endfor %}
                             <p align="right">
 							<br/>
+			    {% if owners %}
                             <strong>Experiment Administrators </strong><br/>
                             {% for owner in owners %}
                                     {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
                             </p>
+			    {% endif %}
 
 						</div>
 						<div id="tabs-2">

@@ -12,16 +12,15 @@ views.py
 from base64 import b64decode
 
 from django.template import Context
-from django.http import HttpResponse
-
 from django.conf import settings
+from django.db import transaction
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
-    HttpResponseNotFound, HttpResponseServerError
+    HttpResponseNotFound, HttpResponseServerError, HttpResponse
 from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal import ProcessExperiment
@@ -35,17 +34,14 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
 
+from tardis.tardis_portal.auth import ldap_auth, localdb_auth
+from tardis.tardis_portal.MultiPartForm import MultiPartForm
+from tardis.tardis_portal.metsparser import parseMets
+
 import urllib
 import urllib2
 import datetime
 
-from tardis.tardis_portal.auth import ldap_auth, localdb_auth
-
-from tardis.tardis_portal.MultiPartForm import MultiPartForm
-
-from tardis.tardis_portal.metsparser import parseMets
-
-from django.db import transaction
 
 
 def getNewSearchDatafileSelectionForm():
@@ -104,192 +100,62 @@ def logout(request):
                         'tardis_portal/index.html', c))
 
 
-def get_accessible_experiments(user_id):
+def get_accessible_experiments(request):
 
-    experiments = \
-        Experiment.objects.filter(experimentacl__isUser=True,
-        experimentacl__userOrGroupID=user_id, experimentacl__canRead=True)
-
+    experiments = Experiment.safe.all(request)
     return experiments
 
 
-# TODO: we need to review the way this function is implemented. we need to
-#       consider the dataset/experiment read permissions
-def get_accessible_datafiles_for_user(experiments):
+#def get_accessible_datafiles_for_user(experiments):
+def get_accessible_datafiles_for_user(request):
 
-    # from stackoverflow question 852414
-
-    from django.db.models import Q
-
-    if experiments is not None:
-        queries = [Q(dataset__experiment__id=e.id) for e in experiments]
-
-        query = queries.pop()
-
-        for item in queries:
-            query |= item
-
-        dataset_files = Dataset_File.objects.filter(query)
-
-        return dataset_files
-    else:
+    experiments = get_accessible_experiments(request)
+    if experiments.count() == 0:
         return []
 
+    # from stackoverflow question 852414
+    from django.db.models import Q
+    queries = [Q(dataset__experiment__id=e.id) for e in experiments]
 
-def get_owned_experiments(user_id):
+    query = queries.pop()
+    for item in queries:
+        query |= item
 
-    experiments = \
-        Experiment.objects.filter(experimentacl__isUser=True,
-        experimentacl__userOrGroupID=user_id, experimentacl__isOwner=True)
-
-    return experiments
+    return Dataset_File.objects.filter(query)
 
 
-def has_experiment_ownership(experiment_id, user_id):
+def has_experiment_ownership(request, experiment_id):
 
-    experiment = Experiment.objects.get(pk=experiment_id)
-    acl = ExperimentACL.objects.get(isUser=True, userOrGroupID=user_id,
-        experiment=experiment, isOwner=True)
-
-    if acl:
-        return True
+    experiment = Experiment.safe.get(request, experiment_id)
+    if experiment:
+        if experiment.experimentacl.isOwner == True:
+            return True
     return False
 
 
-# custom decorator
-def experiment_ownership_required(f):
+def has_experiment_access(request, experiment_id):
 
-    def wrap(request, *args, **kwargs):
-        # if user isn't logged in it will redirect to login page
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login')
-        if not has_experiment_ownership(kwargs['experiment_id'],
-                request.user.pk):
-            return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def experiment_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-
-        if not has_experiment_access(kwargs['experiment_id'],
-                request.user):
-
-            # if user isn't logged in it will redirect to login page
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def dataset_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not has_dataset_access(kwargs['dataset_id'], request.user):
-
-            # if user isn't logged in it will redirect to login page
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def datafile_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not has_datafile_access(kwargs['dataset_file_id'],
-                                   request.user):
-
-            # if user isn't logged in it will redirect to login page
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def has_experiment_access(experiment_id, user):
-
-    # public route
+    from django.core.exceptions import PermissionDenied
     try:
-        e = Experiment.objects.get(id=experiment_id)
-
-        if e.public:
-            return True
-    except Experiment.DoesNotExist, ge:
-        pass
-
-    if not user.is_authenticated():
-        return False
-
-    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
-        experiment__id=experiment_id, canRead=True)
-
-    if results:
+        Experiment.safe.get(request, experiment_id)
         return True
-    else:
+    except PermissionDenied:
         return False
 
 
-def has_dataset_access(dataset_id, user):
+def has_dataset_access(request, dataset_id):
 
     experiment = Experiment.objects.get(dataset__pk=dataset_id)
-
-    if experiment.public:
-        return True
-
-    if not user.is_authenticated():
-        return False
-
-    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
-        experiment__id=experiment.id, canRead=True)
-
-    if results:
+    if has_experiment_access(request, experiment.id):
         return True
     else:
         return False
 
 
-def has_datafile_access(dataset_file_id, user):
+def has_datafile_access(request, dataset_file_id):
 
-    df = Dataset_File.objects.get(id=dataset_file_id)
-
-    if df.dataset.experiment.public:
-        return True
-
-    if not user.is_authenticated():
-        return False
-
-    results = ExperimentACL.objects.filter(isUser=True, userOrGroupID=user.pk,
-        experiment__id=df.dataset.experiment.id, canRead=True)
-
-    if results:
+    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
+    if has_experiment_access(request, experiment.id):
         return True
     else:
         return False
@@ -314,13 +180,68 @@ def in_group(user, group):
     for group in user.groups.all():
         user_groups.append(str(group.name))
 
-    #logger.debug(group_list)
-    #logger.debug(user_groups)
-
     if filter(lambda x: x in user_groups, group_list):
         return True
     else:
         return False
+
+
+# custom decorator
+def experiment_ownership_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        if not has_experiment_ownership(request, kwargs['experiment_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
+def experiment_access_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        if not has_experiment_access(request, kwargs['experiment_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
+def dataset_access_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        if not has_dataset_access(request, kwargs['dataset_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
+def datafile_access_required(f):
+
+    def wrap(request, *args, **kwargs):
+
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        if not has_datafile_access(request, kwargs['dataset_file_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
 
 
 def index(request):
@@ -328,7 +249,7 @@ def index(request):
     status = ''
 
     c = Context(
-        {'status': status,
+    {'status': status,
          'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
@@ -355,14 +276,8 @@ def site_settings(request):
                     return HttpResponse(render_response_index(request,
                             'tardis_portal/site_settings.xml', c),
                             mimetype='application/xml')
-                else:
-                    return return_response_error(request)
-            else:
-                return return_response_error(request)
-        else:
-            return return_response_error(request)
-    else:
-        return return_response_error(request)
+
+    return return_response_error(request)
 
 
 def display_experiment_image(
@@ -458,35 +373,38 @@ def partners(request):
 def view_experiment(request, experiment_id):
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-        author_experiments = Author_Experiment.objects.all()
-        author_experiments = \
-            author_experiments.filter(experiment=experiment)
-        author_experiments = author_experiments.order_by('order')
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
 
-        datafiles = \
-            Dataset_File.objects.filter(dataset__experiment=experiment_id)
+    author_experiments = Author_Experiment.objects.all()
+    author_experiments = \
+        author_experiments.filter(experiment=experiment)
+    author_experiments = author_experiments.order_by('order')
 
-        size = 0
-        for dataset in experiment.dataset_set.all():
-            for df in dataset.dataset_file_set.all():
-                size = size + long(df.size)
+    datafiles = \
+        Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
-        owners = None
-        try:           
-            ownerIDs = \
-                [acl.userOrGroupID for acl in ExperimentACL.objects.filter(
-                isUser=True, experiment=experiment, isOwner=True)]
-            owners = User.objects.extra(where=['id IN ' + str(
-                tuple(ownerIDs)).replace(',)', ')')]).order_by('username')
-        
-        except ExperimentACL.DoesNotExist, eo:
-            pass
+    size = 0
+    for dataset in experiment.dataset_set.all():
+        for df in dataset.dataset_file_set.all():
+            size = size + long(df.size)
 
-        protocols = [df['protocol'] for df in datafiles.values(
-            'protocol').distinct()]
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       isOwner=True)
 
-        c = Context({
+    owners = None
+    # TODO: resolve usernames through UserProvider
+    # something like
+    # for a in acl:
+    #    owners += UserProvider.get_user(a.entityId)
+
+    protocols = [df['protocol'] for df in datafiles.values(
+                    'protocol').distinct()]
+
+    c = Context({
             # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
             'experiment': experiment,
             'authors': author_experiments,
@@ -499,12 +417,11 @@ def view_experiment(request, experiment_id):
                     {'name': experiment.title, 'link': '/experiment/view/' +
                      str(experiment.id) + '/'}],
             'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
-    except Experiment.DoesNotExist, de:
-        return return_response_not_found(request)
+                getNewSearchDatafileSelectionForm()})
+
 
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/view_experiment.html', c))
+                                              'tardis_portal/view_experiment.html', c))
 
 
 def experiment_index(request):
@@ -513,7 +430,7 @@ def experiment_index(request):
 
     # if logged in
     if request.user.is_authenticated():
-        experiments = get_accessible_experiments(request.user.id)
+        experiments = get_accessible_experiments(request)
         if experiments:
             experiments = experiments.order_by('title')
 
@@ -530,6 +447,7 @@ def experiment_index(request):
         'data_pressed': True,
         'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/experiment_index.html', c))
 
@@ -722,22 +640,25 @@ def register_experiment_ws_xmldata(request):
 
             # TODO: this bit will need to be updated to reflect the new
             #       user authentication requirements
-            if not len(request.POST.getlist('experiment_owner')) == 0:
-                for owner in request.POST.getlist('experiment_owner'):
-                    owner = urllib.unquote_plus(owner)
-                    u = None
+            #if not len(request.POST.getlist('experiment_owner')) == 0:
+            #    for owner in request.POST.getlist('experiment_owner'):
+            #        owner = urllib.unquote_plus(owner)
+            #        u = None
                     # try to get user object using his/her email as a key
                     # from the LDAP DB
-                    if settings.LDAP_ENABLE:
-                        u = ldap_auth.get_or_create_user_ldap(owner)
-                    else:  # use local DB lookup
-                        u = localdb_auth.get_or_create_user(owner)
-                        
-                    e = Experiment.objects.get(pk=eid)
-                    acl = ExperimentACL(userOrGroupID=u.id, experiment=e,
-                        canRead=True, canWrite=True, canDelete=True,
-                        isOwner=True)
-                    acl.save()
+            #        if settings.LDAP_ENABLE:
+            #            u = ldap_auth.get_or_create_user_ldap(owner)
+            #        else:  # use local DB lookup
+            #           u = localdb_auth.get_or_create_user(owner)
+
+                    #e = Experiment.objects.get(pk=eid)
+                    #acl = ExperimentACL(pluginId=u.backend,
+                    #                    entityId=u.username,
+                    #                    canRead=True,
+                    #                    canWrite=True,
+                    #                    canDelete=True,
+                    #                    isOwner=True)
+                    #acl.save()
 
             logger.debug('Sending file request')
 
@@ -853,12 +774,12 @@ def retrieve_datafile_list(request, dataset_id):
 @login_required()
 def control_panel(request):
 
-    experiments = get_owned_experiments(request.user.id)
+    experiments = Experiment.safe.owned(request)
     if experiments:
         experiments = experiments.order_by('title')
 
     c = Context({'experiments': experiments,
-        'subtitle': 'Experiment Control Panel'})
+                 'subtitle': 'Experiment Control Panel'})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
 
@@ -893,8 +814,7 @@ def search_experiment(request):
 @login_required()
 def search_quick(request):
     get = False
-    experiments = Experiment.objects.all()
-    experiments = Experiment.objects.order_by('title')
+    experiments = Experiment.objects.all().order_by('title')
 
     if 'results' in request.GET:
         get = True
@@ -937,11 +857,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     """
 
-    #from django.db.models import Q
-
-    datafile_results = \
-        get_accessible_datafiles_for_user(
-        get_accessible_experiments(request.user.id))
+    datafile_results = get_accessible_datafiles_for_user(request)
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
@@ -999,9 +915,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     """
 
-    #from django.db.models import Q
-
-    experiments = get_accessible_experiments(request.user.id)
+    experiments = get_accessible_experiments(request)
 
     if experiments is None:
         return []
@@ -1432,7 +1346,7 @@ def retrieve_user_list(request):
 def retrieve_access_list(request, experiment_id):
 
     e = Experiment.objects.get(id=experiment_id)
-    
+
     # TODO: decide if we are to also show system-owned ACLs
     # TODO: we'll need to also add groups in here later
     userIDs = [acl.userOrGroupID for acl in ExperimentACL.objects.filter(
@@ -1486,7 +1400,7 @@ def remove_access_experiment(request, experiment_id, username):
 
         if acl:
             acl.delete()
-            
+
             c = Context({})
             return HttpResponse(render_response_index(request,
                 'tardis_portal/ajax/remove_user_result.html', c))

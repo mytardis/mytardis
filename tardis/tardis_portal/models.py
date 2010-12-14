@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -88,39 +87,60 @@ class Author(models.Model):
 
 
 class ExperimentManager(models.Manager):
+
     def all(self, request):
         from django.db.models import Q
-        queries = [Q(pluginId=pluginId, entityId=entityId)
-                   for pluginId, entityId in request.groups.iteritems()]
-        if queries:
-            query = queries.pop()
-            for item in queries:
-                query |= item
-            acl = ExperimentACL.objects.filter(query)
-            if acl:
-                exp_queries = [Q(pk=a.experiment) for a in acl]
-                query = Q(public=True)
-                for item in queries:
-                    query |= item
-                    experiment = super(ExperimentManager, self).get_query_set()
-                    return experiment.filter(query)
-        return None
+        query = Q(public=True)
+
+        if request.user.is_authenticated():
+            from django.contrib.sessions.models import Session
+            s = Session.objects.get(pk=request.COOKIES['sessionid'])
+            backend = s.get_decoded()['_auth_user_backend']
+
+            query |= Q(experimentacl__pluginId=backend,
+                       experimentacl__entityId=request.user.id,
+                       experimentacl__canRead=True)
+
+        return super(ExperimentManager, self).get_query_set().filter(query)
 
     def get(self, request, experiment_id):
-        experiment = super(ExperimentManager, self).get(pk=experiment_id)
+        experiment = \
+            super(ExperimentManager, self).get(pk=experiment_id)
+
         if experiment.public:
             return experiment
-        from django.db.models import Q
-        acl = ExperimentACL.objects.get(experiment=experiment)
-        queries = [Q(pluginId=pluginId, entityId=entityId)
-                   for pluginId, entityId in request.groups.iteritems()]
-        if queries:
-            query = queries.pop()
-            for item in queries:
-                query |= item
-            if acl.filter(query) is not None:
-                return experiment
-        return None
+
+        from django.core.exceptions import PermissionDenied
+        if not request.user.is_authenticated():
+            raise PermissionDenied
+
+        from django.contrib.sessions.models import Session
+        s = Session.objects.get(pk=request.COOKIES['sessionid'])
+        backend = s.get_decoded()['_auth_user_backend']
+
+        acl = super(ExperimentManager, self).filter(
+            experimentacl__pluginId=backend,
+            experimentacl__entityId=request.user.id,
+            experimentacl__experiment=experiment,
+            experimentacl__canRead=True)
+
+        if acl.count() == 0:
+            raise PermissionDenied
+        else:
+            return experiment
+
+    def owned(self, request):
+        if not request.user.is_authenticated():
+            return []
+
+        from django.contrib.sessions.models import Session
+        s = Session.objects.get(pk=request.COOKIES['sessionid'])
+        backend = s.get_decoded()['_auth_user_backend']
+        experiments = super(ExperimentManager, self).get_query_set().filter(
+            experimentacl__pluginId=user.backend,
+            experimentacl__entityId=user.id,
+            experimentacl__isOwner=True)
+
 
 class Experiment(models.Model):
 
@@ -138,7 +158,7 @@ class Experiment(models.Model):
     public = models.BooleanField()
 
     objects = models.Manager() # The default manager.
-    safe = ExperimentManager() # The Dahl-specific manager.
+    safe = ExperimentManager() # The acl-aware specific manager.
 
     def __unicode__(self):
         return self.title
@@ -330,8 +350,8 @@ class ExperimentACL(models.Model):
         (SYSTEM_OWNED, 'System-owned'),
     )
 
-    pluginId = models.CharField(max_length=30, null=False, blank=False)
-    entityId = models.CharField(max_length=50, null=False, blank=False)
+    pluginId = models.CharField(null=False, blank=False, max_length=80)
+    entityId = models.CharField(null=False, blank=False, max_length=80)
     experiment = models.ForeignKey(Experiment)
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)
@@ -341,13 +361,19 @@ class ExperimentACL(models.Model):
     # this usually is the end of the embargo period when the experiment
     # becomes eligible to be made public
     # TODO: remove null default value once we've fully implemented embargo!
-    effectiveDate = models.DateField(null=True)
+    effectiveDate = models.DateField(null=True, blank=True)
 
     # if expiryDate is not set, the experiment will be publicly available
     # as long as the effectiveDate is met
-    expiryDate = models.DateField(null=True)
+    expiryDate = models.DateField(null=True, blank=True)
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+
+    def __unicode__(self):
+        return '%i | %s' % (self.experiment.id, self.experiment.title)
+
+    class Meta:
+        ordering = ['experiment__id']
 
 
 class Equipment(models.Model):
