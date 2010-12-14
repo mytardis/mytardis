@@ -29,7 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.models import Experiment
+from django.contrib.auth.models import User
+from tardis.tardis_portal.models import Experiment, ExperimentACL
 
 """
 tests.py
@@ -58,6 +59,22 @@ class SearchTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+
+        try:
+            user = User.objects.get(username='test')
+        except User.DoesNotExist:
+            user = User(username='test', password='test')
+            user.save()
+
+        for experiment in Experiment.objects.all():
+            acl = ExperimentACL(pluginId='django.contrib.auth.backends.ModelBackend',
+                                entityId=user.id,
+                                experiment=experiment,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True)
+            acl.save()
 
     def testSearchDatafileForm(self):
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
@@ -303,8 +320,12 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             MetsExperimentStructCreator(self.dataHolder))
         parser.parse(metsFile)
 
-        from django.contrib.auth.models import User
-        self.user = User.objects.get(username='test')
+        try:
+            self.user = User.objects.get(username='test')
+        except User.DoesNotExist:
+            self.user = User(username='test', password='test')
+            self.user.save()
+
         parser.setContentHandler(
             MetsMetadataInfoHandler(holder=self.dataHolder,
             tardisExpId=None,

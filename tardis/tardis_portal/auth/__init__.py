@@ -48,7 +48,7 @@ class AuthService:
         if authMethod:
             if authMethod in self._authentication_backends:
                 # note that it's the backend's job to create a user entry
-                # for a user in the DB if he has successfully logged in using 
+                # for a user in the DB if he has successfully logged in using
                 # the auth method he has picked and he doesn't exist in the DB
                 return self._authentication_backends[
                     authMethod].authenticate(**credentials)
@@ -56,6 +56,18 @@ class AuthService:
                 return None
         else:
             return auth.authenticate(**credentials)
+
+        from django.conf import settings
+        settings.AUTHENTICATION_BACKENDS = ()
+
+        for up in self._user_providers:
+            settings.AUTHENTICATION_BACKENDS += up
+
+        try:
+            user = authenticate(username=username, password=password)
+        except User.DoesNotExist:
+            return None
+
 
     def getGroups(self, request):
         """
