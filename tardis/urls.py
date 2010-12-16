@@ -85,6 +85,7 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.retrieve_user_list'),
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),
+    (r'^accounts/auth_methods/$', 'tardis.tardis_portal.views.auth_methods'),
     (r'^logout/$', logout, {'next_page': '/'}),
     (r'^accounts/register/', include('registration.urls'), {'form_class':
      RegistrationFormUniqueEmail}),
