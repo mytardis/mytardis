@@ -454,7 +454,8 @@ def experiment_index(request):
 
 # todo complete....
 def login(request):
-    from django.contrib.auth import authenticate, login
+    from django.contrib.auth import authenticate
+    from tardis.tardis_portal.auth import login
 
     # if user exists then check if ldap: try log in through ldap, else try log
     # in usual way, either way login
