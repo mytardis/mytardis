@@ -29,7 +29,7 @@ def get_or_create_user(email):
 
 
 class DjangoGroupProvider(GroupProvider):
-    name = u'localdb'
+    name = u'django_groups'
 
     def getGroups(self, request):
         """
@@ -52,7 +52,7 @@ class DjangoGroupProvider(GroupProvider):
 
 
 class DjangoUserProvider(UserProvider):
-    name = u'localdb'
+    name = u'django_users'
 
     def getUserById(self, id):
         """

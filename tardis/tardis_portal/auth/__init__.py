@@ -4,6 +4,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
 from tardis.tardis_portal.auth.interfaces import AuthProvider, UserProvider, GroupProvider
 
+GROUPS = "_group_list"
+
 
 class AuthService:
     def __init__(self, settings=settings):
@@ -141,9 +143,18 @@ class AuthService:
 auth_service = AuthService()
 
 
+def login(request, user):
+    from django.contrib.auth import login
+    login(request, user)
+    request.__class__.groups = auth_service.getGroups(request)
+    request.session[GROUPS] = request.groups
+
+
 class LazyGroups(object):
     def __get__(self, request, obj_type=None):
         if not hasattr(request, '_cached_groups'):
+            if GROUPS in request.session:
+                return request.session[GROUPS]
             request._cached_groups = auth_service.getGroups(request)
         return request._cached_groups
 
