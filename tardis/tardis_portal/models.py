@@ -350,8 +350,8 @@ class ExperimentACL(models.Model):
         (SYSTEM_OWNED, 'System-owned'),
     )
 
-    pluginId = models.CharField(null=False, blank=False, max_length=80)
-    entityId = models.CharField(null=False, blank=False, max_length=80)
+    pluginId = models.CharField(null=False, blank=False, max_length=30)
+    entityId = models.CharField(null=False, blank=False, max_length=320)
     experiment = models.ForeignKey(Experiment)
     canRead = models.BooleanField(default=False)
     canWrite = models.BooleanField(default=False)

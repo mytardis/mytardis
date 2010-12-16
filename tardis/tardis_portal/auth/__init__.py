@@ -57,18 +57,6 @@ class AuthService:
         else:
             return auth.authenticate(**credentials)
 
-        from django.conf import settings
-        settings.AUTHENTICATION_BACKENDS = ()
-
-        for up in self._user_providers:
-            settings.AUTHENTICATION_BACKENDS += up
-
-        try:
-            user = authenticate(username=username, password=password)
-        except User.DoesNotExist:
-            return None
-
-
     def getGroups(self, request):
         """
         return a list of tuples containing pluginname and group id
