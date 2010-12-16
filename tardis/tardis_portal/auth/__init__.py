@@ -146,8 +146,8 @@ auth_service = AuthService()
 def login(request, user):
     from django.contrib.auth import login
     login(request, user)
-    request.__class__.groups = auth_service.getGroups(request)
-    request.session[GROUPS] = request.groups
+    #request.__class__.groups = auth_service.getGroups(request)
+    #request.session[GROUPS] = request.groups
 
 
 class LazyGroups(object):

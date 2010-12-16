@@ -455,7 +455,7 @@ def experiment_index(request):
 # todo complete....
 def login(request):
     from django.contrib.auth import authenticate
-    from tardis.tardis_portal.auth import login
+    from tardis.tardis_portal.auth import login, auth_service
 
     # if user exists then check if ldap: try log in through ldap, else try log
     # in usual way, either way login
@@ -477,8 +477,7 @@ def login(request):
 
         error_template_redirect = 'tardis_portal/login.html'
 
-        authService = AuthService()
-        user = authService.authenticate(
+        user = auth_service.authenticate(
             authMethod=authMethod, username=username, password=password)
 
         if user:
@@ -493,6 +492,10 @@ def login(request):
             getNewSearchDatafileSelectionForm(), 'loginForm': LoginForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
+
+
+def auth_methods(request):
+    pass
 
 
 def register_experiment_ws_xmldata_internal(request):
