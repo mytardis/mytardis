@@ -37,8 +37,6 @@ import os
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-FILE_STORE_PATH = '/path/to/store'
-
 ADMINS = (('bob', 'bob@bobmail.com'), )
 
 MANAGERS = ADMINS
@@ -81,9 +79,6 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
-GROUP_PROVIDERS = ()
-USER_PROVIDERS = ()
-
 MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -120,6 +115,8 @@ STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
                                            '../parts/django-admin.py/django/contrib/admin/media/')
+
+FILE_STORE_PATH = '/path/to/store'
 
 
 
