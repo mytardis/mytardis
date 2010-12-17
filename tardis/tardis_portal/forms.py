@@ -39,7 +39,7 @@ forms module
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from tardis import settings
+from django.conf import settings
 
 
 class LoginForm(AuthenticationForm):
