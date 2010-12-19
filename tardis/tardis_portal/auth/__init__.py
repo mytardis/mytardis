@@ -63,9 +63,11 @@ class AuthService:
         """
         return a list of tuples containing pluginname and group id
         """
+        grouplist = []
         for gp in self._group_providers:
             for group in gp.getGroups(request):
-                yield (gp.name, group)
+                grouplist.append((gp.name, group))
+        return grouplist
 
     def searchEntities(self, filter):
         """
@@ -146,8 +148,9 @@ auth_service = AuthService()
 def login(request, user):
     from django.contrib.auth import login
     login(request, user)
-    #request.__class__.groups = auth_service.getGroups(request)
-    #request.session[GROUPS] = request.groups
+    
+    request.__class__.groups = auth_service.getGroups(request)
+    request.session[GROUPS] = request.groups
 
 
 class LazyGroups(object):
