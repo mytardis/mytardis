@@ -145,7 +145,8 @@ INSTALLED_APPS = (
     )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
-GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',)
+GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                   'tardis.tardis_portal.auth.vbl_auth.VblGroupProvider',)
 
 # AUTH_PROVIDERS entry format:
 #('name', 'display name', 'backend implementation')
@@ -154,7 +155,7 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 #   backend implementation points to the actual backend implementation
 # We will assumem that localdb will always be a default AUTH_PROVIDERS entry
 AUTH_PROVIDERS = (
-    ('localdb', 'Local DB', 'django.contrib.auth.backends.ModelBackend'),
+    ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
     ('vbl', 'VBL', 'tardis.tardis_portal.auth.vbl_auth.Backend'),
     )
 
