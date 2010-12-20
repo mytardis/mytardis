@@ -118,7 +118,12 @@ def _get_or_create_user_with_username(username):
 
 
 class LdapBackend():
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request):
+        username = request.POST['username']
+        password = request.POST['password']
+        if not username or not password:
+            return None
+
         l = None
         l_bind = None
         try:

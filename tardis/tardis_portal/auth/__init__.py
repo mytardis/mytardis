@@ -3,6 +3,7 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
 from tardis.tardis_portal.auth.interfaces import AuthProvider, UserProvider, GroupProvider
+from tardis.tardis_portal.logger import logger
 
 GROUPS = "_group_list"
 
@@ -65,6 +66,7 @@ class AuthService:
         """
         grouplist = []
         for gp in self._group_providers:
+            logger.debug("group provider: " + gp.name)
             for group in gp.getGroups(request):
                 grouplist.append((gp.name, group))
         return grouplist
@@ -148,7 +150,6 @@ auth_service = AuthService()
 def login(request, user):
     from django.contrib.auth import login
     login(request, user)
-    
     request.__class__.groups = auth_service.getGroups(request)
     request.session[GROUPS] = request.groups
 

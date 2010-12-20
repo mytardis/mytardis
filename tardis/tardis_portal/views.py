@@ -463,8 +463,6 @@ def login(request):
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
-        username = request.POST['username']
-        password = request.POST['password']
         authMethod = request.POST['authMethod']
         next = request.POST['next']
         # TODO: this block will need fixing later as the expected functionality
@@ -478,11 +476,12 @@ def login(request):
         error_template_redirect = 'tardis_portal/login.html'
 
         user = auth_service.authenticate(
-            authMethod=authMethod, username=username, password=password)
+            authMethod=authMethod, request=request)
 
         if user:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
+
             return HttpResponseRedirect(next)
         return return_response_error_message(
             request, error_template_redirect,

@@ -5,6 +5,8 @@ Local DB Authentication module.
 '''
 
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.backends import ModelBackend
+
 from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal import constants
@@ -27,6 +29,22 @@ def get_or_create_user(email):
         logger.debug("user found in DB")
     return u
 
+
+class DjangoAuthBackend():
+    """Authenticate against Django's Model Backend.
+
+    """
+    def authenticate(self, request):
+        username = request.POST['username']
+        password = request.POST['password']
+        if not username or not password:
+            return None
+        return _modelBackend.authenticate(username, password)
+
+    def get_user(self, user_id):
+        return _modelBackend.get_user(user_id)
+
+_modelBackend = ModelBackend()
 
 class DjangoGroupProvider(GroupProvider):
     name = u'django_groups'
