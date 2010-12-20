@@ -1,20 +1,23 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from django import template
+from django.utils.safestring import mark_safe
+
 from tardis.tardis_portal.models import *
 
 register = template.Library()
 
 
 @register.filter
-def eparametertypecheck(value, arg):
+def eparametertypecheck(value, arg, ):
     experimentparameter = ExperimentParameter.objects.get(id=arg)
 
     if experimentparameter.name.name.endswith('Image'):
         eid = experimentparameter.parameterset.id
         psid = experimentparameter.parameterset.id
-        return "<img src='/displayExperimentImage/" + str(eid) + '/' \
-            + str(psid) + '/' + experimentparameter.name.name + "/' />"
+        result = "<img src='/displayExperimentImage/%s/%s/%s/'" \
+            % (eid, psid, experimentparameter.name.name)
+        return mark_safe(result)
     else:
         return value
 
@@ -26,8 +29,9 @@ def dsparametertypecheck(value, arg):
     if datasetparameter.name.name.endswith('Image'):
         dsid = datasetparameter.parameterset.dataset.id
         psid = datasetparameter.parameterset.id
-        return "<img src='/displayDatasetImage/" + str(dsid) + '/' \
-            + str(psid) + '/' + datasetparameter.name.name + "/' />"
+        result = "<img src='/displayDatasetImage/%s/%s/%s/'" \
+            % (dsid, psid, datasetparameter.name.name)
+        return mark_safe(result)
     else:
         return value
 
@@ -39,7 +43,8 @@ def dfparametertypecheck(value, arg):
     if datafileparameter.name.name.endswith('Image'):
         dfid = datafileparameter.parameterset.dataset_file.id
         psid = datafileparameter.parameterset.id
-        return "<img src='/displayDatafileImage/" + str(dfid) + '/' \
-            + str(psid) + '/' + datafileparameter.name.name + "/' />"
+        result = "<img src='/displayDatafileImage/%s/%s/%s/'" \
+            % (dfid, psid, datafileparameter.name.name)
+        return mark_safe(result)
     else:
         return value
