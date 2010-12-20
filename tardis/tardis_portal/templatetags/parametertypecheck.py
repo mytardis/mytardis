@@ -9,7 +9,7 @@ register = template.Library()
 
 
 @register.filter
-def eparametertypecheck(value, arg, ):
+def eparametertypecheck(value, arg):
     experimentparameter = ExperimentParameter.objects.get(id=arg)
 
     if experimentparameter.name.name.endswith('Image'):
