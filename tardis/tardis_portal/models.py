@@ -41,6 +41,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.utils.safestring import SafeUnicode
 
+from tardis.tardis_portal.managers import ExperimentManager
+
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
@@ -85,61 +87,6 @@ class Author(models.Model):
     def __unicode__(self):
         return self.name
 
-
-class ExperimentManager(models.Manager):
-
-    def all(self, request):
-        from django.db.models import Q
-        query = Q(public=True)
-
-        if request.user.is_authenticated():
-            from django.contrib.sessions.models import Session
-            s = Session.objects.get(pk=request.COOKIES['sessionid'])
-            backend = s.get_decoded()['_auth_user_backend']
-
-            query |= Q(experimentacl__pluginId=backend,
-                       experimentacl__entityId=request.user.id,
-                       experimentacl__canRead=True)
-
-        return super(ExperimentManager, self).get_query_set().filter(query)
-
-    def get(self, request, experiment_id):
-        experiment = \
-            super(ExperimentManager, self).get(pk=experiment_id)
-
-        if experiment.public:
-            return experiment
-
-        from django.core.exceptions import PermissionDenied
-        if not request.user.is_authenticated():
-            raise PermissionDenied
-
-        from django.contrib.sessions.models import Session
-        s = Session.objects.get(pk=request.COOKIES['sessionid'])
-        backend = s.get_decoded()['_auth_user_backend']
-
-        acl = super(ExperimentManager, self).filter(
-            experimentacl__pluginId=backend,
-            experimentacl__entityId=request.user.id,
-            experimentacl__experiment=experiment,
-            experimentacl__canRead=True)
-
-        if acl.count() == 0:
-            raise PermissionDenied
-        else:
-            return experiment
-
-    def owned(self, request):
-        if not request.user.is_authenticated():
-            return []
-
-        from django.contrib.sessions.models import Session
-        s = Session.objects.get(pk=request.COOKIES['sessionid'])
-        backend = s.get_decoded()['_auth_user_backend']
-        experiments = super(ExperimentManager, self).get_query_set().filter(
-            experimentacl__pluginId=user.backend,
-            experimentacl__entityId=user.id,
-            experimentacl__isOwner=True)
 
 
 class Experiment(models.Model):

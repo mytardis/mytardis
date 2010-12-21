@@ -9,7 +9,6 @@ views.py
 
 """
 
-from base64 import b64decode
 
 from django.template import Context
 from django.conf import settings
@@ -17,11 +16,12 @@ from django.db import transaction
 
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.contrib.auth import authenticate, login
+# from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError, HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
@@ -29,7 +29,6 @@ from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.auth import AuthService
 
-from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
@@ -38,6 +37,7 @@ from tardis.tardis_portal.auth import ldap_auth, localdb_auth
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
+from base64 import b64decode
 import urllib
 import urllib2
 import datetime
@@ -86,13 +86,8 @@ def return_response_error_message(request, redirect_path, message):
 
 
 def logout(request):
-    try:
-        del request.session['username']
-        del request.session['password']
-        if 'datafileResults' in request.session:
-            del request.session['datafileResults']
-    except KeyError:
-        pass
+    if 'datafileResults' in request.session:
+        del request.session['datafileResults']
 
     c = Context({})
 
@@ -106,14 +101,13 @@ def get_accessible_experiments(request):
     return experiments
 
 
-#def get_accessible_datafiles_for_user(experiments):
+
 def get_accessible_datafiles_for_user(request):
 
     experiments = get_accessible_experiments(request)
     if experiments.count() == 0:
         return []
 
-    # from stackoverflow question 852414
     from django.db.models import Q
     queries = [Q(dataset__experiment__id=e.id) for e in experiments]
 
@@ -126,16 +120,15 @@ def get_accessible_datafiles_for_user(request):
 
 def has_experiment_ownership(request, experiment_id):
 
-    experiment = Experiment.safe.get(request, experiment_id)
+    experiment = Experiment.safe.owned(request).filter(
+        pk=experiment_id)
     if experiment:
-        if experiment.experimentacl.isOwner == True:
-            return True
+        return True
     return False
 
 
 def has_experiment_access(request, experiment_id):
 
-    from django.core.exceptions import PermissionDenied
     try:
         Experiment.safe.get(request, experiment_id)
         return True
@@ -280,17 +273,13 @@ def site_settings(request):
     return return_response_error(request)
 
 
+
 def display_experiment_image(
-    request,
-    experiment_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, experiment_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
-    experiment = Experiment.objects.get(pk=experiment_id)
-    if not has_experiment_access(experiment.id, request.user):
+    if not has_experiment_access(request, experiment_id):
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
@@ -299,61 +288,41 @@ def display_experiment_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
+
 def display_dataset_image(
-    request,
-    dataset_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, dataset_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
-    dataset = Dataset.objects.get(pk=dataset_id)
-    if has_experiment_access(dataset.experiment.id, request.user):
-
-        image = DatasetParameter.objects.get(name__name=parameter_name,
-                parameterset=parameterset_id)
-
-        import base64
-
-        data = base64.b64decode(image.string_value)
-
-        response = HttpResponse(data, mimetype='image/jpeg')
-
-        return response
-    else:
+    if not has_dataset_access(request, dataset_id):
         return return_response_error(request)
+
+    image = DatasetParameter.objects.get(name__name=parameter_name,
+                                         parameterset=parameterset_id)
+
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+
 
 
 def display_datafile_image(
-    request,
-    dataset_file_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, dataset_file_id, parameterset_id, parameter_name ):
 
     # todo handle not exist
 
-    datafile = Dataset_File.objects.get(pk=dataset_file_id)
-    if has_experiment_access(datafile.dataset.experiment.id, request.user):
-        image = \
-            DatafileParameter.objects.get(name__name=parameter_name,
-                parameterset=parameterset_id)
-
-        import base64
-
-        data = base64.b64decode(image.string_value)
-
-        response = HttpResponse(data, mimetype='image/jpeg')
-
-        return response
-    else:
+    if not has_datafile_access(request, datafile_id):
         return return_response_error(request)
+
+    image = DatafileParameter.objects.get(name__name=parameter_name,
+                                          parameterset=parameterset_id)
+
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+
 
 
 def about(request):
 
-    c = Context({'subtitle': 'About', 'about_pressed': True,
+    c = Context({'subtitle': 'About',
+                 'about_pressed': True,
                 'nav': [{'name': 'About', 'link': '/about/'}],
                 'searchDatafileSelectionForm':
                 getNewSearchDatafileSelectionForm()})
@@ -364,9 +333,9 @@ def about(request):
 def partners(request):
 
     c = Context({})
-
     return HttpResponse(render_response_index(request,
                         'tardis_portal/partners.html', c))
+
 
 
 @experiment_access_required
@@ -392,14 +361,12 @@ def view_experiment(request, experiment_id):
         for df in dataset.dataset_file_set.all():
             size = size + long(df.size)
 
-    acl = ExperimentACL.objects.filter(experiment=experiment,
+    acl = ExperimentACL.objects.filter(pluginId='user',
+                                       experiment=experiment,
                                        isOwner=True)
 
-    owners = None
-    # TODO: resolve usernames through UserProvider
-    # something like
-    # for a in acl:
-    #    owners += UserProvider.get_user(a.entityId)
+    # TODO: resolve usernames through UserProvider!
+    owners = [User.objects.get(pk=str(a.entityId)) for a in acl]
 
     protocols = [df['protocol'] for df in datafiles.values(
                     'protocol').distinct()]
@@ -457,18 +424,16 @@ def login(request):
     from django.contrib.auth import authenticate
     from tardis.tardis_portal.auth import login, auth_service
 
-    # if user exists then check if ldap: try log in through ldap, else try log
-    # in usual way, either way login
-
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST['authMethod']
-        next = request.POST['next']
+
         # TODO: this block will need fixing later as the expected functionality
         #       this condition is supposed to provide does not work
-        if 'next' in request.POST:
-            next = request.POST['next']
+        next = '/'
+        if 'next' in request.GET:
+            next = request.GET['next']
 
         c = Context({'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -481,7 +446,6 @@ def login(request):
         if user:
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
-
             return HttpResponseRedirect(next)
         return return_response_error_message(
             request, error_template_redirect,
@@ -783,6 +747,7 @@ def control_panel(request):
 
     c = Context({'experiments': experiments,
                  'subtitle': 'Experiment Control Panel'})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
 
@@ -1348,45 +1313,45 @@ def retrieve_user_list(request):
 @experiment_ownership_required
 def retrieve_access_list(request, experiment_id):
 
-    e = Experiment.objects.get(id=experiment_id)
-
     # TODO: decide if we are to also show system-owned ACLs
     # TODO: we'll need to also add groups in here later
-    userIDs = [acl.userOrGroupID for acl in ExperimentACL.objects.filter(
-        isUser=True, experiment=e, canRead=True,
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)]
 
-    users = User.objects.extra(where=['id IN ' + str(tuple(userIDs)).replace(
-        ',)', ')')]).order_by('username')
-
+    users = Experiment.safe.users(request, experiment_id)
     c = Context({'users': users, 'experiment_id': experiment_id})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list.html', c))
 
 
 @experiment_ownership_required
 def add_access_experiment(request, experiment_id, username):
+
     try:
-        u = User.objects.get(username=username)
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
 
-        if not has_experiment_access(experiment_id, u):
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
 
-            e = Experiment.objects.get(id=experiment_id)
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId='user',
+                                       entityId=str(user.id),
+                                       canRead=True,
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
-            acl = ExperimentACL(userOrGroupID=u.id,
-                experiment=e, canRead=True)
-            acl.save()
-
-            c = Context({'user': u, 'experiment_id': experiment_id})
-            return HttpResponse(render_response_index(request,
-                                'tardis_portal/ajax/add_user_result.html', c))
-        else:
-            return return_response_error(request)
-    except User.DoesNotExist, ue:
-
-        return return_response_not_found(request)
-    except Experiment.DoesNotExist, ge:
-        return return_response_not_found(request)
+    if acl.count() == 0:
+        acl = ExperimentACL(experiment=experiment,
+                            pluginId='user',
+                            entityId=str(user.id),
+                            canRead=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
+        c = Context({'user': user, 'experiment_id': experiment_id})
+        return HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/add_user_result.html', c))
 
     return return_response_error(request)
 
@@ -1395,24 +1360,25 @@ def add_access_experiment(request, experiment_id, username):
 def remove_access_experiment(request, experiment_id, username):
 
     try:
-        u = User.objects.get(username=username)
-        e = Experiment.objects.get(pk=experiment_id)
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
 
-        acl = ExperimentACL.objects.filter(isUser=True, userOrGroupID=u.id,
-            experiment=e)
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
 
-        if acl:
-            acl.delete()
-
-            c = Context({})
-            return HttpResponse(render_response_index(request,
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId='user',
+                                       entityId=str(user.id),
+                                       canRead=True,
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    if acl.count() == 1:
+        acl.delete()
+        c = Context({})
+        return HttpResponse(render_response_index(request,
                 'tardis_portal/ajax/remove_user_result.html', c))
-        else:
-            return return_response_error(request)
-    except User.DoesNotExist, ue:
-        return return_response_not_found(request)
-    except Experiment.DoesNotExist, ge:
-        return return_response_not_found(request)
 
     return return_response_error(request)
 

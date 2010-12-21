@@ -11,12 +11,16 @@ from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal import constants
 
+
+
 def get_username_for_email(email):
     raise NotImplemented()
 
 
+
 def get_email_for_user(username):
     raise NotImplemented()
+
 
 
 def get_or_create_user(email):
@@ -44,7 +48,11 @@ class DjangoAuthBackend():
     def get_user(self, user_id):
         return _modelBackend.get_user(user_id)
 
+
+
 _modelBackend = ModelBackend()
+
+
 
 class DjangoGroupProvider(GroupProvider):
     name = u'django_groups'

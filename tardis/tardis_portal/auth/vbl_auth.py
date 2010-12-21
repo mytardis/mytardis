@@ -2,6 +2,7 @@
 Created on 10/12/2010
 
 @author: Ulrich Felzmann
+@author: Gerson Gelang
 '''
 
 from django.contrib.auth.models import User, Group
@@ -76,7 +77,7 @@ class Backend():
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']
-        
+
         if not username or not password:
             return None
 
@@ -104,10 +105,10 @@ class Backend():
                         email=username)
             user.is_staff = True
             user.save()
-            
+
             userProfile = UserProfile(user=user)
             userProfile.save()
-            
+
             userAuth = UserAuthentication(userProfile=userProfile,
                 username=username, authenticationMethod=UserAuthentication.VBL_METHOD)
             userAuth.save()

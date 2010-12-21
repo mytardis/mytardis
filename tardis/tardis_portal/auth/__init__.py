@@ -144,6 +144,8 @@ class AuthService:
         """
         pass
 
+
+
 auth_service = AuthService()
 
 
@@ -152,6 +154,7 @@ def login(request, user):
     login(request, user)
     request.__class__.groups = auth_service.getGroups(request)
     request.session[GROUPS] = request.groups
+
 
 
 class LazyGroups(object):
