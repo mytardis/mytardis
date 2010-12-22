@@ -1326,6 +1326,15 @@ def retrieve_access_list(request, experiment_id):
 @experiment_ownership_required
 def add_access_experiment(request, experiment_id, username):
 
+    if 'canRead' in request.GET:
+        canRead = bool(request.GET['canRead'])
+
+    if 'canWrite' in request.GET:
+        canWrite = bool(request.GET['canWrite'])
+
+    if 'canDelete' in request.GET:
+        canDelete = bool(request.GET['canDelete'])
+
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
@@ -1339,7 +1348,9 @@ def add_access_experiment(request, experiment_id, username):
     acl = ExperimentACL.objects.filter(experiment=experiment,
                                        pluginId='user',
                                        entityId=str(user.id),
-                                       canRead=True,
+                                       canRead=canRead,
+                                       canWrite=canWrite,
+                                       canDelete=canDelete,
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
@@ -1381,6 +1392,44 @@ def remove_access_experiment(request, experiment_id, username):
                 'tardis_portal/ajax/remove_user_result.html', c))
 
     return return_response_error(request)
+
+
+@experiment_ownership_required
+def change_user_permissions(request, experiment_id, username):
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId='user',
+                                        entityId=str(user.id),
+                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    except ExperimentACL.DoesNotExist:
+        return return_response_error(request)
+
+
+    if request.method == 'POST':
+        form = ChangeUserPermissionsForm(request.POST, instance=acl)
+
+        if form.is_valid:
+            form.save()
+            return HttpResponseRedirect('/experiment/control_panel/')
+
+    else:
+        form = ChangeUserPermissionsForm(instance=acl)
+        c = Context({'form': form,
+                     'header': "Change User Permissions for '%s'" %user.username})
+
+    return render_to_response('tardis_portal/form_template.html', c)
+
 
 
 @experiment_ownership_required

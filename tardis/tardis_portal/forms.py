@@ -39,22 +39,36 @@ forms module
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
+from django.forms import ModelForm
 from django.conf import settings
 
 
 class LoginForm(AuthenticationForm):
     authMethod = forms.CharField()
     next = forms.CharField(widget=forms.HiddenInput, initial="/")
-    
+
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
         authMethodChoices = ()
-        
+
         for authMethods in settings.AUTH_PROVIDERS:
             authMethodChoices += ((authMethods[0], authMethods[1]),)
-            
+
         self.fields['authMethod'] = forms.CharField(widget=forms.Select(choices=authMethodChoices),
             label='Authentication Method')
+
+
+class ChangeUserPermissionsForm(ModelForm):
+    class Meta:
+        from django.forms.extras.widgets import SelectDateWidget
+        from tardis.tardis_portal.models import ExperimentACL
+        model = ExperimentACL
+        exclude = ('entityId', 'pluginId', 'experiment', 'aclOwnershipType',)
+        widgets = {
+            'expiryDate': SelectDateWidget(),
+            'effectiveDate': SelectDateWidget()
+        }
+
 
 class DatafileSearchForm(forms.Form):
 
@@ -283,3 +297,5 @@ def createSearchDatafileSelectionForm():
 
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
+
+
