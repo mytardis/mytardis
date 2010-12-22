@@ -2,6 +2,9 @@
 
 {% block content %}
 
+<h1>{
+{ header }}</h1>
+
 {% if form.errors %}
 <p class="form-error" style="color: red;">
   Please correct the error{{ form.errors|pluralize }} below.
@@ -13,9 +16,12 @@
     <tr valign="top">
       <td>
         {% for field in form %}
-        {{ field.label }}<br>
-	{{ field }} {{ field.errors }}
-	<br><br>
+        {{ field.label }}
+	<br>
+	{{ field }}
+	{{ field.errors }}
+	<br>
+	<br>
         {% endfor %}
       </td>
     </tr>

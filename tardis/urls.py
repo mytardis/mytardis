@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 from django.contrib import admin
 admin.autodiscover()
 from django.contrib.auth.views import logout
@@ -71,6 +69,8 @@ urlpatterns = patterns(
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/'
      '(?P<username>\w+)$',
      'tardis.tardis_portal.views.remove_access_experiment'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/'
+     '(?P<username>\w+)$', 'tardis.tardis_portal.views.change_user_permissions'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/$',
      'tardis.tardis_portal.views.retrieve_access_list'),
     (r'^experiment/control_panel/$',

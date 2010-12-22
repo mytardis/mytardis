@@ -56,15 +56,18 @@ class GroupAdmin(models.Model):
     group = models.ForeignKey(Group)
 
 
+# TODO: Generalise auth methods
 class UserAuthentication(models.Model):
+
     LOCALDB_METHOD = 1
     VBL_METHOD = 2
     LDAP_METHOD = 3
     __COMPARISON_CHOICES = (
         (LOCALDB_METHOD, 'Local DB'),
         (VBL_METHOD, 'VBL'),
-#        (LDAP_METHOD, 'LDAP')
+ #        (LDAP_METHOD, 'LDAP')
     )
+
     userProfile = models.ForeignKey(UserProfile)
     username = models.CharField(max_length=50)
     authenticationMethod = models.IntegerField(
@@ -88,7 +91,6 @@ class Author(models.Model):
         return self.name
 
 
-
 class Experiment(models.Model):
 
     url = models.URLField(verify_exists=False, max_length=255)
@@ -103,9 +105,8 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
-
-    objects = models.Manager() # The default manager.
-    safe = ExperimentManager() # The acl-aware specific manager.
+    objects = models.Manager()  # The default manager.
+    safe = ExperimentManager()  # The acl-aware specific manager.
 
     def __unicode__(self):
         return self.title
@@ -162,7 +163,7 @@ class DatafileParameterSet(models.Model):
     dataset_file = models.ForeignKey(Dataset_File)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.dataset_file.filename
+        return '%s / %s' % (self.schema.namespace, self.dataset_file.filename)
 
     class Meta:
         ordering = ['id']
@@ -173,7 +174,7 @@ class DatasetParameterSet(models.Model):
     dataset = models.ForeignKey(Dataset)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.dataset.description
+        return '%s / %s' % (self.schema.namespace, self.dataset.description)
 
     class Meta:
         ordering = ['id']
@@ -184,7 +185,7 @@ class ExperimentParameterSet(models.Model):
     experiment = models.ForeignKey(Experiment)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.experiment.title
+        return '%s / %s' % (self.schema.namespace, self.experiment.title)
 
     class Meta:
         ordering = ['id']
@@ -333,7 +334,9 @@ class Equipment(models.Model):
     serial = models.CharField(max_length=60, blank=True)
     comm = models.DateField(null=True, blank=True)
     decomm = models.DateField(null=True, blank=True)
-    url = models.URLField(null=True, blank=True, verify_exists=False, max_length=255)
+    url = models.URLField(null=True, blank=True,
+                          verify_exists=False,
+                          max_length=255)
 
     def __unicode__(self):
         return self.key
