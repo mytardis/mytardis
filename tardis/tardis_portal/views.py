@@ -27,20 +27,18 @@ from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
-from tardis.tardis_portal.auth import AuthService
 
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
 
-from tardis.tardis_portal.auth import ldap_auth, localdb_auth
+from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
 from base64 import b64decode
 import urllib
 import urllib2
-import datetime
 
 
 
@@ -99,7 +97,6 @@ def get_accessible_experiments(request):
 
     experiments = Experiment.safe.all(request)
     return experiments
-
 
 
 def get_accessible_datafiles_for_user(request):
@@ -273,7 +270,6 @@ def site_settings(request):
     return return_response_error(request)
 
 
-
 def display_experiment_image(
     request, experiment_id, parameterset_id, parameter_name):
 
@@ -286,7 +282,6 @@ def display_experiment_image(
                                             parameterset=parameterset_id)
 
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
-
 
 
 def display_dataset_image(
@@ -303,9 +298,8 @@ def display_dataset_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-
 def display_datafile_image(
-    request, dataset_file_id, parameterset_id, parameter_name ):
+    request, dataset_file_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
@@ -335,7 +329,6 @@ def partners(request):
     c = Context({})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/partners.html', c))
-
 
 
 @experiment_access_required
@@ -386,9 +379,8 @@ def view_experiment(request, experiment_id):
             'searchDatafileSelectionForm':
                 getNewSearchDatafileSelectionForm()})
 
-
     return HttpResponse(render_response_index(request,
-                                              'tardis_portal/view_experiment.html', c))
+                        'tardis_portal/view_experiment.html', c))
 
 
 def experiment_index(request):
@@ -421,7 +413,6 @@ def experiment_index(request):
 
 # todo complete....
 def login(request):
-    from django.contrib.auth import authenticate
     from tardis.tardis_portal.auth import login, auth_service
 
     # TODO: put me in SETTINGS
@@ -1426,10 +1417,10 @@ def change_user_permissions(request, experiment_id, username):
     else:
         form = ChangeUserPermissionsForm(instance=acl)
         c = Context({'form': form,
-                     'header': "Change User Permissions for '%s'" %user.username})
+                     'header': "Change User Permissions for '%s'" % user.username})
 
-    return render_to_response('tardis_portal/form_template.html', c)
-
+    return HttpResponse(render_response_index(request,
+                            'tardis_portal/form_template.html', c))
 
 
 @experiment_ownership_required
@@ -1535,7 +1526,7 @@ def import_params(request):
                     try:
                         Schema.objects.get(namespace=schema)
                         return HttpResponse('Schema already exists.')
-                    except Schema.DoesNotExist, s:
+                    except Schema.DoesNotExist:
                         schema_db = Schema(namespace=schema)
                         schema_db.save()
                 else:
