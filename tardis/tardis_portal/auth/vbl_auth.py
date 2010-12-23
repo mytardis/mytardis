@@ -2,7 +2,7 @@
 Created on 10/12/2010
 
 @author: Ulrich Felzmann
-@author: Gerson Gelang
+@author: Gerson Galang
 '''
 
 from django.contrib.auth.models import User, Group
@@ -43,7 +43,26 @@ class VblGroupProvider(GroupProvider):
         return an iteration of the available groups.
         """
         if not request.session.__contains__(EPN_LIST):
-            return []
+            # check if the user is linked to any experiments
+            if not settings.VBLSTORAGEGATEWAY:
+                return []
+    
+            client = Client(settings.VBLSTORAGEGATEWAY)
+            client.set_options(cache=None)
+            
+            try:
+                # check if a user exists that can authenticate using the VBL
+                # auth method
+                userAuth = UserAuthentication.objects.get(
+                    userProfile__user=request.user,
+                    authenticationMethod=UserAuthentication.VBL_METHOD)
+    
+            except UserAuthentication.DoesNotExist:
+                return []
+            
+            result = str(
+                client.service.VBLgetExpIDsFromEmail(userAuth.username))
+            return result.split(',')
         epnList = request.session[EPN_LIST]
         return epnList
 
