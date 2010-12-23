@@ -42,13 +42,16 @@ class ExperimentManager(models.Manager):
                    pluginId='user',
                    entityId=str(request.user.id),
                    canRead=True,
+                   effectiveDate__lt=datetime.today(),
                    expiryDate__gt=datetime.today())
 
         for name, group in request.groups:
             query |= Q(pluginId=name,
                        entityId=group,
                        experiment=experiment,
-                       canRead=True)
+                       canRead=True,
+                       effectiveDate__lt=datetime.today(),
+                       expiryDate__gt=datetime.today())
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(query)
@@ -76,3 +79,4 @@ class ExperimentManager(models.Manager):
                                            canRead=True)
 
         return [User.objects.get(pk=str(a.entityId)) for a in acl]
+
