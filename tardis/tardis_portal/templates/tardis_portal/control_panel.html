@@ -41,28 +41,31 @@
 <link rel="stylesheet" type="text/css" href="/site_media/css/autocomplete/lib/thickbox.css" />
 <script type="text/javascript">
 
-		$(document).ready(function() {
+$(document).ready(function() {
 
-			//beginswith, endswith
-			String.prototype.beginsWith = function(t, i) { if (i==false) { return
-			(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
-			== this.substring(0, t.length).toLowerCase()); } }
+		//beginswith, endswith
+		String.prototype.beginsWith = function(t, i) { if (i==false) { return
+		(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+		== this.substring(0, t.length).toLowerCase()); } }
 
-			String.prototype.endsWith = function(t, i) { if (i==false) { return (t
-			== this.substring(this.length - t.length)); } else { return
-			(t.toLowerCase() == this.substring(this.length -
-			t.length).toLowerCase()); } }
+		String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+		== this.substring(this.length - t.length)); } else { return
+		(t.toLowerCase() == this.substring(this.length -
+		t.length).toLowerCase()); } }
 
-		   $('.access_list').hide().end().find('.access_list_toggle').click(function() {
-		     $(this).next().toggle();
-		   });
+  $('#access_list_user.access_list').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
 
-			$(".access_list_toggle").text("[Show]");
+  $('#access_list_group.access_list').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
 
-			var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
+  $(".access_list_user_toggle").text("[Show]");
 
-			// access list
-			 $(".access_list_toggle").toggle(function(){
+  $(".access_list_group_toggle").text("[Show]");
+
+  var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
+
+
+			// user access list
+			 $(".access_list_user_toggle").toggle(function(){
 			   $(this).text("[Hide]");
 				var href = $(this).attr("href");
 
@@ -70,7 +73,7 @@
 
 				$(this).next().load(href, function(){
 						$(document).ready(function(){
-								var value = (function () {
+								var users = (function () {
 								    var val = null;
 
 								    $.ajax({
@@ -81,18 +84,17 @@
 								            val = data;
 								        }
 								    });
-
 								    return val;
 
 								})();
 
-								$(".usersuggest").autocomplete(value.split(" "), {
+								$(".usersuggest").autocomplete(users.split(" "), {
 									matchContains: true,
 									minChars: 0
 								});
 
-								$(".form_submit").unbind('click');
-								$(".form_submit").click(function(event) {
+								$("#user.form_submit").unbind('click');
+								$("#user.form_submit").click(function(event) {
 									event.preventDefault();
 
 								    var usersuggest = $(this).siblings(".usersuggest").val();
@@ -102,8 +104,7 @@
 		                                                    var canWrite = $(this).siblings(".canWrite").is(':checked');
 		                                                    var canDelete = $(this).siblings(".canDelete").is(':checked');
 		                                                    var permissions = '?canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete;
-		                                                    action = experiment_id + '/access_list/add/' + usersuggest + permissions;
-                                                                    alert(action);
+		                                                    action = experiment_id + '/access_list/add/user/' + usersuggest + permissions;
 								    $.ajax({
 							        'async': false,
 							        'global': true,
@@ -117,9 +118,7 @@
 										// todo this is a duplicate function..
 										   $(".remove_user").unbind('click');
 										   $(".remove_user").click(function() {
-
 												var href = $(this).attr("href");
-
 												remove_user = $(this);
 
 												$.ajax({
@@ -129,8 +128,7 @@
 												        'success': function (data) {
 
 												            val = data;
-
-															if(val == "OK")
+													    if(val == "OK")
 															{
 																remove_user.fadeOut(500, function(){
 																remove_user.parents('.access_list_user').remove();
@@ -138,11 +136,10 @@
 															}
 															else
 															{
-																alert('Error adding user. Perhaps they already have access?');
+																alert('Error removing user.');
 															}
 														}
 												    }); // end ajax
-
 
 												return false;
 
@@ -176,21 +173,21 @@
 									        'success': function (data) {
 
 									            val = data;
-
 												if(val == "OK")
 												{
 													remove_user.fadeOut(500, function(){
 													remove_user.parents('.access_list_user').remove();
 													});
 												}
+												else {
+												   alert('Error removing user.');
+												}
 											}
 									    }); // end ajax
-
 
 									return false;
 
 								 }); // end remove user
-
 							});
 						});
 
@@ -199,90 +196,233 @@
 			 });
 
 
+			 // group access list
+			 $(".access_list_group_toggle").toggle(function(){
+			   $(this).text("[Hide]");
+				var href = $(this).attr("href");
+
+				$(this).next().html(loadingHTML + "</br>");
+
+				$(this).next().load(href, function(){
+						$(document).ready(function(){
+
+						                var users = (function () {
+								    var val = null;
+
+								    $.ajax({
+								        'async': false,
+								        'global': false,
+								        'url': '/ajax/user_list',
+								        'success': function (data) {
+								            val = data;
+								        }
+								    });
+								    return val;
+								})();
+
+						                var groups = (function () {
+								    var val = null;
+
+								    $.ajax({
+								        'async': false,
+								        'global': false,
+								        'url': '/ajax/group_list',
+								        'success': function (data) {
+								            val = data;
+								        }
+								    });
+								    return val;
+								})();
+
+								$(".usersuggest").autocomplete(users.split(" "), {
+									matchContains: true,
+									minChars: 0
+								});
+
+								$(".groupsuggest").autocomplete(groups.split(" "), {
+									matchContains: true,
+									minChars: 0
+								});
+
+
+								$("#group.form_submit").unbind('click');
+								$("#group.form_submit").click(function(event) {
+									event.preventDefault();
+
+								    var experiment_id = $(this).siblings(".experiment_id").val();
+								    var usersuggest = $(this).siblings(".usersuggest").val();
+								    var groupsuggest = $(this).siblings(".groupsuggest").val();
+		                                                    var groups_div = $(this).parents('.access_list').children('.groups');
+								    var create = $(this).siblings(".create").is(':checked');
+		                                                    var canRead = $(this).siblings(".canRead").is(':checked');
+		                                                    var canWrite = $(this).siblings(".canWrite").is(':checked');
+		                                                    var canDelete = $(this).siblings(".canDelete").is(':checked');
+		                                                    var permissions = '?create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+		                                                    action = experiment_id + '/access_list/add/group/' + groupsuggest + permissions;
+
+								    $.ajax({
+							        'async': false,
+							        'global': true,
+								     type: "GET",
+								     url: action,
+								     success: function(data) {
+										if (data.beginsWith("<div class=", true) == true)
+										{
+											groups_div.hide()
+											.append(data).fadeIn();
+										// todo this is a duplicate function..
+										   $(".remove_group").unbind('click');
+										   $(".remove_group").click(function() {
+												var href = $(this).attr("href");
+												remove_group = $(this);
+
+												$.ajax({
+												        'async': false,
+												        'global': false,
+												        'url': href,
+												        'success': function (data) {
+
+												            val = data;
+													    if(val == "OK")
+															{
+															remove_group.fadeOut(500, function(){
+															     remove_group.parents('.access_list_group').remove();
+															     });
+															}
+															else
+															{
+																alert('Error removing group.');
+															}
+														}
+												    }); // end ajax
+
+												return false;
+
+											 }); // end remove group
+										}
+										else
+										{
+											alert('Error adding group.');
+										}
+								     },
+								     error: function(data) {
+										alert('Error adding group. Perhaps the name already exists.');
+								     }
+								    });
+
+								    return false;
+
+								});
+
+							   $(".remove_group").unbind('click');
+							   $(".remove_group").click(function() {
+
+									var href = $(this).attr("href");
+
+									remove_group = $(this);
+									alert(remove_group.parents('.access_list_group'));
+
+									$.ajax({
+									        'async': false,
+									        'global': false,
+									        'url': href,
+									        'success': function (data) {
+
+									            val = data;
+												if(val == "OK")
+												{
+													remove_group.fadeOut(500, function(){
+													remove_group.parents('.access_list_group').remove();
+													});
+												}
+												else {
+												  alert('Error removing group.');
+												}
+											}
+									    }); // end ajax
+
+									return false;
+
+								 }); // end remove group
+							});
+						});
+
+			 },function(){
+			   $(this).text("[Show]");
+			 });
+
 		});
 
 		</script>
-
 		{% endblock %}
 
 		{% block content %}
-
 		<div id="content">
 			<div class="post">
-				<h1 class="title">
-					<a href="#">Control Panel</a>
-				</h1>
+				<h1 class="title"><a href="#">Control Panel</a></h1>
 				<div class="entry">
-					<br/>
-					<p>
-						{% if experiments %}
+				  <br/>
+				  <p>
+				    {% if experiments %}
+				    <table class="experiment-table">
+				      {% for experiment in experiments %}
+				      <tr>
+					<th width="70%">
+					  <a href="../view/{{ experiment.id }}">{{ experiment.title }}</a>
+					  <br/>
+					</th>
+				      </tr>
+				      <tr>
+					<td>
+					  User Access <a href="{{experiment.id}}/access_list/user/" class="access_list_user_toggle"></a>
+					  <div class="access_list" id="access_list_user">
+					  </div>
+					  <br/>
+					</td>
+				      </tr>
 
-								<table class="experiment-table">
-								{% for experiment in experiments %}
-									<tr>
-										<th width="70%">
-											<a href="../view/{{ experiment.id }}">{{ experiment.title }}</a>
+					<td>
+					  Group Access <a href="{{experiment.id}}/access_list/group/" class="access_list_group_toggle"></a>
+					  <div class="access_list" id="access_list_group">
+					  </div>
+					  <br/>
+					</td>
+				      </tr>
+				      {%endfor %}
 
-											<br/>
-										</th>
-									</tr>
-									<tr>
-										<td>
-											Experiment Access <a href="{{experiment.id}}/access_list/" class="access_list_toggle">[Show Access List]</a>
+				    </table>
 
-											<div class="access_list">
-
-											</div>
-
-											<br/>
-											<br/>
-										</td>
-									</tr>
-
-
-								{%endfor %}
-
-								</table>
-
-						{% else %}
-
-							There are no experiments under your control.
-
-						{% endif %}
-					</p>
-
+				    {% else %}
+				    There are no experiments under your control.
+				    {% endif %}
+				  </p>
 				</div>
 			</div>
 		</div>
-
 		{% endblock %}
-		{% block sidebar %}
 
+		{% block sidebar %}
 		<ul>
-			<li>
-				<h2>
-					Browse Experiments
-				</h2>
-				<ul>
-					<li>
-						<a href="/experiment/view">Index</a>
-					</li>
-					<li>
-						<a href="/search/experiment">Search</a>
-					</li>
-				</ul>
-				{% if user.is_authenticated %}
-				<br/>
-				<h2>
-					Controls
-				</h2>
-				<ul>
-					<li>
-						<a href="/experiment/control_panel">Control Panel</a>
-					</li>
-				</ul>
-				{% endif %}
-			</li>
+		  <li>
+		    <h2>Browse Experiments</h2>
+		    <ul>
+		      <li>
+			<a href="/experiment/view">Index</a>
+		      </li>
+		      <li>
+			<a href="/search/experiment">Search</a>
+		      </li>
+		    </ul>
+		    {% if user.is_authenticated %}
+		    <br/>
+		    <h2>Controls</h2>
+		    <ul>
+		      <li>
+			<a href="/experiment/control_panel">Control Panel</a>
+		      </li>
+		    </ul>
+		    {% endif %}
+		  </li>
 		</ul>
 		<p>
-			{% endblock %}
+		{% endblock %}

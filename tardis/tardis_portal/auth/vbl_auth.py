@@ -14,7 +14,9 @@ from tardis.tardis_portal.logger import logger
 
 from suds.client import Client
 
+
 EPN_LIST = "_epn_list"
+
 
 def get_expids(epns):
     """
@@ -46,20 +48,20 @@ class VblGroupProvider(GroupProvider):
             # check if the user is linked to any experiments
             if not settings.VBLSTORAGEGATEWAY:
                 return []
-    
+
             client = Client(settings.VBLSTORAGEGATEWAY)
             client.set_options(cache=None)
-            
+
             try:
                 # check if a user exists that can authenticate using the VBL
                 # auth method
                 userAuth = UserAuthentication.objects.get(
                     userProfile__user=request.user,
                     authenticationMethod=UserAuthentication.VBL_METHOD)
-    
+
             except UserAuthentication.DoesNotExist:
                 return []
-            
+
             result = str(
                 client.service.VBLgetExpIDsFromEmail(userAuth.username))
             return result.split(',')
@@ -107,6 +109,7 @@ class Backend():
         client = Client(settings.VBLSTORAGEGATEWAY)
         client.set_options(cache=None)
         result = str(client.service.VBLgetExpIDs(username, password))
+
         if result == "None" or result.startswith('Error'):
             return None
         try:

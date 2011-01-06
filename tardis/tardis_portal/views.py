@@ -32,7 +32,6 @@ from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
 
-from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
@@ -151,6 +150,16 @@ def has_datafile_access(request, dataset_file_id):
         return False
 
 
+def is_group_admin(request, group_id):
+
+    groupadmin = GroupAdmin.objects.filter(user=request.user,
+                                           group__id=group_id)
+    if groupadmin.count():
+        return True
+    else:
+        return False
+
+
 def in_group(user, group):
     """Returns True/False if the user is in the given group(s).
     Usage::
@@ -176,7 +185,20 @@ def in_group(user, group):
         return False
 
 
-# custom decorator
+def group_ownership_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect('/login?next=%s' % request.path)
+        if not is_group_admin(request, kwargs['group_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
 def experiment_ownership_required(f):
 
     def wrap(request, *args, **kwargs):
@@ -270,6 +292,7 @@ def site_settings(request):
     return return_response_error(request)
 
 
+@experiment_access_required
 def display_experiment_image(
     request, experiment_id, parameterset_id, parameter_name):
 
@@ -284,6 +307,7 @@ def display_experiment_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
+@dataset_access_required
 def display_dataset_image(
     request, dataset_id, parameterset_id, parameter_name):
 
@@ -298,6 +322,7 @@ def display_dataset_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
+@datafile_access_required
 def display_datafile_image(
     request, dataset_file_id, parameterset_id, parameter_name):
 
@@ -310,7 +335,6 @@ def display_datafile_image(
                                           parameterset=parameterset_id)
 
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
-
 
 
 def about(request):
@@ -420,11 +444,10 @@ def login(request):
             'password' in request.POST:
         authMethod = request.POST['authMethod']
 
-        # TODO: this block will need fixing later as the expected functionality
-        #       this condition is supposed to provide does not work
-        next = '/'
         if 'next' in request.GET:
             next = request.GET['next']
+        else:
+            next = '/'
 
         c = Context({'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -1295,36 +1318,140 @@ def search_datafile(request):
 def retrieve_user_list(request):
 
     users = User.objects.all().order_by('username')
-
     c = Context({'users': users})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/user_list.html', c))
 
 
-@experiment_ownership_required
-def retrieve_access_list(request, experiment_id):
+@login_required()
+def retrieve_group_list(request):
 
-    # TODO: decide if we are to also show system-owned ACLs
-    # TODO: we'll need to also add groups in here later
+    groups = Group.objects.all().order_by('name')
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_list.html', c))
+
+
+@experiment_ownership_required
+def retrieve_access_list_user(request, experiment_id):
 
     users = Experiment.safe.users(request, experiment_id)
     c = Context({'users': users, 'experiment_id': experiment_id})
-
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list.html', c))
+                        'tardis_portal/ajax/access_list_user.html', c))
 
 
 @experiment_ownership_required
-def add_access_experiment(request, experiment_id, username):
+def retrieve_access_list_group(request, experiment_id):
+
+    # TODO: decide if we are to also show system-owned ACLs
+
+    groups = Experiment.safe.groups(request, experiment_id)
+    c = Context({'groups': groups, 'experiment_id': experiment_id})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_group.html', c))
+
+
+@group_ownership_required
+def retrieve_group_userlist(request, group_id):
+
+    users = User.objects.filter(groups__id=group_id)
+    c = Context({'users': users, 'group_id': group_id})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_user_list.html', c))
+
+
+@login_required()
+def manage_groups(request):
+
+    groups = Group.objects.filter(groupadmin__user=request.user)
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_group_members.html', c))
+
+
+@group_ownership_required
+def add_user_to_group(request, group_id, username):
+
+    isAdmin = False
+
+    if 'isAdmin' in request.GET:
+        if request.GET['isAdmin'] == 'true':
+            isAdmin = True
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    if user.groups.filter(name=group.name).count() > 0:
+        return return_response_error(request)
+
+    user.groups.add(group)
+    user.save()
+
+    if isAdmin:
+        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin.save()
+
+    c = Context({'user': user, 'group_id': group_id, 'isAdmin': isAdmin})
+    return HttpResponse(render_response_index(request,
+         'tardis_portal/ajax/add_user_to_group_result.html', c))
+
+
+@group_ownership_required
+def remove_user_from_group(request, group_id, username):
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    if user.groups.filter(name=group.name).count() == 0:
+        return return_response_error(request)
+
+    user.groups.remove(group)
+    user.save()
+
+    try:
+        groupadmin = GroupAdmin.objects.filter(user=user, group=group)
+        groupadmin.delete()
+    except GroupAdmin.DoesNotExist:
+        pass
+
+    c = Context({})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/remove_member_result.html', c))
+
+
+@experiment_ownership_required
+def add_experiment_access_user(request, experiment_id, username):
+
+    canRead = False
+    canWrite = False
+    canDelete = False
 
     if 'canRead' in request.GET:
-        canRead = bool(request.GET['canRead'])
+        if request.GET['canRead'] == 'true':
+            canRead = True
 
     if 'canWrite' in request.GET:
-        canWrite = bool(request.GET['canWrite'])
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
 
     if 'canDelete' in request.GET:
-        canDelete = bool(request.GET['canDelete'])
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
 
     try:
         user = User.objects.get(username=username)
@@ -1339,16 +1466,15 @@ def add_access_experiment(request, experiment_id, username):
     acl = ExperimentACL.objects.filter(experiment=experiment,
                                        pluginId='user',
                                        entityId=str(user.id),
-                                       canRead=canRead,
-                                       canWrite=canWrite,
-                                       canDelete=canDelete,
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
         acl = ExperimentACL(experiment=experiment,
                             pluginId='user',
                             entityId=str(user.id),
-                            canRead=True,
+                            canRead=canRead,
+                            canWrite=canWrite,
+                            canDelete=canDelete,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
         c = Context({'user': user, 'experiment_id': experiment_id})
@@ -1359,7 +1485,7 @@ def add_access_experiment(request, experiment_id, username):
 
 
 @experiment_ownership_required
-def remove_access_experiment(request, experiment_id, username):
+def remove_experiment_access_user(request, experiment_id, username):
 
     try:
         user = User.objects.get(username=username)
@@ -1374,13 +1500,13 @@ def remove_access_experiment(request, experiment_id, username):
     acl = ExperimentACL.objects.filter(experiment=experiment,
                                        pluginId='user',
                                        entityId=str(user.id),
-                                       canRead=True,
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
     if acl.count() == 1:
-        acl.delete()
+        acl[0].delete()
         c = Context({})
         return HttpResponse(render_response_index(request,
-                'tardis_portal/ajax/remove_user_result.html', c))
+                'tardis_portal/ajax/remove_member_result.html', c))
 
     return return_response_error(request)
 
@@ -1406,7 +1532,6 @@ def change_user_permissions(request, experiment_id, username):
     except ExperimentACL.DoesNotExist:
         return return_response_error(request)
 
-
     if request.method == 'POST':
         form = ChangeUserPermissionsForm(request.POST, instance=acl)
 
@@ -1421,6 +1546,167 @@ def change_user_permissions(request, experiment_id, username):
 
     return HttpResponse(render_response_index(request,
                             'tardis_portal/form_template.html', c))
+
+
+@experiment_ownership_required
+def change_group_permissions(request, experiment_id, group_id):
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId='django_groups',
+                                        entityId=str(group.id),
+                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    except ExperimentACL.DoesNotExist:
+        return return_response_error(request)
+
+
+    if request.method == 'POST':
+        form = ChangeGroupPermissionsForm(request.POST)
+
+        if form.is_valid():
+            acl.canRead = form.cleaned_data['canRead']
+            acl.canWrite = form.cleaned_data['canWrite']
+            acl.canDelete = form.cleaned_data['canDelete']
+            acl.effectiveDate = form.cleaned_data['effectiveDate']
+            acl.expiryDate = form.cleaned_data['expiryDate']
+            acl.save()
+            return HttpResponseRedirect('/experiment/control_panel/')
+
+    else:
+        form = ChangeGroupPermissionsForm(initial={'canRead': acl.canRead,
+                                                   'canWrite': acl.canWrite,
+                                                   'canDelete': acl.canDelete,
+                                                   'effectiveDate': acl.effectiveDate,
+                                                   'expiryDate': acl.expiryDate})
+
+    c = Context({'form': form,
+                 'header': "Change Group Permissions for '%s'" % group.name})
+
+    return HttpResponse(render_response_index(request,
+                            'tardis_portal/change_group_permissions.html', c))
+
+
+@experiment_ownership_required
+def add_experiment_access_group(request, experiment_id, groupname):
+
+    create = False
+    canRead = False
+    canWrite = False
+    canDelete = False
+    admin = ''
+
+    if 'canRead' in request.GET:
+        if request.GET['canRead'] == 'true':
+            canRead = True
+
+    if 'canWrite' in request.GET:
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
+
+    if 'canDelete' in request.GET:
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
+
+    if 'admin' in request.GET:
+        admin = request.GET['admin']
+
+    if 'create' in request.GET:
+        if request.GET['create'] == 'true':
+            create = True
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    if create:
+        try:
+            group = Group(name=groupname)
+            group.save()
+        except:
+            return return_response_error(request)
+    else:
+        try:
+            group = Group.objects.get(name=groupname)
+        except Group.DoesNotExist:
+            return return_response_error(request)
+
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId='django_groups',
+                                       entityId=str(group.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    if acl.count() > 0:
+        # an acl role already exists
+        return return_response_error(request)
+
+    acl = ExperimentACL(experiment=experiment,
+                        pluginId='django_groups',
+                        entityId=str(group.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
+
+    user = None
+    try:
+        user = User.objects.get(username=admin)
+    except User.DoesNotExist:
+        pass
+
+    # create admin for this group
+    if user:
+        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin.save()
+
+    # add the current user as admin as well
+    if not request.user == admin:
+        groupadmin = GroupAdmin(user=request.user, group=group)
+        groupadmin.save()
+
+    c = Context({'group': group,
+                 'experiment_id': experiment_id,
+                 'groupadmin': groupadmin})
+
+    return HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/add_group_result.html', c))
+
+
+@experiment_ownership_required
+def remove_experiment_access_group(request, experiment_id, group_id):
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId='django_groups',
+                                       entityId=str(group.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+    if acl.count() == 1:
+        acl[0].delete()
+        c = Context({})
+        return HttpResponse(render_response_index(request,
+                'tardis_portal/ajax/remove_member_result.html', c))
+
+    return return_response_error(request)
 
 
 @experiment_ownership_required
