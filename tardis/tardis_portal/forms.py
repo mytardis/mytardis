@@ -45,7 +45,6 @@ from django.conf import settings
 
 class LoginForm(AuthenticationForm):
     authMethod = forms.CharField()
-    next = forms.CharField(widget=forms.HiddenInput)
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)

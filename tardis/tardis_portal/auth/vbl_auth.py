@@ -142,7 +142,7 @@ class Backend():
                 # existing userProfile attached to his/her account
                 userProfile = UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
-                userProfile = UserProfile(user=user)
+                userProfile = UserProfile(user=user, isNotADjangoAccount=True)
                 userProfile.save()
 
             userAuth = UserAuthentication(userProfile=userProfile,
