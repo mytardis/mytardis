@@ -445,14 +445,14 @@ def login(request):
         # login page
         return HttpResponseRedirect('/')
 
-    if 'next' not in request.GET:
-        next = '/'
-    next = request.GET['next']
-
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST['authMethod']
+        
+        if 'next' not in request.GET:
+            next = '/'
+        next = request.GET['next']
 
         c = Context({'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -472,11 +472,9 @@ def login(request):
         return return_response_error_message(
             request, error_template_redirect, c)
 
-    loginForm = LoginForm()
-    loginForm['next'].field.initial = next
     c = Context({'searchDatafileSelectionForm':
         getNewSearchDatafileSelectionForm(),
-        'loginForm': loginForm})
+        'loginForm': LoginForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
@@ -542,17 +540,19 @@ def add_auth_method(request):
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm(request.POST)
     
-    if authForm.is_valid():
-        # let's try and authenticate here
-        user = auth_service.authenticate(
-            authMethod=authForm.cleaned_data['authenticationMethod'],
-            request=request)
+    if not authForm.is_valid():
+        return list_auth_methods(request,
+            status='Invalid authentication form was submitted')
+        
+    # let's try and authenticate here
+    user = auth_service.authenticate(
+        authMethod=authForm.cleaned_data['authenticationMethod'],
+        request=request)
 
     status = None
     # if the returned user is not the same as the current logged in user
     if user != request.user:
         status = 'Sorry, that user account already exists in the system'
-        
         
     # let's redisplay again after we've successfully authenticated
     return list_auth_methods(request, status=status)

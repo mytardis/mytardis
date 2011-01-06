@@ -27,23 +27,24 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %} 
+{% extends "tardis_portal/data_browsing_template.html" %} 
 {% block content %}
-<p>
-
-{% for userAuth in userAuthMethodList %}
-<b>username:</b> {{ userAuth.0 }}<br/>
-<b>auth method:</b> {{ userAuth.1 }}<br/>
-<br/>
-{% endfor %}
-<p/>
-{% if supportedAuthMethods|length > 0 %}
-Add a new account:
-<form action="/accounts/add_auth_method/" method="POST">
-  {{ authForm.as_p }}
-  <input type="submit" value="Link the Accounts">
-</form>
-{% endif %}
+<div id="content">
+	<p>
+	{% for userAuth in userAuthMethodList %}
+		<b>username:</b> {{ userAuth.0 }}<br/>
+		<b>auth method:</b> {{ userAuth.1 }}<br/>
+		<br/>
+	{% endfor %}
+	<p/>
+	{% if supportedAuthMethods|length > 0 %}
+		Add a new account:
+		<form action="/accounts/add_auth_method/" method="POST">
+		  {{ authForm.as_p }}
+		  <input type="submit" value="Link the Accounts">
+		</form>
+	{% endif %}
+</div>
 
 {% endblock %}
 </p><p/>
