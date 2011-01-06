@@ -70,6 +70,21 @@ class ChangeUserPermissionsForm(ModelForm):
         }
 
 
+class ChangeGroupPermissionsForm(forms.Form):
+
+    from django.forms.extras.widgets import SelectDateWidget
+
+    canRead = forms.BooleanField(label='canRead', required=False)
+    canWrite = forms.BooleanField(label='canWrite', required=False)
+    canDelete = forms.BooleanField(label='canDelete', required=False)
+
+    effectiveDate = forms.DateTimeField(label='Effective Date',
+            widget=SelectDateWidget(), required=False)
+    expiryDate = forms.DateTimeField(label='Expiry Date',
+            widget=SelectDateWidget(), required=False)
+
+
+
 class DatafileSearchForm(forms.Form):
 
     filename = forms.CharField(required=False, max_length=100)

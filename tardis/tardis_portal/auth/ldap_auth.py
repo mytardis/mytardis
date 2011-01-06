@@ -25,12 +25,12 @@ import urllib2
 
 import ldap
 
+
 def get_ldap_username_for_email(email):
     # return username if found, otherwise return none
     l = None
     try:
         l = ldap.open(settings.LDAP_URL)
-
         searchScope = ldap.SCOPE_SUBTREE
 
         # retrieve all attributes - again adjust to your needs
@@ -40,19 +40,17 @@ def get_ldap_username_for_email(email):
             + email + '))'
 
         l.protocol_version = ldap.VERSION3
-
         result = l.search_s(settings.BASE_DN, searchScope,
                             searchFilter, retrieveAttributes)
-
         return result[0][1]['uid'][0]
+
     except ldap.LDAPError, e:
-
         return ''
+
     except IndexError, i:
-
         return ''
-    finally:
 
+    finally:
         if l:
             l.unbind_s()
 
@@ -107,12 +105,13 @@ def _get_or_create_user_with_username(username):
             email=username)
         user.is_staff = True
         user.save()
-        
+
         userProfile = UserProfile(authcate_user=True, user=user)
         userProfile.save()
-        
+
         userAuth = UserAuthentication(userProfile=userProfile,
-            username=username, authenticationMethod=UserAuthentication.LDAP_METHOD)
+            username=username,
+            authenticationMethod=UserAuthentication.LDAP_METHOD)
         userAuth.save()
     return user
 
@@ -128,29 +127,23 @@ class LdapBackend():
         l_bind = None
         try:
             l = ldap.open(settings.LDAP_URL)
-    
             searchScope = ldap.SCOPE_SUBTREE
-    
             # retrieve all attributes - again adjust to your needs
             # see documentation for more options
             retrieveAttributes = None
             searchFilter = 'uid=' + username
-    
+
             l.protocol_version = ldap.VERSION3
-    
             result = l.search_s(settings.BASE_DN, searchScope,
                                 searchFilter, retrieveAttributes)
-    
             DN = result[0][0]
-    
             l_bind = ldap.open('directory.monash.edu.au')
-    
             l_bind.simple_bind_s(DN, password)
 
             # check if the given username in combination with the VBL
             # auth method is already in the UserAuthentication table
             return _get_or_create_user_with_username(username)
-        
+
         except ldap.LDAPError, e:
             return None
         except IndexError, i:

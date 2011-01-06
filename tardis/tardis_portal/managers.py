@@ -64,10 +64,13 @@ class ExperimentManager(models.Manager):
         if not request.user.is_authenticated():
             return []
 
+        from tardis.tardis_portal.models import ExperimentACL
         experiments = super(ExperimentManager, self).get_query_set().filter(
             experimentacl__pluginId='user',
             experimentacl__entityId=str(request.user.id),
-            experimentacl__isOwner=True)
+            experimentacl__isOwner=True,
+            experimentacl__aclOwnershipType=ExperimentACL.OWNER_OWNED
+            )
 
         return experiments
 
@@ -76,7 +79,17 @@ class ExperimentManager(models.Manager):
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(pluginId='user',
                                            experiment__id=experiment_id,
-                                           canRead=True)
+                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         return [User.objects.get(pk=str(a.entityId)) for a in acl]
 
+    def groups(self, request, experiment_id):
+        from tardis.tardis_portal.models import ExperimentACL
+        acl = ExperimentACL.objects.filter(pluginId='django_groups',
+                                           experiment__id=experiment_id,
+                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+        return [Group.objects.get(pk=str(a.entityId)) for a in acl]
+
+    def admins(self, request, experiment_id):
+        return []
