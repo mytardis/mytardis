@@ -103,7 +103,8 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.remove_user_from_group'),
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),
-    (r'^accounts/auth_methods/$', 'tardis.tardis_portal.views.auth_methods'),
+    (r'^accounts/list_auth_methods/$', 'tardis.tardis_portal.views.list_auth_methods'),
+    (r'^accounts/add_auth_method/$', 'tardis.tardis_portal.views.add_auth_method'),
     (r'^logout/$', logout, {'next_page': '/'}),
     (r'^accounts/register/', include('registration.urls'), {'form_class':
      RegistrationFormUniqueEmail}),

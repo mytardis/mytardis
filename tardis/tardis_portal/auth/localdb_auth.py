@@ -11,7 +11,8 @@ from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal import constants
 
-
+auth_key = u'localdb'
+auth_display_name = u'Local DB'
 
 def get_username_for_email(email):
     raise NotImplemented()

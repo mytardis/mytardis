@@ -136,3 +136,12 @@ class AuthServiceTestCase(TestCase):
 
         self.assertEqual(len([g for g in a.getGroupsForEntity('user1')]), 2)
         self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]), 1)
+
+    def testAuthenticate(self):
+        from tardis.tardis_portal.auth import AuthService
+        s = MockSettings()
+        s.USER_PROVIDERS = ()
+        s.GROUP_PROVIDERS = ()
+        a = AuthService(settings=s)
+        
+        pass

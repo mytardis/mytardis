@@ -38,12 +38,7 @@
 				</h1>
 				<div class="entry">
 					<p>
-
-					  {% if form.errors %}
-					    <p class="error">Sorry, that's not a valid username or password</p>
-					  {% endif %}
-
-					  <form action='.' method='post'>
+					  <form action='' method='post'>
 					    {{ loginForm.as_p }}
 					    <input type="submit" value="login" />
 					  </form>
@@ -52,7 +47,6 @@
 				</div>
 			</div>
 		</div>
-
 			{% endblock %} {% block sidebar %}
 		<p>
 			{% endblock %} {% block bottom %}

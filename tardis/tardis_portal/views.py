@@ -17,11 +17,12 @@ from django.db import transaction
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 # from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.exceptions import PermissionDenied
 
 from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
@@ -32,6 +33,7 @@ from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
 
+from tardis.tardis_portal.auth import localdb_auth
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
@@ -75,11 +77,9 @@ def return_response_not_found(request):
                                 'tardis_portal/blank_status.html', c))
 
 
-def return_response_error_message(request, redirect_path, message):
-    c = Context({'status': message, 'error': True})
-
+def return_response_error_message(request, redirect_path, context):
     return HttpResponseServerError(render_response_index(request,
-                                   redirect_path, c))
+                                   redirect_path, context))
 
 
 def logout(request):
@@ -427,6 +427,7 @@ def experiment_index(request):
         'subtitle': 'Experiment Index',
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
+        'next': '/experiment/view/',
         'data_pressed': True,
         'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -438,16 +439,20 @@ def experiment_index(request):
 # todo complete....
 def login(request):
     from tardis.tardis_portal.auth import login, auth_service
+    
+    if type(request.user) is not AnonymousUser:
+        # redirect the user to the home page if he is trying to go to the
+        # login page
+        return HttpResponseRedirect('/')
+
+    if 'next' not in request.GET:
+        next = '/'
+    next = request.GET['next']
 
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST['authMethod']
-
-        if 'next' in request.GET:
-            next = request.GET['next']
-        else:
-            next = '/'
 
         c = Context({'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -461,18 +466,96 @@ def login(request):
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
             return HttpResponseRedirect(next)
+        c = Context({'status': "Sorry, username and password don't match",
+            'error': True, 'loginForm': LoginForm(),
+            'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
         return return_response_error_message(
-            request, error_template_redirect,
-            "Sorry, username and password don't match")
+            request, error_template_redirect, c)
 
+    loginForm = LoginForm()
+    loginForm['next'].field.initial = next
     c = Context({'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm(), 'loginForm': LoginForm()})
+        getNewSearchDatafileSelectionForm(),
+        'loginForm': loginForm})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
 
-def auth_methods(request):
-    pass
+def list_auth_methods(request, status=None):
+    userAuthMethodList = []
+    
+    # the list of supported non-local DB authentication methods
+    supportedAuthMethods = {}
+
+    for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
+        # we will only add non-localDB authentication methods. the reasoning
+        # behind only adding non-localDB auth method is because if a user
+        # has authenticated using the VBL auth, we wouldn't want to offer him
+        # a way to authenticate using local DB anymore. 
+        if authKey != localdb_auth.auth_key:
+            supportedAuthMethods[authKey] = authDisplayName
+
+    try:
+        userProfile = UserProfile.objects.get(user=request.user)
+
+        if not userProfile.isNotADjangoAccount:
+            # if the main account for this user is a django account, add his
+            # details in the userAuthMethodList
+            userAuthMethodList.append((request.user.username,
+            localdb_auth.auth_display_name))
+
+        userAuths = UserAuthentication.objects.filter(
+            userProfile__user=request.user)
+        for userAuth in userAuths:
+            userAuthMethodList.append((userAuth.username,
+                userAuth.getAuthMethodDescription()))
+            del supportedAuthMethods[userAuth.authenticationMethod]
+
+    except UserProfile.DoesNotExist:
+        userAuthMethodList.append((request.user.username,
+            localdb_auth.auth_display_name))
+        
+    
+    LinkedUserAuthenticationForm = \
+        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    authForm = LinkedUserAuthenticationForm()
+    
+    c = Context({'userAuthMethodList': userAuthMethodList,
+        'authForm': authForm, 'supportedAuthMethods':supportedAuthMethods, 'status': status})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/auth_methods.html', c))
+
+def add_auth_method(request):
+    from tardis.tardis_portal.auth import auth_service
+    
+    supportedAuthMethods = {}
+
+    for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
+        # we will only add non-localDB authentication methods. the reasoning
+        # behind only adding non-localDB auth method is because if a user
+        # has authenticated using the VBL auth, we wouldn't want to offer him
+        # a way to authenticate using local DB anymore. 
+        if authKey != localdb_auth.auth_key:
+            supportedAuthMethods[authKey] = authDisplayName
+
+    LinkedUserAuthenticationForm = \
+        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    authForm = LinkedUserAuthenticationForm(request.POST)
+    
+    if authForm.is_valid():
+        # let's try and authenticate here
+        user = auth_service.authenticate(
+            authMethod=authForm.cleaned_data['authenticationMethod'],
+            request=request)
+
+    status = None
+    # if the returned user is not the same as the current logged in user
+    if user != request.user:
+        status = 'Sorry, that user account already exists in the system'
+        
+        
+    # let's redisplay again after we've successfully authenticated
+    return list_auth_methods(request, status=status)
 
 
 def register_experiment_ws_xmldata_internal(request):

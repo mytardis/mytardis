@@ -403,26 +403,39 @@ $(document).ready(function() {
 
 		{% block sidebar %}
 		<ul>
-		  <li>
-		    <h2>Browse Experiments</h2>
-		    <ul>
-		      <li>
-			<a href="/experiment/view">Index</a>
-		      </li>
-		      <li>
-			<a href="/search/experiment">Search</a>
-		      </li>
-		    </ul>
-		    {% if user.is_authenticated %}
-		    <br/>
-		    <h2>Controls</h2>
-		    <ul>
-		      <li>
-			<a href="/experiment/control_panel">Control Panel</a>
-		      </li>
-		    </ul>
-		    {% endif %}
-		  </li>
+			<li>
+				<h2>
+					Browse Experiments
+				</h2>
+				<ul>
+					<li>
+						<a href="/experiment/view">Index</a>
+					</li>
+					<li>
+						<a href="/search/experiment">Search</a>
+					</li>
+				</ul>
+				{% if user.is_authenticated %}
+				<br/>
+				<h2>
+                    Controls
+                </h2>
+                <ul>
+                    <li>
+                        <a href="/experiment/control_panel">Control Panel</a>
+                    </li>                   
+                </ul>
+                <br/>
+                <h2>
+                    Account Management
+                </h2>
+                <ul>
+                    <li>
+                        <a href="/accounts/list_auth_methods">Authentication Panel</a>
+                    </li>                   
+                </ul>
+				{% endif %}
+			</li>
 		</ul>
 		<p>
 		{% endblock %}
