@@ -25,6 +25,8 @@ import urllib2
 
 import ldap
 
+auth_key = u'ldap'
+auth_display_name = u'LDAP'
 
 def get_ldap_username_for_email(email):
     # return username if found, otherwise return none
@@ -96,7 +98,7 @@ def _get_or_create_user_with_username(username):
     user = None
     try:
         user = UserAuthentication.objects.get(username=username,
-            authenticationMethod=UserAuthentication.LDAP_METHOD).userProfile.user
+            authenticationMethod=auth_key).userProfile.user
     except UserAuthentication.DoesNotExist:
         # else, create a new user with a random password
         name = 'ldap_%s' % username[0:25]
@@ -110,8 +112,7 @@ def _get_or_create_user_with_username(username):
         userProfile.save()
 
         userAuth = UserAuthentication(userProfile=userProfile,
-            username=username,
-            authenticationMethod=UserAuthentication.LDAP_METHOD)
+            username=username, authenticationMethod=auth_key)
         userAuth.save()
     return user
 

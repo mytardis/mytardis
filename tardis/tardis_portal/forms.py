@@ -45,7 +45,7 @@ from django.conf import settings
 
 class LoginForm(AuthenticationForm):
     authMethod = forms.CharField()
-    next = forms.CharField(widget=forms.HiddenInput, initial="/")
+    next = forms.CharField(widget=forms.HiddenInput)
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -113,6 +113,31 @@ class MXDatafileSearchForm(DatafileSearchForm):
     xrayWavelengthTo = forms.IntegerField(
         required=False, label='X-ray Wavelength To',
         widget=forms.TextInput(attrs={'size': '4'}))
+
+
+def createLinkedUserAuthenticationForm(authMethods):
+    """Create a LinkedUserAuthenticationForm and use the contents of
+    authMethods to the list of options in the dropdown menu for
+    authenticationMethod.
+
+    """
+    _authenticationMethodChoices = ()
+    for authMethodKey in authMethods.keys():
+        _authenticationMethodChoices += (
+            (authMethodKey, authMethods[authMethodKey]), )
+
+    fields = {}
+    fields['authenticationMethod'] = \
+        forms.CharField(label='Authentication Method',
+        widget=forms.Select(choices=_authenticationMethodChoices),
+        required=True)
+    fields['username'] = forms.CharField(label='Username',
+        max_length=30, required=True)
+    fields['password'] = forms.CharField(required=True,
+        widget=forms.PasswordInput(), label='Password', max_length=12)
+
+    return type('LinkedUserAuthenticationForm', (forms.BaseForm, ),
+                    {'base_fields': fields})
 
 
 # infrared
@@ -279,34 +304,34 @@ def __getParameterChoices(choicesString):
 
     import string
     import re
-    paramChoices = []
+    paramChoices = ()
 
     # we'll always add '-' as the default value for a dropdown menu just
     # incase the user doesn't specify a value they'd like to search for
-    paramChoices.append(('-', '-'))
+    paramChoices += (('-', '-'),)
     dropDownEntryPattern = re.compile(r'\((.*):(.*)\)')
 
     dropDownEntryStrings = string.split(choicesString, ',')
     for dropDownEntry in dropDownEntryStrings:
         dropDownEntry = string.strip(dropDownEntry)
         (key, value) = dropDownEntryPattern.search(dropDownEntry).groups()
-        paramChoices.append((str(key), str(value)))
+        paramChoices += ((str(key), str(value)),)
 
-    return tuple(paramChoices)
+    return paramChoices
 
 
 def createSearchDatafileSelectionForm():
 
     from tardis.tardis_portal import constants
 
-    supportedDatafileSearches = [('-', 'Datafile')]
+    supportedDatafileSearches = (('-', 'Datafile'),)
     for key in constants.SCHEMA_DICT:
-        supportedDatafileSearches.append((key, key.upper()))
+        supportedDatafileSearches += ((key, key.upper()),)
 
     fields = {}
     fields['type'] = \
         forms.CharField(label='type',
-        widget=forms.Select(choices=tuple(supportedDatafileSearches)),
+        widget=forms.Select(choices=supportedDatafileSearches),
         required=False)
     fields['type'].widget.attrs['class'] = 'searchdropdown'
 

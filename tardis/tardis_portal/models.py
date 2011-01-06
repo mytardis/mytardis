@@ -40,6 +40,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 from django.utils.safestring import SafeUnicode
+from django.conf import settings
 
 from tardis.tardis_portal.managers import ExperimentManager
 
@@ -47,9 +48,19 @@ from tardis.tardis_portal.managers import ExperimentManager
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
 
+    # This flag will tell us if the main User account was created using any
+    # non localdb auth methods. For example, if a first time user authenticates
+    # to the system using the VBL auth method, an account will be created for
+    # him, say "vbl_user001" and the field isNotADjangoAccount will be set to
+    # True.
+    isNotADjangoAccount = models.BooleanField(
+        null=False, blank=False, default=False)
+
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()
 
+    def __unicode__(self):
+        return self.user.username
 
 class GroupAdmin(models.Model):
     user = models.ForeignKey(User)
@@ -58,20 +69,25 @@ class GroupAdmin(models.Model):
 
 # TODO: Generalise auth methods
 class UserAuthentication(models.Model):
-
-    LOCALDB_METHOD = 1
-    VBL_METHOD = 2
-    LDAP_METHOD = 3
-    __COMPARISON_CHOICES = (
-        (LOCALDB_METHOD, 'Local DB'),
-        (VBL_METHOD, 'VBL'),
- #        (LDAP_METHOD, 'LDAP')
-    )
-
+    CHOICES = ()
     userProfile = models.ForeignKey(UserProfile)
     username = models.CharField(max_length=50)
-    authenticationMethod = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=LOCALDB_METHOD)
+    authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        # instantiate comparisonChoices based on settings.AUTH PROVIDERS
+        self.CHOICES = ()
+        for authMethods in settings.AUTH_PROVIDERS:
+            self.CHOICES += ((authMethods[0], authMethods[1]),)
+        self._comparisonChoicesDict = dict(self.CHOICES)
+
+        super(UserAuthentication, self).__init__(*args, **kwargs)
+
+    def getAuthMethodDescription(self):
+        return self._comparisonChoicesDict[self.authenticationMethod]
+
+    def __unicode__(self):
+        return self.username + ' - ' + self.getAuthMethodDescription()
 
 
 class XSLT_docs(models.Model):

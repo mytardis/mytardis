@@ -5,7 +5,7 @@ Created on 10/12/2010
 @author: Gerson Galang
 '''
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, AnonymousUser
 from django.conf import settings
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider
@@ -17,6 +17,8 @@ from suds.client import Client
 
 EPN_LIST = "_epn_list"
 
+auth_key = u'vbl'
+auth_display_name = u'VBL'
 
 def get_expids(epns):
     """
@@ -57,7 +59,7 @@ class VblGroupProvider(GroupProvider):
                 # auth method
                 userAuth = UserAuthentication.objects.get(
                     userProfile__user=request.user,
-                    authenticationMethod=UserAuthentication.VBL_METHOD)
+                    authenticationMethod=auth_key)
 
             except UserAuthentication.DoesNotExist:
                 return []
@@ -116,23 +118,35 @@ class Backend():
             # check if the given username in combination with the VBL
             # auth method is already in the UserAuthentication table
             user = UserAuthentication.objects.get(username=username,
-                authenticationMethod=UserAuthentication.VBL_METHOD).userProfile.user
+                authenticationMethod=auth_key).userProfile.user
 
         except UserAuthentication.DoesNotExist:
+            # if request.user is not null, then we can assume that we are only
+            # calling this function to verify if the provided username and
+            # password will authenticate with this backend
+            if type(request.user) is not AnonymousUser:
+                user = request.user
+                
             # else, create a new user with a random password
-            name = username.partition('@')[0]
-            name = 'vbl_%s' % name[0:26]
-            user = User(username=name,
-                        password=User.objects.make_random_password(),
-                        email=username)
-            user.is_staff = True
-            user.save()
+            else:
+                name = username.partition('@')[0]
+                name = 'vbl_%s' % name[0:26]
+                user = User(username=name,
+                            password=User.objects.make_random_password(),
+                            email=username)
+                user.is_staff = True
+                user.save()
 
-            userProfile = UserProfile(user=user)
-            userProfile.save()
+            try:
+                # we'll also try and check if the user already has an
+                # existing userProfile attached to his/her account
+                userProfile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                userProfile = UserProfile(user=user)
+                userProfile.save()
 
             userAuth = UserAuthentication(userProfile=userProfile,
-                username=username, authenticationMethod=UserAuthentication.VBL_METHOD)
+                username=username, authenticationMethod=auth_key)
             userAuth.save()
 
         # result contains comma separated list of epns

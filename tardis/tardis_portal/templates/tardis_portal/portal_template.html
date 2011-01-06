@@ -88,7 +88,7 @@ $(document).ready(function() {
 		<!-- end header -->
 		<div id="headerbg">
 			<div id="headerloginstatus">
-		{% if is_authenticated %}Welcome, <em>{{ username }}</em> - <a href="/logout"> [Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login"> [Log In] </a> {% endif %}
+		{% if is_authenticated %}Welcome, <em>{{ username }}</em> - <a href="/logout"> [Log Out]</a> {% else %} <a href="/accounts/register"> [Register] </a> <a href="/login?next={{ next }}"> [Log In]</a> {% endif %}
 		
 	</div>
 </div>
