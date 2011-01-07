@@ -62,7 +62,8 @@ class DjangoGroupProvider(GroupProvider):
         """
         return an iteration of the available groups.
         """
-        return request.user.groups.all()
+        groups = request.user.groups.all()
+        return [g.id for g in groups]
 
     def getGroupById(self, id):
         """

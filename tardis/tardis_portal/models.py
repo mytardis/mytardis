@@ -109,7 +109,7 @@ class Author(models.Model):
 
 class Experiment(models.Model):
 
-    url = models.URLField(verify_exists=False, max_length=255)
+    url = models.URLField(verify_exists=False, max_length=255, null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -322,14 +322,7 @@ class ExperimentACL(models.Model):
     canWrite = models.BooleanField(default=False)
     canDelete = models.BooleanField(default=False)
     isOwner = models.BooleanField(default=False)
-
-    # this usually is the end of the embargo period when the experiment
-    # becomes eligible to be made public
-    # TODO: remove null default value once we've fully implemented embargo!
     effectiveDate = models.DateField(null=True, blank=True)
-
-    # if expiryDate is not set, the experiment will be publicly available
-    # as long as the effectiveDate is met
     expiryDate = models.DateField(null=True, blank=True)
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)

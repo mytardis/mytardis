@@ -15,7 +15,27 @@ class ExperimentManager(models.Manager):
             for name, group in request.groups:
                 query |= Q(experimentacl__pluginId=name,
                            experimentacl__entityId=group,
-                           experimentacl__canRead=True)
+                           experimentacl__canRead=True,
+                           experimentacl__effectiveDate__lte=datetime.today(),
+                           experimentacl__expiryDate__gte=datetime.today())
+
+                query |= Q(experimentacl__pluginId=name,
+                           experimentacl__entityId=group,
+                           experimentacl__canRead=True,
+                           experimentacl__effectiveDate__isnull=True,
+                           experimentacl__expiryDate__isnull=True)
+
+            query |= Q(experimentacl__pluginId='user',
+                       experimentacl__entityId=str(request.user.id),
+                       experimentacl__canRead=True,
+                       experimentacl__effectiveDate__lte=datetime.today(),
+                       experimentacl__expiryDate__gte=datetime.today())
+
+            query |= Q(experimentacl__pluginId='user',
+                       experimentacl__entityId=str(request.user.id),
+                       experimentacl__canRead=True,
+                       experimentacl__effectiveDate__lte=datetime.today(),
+                       experimentacl__expiryDate__gte=datetime.today())
 
             query |= Q(experimentacl__pluginId='user',
                        experimentacl__entityId=str(request.user.id),
@@ -42,16 +62,30 @@ class ExperimentManager(models.Manager):
                    pluginId='user',
                    entityId=str(request.user.id),
                    canRead=True,
-                   effectiveDate__lt=datetime.today(),
-                   expiryDate__gt=datetime.today())
+                   effectiveDate__lte=datetime.today(),
+                   expiryDate__gte=datetime.today())
+
+        query |= Q(experiment=experiment,
+                   pluginId='user',
+                   entityId=str(request.user.id),
+                   canRead=True,
+                   effectiveDate__isnull=True,
+                   expiryDate__isnull=True)
 
         for name, group in request.groups:
             query |= Q(pluginId=name,
-                       entityId=group,
+                       entityId=str(group),
                        experiment=experiment,
                        canRead=True,
-                       effectiveDate__lt=datetime.today(),
-                       expiryDate__gt=datetime.today())
+                       effectiveDate__lte=datetime.today(),
+                       expiryDate__gte=datetime.today())
+
+            query |= Q(pluginId=name,
+                       entityId=str(group),
+                       experiment=experiment,
+                       canRead=True,
+                       effectiveDate__isnull=True,
+                       expiryDate__isnull=True)
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(query)
@@ -91,5 +125,3 @@ class ExperimentManager(models.Manager):
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
 
-    def admins(self, request, experiment_id):
-        return []

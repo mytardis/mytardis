@@ -29,13 +29,7 @@
 -->
 <div class="users">
 {% for user in users %}
-	<div class="access_list_user">
-	  <p><strong>{{ user.username }}</strong> ({{user.email}})
-	    <a class="remove_user" href="/group/{{group_id}}/remove/{{user.username}}">[x]</a>
-	    <br/>
-	    <br/>
-	</p>
-	</div> <!--member_list_user -->
+{% include "tardis_portal/ajax/add_user_to_group_result.html" %}
 {% endfor %}
 </div> <!-- users -->
 <p>

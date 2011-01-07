@@ -253,7 +253,7 @@ $(document).ready(function() {
 								    var usersuggest = $(this).siblings(".usersuggest").val();
 								    var groupsuggest = $(this).siblings(".groupsuggest").val();
 		                                                    var groups_div = $(this).parents('.access_list').children('.groups');
-								    var create = $(this).siblings(".create").is(':checked');
+								    var create = $(this).siblings(".creategroup").is(':checked');
 		                                                    var canRead = $(this).siblings(".canRead").is(':checked');
 		                                                    var canWrite = $(this).siblings(".canWrite").is(':checked');
 		                                                    var canDelete = $(this).siblings(".canDelete").is(':checked');
@@ -320,7 +320,6 @@ $(document).ready(function() {
 									var href = $(this).attr("href");
 
 									remove_group = $(this);
-									alert(remove_group.parents('.access_list_group'));
 
 									$.ajax({
 									        'async': false,
