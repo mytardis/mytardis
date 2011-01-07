@@ -30,7 +30,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 from django.contrib.auth.models import User
-from tardis.tardis_portal.models import Experiment, ExperimentACL
+from tardis.tardis_portal.models import *
 
 """
 tests.py
@@ -63,18 +63,37 @@ class SearchTestCase(TestCase):
         try:
             user = User.objects.get(username='test')
         except User.DoesNotExist:
-            user = User(username='test', password='test')
+            user = User.objects.create_user('test', '', 'test')
             user.save()
 
         for experiment in Experiment.objects.all():
-            acl = ExperimentACL(pluginId='django.contrib.auth.backends.ModelBackend',
-                                entityId=user.id,
+            acl = ExperimentACL(pluginId='user',
+                                entityId=str(user.id),
                                 experiment=experiment,
                                 canRead=True,
                                 canWrite=True,
                                 canDelete=True,
                                 isOwner=True)
             acl.save()
+
+
+        from tardis.tardis_portal.constants import SCHEMA_DICT
+        schema = Schema.objects.get(
+            namespace=SCHEMA_DICT['saxs']['datafile']
+            )
+        parameter = ParameterName.objects.get(schema = schema,
+                                              name = 'io')
+        parameter.is_searchable = True
+        parameter.save()
+
+        schema = Schema.objects.get(
+            namespace=SCHEMA_DICT['saxs']['dataset']
+            )
+
+        parameter = ParameterName.objects.get(schema = schema,
+                                              name = 'frqimn')
+        parameter.is_searchable = True
+        parameter.save()
 
     def testSearchDatafileForm(self):
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
@@ -104,14 +123,16 @@ class SearchTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # let's try to login this time...
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+                                   {'type': 'saxs', 'filename': '', })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
     def testSearchDatafileResults(self):
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/datafile/',
             {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
@@ -164,7 +185,8 @@ class SearchTestCase(TestCase):
             '/accounts/login/?next=/search/experiment/')
 
         # let's try to login this time...
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/experiment/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not

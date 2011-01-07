@@ -29,21 +29,14 @@
 -->
 <div class="groups">
 {% for group in groups %}
-<div class="access_list_group">
-  <p><strong>{{ group.name }}</strong>
-    <a class="change_group" href="{{experiment_id}}/access_list/change/group/{{group.id}}">[change]</a>
-    <a class="remove_group" href="{{experiment_id}}/access_list/remove/group/{{group.id}}">[x]</a>
-    <br/>
-    <br/>
-  </p>
-</div> <!--access_list_group -->
+{% include "tardis_portal/ajax/add_group_result.html" %}
 {% endfor %}
 </div> <!-- groups -->
 <p>
   <label>Add group: </label>
   <input type="text" class="groupsuggest" name="addgroup" />
   <label>CREATE? </label>
-  <input type="checkbox" name="create" class="createGroup" /> <br/>
+  <input type="checkbox" name="create" class="creategroup" /> <br/>
   <label>Group admin: </label>
   <input type="text" class="usersuggest" name="adduser" />
   <a class="form_submit" id="group" href="">Submit</a><br/>
