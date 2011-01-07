@@ -439,7 +439,7 @@ def experiment_index(request):
 # todo complete....
 def login(request):
     from tardis.tardis_portal.auth import login, auth_service
-    
+
     if type(request.user) is not AnonymousUser:
         # redirect the user to the home page if he is trying to go to the
         # login page
@@ -449,7 +449,7 @@ def login(request):
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST['authMethod']
-        
+
         if 'next' not in request.GET:
             next = '/'
         next = request.GET['next']
@@ -481,7 +481,7 @@ def login(request):
 
 def list_auth_methods(request, status=None):
     userAuthMethodList = []
-    
+
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
@@ -489,7 +489,7 @@ def list_auth_methods(request, status=None):
         # we will only add non-localDB authentication methods. the reasoning
         # behind only adding non-localDB auth method is because if a user
         # has authenticated using the VBL auth, we wouldn't want to offer him
-        # a way to authenticate using local DB anymore. 
+        # a way to authenticate using local DB anymore.
         if authKey != localdb_auth.auth_key:
             supportedAuthMethods[authKey] = authDisplayName
 
@@ -512,12 +512,12 @@ def list_auth_methods(request, status=None):
     except UserProfile.DoesNotExist:
         userAuthMethodList.append((request.user.username,
             localdb_auth.auth_display_name))
-        
-    
+
+
     LinkedUserAuthenticationForm = \
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm()
-    
+
     c = Context({'userAuthMethodList': userAuthMethodList,
         'authForm': authForm, 'supportedAuthMethods':supportedAuthMethods, 'status': status})
     return HttpResponse(render_response_index(request,
@@ -525,25 +525,25 @@ def list_auth_methods(request, status=None):
 
 def add_auth_method(request):
     from tardis.tardis_portal.auth import auth_service
-    
+
     supportedAuthMethods = {}
 
     for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
         # we will only add non-localDB authentication methods. the reasoning
         # behind only adding non-localDB auth method is because if a user
         # has authenticated using the VBL auth, we wouldn't want to offer him
-        # a way to authenticate using local DB anymore. 
+        # a way to authenticate using local DB anymore.
         if authKey != localdb_auth.auth_key:
             supportedAuthMethods[authKey] = authDisplayName
 
     LinkedUserAuthenticationForm = \
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm(request.POST)
-    
+
     if not authForm.is_valid():
         return list_auth_methods(request,
             status='Invalid authentication form was submitted')
-        
+
     # let's try and authenticate here
     user = auth_service.authenticate(
         authMethod=authForm.cleaned_data['authenticationMethod'],
@@ -553,7 +553,7 @@ def add_auth_method(request):
     # if the returned user is not the same as the current logged in user
     if user != request.user:
         status = 'Sorry, that user account already exists in the system'
-        
+
     # let's redisplay again after we've successfully authenticated
     return list_auth_methods(request, status=status)
 
