@@ -48,8 +48,8 @@
 						{% for experiment in experiments %}
 							<tr>
 								<th>
-									<a href="../view/{{ experiment.id }}">{{ experiment.title }}									
-										
+									<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}
+
 										</a>
 								</th>
 								
