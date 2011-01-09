@@ -45,7 +45,7 @@ INSTALLED_APPS = (
 
 TEST_RUNNER = 'django_nose.run_tests'
 
-LOG_FILENAME = '/dev/stderr'
+LOG_FILENAME = None
 
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
