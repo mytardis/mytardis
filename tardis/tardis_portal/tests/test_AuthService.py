@@ -60,10 +60,23 @@ class AuthServiceTestCase(TestCase):
         self.user2 = User.objects.create_user('user2', '', 'secret')
         self.user3 = User.objects.create_user('user3', '', 'secret')
 
-    def teardown(self):
+        from tardis.tardis_portal.auth import AuthService, auth_service
+        s = MockSettings()
+        s.GROUP_PROVIDERS = \
+            ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+        a = AuthService(settings=s)
+
+        self._auth_service_group_providers = auth_service._group_providers
+        # add the local group provider to the singleton auth_service
+        auth_service._group_providers = a._group_providers
+
+    def tearDown(self):
         self.user1.delete()
         self.user2.delete()
         self.user3.delete()
+
+        from tardis.tardis_portal.auth import auth_service
+        auth_service._group_providers = self._auth_service_group_providers
 
     def testInitialisation(self):
         from tardis.tardis_portal.auth import AuthService
@@ -79,15 +92,12 @@ class AuthServiceTestCase(TestCase):
         self.assertEqual(len(a._group_providers), 1)
 
     def testGroupProvider(self):
-        from tardis.tardis_portal.auth import AuthService, auth_service
+        from tardis.tardis_portal.auth import AuthService
         s = MockSettings()
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
         a = AuthService(settings=s)
         self.assertEqual(len(a._group_providers), 1)
-
-        # add the local group provider to the singleton auth_service
-        auth_service._group_providers = a._group_providers
 
         c = Client()
         c.login(username='user1', password='secret')
