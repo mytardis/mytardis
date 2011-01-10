@@ -60,6 +60,11 @@ class AuthServiceTestCase(TestCase):
         self.user2 = User.objects.create_user('user2', '', 'secret')
         self.user3 = User.objects.create_user('user3', '', 'secret')
 
+    def teardown(self):
+        self.user1.delete()
+        self.user2.delete()
+        self.user3.delete()
+
     def testInitialisation(self):
         from tardis.tardis_portal.auth import AuthService
         s = MockSettings()
@@ -88,7 +93,7 @@ class AuthServiceTestCase(TestCase):
         c.login(username='user1', password='secret')
         self.assert_(SESSION_KEY in c.session)
 
-        r = str(c.get('/groups/'))
+        r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2)
         self.assertTrue(',1)' in r)
         self.assertTrue(',2)' in r)
@@ -96,7 +101,7 @@ class AuthServiceTestCase(TestCase):
         c.login(username='user2', password='secret')
         self.assert_(SESSION_KEY in c.session)
 
-        r = str(c.get('/groups/'))
+        r = str(c.get('/test/groups/'))
         self.assertEqual(r.count('mockdb'), 2, r)
         self.assertTrue(',1)' in r)
         self.assertTrue(',3)' in r)
@@ -143,5 +148,5 @@ class AuthServiceTestCase(TestCase):
         s.USER_PROVIDERS = ()
         s.GROUP_PROVIDERS = ()
         a = AuthService(settings=s)
-        
+
         pass
