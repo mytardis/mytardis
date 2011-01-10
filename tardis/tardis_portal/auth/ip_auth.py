@@ -8,7 +8,7 @@ from tardis.tardis_portal.auth.interfaces import GroupProvider
 
 
 class IPGroupProvider(GroupProvider):
-    name = u'ip_adress'
+    name = u'ip_address'
 
     def getGroups(self, request):
         """
@@ -24,7 +24,7 @@ class IPGroupProvider(GroupProvider):
             subnet = '%s.%s.%s.%s' % (ip4[0], ip4[1], ip4[2], ip4[3])
             groups += [subnet]
 
-        return [groups]
+        return groups
 
     def getGroupById(self, id):
         """

@@ -12,5 +12,5 @@ def groups_view(request):
 
 # special urls for auth test cases
 urlpatterns += patterns('',
-    (r'^groups/$', groups_view),
+    (r'^test/groups/$', groups_view),
 )
