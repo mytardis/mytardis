@@ -67,6 +67,7 @@ class VblGroupProvider(GroupProvider):
             result = str(
                 client.service.VBLgetExpIDsFromEmail(userAuth.username))
             return result.split(',')
+
         epnList = request.session[EPN_LIST]
         return epnList
 
@@ -126,7 +127,7 @@ class Backend():
             # password will authenticate with this backend
             if type(request.user) is not AnonymousUser:
                 user = request.user
-                
+
             # else, create a new user with a random password
             else:
                 name = username.partition('@')[0]

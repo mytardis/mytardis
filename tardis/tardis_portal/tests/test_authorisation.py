@@ -3,10 +3,12 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.models import *
+from tardis.tardis_portal.models import ExperimentACL, Experiment
 
 
 class ExperimentACLTestCase(TestCase):
+    urls = 'tardis.urls'
+
     def setUp(self):
 
         # create a couple of test users
@@ -51,6 +53,16 @@ class ExperimentACLTestCase(TestCase):
             )
         self.experiment3.save()
 
+        # experiment4 will be accessible based on location information
+        self.experiment4 = Experiment(
+            title='Experiment4',
+            institution_name='Australian Synchrotron',
+            approved=True,
+            public=False,
+            created_by=self.user1,
+            )
+        self.experiment4.save()
+
         # user1 owns experiment1
         acl = ExperimentACL(
             pluginId='user',
@@ -73,6 +85,16 @@ class ExperimentACLTestCase(TestCase):
             )
         acl.save()
 
+        # experiment4 is accessible via location
+        acl = ExperimentACL(
+            pluginId='ip_address',
+            entityId='127.0.0.1',
+            experiment=self.experiment4,
+            canRead=True,
+            aclOwnershipType=ExperimentACL.SYSTEM_OWNED,
+            )
+        acl.save()
+
     def teardown(self):
         self.client1.logout()
         self.client2.logout()
@@ -82,6 +104,7 @@ class ExperimentACLTestCase(TestCase):
         self.experiment1.delete()
         self.experiment2.delete()
         self.experiment3.delete()
+        self.experiment4.delete()
 
         self.user1.delete()
         self.user2.delete()
@@ -105,6 +128,11 @@ class ExperimentACLTestCase(TestCase):
         # user1 should be allowed to see experiment3 as it's public
         response = self.client1.get('/experiment/view/%i/'
                                    % (self.experiment3.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user1 should be allowed to see experiment4 based on his IP address
+        response = self.client1.get('/experiment/view/%i/'
+                                   % (self.experiment4.id))
         self.assertEqual(response.status_code, 200)
 
         # create a group and add it to experiment1
@@ -192,7 +220,6 @@ class ExperimentACLTestCase(TestCase):
         self.client1.get('/experiment/control_panel/%i/access_list/add/user/%s'
                          % (self.experiment1.id, self.user3.username))
         self.assertEqual(response.status_code, 200)
-
 
         # give user3 read permissions for experiment1 effictive TOMORROW
         self.client1.post(url % (self.experiment1.id, self.user3.username),

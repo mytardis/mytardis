@@ -12,34 +12,26 @@ class ExperimentManager(models.Manager):
         query = Q(public=True)
 
         if request.user.is_authenticated():
-            for name, group in request.groups:
-                query |= Q(experimentacl__pluginId=name,
-                           experimentacl__entityId=group,
-                           experimentacl__canRead=True,
-                           experimentacl__effectiveDate__lte=datetime.today(),
-                           experimentacl__expiryDate__gte=datetime.today())
-
-                query |= Q(experimentacl__pluginId=name,
-                           experimentacl__entityId=group,
-                           experimentacl__canRead=True,
-                           experimentacl__effectiveDate__isnull=True,
-                           experimentacl__expiryDate__isnull=True)
-
-            query |= Q(experimentacl__pluginId='user',
-                       experimentacl__entityId=str(request.user.id),
-                       experimentacl__canRead=True,
-                       experimentacl__effectiveDate__lte=datetime.today(),
-                       experimentacl__expiryDate__gte=datetime.today())
-
-            query |= Q(experimentacl__pluginId='user',
-                       experimentacl__entityId=str(request.user.id),
-                       experimentacl__canRead=True,
-                       experimentacl__effectiveDate__lte=datetime.today(),
-                       experimentacl__expiryDate__gte=datetime.today())
-
             query |= Q(experimentacl__pluginId='user',
                        experimentacl__entityId=str(request.user.id),
                        experimentacl__isOwner=True)
+
+            query |= Q(experimentacl__pluginId='user',
+                       experimentacl__entityId=str(request.user.id),
+                       experimentacl__canRead=True)\
+                       & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                          | Q(experimentacl__effectiveDate__isnull=True))\
+                       & (Q(experimentacl__expiryDate__gte=datetime.today())
+                          | Q(experimentacl__expiryDate__isnull=True))
+
+            for name, group in request.groups:
+                query |= Q(experimentacl__pluginId=name,
+                           experimentacl__entityId=str(group),
+                           experimentacl__canRead=True)\
+                           & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                              | Q(experimentacl__effectiveDate__isnull=True))\
+                           & (Q(experimentacl__expiryDate__gte=datetime.today())
+                              | Q(experimentacl__expiryDate__isnull=True))
 
         return super(ExperimentManager, self).get_query_set().filter(query)
 
@@ -61,31 +53,21 @@ class ExperimentManager(models.Manager):
         query |= Q(experiment=experiment,
                    pluginId='user',
                    entityId=str(request.user.id),
-                   canRead=True,
-                   effectiveDate__lte=datetime.today(),
-                   expiryDate__gte=datetime.today())
-
-        query |= Q(experiment=experiment,
-                   pluginId='user',
-                   entityId=str(request.user.id),
-                   canRead=True,
-                   effectiveDate__isnull=True,
-                   expiryDate__isnull=True)
+                   canRead=True)\
+                   & (Q(effectiveDate__lte=datetime.today())
+                      | Q(effectiveDate__isnull=True))\
+                   & (Q(expiryDate__gte=datetime.today())
+                      | Q(expiryDate__isnull=True))
 
         for name, group in request.groups:
             query |= Q(pluginId=name,
                        entityId=str(group),
                        experiment=experiment,
-                       canRead=True,
-                       effectiveDate__lte=datetime.today(),
-                       expiryDate__gte=datetime.today())
-
-            query |= Q(pluginId=name,
-                       entityId=str(group),
-                       experiment=experiment,
-                       canRead=True,
-                       effectiveDate__isnull=True,
-                       expiryDate__isnull=True)
+                       canRead=True)\
+                       & (Q(effectiveDate__lte=datetime.today())
+                          | Q(effectiveDate__isnull=True))\
+                       & (Q(expiryDate__gte=datetime.today())
+                          | Q(expiryDate__isnull=True))
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(query)
@@ -124,4 +106,3 @@ class ExperimentManager(models.Manager):
                                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
-

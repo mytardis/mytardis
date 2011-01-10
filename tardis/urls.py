@@ -67,19 +67,19 @@ urlpatterns = patterns(
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>\w+)$', 'tardis.tardis_portal.views.add_experiment_access_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
-     '(?P<username>\w+)$',
+     '(?P<username>\w+)/$',
      'tardis.tardis_portal.views.remove_experiment_access_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-     '(?P<username>\w+)$', 'tardis.tardis_portal.views.change_user_permissions'),
+     '(?P<username>\w+)/$', 'tardis.tardis_portal.views.change_user_permissions'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'tardis.tardis_portal.views.retrieve_access_list_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
      '(?P<groupname>\w+)$', 'tardis.tardis_portal.views.add_experiment_access_group'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
-     '(?P<group_id>\d+)$',
+     '(?P<group_id>\d+)/$',
      'tardis.tardis_portal.views.remove_experiment_access_group'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
-     '(?P<group_id>\d+)$', 'tardis.tardis_portal.views.change_group_permissions'),
+     '(?P<group_id>\d+)/$', 'tardis.tardis_portal.views.change_group_permissions'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/group/$',
      'tardis.tardis_portal.views.retrieve_access_list_group'),
     (r'^experiment/control_panel/$',
@@ -95,11 +95,11 @@ urlpatterns = patterns(
     (r'^ajax/group_list/$',
      'tardis.tardis_portal.views.retrieve_group_list'),
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
-    (r'^group/(?P<group_id>\d+)$',
+    (r'^group/(?P<group_id>\d+)/$',
      'tardis.tardis_portal.views.retrieve_group_userlist'),
     (r'^group/(?P<group_id>\d+)/add/(?P<username>\w+)$',
      'tardis.tardis_portal.views.add_user_to_group'),
-    (r'^group/(?P<group_id>\d+)/remove/(?P<username>\w+)$',
+    (r'^group/(?P<group_id>\d+)/remove/(?P<username>\w+)/$',
      'tardis.tardis_portal.views.remove_user_from_group'),
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),

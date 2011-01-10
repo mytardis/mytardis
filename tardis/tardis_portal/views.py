@@ -341,9 +341,9 @@ def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
-                'nav': [{'name': 'About', 'link': '/about/'}],
-                'searchDatafileSelectionForm':
-                getNewSearchDatafileSelectionForm()})
+                 'nav': [{'name': 'About', 'link': '/about/'}],
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
