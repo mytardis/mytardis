@@ -458,6 +458,124 @@ class EquipmentTestCase(TestCase):
         self.assertEqual(len(response.context['object_list']), 2)
 
 
+class ExperimentACLTestCase(TestCase):
+    def setUp(self):
+
+        self.client = Client()
+
+        self.user1 = User.objects.create_user('testuser1', '', 'secret')
+        self.user2 = User.objects.create_user('testuser2', '', 'secret')
+        self.user3 = User.objects.create_user('testuser3', '', 'secret')
+
+        # user1 will own experiment1
+        self.experiment1 = Experiment(
+            title = 'Experiment1',
+            institution_name = 'Australian Synchrotron',
+            approved = True,
+            public = False,
+            created_by = self.user1,
+            )
+        self.experiment1.save()
+
+        # user2 will experiment2
+        self.experiment2 = Experiment(
+            title = 'Experiment2',
+            institution_name = 'Australian Synchrotron',
+            approved = True,
+            public = False,
+            created_by = self.user2,
+            )
+        self.experiment2.save()
+
+        # experiment3 is public
+        self.experiment3 = Experiment(
+            title = 'Experiment3',
+            institution_name = 'Australian Synchrotron',
+            approved = True,
+            public = True,
+            created_by = self.user3,
+            )
+        self.experiment3.save()
+
+        # user1 owns experiment1
+        acl = ExperimentACL(
+            pluginId = 'user',
+            entityId = str(self.user1.id),
+            experiment = self.experiment1,
+            canRead = True,
+            isOwner = True,
+            aclOwnershipType = ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+        # user2 owns experiment2
+        acl = ExperimentACL(
+            pluginId = 'user',
+            entityId = str(self.user2.id),
+            experiment = self.experiment2,
+            canRead = True,
+            isOwner = True,
+            aclOwnershipType = ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+
+    def testAccessControl(self):
+        login = self.client.login(username='testuser1', password='secret')
+        self.assertTrue(login)
+
+        # user1 should be see experiment1
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user1 should not be allowed to see experiment2
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment2.id))
+        self.assertEqual(response.status_code, 403)
+
+        # user1 should be allowed to see experiment3 as it's public
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment3.id))
+        self.assertEqual(response.status_code, 200)
+
+        # create a group and add it to experiment1
+        response = self.client.get('/experiment/control_panel/%i/access_list/add/group/%s?canRead=true&create=true'
+                                   % (self.experiment1.id, 'group1'))
+        self.assertEqual(response.status_code, 200)
+
+        # add user2 as admin to the newly created group
+        group = Group.objects.get(name='group1')
+        response = self.client.get('/group/%i/add/%s?isAdmin=true'
+                                   % (group.id, 'testuser2'))
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+
+        # now check user2's permissions
+        login = self.client.login(username='testuser2', password='secret')
+        self.assertTrue(login)
+
+        # user2 should be able to see experiment1 now
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user2 should be also able to see experiment2
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment2.id))
+        self.assertEqual(response.status_code, 200)
+
+        # user2 should be allowed to see experiment3 as it's public
+        response = self.client.get('/experiment/view/%i/'
+                                   % (self.experiment3.id))
+
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+
+
+
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
@@ -471,9 +589,11 @@ def suite():
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     equipmentSuite = \
         unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
+
     allTests = unittest.TestSuite([parserSuite1,
                                    parserSuite2,
                                    userInterfaceSuite,
                                    searchSuite,
-                                   equipmentSuite])
+                                   equipmentSuite,
+                                   ])
     return allTests
