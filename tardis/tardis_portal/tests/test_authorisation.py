@@ -95,7 +95,7 @@ class ExperimentACLTestCase(TestCase):
             )
         acl.save()
 
-    def teardown(self):
+    def tearDown(self):
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()

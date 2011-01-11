@@ -57,3 +57,10 @@ class GroupProvider:
         return a list of groups associated with a particular entity id
         """
         raise NotImplemented()
+
+    def getMembers(self, id):
+        """
+        return the members associated with the group id
+        """
+        raise NotImplemented()
+

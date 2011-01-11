@@ -15,11 +15,8 @@ from django.conf import settings
 from django.db import transaction
 
 from django.shortcuts import render_to_response
-from django.template import RequestContext
-# from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User, Group, AnonymousUser
-from django.http import HttpResponseRedirect, HttpResponseForbidden, \
-    HttpResponseNotFound, HttpResponseServerError, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
@@ -28,12 +25,11 @@ from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
-
-
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
-
 from tardis.tardis_portal.auth import localdb_auth
+from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.shortcuts import *
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
@@ -42,44 +38,10 @@ import urllib
 import urllib2
 
 
-
 def getNewSearchDatafileSelectionForm():
     DatafileSelectionForm = createSearchDatafileSelectionForm()
     return DatafileSelectionForm()
 
-
-def render_response_index(request, *args, **kwargs):
-
-    kwargs['context_instance'] = RequestContext(request)
-
-    kwargs['context_instance']['is_authenticated'] = \
-        request.user.is_authenticated()
-    kwargs['context_instance']['username'] = request.user.username
-
-    if request.mobile:
-        template_path = args[0]
-        split = template_path.partition('/')
-        args = (split[0] + '/mobile/' + split[2], ) + args[1:]
-
-    return render_to_response(*args, **kwargs)
-
-
-def return_response_error(request):
-    c = Context({'status': 'ERROR: Forbidden', 'error': True})
-    return HttpResponseForbidden(render_response_index(request,
-                                 'tardis_portal/blank_status.html', c))
-
-
-def return_response_not_found(request):
-    c = Context({'status': 'ERROR: Not Found', 'error': True})
-
-    return HttpResponseNotFound(render_response_index(request,
-                                'tardis_portal/blank_status.html', c))
-
-
-def return_response_error_message(request, redirect_path, context):
-    return HttpResponseServerError(render_response_index(request,
-                                   redirect_path, context))
 
 
 def logout(request):
@@ -90,170 +52,6 @@ def logout(request):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
-
-
-def get_accessible_experiments(request):
-
-    experiments = Experiment.safe.all(request)
-    return experiments
-
-
-def get_accessible_datafiles_for_user(request):
-
-    experiments = get_accessible_experiments(request)
-    if experiments.count() == 0:
-        return []
-
-    from django.db.models import Q
-    queries = [Q(dataset__experiment__id=e.id) for e in experiments]
-
-    query = queries.pop()
-    for item in queries:
-        query |= item
-
-    return Dataset_File.objects.filter(query)
-
-
-def has_experiment_ownership(request, experiment_id):
-
-    experiment = Experiment.safe.owned(request).filter(
-        pk=experiment_id)
-    if experiment:
-        return True
-    return False
-
-
-def has_experiment_access(request, experiment_id):
-
-    try:
-        Experiment.safe.get(request, experiment_id)
-        return True
-    except PermissionDenied:
-        return False
-
-
-def has_dataset_access(request, dataset_id):
-
-    experiment = Experiment.objects.get(dataset__pk=dataset_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
-
-
-def has_datafile_access(request, dataset_file_id):
-
-    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
-
-
-def is_group_admin(request, group_id):
-
-    groupadmin = GroupAdmin.objects.filter(user=request.user,
-                                           group__id=group_id)
-    if groupadmin.count():
-        return True
-    else:
-        return False
-
-
-def in_group(user, group):
-    """Returns True/False if the user is in the given group(s).
-    Usage::
-        {% if user|in_group:"Friends" %}
-        or
-        {% if user|in_group:"Friends,Enemies" %}
-        {% endif %}
-    You can specify a single group or comma-delimited list.
-    No white space allowed.
-
-    """
-
-    group_list = [group.name]
-
-    user_groups = []
-
-    for group in user.groups.all():
-        user_groups.append(str(group.name))
-
-    if filter(lambda x: x in user_groups, group_list):
-        return True
-    else:
-        return False
-
-
-def group_ownership_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not is_group_admin(request, kwargs['group_id']):
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def experiment_ownership_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not has_experiment_ownership(request, kwargs['experiment_id']):
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def experiment_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not has_experiment_access(request, kwargs['experiment_id']):
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def dataset_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not has_dataset_access(request, kwargs['dataset_id']):
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def datafile_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
-        if not has_datafile_access(request, kwargs['dataset_file_id']):
-            return return_response_error(request)
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
 
 
 def index(request):
@@ -519,9 +317,13 @@ def list_auth_methods(request, status=None):
     authForm = LinkedUserAuthenticationForm()
 
     c = Context({'userAuthMethodList': userAuthMethodList,
-        'authForm': authForm, 'supportedAuthMethods':supportedAuthMethods, 'status': status})
+                 'authForm': authForm,
+                 'supportedAuthMethods': supportedAuthMethods,
+                 'status': status})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/auth_methods.html', c))
+
 
 def add_auth_method(request):
     from tardis.tardis_portal.auth import auth_service
@@ -1651,7 +1453,6 @@ def change_group_permissions(request, experiment_id, group_id):
                                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
         return return_response_error(request)
-
 
     if request.method == 'POST':
         form = ChangeGroupPermissionsForm(request.POST)
