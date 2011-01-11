@@ -819,13 +819,14 @@ class TraverseTestCase(TestCase):
 
     def test_traversal(self):
         from tardis.tardis_portal import views
-        result = '<ul><li id="phtml_1"><a>My Files</a><ul><li id="dir1">\
-<a>dir1</a><ul><li id="dir1/file1"><a>file1</a></li></ul></li><li id="dir2">\
-<a>dir2</a><ul><li id="dir2/file2"><a>file2</a></li><li id="dir2/file3">\
-<a>file3</a></li><li id="dir2/subdir"><a>subdir</a><ul>\
-<li id="dir2/subdir/file4"><a>file4</a></li></ul></li></ul></li>\
-<li id="dir3"><a>dir3</a><ul></ul></li></ul></li></ul>'
-        self.assertEqual(views.staging_traverse(), result)
+        result = views.staging_traverse()
+        self.assertTrue('dir1' in result)
+        self.assertTrue('dir1/file1' in result)
+        self.assertTrue('dir2' in result)
+        self.assertTrue('dir2/file2' in result)
+        self.assertTrue('dir2/file3' in result)
+        self.assertTrue('dir2/subdir/file4' in result)
+        self.assertTrue('dir3' in result)
 
 
 def suite():
