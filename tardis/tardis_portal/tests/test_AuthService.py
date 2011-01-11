@@ -1,9 +1,10 @@
-
+# -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY
 
-from tardis.tardis_portal.auth import AuthProvider, UserProvider, GroupProvider
+from tardis.tardis_portal.auth.interfaces import UserProvider, GroupProvider
+from tardis.tardis_portal.auth.AuthService import AuthService
 
 
 class MockSettings(object):

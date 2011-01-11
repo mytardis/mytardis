@@ -16,6 +16,7 @@ from suds.client import Client
 
 
 EPN_LIST = "_epn_list"
+SOAPLoginKey = "_vbl_session_key"
 
 auth_key = u'vbl'
 auth_display_name = u'VBL'
@@ -81,6 +82,21 @@ class VblGroupProvider(GroupProvider):
         """
         raise NotImplemented()
 
+    def getMembers(self, id):
+        """
+        return a list of users associated with an epn
+        """
+
+        if not settings.VBLSTORAGEGATEWAY:
+            return []
+
+        client = Client(settings.VBLSTORAGEGATEWAY)
+        client.set_options(cache=None)
+
+        result = str(client.service.VBLgetEmailsFromExpID(id))
+        return result.split(',')
+
+
 
 class Backend():
     """
@@ -88,14 +104,10 @@ class Backend():
     request object contains the username and password to be provided to the
     VBLgetExpIDs function.
 
-    Function: VBLgetExpIDs
-       Retrieves a list of Experiment Ids from BOSS
-       ArgumentsUser: VBL username Password: VBL password
-       Result: comma separated string with Experiment Ids
-
     a new local user is created if it doesn't already exist
 
-    if the authentication succeeds, the groups are updated
+    if the authentication succeeds, the session will contain a VBL
+    session key used for downloads as well as the user's EPN list
 
     """
     def authenticate(self, request):
@@ -111,10 +123,13 @@ class Backend():
 
         client = Client(settings.VBLSTORAGEGATEWAY)
         client.set_options(cache=None)
-        result = str(client.service.VBLgetExpIDs(username, password))
-
-        if result == "None" or result.startswith('Error'):
+        # result = str(client.service.VBLgetExpIDs(username, password))
+        result = str(client.service.VBLgetSOAPLoginKey(username, password))
+        if result == 'None' or result.startswith('Error'):
             return None
+        else:
+            request.session[SOAPLoginKey] = result
+
         try:
             # check if the given username in combination with the VBL
             # auth method is already in the UserAuthentication table
@@ -132,10 +147,8 @@ class Backend():
             else:
                 name = username.partition('@')[0]
                 name = 'vbl_%s' % name[0:26]
-                user = User(username=name,
-                            password=User.objects.make_random_password(),
-                            email=username)
-                user.is_staff = True
+                password = User.objects.make_random_password()
+                user = User.objects.create_user(name, password, username)
                 user.save()
 
             try:
@@ -151,7 +164,8 @@ class Backend():
             userAuth.save()
 
         # result contains comma separated list of epns
-        request.session[EPN_LIST] = result.split(',')
+        request.session[EPN_LIST] = \
+            str(client.service.VBLgetExpIDsFromEmail(username)).split(',')
         return user
 
     def get_user(self, user_id):
