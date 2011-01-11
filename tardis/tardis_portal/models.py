@@ -72,6 +72,11 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.view_experiment', (),
                 {'experiment_id': self.id})
 
+    @models.permalink
+    def get_edit_url(self):
+        return ('tardis.tardis_portal.views.edit_experiment', (),
+                {'experiment_id': self.id})
+
 
 class Experiment_Owner(models.Model):
 

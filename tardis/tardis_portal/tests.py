@@ -478,15 +478,25 @@ class ExperimentFormTestCase(TestCase):
         from django.http import QueryDict
         data = data or [('authors', 'russell, steve'),
                         ('created_by', self.user.pk),
-                        ('dataset_description[0]', 'first one'),
-                        ('dataset_description[1]', 'second'),
                         ('description', 'desc.....'),
-                        ('file_filename[0]', 'file/another.py'),
-                        ('file_filename[1]', 'second_ds/file.py'),
-                        ('file_filename[1]', 'second_ds/file1.py'),
                         ('institution_name', 'some university'),
                         ('title', 'test experiment'),
-                        ('url', 'http://www.test.com')]
+                        ('url', 'http://www.test.com'),
+                        ('dataset-MAX_NUM_FORMS', ''),
+                        ('dataset-INITIAL_FORMS', '1'),
+                        ('dataset-TOTAL_FORMS', '2'),
+                        ('dataset-0-datafile-MAX_NUM_FORMS', ''),
+                        ('dataset-0-datafile-INITIAL_FORMS', '0'),
+                        ('dataset-0-datafile-TOTAL_FORMS', '1'),
+                        ('dataset-0-description', 'first one'),
+                        ('dataset-0-datafile-0-filename', 'file/another.py'),
+                        ('dataset-1-description', 'second'),
+                        ('dataset-1-datafile-MAX_NUM_FORMS', ''),
+                        ('dataset-1-datafile-INITIAL_FORMS', '0'),
+                        ('dataset-1-datafile-TOTAL_FORMS', '2'),
+                        ('dataset-1-datafile-0-filename', 'second_ds/file.py'),
+                        ('dataset-1-datafile-1-filename', 'second_ds/file1.py'),
+                        ]
         data = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in data]))
         return data
 
@@ -506,18 +516,13 @@ class ExperimentFormTestCase(TestCase):
                                           author=a,
                                           order=i)
             ae.save()
-
-        for k, v in data.items():
-            match = forms.FullExperiment.re_post_data.match(k)
-            if not match or not 'dataset' == match.groupdict()['form']:
-                continue
-            number = int(match.groupdict()['number'])
-            dataset = models.Dataset(description=v,
+        ds_desc = {'first one': ['file/another.py'],
+                   'second': ['second_ds/file.py', 'second_ds/file1.py']}
+        for d, df in ds_desc.items():
+            dataset = models.Dataset(description=d,
                                      experiment=exp)
             dataset.save()
-
-            datafiles = data.getlist('file_filename[' + str(number) + ']')
-            for f in datafiles:
+            for f in df:
                 d = models.Dataset_File(url='file://' + f,
                                          dataset=dataset,
                                          filename=basename(f))
@@ -552,14 +557,23 @@ class ExperimentFormTestCase(TestCase):
                         ('institution_name', 'some university'),
                         ('description', 'desc.....'),
                         ('authors', 'russell, steve'),
-                        ('dataset_description[0]', 'first one'),
-                        ('file_filename[0]', 'location.py'),
-                        ('file_filename[0]', 'another.py'),
-                        ('file_url[0]', 'file/location.py'),
-                        ('file_url[0]', 'file/another.py'),
-                        ('dataset_description[1]', 'second'),
-                        ('file_filename[1]', 'file.py'),
-                        ('file_url[1]', 'second_ds/file.py'),
+                        ('dataset-MAX_NUM_FORMS', ''),
+                        ('dataset-INITIAL_FORMS', '1'),
+                        ('dataset-TOTAL_FORMS', '2'),
+                        ('dataset-0-datafile-MAX_NUM_FORMS', ''),
+                        ('dataset-0-datafile-INITIAL_FORMS', '0'),
+                        ('dataset-0-datafile-TOTAL_FORMS', '2'),
+                        ('dataset-0-description', 'first one'),
+                        ('dataset-0-datafile-0-filename', 'location.py'),
+                        ('dataset-0-datafile-1-filename', 'another.py'),
+                        ('dataset-0-datafile-0-url', 'file/location.py'),
+                        ('dataset-0-datafile-1-url', 'file/another.py'),
+                        ('dataset-1-description', 'second'),
+                        ('dataset-1-datafile-MAX_NUM_FORMS', ''),
+                        ('dataset-1-datafile-INITIAL_FORMS', '0'),
+                        ('dataset-1-datafile-TOTAL_FORMS', '1'),
+                        ('dataset-1-datafile-0-filename', 'file.py'),
+                        ('dataset-1-datafile-0-url', 'second_ds/file.py'),
                         ]
         example_post = self._data_to_post(example_post)
 
@@ -618,6 +632,7 @@ class ExperimentFormTestCase(TestCase):
 
         f = forms.FullExperiment()
         self.assertEqual(f.as_table(), as_table)
+        #TODO needs to be extended to cover printing initial datasets
 
     def test_validation(self):
         from tardis.tardis_portal import forms
@@ -629,14 +644,18 @@ class ExperimentFormTestCase(TestCase):
         # test blank post data
         post = self._data_to_post([('authors', ''),
                                    ('created_by', ''),
-                                   ('dataset_description[0]', ''),
-                                   ('dataset_description[1]', ''),
                                    ('description', ''),
-                                   ('file_filename[0]', ''),
-                                   ('file_filename[1]', ''),
                                    ('institution_name', ''),
                                    ('title', ''),
-                                   ('url', '')])
+                                   ('url', ''),
+                                   ('dataset-MAX_NUM_FORMS', ''),
+                                   ('dataset-INITIAL_FORMS', '1'),
+                                   ('dataset-TOTAL_FORMS', '1'),
+                                   ('dataset-0-datafile-MAX_NUM_FORMS', ''),
+                                   ('dataset-0-datafile-INITIAL_FORMS', '0'),
+                                   ('dataset-0-datafile-TOTAL_FORMS', '0'),
+                                   ('dataset-0-description', ''),
+                                   ])
         f = forms.FullExperiment(data=post)
         self.assertFalse(f.is_valid())
 
@@ -644,6 +663,15 @@ class ExperimentFormTestCase(TestCase):
         example_post = self._data_to_post()
         f = forms.FullExperiment(example_post)
         self.assertTrue(f.is_valid())
+
+        # test a valid instance of a form
+        exp = self._create_experiment()
+        f = forms.FullExperiment(instance=exp)
+        self.assertTrue(f.is_valid())
+
+        # test a valid instance with unmodified post
+        #f = forms.FullExperiment(instance=exp, data=example_post)
+        #self.assertFalse(f.is_valid())
 
     def test_instance(self):
         from tardis.tardis_portal import forms
@@ -690,6 +718,7 @@ class ExperimentFormTestCase(TestCase):
             {{ field.label_tag }}: {{ field }}
         </div>
     {% endfor %}
+    {{ form.datasets.management_form }}
     {% for dataset_form, file_forms in form.get_datasets %}
         {% for field in dataset_form %}
         <div class="fieldWrapper">
@@ -697,7 +726,8 @@ class ExperimentFormTestCase(TestCase):
             {{ field.label_tag }}: {{ field }}
         </div>
         {% endfor %}
-    {% for file_form in file_forms %}
+    {{ file_forms.management_form }}
+    {% for file_form in file_forms.forms %}
         {% for field in file_form %}
         <div class="fieldWrapper">
             {{ field.errors }}
@@ -718,11 +748,15 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(value % "some university" in output)
         self.assertTrue(text_area % "desc....." in output)
 
-        self.assertTrue(text_area % "second")
+        self.assertTrue(text_area % "second" in output, output)
         self.assertTrue(value % "file1.py" in output)
         self.assertTrue(value % "file://second_ds/file.py" in output)
-        self.assertEqual(output.count('file_filename[1]'), 4)
-        self.assertEqual(output.count('dataset_description[1]'), 2)
+
+        self.assertEqual(output.count('0-datafile-0-filename" value'), 1)
+        self.assertEqual(output.count('0-datafile-1-filename" value'), 1)
+        self.assertEqual(output.count('1-datafile-0-filename" value'), 1)
+        self.assertEqual(output.count('description">first one</text'), 1)
+        self.assertEqual(output.count('description">second</text'), 1)
 
     def test_initial_data(self):
         from tardis.tardis_portal import forms

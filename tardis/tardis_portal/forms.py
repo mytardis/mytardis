@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -46,8 +45,9 @@ from django.utils.html import conditional_escape
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from django.forms.util import ErrorDict, ErrorList
-from django.forms.models import ModelChoiceField
+from django.forms.models import ModelChoiceField, model_to_dict
 from django.forms.forms import BoundField
+from django.forms.formsets import formset_factory
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
@@ -258,6 +258,7 @@ class Dataset(PostfixedForm, forms.ModelForm):
 class Dataset_File(PostfixedForm, forms.ModelForm):
     id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     url = forms.CharField(required=False)
+    filename = forms.CharField(required=False)
 
     class Meta:
         model = models.Dataset_File
@@ -342,19 +343,32 @@ class FullExperiment(Experiment):
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
-        post_data = self._parse_post(data)
+        # initialise formsets
+        dataset_formset = formset_factory(Dataset, extra=1)
+        datafile_formset = formset_factory(Dataset_File, extra=0)
 
-        if data:
-            self._fill_forms(post_data)
+        # fix up experiment form
+        post_data = self._parse_post(data)
+        self._fill_forms(post_data)
+
+        # fill formsets
+        initial_ds, initial_dfs = self._initialise_from_instance(instance)
+
+        self.datasets = dataset_formset(data=data,
+                                        initial=initial_ds,
+                                        auto_id='id_%s',
+                                        prefix="dataset")
+        if initial_dfs:
+            for i, df in enumerate(initial_dfs):
+                self.dataset_files[i] = datafile_formset(data=data,
+                                                         initial=df,
+                                                         auto_id="id_%s",
+                                                         prefix="dataset-%s-datafile" % i)
         else:
-            self._fill_forms(post_data)
-            self._initialise_from_instance(instance)
-            # TODO, needs to start counting from where parse_form stops
-            if not self.datasets:
-                for i in xrange(self.__ds_num, extra):
-                    form = Dataset(auto_id='dataset_%s')
-                    del form.fields['id']
-                    self._add_dataset_form(i, form)
+            for i, df in enumerate(self.datasets.forms):
+                self.dataset_files[i] = datafile_formset(data=data,
+                                                         auto_id="id_%s",
+                                                         prefix="dataset-%s-datafile" % i)
 
     def _initialise_from_instance(self, experiment):
         """
@@ -367,44 +381,24 @@ class FullExperiment(Experiment):
         :rtype: dictionary containing strings and lists of strings
         """
         if not experiment:
-            return
+            return [], []
         authors = experiment.author_experiment_set.all()
         self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
         self.initial['authors'] = ', '.join([a.author for a in authors])
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
                                           widget=CommaSeparatedInput())
-
+        datasets = []
+        datafiles = []
         for i, ds in enumerate(experiment.dataset_set.all()):
-            form = Dataset(instance=ds, auto_id='dataset_%s')
-            self._add_dataset_form(i, form)
 
-            self.dataset_files[i] = []
+            datasets.append(model_to_dict(ds))
+
+            datafile = []
             for file in ds.dataset_file_set.all():
-                self._add_datafile_form(i, Dataset_File(instance=file,
-                                                        auto_id='file_%s'))
-
-    def _parse_initial(self, initial=None):
-        """
-        create a dictionary containing each of the sub form types.
-        """
-        parsed = {'experiment': {}, 'authors': {},
-                  'dataset': {}, 'file': {}}
-        if not initial:
-            return parsed
-        if 'authors' in initial:
-            parsed['authors'] = initial['authors']
-        for k, v in initial.items():
-            m = self.re_post_data.match(k)
-            if m:
-                item = m.groupdict()
-                field = item['field']
-                if not item['number'] in parsed[item['form']]:
-                    parsed[item['form']][item['number']] = {}
-                parsed[item['form']][item['number']][field] = v
-            else:
-                parsed['experiment'][k] = v
-        return parsed
+                datafile.append(model_to_dict(file))
+            datafiles.append(datafile)
+        return datasets, datafiles
 
     def _parse_post(self, data=None):
         """
@@ -456,58 +450,11 @@ class FullExperiment(Experiment):
                                             'order': num},
                                       instance=o_ae)
                 self.author_experiments.append(f)
-        
+
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
                                           widget=CommaSeparatedInput())
-
-        if not data:
-            return data
-
-        for number, dataset in data['dataset'].items():
-
-            ds_inst = models.Dataset()
-            ds_inst.experiment = self.instance
-            if 'id' in dataset:
-                ds_pk = dataset.get('id')
-                try:
-                    ds_inst = models.Dataset.objects.get(id=ds_pk)
-                except models.Dataset.DoesNotExist:
-                    pass
-            form = Dataset(data=dataset,
-                           instance=ds_inst,
-                           auto_id='dataset_%s')
-            self._add_dataset_form(number, form)
-            self.dataset_files[number] = []
-
-        for number, files in data['file'].items():
-            # TODO to cover extra fields we should be looking for all fields
-            # starting with file_
-
-            for f in files:
-                df_inst = models.Dataset_File()
-                df_inst.dataset = self.datasets[number].instance
-                if 'id' in f:
-                    df_pk = f.get('id')
-                    try:
-                        df_inst = models.Dataset_File.objects.get(id=df_pk)
-                    except models.Dataset_File.DoesNotExist:
-                        pass
-
-                d = Dataset_File(data=f,
-                                 instance=df_inst, auto_id='file_%s')
-                self._add_datafile_form(number, d)
-
-        return data
-
-    def _add_dataset_form(self, number, form):
-        self.datasets[number] = form
-        setattr(form, 'postfix', '[%s]' % number)
-        self.__ds_num = self.__ds_num + 1
-
-    def _add_datafile_form(self, number, form):
-        setattr(form, 'postfix', '[%s]' % number)
-        self.dataset_files[number].append(form)
+        return
 
     def get_dataset_files(self, number):
         """
@@ -529,7 +476,8 @@ class FullExperiment(Experiment):
          a :class:`~tardis.tardis_portal.models.Dataset`and a
          list of :class:`~tardis.tardis_portal.models.Dataset_File`
         """
-        for number, form in self.datasets.items():
+        for number, form in enumerate(self.datasets.forms):
+            df = formset_factory(Dataset_File, extra=0)
             yield (form, self.get_dataset_files(number))
 
     def save(self, commit=True):
@@ -548,18 +496,18 @@ class FullExperiment(Experiment):
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
 
-        for key, dataset in self.datasets.items():
+        for key, dataset in enumerate(self.datasets.forms):
             # XXX for some random reason the link between the instance needs
             # to be reinitialised
-            dataset.instance.experiment = dataset.instance.experiment
+            dataset.instance.experiment = experiment
             o_dataset = dataset.save(commit)
             datasets.append(o_dataset)
             # save any datafiles if the data set has any
-            if key in self.dataset_files:
-                for df in self.dataset_files[key]:
+            if self.dataset_files[key]:
+                for df in self.dataset_files[key].forms:
                     # XXX for some random reason the link between the instance
                     # needs to be reinitialised
-                    df.instance.dataset = df.instance.dataset
+                    df.instance.dataset = o_dataset
                     print df.errors
                     o_df = df.save(commit)
                     dataset_files.append(o_df)
