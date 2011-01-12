@@ -16,13 +16,14 @@ $('#fileInput').uploadify({
 });
 
 function allComplete(event, data) {
-    $('.uploadify').load('{{ upload_complete_url }}', {
-        'filesUploaded': data.filesUploaded,
-        'errorCount': data.errors,
-        'allBytesLoaded': data.allBytesLoaded,
-        'speed': data.speed
-    });
+    // $('#uploadify').load('{{ upload_complete_url }}', {
+    //     'filesUploaded': data.filesUploaded,
+    //     'errorCount': data.errors,
+    //     'allBytesLoaded': data.allBytesLoaded,
+    //     'speed': data.speed
+    // });
     // Raise custom event
-    $('.uploadify').trigger('allUploadsComplete', data);
+    $('#uploadify').trigger('allUploadsComplete', data);
+
 }
 // ]]></script>

@@ -602,3 +602,22 @@ table.experiment-table th {
         width: 500px;
 
     }    
+    
+    .upload_files_link
+    {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    
+    .upload_files_box
+    {
+        background-color: #F5EFEF;
+        padding: 10px;
+        width: 95%;
+    }
+    
+    .download_entire_experiment
+    {
+        text-align: right;
+    }

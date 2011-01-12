@@ -32,15 +32,7 @@
 {% load parametertypecheck %}
 {% load uploadify_tags %}
 
-		{% block script %}
-
-		<script type="text/javascript">
-
-		$(".uploadify").bind("allUploadsComplete", function(e, data){
-		    echo("bound");
-		});
-
-		</script>		
+		{% block script %}		
 		
 		{# <script> #}
 		{# 	$(function() { #}
@@ -54,6 +46,50 @@
 		{# </script> #}
 		
 		<script language="JavaScript">
+		
+		$("#uploadify").live("allUploadsComplete", function(e, data){
+
+			dataset_id = $(this).parents('.upload_files_container').siblings('.dataset_id').val();
+			
+			$(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id,function(){
+					$(document).ready(function(){						
+						
+						var datafile_info_selectors = 	
+							$(this).find('.datafile_info').hide().end().find('.datafile_info_toggle');
+
+						datafile_info_selectors.text("[Show Metadata]");
+
+						// datafile metadata
+						 datafile_info_selectors.toggle(function(){
+			 				$(this).text("[Hide Metadata]");
+							var href = $(this).attr("href");
+
+							//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
+							//{
+								$(this).next().html(loadingHTML);									
+							//}
+							$(this).next().load(href);
+
+						 },function(){
+							$(this).text("[Show Metadata]");
+						 });	
+
+						   datafile_info_selectors.click(function() {
+							$(this).next().toggle();				
+						   });		
+
+							// file selectors
+							$(this).find('.dataset_selector_all').click(function() {	
+								$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+						   });
+						
+					 });
+					
+				 });		
+						
+						
+		});		
 
 		function disableEnterKey(e)
 		{
@@ -76,15 +112,26 @@
 		</script>
 
 		<script type="text/javascript">
-			$(document).ready(function() {	
+			$(document).ready(function() {				
 				
-				$("#select_files_container").load("/ajax/select_files/1/");
+				$('.upload_files_link').live('click', function( event ){
+					
+					$('.upload_files_container').each(function(index) {
+					    $(this).html("");
+					  });	
+					
+					$('.upload_files_link').each(function(index) {
+						$(this).show();
+					    $(this).html('Upload Files To Dataset');
+					  });								
+					
+					$(this).hide();
 				
-				$('#upload_dataset_select').change(function() {
+					dataset_id = $(this).siblings('.dataset_id').val();
 				
-					upload_dataset_select_id = $("#upload_dataset_select").val();
+					$(this).siblings(".upload_files_container").load("/ajax/upload_files/" + dataset_id + "/");
 				
-					$("#select_files_container").load("/ajax/select_files/" + upload_dataset_select_id + "/");
+					
 				});
 				
 				
@@ -371,7 +418,9 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
 							</p>		
+
 							{% for p in protocols %}
+							<div class="download_entire_experiment">
 							<p>
 							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
@@ -380,6 +429,8 @@
 							{% endif %}
 							</p>		
 							{% endfor %}
+							</div>
+
                             <p align="right">
 							<br/>
                             <strong>Experiment Administrators </strong><br/>
@@ -390,6 +441,7 @@
 							
 						</div>
 						<div id="tabs-2">
+							<div class="download_entire_experiment">
 							{% for p in protocols %}
 							<p>
 							{% if p %}
@@ -399,6 +451,7 @@
 							{% endif %}
 							</p>		
 							{% endfor %}
+							</div>
 							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">							
 							<div id="datasets">
@@ -461,27 +514,7 @@
 																		
 					</div>
 					
-					<div align="right">
-						</br>
-						Add files to dataset:
-						<select id="upload_dataset_select" name="upload_dataset_select">
-							
-						{% for dataset in experiment.dataset_set.all %}
 
-							<option value="{{forloop.counter}}">{{forloop.counter}} - {{dataset.description}}</option>
-
-
-						{% endfor %}
-						
-						</select>
-						</br>
-						<br/>
-						<div id="select_files_container" style="padding: 0 10px 10px 0">
-
-						</div>
-
-						<strong><a id="upload_go" href="javascript:$('#fileInput').uploadifyUpload();">Go</a></strong>
-					</div>
 
 					</div><!-- End tab container -->		
 
