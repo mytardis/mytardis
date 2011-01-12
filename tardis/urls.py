@@ -87,5 +87,5 @@ urlpatterns = patterns(
     (r'^upload_complete/(?P<experiment_id>\d+)/$',
      'tardis.tardis_portal.views.upload_complete'), 
     (r'upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),  
-    (r'ajax/select_files/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.select_files'), 
+    (r'ajax/upload_files/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload_files'), 
 )

@@ -2103,7 +2103,7 @@ def add_datafile_to_dataset(dataset, filepath, size):
     return datafile
 
 
-def select_files(request, dataset_id):
+def upload_files(request, dataset_id):
     """
     Creates an Uploadify 'create files' button with a dataset
     destination. A workaround for a JQuery Dialog conflict
@@ -2117,6 +2117,6 @@ def select_files(request, dataset_id):
     cont = {'upload_complete_url': '/upload_complete/' + dataset_id \
             + '/', 'dataset_id': dataset_id}
     c = Context(cont)
-    return render_to_response('tardis_portal/ajax/select_files.html', c)
+    return render_to_response('tardis_portal/ajax/upload_files.html', c)
 
 
