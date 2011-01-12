@@ -29,7 +29,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.models import Experiment
+from django.contrib.auth.models import User
+from tardis.tardis_portal.models import *
 
 """
 tests.py
@@ -74,15 +75,6 @@ class SearchTestCase(TestCase):
                                                 created_by=user,
                                                 expid=None)
             experiment = Experiment.objects.get(pk=expid)
-
-            acl = ExperimentACL(pluginId='user',
-                                entityId=str(user.id),
-                                experiment=experiment,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True)
-            acl.save()
             self.experiments += [experiment]
 
         from tardis.tardis_portal.constants import SCHEMA_DICT
