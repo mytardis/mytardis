@@ -82,6 +82,8 @@ urlpatterns = patterns(
      '(?P<group_id>\d+)/$', 'tardis.tardis_portal.views.change_group_permissions'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/group/$',
      'tardis.tardis_portal.views.retrieve_access_list_group'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/external/$',
+     'tardis.tardis_portal.views.retrieve_access_list_external'),
     (r'^experiment/control_panel/$',
      'tardis.tardis_portal.views.control_panel'),
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$',

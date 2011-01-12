@@ -58,9 +58,4 @@ class GroupProvider:
         """
         raise NotImplemented()
 
-    def getMembers(self, id):
-        """
-        return the members associated with the group id
-        """
-        raise NotImplemented()
 

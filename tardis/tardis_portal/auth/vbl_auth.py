@@ -41,7 +41,14 @@ def get_expids(epns):
 
 
 class VblGroupProvider(GroupProvider):
-    name = u'vbl_groups'
+    name = u'vbl_group'
+
+    def __init__(self):
+        if settings.VBLSTORAGEGATEWAY:
+            self.client = Client(settings.VBLSTORAGEGATEWAY)
+            self.client.set_options(cache=None)
+        else:
+            self.client = None
 
     def getGroups(self, request):
         """
@@ -51,9 +58,6 @@ class VblGroupProvider(GroupProvider):
             # check if the user is linked to any experiments
             if not settings.VBLSTORAGEGATEWAY:
                 return []
-
-            client = Client(settings.VBLSTORAGEGATEWAY)
-            client.set_options(cache=None)
 
             try:
                 # check if a user exists that can authenticate using the VBL
@@ -66,7 +70,7 @@ class VblGroupProvider(GroupProvider):
                 return []
 
             result = str(
-                client.service.VBLgetExpIDsFromEmail(userAuth.username))
+                self.client.service.VBLgetExpIDsFromEmail(userAuth.username))
             return result.split(',')
 
         epnList = request.session[EPN_LIST]
@@ -80,22 +84,43 @@ class VblGroupProvider(GroupProvider):
             "display": "Group Name",}
 
         """
-        raise NotImplemented()
+        return {'id' : id,
+                'display': 'EPN_%i' % id}
 
-    def getMembers(self, id):
-        """
-        return a list of users associated with an epn
-        """
-
+    def searchGroups(self, **filter):
         if not settings.VBLSTORAGEGATEWAY:
             return []
 
-        client = Client(settings.VBLSTORAGEGATEWAY)
-        client.set_options(cache=None)
+        epn = filter.get('name')
+        if not epn:
+            return []
 
-        result = str(client.service.VBLgetEmailsFromExpID(id))
-        return result.split(',')
+        users = str(self.client.service.VBLgetEmailsFromExpID(epn))
+        if not users == 'None':
+            return [{'id': int(epn),
+                     'display' : 'VBL/EPN_%s' % epn,
+                     'members' : users.split(',')}]
+        else:
+            return []
 
+
+    def getGroupsForEntity(self, entity):
+        """
+        return a list of the groups an entity belongs to::
+
+           [{'name': 'Group 456', 'id': '2'},
+           {'name': 'Group 123', 'id': '1'}]
+
+        """
+        result = str(self.client.service.VBLgetExpIDsFromEmail(entity))
+        if not result == 'None':
+            return [{'id': epn,
+                     'name': 'EPN_%i' % epn} for epn in result.split(',')]
+        else:
+            return []
+
+    def getUser(self, user_dict):
+        return None
 
 
 class Backend():
