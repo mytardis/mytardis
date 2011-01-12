@@ -1,0 +1,2523 @@
+<experiment>
+  <title>Cookson</title>
+  <createdate>2010-06-18T12:21:20+10:00</createdate>
+  <lastmoddate>2010-04-27T17:58:48+10:00</lastmoddate>
+  <abstract>unknown</abstract>
+  <organization>unknown</organization>
+  <creator>saxdataparser-0.1</creator>
+  <author>Cookson</author>
+    <dataset>
+      <description>Cookson</description>
+      <metadata schema="http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10">
+        <trd:saxsAutoProcessingResults xmlns:trd="http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10">
+          <trd:frqimn>0.0450647</trd:frqimn>
+          <trd:frxcen>411.947</trd:frxcen>
+          <trd:frleng>554.619</trd:frleng>
+          <trd:frwlen>0.670200</trd:frwlen>
+          <trd:frqimx>2.26206</trd:frqimx>
+          <trd:frtype>PIL200K</trd:frtype>
+          <trd:frycen>559.038</trd:frycen>
+        </trd:saxsAutoProcessingResults>
+      </metadata>
+      <file>
+        <name>s3_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>281443</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>679274</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:15:16 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>49.4420 1.2914 20.000 12.000 26.316 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_008.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>312003</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>750369</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:21:15 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7136 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_6_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>304733</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>279</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>732826</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:44:46 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>1.3150 1.5589 20.000 12.000 26.333 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>277803</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>673307</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:36:10 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2460 25.6814 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s8_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>273223</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>661981</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:03:11 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>52.0950 25.4914 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_013.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274389</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>665765</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:53:30 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.7410 24.9764 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_7_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>304691</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>281</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>742040</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:49:42 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2760 1.1539 20.000 12.000 26.340 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274775</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>656957</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:51:17 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.5410 24.5764 20.000 12.000 26.318 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_021.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274321</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>655498</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:55:30 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1410 25.3764 20.000 12.000 26.330 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>555589</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>296</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1046817</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:10:37 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.6410 2.1439 18.500 12.000 26.281 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>313518</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>757880</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:19:14 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.9261 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_3_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>321415</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>774692</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:01:24 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 1.0289 20.000 12.000 26.311 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_4_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>315776</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>765066</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:12:04 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>1.7070 -1.7261 20.000 12.000 26.315 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>287758</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>691925</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 02:56:40 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.5740 -0.8236 20.000 12.000 26.304 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_6_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>268371</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>646510</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:48:08 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9990 47.3364 20.000 12.000 26.317 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s12_crumpet_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1090666</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1162</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2305626</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:32:07 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9400 47.3364 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_3_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>30.0</trd:countingSecs>
+            <trd:io>968780</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>867</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2372407</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:58:23 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.305 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_007.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276705</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>671845</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:36:52 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0460 25.7814 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_10_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>309107</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>278</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>743929</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 02:00:28 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3440 1.6114 20.000 12.000 26.336 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_024.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>547655</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>571</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1311904</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:56:14 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.5410 25.3764 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_013.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>309501</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>745728</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:26:08 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7336 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_016.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>309745</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>750714</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:28:38 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.6070 -0.7136 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276110</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>669524</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:35:42 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0460 25.6814 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_014.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275080</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>661548</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:53:45 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.5410 24.9764 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_4_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>283933</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>679057</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:04:54 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>26.1680 0.6289 20.000 12.000 26.304 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_007.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>312214</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>756988</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:21:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7761 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_010.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276203</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670084</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:37:32 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3460 25.7814 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_0_005.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>556691</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1044440</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:08:42 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.6410 2.1439 18.500 12.000 26.279 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_005.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>553710</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>577</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1342154</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:36:23 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3460 25.6814 20.000 12.000 26.317 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_tape_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1078006</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1144</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2633951</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:45:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 47.3364 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_011.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274750</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>661686</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:53:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1410 24.9764 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_015.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274988</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>665934</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:54:00 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.3420 24.9764 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_2_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>30.0</trd:countingSecs>
+            <trd:io>1034573</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>869</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2514090</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:22:24 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.291 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_022.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>548335</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>568</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1308853</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:55:44 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9410 25.3764 20.000 12.000 26.329 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_3_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>317827</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>763654</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:06:26 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7261 20.000 12.000 26.311 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s12_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>278832</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>280</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>675583</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:10:14 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>26.7390 49.3739 20.000 12.000 26.334 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_025.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275833</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>666064</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:41:03 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3460 26.0814 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_025.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274133</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>655966</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:56:28 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.3420 25.3764 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_019.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274761</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>656813</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:55:00 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.5410 25.1789 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_6_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1073421</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1145</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2639761</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:47:49 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9990 47.3364 20.000 12.000 26.326 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_012.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>273965</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>657439</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:53:16 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9410 24.9764 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_008.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274569</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>283</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>658386</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:52:15 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.7410 24.7789 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_017.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275108</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>655917</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:54:31 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9410 25.1789 20.000 12.000 26.326 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_1_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>555227</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>293</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1046668</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:12:05 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2370 1.0939 18.500 12.000 26.278 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_3_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>646099</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>577</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1579363</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:57:40 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.309 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>285622</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>688024</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:00:57 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>26.3330 -0.8511 20.000 12.000 26.295 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_011.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>311769</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>753215</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:21:58 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.5211 20.000 12.000 26.318 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_2_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>691361</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>571</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1676189</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:21:32 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.290 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s4_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>279646</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>677244</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:26:21 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>73.3300 -1.2411 20.000 12.000 26.313 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_005.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274343</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>658828</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:51:31 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.3420 24.5764 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_010.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>312872</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>752192</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:21:44 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.5861 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s3_1_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1123906</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1164</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2768201</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:16:13 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>49.4420 1.2914 20.000 12.000 26.317 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_010.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274003</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>654490</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:52:45 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.3420 24.7789 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_8_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>308001</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>276</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>743185</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:54:09 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2690 1.0289 20.000 12.000 26.339 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_5_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1232171</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1122</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>3037179</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:33:15 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.8070 -0.7136 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_3_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1290635</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1150</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>3170789</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:59:21 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.316 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_9_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>308725</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>279</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>746018</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:56:59 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3850 0.2564 20.000 12.000 26.340 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1268149</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1134</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>3115498</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:09:55 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7261 20.000 12.000 26.309 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_0_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>551962</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>293</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1034440</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:03:03 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0370 -2.5011 18.500 12.000 26.278 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_017.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276954</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>672754</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:39:13 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0460 25.9814 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274332</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>283</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>662103</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:07:18 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 49.9989 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_016.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276319</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>292</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670254</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:38:58 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0540 25.9814 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_0_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>554255</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>292</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1046402</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:03:36 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.9630 -2.5011 18.500 12.000 26.271 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_020.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276064</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>668023</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:39:54 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3460 25.9814 20.000 12.000 26.317 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s12_crumpet_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>273252</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>292</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>564304</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:30:10 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9400 47.3364 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s4_2_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1113521</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1145</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2753837</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:27:24 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>73.3300 -1.2411 20.000 12.000 26.316 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_2_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>323720</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>782587</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:55:46 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 1.0289 20.000 12.000 26.314 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_014.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>310681</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>751078</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:26:59 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7136 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276868</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>668950</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:35:56 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.1460 25.6814 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>313752</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>760203</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:19:29 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.8261 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_018.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274398</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>658307</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:54:45 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.7410 25.1789 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_5_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1147885</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1151</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2807751</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 02:54:45 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1840 -1.9711 20.000 12.000 26.296 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_5_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>284022</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>680124</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:10:11 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>27.1610 1.7664 20.000 12.000 26.307 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_4_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1262860</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1147</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>3103739</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:13:02 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>1.7070 -1.7261 20.000 12.000 26.314 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275483</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>662542</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:48:51 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2540 25.4839 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_012.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276663</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>671584</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:38:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0460 25.8839 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_006.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274699</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>282</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>662721</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:51:46 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1410 24.7789 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_0_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>1.0</trd:countingSecs>
+            <trd:io>55257</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>30</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>79187</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:01:31 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.9630 -2.5011 18.500 12.000 26.279 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_1_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1144949</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1167</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2801003</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 02:58:17 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.5740 -0.8236 20.000 12.000 26.305 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_tape_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>269766</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>648676</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:43:06 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 47.3364 20.000 12.000 26.331 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>345199</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>822448</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:19:30 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 1.0289 20.000 12.000 26.290 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275072</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>662830</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:51:02 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.7410 24.5764 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_009.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274933</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>659479</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:52:30 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.5410 24.7789 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_015.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>310647</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>282</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>748170</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:28:00 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.8070 -0.7136 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_crumpet_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1099735</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1161</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2326091</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:26:44 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 49.3739 20.000 12.000 26.330 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>690632</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>572</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1649134</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:19:57 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.296 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_023.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274357</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>659562</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:55:59 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.7410 25.3764 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_015.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276858</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>673860</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:38:43 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.3460 25.8839 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_3_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>323815</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>778805</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:57:11 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2700 -0.9711 20.000 12.000 26.310 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_5_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>288170</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>689288</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 02:53:35 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1840 -1.9711 20.000 12.000 26.299 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_013.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276628</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>671786</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:38:15 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.1460 25.8839 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_018.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>277288</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>294</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670952</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:39:26 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.1460 25.9814 20.000 12.000 26.319 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_022.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275894</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>666304</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:40:22 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0460 26.0814 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_005.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>312251</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>287</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>756131</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:19:57 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.6261 20.000 12.000 26.329 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_006.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275947</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670335</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:36:38 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0540 25.7814 20.000 12.000 26.318 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_007.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>273981</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>283</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>658037</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:52:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9410 24.7789 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s12_tape_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>270423</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>650684</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:41:50 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 47.3364 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_1_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>40.0</trd:countingSecs>
+            <trd:io>1108173</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>1137</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>2732247</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:08:36 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 49.9989 20.000 12.000 26.326 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s4_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>279370</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>672879</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:23:58 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>73.3790 -2.6286 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_019.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>553517</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>584</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1338143</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:39:40 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2460 25.9814 20.000 12.000 26.318 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_006.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>313269</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>755952</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:20:12 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.5261 20.000 12.000 26.331 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_017.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>309929</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>283</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>747524</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:29:07 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.4070 -0.7136 20.000 12.000 26.326 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_016.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274578</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>654274</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:54:16 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1410 25.1789 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s3_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>280354</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>676332</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:18:31 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>48.3820 -0.4436 20.000 12.000 26.313 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_008.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276087</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>668805</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:37:05 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.1460 25.7814 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_021.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276085</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>672351</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:40:08 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0540 26.0814 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_009.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275978</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>669441</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:37:19 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2460 25.7814 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_012.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>311859</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>290</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>752693</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:24:47 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7136 20.000 12.000 26.317 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_0_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>554585</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1043886</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:06:55 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>1.6100 -1.9736 18.500 12.000 26.276 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_011.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>277310</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>671472</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:37:47 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0540 25.8839 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_002.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274796</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>283</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>654016</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:50:47 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.9410 24.5764 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s3_3_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>280256</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>652745</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:21:01 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>51.8110 1.7314 20.000 12.000 26.316 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_020.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274207</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>282</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>659006</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:55:15 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>24.3420 25.1789 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_crumpet_003.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>274098</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>487567</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:28:37 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.8510 47.1464 20.000 12.000 26.327 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_024.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275983</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>669679</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:40:49 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2460 26.0814 20.000 12.000 26.321 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276780</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>288</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670815</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:35:28 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0540 25.6814 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_009.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>20.0</trd:countingSecs>
+            <trd:io>624173</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>570</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>1501031</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:21:30 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.6486 20.000 12.000 26.329 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_5_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>309569</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>281</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>746047</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:32:12 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.8070 -0.7136 20.000 12.000 26.331 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s7_2_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275120</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>284</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>654803</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:50:33 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>25.1410 24.5764 20.000 12.000 26.325 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_014.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276826</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>293</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>668342</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:38:28 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.2460 25.8839 20.000 12.000 26.323 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>air_0_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>1.0</trd:countingSecs>
+            <trd:io>55183</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>29</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>75772</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 00:02:04 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0370 -2.5011 18.500 12.000 26.280 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s1_4_004.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>313860</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>285</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>756361</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 01:19:43 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>2.7070 -0.7261 20.000 12.000 26.322 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s2_3_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>284451</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>289</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>681909</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:02:55 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>26.6860 -0.4736 20.000 12.000 26.302 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s11_crumpet_001.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>276231</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>291</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>566523</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 04:25:41 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.0010 49.3739 20.000 12.000 26.328 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+      <file>
+        <name>s6_1_023.tif</name>
+        <size>4096828</size>
+        <md5>unknown</md5>
+        <path>unknown</path>
+        <metadata schema="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+          <trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10">
+            <trd:countingSecs>10.0</trd:countingSecs>
+            <trd:io>275764</trd:io>
+            <trd:ioBgnd>0</trd:ioBgnd>
+            <trd:it>286</trd:it>
+            <trd:itBgnd>0</trd:itBgnd>
+            <trd:ibs>670995</trd:ibs>
+            <trd:ibsBgnd>0</trd:ibsBgnd>
+            <trd:timeStampString>Fri Apr 16 03:40:35 2010</trd:timeStampString>
+            <trd:positionerString>UDEF1_2_PV1_2_3_4_5</trd:positionerString>
+            <trd:positionerValues>0.1460 26.0814 20.000 12.000 26.324 2.0007 1.2999</trd:positionerValues>
+          </trd:datafile>
+        </metadata>
+      </file>
+    </dataset>
+</experiment>
