@@ -1,0 +1,34 @@
+{% load xmldate %}
+<registryObject group="Monash University">
+  <key>MONASH-{{experiment.id}}</key>
+	<originatingSource>http://www.monash.edu.au</originatingSource>
+  <collection type="dataset" dateAccessioned="{{experiment.update_time|toxmldatetime}}"  dateModified="{{experiment.update_time|toxmldatetime}}">
+    <identifier type="local">experiment/view/{{experiment.id}}</identifier>
+	<identifier type="handle">hdl:{{experiment.handle}}</identifier>
+    <name type="primary">
+		<namePart>
+			{{experiment.title}}
+		</namePart>
+	</name>
+    <location>
+      <address>
+        <electronic type="url">
+          <value>http://monash.edu.au/experiment/view/{{experiment.id}}</value>
+        </electronic>
+        <physical>
+          <addressPart type="text">{{experiment.institution_name}}</addressPart>
+        </physical>
+      </address>
+    </location>
+    <relatedObject>
+      <key>MONASH:eif019</key>
+      <relation type="isOwnedBy">
+        <description>Is owned by</description>
+        <url>http://www.monash.edu.au</url>
+      </relation>
+    </relatedObject>
+
+    <description type="about">{{experiment.description}}</description>
+
+  </collection>
+</registryObject>
