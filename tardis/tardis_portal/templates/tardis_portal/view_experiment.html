@@ -437,6 +437,11 @@
                             {% for owner in owners %}
                                     {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
+
+							{% if not experiment.public %}
+							<br/><br/>
+							<strong><a href="http://localhost/experiment/view/{{experiment.id}}/publish/">Publish Experiment</a></strong><br/>
+							{% endif %}
                             </p>																			
 							
 						</div>

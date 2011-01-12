@@ -2120,3 +2120,130 @@ def upload_files(request, dataset_id):
     return render_to_response('tardis_portal/ajax/upload_files.html', c)
 
 
+def rif_cs(request):
+    import datetime
+    
+    print ExperimentParameter.objects.get(parameterset__experiment=1,
+            parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
+            name__name='profile').string_value
+
+    experiments = Experiment.objects.filter(public=True)
+
+    c = Context({
+        'experiments': experiments,
+        'now': datetime.datetime.now(),
+        # 'party_rif_cs': party_rif_cs,
+        # 'activity_rif_cs': activity_rif_cs,
+        # 'activity_keys': activity_keys,
+        # 'party_keys': party_keys,
+    })
+    return HttpResponse(render_response_index(request, 'tardis_portal/rif-cs/template.xml', c), mimetype='application/xml')
+    
+@experiment_ownership_required
+def publish_experiment(request, experiment_id):
+
+    experiment = Experiment.objects.get(id=experiment_id)
+
+    if request.method == 'POST':  # If the form has been submitted...
+        if not experiment.public:
+            publish_to_tardis_edu_au = False
+            # right now the publish to TARDIS.edu.au central index feature is disabled
+            # the publish action still works for making an experiment public and exposing rif-cs
+
+            if publish_to_tardis_edu_au:
+
+                filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
+                    '/METS.XML'
+
+                mpform = MultiPartForm()
+                mpform.add_field('username', settings.TARDIS_USERNAME)
+                mpform.add_field('password', settings.TARDIS_PASSWORD)
+                mpform.add_field('url', request.build_absolute_uri('/'))
+                mpform.add_field('mytardis_id', experiment_id)
+
+                f = open(filename, 'r')
+
+                # Add a fake file
+
+                mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
+
+                logger.debug('about to send register request to site')
+
+                # Build the request
+
+                requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
+                requestmp.add_header('User-agent',
+                                     'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+                body = str(mpform)
+                requestmp.add_header('Content-type', mpform.get_content_type())
+                requestmp.add_header('Content-length', len(body))
+                requestmp.add_data(body)
+
+                print
+                logger.debug('OUTGOING DATA:')
+                logger.debug(requestmp.get_data())
+
+                print
+                logger.debug('SERVER RESPONSE:')
+                logger.debug(urllib2.urlopen(requestmp).read())
+
+            print request.POST
+            
+            profile = request.POST['profile']
+            
+            save_rif_cs_profile(experiment, profile)
+            
+            experiment.public = True
+            experiment.save()
+
+            c = Context({'user': request.user, 'experiment': experiment})
+            return HttpResponseRedirect('/experiment/view/')
+        else:
+            return return_response_error(request)
+    else:
+        
+        profiles = ExperimentParameter.objects.filter(
+                parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
+                name__name='profile')
+
+        profile_list = list()
+        profile_list.append({'id': -1, 'value': 'default'})
+        
+        for profile in profiles:
+            profile_list.append({'id': profile.id, 'value': profile.string_value })
+        
+
+        c = Context({'user': request.user,
+                'experiment': experiment,
+                'profile_list': profile_list,
+                })
+        return HttpResponse(render_response_index(request,
+                            'tardis_portal/publish_experiment.html', c))
+                            
+def save_rif_cs_profile(experiment, profile):
+    # save party experiment parameter
+
+    schema = \
+        Schema.objects.get(
+        namespace__exact="http://monash.edu.au/rif-cs/profile/")
+
+    parametername = \
+        ParameterName.objects.get(
+        schema__namespace__exact=schema.namespace,
+        name="profile")
+
+    try:
+        parameterset = ExperimentParameterSet.objects.get(schema=schema, experiment=experiment)      
+    except ExperimentParameterSet.DoesNotExist, e:
+        parameterset = \
+            ExperimentParameterSet(
+            schema=schema, experiment=experiment)
+
+        parameterset.save()
+
+    ep = ExperimentParameter(
+        parameterset=parameterset,
+        name=parametername,
+        string_value=profile,
+        numerical_value=None)
+    ep.save()

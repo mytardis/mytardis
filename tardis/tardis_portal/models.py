@@ -71,12 +71,22 @@ class Experiment(models.Model):
     def get_absolute_url(self):
         return ('tardis.tardis_portal.views.view_experiment', (),
                 {'experiment_id': self.id})
-
+                
     @models.permalink
     def get_edit_url(self):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
+    def rif_cs_profile(self):
+        profile = "default"
+        try:
+            profile = ExperimentParameter.objects.get(parameterset__experiment__id=self.id,
+                    parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
+                    name__name='profile').string_value
+        except ExperimentParameter.DoesNotExist, eo:
+            pass
+
+        return "tardis_portal/rif-cs/profiles/" + profile + ".xml"
 
 class Experiment_Owner(models.Model):
 
