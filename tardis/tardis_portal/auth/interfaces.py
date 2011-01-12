@@ -46,7 +46,7 @@ class GroupProvider:
         """
         raise NotImplemented()
 
-    def searchGroups(self, filter):
+    def searchGroups(self, **filter):
         """
         return a list of groups that match the filter
         """
