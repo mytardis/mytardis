@@ -14,6 +14,7 @@ from tardis.tardis_portal import constants
 auth_key = u'localdb'
 auth_display_name = u'Local DB'
 
+
 def get_username_for_email(email):
     raise NotImplemented()
 
@@ -77,6 +78,16 @@ class DjangoGroupProvider(GroupProvider):
         if groupObj:
             return {'id': id, 'display': groupObj.name}
         return None
+
+    def searchGroups(self, **filter):
+        result = []
+        groups = Group.objects.filter(**filter)
+        for g in groups:
+            users = [u.username for u in User.objects.filter(groups=g)]
+            result += [{'id': g.id,
+                        'display': g.name,
+                        'members': users}]
+        return result
 
 
 class DjangoUserProvider(UserProvider):

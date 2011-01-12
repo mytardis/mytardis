@@ -33,5 +33,8 @@ class IPGroupProvider(GroupProvider):
             {"id": 123,
             "display": "Group Name",}
 
-        """
+         """
         raise NotImplemented()
+
+    def searchGroups(self, **filter):
+        return []

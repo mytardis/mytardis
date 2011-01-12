@@ -137,17 +137,10 @@ class ExperimentManager(models.Manager):
         """
 
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(experiment__id=experiment_id,
+        acl = ExperimentACL.objects.filter(pluginId='user',
+                                           experiment__id=experiment_id,
                                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
-        plugins = {}
-        for a in acl:
-            if not a.pluginId in plugins.keys():
-                plugins[a.pluginId] = [a.entityId]
-            else:
-                plugins[a.pluginId] += [a.entityId]
-
-        # TODO: Lookup ALL users through different UserProviders
-        return [User.objects.get(pk=int(u)) for u in plugins['user']]
+        return [User.objects.get(pk=int(a.entityId)) for a in acl]
 
     def groups(self, request, experiment_id):
         """
@@ -161,3 +154,29 @@ class ExperimentManager(models.Manager):
                                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
+
+    def external(self, request, experiment_id):
+        from tardis.tardis_portal.models import ExperimentACL
+        acl = ExperimentACL.objects.filter(experiment__id=experiment_id,
+                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+        acl.exclude(pluginId='user').exclude(pluginId='django_groups')
+        if not acl:
+           return None
+
+        from tardis.tardis_portal.auth import AuthService
+        authService = AuthService()
+
+        result = []
+        for a in acl:
+            group = authService.searchGroups(plugin=a.pluginId, name=a.entityId)
+            if group:
+                result += group
+        return result
+
+
+
+
+
+
+

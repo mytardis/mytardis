@@ -89,11 +89,13 @@ class AuthService:
         :param name: the value of the displayname to search for
         :param max_results: the maximum number of elements to return
         :param sort_by: the attribute the users should be sorted on
+        :param plugin: restrict the search to the specific group provider
         """
 
         result = []
         max_results = kw.get('max_results', '')
         sort_by = kw.get('sort_by', '')
+        plugin = kw.get('plugin', '')
 
         # We apply sorting and slicing here across all sets, so don't
         # make the plugin do it
@@ -101,8 +103,13 @@ class AuthService:
             del kw['sort_by']
         if max_results:
             del kw['max_results']
+        if plugin:
+            del kw['plugin']
 
         for gp in self._group_providers:
+            if plugin:
+                if not gp.name == plugin:
+                    continue
             for group in gp.searchGroups(**kw):
                 group["pluginname"] = gp.name
                 result.append(group)

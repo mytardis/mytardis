@@ -54,15 +54,18 @@ $(document).ready(function() {
 		t.length).toLowerCase()); } }
 
   $('#access_list_user.access_list').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
-
   $('#access_list_group.access_list').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
+  $('#access_list_external.access_list').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
 
   $(".access_list_user_toggle").text("[Show]");
-
   $(".access_list_group_toggle").text("[Show]");
+  $(".access_list_external_toggle").text("[Show]");
 
   var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
+			 $(".access_list_user_external").toggle(function(){
+			   $(this).text("[Hide]");
+                         });
 
 			// user access list
 			 $(".access_list_user_toggle").toggle(function(){
@@ -379,7 +382,7 @@ $(document).ready(function() {
 					  <br/>
 					</td>
 				      </tr>
-
+				      <tr>
 					<td>
 					  Group Access <a href="{{experiment.id}}/access_list/group/" class="access_list_group_toggle"></a>
 					  <div class="access_list" id="access_list_group">
@@ -387,10 +390,16 @@ $(document).ready(function() {
 					  <br/>
 					</td>
 				      </tr>
+				      <tr>
+					<td>
+					  External Access <a href="{{experiment.id}}/access_list/external/" class="access_list_group_toggle"></a>
+					  <div class="access_list" id="access_list_external">
+					  </div>
+					  <br/>
+					</td>
+				      </tr>
 				      {%endfor %}
-
 				    </table>
-
 				    {% else %}
 				    There are no experiments under your control.
 				    {% endif %}
