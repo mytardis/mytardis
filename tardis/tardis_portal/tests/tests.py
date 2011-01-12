@@ -43,9 +43,9 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from django.test import TestCase
 from django.test.client import Client
 
+from tardis.tardis_portal.views import _registerExperimentDocument
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
-from tardis.tardis_portal.metsparser import MetsMetadataInfoHandler
 
 from os import path
 import unittest
@@ -53,12 +53,12 @@ from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
 
-class SearchTestCase(TestCase):
 
-    fixtures = ['test_saxs_data']
+class SearchTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+        self.experiments = []
 
         try:
             user = User.objects.get(username='test')
@@ -66,7 +66,16 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
-        for experiment in Experiment.objects.all():
+        files = ['286-notmets.xml',
+                 'Edward-notmets.xml',
+                 'Cookson-notmets.xml']
+        for f in files:
+            filename = path.join(path.abspath(path.dirname(__file__)), f)
+            expid = _registerExperimentDocument(filename=filename,
+                                                created_by=user,
+                                                expid=None)
+            experiment = Experiment.objects.get(pk=expid)
+
             acl = ExperimentACL(pluginId='user',
                                 entityId=str(user.id),
                                 experiment=experiment,
@@ -75,32 +84,29 @@ class SearchTestCase(TestCase):
                                 canDelete=True,
                                 isOwner=True)
             acl.save()
-
+            self.experiments += [experiment]
 
         from tardis.tardis_portal.constants import SCHEMA_DICT
-        schema = Schema.objects.get(
-            namespace=SCHEMA_DICT['saxs']['datafile']
-            )
-        parameter = ParameterName.objects.get(schema = schema,
-                                              name = 'io')
+        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['datafile'])
+        parameter = ParameterName.objects.get(schema=schema, name='io')
         parameter.is_searchable = True
         parameter.save()
 
-        schema = Schema.objects.get(
-            namespace=SCHEMA_DICT['saxs']['dataset']
-            )
-
-        parameter = ParameterName.objects.get(schema = schema,
-                                              name = 'frqimn')
+        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['dataset'])
+        parameter = ParameterName.objects.get(schema=schema, name='frqimn')
         parameter.is_searchable = True
         parameter.save()
+
+    def tearDown(self):
+        for experiment in self.experiments:
+            experiment.delete()
 
     def testSearchDatafileForm(self):
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
 
         # check if the response is a redirect to the login page
         self.assertRedirects(response,
-            '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
+                             '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
 
         # let's try to login this time...
         self.client.login(username='test', password='test')
@@ -170,12 +176,6 @@ class SearchTestCase(TestCase):
             {'type': 'saxs', 'frqimn': '0.0450647', })
         self.assertEqual(len(response.context['paginator'].object_list), 125)
         self.client.logout()
-
-    def testPrivateSearchFunctions(self):
-        from tardis.tardis_portal import views
-
-        # TODO: need to decide if we are to make those private functions public
-        #       so they can be tested
 
     def testSearchExperimentForm(self):
         response = self.client.get('/search/experiment/')
@@ -328,62 +328,50 @@ class MetsExperimentStructCreatorTestCase(TestCase):
 
 class MetsMetadataInfoHandlerTestCase(TestCase):
 
-    fixtures = ['test_saxs_data']
-
     def setUp(self):
-        import os
-        metsFile = os.path.join(path.abspath(path.dirname(__file__)),
-            './METS_test.xml')
-        parser = make_parser(["drv_libxml2"])
-        parser.setFeature(feature_namespaces, 1)
-        self.dataHolder = MetsDataHolder()
-
-        parser.setContentHandler(
-            MetsExperimentStructCreator(self.dataHolder))
-        parser.parse(metsFile)
+        self.experiment = None
 
         try:
             self.user = User.objects.get(username='test')
         except User.DoesNotExist:
-            self.user = User(username='test', password='test')
+            self.user = User.objects.create_user('test', '', 'test')
             self.user.save()
 
-        parser.setContentHandler(
-            MetsMetadataInfoHandler(holder=self.dataHolder,
-            tardisExpId=None,
-            createdBy=self.user))
-        parser.parse(metsFile)
+        filename = path.join(path.abspath(path.dirname(__file__)),
+                             './METS_test.xml')
+
+        expid = _registerExperimentDocument(filename, self.user, expid=None)
+        self.experiment = Experiment.objects.get(pk=expid)
+
+    def tearDown(self):
+        self.experiment.delete()
 
     def testIngestedExperimentFields(self):
-        self.assertTrue(self.dataHolder.experimentDatabaseId == 4,
-            'Experiment ID should be 4')
         from tardis.tardis_portal import models
-        experiment = models.Experiment.objects.get(id=4)
-        self.assertTrue(experiment.title == 'SAXS Test',
+        self.assertTrue(self.experiment.title == 'SAXS Test',
             'wrong experiment title')
-        self.assertTrue(experiment.institution_name ==
+        self.assertTrue(self.experiment.institution_name ==
             'Adelaide University',
             'wrong experiment institution')
-        self.assertTrue(experiment.description ==
+        self.assertTrue(self.experiment.description ==
             'Hello world hello world',
             'wrong experiment abstract')
-        self.assertTrue(experiment.created_by == self.user,
+        self.assertTrue(self.experiment.created_by == self.user,
             'wrong experiment creator')
-        self.assertTrue(experiment.url ==
+        self.assertTrue(self.experiment.url ==
             'http://www.blahblah.com/espanol',
             'wrong experiment url')
 
         authors = models.Author_Experiment.objects.filter(
-            experiment=experiment)
+            experiment=self.experiment)
         self.assertTrue(len(authors) == 3)
         authorNames = [author.author.name for author in authors]
         self.assertTrue('Moscatto Brothers' in authorNames)
 
     def testIngestedDatasetFields(self):
         from tardis.tardis_portal import models
-        experiment = models.Experiment.objects.get(id=4)
         datasets = models.Dataset.objects.filter(
-            experiment=experiment)
+            experiment=self.experiment)
         self.assertTrue(len(datasets) == 1,
             'there should only be one dataset for the experiment')
         dataset = datasets[0]
@@ -456,124 +444,6 @@ class EquipmentTestCase(TestCase):
         response = self.client.get('/equipment/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['object_list']), 2)
-
-
-class ExperimentACLTestCase(TestCase):
-    def setUp(self):
-
-        self.client = Client()
-
-        self.user1 = User.objects.create_user('testuser1', '', 'secret')
-        self.user2 = User.objects.create_user('testuser2', '', 'secret')
-        self.user3 = User.objects.create_user('testuser3', '', 'secret')
-
-        # user1 will own experiment1
-        self.experiment1 = Experiment(
-            title = 'Experiment1',
-            institution_name = 'Australian Synchrotron',
-            approved = True,
-            public = False,
-            created_by = self.user1,
-            )
-        self.experiment1.save()
-
-        # user2 will experiment2
-        self.experiment2 = Experiment(
-            title = 'Experiment2',
-            institution_name = 'Australian Synchrotron',
-            approved = True,
-            public = False,
-            created_by = self.user2,
-            )
-        self.experiment2.save()
-
-        # experiment3 is public
-        self.experiment3 = Experiment(
-            title = 'Experiment3',
-            institution_name = 'Australian Synchrotron',
-            approved = True,
-            public = True,
-            created_by = self.user3,
-            )
-        self.experiment3.save()
-
-        # user1 owns experiment1
-        acl = ExperimentACL(
-            pluginId = 'user',
-            entityId = str(self.user1.id),
-            experiment = self.experiment1,
-            canRead = True,
-            isOwner = True,
-            aclOwnershipType = ExperimentACL.OWNER_OWNED,
-            )
-        acl.save()
-
-        # user2 owns experiment2
-        acl = ExperimentACL(
-            pluginId = 'user',
-            entityId = str(self.user2.id),
-            experiment = self.experiment2,
-            canRead = True,
-            isOwner = True,
-            aclOwnershipType = ExperimentACL.OWNER_OWNED,
-            )
-        acl.save()
-
-
-    def testAccessControl(self):
-        login = self.client.login(username='testuser1', password='secret')
-        self.assertTrue(login)
-
-        # user1 should be see experiment1
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # user1 should not be allowed to see experiment2
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment2.id))
-        self.assertEqual(response.status_code, 403)
-
-        # user1 should be allowed to see experiment3 as it's public
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment3.id))
-        self.assertEqual(response.status_code, 200)
-
-        # create a group and add it to experiment1
-        response = self.client.get('/experiment/control_panel/%i/access_list/add/group/%s?canRead=true&create=true'
-                                   % (self.experiment1.id, 'group1'))
-        self.assertEqual(response.status_code, 200)
-
-        # add user2 as admin to the newly created group
-        group = Group.objects.get(name='group1')
-        response = self.client.get('/group/%i/add/%s?isAdmin=true'
-                                   % (group.id, 'testuser2'))
-        self.assertEqual(response.status_code, 200)
-
-        self.client.logout()
-
-        # now check user2's permissions
-        login = self.client.login(username='testuser2', password='secret')
-        self.assertTrue(login)
-
-        # user2 should be able to see experiment1 now
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment1.id))
-        self.assertEqual(response.status_code, 200)
-
-        # user2 should be also able to see experiment2
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment2.id))
-        self.assertEqual(response.status_code, 200)
-
-        # user2 should be allowed to see experiment3 as it's public
-        response = self.client.get('/experiment/view/%i/'
-                                   % (self.experiment3.id))
-
-        self.assertEqual(response.status_code, 200)
-
-        self.client.logout()
-
 
 
 def suite():
