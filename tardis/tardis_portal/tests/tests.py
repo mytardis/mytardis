@@ -228,7 +228,7 @@ class MetsExperimentStructCreatorTestCase(TestCase):
     def setUp(self):
         import os
         metsFile = os.path.join(path.abspath(path.dirname(__file__)),
-            'tests/METS_test.xml')
+            './METS_test.xml')
         parser = make_parser(["drv_libxml2"])
         parser.setFeature(feature_namespaces, 1)
         self.dataHolder = MetsDataHolder()
@@ -294,7 +294,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
     def setUp(self):
         import os
         metsFile = os.path.join(path.abspath(path.dirname(__file__)),
-            'tests/METS_test.xml')
+            './METS_test.xml')
         parser = make_parser(["drv_libxml2"])
         parser.setFeature(feature_namespaces, 1)
         self.dataHolder = MetsDataHolder()
