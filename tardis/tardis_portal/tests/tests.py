@@ -53,7 +53,6 @@ from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
 
-
 class SearchTestCase(TestCase):
 
     def setUp(self):
@@ -73,7 +72,9 @@ class SearchTestCase(TestCase):
             filename = path.join(path.abspath(path.dirname(__file__)), f)
             expid = _registerExperimentDocument(filename=filename,
                                                 created_by=user,
-                                                expid=None)
+                                                expid=None,
+                                                owners=[user.username],
+                                                username=user.username)
             experiment = Experiment.objects.get(pk=expid)
             self.experiments += [experiment]
 
