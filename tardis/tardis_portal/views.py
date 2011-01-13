@@ -688,7 +688,8 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
-def _registerExperimentDocument(filename, created_by, expid=None):
+def _registerExperimentDocument(filename, created_by, expid=None,
+                                owners=[], username=None):
     '''
     Register the experiment document.
 
@@ -696,6 +697,8 @@ def _registerExperimentDocument(filename, created_by, expid=None):
     filename -- path of the document to parse (METS or notMETS)
     created_by -- a User instance
     expid -- the experiment ID to use
+    owner -- a list of owners
+    username -- the user who is the owner
 
     Returns:
     The experiment ID
@@ -713,6 +716,28 @@ def _registerExperimentDocument(filename, created_by, expid=None):
     else:
         logger.debug('processing METS')
         eid = parseMets(filename, created_by, expid)
+
+    g = Group(name=eid)
+    g.save()
+
+    # for each PI
+    for owner in owners:
+        owner = urllib.unquote_plus(owner)
+        u = None
+        # try get user from email
+        if settings.LDAP_ENABLE:
+            u = ldap_auth.get_or_create_user_ldap(owner)
+        else:
+            u = User.objects.get(username=username)
+
+        # if exist, assign to group
+        if u:
+            logger.debug('registering owner: ' + owner)
+            e = Experiment.objects.get(pk=eid)
+            exp_owner = Experiment_Owner(experiment=e,
+                                         user=u)
+            exp_owner.save()
+            u.groups.add(g)
 
     return eid
 
@@ -774,45 +799,17 @@ def register_experiment_ws_xmldata(request):
             class RegisterThread(threading.Thread):
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
+                    owners = request.POST.getlist('experiment_owner')
                     try:
                         _registerExperimentDocument(filename=filename,
-                                                    created_by=user, expid=eid)
+                                                    created_by=user, expid=eid,
+                                                    owners=owners,
+                                                    username=username)
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
 
             RegisterThread().start()
-
-            # create group
-
-            # for each PI
-                # check if they exist
-                    # if exist
-                        # assign to group
-                    # else
-                        # create user, generate username, randomly generated
-                        # pass, send email with pass
-
-            if not len(request.POST.getlist('experiment_owner')) == 0:
-                g = Group(name=eid)
-                g.save()
-
-                for owner in request.POST.getlist('experiment_owner'):
-                    owner = urllib.unquote_plus(owner)
-                    u = None
-                    # try get user from email
-                    if settings.LDAP_ENABLE:
-                        u = ldap_auth.get_or_create_user_ldap(owner)
-                    else:
-                        u = User.objects.get(username=username)
-
-                    if u:
-                        logger.debug('registering owner: ' + owner)
-                        e = Experiment.objects.get(pk=eid)
-                        exp_owner = Experiment_Owner(experiment=e,
-                                user=u)
-                        exp_owner.save()
-                        u.groups.add(g)
 
             logger.debug('Sending file request')
 
@@ -1013,6 +1010,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     """
 
     #from django.db.models import Q
+    logger.info('__getFilteredDatafiles: searchFilterData {0}'.format(searchFilterData))
 
     datafile_results = \
         get_accessible_datafiles_for_user(
@@ -1021,6 +1019,10 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
     if len(datafile_results) == 0:
+        logger.info("__getFilteredDatafiles: user ",
+                    "{0} ({1}) doesn\'t".format(request.user,
+                                                request.user.id),
+                    "access to any experiments")
         return datafile_results
 
     datafile_results = \
@@ -1056,7 +1058,7 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # let's sort it in the end
     if datafile_results:
         datafile_results = datafile_results.order_by('filename')
-
+    logger.debug("results: {0}".format(datafile_results))
     return datafile_results
 
 
@@ -1424,7 +1426,7 @@ def search_datafile(request):
         # TODO: should we forward the page to experiment search page if
         #       nothing is provided in the future?
         searchQueryType = 'mx'
-
+    logger.info('search_datafile: searchQueryType {0}'.format(searchQueryType))
     # TODO: check if going to /search/datafile will flag an error in unit test
     bodyclass = None
 
