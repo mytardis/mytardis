@@ -1,3 +1,4 @@
+
 '''
 Created on 06/01/2011
 
@@ -20,7 +21,7 @@ class IPGroupProvider(GroupProvider):
 
         ip4 = addr.split('.')
         for i in range(4):
-            ip4[3 - i] = '0'
+            ip4[3 - i] = '*'
             subnet = '%s.%s.%s.%s' % (ip4[0], ip4[1], ip4[2], ip4[3])
             groups += [subnet]
 
@@ -37,4 +38,10 @@ class IPGroupProvider(GroupProvider):
         raise NotImplemented()
 
     def searchGroups(self, **filter):
-        return []
+        address = filter.get('name')
+        if address:
+            return [{'id': None,
+                     'display': address,
+                     'members': ['everybody']}]
+        else:
+            return []

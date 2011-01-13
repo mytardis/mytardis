@@ -37,8 +37,7 @@ models.py
 """
 
 from django.db import models
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
 from django.conf import settings
 
@@ -61,6 +60,7 @@ class UserProfile(models.Model):
 
     def __unicode__(self):
         return self.user.username
+
 
 class GroupAdmin(models.Model):
     user = models.ForeignKey(User)

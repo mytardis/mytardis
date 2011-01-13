@@ -6,7 +6,6 @@ from django.contrib import auth
 from tardis.tardis_portal.logger import logger
 
 
-
 class AuthService:
     def __init__(self, settings=settings):
         self._group_providers = []

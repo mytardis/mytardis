@@ -53,7 +53,6 @@ from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
 
-
 class SearchTestCase(TestCase):
 
     def setUp(self):

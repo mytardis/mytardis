@@ -53,8 +53,9 @@ class LoginForm(AuthenticationForm):
         for authMethods in settings.AUTH_PROVIDERS:
             authMethodChoices += ((authMethods[0], authMethods[1]),)
 
-        self.fields['authMethod'] = forms.CharField(widget=forms.Select(choices=authMethodChoices),
-            label='Authentication Method')
+        self.fields['authMethod'] = \
+            forms.CharField(widget=forms.Select(choices=authMethodChoices),
+                            label='Authentication Method')
 
 
 class ChangeUserPermissionsForm(ModelForm):
@@ -81,7 +82,6 @@ class ChangeGroupPermissionsForm(forms.Form):
             widget=SelectDateWidget(), required=False)
     expiryDate = forms.DateTimeField(label='Expiry Date',
             widget=SelectDateWidget(), required=False)
-
 
 
 class DatafileSearchForm(forms.Form):
@@ -336,5 +336,3 @@ def createSearchDatafileSelectionForm():
 
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
-
-

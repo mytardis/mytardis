@@ -5,7 +5,7 @@ Created on 10/12/2010
 @author: Gerson Galang
 '''
 
-from django.contrib.auth.models import User, Group, AnonymousUser
+from django.contrib.auth.models import User, AnonymousUser
 from django.conf import settings
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider
@@ -20,24 +20,6 @@ SOAPLoginKey = "_vbl_session_key"
 
 auth_key = u'vbl'
 auth_display_name = u'VBL'
-
-def get_expids(epns):
-    """
-    Return the corresponding experiment ids for a list of (str)EPNs
-    """
-    # for complex queries with OR statements
-    from django.db.models import Q
-    queries = [Q(string_value=value) for value in epns]
-    query = queries.pop()
-    for item in queries:
-        query |= item
-
-    expids = []
-    # filter for soft parameter 'EPN' and
-    # list of epns the user is supposed to see
-    for epn in ExperimentParameter.objects.filter(name__name='EPN').filter(query):
-        expids += [epn.parameterset.experiment.id]
-    return expids
 
 
 class VblGroupProvider(GroupProvider):
@@ -84,7 +66,7 @@ class VblGroupProvider(GroupProvider):
             "display": "Group Name",}
 
         """
-        return {'id' : id,
+        return {'id': id,
                 'display': 'EPN_%i' % id}
 
     def searchGroups(self, **filter):
@@ -98,11 +80,10 @@ class VblGroupProvider(GroupProvider):
         users = str(self.client.service.VBLgetEmailsFromExpID(epn))
         if not users == 'None':
             return [{'id': int(epn),
-                     'display' : 'VBL/EPN_%s' % epn,
-                     'members' : users.split(',')}]
+                     'display': 'VBL/EPN_%s' % epn,
+                     'members': users.split(',')}]
         else:
             return []
-
 
     def getGroupsForEntity(self, entity):
         """

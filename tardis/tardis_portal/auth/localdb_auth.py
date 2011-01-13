@@ -9,7 +9,7 @@ from django.contrib.auth.backends import ModelBackend
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
 from tardis.tardis_portal.logger import logger
-from tardis.tardis_portal import constants
+
 
 auth_key = u'localdb'
 auth_display_name = u'Local DB'
@@ -19,10 +19,8 @@ def get_username_for_email(email):
     raise NotImplemented()
 
 
-
 def get_email_for_user(username):
     raise NotImplemented()
-
 
 
 def get_or_create_user(email):
@@ -51,9 +49,7 @@ class DjangoAuthBackend():
         return _modelBackend.get_user(user_id)
 
 
-
 _modelBackend = ModelBackend()
-
 
 
 class DjangoGroupProvider(GroupProvider):

@@ -1,9 +1,9 @@
+1from datetime import datetime
+
 from django.db import models
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
-
-from datetime import datetime
 
 
 class ExperimentManager(models.Manager):
@@ -19,6 +19,7 @@ class ExperimentManager(models.Manager):
     filling the request.groups object.
 
     """
+
     def all(self, request):
         """
         Returns all experiments a user - either authenticated or
@@ -57,7 +58,7 @@ class ExperimentManager(models.Manager):
                            & (Q(experimentacl__expiryDate__gte=datetime.today())
                               | Q(experimentacl__expiryDate__isnull=True))
 
-        return super(ExperimentManager, self).get_query_set().filter(query)
+        return super(ExperimentManager, self).get_query_set().filter(query).distinct()
 
     def get(self, request, experiment_id):
         """
@@ -156,27 +157,26 @@ class ExperimentManager(models.Manager):
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
 
     def external(self, request, experiment_id):
-        from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(experiment__id=experiment_id,
-                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        """
+        returns a list of groups which have external ACL rules
+        """
 
-        acl.exclude(pluginId='user').exclude(pluginId='django_groups')
+        from tardis.tardis_portal.models import ExperimentACL
+        acl = ExperimentACL.objects.exclude(pluginId='user')
+        acl.exclude(pluginId='django_groups')
+        acl.filter(experiment__id=experiment_id,
+                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
         if not acl:
-           return None
+            return None
 
         from tardis.tardis_portal.auth import AuthService
         authService = AuthService()
 
         result = []
         for a in acl:
-            group = authService.searchGroups(plugin=a.pluginId, name=a.entityId)
+            group = authService.searchGroups(plugin=a.pluginId,
+                                             name=a.entityId)
             if group:
                 result += group
         return result
-
-
-
-
-
-
-
