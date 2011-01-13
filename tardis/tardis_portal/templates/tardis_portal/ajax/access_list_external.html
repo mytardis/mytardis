@@ -1,0 +1,9 @@
+<div class="external">
+  <div class="access_list_external">
+    {% for group in groups %}
+      {% for user in group.members %}
+        <strong>{{ group.display }}</strong> {{ user }}<br>
+      {% endfor %}
+    {% endfor %}
+  </div> <!-- access_list_external -->
+</div> <!-- external -->

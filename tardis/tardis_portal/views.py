@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -41,7 +40,6 @@ import urllib2
 def getNewSearchDatafileSelectionForm():
     DatafileSelectionForm = createSearchDatafileSelectionForm()
     return DatafileSelectionForm()
-
 
 
 def logout(request):
@@ -250,7 +248,8 @@ def login(request):
 
         if 'next' not in request.GET:
             next = '/'
-        next = request.GET['next']
+        else:
+            next = request.GET['next']
 
         c = Context({'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
@@ -310,7 +309,6 @@ def list_auth_methods(request, status=None):
     except UserProfile.DoesNotExist:
         userAuthMethodList.append((request.user.username,
             localdb_auth.auth_display_name))
-
 
     LinkedUserAuthenticationForm = \
         createLinkedUserAuthenticationForm(supportedAuthMethods)
