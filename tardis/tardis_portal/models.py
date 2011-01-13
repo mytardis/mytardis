@@ -78,15 +78,19 @@ class Experiment(models.Model):
                 {'experiment_id': self.id})
 
     def rif_cs_profile(self):
-        profile = "default"
+        profile = "default.xml"
         try:
-            profile = ExperimentParameter.objects.get(parameterset__experiment__id=self.id,
+            profiles = ExperimentParameter.objects.filter(parameterset__experiment__id=self.id,
                     parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
-                    name__name='profile').string_value
+                    name__name='profile')
+
+            if len(profiles):
+                profile = profiles[0].string_value
+
         except ExperimentParameter.DoesNotExist, eo:
             pass
 
-        return "tardis_portal/rif-cs/profiles/" + profile + ".xml"
+        return "tardis_portal/rif-cs/profiles/" + profile
 
 class Experiment_Owner(models.Model):
 

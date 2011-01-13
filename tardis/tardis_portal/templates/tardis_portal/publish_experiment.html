@@ -40,7 +40,7 @@
 		{% block content %}
 			<div id="content">
 				<div class="post">
-					<h1 class="title"><a name="abouttardis">Pubilsh Experiment</a></h1>
+					<h1 class="title"><a name="abouttardis">Publish Experiment</a></h1>
 					<div class="entry">
 
 			<form action="." method="POST" class="publishform">
@@ -56,7 +56,7 @@
 					<select name="profile">
 					{% for profile in profile_list %}
 					
-						<option value="{{profile.value}}">{{profile.value}}</option>
+						<option value="{{profile}}">{{profile}}</option>
 						
 					{% endfor %}
 					</select>
@@ -68,20 +68,6 @@
 			</form>
 		    		</div>
 		    	</div>
-			</div>
-		    <br/>
 
-			{% endblock %} {% block sidebar %}
 
-				<ul>
-					<li>
-						<h2></h2>
-
-							<ul>
-								
-							</ul>
-					</li>
-				</ul>		
-
-		<p>
 			{% endblock %}

@@ -156,9 +156,11 @@ def get_owned_experiments(user_id):
 
 
 def has_experiment_ownership(experiment_id, user_id):
-
-    experiment = Experiment.objects.get(pk=experiment_id)
-
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist, e:
+        return False
+    
     eo = Experiment_Owner.objects.filter(experiment=experiment,
             user=user_id)
 
@@ -525,6 +527,7 @@ def view_experiment(request, experiment_id):
                     : '/experiment/view/' + str(experiment.id) + '/'}],
             'searchDatafileSelectionForm'
                 : getNewSearchDatafileSelectionForm(),
+            'is_owner': has_experiment_ownership(experiment.id, request.user.id),
             })
     except Experiment.DoesNotExist, de:
         return return_response_not_found(request)
@@ -996,11 +999,18 @@ def retrieve_datafile_list(request, dataset_id):
     except (EmptyPage, InvalidPage):
         dataset = paginator.page(paginator.num_pages)
 
+    is_owner = False
+    
+    if request.user.is_authenticated():
+        experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
+        is_owner = has_experiment_ownership(experiment_id, request.user.id)
+
     c = Context({
         'dataset': dataset,
         'paginator': paginator,
         'dataset_id': dataset_id,
         'filename_search': filename_search,
+        'is_owner': is_owner,
         })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/datafile_list.html', c))
@@ -1980,7 +1990,6 @@ def upload_complete(request, experiment_id):
     c = Context(cont)
     return render_to_response('tardis_portal/upload_complete.html', c)
 
-
 def upload(
     request,
     dataset_id,
@@ -2122,10 +2131,6 @@ def upload_files(request, dataset_id):
 
 def rif_cs(request):
     import datetime
-    
-    print ExperimentParameter.objects.get(parameterset__experiment=1,
-            parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
-            name__name='profile').string_value
 
     experiments = Experiment.objects.filter(public=True)
 
@@ -2141,77 +2146,83 @@ def rif_cs(request):
     
 @experiment_ownership_required
 def publish_experiment(request, experiment_id):
-
-    experiment = Experiment.objects.get(id=experiment_id)
+    
+    try:
+        experiment = Experiment.objects.get(id=experiment_id)
+    except Experiment.DoesNotExist, e:    
+        return return_response_error(request)
+        
+    if experiment.public:
+        return return_response_error(request)
 
     if request.method == 'POST':  # If the form has been submitted...
-        if not experiment.public:
-            publish_to_tardis_edu_au = False
-            # right now the publish to TARDIS.edu.au central index feature is disabled
-            # the publish action still works for making an experiment public and exposing rif-cs
+        
+        publish_to_tardis_edu_au = False
+        # right now the publish to TARDIS.edu.au central index feature is disabled
+        # the publish action still works for making an experiment public and exposing rif-cs
 
-            if publish_to_tardis_edu_au:
+        if publish_to_tardis_edu_au:
 
-                filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
-                    '/METS.XML'
+            filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
+                '/METS.XML'
 
-                mpform = MultiPartForm()
-                mpform.add_field('username', settings.TARDIS_USERNAME)
-                mpform.add_field('password', settings.TARDIS_PASSWORD)
-                mpform.add_field('url', request.build_absolute_uri('/'))
-                mpform.add_field('mytardis_id', experiment_id)
+            mpform = MultiPartForm()
+            mpform.add_field('username', settings.TARDIS_USERNAME)
+            mpform.add_field('password', settings.TARDIS_PASSWORD)
+            mpform.add_field('url', request.build_absolute_uri('/'))
+            mpform.add_field('mytardis_id', experiment_id)
 
-                f = open(filename, 'r')
+            f = open(filename, 'r')
 
-                # Add a fake file
+            # Add a fake file
 
-                mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
+            mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
 
-                logger.debug('about to send register request to site')
+            logger.debug('about to send register request to site')
 
-                # Build the request
+            # Build the request
 
-                requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
-                requestmp.add_header('User-agent',
-                                     'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-                body = str(mpform)
-                requestmp.add_header('Content-type', mpform.get_content_type())
-                requestmp.add_header('Content-length', len(body))
-                requestmp.add_data(body)
+            requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
+            requestmp.add_header('User-agent',
+                                 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+            body = str(mpform)
+            requestmp.add_header('Content-type', mpform.get_content_type())
+            requestmp.add_header('Content-length', len(body))
+            requestmp.add_data(body)
 
-                print
-                logger.debug('OUTGOING DATA:')
-                logger.debug(requestmp.get_data())
+            print
+            logger.debug('OUTGOING DATA:')
+            logger.debug(requestmp.get_data())
 
-                print
-                logger.debug('SERVER RESPONSE:')
-                logger.debug(urllib2.urlopen(requestmp).read())
+            print
+            logger.debug('SERVER RESPONSE:')
+            logger.debug(urllib2.urlopen(requestmp).read())
 
-            print request.POST
+        print request.POST
+    
+        profile = request.POST['profile']
+    
+        save_rif_cs_profile(experiment, profile)
+    
+        experiment.public = True
+        experiment.save()
+
+        c = Context({'user': request.user, 'experiment': experiment})
+        return HttpResponseRedirect('/experiment/view/')
             
-            profile = request.POST['profile']
-            
-            save_rif_cs_profile(experiment, profile)
-            
-            experiment.public = True
-            experiment.save()
-
-            c = Context({'user': request.user, 'experiment': experiment})
-            return HttpResponseRedirect('/experiment/view/')
-        else:
-            return return_response_error(request)
     else:
         
-        profiles = ExperimentParameter.objects.filter(
-                parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
-                name__name='profile')
-
-        profile_list = list()
-        profile_list.append({'id': -1, 'value': 'default'})
+        # profiles = ExperimentParameter.objects.filter(
+        #         parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
+        #         name__name='profile').distinct()
+        # 
+        # profile_list = list()
+        # profile_list.append({'id': -1, 'value': 'default'})
+        # 
+        # for profile in profiles:
+        #     profile_list.append({'id': profile.id, 'value': profile.string_value })
         
-        for profile in profiles:
-            profile_list.append({'id': profile.id, 'value': profile.string_value })
-        
+        profile_list = get_rif_cs_profile_list()
 
         c = Context({'user': request.user,
                 'experiment': experiment,
@@ -2219,6 +2230,29 @@ def publish_experiment(request, experiment_id):
                 })
         return HttpResponse(render_response_index(request,
                             'tardis_portal/publish_experiment.html', c))
+                          
+def get_rif_cs_profile_list():
+    #profile_dir = "/Users/steve/Dropbox/"
+    profile_dir = settings.APP_ROOT + "tardis_portal/templates/tardis_portal/rif-cs/profiles/"
+    
+    profile_list = list()
+    
+    for f in os.listdir(profile_dir):
+        valid = True
+        
+        if not os.path.isfile(profile_dir + f):
+            valid = False
+        
+        if f.startswith('.'):
+            valid = False
+        
+        if not f.endswith('.xml'):
+            valid = False
+            
+        if valid:
+            profile_list.append(f)
+    
+    return profile_list
                             
 def save_rif_cs_profile(experiment, profile):
     # save party experiment parameter
