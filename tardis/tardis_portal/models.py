@@ -66,7 +66,7 @@ class Author(models.Model):
 
 class Experiment(models.Model):
 
-    url = models.URLField(verify_exists=False, max_length=255)
+    url = models.URLField(blank=True, verify_exists=False, max_length=255)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -112,7 +112,7 @@ class Author_Experiment(models.Model):
 class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     def __unicode__(self):
         return self.description
@@ -122,10 +122,11 @@ class Dataset_File(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    url = models.URLField(max_length=400)
-    size = models.CharField(blank=True, max_length=400)
+    url = models.CharField(blank=True, max_length=400)
+    size = models.CharField(blank=False, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
-    created_time = models.DateTimeField(null=True, blank=True)
+    modification_time = models.DateTimeField(null=True, blank=True)
+    mimetype = models.CharField(blank=True, max_length=80)
 
     def __unicode__(self):
         return self.filename
