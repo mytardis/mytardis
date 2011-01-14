@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -35,20 +34,26 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
         else:
-            file_path = join(settings.FILE_STORE_PATH,
-                             str(datafile.dataset.experiment.id),
-                             datafile.url.partition('//')[2])
+            if url.startswith('tardis://'):
+                file_path = join(settings.FILE_STORE_PATH,
+                                 str(datafile.dataset.experiment.id),
+                                 url.partition('//')[2])
+            else:
+                file_path = url.partition('//')[2]
+
             try:
+                if datafile.mimetype:
+                    mimetype = datafile.mimetype
+                else:
+                    mimetype = 'application/octet-stream'
+
                 logger.debug(file_path)
                 wrapper = FileWrapper(file(file_path))
 
                 response = HttpResponse(wrapper,
-                        mimetype='application/octet-stream')
+                        mimetype=mimetype)
                 response['Content-Disposition'] = \
                     'attachment; filename=' + datafile.filename
-
-                # import os
-                # response['Content-Length'] = os.path.getsize(file_path)
 
                 return response
 
@@ -108,10 +113,12 @@ def download_datafiles(request):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
-                        if datafile.url.startswith('file://'):
+                        if datafile.url.startswith('tardis://'):
                             absolute_filename = datafile.url.partition('//')[2]
-                            fileString += expid + '/' + absolute_filename + ' '
-                            fileSize += long(datafile.size)
+                            fileString += '%s/%s ' % (expid, absolute_filename)
+                        else:
+                            fileString += datafile.url.partition('//')[2]
+                        fileSize += long(datafile.size)
 
             for dfid in datafiles:
                 datafile = Dataset_File.objects.get(pk=dfid)
@@ -121,10 +128,12 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('file://'):
+                    if datafile.url.startswith('tardis://'):
                         absolute_filename = datafile.url.partition('//')[2]
-                        fileString += expid + '/' + absolute_filename + ' '
-                        fileSize += long(datafile.size)
+                        fileString += '%s/%s ' % (expid, absolute_filename)
+                    else:
+                        fileString += datafile.url.partition('//')[2]
+                    fileSize += long(datafile.size)
 
         else:
             return return_response_not_found(request)
@@ -140,10 +149,12 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('file://'):
+                    if datafile.url.startswith('tardis://'):
                         absolute_filename = datafile.url.partition('//')[2]
-                        fileString += expid + '/' + absolute_filename + ' '
-                        fileSize += long(datafile.size)
+                        fileString += '%s/%s ' % (expid, absolute_filename)
+                    else:
+                        fileString += datafile.url.partition('//')[2]
+                    fileSize += long(datafile.size)
 
         else:
             return return_response_not_found(request)
