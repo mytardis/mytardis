@@ -158,12 +158,9 @@ class ProcessExperiment:
 
                         x = 0
                         for authorName in authors:
-                            author = \
-                                Author(name=SafeUnicode(authorName))
-                            author.save()
                             author_experiment = \
                                 Author_Experiment(experiment=experiment,
-                                    author=author, order=x)
+                                    author=authorName, order=x)
                             author_experiment.save()
                             x = x + 1
 

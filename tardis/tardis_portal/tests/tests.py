@@ -354,7 +354,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         authors = models.Author_Experiment.objects.filter(
             experiment=self.experiment)
         self.assertTrue(len(authors) == 3)
-        authorNames = [author.author.name for author in authors]
+        authorNames = [author.author for author in authors]
         self.assertTrue('Moscatto Brothers' in authorNames)
 
     def testIngestedDatasetFields(self):
