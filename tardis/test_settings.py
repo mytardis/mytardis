@@ -46,8 +46,9 @@ INSTALLED_APPS = (
 TEST_RUNNER = 'django_nose.run_tests'
 
 LOG_FILENAME = None
+# LOG_FILENAME = '/var/log/tardis/tardis.log'
 
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO

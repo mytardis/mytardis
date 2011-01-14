@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,35 +30,48 @@
 {% extends "tardis_portal/search_experiment.html" %}
 {% load experimentstats %}
 
-		{% block searchPageBody %}
-						{% if experiments.count %}<em><strong>{{ experiments.count }}</strong> result(s) found..</em>
-						{% else %}
-						No experiments found
-						{% endif %}
-							<table class="experiment-table">
-							{% for experiment in experiments %}
-								<tr>
-									<th>
-										<a href="../../experiment/view/{{ experiment.id }}">{{ experiment.title }}								
-
-											</a>
-									</th>
-
-								</tr>	
-
-								<tr>
-
-										<td>From <strong>{{experiment.institution_name}}</strong>, deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong></td>
-
-								</tr>
-
-								<tr>
-
-										<td class="experiment-table-stats"><strong>{{ experiment.dataset_set.all.count }}</strong> dataset(s), containing <strong>{{ experiment.id|experiment_file_count }}</strong> files
-											<br/><br/>
-
-								</tr>				
-
-							{%endfor %}
-						</table>
-		{% endblock %}
+{% block searchPageBody %}
+{% if experiments.count %}
+<em>
+  <strong>{{ experiments.count }}</strong>
+  experiment{{ experiments.count|pluralize }} found.
+</em>
+{% else %}
+No experiments found
+{% endif %}
+<table class="experiment-table">
+  {% for experiment in experiments %}
+  <tr>
+    <th>
+      <a href="/experiment/view/{{ experiment.id }}">{{ experiment.title }}</a>
+    </th>
+  </tr>
+  <tr>
+    <td>
+      From <strong>{{ experiment.institution_name }}</strong>,
+      deposited <strong>{{ experiment.created_time|date:"jS F Y" }}</strong>,
+      modified <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+    </td>
+  </tr>
+  {% if experiment.start_time and experiment.end_time %}
+  <tr>
+    <td>
+      <strong>{{ experiment.start_time|date:"jS F Y H:i" }}</strong>
+      - <strong>{{ experiment.end_time|date:"jS F Y H:i" }}</srong>
+    </td>
+  </tr>
+  {% endif %}
+  <tr>
+    <td class="experiment-table-stats">
+      <strong>{{ experiment.dataset_set.all.count }}</strong>
+      dataset{{ experiment.dataset_set.all.count|pluralize }},
+      containing
+      <strong>{{ experiment.id|experiment_file_count }}</strong>
+      file{{ experiment.id|experiment_file_count|pluralize }}
+      <br/>
+      <br/>
+    </td>
+  </tr>
+{%endfor %}
+</table>
+{% endblock %}

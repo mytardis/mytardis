@@ -1,0 +1,1867 @@
+<experiment>
+	<title>Specialist Crystallography at the Australian Synchrotron</title>
+	<createdate>2007-10-30T00:00:00+11:00</createdate>
+	<lastmoddate>2007-10-30T00:00:00+11:00</lastmoddate>
+	<abstract>We aim to detemine the crystal structures of several micro-crystalline materials and compare the data quality with that obtained recently for the SCrAPS program at the ChemMatCars beamline.</abstract>
+	<organization>Australian Synchrotron</organization>
+	<creator>VBL MetaMan</creator>
+	<author>Dr. Paul Jensen</author>
+	<author>Dr. Peter Turner</author>
+	<dataset>
+		<description>Australian Synchrotron Proposal ID: 286</description>
+		<metadata schema="http://www.tardis.edu.au/schemas/mxautoprocessingresults/1">
+			<trd:mxAutoProcessingResults xmlns:trd="http://www.tardis.edu.au/schemas/mxautoprocessingresults/1">
+			  <trd:EPN>trd:EPN</trd:EPN>
+			  <trd:framesDir>trd:framesDir</trd:framesDir>
+			  <trd:processingDir>trd:processingDir</trd:processingDir>
+			  <trd:rootName>trd:rootName</trd:rootName>
+			  <trd:runNumber>0.0</trd:runNumber>
+			  <trd:firstImage>0.0</trd:firstImage>
+			  <trd:lastImage>0.0</trd:lastImage>
+			  <trd:spacegroup>trd:spacegroup</trd:spacegroup>
+			  <trd:cellA>0.0</trd:cellA>
+			  <trd:cellB>0.0</trd:cellB>
+			  <trd:cellC>0.0</trd:cellC>
+			  <trd:cellAlpha>0.0</trd:cellAlpha>
+			  <trd:cellBeta>0.0</trd:cellBeta>
+			  <trd:cellGamma>0.0</trd:cellGamma>
+			  <trd:midslopeAnomNormProb>0.0</trd:midslopeAnomNormProb>
+			  <trd:delanomCorrelationBettweenHalfSetsAll>0.0</trd:delanomCorrelationBettweenHalfSetsAll>
+			  <trd:delanomCorrelationBettweenHalfSetsLow>0.0</trd:delanomCorrelationBettweenHalfSetsLow>
+			  <trd:delanomCorrelationBettweenHalfSetsHigh>0.0</trd:delanomCorrelationBettweenHalfSetsHigh>
+			  <trd:anomMultiplicityAll>0.0</trd:anomMultiplicityAll>
+			  <trd:anomMultiplicityLow>0.0</trd:anomMultiplicityLow>
+			  <trd:anomMultiplicityHigh>0.0</trd:anomMultiplicityHigh>
+			  <trd:completenessAll>0.0</trd:completenessAll>
+			  <trd:completenessLow>0.0</trd:completenessLow>
+			  <trd:completenessHigh>0.0</trd:completenessHigh>
+			  <trd:meanIOverSdIAll>0.0</trd:meanIOverSdIAll>
+			  <trd:meanIOverSdILow>0.0</trd:meanIOverSdILow>
+			  <trd:totalUniqueAll>0.0</trd:totalUniqueAll>
+			  <trd:totalUniqueLow>0.0</trd:totalUniqueLow>
+			  <trd:totalUniqueHigh>0.0</trd:totalUniqueHigh>
+			  <trd:totalObsAll>0.0</trd:totalObsAll>
+			  <trd:totalObsLow>0.0</trd:totalObsLow>
+			  <trd:totalObsHigh>0.0</trd:totalObsHigh>
+			  <trd:rpimIplusAndIminusAll>0.0</trd:rpimIplusAndIminusAll>
+			  <trd:rpimIplusAndIminusLow>0.0</trd:rpimIplusAndIminusLow>
+			  <trd:rpimIplusAndIminusHigh>0.0</trd:rpimIplusAndIminusHigh>
+			  <trd:rpimWithinIplusAndIminusAll>0.0</trd:rpimWithinIplusAndIminusAll>
+			  <trd:rpimWithinIplusAndIminusLow>0.0</trd:rpimWithinIplusAndIminusLow>
+			  <trd:rpimWithinIplusAndIminusHigh>0.0</trd:rpimWithinIplusAndIminusHigh>
+			  <trd:rmeasIplusAndIminusAll>0.0</trd:rmeasIplusAndIminusAll>
+			  <trd:rmeasIplusAndIminusLow>0.0</trd:rmeasIplusAndIminusLow>
+			  <trd:rmeasIplusAndIminusHigh>0.0</trd:rmeasIplusAndIminusHigh>
+			  <trd:xdsLog>trd:xdsLog</trd:xdsLog>
+			  <trd:pointlessLog>trd:pointlessLog</trd:pointlessLog>
+			  <trd:scalaLog>trd:scalaLog</trd:scalaLog>
+			  <trd:highRes>0.0</trd:highRes>
+			  <trd:rMerge>0.0</trd:rMerge>
+			  <trd:completeness>0.0</trd:completeness>
+			  <trd:ranom>0.0</trd:ranom>
+			  <trd:created>trd:created</trd:created>
+			  <trd:isigImage>R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub//ge8WSLf/rhf/3kdbW1mxsbP//mf///yH5BAAAAAAALAAAAAAQAA4AAARe8L1Ekyky67QZ1hLnjM5UUde0ECwLJoExKcppV0aCcGCmTIHEIUEqjgaORCMxIC6e0CcguWw6aFjsVMkkIr7g77ZKPJjPZqIyd7sJAgVGoEGv2xsBxqNgYPj/gAwXEQA7</trd:isigImage> 			<trd:mergeImage>R0lGODlhEAAOALMAAOazToeHh0tLS/7LZv/0jvb29t/f3//Ub//ge8WSLf/rhf/3kdbW1mxsbP//mf///yH5BAAAAAAALAAAAAAQAA4AAARe8L1Ekyky67QZ1hLnjM5UUde0ECwLJoExKcppV0aCcGCmTIHEIUEqjgaORCMxIC6e0CcguWw6aFjsVMkkIr7g77ZKPJjPZqIyd7sJAgVGoEGv2xsBxqNgYPj/gAwXEQA7</trd:mergeImage>
+			</trd:mxAutoProcessingResults>		
+		</metadata>
+		<file>
+			<name>OKxtal1_1_001.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_001.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_002.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_002.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_003.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_003.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_004.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_004.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_005.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_005.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_006.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_006.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_007.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_007.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_008.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_008.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_009.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_009.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_010.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_010.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_011.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_011.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_012.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_012.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_013.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_013.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_014.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_014.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_015.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_015.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_016.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_016.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_017.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_017.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_018.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_018.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_019.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_019.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_020.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_020.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_021.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_021.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_022.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_022.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_023.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_023.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_024.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_024.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_025.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_025.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_026.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_026.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_027.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_027.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_028.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_028.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_029.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_029.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_030.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_030.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_031.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_031.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_032.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_032.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_033.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_033.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_034.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_034.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_035.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_035.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_036.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_036.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_037.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_037.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_038.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_038.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_039.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_039.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_040.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_040.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_041.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_041.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_042.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_042.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_043.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_043.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_044.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_044.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_045.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_045.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_046.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_046.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_047.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_047.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_048.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_048.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_049.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_049.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_050.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_050.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_051.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_051.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_052.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_052.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_053.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_053.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_054.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_054.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_055.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_055.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_056.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_056.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_057.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_057.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_058.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_058.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_059.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_059.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_060.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_060.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_061.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_061.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_062.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_062.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_063.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_063.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_064.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_064.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_065.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_065.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_066.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_066.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_067.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_067.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_068.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_068.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_069.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_069.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_070.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_070.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_071.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_071.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_072.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_072.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_073.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_073.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_074.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_074.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_075.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_075.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_076.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_076.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_077.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_077.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_078.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_078.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_079.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_079.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_080.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_080.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_081.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_081.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_082.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_082.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_083.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_083.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_084.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_084.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_085.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_085.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_086.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_086.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_087.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_087.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_088.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_088.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_089.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_089.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+		<file>
+			<name>OKxtal1_1_090.img</name>
+			<size>8389120</size>
+			<md5>unknown</md5>
+			<path>file://Frames/test/OKxtal1_1_090.img</path>
+			<metadata schema="http://tardis.edu.au/schemas/trdDatafile/1">
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+			</metadata>
+		</file>
+	</dataset>
+</experiment>
