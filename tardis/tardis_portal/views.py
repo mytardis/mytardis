@@ -3,8 +3,8 @@
 """
 views.py
 
-@author Steve Androulakis
-@author Gerson Galang
+.. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
 """
 
@@ -55,7 +55,6 @@ def logout(request):
 def index(request):
 
     status = ''
-
     c = Context(
     {'status': status,
          'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
@@ -386,8 +385,8 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
-@transaction.commit_manually
-def _registerExperimentDocument(filename, created_by, expid=None):
+def _registerExperimentDocument(filename, created_by, expid=None,
+                                owners=[], username=None):
     '''
     Register the experiment document.
 
@@ -395,6 +394,8 @@ def _registerExperimentDocument(filename, created_by, expid=None):
     filename -- path of the document to parse (METS or notMETS)
     created_by -- a User instance
     expid -- the experiment ID to use
+    owner -- a list of owners
+    username -- the user who is the owner
 
     Returns:
     The experiment ID
@@ -424,6 +425,30 @@ def _registerExperimentDocument(filename, created_by, expid=None):
         logger.debug('committing ingestion')
         transaction.commit()
         return eid
+
+    g = Group(name=eid)
+    g.save()
+
+    # for each PI
+    for owner in owners:
+        owner = urllib.unquote_plus(owner)
+        u = None
+        # try get user from email
+        if settings.LDAP_ENABLE:
+            u = ldap_auth.get_or_create_user_ldap(owner)
+        else:
+            u = User.objects.get(username=username)
+
+        # if exist, assign to group
+        if u:
+            logger.debug('registering owner: ' + owner)
+            e = Experiment.objects.get(pk=eid)
+            exp_owner = Experiment_Owner(experiment=e,
+                                         user=u)
+            exp_owner.save()
+            u.groups.add(g)
+
+    return eid
 
 
 # web service
@@ -483,46 +508,17 @@ def register_experiment_ws_xmldata(request):
             class RegisterThread(threading.Thread):
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
+                    owners = request.POST.getlist('experiment_owner')
                     try:
                         _registerExperimentDocument(filename=filename,
-                                                    created_by=user, expid=eid)
+                                                    created_by=user, expid=eid,
+                                                    owners=owners,
+                                                    username=username)
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
 
             RegisterThread().start()
-
-            # create group
-
-            # for each PI
-                # check if they exist
-                    # if exist
-                        # assign to group
-                    # else
-                        # create user, generate username, randomly generated
-                        # pass, send email with pass
-
-            # TODO: this bit will need to be updated to reflect the new
-            #       user authentication requirements
-            #if not len(request.POST.getlist('experiment_owner')) == 0:
-            #    for owner in request.POST.getlist('experiment_owner'):
-            #        owner = urllib.unquote_plus(owner)
-            #        u = None
-                    # try to get user object using his/her email as a key
-                    # from the LDAP DB
-            #        if settings.LDAP_ENABLE:
-            #            u = ldap_auth.get_or_create_user_ldap(owner)
-            #        else:  # use local DB lookup
-            #           u = localdb_auth.get_or_create_user(owner)
-
-                    #e = Experiment.objects.get(pk=eid)
-                    #acl = ExperimentACL(pluginId=u.backend,
-                    #                    entityId=u.username,
-                    #                    canRead=True,
-                    #                    canWrite=True,
-                    #                    canDelete=True,
-                    #                    isOwner=True)
-                    #acl.save()
 
             logger.debug('Sending file request')
 
@@ -723,10 +719,15 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     """
 
     datafile_results = get_accessible_datafiles_for_user(request)
+    logger.info('__getFilteredDatafiles: searchFilterData {0}'.format(searchFilterData))
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
     if datafile_results.count() == 0:
+        logger.info("__getFilteredDatafiles: user ",
+                    "{0} ({1}) doesn\'t".format(request.user,
+                                                request.user.id),
+                    "access to any experiments")
         return datafile_results
 
     datafile_results = \
@@ -762,7 +763,7 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # let's sort it in the end
     if datafile_results:
         datafile_results = datafile_results.order_by('filename')
-
+    logger.debug("results: {0}".format(datafile_results))
     return datafile_results
 
 
@@ -1128,7 +1129,7 @@ def search_datafile(request):
         # TODO: should we forward the page to experiment search page if
         #       nothing is provided in the future?
         searchQueryType = 'mx'
-
+    logger.info('search_datafile: searchQueryType {0}'.format(searchQueryType))
     # TODO: check if going to /search/datafile will flag an error in unit test
     bodyclass = None
 
@@ -1227,10 +1228,14 @@ def retrieve_access_list_user(request, experiment_id):
 @experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
-    # TODO: decide if we are to also show system-owned ACLs
+    user_owned_groups = Experiment.safe.user_owned_groups(request,
+                                                          experiment_id)
+    system_owned_groups = Experiment.safe.system_owned_groups(request,
+                                                            experiment_id)
 
-    groups = Experiment.safe.groups(request, experiment_id)
-    c = Context({'groups': groups, 'experiment_id': experiment_id})
+    c = Context({'user_owned_groups': user_owned_groups,
+                 'system_owned_groups': system_owned_groups,
+                 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group.html', c))
 

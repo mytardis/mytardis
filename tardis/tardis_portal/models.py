@@ -45,6 +45,12 @@ from tardis.tardis_portal.managers import ExperimentManager
 
 
 class UserProfile(models.Model):
+    """
+    UserProfile class is an extension to the Django standard user model.
+
+    :attribute isNotADjangoAccount: is the user an external user
+    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    """
     user = models.ForeignKey(User, unique=True)
 
     # This flag will tell us if the main User account was created using any
@@ -63,6 +69,12 @@ class UserProfile(models.Model):
 
 
 class GroupAdmin(models.Model):
+    """
+    GroupAdmin links the Django User and Group tables for group administrators
+    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    :attribute group: a forign key to the :class:`django.contrib.auth.models.Group`
+    """
+
     user = models.ForeignKey(User)
     group = models.ForeignKey(Group)
 
@@ -126,6 +138,53 @@ class Experiment(models.Model):
 
     def __unicode__(self):
         return self.title
+
+
+class ExperimentACL(models.Model):
+
+    """
+    The ExperimentACL table is the core of the Tardis Authorisation framework
+    http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt
+    :attribute pluginId: the the name of the auth plugin being used
+    :attribute entityId: a foreign key to auth plugins
+    :attribute experimentId: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute canRead: gives the user read access
+    :attribute canWrite: gives the user write access
+    :attribute canDelete: gives the user delete permission
+    :attribute owner: the experiment owner flag.
+    :attribute effectiveDate: the date when access takes into effect
+    :attribute expiryDate: the date when access ceases
+    :attribute aclOwnershipType: system-owned or user-owned.
+    System-owned ACLs will prevent users from removing or
+    editing ACL entries to a particular experiment they
+    own. User-owned ACLs will allow experiment owners to
+    remove/add/edit ACL entries to the experiments they own.
+    """
+
+    OWNER_OWNED = 1
+    SYSTEM_OWNED = 2
+    __COMPARISON_CHOICES = (
+        (OWNER_OWNED, 'Owner-owned'),
+        (SYSTEM_OWNED, 'System-owned'),
+    )
+
+    pluginId = models.CharField(null=False, blank=False, max_length=30)
+    entityId = models.CharField(null=False, blank=False, max_length=320)
+    experiment = models.ForeignKey(Experiment)
+    canRead = models.BooleanField(default=False)
+    canWrite = models.BooleanField(default=False)
+    canDelete = models.BooleanField(default=False)
+    isOwner = models.BooleanField(default=False)
+    effectiveDate = models.DateField(null=True, blank=True)
+    expiryDate = models.DateField(null=True, blank=True)
+    aclOwnershipType = models.IntegerField(
+        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+
+    def __unicode__(self):
+        return '%i | %s' % (self.experiment.id, self.experiment.title)
+
+    class Meta:
+        ordering = ['experiment__id']
 
 
 class Author_Experiment(models.Model):
@@ -304,34 +363,6 @@ class XML_data(models.Model):
 
     def __unicode__(self):
         return self.xmlns
-
-
-class ExperimentACL(models.Model):
-
-    OWNER_OWNED = 1
-    SYSTEM_OWNED = 2
-    __COMPARISON_CHOICES = (
-        (OWNER_OWNED, 'Owner-owned'),
-        (SYSTEM_OWNED, 'System-owned'),
-    )
-
-    pluginId = models.CharField(null=False, blank=False, max_length=30)
-    entityId = models.CharField(null=False, blank=False, max_length=320)
-    experiment = models.ForeignKey(Experiment)
-    canRead = models.BooleanField(default=False)
-    canWrite = models.BooleanField(default=False)
-    canDelete = models.BooleanField(default=False)
-    isOwner = models.BooleanField(default=False)
-    effectiveDate = models.DateField(null=True, blank=True)
-    expiryDate = models.DateField(null=True, blank=True)
-    aclOwnershipType = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
-
-    def __unicode__(self):
-        return '%i | %s' % (self.experiment.id, self.experiment.title)
-
-    class Meta:
-        ordering = ['experiment__id']
 
 
 class Equipment(models.Model):

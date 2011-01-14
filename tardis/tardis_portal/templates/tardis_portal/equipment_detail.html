@@ -1,53 +1,56 @@
 {% extends "tardis_portal/portal_template.html" %}
 
 {% block content %}
-
-    <h2>{{ object.key }}</h2>
-    <table border="0" cellspacing="0" cellpadding="0">
-      {% if object.type %}
-      <tr>
-	<td>Type:</td>
-	<td>{{ object.type }}</td>
-      </tr>
-      {% endif %}
-      {% if object.make %}
-      <tr>
-	<td>Make:</td>
-	<td>{{ object.make }}</td>
-      </tr>
-      {% endif %}
-      {% if object.model %}
-      <tr>
-	<td>Model:</td>
-	<td>{{ object.model }}</td>
-      </tr>
-      {% endif %}
-      {% if object.serial %}
-      <tr>
-	<td>Serial:</td>
-	<td>{{ object.serial }}</td>
-      </tr>
-      {% endif %}
-      {% if object.description %}
-      <tr>
-	<td valign="top">Description:</td>
-	<td>{{ object.description|linebreaks }}</td>
-      </tr>
-      {% endif %}
-      {% if object.comm %}
-      <tr>
-	<td>Commissioned:</td>
-	<td>{{ object.comm }}</td>
-      </tr>
-      {% endif %}
-      {% if object.decom %}
-      <tr>
-	<td>Decommissioned:</td>
-	<td>{{ object.decomm }}</td>
-      </tr>
-      {% endif %}
-    </table>
-
-    <a href="{{ object.url }}">{{ object.url }}</a>
-
+<div id="content">
+  <div class="post">
+    <h1 class="title"><a href="#">{{ object.key }}</a></h1>
+    <div class="entry">
+      <table>
+	{% if object.type %}
+	<tr>
+	  <td>Type:</td>
+	  <td>{{ object.type }}</td>
+	</tr>
+	{% endif %}
+	{% if object.make %}
+	<tr>
+	  <td>Make:</td>
+	  <td>{{ object.make }}</td>
+	</tr>
+	{% endif %}
+	{% if object.model %}
+	<tr>
+	  <td>Model:</td>
+	  <td>{{ object.model }}</td>
+	</tr>
+	{% endif %}
+	{% if object.serial %}
+	<tr>
+	  <td>Serial:</td>
+	  <td>{{ object.serial }}</td>
+	</tr>
+	{% endif %}
+	{% if object.description %}
+	<tr>
+	  <td valign="top">Description:</td>
+	  <td>{{ object.description|linebreaks }}</td>
+	</tr>
+	{% endif %}
+	{% if object.comm %}
+	<tr>
+	  <td>Commissioned:</td>
+	  <td>{{ object.comm }}</td>
+	</tr>
+	{% endif %}
+	{% if object.decom %}
+	<tr>
+	  <td>Decommissioned:</td>
+	  <td>{{ object.decomm }}</td>
+	</tr>
+	{% endif %}
+      </table>
+      <a href="{{ object.url }}">{{ object.url }}</a>
+    </div> <!-- entry -->
+  </div> <!-- post -->
+</div> <!-- content -->
 {% endblock %}

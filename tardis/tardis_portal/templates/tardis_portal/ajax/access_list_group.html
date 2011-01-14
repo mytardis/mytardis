@@ -28,8 +28,17 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 <div class="groups">
-{% for group in groups %}
-{% include "tardis_portal/ajax/add_group_result.html" %}
+{% for group in system_owned_groups %}
+  <div class="access_list_group">
+    <p>
+      <strong>{{ group.name }}</strong>
+      <br/>
+      <br/>
+    </p>
+  </div> <!-- access_list_group -->
+{% endfor %}
+{% for group in user_owned_groups %}
+  {% include "tardis_portal/ajax/add_group_result.html" %}
 {% endfor %}
 </div> <!-- groups -->
 <p>
