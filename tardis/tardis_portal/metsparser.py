@@ -447,15 +447,6 @@ class MetsMetadataInfoHandler(ContentHandler):
 
                 x = 0
                 for author in self.metsObject.authors:
-                    try:
-                        # check if the given author already exists in the DB
-                        author = models.Author.objects.get(
-                            name=SafeUnicode(author))
-                    except models.Author.DoesNotExist:
-                        # create it otherwise
-                        author = models.Author(name=SafeUnicode(author))
-                        author.save()
-
                     author_experiment = models.Author_Experiment(
                         experiment=self.modelExperiment,
                         author=author, order=x)
