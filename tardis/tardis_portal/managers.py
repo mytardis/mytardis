@@ -143,10 +143,10 @@ class ExperimentManager(models.Manager):
                                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         return [User.objects.get(pk=int(a.entityId)) for a in acl]
 
-    def groups(self, request, experiment_id):
+    def user_owned_groups(self, request, experiment_id):
         """
-        returns a list of groups which have ACL rules associated with
-        this to this experiment
+        returns a list of user owned-groups which have ACL rules
+        associated with this experiment
         """
 
         from tardis.tardis_portal.models import ExperimentACL
@@ -156,7 +156,20 @@ class ExperimentManager(models.Manager):
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
 
-    def external(self, request, experiment_id):
+    def system_owned_groups(self, request, experiment_id):
+        """
+        returns a list of sytem-owned groups which have ACL rules
+        associated with this experiment
+        """
+
+        from tardis.tardis_portal.models import ExperimentACL
+        acl = ExperimentACL.objects.filter(pluginId='django_groups',
+                                           experiment__id=experiment_id,
+                                           aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+
+        return [Group.objects.get(pk=str(a.entityId)) for a in acl]
+
+    def external_users(self, request, experiment_id):
         """
         returns a list of groups which have external ACL rules
         """
