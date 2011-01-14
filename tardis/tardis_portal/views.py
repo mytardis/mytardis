@@ -250,11 +250,6 @@ def login(request):
         else:
             next = request.GET['next']
 
-        c = Context({'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
-
-        error_template_redirect = 'tardis_portal/login.html'
-
         user = auth_service.authenticate(
             authMethod=authMethod, request=request)
 
@@ -262,15 +257,15 @@ def login(request):
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
             return HttpResponseRedirect(next)
-        c = Context({'status': "Sorry, username and password don't match",
-            'error': True, 'loginForm': LoginForm(),
-            'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
-        return return_response_error_message(
-            request, error_template_redirect, c)
 
-    c = Context({'searchDatafileSelectionForm':
-        getNewSearchDatafileSelectionForm(),
-        'loginForm': LoginForm()})
+        c = Context({'status': "Sorry, username and password don't match.",
+                     'error': True,
+                     'loginForm': LoginForm(),})
+        return return_response_error_message(
+            request, 'tardis_portal/login.html', c)
+
+    c = Context({'loginForm': LoginForm()})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
