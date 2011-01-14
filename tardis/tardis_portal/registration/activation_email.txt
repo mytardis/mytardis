@@ -1,3 +1,0 @@
-Thanks for signing up to {{site.name}}. Use this link to activate your registration: http://{{site.domain}}/accounts/activate/{{activation_key}}/
-
-{# This is configurable in /admin/sites/site/ #}

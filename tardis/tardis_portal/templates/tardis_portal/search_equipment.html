@@ -1,0 +1,38 @@
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block content %}
+<div id="content">
+  <div class="post">
+    <h1 class="title"><a href="#">Search Equipment</a></h1>
+    <div class="searchmenu" style="padding-left: 10px">Search <a href="/search/experiment/">Experiment</a>
+      | <form action="/search/datafile" method="GET" style="display: inline">
+        {{ searchDatafileSelectionForm.type }}
+        <noscript><input type="submit" value="Submit"></noscript>
+      </form>
+      | <span style="display: inline">
+      <a href="/search/equipment/">Equipment</a></span>
+    </div> <!-- searchmenu -->
+    <br/>
+    <div class="entry">
+      {% if form.errors %}
+      <p style="color: red;">
+        Please correct the error{{ form.errors|pluralize }} below.
+      </p>
+      {% endif %}
+      <form name="input" action="." method="post">
+	<table>
+          <tr>
+            <td>
+              {% for field in form %}
+              {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
+              {% endfor %}
+            </td>
+          </tr>
+        </table>
+	<input type="submit" value="Submit">
+      </form>
+    </div>  <!-- entry -->
+  </div> <!-- post -->
+</div> <!-- content -->
+{% endblock content%}
+

@@ -38,6 +38,12 @@ from django.utils.safestring import SafeUnicode
 
 
 class UserProfile(models.Model):
+    """
+    UserProfile class is an extension to the Django standard user model.
+
+    :attribute authcate_user: is the user an external user
+    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    """
 
     authcate_user = models.BooleanField()
     user = models.ForeignKey(User, unique=True)
@@ -59,6 +65,9 @@ class Experiment(models.Model):
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
     description = models.TextField(blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
@@ -71,7 +80,7 @@ class Experiment(models.Model):
     def get_absolute_url(self):
         return ('tardis.tardis_portal.views.view_experiment', (),
                 {'experiment_id': self.id})
-                
+
     @models.permalink
     def get_edit_url(self):
         return ('tardis.tardis_portal.views.edit_experiment', (),
@@ -116,6 +125,10 @@ class Author_Experiment(models.Model):
             + SafeUnicode(self.experiment.id) + ' | ' \
             + SafeUnicode(self.order)
 
+    class Meta:
+        ordering = ['order']
+        unique_together = (('experiment', 'author'),)
+
 
 class Dataset(models.Model):
 
@@ -145,6 +158,7 @@ class Dataset_File(models.Model):
     url = models.CharField(max_length=400)
     size = models.CharField(blank=True, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
+    created_time = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):
         return self.filename
@@ -253,7 +267,10 @@ class DatafileParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Datafile Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Datafile Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -267,7 +284,10 @@ class DatasetParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Dataset Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Dataset Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -280,7 +300,10 @@ class ExperimentParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True)
 
     def __unicode__(self):
-        return self.name.name
+        if self.name.is_numeric:
+            return 'Experiment Param: %s=%s' % (self.name.name,
+                self.numerical_value)
+        return 'Experiment Param: %s=%s' % (self.name.name, self.string_value)
 
     class Meta:
         ordering = ['id']
@@ -295,3 +318,19 @@ class XML_data(models.Model):
 
     def __unicode__(self):
         return self.xmlns
+
+
+class Equipment(models.Model):
+    key = models.CharField(unique=True, max_length=30)
+    dataset = models.ManyToManyField(Dataset, null=True, blank=True)
+    description = models.TextField(blank=True)
+    make = models.CharField(max_length=60, blank=True)
+    model = models.CharField(max_length=60, blank=True)
+    type = models.CharField(max_length=60, blank=True)
+    serial = models.CharField(max_length=60, blank=True)
+    comm = models.DateField(null=True, blank=True)
+    decomm = models.DateField(null=True, blank=True)
+    url = models.URLField(null=True, blank=True, verify_exists=False, max_length=255)
+
+    def __unicode__(self):
+        return self.key
