@@ -632,6 +632,8 @@ class ExperimentFormTestCase(TestCase):
 <tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
 <tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
 <tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
+<tr><th><label for="start_time">Start time:</label></th><td><input type="text" name="start_time" id="start_time" /></td></tr>
+<tr><th><label for="end_time">End time:</label></th><td><input type="text" name="end_time" id="end_time" /></td></tr>
 <tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
 <option value="">---------</option>
 <option value="1" selected="selected">tardis_user1</option>
@@ -716,6 +718,8 @@ class ExperimentFormTestCase(TestCase):
 <tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" maxlength="400" /></td></tr>
 <tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
 <tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description"></textarea></td></tr>
+<tr><th><label for="start_time">Start time:</label></th><td><input type="text" name="start_time" id="start_time" /></td></tr>
+<tr><th><label for="end_time">End time:</label></th><td><input type="text" name="end_time" id="end_time" /></td></tr>
 <tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
 <option value="" selected="selected">---------</option>
 <option value="1">tardis_user1</option>
