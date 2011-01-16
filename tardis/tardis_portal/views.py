@@ -2099,20 +2099,26 @@ def upload_files(request, dataset_id):
     return render_to_response('tardis_portal/ajax/upload_files.html', c)
 
 
-def rif_cs(request):
-    import datetime
+def rif_cs(request, template_name='tardis_portal/rif-cs/template.xml'):
+    """
+    Render all public experiments within a RIF-CS document
 
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
     experiments = Experiment.objects.filter(public=True)
 
     c = Context({
         'experiments': experiments,
         'now': datetime.datetime.now(),
-        # 'party_rif_cs': party_rif_cs,
-        # 'activity_rif_cs': activity_rif_cs,
-        # 'activity_keys': activity_keys,
-        # 'party_keys': party_keys,
     })
-    return HttpResponse(render_response_index(request, 'tardis_portal/rif-cs/template.xml', c), mimetype='application/xml')
+    return HttpResponse(render_response_index(request,
+                                              template_name,
+                                              c),
+                        mimetype='application/xml')
 
 
 def get_rif_cs_profile_list():
