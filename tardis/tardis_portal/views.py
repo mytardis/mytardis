@@ -2122,8 +2122,8 @@ def rif_cs(request, template_name='tardis_portal/rif-cs/template.xml'):
 
 
 def get_rif_cs_profile_list():
-    #profile_dir = "/Users/steve/Dropbox/"
-    profile_dir = settings.APP_ROOT + "tardis_portal/templates/tardis_portal/rif-cs/profiles/"
+    profile_dir = settings.APP_ROOT + \
+                  "tardis_portal/templates/tardis_portal/rif-cs/profiles/"
 
     profile_list = list()
 
@@ -2144,24 +2144,24 @@ def get_rif_cs_profile_list():
 
     return profile_list
 
+
 def save_rif_cs_profile(experiment, profile):
     # save party experiment parameter
 
-    schema = \
-        Schema.objects.get(
+    schema = Schema.objects.get(
         namespace__exact="http://monash.edu.au/rif-cs/profile/")
 
-    parametername = \
-        ParameterName.objects.get(
+    parametername = ParameterName.objects.get(
         schema__namespace__exact=schema.namespace,
         name="profile")
 
     try:
-        parameterset = ExperimentParameterSet.objects.get(schema=schema, experiment=experiment)
-    except ExperimentParameterSet.DoesNotExist, e:
         parameterset = \
-            ExperimentParameterSet(
-            schema=schema, experiment=experiment)
+                     ExperimentParameterSet.objects.get(schema=schema,
+                                                        experiment=experiment)
+    except ExperimentParameterSet.DoesNotExist, e:
+        parameterset = ExperimentParameterSet(schema=schema,
+                                              experiment=experiment)
 
         parameterset.save()
 
@@ -2191,11 +2191,13 @@ def search_equipment(request):
                 q = q.filter(type__icontains=data['type'])
 
             c = Context({'object_list': q,
-                         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+                         'searchDatafileSelectionForm':
+                         getNewSearchDatafileSelectionForm()})
             return render_to_response('tardis_portal/equipment_list.html', c)
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
-                 'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+                 'searchDatafileSelectionForm':
+                 getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
