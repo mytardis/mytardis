@@ -2032,28 +2032,21 @@ def duplicate_file_check_rename(copyto):
     """
     Checks if the destination for the file already exists and returns
     a non-conflicting name
+
     :param copyto: The destination path to check
     :type copyto: string
     :rtype: The new non-conflicting path (the original path if no conflicts)
     """
-
-    orig_copyto = copyto
     i = 1
+    base, filename = path.split(copyto)
+    name, ext = path.splitext(filename)
+    result = copyto
 
-    while path.exists(copyto):
-        logger.error('%s destination exists' % copyto)
-
-        copyto_split = orig_copyto.rpartition('.')
-
-        if copyto_split[0] == '':
-            copyto = copyto_split[2] + '_' + str(i)
-        else:
-            copyto = copyto_split[0] + '_' + str(i) + '.' \
-                + copyto_split[2]
-
-        i = i + 1
-
-    return copyto
+    while path.exists(result):
+        logger.debug('%s destination exists' % result)
+        result = path.join(base, "{0}_{1}{2}".format(name, i, ext))
+        i += 1
+    return result
 
 
 def add_datafile_to_dataset(dataset, filepath, size):
