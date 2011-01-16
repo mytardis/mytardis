@@ -99,7 +99,8 @@ urlpatterns = patterns(
     (r'^admin/(.*)', admin.site.root),
     (r'^ajax/upload_complete/$',
      'tardis.tardis_portal.views.upload_complete'),
-    (r'upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
-    (r'ajax/upload_files/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload_files'),
-    (r'^rif-cs/$','tardis.tardis_portal.views.rif_cs'),
+    (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
+    (r'^ajax/upload_files/(?P<dataset_id>\d+)/$',
+     'tardis.tardis_portal.views.upload_files'),
+    (r'^rif-cs/$', 'tardis.tardis_portal.views.rif_cs'),
 )

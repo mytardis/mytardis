@@ -42,7 +42,8 @@ class UserProfile(models.Model):
     UserProfile class is an extension to the Django standard user model.
 
     :attribute authcate_user: is the user an external user
-    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    :attribute user: a forign key to the
+       :class:`django.contrib.auth.models.User`
     """
 
     authcate_user = models.BooleanField()
@@ -100,6 +101,7 @@ class Experiment(models.Model):
             pass
 
         return "tardis_portal/rif-cs/profiles/" + profile
+
 
 class Experiment_Owner(models.Model):
 
