@@ -85,3 +85,10 @@ class UploadTestCase(TestCase):
         self.assertTrue("<p>Errors: 0</p>" in response.content)
         self.assertTrue("<p>Bytes: 2</p>" in response.content)
         self.assertTrue("<p>Speed: really fast!</p>" in response.content)
+
+
+class RIFCSTestCase(TestCase):
+    def testGetRifCsProfileList(self):
+        from tardis.tardis_portal.views import get_rif_cs_profile_list
+        self.assertEqual(get_rif_cs_profile_list(),
+                         ['xtal.xml', 'default.xml'])
