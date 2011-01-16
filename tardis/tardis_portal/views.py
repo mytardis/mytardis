@@ -1898,7 +1898,16 @@ def stage_files(
 
 @login_required
 def create_experiment(request,
-                      template='tardis_portal/create_experiment.html'):
+                      template_name='tardis_portal/create_experiment.html'):
+    """
+    Create a new experiment view.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
     if request.method == 'POST':
         form = FullExperiment(request.POST, request.FILES)
         if form.is_valid():
@@ -1936,7 +1945,7 @@ def create_experiment(request,
         'form': form,
         })
 
-    return HttpResponse(render_response_index(request, template, c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 def upload_complete(request,
