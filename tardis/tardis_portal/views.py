@@ -524,8 +524,8 @@ def view_experiment(request, experiment_id):
             'owners': owners,
             'size': size,
             'protocols': protocols,
-            'upload_complete_url': '/upload_complete/' + experiment_id
-                + '/',
+            'upload_complete_url':
+                reverse('tardis.tardis_portal.views.upload_complete'),
             'nav': [{'name': 'Data', 'link': '/experiment/view/'},
                     {'name': experiment.title, 'link'
                     : '/experiment/view/' + str(experiment.id) + '/'}],
@@ -1941,7 +1941,7 @@ def create_experiment(request,
     return HttpResponse(render_response_index(request, template, c))
 
 
-def upload_complete(request, experiment_id):
+def upload_complete(request):
     """
     The ajax-loaded result of a file being uploaded
     :param experiment_id: the ID of the experiment uploaded to
@@ -2092,9 +2092,9 @@ def upload_files(request, dataset_id):
     :type dataset_id: integer
     :rtype: A view containing an Uploadify 'create files' button
     """
-
-    cont = {'upload_complete_url': '/upload_complete/' + dataset_id \
-            + '/', 'dataset_id': dataset_id}
+    url = reverse('tardis.tardis_portal.views.upload_complete')
+    cont = {'upload_complete_url': url,
+            'dataset_id': dataset_id}
     c = Context(cont)
     return render_to_response('tardis_portal/ajax/upload_files.html', c)
 
