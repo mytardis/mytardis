@@ -90,5 +90,5 @@ class UploadTestCase(TestCase):
 class RIFCSTestCase(TestCase):
     def testGetRifCsProfileList(self):
         from tardis.tardis_portal.views import get_rif_cs_profile_list
-        self.assertEqual(get_rif_cs_profile_list(),
-                         ['xtal.xml', 'default.xml'])
+        self.assertTrue('xtal.xml' in get_rif_cs_profile_list())
+        self.assertTrue('default.xml' in get_rif_cs_profile_list())
