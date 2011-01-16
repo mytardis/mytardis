@@ -33,6 +33,7 @@
 		{% block content %}
 
 		<div id="content">
+			{% if user.is_authenticated %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">My Experiments</a>
@@ -75,6 +76,7 @@
 				{% endif %}
 			</div>
 			<br/><br/><br/>
+		        {% endif %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">Public Experiments</a>
