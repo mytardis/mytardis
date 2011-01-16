@@ -1941,24 +1941,25 @@ def create_experiment(request,
     return HttpResponse(render_response_index(request, template, c))
 
 
-def upload_complete(request):
+def upload_complete(request,
+                    template_name='tardis_portal/upload_complete.html'):
     """
     The ajax-loaded result of a file being uploaded
-    :param experiment_id: the ID of the experiment uploaded to
-    :type experiment_id: integer
-    :rtype: view
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
     """
 
-    print request.POST
-
-    cont = {
+    c = Context({
         'numberOfFiles': request.POST['filesUploaded'],
         'bytes': request.POST['allBytesLoaded'],
         'speed': request.POST['speed'],
         'errorCount': request.POST['errorCount'],
-        }
-    c = Context(cont)
-    return render_to_response('tardis_portal/upload_complete.html', c)
+        })
+    return render_to_response(template_name, c)
 
 def upload(
     request,
