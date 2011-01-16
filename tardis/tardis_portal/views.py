@@ -2119,25 +2119,28 @@ def rif_cs(request, template_name='tardis_portal/rif-cs/template.xml'):
 
 
 def get_rif_cs_profile_list():
-    profile_dir = settings.APP_ROOT + \
-                  "tardis_portal/templates/tardis_portal/rif-cs/profiles/"
+    """
+    Return a list of the possible RIF-CS profiles that can
+    be applied.
+
+    :rtype: list of strings
+    """
+
+    # TODO this is not a scalable or pluggable way of listing
+    #  or defining RIF-CS profiles. The current method REQUIRES
+    #  branching of the templates directory. instead of using the
+    #  built in template resolution tools.
+    TARDIS_ROOT = path.abspath(path.join(path.dirname(__file__)))
+    profile_dir = path.join(TARDIS_ROOT,
+                  "templates/tardis_portal/rif-cs/profiles/")
 
     profile_list = list()
 
     for f in os.listdir(profile_dir):
-        valid = True
-
-        if not os.path.isfile(profile_dir + f):
-            valid = False
-
-        if f.startswith('.'):
-            valid = False
-
-        if not f.endswith('.xml'):
-            valid = False
-
-        if valid:
-            profile_list.append(f)
+        if not os.path.isfile(profile_dir + f) or \
+               f.startswith('.') or not f.endswith('.xml'):
+            continue
+        profile_list.append(f)
 
     return profile_list
 
