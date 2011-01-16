@@ -1815,7 +1815,8 @@ def import_params(request):
 
 def staging_traverse(staging=settings.STAGING_PATH):
     """
-    recurse through directories and form HTML list tree for jtree
+    Recurse through directories and form HTML list tree for jtree
+
     :param staging: the path to begin traversing
     :type staging: string
     :rtype: string
@@ -1844,7 +1845,7 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     :param pathname: the directory to traverse
     :type pathname: string
     :param dirname: the root directory of the traversal
-    :typr dirname: string
+    :type dirname: string
     :rtype: string
     """
 
