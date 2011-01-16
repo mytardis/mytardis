@@ -24,6 +24,7 @@ from django.contrib.auth.models import User, Group
 from django.http import HttpResponseRedirect, HttpResponseForbidden, \
     HttpResponseNotFound, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
+from django.core.urlresolvers import reverse
 
 from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
@@ -2083,21 +2084,23 @@ def add_datafile_to_dataset(dataset, filepath, size):
     return datafile
 
 
-def upload_files(request, dataset_id):
+def upload_files(request, dataset_id,
+                 template_name='tardis_portal/ajax/upload_files.html'):
     """
     Creates an Uploadify 'create files' button with a dataset
-    destination. A workaround for a JQuery Dialog conflict
-    See: http://www.uploadify.com/forums/discussion ...
-    /3348/uploadify-in-jquery-ui-dialog-modal-causes-double-queue-item/p1
+    destination. `A workaround for a JQuery Dialog conflict\
+    <http://www.uploadify.com/forums/discussion/3348/uploadify-in-jquery-ui-dialog-modal-causes-double-queue-item/p1>`_
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param template_name: the path of the template to render
     :param dataset_id: the dataset_id
     :type dataset_id: integer
-    :rtype: A view containing an Uploadify 'create files' button
+    :rtype: A view containing an Uploadify *create files* button
     """
     url = reverse('tardis.tardis_portal.views.upload_complete')
-    cont = {'upload_complete_url': url,
-            'dataset_id': dataset_id}
-    c = Context(cont)
-    return render_to_response('tardis_portal/ajax/upload_files.html', c)
+    c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
+    return render_to_response(template_name, c)
 
 
 def rif_cs(request, template_name='tardis_portal/rif-cs/template.xml'):
