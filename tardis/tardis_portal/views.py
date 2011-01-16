@@ -1707,15 +1707,11 @@ def publish_experiment(request, experiment_id):
             requestmp.add_header('Content-length', len(body))
             requestmp.add_data(body)
 
-            print
             logger.debug('OUTGOING DATA:')
             logger.debug(requestmp.get_data())
 
-            print
             logger.debug('SERVER RESPONSE:')
             logger.debug(urllib2.urlopen(requestmp).read())
-
-        print request.POST
 
         profile = request.POST['profile']
 
