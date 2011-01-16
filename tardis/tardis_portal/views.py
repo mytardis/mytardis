@@ -270,86 +270,20 @@ def login(request):
                         'tardis_portal/login.html', c))
 
 
-def list_auth_methods(request, status=None):
-    userAuthMethodList = []
-
-    # the list of supported non-local DB authentication methods
-    supportedAuthMethods = {}
-
-    for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
-        # we will only add non-localDB authentication methods. the reasoning
-        # behind only adding non-localDB auth method is because if a user
-        # has authenticated using the VBL auth, we wouldn't want to offer him
-        # a way to authenticate using local DB anymore.
-        if authKey != localdb_auth.auth_key:
-            supportedAuthMethods[authKey] = authDisplayName
-
-    try:
-        userProfile = UserProfile.objects.get(user=request.user)
-
-        if not userProfile.isNotADjangoAccount:
-            # if the main account for this user is a django account, add his
-            # details in the userAuthMethodList
-            userAuthMethodList.append((request.user.username,
-            localdb_auth.auth_display_name))
-
-        userAuths = UserAuthentication.objects.filter(
-            userProfile__user=request.user)
-        for userAuth in userAuths:
-            userAuthMethodList.append((userAuth.username,
-                userAuth.getAuthMethodDescription()))
-            del supportedAuthMethods[userAuth.authenticationMethod]
-
-    except UserProfile.DoesNotExist:
-        userAuthMethodList.append((request.user.username,
-            localdb_auth.auth_display_name))
-
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
-    authForm = LinkedUserAuthenticationForm()
-
-    c = Context({'userAuthMethodList': userAuthMethodList,
-                 'authForm': authForm,
-                 'supportedAuthMethods': supportedAuthMethods,
-                 'status': status})
-
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/auth_methods.html', c))
-
-
-def add_auth_method(request):
-    from tardis.tardis_portal.auth import auth_service
-
-    supportedAuthMethods = {}
-
-    for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
-        # we will only add non-localDB authentication methods. the reasoning
-        # behind only adding non-localDB auth method is because if a user
-        # has authenticated using the VBL auth, we wouldn't want to offer him
-        # a way to authenticate using local DB anymore.
-        if authKey != localdb_auth.auth_key:
-            supportedAuthMethods[authKey] = authDisplayName
-
-    LinkedUserAuthenticationForm = \
-        createLinkedUserAuthenticationForm(supportedAuthMethods)
-    authForm = LinkedUserAuthenticationForm(request.POST)
-
-    if not authForm.is_valid():
-        return list_auth_methods(request,
-            status='Invalid authentication form was submitted')
-
-    # let's try and authenticate here
-    user = auth_service.authenticate(
-        authMethod=authForm.cleaned_data['authenticationMethod'],
-        request=request)
-
-    status = None
-    # if the returned user is not the same as the current logged in user
-    if user != request.user:
-        status = 'Sorry, that user account already exists in the system'
-
-    # let's redisplay again after we've successfully authenticated
-    return list_auth_methods(request, status=status)
+def manage_auth_methods(request):
+    from tardis.tardis_portal.auth.authentication import *
+    
+    if request.method == 'POST':
+        operation = request.POST['operation']
+        if operation == 'addAuth':
+            return add_auth_method(request)
+        elif operation == 'removeAuth':
+            return remove_auth_method(request)
+        else:
+            return edit_auth_method(request)
+    else:
+        # if GET, we'll just give the initial list of auth methods for the user
+        return list_auth_methods(request)
 
 
 def register_experiment_ws_xmldata_internal(request):

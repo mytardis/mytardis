@@ -27,24 +27,196 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/data_browsing_template.html" %} 
+{% extends "tardis_portal/data_browsing_template.html" %}
 {% block content %}
 <div id="content">
-	<p>
-	{% for userAuth in userAuthMethodList %}
-		<b>username:</b> {{ userAuth.0 }}<br/>
-		<b>auth method:</b> {{ userAuth.1 }}<br/>
-		<br/>
-	{% endfor %}
+    <div id="authList">
 	<p/>
+	{% for userAuth in userAuthMethodList %}
+	    <div class="authMethod" id="{{ userAuth.2 }}">
+	    <table>
+	    <tr>
+		<td><strong>username:</strong></td><td> {{ userAuth.0 }} &nbsp;
+		{% if userAuth.1 == 'Local DB' %}
+		<a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_changelink.gif"></a>
+        {% else %}
+	        {% if not isNotDjangoAccount %}
+	        <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a>
+	        {% endif %}
+        {% endif %}
+		</td>
+        </tr>
+		<tr>
+        <td><strong>auth method:</strong></td><td>{{ userAuth.1 }}</td>
+        </tr>
+        <tr><td rowspan="2">&nbsp;</td></tr>
+        </table>
+		</div> <!-- authMethod -->
+	{% endfor %}
+	</div> <!--  authList -->
+	<p/>
+	<div id="authForm">
 	{% if supportedAuthMethods|length > 0 %}
 		Add a new account:
-		<form action="/accounts/add_auth_method/" method="POST">
-		  {{ authForm.as_p }}
-		  <input type="submit" value="Link the Accounts">
+		<form action="." method="POST"">
+		<table>
+          {% for field in authForm %}
+          <tr>
+            <td style="text-align:right">{{ field.label_tag }}:</td><td>{{ field }}</td> 
+          </tr>
+          {% endfor %}
+          <tr>
+            <td>&nbsp;</td><td><input type="submit" value="Link the Accounts" id="link"></td>
+          </tr>
+        </table>
 		</form>
+		
 	{% endif %}
+	</div>
 </div>
 
+<script>
+var showChangePasswordForm = 0;
+var authMethodDict = [];
+{% for authKey, authDesc in allAuthMethods.items %}
+authMethodDict["{{ authKey }}"] = "{{ authDesc }}";
+{% endfor %}
+
+var remove_auth = function(event) {
+    if (confirm("Are you sure you want to delete this authentication method?")) {
+        var divId = this.id;
+        var data = { operation: 'removeAuth', authMethod: divId };
+		$.post("/accounts/manage_auth_methods/", data, function(data) {
+	        var status = data.status;
+	        if (status == "success") {
+	        	$('div').remove('#' + divId + '.authMethod');
+	            $('<option value="' + divId + '">' + authMethodDict[divId] + '</option>').insertAfter($("option:last"));
+	        }
+	        else {
+	            display_error(data.errorMessage, $("div #" + divId + ".authMethod"));
+	        }   
+	    }, "json");
+    }
+}
+
+var edit_auth = function(event) {
+	var divId = this.id;
+	if (showChangePasswordForm == 0) {
+		var changePasswordFormStr = 
+		'<div class="changePassword">' +
+		'<form action="." method="POST">' +
+	    '<table>' +
+	    '<tr><td><label for="id_currentPassword">Current Password:</label></td><td><input id="id_currentPassword" type="password" name="currentPassword" /></td></tr>' + 
+		'<tr><td><label for="id_password">New Password:</label></td><td><input id="id_password" type="password" name="password" /></td></tr>' + 
+		'<tr><td><label for="id_password1">Confirm Password:</label></td><td><input id="id_password1" type="password" name="password1" /></td></tr>' + 
+	    '<tr><td>&nbsp;</td><td><input type="submit" value="Change Password" id="edit"></td></tr>' + 
+	    '</table>' +
+	    '</form>' +
+	    '</div>';
+	    var changePassword = $(changePasswordFormStr);
+	    showChangePasswordForm = 1;
+	    changePassword.insertAfter('#' + divId + '.authMethod');
+	    var replacementImg = '<img src="/site_media/images/minus-8.png">';
+	    $('#' + divId + '.edit_auth img').replaceWith(replacementImg);
+	}
+	else {
+		showChangePasswordForm = 0;
+		$('div').remove('.changePassword');
+		var replacementImg = '<img src="/site_media/images/icon_changelink.gif">';
+        $('#' + divId + '.edit_auth img').replaceWith(replacementImg);
+	}
+}
+
+var process_new_auth_entry = function(data) {
+	var dataMap = data.data;
+	var username = dataMap.username;
+	var authenticationMethod = dataMap.authenticationMethod;
+
+	var auth_method_str = '<div class="authMethod" id="' + authenticationMethod + '">\n';
+	auth_method_str += '<table><tr><td><strong>username:</strong></td><td>' + username;
+	auth_method_str += '&nbsp;<a class="remove_auth" id="' + authenticationMethod + '" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a></td></tr>\n';
+	auth_method_str += '<tr><td><strong>auth method:</strong></td><td>' + authMethodDict[authenticationMethod] + '</td></tr>\n';
+	auth_method_str += '<tr><td rowspan="2">&nbsp;</td></tr></table>';
+    auth_method_str += '</div>\n'
+	var new_auth_method = $(auth_method_str);
+	new_auth_method.insertAfter($(".authMethod:last"));
+
+    var supportedAuthMethodsLength = dataMap.supportedAuthMethodsLen;
+    if (supportedAuthMethodsLength == 0) {
+    	$('div').remove('#authForm');
+    }
+    else {
+        $('option').remove("option[value='" + authenticationMethod + "']");
+        $("#id_username").val("");
+        $("#id_password").val("");
+    }
+	
+};
+
+var edit_account = function() {
+	var currentPassword = $("#id_currentPassword").val();
+    var password = $("#id_password").val();
+    var password1 = $("#id_password1").val();
+
+    if (currentPassword == "" || password == "" || password1 == "") {
+    	display_error("Sorry, all the password fields should be filled.", $("div .changePassword"));
+    }
+    else if (password != password1) {
+        display_error("The passwords don't match.", $("div .changePassword"));
+    }
+    else {
+    	var data = { operation: 'editAuth', currentPassword: currentPassword, newPassword: password };
+        $.post("/accounts/manage_auth_methods/", data, function(data) {
+            var status = data.status;
+            if (status == "success") {
+                showChangePasswordForm = 0;
+                $('div').remove('.changePassword');
+                var replacementImg = '<img src="/site_media/images/icon_changelink.gif">';
+                $('a img').replaceWith(replacementImg);
+                var msg_div = $('<div"><b>Password successfully changed</b></div>');
+                msg_div.insertAfter('.authMethod').fadeIn("slow").animate({opacity: 1.0}, 5000).fadeOut("slow",function() { msg_div.remove(); });
+            }
+            else {
+                display_error(data.errorMessage, $("div .changePassword"));
+            }   
+        }, "json");
+    }
+    return false;
+};
+
+var link_account = function() {
+	var username = $("#id_username").val();
+    var password = $("#id_password").val();
+    var authenticationMethod = $("#id_authenticationMethod").val();
+
+    if (username != "" && password != "" && authenticationMethod != "") {
+        var data = { operation: 'addAuth', username: username, password: password, authenticationMethod: authenticationMethod };
+        $.post("/accounts/manage_auth_methods/", data, function(data) {
+            var status = data.status;
+            if (status == "success") {
+            	process_new_auth_entry(data);
+            }
+            else {
+            	display_error(data.errorMessage, $("#authForm"));
+            }   
+        }, "json");
+    }
+    else {
+        display_error("You need to provide all the necessary information to authenticate.", $("#authForm"));
+    }
+	return false;
+};
+
+var display_error = function(msg, elem) {
+	  var msg_div = $('<div id="statusBoxError">'+msg+'</div>');
+	  msg_div.insertBefore(elem).fadeIn("slow").animate({opacity: 1.0}, 5000).fadeOut("slow",function() { msg_div.remove(); });
+};
+
+$("#link").click(link_account);
+$("#edit").live('click', edit_account);
+$(".edit_auth").live('click', edit_auth);
+$(".remove_auth").live('click', remove_auth);
+
+</script>
 {% endblock %}
 </p><p/>
