@@ -33,13 +33,13 @@ class ExperimentManager(models.Manager):
         # experiments
         if request.user.is_authenticated():
             # which experiments are owned by the user?
-            query |= Q(experimentacl__pluginId='user',
+            query |= Q(experimentacl__pluginId='django_user',
                        experimentacl__entityId=str(request.user.id),
                        experimentacl__isOwner=True)
 
             # for which experiments does the user have read access
             # based on USER permissions?
-            query |= Q(experimentacl__pluginId='user',
+            query |= Q(experimentacl__pluginId='django_user',
                        experimentacl__entityId=str(request.user.id),
                        experimentacl__canRead=True)\
                        & (Q(experimentacl__effectiveDate__lte=datetime.today())
@@ -78,13 +78,13 @@ class ExperimentManager(models.Manager):
 
         # does the user own this experiment?
         query = Q(experiment=experiment,
-                  pluginId='user',
+                  pluginId='django_user',
                   entityId=str(request.user.id),
                   isOwner=True)
 
         # check if there is a user based authorisation role
         query |= Q(experiment=experiment,
-                   pluginId='user',
+                   pluginId='django_user',
                    entityId=str(request.user.id),
                    canRead=True)\
                    & (Q(effectiveDate__lte=datetime.today())
@@ -123,7 +123,7 @@ class ExperimentManager(models.Manager):
         # build the query to filter the ACL table
         from tardis.tardis_portal.models import ExperimentACL
         experiments = super(ExperimentManager, self).get_query_set().filter(
-            experimentacl__pluginId='user',
+            experimentacl__pluginId='django_user',
             experimentacl__entityId=str(request.user.id),
             experimentacl__isOwner=True,
             experimentacl__aclOwnershipType=ExperimentACL.OWNER_OWNED
@@ -138,7 +138,7 @@ class ExperimentManager(models.Manager):
         """
 
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(pluginId='user',
+        acl = ExperimentACL.objects.filter(pluginId='django_user',
                                            experiment__id=experiment_id,
                                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
         return [User.objects.get(pk=int(a.entityId)) for a in acl]
@@ -175,7 +175,7 @@ class ExperimentManager(models.Manager):
         """
 
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.exclude(pluginId='user')
+        acl = ExperimentACL.objects.exclude(pluginId='django_user')
         acl.exclude(pluginId='django_groups')
         acl.filter(experiment__id=experiment_id,
                    aclOwnershipType=ExperimentACL.OWNER_OWNED)

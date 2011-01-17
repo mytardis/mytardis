@@ -173,7 +173,7 @@ def view_experiment(request, experiment_id):
         for df in dataset.dataset_file_set.all():
             size = size + long(df.size)
 
-    acl = ExperimentACL.objects.filter(pluginId='user',
+    acl = ExperimentACL.objects.filter(pluginId='django_user',
                                        experiment=experiment,
                                        isOwner=True)
 
@@ -272,7 +272,7 @@ def login(request):
 
 def manage_auth_methods(request):
     from tardis.tardis_portal.auth.authentication import *
-    
+
     if request.method == 'POST':
         operation = request.POST['operation']
         if operation == 'addAuth':
@@ -1290,13 +1290,13 @@ def add_experiment_access_user(request, experiment_id, username):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='user',
+                                       pluginId='django_user',
                                        entityId=str(user.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
         acl = ExperimentACL(experiment=experiment,
-                            pluginId='user',
+                            pluginId='django_user',
                             entityId=str(user.id),
                             canRead=canRead,
                             canWrite=canWrite,
@@ -1324,7 +1324,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='user',
+                                       pluginId='django_user',
                                        entityId=str(user.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
@@ -1352,7 +1352,7 @@ def change_user_permissions(request, experiment_id, username):
 
     try:
         acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId='user',
+                                        pluginId='django_user',
                                         entityId=str(user.id),
                                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
@@ -1389,7 +1389,7 @@ def change_group_permissions(request, experiment_id, group_id):
 
     try:
         acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId='django_groups',
+                                        pluginId='django_group',
                                         entityId=str(group.id),
                                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
@@ -1467,7 +1467,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
             return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_groups',
+                                       pluginId='django_group',
                                        entityId=str(group.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
     if acl.count() > 0:
@@ -1475,7 +1475,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return return_response_error(request)
 
     acl = ExperimentACL(experiment=experiment,
-                        pluginId='django_groups',
+                        pluginId='django_group',
                         entityId=str(group.id),
                         canRead=canRead,
                         canWrite=canWrite,
@@ -1521,7 +1521,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_groups',
+                                       pluginId='django_group',
                                        entityId=str(group.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
