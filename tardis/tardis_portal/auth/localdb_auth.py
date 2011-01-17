@@ -53,7 +53,7 @@ _modelBackend = ModelBackend()
 
 
 class DjangoGroupProvider(GroupProvider):
-    name = u'django_groups'
+    name = u'django_group'
 
     def getGroups(self, request):
         """
