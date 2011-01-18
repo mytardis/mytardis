@@ -351,9 +351,9 @@
 							{% for p in protocols %}
 							<p>
 							{% if p %}
-							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
 							{% endif %}
 							</p>
 							{% endfor %}
@@ -372,9 +372,9 @@
 							{% for p in protocols %}
 							<p>
 							{% if p %}
-							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
 							{% endif %}
 							</p>
 							{% endfor %}
@@ -392,7 +392,7 @@
 									<div class="dataset_description">
 									<strong>Dataset Description</strong>: {{ dataset.description|safe }} <br>
 									<strong>Dataset Equipment</strong>:
-									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}">{{ eq.key }}</a>
+									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}/">{{ eq.key }}</a>
 									{% endfor %}
 									</div>
 									<div class="dataset_extrainfo">

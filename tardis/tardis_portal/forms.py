@@ -55,7 +55,8 @@ class LoginForm(AuthenticationForm):
             authMethodChoices += ((authMethods[0], authMethods[1]),)
 
         self.fields['authMethod'] = \
-            forms.CharField(widget=forms.Select(choices=authMethodChoices),
+            forms.CharField(required=True,
+                            widget=forms.Select(choices=authMethodChoices),
                             label='Authentication Method')
 
 
