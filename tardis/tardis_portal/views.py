@@ -124,7 +124,7 @@ def display_datafile_image(
 
     # todo handle not exist
 
-    if not has_datafile_access(request, datafile_id):
+    if not has_datafile_access(request, dataset_file_id):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,
@@ -358,27 +358,32 @@ def _registerExperimentDocument(filename, created_by, expid=None,
         transaction.commit()
         return eid
 
-    g = Group(name=eid)
-    g.save()
-
     # for each PI
     for owner in owners:
+        # is the use of the urllib really neccessary???
         owner = urllib.unquote_plus(owner)
-        u = None
+
         # try get user from email
         if settings.LDAP_ENABLE:
             u = ldap_auth.get_or_create_user_ldap(owner)
-        else:
-            u = User.objects.get(username=username)
 
-        # if exist, assign to group
-        if u:
-            logger.debug('registering owner: ' + owner)
-            e = Experiment.objects.get(pk=eid)
-            exp_owner = Experiment_Owner(experiment=e,
-                                         user=u)
-            exp_owner.save()
-            u.groups.add(g)
+            # if exist, create ACL
+            if u:
+                logger.debug('registering owner: ' + owner)
+                e = Experiment.objects.get(pk=eid)
+                #exp_owner = Experiment_Owner(experiment=e,
+                #                             user=u)
+                #exp_owner.save()
+                #u.groups.add(g)
+                acl = ExperimentACL(experiment=e,
+                                    pluginId='django_user',
+                                    entityId=str(u.id),
+                                    canRead=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl.save()
 
     return eid
 
