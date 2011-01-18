@@ -1,7 +1,8 @@
 '''
-Created on 14/01/2011
+A module containing helper methods for the manage_auth_methods function in
+views.py.
 
-@author: gerson
+.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
 from django.http import HttpResponse
 from tardis.tardis_portal.models import *
@@ -52,7 +53,6 @@ def list_auth_methods(request):
     LinkedUserAuthenticationForm = \
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm()
-    print "yes", UserProfile.objects.get(user=request.user).isNotADjangoAccount
     
     c = Context({'userAuthMethodList': userAuthMethodList,
         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
@@ -85,11 +85,12 @@ def add_auth_method(request):
         errorMessage = 'Wrong username or password. Please try again'
         return _getJsonFailedResponse(errorMessage)
 
-    # if has already registered to use the provided auth method, then we can't
-    # link the auth method to the user
+    # if has already registered to use the provided auth method, then we'll
+    # merge the two accounts
     if user != request.user:
-        errorMessage = 'Sorry, that user account already exists in the system'
-        return _getJsonFailedResponse(errorMessage)
+        # but before we do that, we'll try and confirm with the user if that's
+        # what he really wants
+        return _getJsonConfirmResponse()
 
     # TODO: we'll need to send back a json message with a success status and
     #       other info that can be used to modify the html document
@@ -104,6 +105,11 @@ def add_auth_method(request):
         # method options that can be added by this user
         del supportedAuthMethods[userAuth.authenticationMethod]
             
+    data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
+    return _getJsonSuccessResponse(data)
+
+
+def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
     data= {}
     username = authForm.cleaned_data['username']
     data['username'] = username
@@ -115,6 +121,79 @@ def add_auth_method(request):
     data['supportedAuthMethodsLen'] = len(supportedAuthMethods)
 
     logger.debug('Sending partial data to auth methods management page')
+    return data
+
+
+def merge_auth_method(request):
+    from tardis.tardis_portal.auth import auth_service
+ 
+    supportedAuthMethods = _getSupportedAuthMethods()
+    LinkedUserAuthenticationForm = \
+        createLinkedUserAuthenticationForm(supportedAuthMethods)
+    authForm = LinkedUserAuthenticationForm(request.POST)
+
+    if not authForm.is_valid():
+        errorMessage = \
+            'Please provide all the necessary information to authenticate.'
+        return _getJsonFailedResponse(errorMessage)
+
+    authenticationMethod = authForm.cleaned_data['authenticationMethod']
+
+    # let's try and authenticate here
+    user = auth_service.authenticate(authMethod=authenticationMethod,
+        request=request)
+    
+    if user is None:
+        errorMessage = 'Wrong username or password. Please try again'
+        return _getJsonFailedResponse(errorMessage)
+    
+    # if has already registered to use the provided auth method, then we can't
+    # link the auth method to the user
+    if user != request.user:
+        # TODO: find all the experiments "user" has access to and link
+        # "request.user" to them
+        
+        # check if the "request.user" has a userProfile
+        userProfile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # if he has, link 'user's UserAuthentication to it
+        userAuths = UserAuthentication.objects.filter(
+            userProfile__user=user)
+
+        for userAuth in userAuths:
+            
+            userAuth.userProfile = userProfile
+            userAuth.save()
+            
+            # also remove the current userAuth from the list of authentication
+            # method options that can be added by this user
+            del supportedAuthMethods[userAuth.authenticationMethod]
+        
+        # let's search for the ACLs that refer to 'user' and transfer them
+        # to request.user
+        userIdToBeReplaced = user.id
+        replacementUserId = request.user.id
+    
+        # TODO: note that django_user here has been hardcoded. Uli's going
+        # to change the implementation on his end so that I can just use a key
+        # in here instead of a hardcoded string.
+        experimentACLs = ExperimentACL.objects.filter(pluginId='django_user',
+            entityId=userIdToBeReplaced)
+        
+        for experimentACL in experimentACLs:
+            experimentACL.entityId = replacementUserId
+            experimentACL.save()
+    
+        # let's also change the group memberships of all the groups that 'user'
+        # is a member of
+        groups = Group.objects.filter(user=user)
+        for group in groups:
+            request.user.groups.add(group)
+        
+        # we can now delete 'user'
+        user.delete()
+
+    data = _setupJsonData(authForm, authenticationMethod, supportedAuthMethods)
     return _getJsonSuccessResponse(data)
 
 
@@ -145,6 +224,7 @@ def edit_auth_method(request):
         errorMessage = 'The current password you entered is wrong.'
         return _getJsonFailedResponse(errorMessage)
 
+
 def _getSupportedAuthMethods():
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
@@ -168,5 +248,11 @@ def _getJsonFailedResponse(errorMessage):
 def _getJsonSuccessResponse(data={}):
     from django.utils import simplejson
     response = {"status": "success", "data": data}
+    return HttpResponse(simplejson.dumps(response),
+        mimetype="application/json")
+
+def _getJsonConfirmResponse(data={}):
+    from django.utils import simplejson
+    response = {"status": "confirm", "data": data}
     return HttpResponse(simplejson.dumps(response),
         mimetype="application/json")

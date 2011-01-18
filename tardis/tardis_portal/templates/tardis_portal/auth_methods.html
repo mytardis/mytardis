@@ -196,6 +196,21 @@ var link_account = function() {
             if (status == "success") {
             	process_new_auth_entry(data);
             }
+            else if (status == "confirm") {
+            	var confirmMessage = "This process would involve merging the two accounts you own.\nWould you like to continue?"
+                if (confirm(confirmMessage)) {
+                	data = { operation: 'mergeAuth', username: username, password: password, authenticationMethod: authenticationMethod };
+                	$.post("/accounts/manage_auth_methods/", data, function(data) {
+                    	var status = data.status
+                		if (status == "success") {
+                			process_new_auth_entry(data);
+                        }
+                        else {
+                        	alert("done merging failed");
+                        }
+                	}, "json");
+                }
+            }
             else {
             	display_error(data.errorMessage, $("#authForm"));
             }   

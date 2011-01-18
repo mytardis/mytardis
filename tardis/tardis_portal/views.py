@@ -26,8 +26,9 @@ from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth import localdb_auth
+from tardis.tardis_portal.auth import localdb_auth, ldap_auth
 from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import *
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
@@ -71,7 +72,7 @@ def site_settings(request):
             username = request.POST['username']
             password = request.POST['password']
 
-            user = authenticate(username=username, password=password)
+            user = auth_service.authenticate(username=username, password=password)
             if user is not None:
                 if user.is_staff:
 
@@ -277,6 +278,8 @@ def manage_auth_methods(request):
         operation = request.POST['operation']
         if operation == 'addAuth':
             return add_auth_method(request)
+        elif operation == 'mergeAuth':
+            return merge_auth_method(request)
         elif operation == 'removeAuth':
             return remove_auth_method(request)
         else:
