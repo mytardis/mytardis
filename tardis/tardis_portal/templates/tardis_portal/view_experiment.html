@@ -425,8 +425,8 @@
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>
 							</p>
 
+                                                        <div class="download_entire_experiment">
 							{% for p in protocols %}
-							<div class="download_entire_experiment">
 
 							<p>
 
@@ -437,6 +437,8 @@
 							{% endif %}
 							</p>
 							{% endfor %}
+                                                        </div>
+
                             <p align="right">
 							<br/>
                             <strong>Experiment Administrators </strong><br/>
@@ -454,7 +456,7 @@
                             </p>
 
 
-                                                </div></div>
+                                                </div>
                                                 <div id="tabs-2">
                                                         <div class="download_entire_experiment">
                                                         {% for p in protocols %}
@@ -468,6 +470,7 @@
 							{% endif %}
 							</p>
 							{% endfor %}
+                                                        </div>
 							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">
 
