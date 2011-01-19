@@ -75,7 +75,7 @@ class SearchTestCase(TestCase):
                                                 expid=None)
             experiment = Experiment.objects.get(pk=expid)
 
-            acl = ExperimentACL(pluginId='user',
+            acl = ExperimentACL(pluginId='django_user',
                                 entityId=str(user.id),
                                 experiment=experiment,
                                 canRead=True,
