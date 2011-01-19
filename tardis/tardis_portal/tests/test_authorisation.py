@@ -3,7 +3,10 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group
 
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.models import ExperimentACL, Experiment
+
+
 
 
 class ExperimentACLTestCase(TestCase):
@@ -65,7 +68,7 @@ class ExperimentACLTestCase(TestCase):
 
         # user1 owns experiment1
         acl = ExperimentACL(
-            pluginId='user',
+            pluginId=django_user,
             entityId=str(self.user1.id),
             experiment=self.experiment1,
             canRead=True,
@@ -76,7 +79,7 @@ class ExperimentACLTestCase(TestCase):
 
         # user2 owns experiment2
         acl = ExperimentACL(
-            pluginId='user',
+            pluginId=django_user,
             entityId=str(self.user2.id),
             experiment=self.experiment2,
             canRead=True,

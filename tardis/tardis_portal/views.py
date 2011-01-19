@@ -27,6 +27,7 @@ from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import localdb_auth, ldap_auth
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import *
@@ -48,7 +49,6 @@ def logout(request):
         del request.session['datafileResults']
 
     c = Context({})
-
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -174,7 +174,7 @@ def view_experiment(request, experiment_id):
         for df in dataset.dataset_file_set.all():
             size = size + long(df.size)
 
-    acl = ExperimentACL.objects.filter(pluginId='django_user',
+    acl = ExperimentACL.objects.filter(pluginId=django_user,
                                        experiment=experiment,
                                        isOwner=True)
 
@@ -376,7 +376,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
                 #exp_owner.save()
                 #u.groups.add(g)
                 acl = ExperimentACL(experiment=e,
-                                    pluginId='django_user',
+                                    pluginId=django_user,
                                     entityId=str(u.id),
                                     canRead=True,
                                     canWrite=True,
@@ -660,11 +660,10 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
-    if datafile_results.count() == 0:
-        logger.info("__getFilteredDatafiles: user ",
-                    "{0} ({1}) doesn\'t".format(request.user,
-                                                request.user.id),
-                    "access to any experiments")
+    if not datafile_results:
+        logger.info("__getFilteredDatafiles: user %s (%i) "
+                    "doesn't access to any experiments" % (request.user,
+                                                           request.user.id))
         return datafile_results
 
     datafile_results = \
@@ -1298,13 +1297,13 @@ def add_experiment_access_user(request, experiment_id, username):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_user',
+                                       pluginId=django_user,
                                        entityId=str(user.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
         acl = ExperimentACL(experiment=experiment,
-                            pluginId='django_user',
+                            pluginId=django_user,
                             entityId=str(user.id),
                             canRead=canRead,
                             canWrite=canWrite,
@@ -1332,7 +1331,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_user',
+                                       pluginId=django_user,
                                        entityId=str(user.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
@@ -1360,7 +1359,7 @@ def change_user_permissions(request, experiment_id, username):
 
     try:
         acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId='django_user',
+                                        pluginId=django_user,
                                         entityId=str(user.id),
                                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
@@ -1397,7 +1396,7 @@ def change_group_permissions(request, experiment_id, group_id):
 
     try:
         acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId='django_group',
+                                        pluginId=django_group,
                                         entityId=str(group.id),
                                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
@@ -1475,7 +1474,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
             return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_group',
+                                       pluginId=django_group,
                                        entityId=str(group.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
     if acl.count() > 0:
@@ -1483,7 +1482,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return return_response_error(request)
 
     acl = ExperimentACL(experiment=experiment,
-                        pluginId='django_group',
+                        pluginId=django_group,
                         entityId=str(group.id),
                         canRead=canRead,
                         canWrite=canWrite,
@@ -1529,7 +1528,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
         return return_response_error(request)
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId='django_group',
+                                       pluginId=django_group,
                                        entityId=str(group.id),
                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
