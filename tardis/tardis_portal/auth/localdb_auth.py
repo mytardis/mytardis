@@ -87,7 +87,7 @@ class DjangoGroupProvider(GroupProvider):
 
 
 class DjangoUserProvider(UserProvider):
-    name = u'django_users'
+    name = u'django_user'
 
     def getUserById(self, id):
         """
@@ -103,3 +103,7 @@ class DjangoUserProvider(UserProvider):
             return {'id': id, 'display': userObj.first_name + ' ' +
                 userObj.last_name, 'email': userObj.email}
         return None
+
+
+django_user = DjangoUserProvider.name
+django_group = DjangoGroupProvider.name

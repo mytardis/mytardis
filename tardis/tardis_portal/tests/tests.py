@@ -46,6 +46,7 @@ from django.test.client import Client
 from tardis.tardis_portal.views import _registerExperimentDocument
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 from os import path
 import unittest
@@ -75,7 +76,7 @@ class SearchTestCase(TestCase):
                                                 expid=None)
             experiment = Experiment.objects.get(pk=expid)
 
-            acl = ExperimentACL(pluginId='django_user',
+            acl = ExperimentACL(pluginId=django_user,
                                 entityId=str(user.id),
                                 experiment=experiment,
                                 canRead=True,
