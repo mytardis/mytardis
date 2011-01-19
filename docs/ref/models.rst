@@ -23,14 +23,6 @@
    :inherited-members:
 
 
-:class:`Author` Objects
------------------------
-.. autoclass:: Author
-   :members:
-   :undoc-members:
-   :inherited-members:
-
-
 :class:`Experiment` Objects
 ---------------------------
 .. autoclass:: Experiment
