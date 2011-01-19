@@ -109,16 +109,12 @@ class ExperimentFormTestCase(TestCase):
         example_post = self._data_to_post()
 
         f = forms.FullExperiment(example_post)
-        as_table = """<tr><th><label for="url">Url:</label></th><td><input id="url" type="text" name="url" value="http://www.test.com" maxlength="255" /></td></tr>
+        as_table = """<tr><th><label for="url">Url:</label></th><td><input type="text" name="url" value="http://www.test.com" id="url" /></td></tr>
 <tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
 <tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
 <tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
 <tr><th><label for="start_time">Start time:</label></th><td><input type="text" name="start_time" id="start_time" /></td></tr>
 <tr><th><label for="end_time">End time:</label></th><td><input type="text" name="end_time" id="end_time" /></td></tr>
-<tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
-<option value="">---------</option>
-<option value="1" selected="selected">tardis_user1</option>
-</select></td></tr>
 <tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
 <tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="authors" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
@@ -128,7 +124,6 @@ class ExperimentFormTestCase(TestCase):
         from tardis.tardis_portal import forms, models
 
         example_post = [('title', 'test experiment'),
-                        ('created_by', self.user.pk),
                         ('url', 'http://www.test.com'),
                         ('institution_name', 'some university'),
                         ('description', 'desc.....'),
@@ -159,12 +154,13 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(f.is_valid(), repr(f.errors))
 
         # save form
-        exp = f.save()
+        exp = f.save(commit=False)
+        exp['experiment'].created_by = self.user
+        exp.save_m2m()
 
         # retrieve model from database
         e = models.Experiment.objects.get(pk=exp['experiment'].pk)
         self.assertEqual(e.title, example_post['title'])
-        self.assertEqual(unicode(e.created_by.pk), example_post['created_by'])
         self.assertEqual(e.institution_name, example_post['institution_name'])
         self.assertEqual(e.description, example_post['description'])
 
@@ -195,16 +191,12 @@ class ExperimentFormTestCase(TestCase):
     def test_initial_form(self):
         from tardis.tardis_portal import forms
 
-        as_table = """<tr><th><label for="url">Url:</label></th><td><input id="url" type="text" name="url" maxlength="255" /></td></tr>
+        as_table = """<tr><th><label for="url">Url:</label></th><td><input type="text" name="url" id="url" /></td></tr>
 <tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" maxlength="400" /></td></tr>
 <tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" maxlength="400" /></td></tr>
 <tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description"></textarea></td></tr>
 <tr><th><label for="start_time">Start time:</label></th><td><input type="text" name="start_time" id="start_time" /></td></tr>
 <tr><th><label for="end_time">End time:</label></th><td><input type="text" name="end_time" id="end_time" /></td></tr>
-<tr><th><label for="created_by">Created by:</label></th><td><select name="created_by" id="created_by">
-<option value="" selected="selected">---------</option>
-<option value="1">tardis_user1</option>
-</select></td></tr>
 <tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
 <tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" id="authors" /></td></tr>"""
 
@@ -261,8 +253,6 @@ class ExperimentFormTestCase(TestCase):
                         str(f['title']), str(f['title']))
         self.assertTrue(value % 'some university' in
                         str(f['institution_name']))
-        self.assertTrue('selected="selected">tardis_user1</option>' in
-                        str(f['created_by']))
         for ds, df in f.get_datasets():
             if 'dataset_description[0]' in str(ds['description']):
                 self.assertTrue(text_area % "first one" in
@@ -351,8 +341,6 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(value % 'test experiment' in str(f['title']))
         self.assertTrue(value % 'some university' in
                         str(f['institution_name']))
-        self.assertTrue('selected="selected">tardis_user1</option>' in
-                        str(f['created_by']))
         # TODO the reset of this test is disabled because it's too complex
         return
         for ds, df in f.get_datasets():

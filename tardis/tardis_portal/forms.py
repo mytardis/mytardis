@@ -278,9 +278,10 @@ class Dataset_File(PostfixedForm, forms.ModelForm):
 
 
 class Experiment(forms.ModelForm):
+    url = forms.CharField(required=False)
     class Meta:
         model = models.Experiment
-        exclude = ('authors', 'handle', 'approved')
+        exclude = ('authors', 'handle', 'approved', 'created_by')
 
 
 class FullExperimentModel(UserDict):
