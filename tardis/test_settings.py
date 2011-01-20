@@ -17,12 +17,9 @@ SITE_ID = '1'
 MEDIA_URL = '/site_media/'
 TEMPLATE_DIRS = ['.']
 
-AUTH_PROVIDERS = (
-    ('localdb', 'Local DB', 'django.contrib.auth.backends.ModelBackend'),
-
-)
-USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
-)
+AUTH_PROVIDERS = (('localdb', 'Local DB',
+                  'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),)
+USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 )
