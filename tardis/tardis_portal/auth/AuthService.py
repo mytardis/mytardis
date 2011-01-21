@@ -7,11 +7,13 @@ from tardis.tardis_portal.logger import logger
 
 
 class AuthService:
-    def __init__(self, settings=settings):
+    def __init__(self):
         self._group_providers = []
         self._user_providers = []
         self._authentication_backends = {}
-
+        self._initialised = False
+        
+    def _manual_init(self, settings=settings):
         for gp in settings.GROUP_PROVIDERS:
             self._group_providers.append(self._safe_import(gp))
         for up in settings.USER_PROVIDERS:
@@ -19,6 +21,7 @@ class AuthService:
         for authenticationBackend in settings.AUTH_PROVIDERS:
             self._authentication_backends[authenticationBackend[0]] = \
                 self._safe_import(authenticationBackend[2])
+        self._initialised = True
 
     def _safe_import(self, path):
         try:
@@ -46,6 +49,10 @@ class AuthService:
         use and if authentication didn't work using that method, try each
         Django AuthProvider.
         """
+        
+        if not self._initialised:
+            self._manual_init()
+            
         if authMethod:
             if authMethod in self._authentication_backends:
                 # note that it's the backend's job to create a user entry
@@ -62,6 +69,8 @@ class AuthService:
         """
         return a list of tuples containing pluginname and group id
         """
+        if not self._initialised:
+            self._manual_init()
         grouplist = []
         for gp in self._group_providers:
             logger.debug("group provider: " + gp.name)
@@ -73,12 +82,16 @@ class AuthService:
         """
         return a list of users and/or groups
         """
+        if not self._initialised:
+            self._manual_init()
         pass
 
     def searchUsers(self, filter):
         """
         return a list of users and/or groups
         """
+        if not self._initialised:
+            self._manual_init()
         pass
 
     def searchGroups(self, **kw):
@@ -90,7 +103,8 @@ class AuthService:
         :param sort_by: the attribute the users should be sorted on
         :param plugin: restrict the search to the specific group provider
         """
-
+        if not self._initialised:
+            self._manual_init()
         result = []
         max_results = kw.get('max_results', '')
         sort_by = kw.get('sort_by', '')
@@ -134,6 +148,8 @@ class AuthService:
            {'name': 'Group 123', 'id': '1'}]
 
         """
+        if not self._initialised:
+            self._manual_init()
         for gp in self._group_providers:
             for group in gp.getGroupsForEntity(entity):
                 group["pluginname"] = gp.name
@@ -147,4 +163,6 @@ class AuthService:
         user within the Django DB and returning the resulting
         user model.
         """
+        if not self._initialised:
+            self._manual_init()
         pass
