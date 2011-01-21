@@ -7,7 +7,8 @@ ROOT_URLCONF = 'tardis.urls'
 DEBUG = True
 STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
                             'tardis_portal/site_media')
-
+FILE_STORE_PATH = path.join(path.abspath(path.dirname(__file__)),
+                            '../var/store/')
 # LDAP configuration
 LDAP_ENABLE = False
 

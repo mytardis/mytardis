@@ -111,6 +111,13 @@ class Author_Experiment(models.Model):
 
 class Dataset(models.Model):
 
+    """
+    Class to link datasets to experiments
+
+    :attribute experiment: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute description: description of this dataset
+    """
+
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
 
@@ -119,6 +126,18 @@ class Dataset(models.Model):
 
 
 class Dataset_File(models.Model):
+
+    """
+    Class to store meta-data about a physical file
+
+    :attribute dataset: a forign key to the :class:`tardis.tardis_portal.models.Dataset`
+    :attribute filename: basename of the file
+    :attribute url: location (path) of the file
+    :attribute size: file size
+    :attribute protocol: special download protocol to be used
+    :attribute modification time: last modification time of the file
+    :attribute mimetype: for example 'application/pdf'
+    """
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
