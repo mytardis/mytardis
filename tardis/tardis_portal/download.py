@@ -34,12 +34,9 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
         else:
-            if url.startswith('tardis://'):
-                file_path = join(settings.FILE_STORE_PATH,
-                                 str(datafile.dataset.experiment.id),
-                                 url.partition('//')[2])
-            else:
-                file_path = url.partition('//')[2]
+            file_path = join(settings.FILE_STORE_PATH,
+                             str(datafile.dataset.experiment.id),
+                             url.partition('//')[2])
 
             try:
                 if datafile.mimetype:
@@ -60,7 +57,6 @@ def download_datafile(request, datafile_id):
             except IOError:
                 return return_response_not_found(request)
     else:
-
         return return_response_error(request)
 
 
@@ -113,11 +109,9 @@ def download_datafiles(request):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
-                        if datafile.url.startswith('tardis://'):
-                            absolute_filename = datafile.url.partition('//')[2]
-                            fileString += '%s/%s ' % (expid, absolute_filename)
-                        else:
-                            fileString += datafile.url.partition('//')[2]
+
+                        absolute_filename = datafile.url.partition('//')[2]
+                        fileString += '%s/%s ' % (expid, absolute_filename)
                         fileSize += long(datafile.size)
 
             for dfid in datafiles:
@@ -128,11 +122,8 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('tardis://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString += '%s/%s ' % (expid, absolute_filename)
-                    else:
-                        fileString += datafile.url.partition('//')[2]
+                    absolute_filename = datafile.url.partition('//')[2]
+                    fileString += '%s/%s ' % (expid, absolute_filename)
                     fileSize += long(datafile.size)
 
         else:
@@ -149,11 +140,8 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('tardis://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString += '%s/%s ' % (expid, absolute_filename)
-                    else:
-                        fileString += datafile.url.partition('//')[2]
+                    absolute_filename = datafile.url.partition('//')[2]
+                    fileString += '%s/%s ' % (expid, absolute_filename)
                     fileSize += long(datafile.size)
 
         else:
