@@ -270,8 +270,9 @@ def login(request):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
-
+@login_required()
 def manage_auth_methods(request):
+    '''Manage the user's authentication methods using AJAX.'''
     from tardis.tardis_portal.auth.authentication import *
 
     if request.method == 'POST':

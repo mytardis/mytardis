@@ -7,18 +7,26 @@ from tardis.tardis_portal.logger import logger
 
 
 class AuthService:
-    def __init__(self):
+    def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []
         self._authentication_backends = {}
         self._initialised = False
+        self.settings = settings
         
-    def _manual_init(self, settings=settings):
-        for gp in settings.GROUP_PROVIDERS:
+    def _manual_init(self):
+        """Manual init had to be called by all the functions of the AuthService
+        class to initialise the instance variables. This block of code used to
+        be in the __init__ function but has been moved to its own init function
+        to get around the problems with cyclic imports to static variables
+        being exported from auth related modules.
+
+        """
+        for gp in self.settings.GROUP_PROVIDERS:
             self._group_providers.append(self._safe_import(gp))
-        for up in settings.USER_PROVIDERS:
+        for up in self.settings.USER_PROVIDERS:
             self._user_providers.append(self._safe_import(up))
-        for authenticationBackend in settings.AUTH_PROVIDERS:
+        for authenticationBackend in self.settings.AUTH_PROVIDERS:
             self._authentication_backends[authenticationBackend[0]] = \
                 self._safe_import(authenticationBackend[2])
         self._initialised = True
@@ -49,7 +57,7 @@ class AuthService:
         use and if authentication didn't work using that method, try each
         Django AuthProvider.
         """
-        
+
         if not self._initialised:
             self._manual_init()
             
