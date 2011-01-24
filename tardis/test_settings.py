@@ -18,7 +18,9 @@ MEDIA_URL = '/site_media/'
 TEMPLATE_DIRS = ['.']
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
-                  'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),)
+                  'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+                  ('vbl', 'VBL', 'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
+)
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'

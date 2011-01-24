@@ -13,6 +13,15 @@ from tardis.tardis_portal.shortcuts import *
 from tardis.tardis_portal.logger import logger
 
 def list_auth_methods(request):
+    '''Generate a list of authentication methods that request.user uses to
+    authenticate to the system and send it back in a HttpResponse.
+    
+    :param request: the HTTP request object
+    
+    :returns: The HttpResponse which contains request.user's list of 
+        authentication methods
+
+    '''
     userAuthMethodList = []
         
     # the list of supported non-local DB authentication methods
@@ -54,15 +63,33 @@ def list_auth_methods(request):
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm()
     
+    isNotDjangoAccount = False
+    try:
+        isNotDjangoAccount = UserProfile.objects.get(
+            user=request.user).isNotADjangoAccount
+    except UserProfile.DoesNotExist:
+        isNotDjangoAccount = False
+    
     c = Context({'userAuthMethodList': userAuthMethodList,
         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
         'allAuthMethods': _getSupportedAuthMethods(),
-        'isNotDjangoAccount': UserProfile.objects.get(user=request.user).isNotADjangoAccount})
+        'isNotDjangoAccount': isNotDjangoAccount})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/auth_methods.html', c))
 
 def add_auth_method(request):
+    '''Add a new authentication method to request.user's existing list of 
+    authentication methods. This method will ask for a confirmation if the user
+    wants to merge two accounts if the authentication method he provided
+    already exists as a method for another user.
+    
+    :param request: the HTTP request object
+    
+    :returns: The HttpResponse which contains request.user's new list of
+        authentication methods
+
+    '''
     from tardis.tardis_portal.auth import auth_service
  
     supportedAuthMethods = _getSupportedAuthMethods()
@@ -110,6 +137,17 @@ def add_auth_method(request):
 
 
 def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
+    '''Sets up the JSON data dictionary that will be sent back to the web
+    client.
+    
+    :param authForm: the Authentication Form
+    :param authenticationMethod: the user's authentication method
+    :param supportedAuthMethods: is what's left of the list of authentication 
+        methods that the user is not using yet
+    
+    :returns: The data dictionary
+
+    '''
     data= {}
     username = authForm.cleaned_data['username']
     data['username'] = username
@@ -125,6 +163,19 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
 
 
 def merge_auth_method(request):
+    '''Merge the account that the user is logged in as and the account that
+    he provided in the Authentication Form. Merging accounts involve relinking
+    the UserAuthentication table entries, transferring ExperimentACL entries
+    to the merged account, changing the Group memberships and deleting the
+    unneeded account.
+    
+    :param request: the HTTP request object
+    
+    :returns: The HttpResponse which contains request.user's new list of
+        authentication methods
+
+    '''
+
     from tardis.tardis_portal.auth import auth_service
  
     supportedAuthMethods = _getSupportedAuthMethods()
@@ -198,9 +249,14 @@ def merge_auth_method(request):
 
 
 def remove_auth_method(request):
-    """Removes the non-local DB auth method from the UserAuthentication model.
-    
-    """
+    '''Removes the non-local DB auth method from the UserAuthentication model.
+
+    :param request: the HTTP request object
+
+    :returns: The HttpResponse which contains request.user's new list of
+        authentication methods
+
+    '''
     authMethod = request.POST['authMethod']
     try:
         UserAuthentication.objects.get(userProfile__user=request.user,
@@ -213,6 +269,7 @@ def remove_auth_method(request):
 
 
 def edit_auth_method(request):
+    '''Change the local DB (Django) password for request.user.'''
     currentPassword = request.POST['currentPassword']
     newPassword = request.POST['newPassword']
     u = request.user
@@ -226,6 +283,7 @@ def edit_auth_method(request):
 
 
 def _getSupportedAuthMethods():
+    '''Return the list of all non-local DB authentication methods.'''
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
@@ -239,6 +297,7 @@ def _getSupportedAuthMethods():
 
 
 def _getJsonFailedResponse(errorMessage):
+    '''Return a failed JSON HttpResponse.'''
     from django.utils import simplejson
     response = {"status": "fail", "errorMessage": errorMessage}
     return HttpResponse(simplejson.dumps(response),
@@ -246,12 +305,14 @@ def _getJsonFailedResponse(errorMessage):
 
 
 def _getJsonSuccessResponse(data={}):
+    '''Return a successful JSON HttpResponse.'''
     from django.utils import simplejson
     response = {"status": "success", "data": data}
     return HttpResponse(simplejson.dumps(response),
         mimetype="application/json")
 
 def _getJsonConfirmResponse(data={}):
+    '''Return a JSON HttpResponse asking the user for confirmation'''
     from django.utils import simplejson
     response = {"status": "confirm", "data": data}
     return HttpResponse(simplejson.dumps(response),
