@@ -44,7 +44,11 @@
       {% for datafile in datafiles.object_list %}
         <tr>
 	  <th>
-	    <a class="filelink" href="/experiment/view/{{datafile.dataset.experiment.id}}/download?dfid={{datafile.id}}">{{ datafile.filename }}</a>
+	    {% if datafile.protocol %}
+	      <a class="filelink" href="/{{datafile.protocol}}/download/{{datafile.id}}/">{{ datafile.filename }}</a>
+	    {% else %}
+  	      <a class="filelink" href="/download/{{datafile.id}}/">{{ datafile.filename }}</a>
+	    {% endif %}
 	    {% if datafile.size %}
 	      ({{ datafile.size|filesizeformat }})
 	    {% endif %}
