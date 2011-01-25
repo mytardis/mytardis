@@ -152,9 +152,11 @@ class Backend():
             # else, create a new user with a random password
             else:
                 name = username.partition('@')[0]
-                name = 'vbl_%s' % name[0:26]
+                name = '%s_%s' % (auth_key, name[0:26])
                 password = User.objects.make_random_password()
-                user = User.objects.create_user(name, password, username)
+                user = User.objects.create_user(username=name,
+                                                password=password,
+                                                email=username)
                 user.save()
 
             try:

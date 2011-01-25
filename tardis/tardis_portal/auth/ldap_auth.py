@@ -1,29 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from django.template import Context, loader
-from django.http import HttpResponse
+import ldap
 
 from django.conf import settings
 
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User, Group
-from django.http import HttpResponseRedirect, HttpResponseForbidden, \
-    HttpResponseNotFound, HttpResponseServerError
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
-from tardis.tardis_portal.forms import RegisterExperimentForm
+from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.logger import logger
 
-from django.core.paginator import Paginator, InvalidPage, EmptyPage
-
-from tardis.tardis_portal.models import *
-
-import urllib
-import urllib2
-
-import ldap
 
 auth_key = u'ldap'
 auth_display_name = u'LDAP'
@@ -44,12 +30,13 @@ def get_ldap_username_for_email(email):
         l.protocol_version = ldap.VERSION3
         result = l.search_s(settings.BASE_DN, searchScope,
                             searchFilter, retrieveAttributes)
+        l.unbind_s()
         return result[0][1]['uid'][0]
 
-    except ldap.LDAPError, e:
+    except ldap.LDAPError:
         return ''
 
-    except IndexError, i:
+    except IndexError:
         return ''
 
     finally:
@@ -69,16 +56,15 @@ def get_ldap_email_for_user(username):
         # retrieve all attributes - again adjust to your needs
         # see documentation for more options
         retrieveAttributes = ['mail']
-        searchFilter = 'uid=' + username
+        Searchfilter = 'uid=' + Username
 
         l.protocol_version = ldap.VERSION3
 
         result = l.search_s(settings.BASE_DN, searchScope,
                             searchFilter, retrieveAttributes)
-
+        l.unbind_s()
         return result[0][1]['mail'][0]
-    except ldap.LDAPError, e:
-
+    except ldap.LDAPError:
         return ''
     except IndexError, i:
 
@@ -145,9 +131,9 @@ class LdapBackend():
             # auth method is already in the UserAuthentication table
             return _get_or_create_user_with_username(username)
 
-        except ldap.LDAPError, e:
+        except ldap.LDAPError:
             return None
-        except IndexError, i:
+        except IndexError:
             return None
         finally:
             if l:
