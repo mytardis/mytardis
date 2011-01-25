@@ -273,7 +273,8 @@ def login(request):
 @login_required()
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
-    from tardis.tardis_portal.auth.authentication import *
+    from tardis.tardis_portal.auth.authentication import add_auth_method, \
+        merge_auth_method, remove_auth_method, edit_auth_method
 
     if request.method == 'POST':
         operation = request.POST['operation']
@@ -583,7 +584,6 @@ def control_panel(request):
                         'tardis_portal/control_panel.html', c))
 
 
-@login_required()
 def search_experiment(request):
     """Either show the search experiment form or the result of the search
     experiment query.
@@ -610,7 +610,6 @@ def search_experiment(request):
     return HttpResponse(render_response_index(request, url, c))
 
 
-@login_required()
 def search_quick(request):
     get = False
     experiments = Experiment.objects.all().order_by('title')
@@ -640,7 +639,6 @@ def search_quick(request):
                         'tardis_portal/search_experiment.html', c))
 
 
-@login_required()
 def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     """Filter the list of datafiles for the provided searchQueryType using the
     cleaned up searchFilterData.
@@ -662,9 +660,9 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
     if not datafile_results:
-        logger.info("__getFilteredDatafiles: user %s (%i) "
-                    "doesn't access to any experiments" % (request.user,
-                                                           request.user.id))
+        # Don't log a user id here!!! It will fail if the user is not logged in.
+        logger.info("__getFilteredDatafiles: user {0}"
+                    "doesn't access to any experiments".format(request.user))
         return datafile_results
 
     datafile_results = \
@@ -704,7 +702,6 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     return datafile_results
 
 
-@login_required()
 def __getFilteredExperiments(request, searchFilterData):
     """Filter the list of experiments using the cleaned up searchFilterData.
 
@@ -1040,9 +1037,7 @@ def __processExperimentParameters(request, form):
     """
 
     if form.is_valid():
-
         experiments = __getFilteredExperiments(request, form.cleaned_data)
-
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
         # by the paginator
@@ -1052,7 +1047,6 @@ def __processExperimentParameters(request, form):
         return None
 
 
-@login_required()
 def search_datafile(request):
     """Either show the search datafile form or the result of the search
     datafile query.
