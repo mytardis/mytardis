@@ -274,7 +274,8 @@ def login(request):
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
     from tardis.tardis_portal.auth.authentication import add_auth_method, \
-        merge_auth_method, remove_auth_method, edit_auth_method
+        merge_auth_method, remove_auth_method, edit_auth_method, \
+        list_auth_methods
 
     if request.method == 'POST':
         operation = request.POST['operation']
