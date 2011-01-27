@@ -1,7 +1,7 @@
-from django.http import HttpResponseRedirect
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
 from django.db.models import Q
-
 
 from tardis.tardis_portal.models import Experiment, Dataset_File, GroupAdmin
 from tardis.tardis_portal.shortcuts import *
@@ -64,6 +64,7 @@ def has_datafile_access(request, dataset_file_id):
         return False
 
 
+@login_required
 def is_group_admin(request, group_id):
 
     groupadmin = GroupAdmin.objects.filter(user=request.user,
@@ -105,8 +106,6 @@ def experiment_ownership_required(f):
 def experiment_access_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
         if not has_experiment_access(request, kwargs['experiment_id']):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -119,8 +118,6 @@ def experiment_access_required(f):
 def dataset_access_required(f):
 
     def wrap(request, *args, **kwargs):
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
         if not has_dataset_access(request, kwargs['dataset_id']):
             return return_response_error(request)
         return f(request, *args, **kwargs)
@@ -134,8 +131,6 @@ def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
 
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login?next=%s' % request.path)
         if not has_datafile_access(request, kwargs['dataset_file_id']):
             return return_response_error(request)
         return f(request, *args, **kwargs)
