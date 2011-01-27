@@ -26,4 +26,6 @@ SCHEMA_DICT = {
     }
 
 EXPERIMENT_SCHEMAS = \
-    ['http://www.tardis.edu.au/schemas/as/experiment/2010/09/21', ]
+    ['http://www.tardis.edu.au/schemas/as/experiment/2010/09/21',
+     'http://www.tardis.edu.au/schemas/as/sample/2011/01/24'
+]
