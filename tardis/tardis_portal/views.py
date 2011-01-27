@@ -1175,7 +1175,7 @@ def retrieve_access_list_group(request, experiment_id):
 @experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
-    groups = Experiment.safe.external(request, experiment_id)
+    groups = Experiment.safe.external_users(request, experiment_id)
     c = Context({'groups': groups, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))

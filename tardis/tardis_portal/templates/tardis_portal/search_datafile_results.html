@@ -34,7 +34,7 @@
   {% if not paginator.object_list.count %}
     No datafiles found
   {% else %}
-    <strong>{{ paginator.object_list.count }}</strong> result(s) found
+    <strong>{{ paginator.object_list.count }}</strong> result{{ paginator.object_list.count|pluralize }} found
     <table class="results-table">
       <tr>
 	<th>Filename</th>

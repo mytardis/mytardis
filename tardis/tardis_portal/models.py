@@ -78,6 +78,9 @@ class GroupAdmin(models.Model):
     user = models.ForeignKey(User)
     group = models.ForeignKey(Group)
 
+    def __unicode__(self):
+        return '%s: %s' % (self.user.username, self.group.name)
+
 
 # TODO: Generalise auth methods
 class UserAuthentication(models.Model):

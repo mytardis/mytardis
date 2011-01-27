@@ -79,6 +79,12 @@ class VblGroupProvider(GroupProvider):
 
         users = str(self.client.service.VBLgetEmailsFromExpID(epn))
         if not users == 'None':
+
+            # chop off literals (a,b,c) from epn (2467a -> 2467)
+            from re import match
+            epn = match('\d*', epn).group(0)
+            logger.debug(epn)
+
             return [{'id': int(epn),
                      'display': 'VBL/EPN_%s' % epn,
                      'members': users.split(',')}]

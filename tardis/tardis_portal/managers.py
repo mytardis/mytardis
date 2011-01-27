@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.logger import logger
 
 
 class ExperimentManager(models.Manager):
@@ -128,7 +129,6 @@ class ExperimentManager(models.Manager):
             experimentacl__pluginId=django_user,
             experimentacl__entityId=str(request.user.id),
             experimentacl__isOwner=True,
-            experimentacl__aclOwnershipType=ExperimentACL.OWNER_OWNED
             )
 
         return experiments
@@ -178,9 +178,8 @@ class ExperimentManager(models.Manager):
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.exclude(pluginId=django_user)
-        acl.exclude(pluginId=django_group)
-        acl.filter(experiment__id=experiment_id,
-                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = acl.exclude(pluginId=django_group)
+        acl = acl.filter(experiment__id=experiment_id)
 
         if not acl:
             return None
