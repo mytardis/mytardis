@@ -65,16 +65,16 @@ urlpatterns = patterns(
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_datafile_image'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>\w+)$', 'tardis.tardis_portal.views.add_experiment_access_user'),
+     '(?P<username>[\w\.]+)$', 'tardis.tardis_portal.views.add_experiment_access_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
-     '(?P<username>\w+)/$',
+     '(?P<username>[\w\.]+)/$',
      'tardis.tardis_portal.views.remove_experiment_access_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
-     '(?P<username>\w+)/$', 'tardis.tardis_portal.views.change_user_permissions'),
+     '(?P<username>[\w\.]+)/$', 'tardis.tardis_portal.views.change_user_permissions'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'tardis.tardis_portal.views.retrieve_access_list_user'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>\w+)$', 'tardis.tardis_portal.views.add_experiment_access_group'),
+     '(?P<groupname>[\w\s\.]+)$', 'tardis.tardis_portal.views.add_experiment_access_group'),
     (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$',
      'tardis.tardis_portal.views.remove_experiment_access_group'),
@@ -99,9 +99,9 @@ urlpatterns = patterns(
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/(?P<group_id>\d+)/$',
      'tardis.tardis_portal.views.retrieve_group_userlist'),
-    (r'^group/(?P<group_id>\d+)/add/(?P<username>\w+)$',
+    (r'^group/(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
      'tardis.tardis_portal.views.add_user_to_group'),
-    (r'^group/(?P<group_id>\d+)/remove/(?P<username>\w+)/$',
+    (r'^group/(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'tardis.tardis_portal.views.remove_user_from_group'),
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),

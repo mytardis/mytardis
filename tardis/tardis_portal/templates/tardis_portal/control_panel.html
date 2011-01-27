@@ -53,9 +53,9 @@ $(document).ready(function() {
 		(t.toLowerCase() == this.substring(this.length -
 		t.length).toLowerCase()); } }
 
-  $('#access_list_user.access_list').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
-  $('#access_list_group.access_list').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
-  $('#access_list_external.access_list').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+  $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
+  $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
+  $('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
 
   $(".access_list_user_toggle").text("[Show]");
   $(".access_list_group_toggle").text("[Show]");
@@ -102,7 +102,7 @@ $(document).ready(function() {
 
 								    var usersuggest = $(this).siblings(".usersuggest").val();
 								    var experiment_id = $(this).siblings(".experiment_id").val();
-		                                                    var users_div = $(this).parents('.access_list').children('.users');
+		                                                    var users_div = $(this).parents('.access_list1').children('.users');
 		                                                    var canRead = $(this).siblings(".canRead").is(':checked');
 		                                                    var canWrite = $(this).siblings(".canWrite").is(':checked');
 		                                                    var canDelete = $(this).siblings(".canDelete").is(':checked');
@@ -116,8 +116,7 @@ $(document).ready(function() {
 								     success: function(data) {
 										if (data.beginsWith("<div class=", true) == true)
 										{
-											users_div.hide()
-											.append(data).fadeIn();
+											users_div.hide().append(data).fadeIn();
 										// todo this is a duplicate function..
 										   $(".remove_user").unbind('click');
 										   $(".remove_user").click(function() {
@@ -242,7 +241,7 @@ $(document).ready(function() {
 									minChars: 0
 								});
 
-								$(".groupsuggest").autocomplete(groups.split(" "), {
+								$(".groupsuggest").autocomplete(groups.split(" ~ "), {
 									matchContains: true,
 									minChars: 0
 								});
@@ -255,7 +254,7 @@ $(document).ready(function() {
 								    var experiment_id = $(this).siblings(".experiment_id").val();
 								    var usersuggest = $(this).siblings(".usersuggest").val();
 								    var groupsuggest = $(this).siblings(".groupsuggest").val();
-		                                                    var groups_div = $(this).parents('.access_list').children('.groups');
+		                                                    var groups_div = $(this).parents('.access_list2').children('.groups');
 								    var create = $(this).siblings(".creategroup").is(':checked');
 		                                                    var canRead = $(this).siblings(".canRead").is(':checked');
 		                                                    var canWrite = $(this).siblings(".canWrite").is(':checked');
@@ -271,8 +270,7 @@ $(document).ready(function() {
 								     success: function(data) {
 										if (data.beginsWith("<div class=", true) == true)
 										{
-											groups_div.hide()
-											.append(data).fadeIn();
+											groups_div.hide().append(data).fadeIn();
 										// todo this is a duplicate function..
 										   $(".remove_group").unbind('click');
 										   $(".remove_group").click(function() {
@@ -377,7 +375,7 @@ $(document).ready(function() {
 				      <tr>
 					<td>
 					  User Access <a href="{{experiment.id}}/access_list/user/" class="access_list_user_toggle"></a>
-					  <div class="access_list" id="access_list_user">
+					  <div class="access_list1">
 					  </div>
 					  <br/>
 					</td>
@@ -385,7 +383,7 @@ $(document).ready(function() {
 				      <tr>
 					<td>
 					  Group Access <a href="{{experiment.id}}/access_list/group/" class="access_list_group_toggle"></a>
-					  <div class="access_list" id="access_list_group">
+					  <div class="access_list2">
 					  </div>
 					  <br/>
 					</td>
@@ -393,8 +391,9 @@ $(document).ready(function() {
 				      <tr>
 					<td>
 					  External Access <a href="{{experiment.id}}/access_list/external/" class="access_list_group_toggle"></a>
-					  <div class="access_list" id="access_list_external">
+					  <div class="access_list3">
 					  </div>
+					  <br/>
 					  <br/>
 					</td>
 				      </tr>
