@@ -93,20 +93,33 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     return ''
 
 
-def stage_files(
-    datafiles,
-    experiment_id,
-    staging=settings.STAGING_PATH,
-    store=settings.FILE_STORE_PATH,
-    ):
+class StagingHook():
+    def __init__(self, user, experimentId, staging=None, store=None):
+        self.staging = staging or settings.STAGING_PATH
+        self.store = store or settings.FILE_STORE_PATH
+        self.user = user
+        self.experimentId = experimentId
+
+    def __call__(self, datafile, created=False):
+        if created == False:
+            return
+        stage_files(datafile, self.experimentId, self.staging, self.store)
+
+
+def stage_files(datafiles,
+                experiment_id,
+                staging=settings.STAGING_PATH,
+                store=settings.FILE_STORE_PATH,
+                ):
     """
     move files from the staging area to the dataset.
     """
-
     experiment_path = path.join(store, str(experiment_id))
     if not path.exists(experiment_path):
         makedirs(experiment_path)
 
+    if not isinstance(datafiles, list):
+        datafiles = [datafiles]
     for datafile in datafiles:
         urlpath = datafile.url.partition('//')[2]
         todir = path.join(experiment_path, path.split(urlpath)[0])
