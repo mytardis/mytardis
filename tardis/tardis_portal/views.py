@@ -1946,28 +1946,16 @@ def edit_experiment(request, experiment_id,
     experiment = Experiment.objects.get(id=experiment_id)
 
     if request.method == 'POST':
-        form = FullExperiment(request.POST, request.FILES, instance=experiment, extra=0)
+        staging = StagingHook(None, experiment_id)
+        form = ExperimentForm(request.POST, request.FILES,
+                              instance=experiment, extra=0,
+                              datafile_post_save_cb=staging)
         if form.is_valid():
-            full_experiment = form.save(commit=False)
-
-            # Need to detect changed files
-            #for ds_f in full_experiment['dataset_files']:
-                #if not ds_f.id:
-                #    filepath = ds_f.filename
-                #    ds_f.url = filepath
-                #    ds_f.filename = os.path.basename(filepath)
-                #    ds_f.size = 0
-                #    ds_f.protocol = "file"
-            # group/owner assignment stuff, soon to be replaced
-            #experiment = full_experiment['experiment']
-            full_experiment.save_m2m()
-
-            #datafiles = full_experiment['dataset_files']
-            #stage_files(datafiles, experiment.id)
+            form.save()
 
             return HttpResponseRedirect(experiment.get_absolute_url())
     else:
-        form = FullExperiment(instance=experiment, extra=0)
+        form = ExperimentForm(instance=experiment, extra=0)
 
     c = Context({'subtitle': 'Edit Experiment',
                  'directory_listing': staging_traverse(),
