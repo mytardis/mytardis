@@ -1857,6 +1857,7 @@ def upload_complete(request,
         })
     return render_to_response(template_name, c)
 
+
 def upload(
     request,
     dataset_id,
@@ -1865,6 +1866,9 @@ def upload(
     ):
     """
     Uploads a datafile to the store and datafile metadata
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
     :param dataset_id: the dataset_id
     :type dataset_id: integer
     :rtype: boolean true if successful
