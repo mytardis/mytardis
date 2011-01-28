@@ -162,6 +162,15 @@ class FullExperimentModel(UserDict):
 
 
 class DataFileFormSet(BaseInlineFormSet):
+
+    def __init__(self, *args, **kwargs):
+        if 'post_save_cb' in kwargs:
+            self._post_save_cb = kwargs['post_save_cb']
+            del kwargs['post_save_cb']
+        else:
+            self._post_save_cb = None
+        super(DataFileFormSet, self).__init__(**kwargs)
+
     def save_new(self, form, commit=True):
         # this is a local file so correct the missing details
 
@@ -171,14 +180,18 @@ class DataFileFormSet(BaseInlineFormSet):
             form.cleaned_data['filename'] = basename(filepath)
             form.cleaned_data['size'] = 0
             form.cleaned_data['protocol'] = u'file'
-        return super(DataFileFormSet, self).save_new(form, commit=commit)
+        datafile = super(DataFileFormSet, self).save_new(form, commit=commit)
+        if self._post_save_cb:
+            self._post_save_cb(datafile, True)
+        return datafile
 
     def save_existing(self, form, instance, commit=True):
-        # custom save behavior for existing objects
-        # instance is the existing object, and form has the updated data
-        return super(DataFileFormSet, self).save_existing(form,
-                                                          instance,
-                                                          commit=commit)
+        datafile = super(DataFileFormSet, self).save_existing(form,
+                                                              instance,
+                                                              commit=commit)
+        if self._datafile_post_save_cb:
+            self._datafile_post_save_cb(datafile, True)
+        return datafile
 
 
 class ExperimentForm(forms.ModelForm):
@@ -198,7 +211,8 @@ class ExperimentForm(forms.ModelForm):
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
-                 empty_permitted=False, instance=None, extra=0):
+                 empty_permitted=False, instance=None, extra=0,
+                 datafile_post_save_cb=None):
         self.author_experiments = []
         self.datasets = {}
         self.dataset_files = {}
@@ -249,6 +263,7 @@ class ExperimentForm(forms.ModelForm):
             print "DF"
             self.dataset_files[i] = datafile_formset(data=data,
                                                      instance=df.instance,
+                                                     post_save_cb=datafile_post_save_cb,
                                                      prefix="dataset-%s-datafile" % i)
 
     def _parse_authors(self, data=None):
