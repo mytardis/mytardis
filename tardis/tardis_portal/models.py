@@ -99,9 +99,9 @@ class Experiment(models.Model):
             if len(profiles):
                 profile = profiles[0].string_value
 
-        except ExperimentParameter.DoesNotExist, eo:
+        except ExperimentParameter.DoesNotExist:
             pass
-
+        # TODO remove hard coded path.
         return "tardis_portal/rif-cs/profiles/" + profile
 
 
