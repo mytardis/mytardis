@@ -15,6 +15,7 @@ auth_key = u'localdb'
 auth_display_name = u'Local DB'
 
 
+# TODO: remove these functions, they should be obsolete! [UF]
 def get_username_for_email(email):
     raise NotImplemented()
 
@@ -34,12 +35,15 @@ def get_or_create_user(email):
     return u
 
 
+_modelBackend = ModelBackend()
+
+
 class DjangoAuthBackend():
     """Authenticate against Django's Model Backend.
 
     """
     def authenticate(self, request):
-        username = request.POST['username']
+        username = '%s_%s' % (auth_key,request.POST['username'])
         password = request.POST['password']
         if not username or not password:
             return None
@@ -47,9 +51,6 @@ class DjangoAuthBackend():
 
     def get_user(self, user_id):
         return _modelBackend.get_user(user_id)
-
-
-_modelBackend = ModelBackend()
 
 
 class DjangoGroupProvider(GroupProvider):

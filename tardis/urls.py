@@ -9,7 +9,7 @@ from django.views.generic import list_detail
 from tardis.tardis_portal.models import Equipment
 from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
 
-from registration.forms import RegistrationFormUniqueEmail
+from tardis.tardis_portal.forms import RegistrationForm
 
 
 urlpatterns = patterns(
@@ -107,9 +107,8 @@ urlpatterns = patterns(
     (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),
     (r'^accounts/manage_auth_methods/$', 'tardis.tardis_portal.views.manage_auth_methods'),
     (r'^logout/$', logout, {'next_page': '/'}),
-    (r'^accounts/register/', include('registration.urls'),
-     {'form_class': RegistrationFormUniqueEmail}),
-    (r'^accounts/', include('registration.urls')),
+    (r'^accounts/', include('registration.urls'),
+     {'form_class': RegistrationForm}),
     (r'site_media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.STATIC_DOC_ROOT}),
     (r'media/(?P<path>.*)$', 'django.views.static.serve',

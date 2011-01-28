@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -39,9 +38,16 @@ forms module
 '''
 
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
 from django.forms import ModelForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
+
+from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
+
+from tardis.tardis_portal.models import UserProfile, UserAuthentication
+
+from registration.models import RegistrationProfile
 
 
 class LoginForm(AuthenticationForm):
@@ -58,6 +64,87 @@ class LoginForm(AuthenticationForm):
             forms.CharField(required=True,
                             widget=forms.Select(choices=authMethodChoices),
                             label='Authentication Method')
+
+
+attrs_dict = {'class': 'required'}
+
+
+class RegistrationForm(forms.Form):
+    """
+    Form for registering a new user account.
+
+    Validates that the requested username is not already in use, and
+    requires the password to be entered twice to catch typos.
+
+    Subclasses should feel free to add any additional validation they
+    need, but should avoid defining a ``save()`` method -- the actual
+    saving of collected user data is delegated to the active
+    registration backend.
+
+    """
+
+    username = forms.RegexField(regex=r'^[\w\.]+$',
+                                max_length=22,
+                                widget=forms.TextInput(attrs=attrs_dict),
+                                label=_("Username"),
+                                error_messages={'invalid': _("This value must contain only letters, numbers and underscores.")})
+    email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
+                                                               maxlength=75)),
+                             label=_("Email address"))
+
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+                                label=_("Password"))
+
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+                                label=_("Password (again)"))
+
+    def clean_username(self):
+        """
+        Validate that the username is alphanumeric and is not already
+        in use.
+
+        """
+        from tardis.tardis_portal.auth.localdb_auth import auth_key
+        username = '%s_%s' % (auth_key, self.cleaned_data['username'])
+
+        try:
+            user = User.objects.get(username__iexact=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(_("A user with that username already exists."))
+
+    def clean(self):
+        """
+        Verifiy that the values entered into the two password fields
+        match. Note that an error here will end up in
+        ``non_field_errors()`` because it doesn't apply to a single
+        field.
+
+        """
+        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
+            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+                raise forms.ValidationError(_("The two password fields didn't match."))
+
+        return self.cleaned_data
+
+    def save(self, profile_callback=None):
+        from tardis.tardis_portal.auth.localdb_auth import auth_key
+
+        user = RegistrationProfile.objects.create_inactive_user(
+            username=self.cleaned_data['username'],
+            password=self.cleaned_data['password1'],
+            email=self.cleaned_data['email'])
+
+        userProfile = UserProfile(user=user, isNotADjangoAccount=False)
+        userProfile.save()
+
+        authentication = \
+            UserAuthentication(userProfile=userProfile,
+                               username=self.cleaned_data['username'],
+                               authenticationMethod=auth_key)
+        authentication.save()
+
+        return user
 
 
 class ChangeUserPermissionsForm(ModelForm):
