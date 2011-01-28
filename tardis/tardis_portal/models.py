@@ -135,7 +135,8 @@ class Dataset_File(models.Model):
     :attribute url: location (path) of the file
     :attribute size: file size
     :attribute protocol: special download protocol to be used
-    :attribute modification time: last modification time of the file
+    :attribute created_time: time the file was added to tardis
+    :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     """
 
@@ -144,11 +145,24 @@ class Dataset_File(models.Model):
     url = models.CharField(blank=True, max_length=400)
     size = models.CharField(blank=False, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
+    created_time = models.DateTimeField(auto_now_add=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
 
     def __unicode__(self):
         return self.filename
+
+    def Mimetype(self):
+        if self.mimetype:
+            return self.mimetype
+        else:
+            suffix = self.filename.split('.')[-1]
+            print suffix
+            try:
+                import mimetypes
+                return mimetypes.types_map['.%s' % suffix.lower()]
+            except KeyError:
+                return 'application/octet-stream'
 
 
 class Schema(models.Model):
