@@ -48,9 +48,21 @@
 	var name = container_type + dataset_number + '-datafile-' + total + '-filename';
 	var id = 'id_' + name;
 
-	var li = $('<li></li>');
+
+	var name1 = container_type + dataset_number + '-datafile-' + total + '-id';
+	var id1 = 'id_' + name1;
+
+
+	var name2 = container_type + dataset_number + '-datafile-' + total + '-url';
+	var id2 = 'id_' + name2;
+
+	var li = $(document.createElement('<li>')).attr({'class': 'datafile'});
 	var file = $('<input type="hidden"/>').attr({'value': filename, 'name': name, 'id': id});
 	li.append(file);
+	var file1 = $('<input type="hidden"/>').attr({'value': '', 'name': name1, 'id': id1});
+	li.append(file1);
+	var file2 = $('<input type="hidden"/>').attr({'value': '', 'name': name2, 'id': id2});
+	li.append(file2);
 	li.append($('<span class="file"></span>').text(filename));
 	var delete_file = $('<span class="remove_file">[x]</span>').click(function() {
     	    deleteDatafile(li, container_type + dataset_number + '-datafile');
@@ -124,6 +136,13 @@
             }
         });
 
+	// reset primary key field
+	$('#id_' + prefix + '-' + formCount + '-id', row).val('');
+	$('#id_' + prefix + '-' + formCount + '-datafile-INITIAL_FORMS', row).val('0');
+
+	// remove the delete field because this won't be bound to real data
+	$('#id_' + prefix + '-' + formCount + '-DELETE', row).remove();
+
         // reset the datafile counts to 0
         $('ul.dataset > input:first', row).val('0');
 
@@ -138,27 +157,62 @@
     }
 
     function deleteDataset(btn, prefix) {
-        $(btn).parents('.dataset_container').remove();
-        var forms = $('.dataset_container');
-        $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
-        for (var i=0, formCount=forms.length; i<formCount; i++) {
-            $(forms.get(i)).find(':input').children().not(':last').children().each(function() {
-                updateElementIndex(this, prefix, i);
-            });
-        }
+
+	var parent = $(btn).parents('.dataset_container');
+	var id_regex = new RegExp('(' + prefix + '-\\d+)');
+	var total_input = parent.find('input:first');
+	// find the number of the parent dataset
+	var dataset_number = $(total_input).attr('id').match(new RegExp("id_" + prefix + "-(\\d+)-.*"))[1];
+
+	// if the -DELETE field exists then fold the area and mark it for deletion
+	if ($('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).length > 0) {
+	    var head = parent.find('.msg_head');
+            $(head).css('background-color', '#FF0000');
+            $(head).css('color', 'white');
+            $(head).next(".msg_body").hide();
+	    $('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).attr('value', '1');
+	    for (i=0; i < $('#id_' + prefix + "-" + dataset_number + "-datafile-TOTAL_FORMS", parent).val(); i++) {
+		$('#id_' + prefix + "-" + dataset_number + "-datafile-" + i + "-DELETE", parent).attr('value', '1');
+	    }
+	} else {
+            $(parent).remove();
+            var forms = $('.dataset_container');
+            $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
+            for (var i=0, formCount=forms.length; i<formCount; i++) {
+		$(forms.get(i)).find(':input').children().not(':last').children().each(function() {
+                    updateElementIndex(this, prefix, i);
+		});
+            }
+	}
         return false;
     }
 
     function deleteDatafile(btn, prefix) {
-        dataset = $(btn).parent('.dataset')
-        $(btn).remove();
-        var forms = $('li', dataset);
-        $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
-        for (var i=0, formCount=forms.length; i<formCount; i++) {
-            $(forms.get(i)).find(':input').each(function() {
-                updateElementIndex(this, prefix, i);
-            });
-        }
+
+        var dataset = $(btn).parents('.dataset');
+        var parent = $(btn).parents('.datafile');
+
+	var id_regex = new RegExp("id_dataset-(\\d+)-" + prefix + "-(\\d+)-.*");
+	var total_input = parent.find('input:first');
+
+	var match = $(total_input).attr('id').match(id_regex);
+	var ds_id = match[1];
+	var df_id = match[2];
+
+	if ($('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).length > 0) {
+	    $('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).attr('value', '1');
+            $(parent).css('background-color', '#FF0000');
+
+	} else {
+            var forms = $('li', dataset);
+            $('#id_' + prefix + '-TOTAL_FORMS', dataset).val(forms.length);
+            for (var i=0, formCount=forms.length; i<formCount; i++) {
+		$(forms.get(i)).find(':input').each(function() {
+                    updateElementIndex(this, prefix, i);
+		});
+            }
+	    $(parent).remove();
+	}
         return false;
     }
 
@@ -169,11 +223,13 @@
             //toggle the componenet with class msg_body
 
             $(".msg_head").live('click', function() {
-                if($(this).next(".msg_body").is(':visible')) {
+                if ($(this).next(".msg_body").is(':visible')) {
                     $(this).css('background-color', '#878787');
                     $(this).css('color', 'white');
                     $(this).next(".msg_body").hide();
                 } else {
+		    var dataset_number = $(this).parent().find(":input").attr('id').match(new RegExp("id_dataset-(\\d+)-.*"))[1];
+		    $('#id_dataset-' + dataset_number + "-DELETE", $(this).parent()).attr('value', '0');
                     $(this).css('background-color', '#dcdcdc');
                     $(this).css('color', '#404040');
                     $(this).next(".msg_body").show();
@@ -189,15 +245,16 @@
                 if($(".dataset_container").size() > 1) {
                     //$(this).parents(".dataset_container").remove();
                     // TODO needs to have the correct prefix
-                    deleteDataset(this,'')
+                    deleteDataset(this,'dataset')
                 } else {
                     alert('experiments must have at least one dataset!');
                 }
             });
 
-            /*$(".remove_file").live('click', function() {
-                $(this).parent().remove()
-            });*/
+            $(".remove_file").live('click', function() {
+		deleteDatafile(this, 'datafile')
+                //$(this).parent().remove()
+            });
 
         });
   </script>
@@ -237,10 +294,6 @@
                 <label for="id_description">Description:</label><br/>
                 {{ form.description }}
               </div>
-
-              <input name="url" type="hidden" value="http://remove.me"/>
-              <input name="created_by" type="hidden" value="{{user.id}}"/>
-
             </div>
             <p class="add_new_dataset">Add New Dataset</p>
             <p class="msg_head">My Files</p>
@@ -260,25 +313,31 @@
                     <div class="fieldWrapper">
                       {{ dataset_form.description.errors }}
                       <p>Dataset Description: <br/>
-                      {% if dataset_form.is_bound %}{{dataset_form.id}}{% endif %}
-		      {% if dataset_form.is_bound %}{{dataset_form.delete}}{% endif %}
-		      {{dataset_form.description}}
-		      </p>
-		    </div>
-		    <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
-		    <p><strong>Files</strong></p>
-		    <div>
+                      {% if form.instance %}
+			{{ dataset_form.id }}
+                        {{ dataset_form.DELETE.as_hidden }}
+		      {% endif %}
+                      {{dataset_form.description}}
+                      </p>
+                    </div>
+                    <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+                    <p><strong>Files</strong></p>
+                    <div>
 
-		      <ul class="dataset">
-			{{ file_forms.management_form }}
+                      <ul class="dataset">
+                        {{ file_forms.management_form }}
 			{% for file_form in file_forms.forms %}
-			  {{file_form.url.as_hidden}}
-			  <span class="file">{{file_form.url.as_label}}</span>
-			  <span class="remove_file">[x]</span><br/>
-			{% endfor %}
-		      </ul>
-		    </div>
-		    <div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
+                          <li class="datafile">
+			    {{ file_form.id.as_hidden }}
+                            {{ file_form.DELETE.as_hidden }}
+			    {{ file_form.url.as_hidden }}
+                          <span class="file">{{ file_form.filename }}</span>
+                          <span class="remove_file">[x]</span><br/>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
 		  </div>
 		</div>
 	      {% endfor %}

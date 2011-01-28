@@ -31,7 +31,7 @@ from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse
+    staging_traverse, stage_files
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
@@ -1803,20 +1803,14 @@ def create_experiment(request,
     :rtype: :class:`django.http.HttpResponse`
     """
     if request.method == 'POST':
-        form = FullExperiment(request.POST, request.FILES)
+        form = ExperimentForm(request.POST, request.FILES)
         if form.is_valid():
             full_experiment = form.save(commit=False)
-
-            for ds_f in full_experiment['dataset_files']:
-                filepath = ds_f.filename
-                ds_f.url = 'file://' + filepath
-                ds_f.filename = os.path.basename(filepath)
-                ds_f.size = 0
-                ds_f.protocol = ''
 
             # group/owner assignment stuff, soon to be replaced
 
             experiment = full_experiment['experiment']
+            experiment.created_by = request.user
             full_experiment.save_m2m()
 
             g = Group(name=experiment.id)
@@ -1826,11 +1820,12 @@ def create_experiment(request,
             exp_owner.save()
             request.user.groups.add(g)
 
-            stage_files(full_experiment['dataset_files'], experiment.id)
-
+            #stage_files(full_experiment['dataset_files'], experiment.id)
+            #for df in full_experiment['dataset_files']:
+            #    df.save()
             return HttpResponseRedirect(experiment.get_absolute_url())
     else:
-        form = FullExperiment()
+        form = ExperimentForm(extra=1)
 
     c = Context({
         'subtitle': 'Create Experiment',
@@ -1943,3 +1938,42 @@ def search_equipment(request):
                  'searchDatafileSelectionForm':
                  getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
+
+
+@login_required
+def edit_experiment(request, experiment_id,
+                      template="tardis_portal/create_experiment.html"):
+    experiment = Experiment.objects.get(id=experiment_id)
+
+    if request.method == 'POST':
+        form = FullExperiment(request.POST, request.FILES, instance=experiment, extra=0)
+        if form.is_valid():
+            full_experiment = form.save(commit=False)
+
+            # Need to detect changed files
+            #for ds_f in full_experiment['dataset_files']:
+                #if not ds_f.id:
+                #    filepath = ds_f.filename
+                #    ds_f.url = filepath
+                #    ds_f.filename = os.path.basename(filepath)
+                #    ds_f.size = 0
+                #    ds_f.protocol = "file"
+            # group/owner assignment stuff, soon to be replaced
+            #experiment = full_experiment['experiment']
+            full_experiment.save_m2m()
+
+            #datafiles = full_experiment['dataset_files']
+            #stage_files(datafiles, experiment.id)
+
+            return HttpResponseRedirect(experiment.get_absolute_url())
+    else:
+        form = FullExperiment(instance=experiment, extra=0)
+
+    c = Context({'subtitle': 'Edit Experiment',
+                 'directory_listing': staging_traverse(),
+                 'user_id': request.user.id,
+                 'form': form,
+              })
+
+    return HttpResponse(render_response_index(request,
+                        template, c))
