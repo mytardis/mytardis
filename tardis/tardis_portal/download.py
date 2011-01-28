@@ -39,16 +39,10 @@ def download_datafile(request, datafile_id):
                              url.partition('//')[2])
 
             try:
-                if datafile.mimetype:
-                    mimetype = datafile.mimetype
-                else:
-                    mimetype = 'application/octet-stream'
-
-                logger.debug(file_path)
                 wrapper = FileWrapper(file(file_path))
 
                 response = HttpResponse(wrapper,
-                        mimetype=mimetype)
+                                        mimetype=datafile.Mimetype())
                 response['Content-Disposition'] = \
                     'attachment; filename=' + datafile.filename
 
