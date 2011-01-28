@@ -37,7 +37,6 @@ forms module
 
 '''
 
-import re
 from os.path import basename
 from UserDict import UserDict
 
@@ -45,10 +44,11 @@ from django import forms
 from django.utils.html import conditional_escape
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
-from django.forms.util import ErrorDict, ErrorList
-from django.forms.models import ModelChoiceField, model_to_dict
+from django.forms.util import ErrorList
 from django.forms.forms import BoundField
-from django.forms.formsets import formset_factory
+from django.forms.models import ModelChoiceField
+from django.forms.models import inlineformset_factory
+from django.forms.models import BaseInlineFormSet
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
@@ -118,170 +118,11 @@ class RegisterExperimentForm(forms.Form):
     originid = forms.CharField(max_length=400, required=False)
 
 
-class PostfixedBoundField(BoundField):
-    def _auto_attrs(self, attrs=None):
-        if not hasattr(self.form, 'postfix'):
-            return attrs
-
-        if not attrs:
-            attrs = {}
-
-        attrs.update({'id': self.form.auto_id % self.name +
-                      getattr(self.form, 'postfix'),
-                      'name': self.form.auto_id % self.name +
-                      getattr(self.form, 'postfix')})
-
-        return attrs
-
-    def as_widget(self, widget=None, attrs=None, only_initial=False):
-        """
-        Renders the field by rendering the passed widget, adding any HTML
-        attributes passed as attrs.  If no widget is specified, then the
-        field's default widget will be used.
-        """
-        return super(PostfixedBoundField, self).as_widget(
-            widget=widget,
-            attrs=self._auto_attrs(attrs),
-            only_initial=only_initial)
-
-    def __unicode__(self):
-        """Renders this field as an HTML widget."""
-        if self.field.show_hidden_initial:
-            return self.as_widget() + self.as_hidden(only_initial=True)
-        return self.as_widget(attrs=self._auto_attrs())
-
-    def __str__(self):
-        return self.__unicode__().encode('utf-8')
-
-    def as_label(self, attrs=None, **kwargs):
-        """
-        Returns a string of HTML for representing this as an <label></label>.
-        """
-        return self.as_widget(Label(), attrs=self._auto_attrs(attrs), **kwargs)
-
-    def as_span(self, attrs=None, **kwargs):
-        """
-        Returns a string of HTML for representing this as an <span></span>.
-        """
-        return self.as_widget(Span(), attrs=self._auto_attrs(attrs), **kwargs)
-
-
-class PostfixedForm:
-    def __iter__(self):
-        for name, field in self.fields.items():
-            yield PostfixedBoundField(self, field, name)
-
-    def __getitem__(self, name):
-        "Returns a BoundField with the given name."
-        try:
-            field = self.fields[name]
-        except KeyError:
-            raise KeyError('Key %r not found in Form' % name)
-        return PostfixedBoundField(self, field, name)
-
-    def _html_output(self, normal_row, error_row, row_ender, help_text_html, errors_on_separate_row):
-        "Helper function for outputting HTML. Used by as_table(), as_ul(), as_p()."
-        top_errors = self.non_field_errors() # Errors that should be displayed above all fields.
-        output, hidden_fields = [], []
-
-        for name, field in self.fields.items():
-            html_class_attr = ''
-            bf = PostfixedBoundField(self, field, name)
-            bf_errors = self.error_class([conditional_escape(error) for error in bf.errors]) # Escape and cache in local variable.
-            if bf.is_hidden:
-                if bf_errors:
-                    top_errors.extend([u'(Hidden field %s) %s' % (name, force_unicode(e)) for e in bf_errors])
-                hidden_fields.append(unicode(bf))
-            else:
-                # Create a 'class="..."' atribute if the row should have any
-                # CSS classes applied.
-                css_classes = bf.css_classes()
-                if css_classes:
-                    html_class_attr = ' class="%s"' % css_classes
-
-                if errors_on_separate_row and bf_errors:
-                    output.append(error_row % force_unicode(bf_errors))
-
-                if bf.label:
-                    label = conditional_escape(force_unicode(bf.label))
-                    # Only add the suffix if the label does not end in
-                    # punctuation.
-                    if self.label_suffix:
-                        if label[-1] not in ':?.!':
-                            label += self.label_suffix
-                    label = bf.label_tag(label) or ''
-                else:
-                    label = ''
-
-                if field.help_text:
-                    help_text = help_text_html % force_unicode(field.help_text)
-                else:
-                    help_text = u''
-
-                output.append(normal_row % {
-                    'errors': force_unicode(bf_errors),
-                    'label': force_unicode(label),
-                    'field': unicode(bf),
-                    'help_text': help_text,
-                    'html_class_attr': html_class_attr
-                })
-
-        if top_errors:
-            output.insert(0, error_row % force_unicode(top_errors))
-
-        if hidden_fields: # Insert any hidden fields in the last row.
-            str_hidden = u''.join(hidden_fields)
-            if output:
-                last_row = output[-1]
-                # Chop off the trailing row_ender (e.g. '</td></tr>') and
-                # insert the hidden fields.
-                if not last_row.endswith(row_ender):
-                    # This can happen in the as_p() case (and possibly others
-                    # that users write): if there are only top errors, we may
-                    # not be able to conscript the last row for our purposes,
-                    # so insert a new, empty row.
-                    last_row = (normal_row % {'errors': '', 'label': '',
-                                              'field': '', 'help_text':'',
-                                              'html_class_attr': html_class_attr})
-                    output.append(last_row)
-                output[-1] = last_row[:-len(row_ender)] + str_hidden + row_ender
-            else:
-                # If there aren't any rows in the output, just append the
-                # hidden fields.
-                output.append(str_hidden)
-        return mark_safe(u'\n'.join(output))
-
-
 class Author_Experiment(forms.ModelForm):
 
     class Meta:
         model = models.Author_Experiment
         exclude = ('experiment',)
-
-
-class Dataset(PostfixedForm, forms.ModelForm):
-    id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-
-    class Meta:
-        model = models.Dataset
-        exclude = ('experiment',)
-
-
-class Dataset_File(PostfixedForm, forms.ModelForm):
-    id = forms.IntegerField(required=False, widget=forms.HiddenInput())
-    url = forms.CharField(required=False)
-    filename = forms.CharField(required=False)
-
-    class Meta:
-        model = models.Dataset_File
-        fields = ('filename', 'url', 'protocol')
-
-
-class Experiment(forms.ModelForm):
-    url = forms.CharField(required=False)
-    class Meta:
-        model = models.Experiment
-        exclude = ('authors', 'handle', 'approved', 'created_by')
 
 
 class FullExperimentModel(UserDict):
@@ -309,44 +150,60 @@ class FullExperimentModel(UserDict):
             ds_f.dataset = ds_f.dataset
             ds_f.save()
 
+        # XXX because saving the form can be now done without
+        # commit=False this won't be called during the creation
+        # of new experiments.
+        if hasattr(self.data['datasets'], 'deleted_forms'):
+            for dataset in self.data['datasets'].deleted_forms:
+                dataset.instance.delete()
+        if hasattr(self.data['dataset_files'], 'deleted_forms'):
+            for dataset in self.data['dataset_files'].deleted_forms:
+                dataset.instance.delete()
 
-class FullExperiment(Experiment):
+
+class DataFileFormSet(BaseInlineFormSet):
+    def save_new(self, form, commit=True):
+        # this is a local file so correct the missing details
+
+        if form.is_valid():
+            filepath = form.cleaned_data['filename']
+            form.cleaned_data['url'] = filepath
+            form.cleaned_data['filename'] = basename(filepath)
+            form.cleaned_data['size'] = 0
+            form.cleaned_data['protocol'] = u'file'
+        return super(DataFileFormSet, self).save_new(form, commit=commit)
+
+    def save_existing(self, form, instance, commit=True):
+        # custom save behavior for existing objects
+        # instance is the existing object, and form has the updated data
+        return super(DataFileFormSet, self).save_existing(form,
+                                                          instance,
+                                                          commit=commit)
+
+
+class ExperimentForm(forms.ModelForm):
     """
     This handles the complex experiment forms.
-
-    The post format is expected to be like::
-
-        abstract Test
-        authors Mr Bob
-        dataset_description[0] 1
-        dataset_description[2] 2
-        dataset_description[3] 3
-        file_filename[0] 2R9Y/downloadFiles.py
-        file_filename[0] 2R9Y/Images/0510060001.osc
-        file_filename[0] 2R9Y/Images/0510060002.osc
-        file_filename[2] 2R9Y/downloadFiles.py
-        file_filename[3] 2R9Y/downloadFiles.py
-        file_filename[3] 2R9Y/toplevel.log
-        title Test Title
 
     All internal datasets forms are prefixed with `dataset_`, and all
     internal dataset file fields are prefixed with `file_`. These
     are parsed out of the post data and added to the form as internal
     lists.
     """
-    re_post_data = re.compile('(?P<form>[^_]*)_(?P<field>.*)\[(?P<number>[\d]+)\]$')
-    base_fields = {}
+    url = forms.CharField(required=False)
+
+    class Meta:
+        model = models.Experiment
+        exclude = ('authors', 'handle', 'approved', 'created_by')
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
-                 empty_permitted=False, instance=None, extra=1):
+                 empty_permitted=False, instance=None, extra=0):
         self.author_experiments = []
         self.datasets = {}
         self.dataset_files = {}
-        self.__exp_fields = {}
-        self.__ds_num = 0
 
-        super(FullExperiment, self).__init__(data=data,
+        super(ExperimentForm, self).__init__(data=data,
                                              files=files,
                                              auto_id=auto_id,
                                              prefix=prefix,
@@ -356,118 +213,76 @@ class FullExperiment(Experiment):
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
+        def custom_field_cb(field):
+            if field.name == 'url':
+                return field.formfield(required=False)
+            else:
+                return field.formfield()
+
         # initialise formsets
-        dataset_formset = formset_factory(Dataset, extra=1)
-        datafile_formset = formset_factory(Dataset_File, extra=0)
+        dataset_formset = inlineformset_factory(models.Experiment,
+                                                models.Dataset,
+                                                extra=extra, can_delete=True)
+        datafile_formset = inlineformset_factory(models.Dataset,
+                                                 models.Dataset_File,
+                                                 formset=DataFileFormSet,
+                                                 formfield_callback=custom_field_cb,
+                                                 extra=0, can_delete=True)
 
         # fix up experiment form
-        post_data = self._parse_post(data)
-        self._fill_forms(post_data)
+        post_authors = self._parse_authors(data)
+        self._fill_authors(post_authors)
+        if instance:
+            authors = instance.author_experiment_set.all()
+            self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
+            self.initial['authors'] = ', '.join([a.author for a in authors])
+            self.fields['authors'] = \
+                MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
+                                              widget=CommaSeparatedInput())
 
         # fill formsets
-        initial_ds, initial_dfs = self._initialise_from_instance(instance)
-
         self.datasets = dataset_formset(data=data,
-                                        initial=initial_ds,
-                                        auto_id='id_%s',
+                                        instance=instance,
                                         prefix="dataset")
-        if initial_dfs:
-            for i, df in enumerate(initial_dfs):
-                self.dataset_files[i] = datafile_formset(data=data,
-                                                         initial=df,
-                                                         auto_id="id_%s",
-                                                         prefix="dataset-%s-datafile" % i)
-        else:
-            for i, df in enumerate(self.datasets.forms):
-                self.dataset_files[i] = datafile_formset(data=data,
-                                                         auto_id="id_%s",
-                                                         prefix="dataset-%s-datafile" % i)
+        for i, df in enumerate(self.datasets.forms):
+            print repr(df.instance)
+            print "DF"
+            self.dataset_files[i] = datafile_formset(data=data,
+                                                     instance=df.instance,
+                                                     prefix="dataset-%s-datafile" % i)
 
-    def _initialise_from_instance(self, experiment):
-        """
-        Format an instance of an
-        :class:`~tardis.tardis_portal.models.Experiment` model initialise
-        the internal form variables.
-
-        :param experiment: maximum number of stack frames to show
-        :type experiment: :class:`tardis.tardis_portal.models.Experiment`
-        :rtype: dictionary containing strings and lists of strings
-        """
-        if not experiment:
-            return [], []
-        authors = experiment.author_experiment_set.all()
-        self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
-        self.initial['authors'] = ', '.join([a.author for a in authors])
-        self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
-                                          widget=CommaSeparatedInput())
-        datasets = []
-        datafiles = []
-        for i, ds in enumerate(experiment.dataset_set.all()):
-
-            datasets.append(model_to_dict(ds))
-
-            datafile = []
-            for file in ds.dataset_file_set.all():
-                datafile.append(model_to_dict(file))
-            datafiles.append(datafile)
-        return datasets, datafiles
-
-    def _parse_post(self, data=None):
+    def _parse_authors(self, data=None):
         """
         create a dictionary containing each of the sub form types.
         """
-        parsed = {'experiment': {}, 'authors': [],
-                  'dataset': {}, 'file': {}}
+        authors = []
         if not data:
-            return parsed
+            return authors
         if 'authors' in data:
-            parsed['authors'] = [a.strip() for a in
-                                 data.get('authors').split(',')]
-        for k in data:
-            v = data.get(k)
-            m = self.re_post_data.match(k)
-            if m:
-                item = m.groupdict()
-                field = item['field']
-                if not item['number'] in parsed[item['form']]:
-                    parsed[item['form']][item['number']] = {}
-                if item['form'] == u'file':
-                    v = data.getlist(k)
-                    for i in xrange(len(v)):
-                        form_list = parsed[item['form']][item['number']]
-                        if not form_list:
-                            form_list = [{} for v1 in v]
-                        form_list[i][field] = v[i]
-                        parsed[item['form']][item['number']] = form_list
-                else:
-                    parsed[item['form']][item['number']][field] = v
-            else:
-                parsed['experiment'][k] = v
-        return parsed
+            authors = [a.strip() for a in
+                       data.get('authors').split(',')]
+        return authors
 
-    def _fill_forms(self, data=None):
-        if data and 'authors' in data:
-            if self.instance:
-                o_author_experiments = \
-                    self.instance.author_experiment_set.all()
-            else:
-                o_author_experiments = []
-            for num, author in enumerate(data['authors']):
-                try:
-                    o_ae = o_author_experiments[num]
-                except IndexError:
-                    o_ae = models.Author_Experiment()
-                    o_ae.experiment = self.instance
-                f = Author_Experiment(data={'author': author,
-                                            'order': num},
-                                      instance=o_ae)
-                self.author_experiments.append(f)
+    def _fill_authors(self, authors):
+        if self.instance:
+            o_author_experiments = \
+                self.instance.author_experiment_set.all()
+        else:
+            o_author_experiments = []
+        for num, author in enumerate(authors):
+            try:
+                o_ae = o_author_experiments[num]
+            except IndexError:
+                o_ae = models.Author_Experiment()
+                o_ae.experiment = self.instance
+            f = Author_Experiment(data={'author': author,
+                                        'order': num},
+                                  instance=o_ae)
+            self.author_experiments.append(f)
 
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
                                           widget=CommaSeparatedInput())
-        return
 
     def get_dataset_files(self, number):
         """
@@ -490,14 +305,13 @@ class FullExperiment(Experiment):
          list of :class:`~tardis.tardis_portal.models.Dataset_File`
         """
         for number, form in enumerate(self.datasets.forms):
-            df = formset_factory(Dataset_File, extra=0)
             yield (form, self.get_dataset_files(number))
 
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data['authors']
 
-        experiment = super(FullExperiment, self).save(commit)
+        experiment = super(ExperimentForm, self).save(commit)
 
         authors = []
         author_experiments = []
@@ -508,7 +322,6 @@ class FullExperiment(Experiment):
             ae.instance.experiment = ae.instance.experiment
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
-
         for key, dataset in enumerate(self.datasets.forms):
             # XXX for some random reason the link between the instance needs
             # to be reinitialised
@@ -517,13 +330,16 @@ class FullExperiment(Experiment):
             datasets.append(o_dataset)
             # save any datafiles if the data set has any
             if self.dataset_files[key]:
-                for df in self.dataset_files[key].forms:
-                    # XXX for some random reason the link between the instance
-                    # needs to be reinitialised
-                    df.instance.dataset = o_dataset
-                    print df.errors
-                    o_df = df.save(commit)
-                    dataset_files.append(o_df)
+                o_df = self.dataset_files[key].save(commit)
+                dataset_files += o_df
+
+        if hasattr(self.datasets, 'deleted_forms'):
+            for ds in self.datasets.deleted_forms:
+                ds.instance.delete()
+
+        if hasattr(self.dataset_files, 'deleted_forms'):
+            for df in self.dataset_files.deleted_forms:
+                df.instance.delete()
 
         return FullExperimentModel({'experiment': experiment,
                                     'author_experiments': author_experiments,
@@ -557,7 +373,6 @@ class FullExperiment(Experiment):
             for name, error in dataset.errors.items():
                 if isinstance(dataset.fields[name], ModelChoiceField):
                     continue
-                print dataset.errors[name]
                 if dataset.is_bound and bool(dataset.errors[name]):
                     return False
         return True

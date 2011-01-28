@@ -57,18 +57,21 @@ class ExperimentFormTestCase(TestCase):
                         ('title', 'test experiment'),
                         ('url', 'http://www.test.com'),
                         ('dataset-MAX_NUM_FORMS', ''),
-                        ('dataset-INITIAL_FORMS', '1'),
+                        ('dataset-INITIAL_FORMS', '0'),
                         ('dataset-TOTAL_FORMS', '2'),
                         ('dataset-0-datafile-MAX_NUM_FORMS', ''),
                         ('dataset-0-datafile-INITIAL_FORMS', '0'),
                         ('dataset-0-datafile-TOTAL_FORMS', '1'),
+                        ('dataset-0-id', ''),
                         ('dataset-0-description', 'first one'),
                         ('dataset-0-datafile-0-filename', 'file/another.py'),
                         ('dataset-1-description', 'second'),
                         ('dataset-1-datafile-MAX_NUM_FORMS', ''),
                         ('dataset-1-datafile-INITIAL_FORMS', '0'),
                         ('dataset-1-datafile-TOTAL_FORMS', '2'),
+                        ('dataset-1-datafile-0-id', ''),
                         ('dataset-1-datafile-0-filename', 'second_ds/file.py'),
+                        ('dataset-1-datafile-1-id', ''),
                         ('dataset-1-datafile-1-filename', 'second_ds/file1.py'),
                         ]
         data = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in data]))
@@ -108,7 +111,7 @@ class ExperimentFormTestCase(TestCase):
 
         example_post = self._data_to_post()
 
-        f = forms.FullExperiment(example_post)
+        f = forms.ExperimentForm(example_post)
         as_table = """<tr><th><label for="url">Url:</label></th><td><input type="text" name="url" value="http://www.test.com" id="url" /></td></tr>
 <tr><th><label for="title">Title:</label></th><td><input id="title" type="text" name="title" value="test experiment" maxlength="400" /></td></tr>
 <tr><th><label for="institution_name">Institution name:</label></th><td><input id="institution_name" type="text" name="institution_name" value="some university" maxlength="400" /></td></tr>
@@ -129,26 +132,34 @@ class ExperimentFormTestCase(TestCase):
                         ('description', 'desc.....'),
                         ('authors', 'russell, steve'),
                         ('dataset-MAX_NUM_FORMS', ''),
-                        ('dataset-INITIAL_FORMS', '1'),
+                        ('dataset-INITIAL_FORMS', '0'),
                         ('dataset-TOTAL_FORMS', '2'),
                         ('dataset-0-datafile-MAX_NUM_FORMS', ''),
                         ('dataset-0-datafile-INITIAL_FORMS', '0'),
                         ('dataset-0-datafile-TOTAL_FORMS', '2'),
                         ('dataset-0-description', 'first one'),
+                        ('dataset-0-id', ''),
+                        ('dataset-0-datafile-0-id', ''),
                         ('dataset-0-datafile-0-filename', 'location.py'),
-                        ('dataset-0-datafile-1-filename', 'another.py'),
+                        ('dataset-0-datafile-0-protocol', ''),
                         ('dataset-0-datafile-0-url', 'file/location.py'),
+                        ('dataset-0-datafile-1-id', ''),
+                        ('dataset-0-datafile-1-filename', 'another.py'),
+                        ('dataset-0-datafile-1-protocol', ''),
                         ('dataset-0-datafile-1-url', 'file/another.py'),
+                        ('dataset-1-id', ''),
                         ('dataset-1-description', 'second'),
                         ('dataset-1-datafile-MAX_NUM_FORMS', ''),
                         ('dataset-1-datafile-INITIAL_FORMS', '0'),
                         ('dataset-1-datafile-TOTAL_FORMS', '1'),
+                        ('dataset-1-datafile-0-id', ''),
                         ('dataset-1-datafile-0-filename', 'file.py'),
+                        ('dataset-1-datafile-0-protocol', ''),
                         ('dataset-1-datafile-0-url', 'second_ds/file.py'),
                         ]
         example_post = self._data_to_post(example_post)
 
-        f = forms.FullExperiment(example_post)
+        f = forms.ExperimentForm(example_post)
 
         # test validity of form data
         self.assertTrue(f.is_valid(), repr(f.errors))
@@ -200,7 +211,7 @@ class ExperimentFormTestCase(TestCase):
 <tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
 <tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" id="authors" /></td></tr>"""
 
-        f = forms.FullExperiment()
+        f = forms.ExperimentForm()
         self.assertEqual(f.as_table(), as_table)
         #TODO needs to be extended to cover printing initial datasets
 
@@ -208,7 +219,7 @@ class ExperimentFormTestCase(TestCase):
         from tardis.tardis_portal import forms
 
         # test empty form
-        f = forms.FullExperiment()
+        f = forms.ExperimentForm()
         self.assertTrue(f.is_valid())
 
         # test blank post data
@@ -219,34 +230,35 @@ class ExperimentFormTestCase(TestCase):
                                    ('title', ''),
                                    ('url', ''),
                                    ('dataset-MAX_NUM_FORMS', ''),
-                                   ('dataset-INITIAL_FORMS', '1'),
+                                   ('dataset-INITIAL_FORMS', '0'),
                                    ('dataset-TOTAL_FORMS', '1'),
                                    ('dataset-0-datafile-MAX_NUM_FORMS', ''),
                                    ('dataset-0-datafile-INITIAL_FORMS', '0'),
-                                   ('dataset-0-datafile-TOTAL_FORMS', '0'),
+                                   ('dataset-0-datafile-TOTAL_FORMS', '1'),
+                                   ('dataset-0-id', ''),
                                    ('dataset-0-description', ''),
                                    ])
-        f = forms.FullExperiment(data=post)
+        f = forms.ExperimentForm(data=post)
         self.assertFalse(f.is_valid())
 
         # test a valid form
         example_post = self._data_to_post()
-        f = forms.FullExperiment(example_post)
+        f = forms.ExperimentForm(example_post)
         self.assertTrue(f.is_valid())
 
         # test a valid instance of a form
         exp = self._create_experiment()
-        f = forms.FullExperiment(instance=exp)
+        f = forms.ExperimentForm(instance=exp)
         self.assertTrue(f.is_valid())
 
         # test a valid instance with unmodified post
-        #f = forms.FullExperiment(instance=exp, data=example_post)
+        #f = forms.ExperimentForm(instance=exp, data=example_post)
         #self.assertFalse(f.is_valid())
 
     def test_instance(self):
         from tardis.tardis_portal import forms
         exp = self._create_experiment()
-        f = forms.FullExperiment(instance=exp)
+        f = forms.ExperimentForm(instance=exp)
         value = "value=\"%s\""
         text_area = ">%s</textarea>"
         self.assertTrue(value % 'test experiment' in
@@ -278,7 +290,7 @@ class ExperimentFormTestCase(TestCase):
         from tardis.tardis_portal import forms
         from django.template import Template, Context
         exp = self._create_experiment()
-        f = forms.FullExperiment(instance=exp)
+        f = forms.ExperimentForm(instance=exp)
         template = """<form action="" method="post">
     {% for field in form %}
         <div class="fieldWrapper">
@@ -334,7 +346,7 @@ class ExperimentFormTestCase(TestCase):
         for i, ds in enumerate(exp.dataset_set.all()):
             initial['dataset_description[' + str(i) + ']'] = ds.description
 
-        f = forms.FullExperiment(initial=initial)
+        f = forms.ExperimentForm(initial=initial)
 
         value = "value=\"%s\""
         text_area = ">%s</textarea>"
