@@ -38,6 +38,8 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.search_equipment'),
     (r'^experiment/view/(?P<experiment_id>\d+)/$',
      'tardis.tardis_portal.views.view_experiment'),
+    (r'^experiment/edit/(?P<experiment_id>\d+)/$',
+     'tardis.tardis_portal.views.edit_experiment'),
     (r'^experiment/view/$',
      'tardis.tardis_portal.views.experiment_index'),
     (r'^experiment/register/$',
