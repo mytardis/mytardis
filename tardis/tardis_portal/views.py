@@ -1515,10 +1515,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group,
-                 'experiment_id': experiment_id,
-                 'groupadmin': groupadmin})
-
+    c = Context({'group': group})
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
