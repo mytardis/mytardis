@@ -435,47 +435,6 @@ class EquipmentTestCase(TestCase):
         self.assertEqual(len(response.context['object_list']), 2)
 
 
-class TraverseTestCase(TestCase):
-    dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
-    files = [['dir1', 'file1'],
-             ['dir2', 'file2'],
-             ['dir2', 'file3'],
-             ['dir2', 'subdir', 'file4']]
-
-    def setUp(self):
-        from django.conf import settings
-        staging = settings.STAGING_PATH
-        import os
-        from os import path
-        for dir in self.dirs:
-            os.mkdir(path.join(staging, dir))
-        for file in self.files:
-            f = open(path.join(staging, *file), 'w')
-            f.close()
-
-    def tearDown(self):
-        from django.conf import settings
-        staging = settings.STAGING_PATH
-        import os
-        from os import path
-        for file in self.files:
-            os.remove(path.join(staging, *file))
-        self.dirs.reverse()
-        for dir in self.dirs:
-            os.rmdir(path.join(staging, dir))
-
-    def test_traversal(self):
-        from tardis.tardis_portal import views
-        result = views.staging_traverse()
-        self.assertTrue('dir1' in result)
-        self.assertTrue('dir1/file1' in result)
-        self.assertTrue('dir2' in result)
-        self.assertTrue('dir2/file2' in result)
-        self.assertTrue('dir2/file3' in result)
-        self.assertTrue('dir2/subdir/file4' in result)
-        self.assertTrue('dir3' in result)
-
-
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)

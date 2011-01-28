@@ -30,7 +30,8 @@ from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
 from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
-
+from tardis.tardis_portal.staging import add_datafile_to_dataset,\
+    staging_traverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from tardis.tardis_portal.models import *
@@ -1789,89 +1790,6 @@ def import_params(request):
                         'tardis_portal/import_params.html', c))
 
 
-def staging_traverse(staging=settings.STAGING_PATH):
-    """
-    Recurse through directories and form HTML list tree for jtree
-
-    :param staging: the path to begin traversing
-    :type staging: string
-    :rtype: string
-    """
-
-    ul = '<ul><li id="phtml_1"><a>My Files</a><ul>'
-    for f in os.listdir(staging):
-        ul = ul + traverse(path.join(staging, f), staging)
-    return ul + '</ul></li></ul>'
-
-
-def traverse(pathname, dirname=settings.STAGING_PATH):
-    """
-    Traverse a path and return a nested group of unordered list HTML tags::
-
-       <ul>
-         <li id="dir2/file2"><a>file2</a></li>
-         <li id="dir2/file3"><a>file3</a></li>
-         <li id="dir2/subdir"><a>subdir</a>
-           <ul>
-             <li id="dir2/subdir/file4"><a>file4</a></li>
-           </ul>
-         </li>
-       </ul>
-
-    :param pathname: the directory to traverse
-    :type pathname: string
-    :param dirname: the root directory of the traversal
-    :type dirname: string
-    :rtype: string
-    """
-
-    li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
-                                    path.basename(pathname))
-    if path.isfile(pathname):
-        return li + '</li>'
-    if path.isdir(pathname):
-        ul = '<ul>'
-        for f in os.listdir(pathname):
-            ul = ul + traverse(path.join(pathname, f), dirname)
-        return li + ul + '</ul></li>'
-    return ''
-
-
-def stage_files(
-    datafiles,
-    experiment_id,
-    staging=settings.STAGING_PATH,
-    store=settings.FILE_STORE_PATH,
-    ):
-    """
-    move files from the staging area to the dataset.
-    """
-
-    experiment_path = path.join(store, str(experiment_id))
-    if not os.path.exists(experiment_path):
-        os.makedirs(experiment_path)
-
-    for datafile in datafiles:
-        urlpath = datafile.url.partition('//')[2]
-        todir = path.join(experiment_path, path.split(urlpath)[0])
-        if not os.path.exists(todir):
-            os.makedirs(todir)
-
-        copyfrom = path.join(staging, urlpath)  # to be url
-        copyto = path.join(experiment_path, urlpath)
-        if path.exists(copyto):
-            logger.error("can't stage %s destination exists" % copyto)
-
-            # TODO raise error
-
-            continue
-
-        logger.debug('staging file: %s to %s' % (copyfrom, copyto))
-        datafile.size = os.path.getsize(copyfrom)
-        datafile.save()
-        shutil.move(copyfrom, copyto)
-
-
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -1976,87 +1894,6 @@ def upload(
             print 'added datafile to dataset'
 
     return HttpResponse('True')
-
-
-def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
-    """
-    Writes file POST data to the dataset directory in the file store
-    :param dataset_id: dataset who's directory to be written to
-    :type dataset: models.Model
-    :rtype: the path of the file written to
-    """
-
-    filename = uploaded_file_post.name
-
-    experiment_path = path.join(settings.FILE_STORE_PATH,
-                                str(dataset.experiment.id))
-
-    dataset_path = path.join(experiment_path, str(dataset.id))
-
-    if not os.path.exists(dataset_path):
-        os.makedirs(dataset_path)
-
-    copyto = dataset_path + '/' + filename
-
-    copyto = duplicate_file_check_rename(copyto)
-
-    uploaded_file = open(copyto, 'wb+')
-
-    for chunk in uploaded_file_post.chunks():
-        uploaded_file.write(chunk)
-
-    uploaded_file.close()
-
-    return copyto
-
-
-def duplicate_file_check_rename(copyto):
-    """
-    Checks if the destination for the file already exists and returns
-    a non-conflicting name
-
-    :param copyto: The destination path to check
-    :type copyto: string
-    :rtype: The new non-conflicting path (the original path if no conflicts)
-    """
-    i = 1
-    base, filename = path.split(copyto)
-    name, ext = path.splitext(filename)
-    result = copyto
-
-    while path.exists(result):
-        logger.debug('%s destination exists' % result)
-        result = path.join(base, "{0}_{1}{2}".format(name, i, ext))
-        i += 1
-    return result
-
-
-def add_datafile_to_dataset(dataset, filepath, size):
-    """
-    Adds datafile metadata to a dataset
-    :param dataset_id: dataset who's directory to be written to
-    :type dataset: models.Model
-    :param filepath: The full os path to the file
-    :type filepath: string
-    :param size: The file size in bytes
-    :type size: string
-    :rtype: The new datafile object
-    """
-
-    experiment_path = path.join(settings.FILE_STORE_PATH,
-                                str(dataset.experiment.id))
-
-    dataset_path = path.join(experiment_path, str(dataset.id))
-
-    urlpath = 'file:/' + filepath[len(experiment_path):]
-    filename = urlpath.rpartition('/')[2]
-
-    datafile = Dataset_File(dataset=dataset, filename=filename,
-                            url=urlpath, size=size, protocol='')
-
-    datafile.save()
-
-    return datafile
 
 
 def upload_files(request, dataset_id,
