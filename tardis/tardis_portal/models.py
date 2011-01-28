@@ -89,21 +89,6 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
-    def rif_cs_profile(self):
-        profile = "default.xml"
-        try:
-            profiles = ExperimentParameter.objects.filter(parameterset__experiment__id=self.id,
-                    parameterset__schema__namespace='http://monash.edu.au/rif-cs/profile/',
-                    name__name='profile')
-
-            if len(profiles):
-                profile = profiles[0].string_value
-
-        except ExperimentParameter.DoesNotExist:
-            pass
-        # TODO remove hard coded path.
-        return "tardis_portal/rif-cs/profiles/" + profile
-
 
 class Experiment_Owner(models.Model):
 
