@@ -106,8 +106,7 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 								     success: function(data) {
 										if (data.beginsWith("<div class=", true) == true)
 										{
-											users_div.hide()
-											.append(data).fadeIn();
+										     users_div.hide().append(data).fadeIn();
 										// todo this is a duplicate function..
 										   $(".remove_user").unbind('click');
 										   $(".remove_user").click(function() {

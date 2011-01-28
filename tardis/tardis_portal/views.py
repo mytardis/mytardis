@@ -1469,6 +1469,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
         except Group.DoesNotExist:
             return return_response_error(request)
 
+        if admin and not is_group_admin(request, group.id):
+            return return_response_error(request)
+
+
     acl = ExperimentACL.objects.filter(experiment=experiment,
                                        pluginId=django_group,
                                        entityId=str(group.id),
@@ -1486,21 +1490,30 @@ def add_experiment_access_group(request, experiment_id, groupname):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
-    user = None
-    try:
-        user = User.objects.get(username=admin)
-    except User.DoesNotExist:
-        pass
 
-    # create admin for this group
-    if user:
+    if admin:
+        user = None
+        try:
+            user = User.objects.get(username=admin)
+        except User.DoesNotExist:
+            return return_response_error(request)
+
+        # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
 
-    # add the current user as admin as well
-    if not request.user == admin:
-        groupadmin = GroupAdmin(user=request.user, group=group)
+        user.groups.add(group)
+        user.save()
+
+    # add the current user as admin as well for newly created groups
+    if create and not request.user == user:
+        user = request.user
+
+        groupadmin = GroupAdmin(user=user, group=group)
         groupadmin.save()
+
+        user.groups.add(group)
+        user.save()
 
     c = Context({'group': group,
                  'experiment_id': experiment_id,
