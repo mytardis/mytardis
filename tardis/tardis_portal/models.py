@@ -30,9 +30,11 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from os import path
 from urlparse import urlparse
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.safestring import SafeUnicode
 
@@ -136,6 +138,34 @@ class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     description = models.TextField()
+
+    def addDatafile(self, filepath,
+                    protocol='', url='',
+                    size=None, commit=True):
+        """
+        Add Datafile helper function
+
+        :param filepath: the file path within the repository
+        :type filepath: string
+        """
+        full_file_path = path.join(settings.FILE_STORE_PATH,
+                                   str(self.experiment.id),
+                                   filepath)
+
+        datafile = Dataset_File(dataset=self)
+        datafile.filename = path.basename(filepath)
+        if protocol:
+            datafile.protocol = protocol
+
+        if url:
+            datafile.url = url
+        else:
+            datafile.url = 'file:/' + filepath
+
+        if size:
+            datafile.size = size
+        elif path.exists(full_file_path):
+            datafile.size = path.getsize(full_file_path)
 
     def __unicode__(self):
         return self.description
