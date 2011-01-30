@@ -111,16 +111,21 @@ class MetsExperimentStructCreator(ContentHandler):
             fileName = _getAttrValueByQName(attrs, 'OWNERID')
             fileId = _getAttrValueByQName(attrs, 'ID')
             fileSize = _getAttrValueByQName(attrs, 'SIZE')
-            fileMetadataId = _getAttrValueByQName(attrs, 'ADMID')
+            fileMetadataIds = _getAttrValueByQName(attrs, 'ADMID')
 
             # instantiate the datafile
             self.datafile = metsstruct.Datafile(
-                fileId, fileName, fileSize, fileMetadataId)
+                fileId, fileName, fileSize, fileMetadataIds is not None and
+                fileMetadataIds.split() or None)
 
             # add an entry for this datafile in the metadataMap so we can
             # easily look it up later on when we do our second parse
-            if fileMetadataId is not None:
-                self.metadataMap[fileMetadataId] = self.datafile
+            if fileMetadataIds is not None:
+                for fileMetadataId in fileMetadataIds.split():
+                    if self.metadataMap.has_key(fileMetadataId):
+                        self.metadataMap[fileMetadataId].append(self.datafile)
+                    else:
+                        self.metadataMap[fileMetadataId] = [self.datafile]
 
         elif elName == 'FLocat' and self.inFileGrp and \
                 _getAttrValueByQName(attrs, 'LOCTYPE') == 'URL':
@@ -142,15 +147,22 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # instantiate a new experiment
             experimentId = _getAttrValueByQName(attrs, 'DMDID')
-            experimentMetadataId = \
+            experimentMetadataIds = \
                 _getAttrValueByQName(attrs, 'ADMID')
             self.experiment = metsstruct.Experiment(experimentId,
-                experimentMetadataId)
+                experimentMetadataIds is not None and
+                experimentMetadataIds.split() or None)
 
             # add an entry for this experiment in the metadataMap so we can
             # easily look it up later on when we do our second parse
-            if experimentMetadataId is not None:
-                self.metadataMap[experimentMetadataId] = self.experiment
+            if experimentMetadataIds is not None:
+                for experimentMetadataId in experimentMetadataIds.split():
+                    if self.metadataMap.has_key(experimentMetadataId):
+                        self.metadataMap[
+                            experimentMetadataId].append(self.experiment)
+                    else:
+                        self.metadataMap[experimentMetadataId] = \
+                            [self.experiment]
 
             # we'll save all the div element entries in the metsStructMap so
             # we can easily look them up when we do our second parse
@@ -164,8 +176,10 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # instantiate a new dataset
             datasetId = _getAttrValueByQName(attrs, 'DMDID')
-            datasetMetadataId = _getAttrValueByQName(attrs, 'ADMID')
-            self.dataset = metsstruct.Dataset(datasetId, datasetMetadataId)
+            datasetMetadataIds = _getAttrValueByQName(attrs, 'ADMID')
+            self.dataset = metsstruct.Dataset(datasetId,
+                datasetMetadataIds is not None and datasetMetadataIds.split()
+                or None)
 
             # we'll also link the newly created dataset with the current
             # experiment
@@ -173,8 +187,13 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # add an entry for this dataset in the metadataMap so we can
             # easily look it up later on when we do our second parse
-            if datasetMetadataId is not None:
-                self.metadataMap[datasetMetadataId] = self.dataset
+            if datasetMetadataIds is not None:
+                for datasetMetadataId in datasetMetadataIds.split():
+                    if self.metadataMap.has_key(datasetMetadataId):
+                        self.metadataMap[
+                            datasetMetadataId].append(self.dataset)
+                    else:
+                        self.metadataMap[datasetMetadataId] = [self.dataset]
 
             # we'll save all the div element entries in the metsStructMap so
             # we can easily look them up when we do our second parse
@@ -262,9 +281,10 @@ class MetsMetadataInfoHandler(ContentHandler):
         self.processExperimentStruct = False
         self.processDatasetStruct = False
 
-        self.processExperimentMetadata = False
-        self.processDatasetMetadata = False
-        self.processDatafileMetadata = False
+        self.processMetadata = False
+        
+        # this will hold the techMD ID
+        self.metadataId = None
 
         self.institution = None
         self.grabAbstract = False
@@ -356,42 +376,8 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = True
-            metadataId = _getAttrValueByQName(attrs, 'ID')
-            self.metsObject = self.holder.metadataMap[metadataId]
-
-            metsObjectClassName = self.metsObject.__class__.__name__
-
-            if metsObjectClassName == 'Experiment':
-                self.processExperimentMetadata = True
-
-            elif metsObjectClassName == 'Dataset':
-                self.processDatasetMetadata = True
-
-            elif metsObjectClassName == 'Datafile':
-                self.processDatafileMetadata = True
-
-                # this will be a good time to save the "hard" metadata of this
-                # datafile so that when we start adding "soft" metadata
-                # parameters to it, we already have an entry for it in the DB
-
-                # look up the dataset this file belongs to
-                thisFilesDataset = self.datasetLookupDict[
-                    self.metsObject.dataset.id]
-
-                self.modelDatafile = models.Dataset_File(
-                    dataset=thisFilesDataset,
-                    filename=self.metsObject.name,
-                    url=self.metsObject.url,
-                    size=self.metsObject.size,
-                    protocol=self.metsObject.url.split('://')[0])
-
-                self.modelDatafile.save()
-
-                # TODO: we need to note here that we are only creating a
-                #       datafile entry in the DB for files that have
-                #       corresponding metadata. if we are to create a file
-                #       entry for files with no metadata, we'll need to
-                #       get the unaccessed datafiles from datasetLookupDict.
+            self.metadataId = _getAttrValueByQName(attrs, 'ID')
+            self.processMetadata = True
 
         elif elName == 'xmlData' and self.inTechMd:
             self.inXmlData = True
@@ -439,7 +425,9 @@ class MetsMetadataInfoHandler(ContentHandler):
                     title=self.metsObject.title,
                     institution_name=self.metsObject.institution,
                     description=self.metsObject.description,
-                    created_by=self.createdBy)
+                    created_by=self.createdBy,
+                    start_time=None,
+                    end_time=None)
 
                 self.modelExperiment.save()
 
@@ -513,10 +501,9 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = False
+            self.metadataId = None
             self.metsObject = None
-            self.processExperimentMetadata = False
-            self.processDatasetMetadata = False
-            self.processDatafileMetadata = False
+            self.processMetadata = False
 
         elif elName == 'xmlData' and self.inTechMd:
             self.inXmlData = False
@@ -539,80 +526,126 @@ class MetsMetadataInfoHandler(ContentHandler):
                     models.ParameterName.objects.filter(
                     schema__namespace__exact=schema.namespace).order_by('id')
 
-                if self.processExperimentMetadata:
+                # let's create a trigger holder which we can use to check
+                # if we still need to create another parameterset entry in the
+                # DB
+                createParamSetFlag = {'experiment': True, 'dataset': True, 'datafile': True}
+                datasetParameterSet = None
+                datafileParameterSet = None
 
-                    # create a new parameter set for the metadata
-                    parameterSet = \
-                        models.ExperimentParameterSet(
-                        schema=schema, experiment=self.modelExperiment)
-
-                    parameterSet.save()
-
-                    # now let's process the experiment parameters
-                    for parameterName in parameterNames:
-                        try:
-                            parameterValue = self.tempMetadataHolder[
-                                parameterName.name]
-                            if parameterValue != '':
-                                self._saveParameter('ExperimentParameter',
-                                    parameterName, parameterValue,
-                                    parameterSet)
-                        except KeyError:
-                            # we'll just pass as we don't really need to deal
-                            # with the current parameterName which is not
-                            # provided in the current section of the METS
-                            # document
-                            pass
-
-                elif self.processDatasetMetadata:
-
-                    # create a new parameter set for the dataset metadata
-                    parameterSet = \
-                        models.DatasetParameterSet(
-                        schema=schema, dataset=self.modelDataset)
-                    parameterSet.save()
-
-                    # now let's process the dataset parameters
-                    for parameterName in parameterNames:
-                        try:
-                            parameterValue = self.tempMetadataHolder[
-                                parameterName.name]
-                            if parameterValue != '':
-                                self._saveParameter('DatasetParameter',
-                                    parameterName, parameterValue,
-                                    parameterSet)
-                        except KeyError:
-                            # we'll just pass as we don't really need to deal
-                            # with the current parameterName which is not
-                            # provided in the current section of the METS
-                            # document
-                            logger.debug(str(parameterName) +
-                                ' is not in the tempMetadataHolder')
-                            pass
-
-                elif self.processDatafileMetadata:
-
-                    # create a new parameter set for the metadata
-                    parameterSet = \
-                        models.DatafileParameterSet(
-                        schema=schema, dataset_file=self.modelDatafile)
-                    parameterSet.save()
-
-                    # now let's process the datafile parameters
-                    for parameterName in parameterNames:
-                        try:
-                            parameterValue = self.tempMetadataHolder[
-                                parameterName.name]
-                            if parameterValue != '':
-                                self._saveParameter('DatafileParameter',
-                                    parameterName, parameterValue,
-                                    parameterSet)
-                        except KeyError:
-                            # we'll just pass as we don't really need to deal
-                            # with the current parameterName which is not
-                            # provided in the current section of the METS
-                            # document
-                            pass
+                if self.holder.metadataMap.has_key(self.metadataId):
+                    for metsObject in self.holder.metadataMap[self.metadataId]:
+                        self.metsObject = metsObject
+        
+                        metsObjectClassName = self.metsObject.__class__.__name__
+            
+                        if metsObjectClassName == 'Experiment':
+    
+                            if createParamSetFlag['experiment']:
+                                # create a new parameter set for the metadata
+                                parameterSet = \
+                                    models.ExperimentParameterSet(schema=schema)
+                                parameterSet.save()
+            
+                                # now let's process the experiment parameters
+                                for parameterName in parameterNames:
+                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                        parameterValue = self.tempMetadataHolder[
+                                            parameterName.name]
+                                        if parameterValue != '':
+                                            self._saveParameter('ExperimentParameter',
+                                                parameterName, parameterValue,
+                                                parameterSet)
+                                
+                                createParamSetFlag['experiment'] = False
+        
+                                # now link this parameterset with the experiment
+                                parameterSet.experiment.add(self.modelExperiment)
+                            else:
+                                # this is not even allowed as there's only going
+                                # to be one experiment per METS file
+                                raise Exception('forbidden state!')
+    
+            
+                        elif metsObjectClassName == 'Dataset':
+                            if createParamSetFlag['dataset']:
+                                # create a new parameter set for the dataset metadata
+                                datasetParameterSet = \
+                                    models.DatasetParameterSet(schema=schema)
+                                datasetParameterSet.save()
+            
+                                # now let's process the dataset parameters
+                                for parameterName in parameterNames:
+                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                        parameterValue = self.tempMetadataHolder[
+                                            parameterName.name]
+                                        if parameterValue != '':
+                                            self._saveParameter('DatasetParameter',
+                                                parameterName, parameterValue,
+                                                datasetParameterSet)
+                                
+                                # disable creation for the next visit
+                                createParamSetFlag['dataset'] = False
+    
+                            
+                            dataset = self.datasetLookupDict[self.metsObject.id]
+                            
+                            # now link this parameterset with the dataset
+                            datasetParameterSet.dataset.add(dataset)
+            
+                        elif metsObjectClassName == 'Datafile':
+                            # this will be a good time to save the "hard" metadata of this
+                            # datafile so that when we start adding "soft" metadata
+                            # parameters to it, we already have an entry for it in the DB
+            
+                            # look up the dataset this file belongs to
+                            thisFilesDataset = self.datasetLookupDict[
+                                self.metsObject.dataset.id]
+            
+                            # also check if the file already exists
+                            datafile = thisFilesDataset.dataset_file_set.filter(
+                                filename=self.metsObject.name, size=self.metsObject.size)
+            
+                            if datafile.count() == 0:
+                                self.modelDatafile = models.Dataset_File(
+                                    dataset=thisFilesDataset,
+                                    filename=self.metsObject.name,
+                                    url=self.metsObject.url,
+                                    size=self.metsObject.size,
+                                    protocol=self.metsObject.url.split('://')[0])
+                
+                                self.modelDatafile.save()
+                            else:
+                                self.modelDatafile = thisFilesDataset.dataset_file_set.get(
+                                    filename=self.metsObject.name, size=self.metsObject.size)
+            
+                            # TODO: we need to note here that we are only creating a
+                            #       datafile entry in the DB for files that have
+                            #       corresponding metadata. if we are to create a file
+                            #       entry for files with no metadata, we'll need to
+                            #       get the unaccessed datafiles from datasetLookupDict.
+    
+    
+                            if createParamSetFlag['datafile']:
+                                # create a new parameter set for the metadata
+                                datafileParameterSet = \
+                                    models.DatafileParameterSet(schema=schema)
+                                datafileParameterSet.save()
+            
+                                # now let's process the datafile parameters
+                                for parameterName in parameterNames:
+                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                        parameterValue = self.tempMetadataHolder[
+                                            parameterName.name]
+                                        if parameterValue != '':
+                                            self._saveParameter('DatafileParameter',
+                                                parameterName, parameterValue,
+                                                datafileParameterSet)
+                                createParamSetFlag['datafile'] = False
+        
+                            # now link this parameterset with the datafile
+                            datafileParameterSet.dataset_file.add(self.modelDatafile)
+                    
 
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested' +
@@ -685,9 +718,7 @@ class MetsMetadataInfoHandler(ContentHandler):
             self.customHandler.characters(chars)
 
         elif chars.strip() != '' and self.parameterName is not None and \
-                (self.processExperimentMetadata or \
-                self.processDatasetMetadata or \
-                self.processDatafileMetadata):
+                self.processMetadata:
             # save the parameter value in the temporary metadata dictionary
             self.tempMetadataHolder[self.parameterName] = chars
 
