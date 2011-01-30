@@ -55,8 +55,13 @@ class LoginForm(AuthenticationForm):
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
-        authMethodChoices = ()
 
+        self.fields['username'] = \
+             forms.CharField(required=True,
+                             label="Username",
+                             max_length=75)
+
+        authMethodChoices = ()
         for authMethods in settings.AUTH_PROVIDERS:
             authMethodChoices += ((authMethods[0], authMethods[1]),)
 
@@ -220,7 +225,7 @@ def createLinkedUserAuthenticationForm(authMethods):
         widget=forms.Select(choices=_authenticationMethodChoices),
         required=True)
     fields['username'] = forms.CharField(label='Username',
-        max_length=30, required=True)
+        max_length=75, required=True)
     fields['password'] = forms.CharField(required=True,
         widget=forms.PasswordInput(), label='Password', max_length=12)
 
