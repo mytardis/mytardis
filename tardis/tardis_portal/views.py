@@ -492,51 +492,52 @@ def partners(request):
 @experiment_access_required
 def view_experiment(request, experiment_id):
 
+    c = Context({'upload_complete_url':
+                     reverse('tardis.tardis_portal.views.upload_complete'),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm(),
+                 })
+
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
-        author_experiments = experiment.author_experiment_set.all()
-
-        datafiles = \
-            Dataset_File.objects.filter(dataset__experiment=experiment_id)
-
-        size = 0
-        for dataset in experiment.dataset_set.all():
-            for df in dataset.dataset_file_set.all():
-                try:
-                    size = size + long(df.size)
-                except:
-                    pass
-
-        owners = None
-        try:
-            owners = \
-                Experiment_Owner.objects.filter(experiment=experiment)
-        except Experiment_Owner.DoesNotExist, eo:
-            pass
-
-        protocols = [df['protocol'] for df in
-                     datafiles.values('protocol').distinct()]
-
-        c = Context({
-            # 'totalfilesize': datafiles.aggregate(Sum('size'))['size__sum'],
-            'experiment': experiment,
-            'authors': author_experiments,
-            'datafiles': datafiles,
-            'subtitle': experiment.title,
-            'owners': owners,
-            'size': size,
-            'protocols': protocols,
-            'upload_complete_url':
-                reverse('tardis.tardis_portal.views.upload_complete'),
-            'nav': [{'name': 'Data', 'link': '/experiment/view/'},
-                    {'name': experiment.title, 'link'
-                    : '/experiment/view/' + str(experiment.id) + '/'}],
-            'searchDatafileSelectionForm'
-                : getNewSearchDatafileSelectionForm(),
-            'is_owner': has_experiment_ownership(experiment.id, request.user.id),
-            })
-    except Experiment.DoesNotExist, de:
+    except Experiment.DoesNotExist:
         return return_response_not_found(request)
+
+    c['experiment'] = experiment
+    c['subtitle'] = experiment.title
+    c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
+                {'name': experiment.title,
+                 'link': experiment.get_absolute_url()}]
+
+    c['is_owner'] = has_experiment_ownership(experiment.id, request.user.id)
+
+    c['authors'] = experiment.author_experiment_set.all()
+
+    c['datafiles'] = \
+        Dataset_File.objects.filter(dataset__experiment=experiment_id)
+
+    # calculate the sum of the datafile sizes
+    size = 0
+    for df in c['datafiles']:
+        try:
+            size = size + long(df.size)
+        except:
+            pass
+    c['size'] = size
+
+    try:
+        c['owners'] = \
+            Experiment_Owner.objects.filter(experiment=experiment)
+    except Experiment_Owner.DoesNotExist:
+        c['owners'] = None
+
+    c['protocols'] = [df['protocol'] for df in
+                      c['datafiles'].values('protocol').distinct()]
+
+    if 'status' in request.GET:
+        c['status'] = request.GET['status']
+    if 'error' in request.GET:
+        c['error'] = request.GET['error']
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/view_experiment.html', c))
@@ -1949,6 +1950,10 @@ def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
     experiment = Experiment.objects.get(id=experiment_id)
 
+    c = Context({'subtitle': 'Edit Experiment',
+                 'user_id': request.user.id,
+              })
+
     if request.method == 'POST':
         staging = StagingHook(None, experiment_id)
         form = ExperimentForm(request.POST, request.FILES,
@@ -1956,16 +1961,17 @@ def edit_experiment(request, experiment_id,
                               datafile_post_save_cb=staging)
         if form.is_valid():
             form.save()
+            params = urlencode({'status': "Experiment Saved."})
+            return HttpResponseRedirect('?'.join(experiment.get_absolute_url(),
+                                                 params))
 
-            return HttpResponseRedirect(experiment.get_absolute_url())
+        c['status'] = "Errors exist in form."
+        c["error"] = 'true'
     else:
         form = ExperimentForm(instance=experiment, extra=0)
 
-    c = Context({'subtitle': 'Edit Experiment',
-                 'directory_listing': staging_traverse(),
-                 'user_id': request.user.id,
-                 'form': form,
-              })
+    c['directory_listing'] = staging_traverse()
+    c['form'] = form
 
     return HttpResponse(render_response_index(request,
                         template, c))
