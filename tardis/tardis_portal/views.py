@@ -11,6 +11,7 @@ views.py
 
 import shutil
 from base64 import b64decode
+from urllib import urlencode
 
 from django.template import Context, loader
 from django.http import HttpResponse
@@ -1803,6 +1804,13 @@ def create_experiment(request,
     :type template_name: string
     :rtype: :class:`django.http.HttpResponse`
     """
+
+    c = Context({
+        'subtitle': 'Create Experiment',
+        'directory_listing': staging_traverse(),
+        'user_id': request.user.id,
+        })
+
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1817,23 +1825,21 @@ def create_experiment(request,
             g = Group(name=experiment.id)
             g.save()
             exp_owner = Experiment_Owner(experiment=experiment,
-                    user=request.user)
+                                         user=request.user)
             exp_owner.save()
             request.user.groups.add(g)
+            stage_files(full_experiment['dataset_files'], experiment.id)
+            params = urlencode({'status': "Experiment Saved."})
+            return HttpResponseRedirect(
+                '?'.join([experiment.get_absolute_url(), params]))
 
-            #stage_files(full_experiment['dataset_files'], experiment.id)
-            #for df in full_experiment['dataset_files']:
-            #    df.save()
-            return HttpResponseRedirect(experiment.get_absolute_url())
+        c['status'] = "Errors exist in form."
+        c["error"] = 'true'
+
     else:
         form = ExperimentForm(extra=1)
 
-    c = Context({
-        'subtitle': 'Create Experiment',
-        'directory_listing': staging_traverse(),
-        'user_id': request.user.id,
-        'form': form,
-        })
+    c['form'] = form
 
     return HttpResponse(render_response_index(request, template_name, c))
 
