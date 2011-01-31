@@ -259,8 +259,6 @@ class ExperimentForm(forms.ModelForm):
                                         instance=instance,
                                         prefix="dataset")
         for i, df in enumerate(self.datasets.forms):
-            print repr(df.instance)
-            print "DF"
             self.dataset_files[i] = datafile_formset(data=data,
                                                      instance=df.instance,
                                                      post_save_cb=datafile_post_save_cb,
