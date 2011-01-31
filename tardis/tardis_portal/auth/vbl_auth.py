@@ -83,7 +83,6 @@ class VblGroupProvider(GroupProvider):
             # chop off literals (a,b,c) from epn (2467a -> 2467)
             from re import match
             epn = match('\d*', epn).group(0)
-            logger.debug(epn)
 
             return [{'id': int(epn),
                      'display': 'VBL/EPN_%s' % epn,
@@ -141,6 +140,8 @@ class Backend():
             return None
         else:
             request.session[SOAPLoginKey] = result
+        
+        isADjangoAccount = True
 
         try:
             # check if the given username in combination with the VBL
@@ -157,6 +158,7 @@ class Backend():
 
             # else, create a new user with a random password
             else:
+                isADjangoAccount = False
                 name = username.partition('@')[0]
                 name = '%s_%s' % (auth_key, name[0:26])
                 password = User.objects.make_random_password()
@@ -170,7 +172,8 @@ class Backend():
                 # existing userProfile attached to his/her account
                 userProfile = UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
-                userProfile = UserProfile(user=user, isNotADjangoAccount=True)
+                userProfile = UserProfile(user=user,
+                    isADjangoAccount=isADjangoAccount)
                 userProfile.save()
 
             userAuth = UserAuthentication(userProfile=userProfile,

@@ -140,7 +140,7 @@ class RegistrationForm(forms.Form):
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
 
-        userProfile = UserProfile(user=user, isNotADjangoAccount=False)
+        userProfile = UserProfile(user=user, isADjangoAccount=True)
         userProfile.save()
 
         authentication = \

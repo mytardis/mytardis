@@ -92,7 +92,7 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.get(self.manageAuthMethodsUrl)
         self.assertEqual(len(response.context['userAuthMethodList']), 1)
-        self.assertTrue(response.context['isNotDjangoAccount'] == False)
+        self.assertTrue(response.context['isADjangoAccount'] == True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
         self.assertTrue(len(response.context['allAuthMethods']), 1)
         
