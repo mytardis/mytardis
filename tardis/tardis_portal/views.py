@@ -1971,8 +1971,8 @@ def edit_experiment(request, experiment_id,
         if form.is_valid():
             form.save()
             params = urlencode({'status': "Experiment Saved."})
-            return HttpResponseRedirect('?'.join(experiment.get_absolute_url(),
-                                                 params))
+            return HttpResponseRedirect('?'.join([experiment.get_absolute_url(),
+                                                 params]))
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
