@@ -1722,7 +1722,10 @@ def stats(request):
 
     size = 0
     for df in public_datafiles:
-        size = size + long(df.size)
+        try:
+            size = size + long(df.size)
+        except:
+            pass
 
     public_datafile_size = size
 
