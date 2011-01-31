@@ -52,7 +52,7 @@ from django.forms.models import BaseInlineFormSet
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
-from tardis.tardis_portal.widgets import CommaSeparatedInput, Label, Span
+from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
 
 
 class DatafileSearchForm(forms.Form):
@@ -230,6 +230,8 @@ class ExperimentForm(forms.ModelForm):
         def custom_field_cb(field):
             if field.name == 'url':
                 return field.formfield(required=False)
+            elif field.name == 'filename':
+                return field.formfield(widget=Span)
             else:
                 return field.formfield()
 
