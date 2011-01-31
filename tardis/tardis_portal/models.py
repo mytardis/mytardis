@@ -167,7 +167,8 @@ class Dataset_File(models.Model):
 
     The `protocol` field is only used for rendering the download link, this
     done by insterting the protocol into the url generated to the download
-    location.
+    location. If the `protocol` field is blank then the `file` protocol will
+    be used.
     """
 
     dataset = models.ForeignKey(Dataset)
