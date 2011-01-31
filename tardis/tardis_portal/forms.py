@@ -173,14 +173,17 @@ class DataFileFormSet(BaseInlineFormSet):
 
     def save_new(self, form, commit=True):
         # this is a local file so correct the missing details
+        datafile = super(DataFileFormSet, self).save_new(form, commit=False)
 
-        if form.is_valid():
-            filepath = form.cleaned_data['filename']
-            form.cleaned_data['url'] = filepath
-            form.cleaned_data['filename'] = basename(filepath)
-            form.cleaned_data['size'] = 0
-            form.cleaned_data['protocol'] = u'file'
-        datafile = super(DataFileFormSet, self).save_new(form, commit=commit)
+        filepath = form.cleaned_data['filename']
+        datafile.url = 'file://' + filepath
+        datafile.filename = basename(filepath)
+        datafile.size = 0
+        datafile.protocol = u''
+
+        if commit == True:
+            datafile = super(DataFileFormSet, self).save_new(form,
+                                                             commit=commit)
         if self._post_save_cb:
             self._post_save_cb(datafile, True)
         return datafile
@@ -189,8 +192,8 @@ class DataFileFormSet(BaseInlineFormSet):
         datafile = super(DataFileFormSet, self).save_existing(form,
                                                               instance,
                                                               commit=commit)
-        if self._datafile_post_save_cb:
-            self._datafile_post_save_cb(datafile, True)
+        if self._post_save_cb:
+            self._post_save_cb(datafile, False)
         return datafile
 
 
