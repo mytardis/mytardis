@@ -48,18 +48,18 @@ class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
 
-    :attribute isNotADjangoAccount: is the user an external user
-    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    :attribute isADjangoAccount: is the user a local DB user
+    :attribute user: a foreign key to the :class:`django.contrib.auth.models.User`
     """
     user = models.ForeignKey(User, unique=True)
 
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
     # to the system using the VBL auth method, an account will be created for
-    # him, say "vbl_user001" and the field isNotADjangoAccount will be set to
-    # True.
-    isNotADjangoAccount = models.BooleanField(
-        null=False, blank=False, default=False)
+    # him, say "vbl_user001" and the field isADjangoAccount will be set to
+    # False.
+    isADjangoAccount = models.BooleanField(
+        null=False, blank=False, default=True)
 
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()

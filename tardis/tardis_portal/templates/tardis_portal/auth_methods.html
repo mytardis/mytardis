@@ -40,7 +40,7 @@
 		{% if userAuth.1 == 'Local DB' %}
 		<a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_changelink.gif"></a>
         {% else %}
-	        {% if not isNotDjangoAccount %}
+	        {% if isADjangoAccount %}
 	        <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a>
 	        {% endif %}
         {% endif %}
