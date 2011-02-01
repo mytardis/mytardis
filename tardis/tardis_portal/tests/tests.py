@@ -102,13 +102,6 @@ class SearchTestCase(TestCase):
             experiment.delete()
 
     def testSearchDatafileForm(self):
-        response = self.client.get('/search/datafile/', {'type': 'saxs', })
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-                             '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
@@ -125,16 +118,9 @@ class SearchTestCase(TestCase):
         response = self.client.get('/search/datafile/',
                                    {'type': 'saxs', 'filename': '', })
 
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
-        login = self.client.login(username='test', password='test')
-        self.assertEqual(login, True)
-        response = self.client.get('/search/datafile/',
-                                   {'type': 'saxs', 'filename': '', })
+        # check if the response is zero since the user is not logged in
         self.assertEqual(response.status_code, 200)
-        self.client.logout()
+        self.assertEqual(len(response.context['paginator'].object_list), 0)
 
     def testSearchDatafileResults(self):
         login = self.client.login(username='test', password='test')
@@ -178,13 +164,6 @@ class SearchTestCase(TestCase):
         self.client.logout()
 
     def testSearchExperimentForm(self):
-        response = self.client.get('/search/experiment/')
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-            '/accounts/login/?next=/search/experiment/')
-
-        # let's try to login this time...
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
         response = self.client.get('/search/experiment/')
@@ -193,17 +172,9 @@ class SearchTestCase(TestCase):
             None)
         self.assertTemplateUsed(response,
             'tardis_portal/search_experiment_form.html')
-
         self.client.logout()
 
     def testSearchExperimentAuthentication(self):
-        response = self.client.get('/search/experiment/',
-            {'title': 'cookson', })
-
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/experiment/',
             {'title': 'cookson', })

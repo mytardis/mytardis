@@ -37,6 +37,7 @@ models.py
 """
 
 from django.db import models
+from django.db import transaction
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
 from django.conf import settings
@@ -48,7 +49,7 @@ class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
 
-    :attribute isADjangoAccount: is the user a local DB user
+    :attribute isDjangoAccount: is the user a local DB user
     :attribute user: a foreign key to the :class:`django.contrib.auth.models.User`
     """
     user = models.ForeignKey(User, unique=True)
@@ -56,9 +57,9 @@ class UserProfile(models.Model):
     # This flag will tell us if the main User account was created using any
     # non localdb auth methods. For example, if a first time user authenticates
     # to the system using the VBL auth method, an account will be created for
-    # him, say "vbl_user001" and the field isADjangoAccount will be set to
+    # him, say "vbl_user001" and the field isDjangoAccount will be set to
     # False.
-    isADjangoAccount = models.BooleanField(
+    isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)
 
     def getUserAuthentications(self):

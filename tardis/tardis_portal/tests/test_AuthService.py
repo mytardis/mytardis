@@ -4,7 +4,6 @@ from django.test.client import Client
 
 from django.http import HttpRequest
 from django.contrib.auth import SESSION_KEY
-
 from tardis.tardis_portal.models import User
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 
@@ -85,7 +84,7 @@ class AuthServiceTestCase(TestCase):
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
         a = AuthService(settings=s)
-
+        a._manual_init()
         self._auth_service_group_providers = auth_service._group_providers
         # add the local group provider to the singleton auth_service
         auth_service._group_providers = a._group_providers
@@ -101,29 +100,19 @@ class AuthServiceTestCase(TestCase):
     def testInitialisation(self):
         from tardis.tardis_portal.auth import AuthService
         s = MockSettings()
-        a = AuthService(settings=s)
-
         s.USER_PROVIDERS = \
             ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
         s.GROUP_PROVIDERS = \
             ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',)
         a = AuthService(settings=s)
         a._manual_init()
-        print a._user_providers
         self.assertEqual(len(a._user_providers), 1)
         self.assertEqual(len(a._group_providers), 1)
 
     def testGroupProvider(self):
-        from tardis.tardis_portal.auth import AuthService
-        s = MockSettings()
-        s.GROUP_PROVIDERS = \
-            ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
-        a = AuthService(settings=s)
-        a._manual_init()
-        self.assertEqual(len(a._group_providers), 1)
-
         c = Client()
-        c.login(username='user1', password='secret')
+        login = c.login(username='user1', password='secret')
+        self.assertTrue(login)
         self.assert_(SESSION_KEY in c.session)
 
         r = str(c.get('/test/groups/'))
@@ -146,7 +135,6 @@ class AuthServiceTestCase(TestCase):
             ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
         a = AuthService(settings=s)
         a._manual_init()
-
         # check the correct group provider is registered
         self.assertEqual(len(a._group_providers), 1)
 

@@ -41,13 +41,18 @@ from django import forms
 from django.forms import ModelForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
+from django.db import transaction
 
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
+from tardis.tardis_portal.auth.localdb_auth \
+    import auth_key as locabdb_auth_key
+
 
 from registration.models import RegistrationProfile
+
 
 
 class LoginForm(AuthenticationForm):
@@ -55,7 +60,6 @@ class LoginForm(AuthenticationForm):
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
-
         self.fields['username'] = \
              forms.CharField(required=True,
                              label="Username",
@@ -89,7 +93,7 @@ class RegistrationForm(forms.Form):
     """
 
     username = forms.RegexField(regex=r'^[\w\.]+$',
-                                max_length=22,
+                                max_length=30-1-len(locabdb_auth_key),
                                 widget=forms.TextInput(attrs=attrs_dict),
                                 label=_("Username"),
                                 error_messages={'invalid': _("This value must contain only letters, numbers and underscores.")})
@@ -109,8 +113,7 @@ class RegistrationForm(forms.Form):
         in use.
 
         """
-        from tardis.tardis_portal.auth.localdb_auth import auth_key
-        username = '%s_%s' % (auth_key, self.cleaned_data['username'])
+        username = '%s_%s' % (locabdb_auth_key, self.cleaned_data['username'])
 
         try:
             user = User.objects.get(username__iexact=username)
@@ -132,21 +135,20 @@ class RegistrationForm(forms.Form):
 
         return self.cleaned_data
 
+    @transaction.commit_on_success()
     def save(self, profile_callback=None):
-        from tardis.tardis_portal.auth.localdb_auth import auth_key
-
         user = RegistrationProfile.objects.create_inactive_user(
             username=self.cleaned_data['username'],
             password=self.cleaned_data['password1'],
             email=self.cleaned_data['email'])
 
-        userProfile = UserProfile(user=user, isADjangoAccount=True)
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
         userProfile.save()
 
         authentication = \
             UserAuthentication(userProfile=userProfile,
-                               username=self.cleaned_data['username'],
-                               authenticationMethod=auth_key)
+                               username=self.cleaned_data['username'].split(locabdb_auth_key)[1],
+                               authenticationMethod=locabdb_auth_key)
         authentication.save()
 
         return user

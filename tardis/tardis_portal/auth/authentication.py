@@ -34,7 +34,7 @@ def list_auth_methods(request):
     try:
         userProfile = UserProfile.objects.get(user=request.user)
 
-        if userProfile.isADjangoAccount:
+        if userProfile.isDjangoAccount:
             # if the main account for this user is a django account, add his
             # details in the userAuthMethodList (a list of user authentication
             # methods that the user can modify or delete)
@@ -66,18 +66,17 @@ def list_auth_methods(request):
     LinkedUserAuthenticationForm = \
         createLinkedUserAuthenticationForm(supportedAuthMethods)
     authForm = LinkedUserAuthenticationForm()
-
-    isADjangoAccount = True
+    isDjangoAccount = True
     try:
-        isADjangoAccount = UserProfile.objects.get(
-            user=request.user).isADjangoAccount
+        isDjangoAccount = UserProfile.objects.get(
+            user=request.user).isDjangoAccount
     except UserProfile.DoesNotExist:
-        isADjangoAccount = True
+        isDjangoAccount = True
 
     c = Context({'userAuthMethodList': userAuthMethodList,
         'authForm': authForm, 'supportedAuthMethods': supportedAuthMethods,
         'allAuthMethods': _getSupportedAuthMethods(),
-        'isADjangoAccount': isADjangoAccount})
+        'isDjangoAccount': isDjangoAccount})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/auth_methods.html', c))

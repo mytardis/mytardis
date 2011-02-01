@@ -5,6 +5,7 @@ Created on 10/12/2010
 @author: Gerson Galang
 '''
 
+
 from django.contrib.auth.models import User, AnonymousUser
 from django.conf import settings
 
@@ -134,14 +135,15 @@ class Backend():
 
         client = Client(settings.VBLSTORAGEGATEWAY)
         client.set_options(cache=None)
+
         # result = str(client.service.VBLgetExpIDs(username, password))
         result = str(client.service.VBLgetSOAPLoginKey(username, password))
         if result == 'None' or result.startswith('Error'):
             return None
         else:
             request.session[SOAPLoginKey] = result
-        
-        isADjangoAccount = True
+
+        isDjangoAccount = True
 
         try:
             # check if the given username in combination with the VBL
@@ -158,9 +160,10 @@ class Backend():
 
             # else, create a new user with a random password
             else:
-                isADjangoAccount = False
+                isDjangoAccount = False
                 name = username.partition('@')[0]
-                name = '%s_%s' % (auth_key, name[0:26])
+                max_length = 30-1-len(name)
+                name = '%s_%s' % (auth_key, name[0:max_length])
                 password = User.objects.make_random_password()
                 user = User.objects.create_user(username=name,
                                                 password=password,
@@ -173,7 +176,7 @@ class Backend():
                 userProfile = UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
                 userProfile = UserProfile(user=user,
-                    isADjangoAccount=isADjangoAccount)
+                    isDjangoAccount=isDjangoAccount)
                 userProfile.save()
 
             userAuth = UserAuthentication(userProfile=userProfile,

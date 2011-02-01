@@ -7,11 +7,18 @@ from django.http import HttpResponseForbidden, HttpResponseNotFound, \
 
 def render_response_index(request, *args, **kwargs):
 
-    kwargs['context_instance'] = RequestContext(request)
+    is_authenticated = request.user.is_authenticated()
+    if is_authenticated:
+        is_superuser = request.user.is_superuser
+        email = request.user.email
+    else:
+        is_superuser = False
+        email = ''
 
-    kwargs['context_instance']['is_authenticated'] = \
-        request.user.is_authenticated()
-    kwargs['context_instance']['username'] = request.user.username
+    kwargs['context_instance'] = RequestContext(request)
+    kwargs['context_instance']['is_authenticated'] = is_authenticated
+    kwargs['context_instance']['is_superuser'] = is_superuser
+    kwargs['context_instance']['username'] = email
 
     if request.mobile:
         template_path = args[0]

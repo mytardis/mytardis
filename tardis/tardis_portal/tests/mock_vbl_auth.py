@@ -28,7 +28,7 @@ class MockBackend():
 
         if not username or not password:
             return None
-        
+
         if username != 'test@test.com':
             return None
         elif password != 'testpass':
@@ -60,7 +60,7 @@ class MockBackend():
                 # existing userProfile attached to his/her account
                 userProfile = UserProfile.objects.get(user=user)
             except UserProfile.DoesNotExist:
-                userProfile = UserProfile(user=user, isADjangoAccount=True)
+                userProfile = UserProfile(user=user, isDjangoAccount=True)
                 userProfile.save()
 
             userAuth = UserAuthentication(userProfile=userProfile,
