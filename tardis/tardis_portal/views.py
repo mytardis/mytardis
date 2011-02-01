@@ -9,11 +9,10 @@ views.py
 
 """
 
-import shutil
 from base64 import b64decode
 from urllib import urlencode
 
-from django.template import Context, loader
+from django.template import Context
 from django.http import HttpResponse
 
 from django.conf import settings
@@ -41,9 +40,6 @@ from tardis.tardis_portal import constants
 import urllib
 import urllib2
 import datetime
-
-import os
-from os import path
 
 from tardis.tardis_portal import ldap_auth
 
