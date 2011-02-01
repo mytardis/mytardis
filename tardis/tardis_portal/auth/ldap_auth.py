@@ -1,18 +1,15 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import ldap
 
 from django.conf import settings
-
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
-from tardis.tardis_portal.logger import logger
 
 
 auth_key = u'ldap'
 auth_display_name = u'LDAP'
+
 
 def get_ldap_username_for_email(email):
     # return username if found, otherwise return none

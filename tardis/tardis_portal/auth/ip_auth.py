@@ -2,7 +2,7 @@
 '''
 Created on 06/01/2011
 
-@author: Ulrich Felzmann
+.. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
 '''
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider

@@ -2,7 +2,7 @@
 A module containing helper methods for the manage_auth_methods function in
 views.py.
 
-.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 from django.conf import settings
 from django.http import HttpResponse
@@ -17,7 +17,7 @@ from tardis.tardis_portal.logger import logger
 
 
 def list_auth_methods(request):
-    '''Generate a list of authentication methods that request.user uses to
+    """Generate a list of authentication methods that request.user uses to
     authenticate to the system and send it back in a HttpResponse.
 
     :param request: the HTTP request object
@@ -25,7 +25,7 @@ def list_auth_methods(request):
     :returns: The HttpResponse which contains request.user's list of
         authentication methods
 
-    '''
+    """
     userAuthMethodList = []
 
     # the list of supported non-local DB authentication methods
@@ -83,7 +83,7 @@ def list_auth_methods(request):
 
 
 def add_auth_method(request):
-    '''Add a new authentication method to request.user's existing list of
+    """Add a new authentication method to request.user's existing list of
     authentication methods. This method will ask for a confirmation if the user
     wants to merge two accounts if the authentication method he provided
     already exists as a method for another user.
@@ -93,7 +93,7 @@ def add_auth_method(request):
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
 
-    '''
+    """
     from tardis.tardis_portal.auth import auth_service
 
     supportedAuthMethods = _getSupportedAuthMethods()
@@ -141,7 +141,7 @@ def add_auth_method(request):
 
 
 def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
-    '''Sets up the JSON data dictionary that will be sent back to the web
+    """Sets up the JSON data dictionary that will be sent back to the web
     client.
 
     :param authForm: the Authentication Form
@@ -151,7 +151,7 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
 
     :returns: The data dictionary
 
-    '''
+    """
     data = {}
     username = authForm.cleaned_data['username']
     data['username'] = username
@@ -167,7 +167,7 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
 
 
 def merge_auth_method(request):
-    '''Merge the account that the user is logged in as and the account that
+    """Merge the account that the user is logged in as and the account that
     he provided in the Authentication Form. Merging accounts involve relinking
     the UserAuthentication table entries, transferring ExperimentACL entries
     to the merged account, changing the Group memberships and deleting the
@@ -178,7 +178,7 @@ def merge_auth_method(request):
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
 
-    '''
+    """
 
     from tardis.tardis_portal.auth import auth_service
 
@@ -254,14 +254,14 @@ def merge_auth_method(request):
 
 
 def remove_auth_method(request):
-    '''Removes the non-local DB auth method from the UserAuthentication model.
+    """Removes the non-local DB auth method from the UserAuthentication model.
 
     :param request: the HTTP request object
 
     :returns: The HttpResponse which contains request.user's new list of
         authentication methods
 
-    '''
+    """
     authMethod = request.POST['authMethod']
     try:
         UserAuthentication.objects.get(userProfile__user=request.user,

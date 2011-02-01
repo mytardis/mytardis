@@ -3,8 +3,6 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
 
-from tardis.tardis_portal.logger import logger
-
 
 class AuthService():
     def __init__(self, settings=settings):
