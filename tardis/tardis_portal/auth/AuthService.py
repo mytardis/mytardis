@@ -174,5 +174,3 @@ class AuthService():
         if not self._initialised:
             self._manual_init()
         pass
-
-
