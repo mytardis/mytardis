@@ -161,7 +161,8 @@ class Backend():
             else:
                 isDjangoAccount = False
                 name = username.partition('@')[0]
-                max_length = 30-1-len(name)
+                # length of the maximum username and the separator `_`
+                max_length = 31 - len(name)
                 name = '%s_%s' % (auth_key, name[0:max_length])
                 password = User.objects.make_random_password()
                 user = User.objects.create_user(username=name,
