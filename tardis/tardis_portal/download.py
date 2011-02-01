@@ -121,7 +121,7 @@ def download_datafiles(request):
                 datafile = Dataset_File.objects.get(pk=dfid)
                 if datafile.dataset.id in datasets:
                     continue
-                if  has_datafile_access(request=request,
+                if has_datafile_access(request=request,
                                         dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
