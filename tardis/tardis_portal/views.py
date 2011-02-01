@@ -1947,6 +1947,17 @@ def search_equipment(request):
 @login_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
+    """
+    Edit and existing experiment.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be edited
+    :type experiment_id: string
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
     experiment = Experiment.objects.get(id=experiment_id)
 
     c = Context({'subtitle': 'Edit Experiment',
