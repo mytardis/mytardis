@@ -96,6 +96,7 @@ class AuthServiceTestCase(TestCase):
 
         from tardis.tardis_portal.auth import auth_service
         auth_service._group_providers = self._auth_service_group_providers
+        auth_service._manual_init()
 
     def testInitialisation(self):
         from tardis.tardis_portal.auth import AuthService
