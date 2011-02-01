@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY
 
-from tardis.tardis_portal.auth.interfaces import UserProvider, GroupProvider, AuthProvider
-from tardis.tardis_portal.auth.AuthService import AuthService
+from django.http import HttpRequest
+from django.contrib.auth import SESSION_KEY
 
 from tardis.tardis_portal.models import User
-from django.http import HttpRequest
+from tardis.tardis_portal.auth.interfaces import GroupProvider
+
 
 class MockSettings(object):
     def __init__(self):
@@ -57,7 +57,7 @@ class MockGroupProvider(GroupProvider):
 class MockRequest(HttpRequest):
     def __init__(self):
         super(MockRequest, self).__init__()
-    
+
     def setPost(self, field, value):
         self.POST[field] = value
 
@@ -65,11 +65,11 @@ class MockRequest(HttpRequest):
 class MockAuthProvider():
     def __init__(self):
         pass
-    
+
     def authenticate(self, request):
         username = request.POST['username']
         return User.objects.get(username=username)
-        
+
 
 class AuthServiceTestCase(TestCase):
     urls = 'tardis.tardis_portal.tests.urls'
@@ -175,7 +175,8 @@ class AuthServiceTestCase(TestCase):
         self.assertEqual(len(a._group_providers), 1)
 
         self.assertEqual(len([g for g in a.getGroupsForEntity('user1')]), 2)
-        self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]), 1)
+        self.assertEqual(len([g for g in a.getGroupsForEntity('Group 123')]),
+                         1)
 
     def testAuthenticate(self):
         from tardis.tardis_portal.auth import AuthService
@@ -189,7 +190,7 @@ class AuthServiceTestCase(TestCase):
         request = MockRequest()
         request.setPost('username', 'user1')
         request.setPost('authMethod', 'mockauth')
-        
+
         user = a.authenticate(authMethod='mockauth', request=request)
 
         realUser = User.objects.get(username='user1')
