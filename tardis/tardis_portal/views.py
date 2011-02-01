@@ -1490,23 +1490,22 @@ def add_experiment_access_group(request, experiment_id, groupname):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
-
+    adminuser = None
     if admin:
-        user = None
         try:
-            user = User.objects.get(username=admin)
+            adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
             return return_response_error(request)
 
         # create admin for this group and add it to the group
-        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin = GroupAdmin(user=adminuser, group=group)
         groupadmin.save()
 
-        user.groups.add(group)
-        user.save()
+        adminuser.groups.add(group)
+        adminuser.save()
 
     # add the current user as admin as well for newly created groups
-    if create and not request.user == user:
+    if create and not request.user == adminuser:
         user = request.user
 
         groupadmin = GroupAdmin(user=user, group=group)

@@ -4,9 +4,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.models import ExperimentACL, Experiment
-
-
+from tardis.tardis_portal.models import ExperimentACL, Experiment, UserAuthentication
 
 
 class ExperimentACLTestCase(TestCase):
@@ -147,7 +145,7 @@ class ExperimentACLTestCase(TestCase):
         # add user2 as admin to the newly created group
         group = Group.objects.get(name='group1')
         response = self.client1.get('/group/%i/add/%s?isAdmin=true'
-                                   % (group.id, 'testuser2'))
+                                   % (group.id, self.user2.username))
         self.assertEqual(response.status_code, 200)
 
         self.client1.logout()

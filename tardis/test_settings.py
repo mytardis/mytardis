@@ -17,6 +17,7 @@ SITE_ID = '1'
 MEDIA_URL = '/site_media/'
 TEMPLATE_DIRS = ['.']
 
+# TODO: move vbl auth provider settings to mecat module
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
                   ('vbl', 'VBL', 'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
@@ -48,15 +49,15 @@ INSTALLED_APPS = (
         'django_nose',
 )
 
+# TODO: move to mecat settings module
 VBLSTORAGEGATEWAY = \
 'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-# TEST_RUNNER = 'django_nose.run_tests'
 
 # LOG_FILENAME = '/var/log/tardis/tardis.log'
 
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.ERROR

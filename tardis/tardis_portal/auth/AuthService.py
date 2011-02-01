@@ -6,14 +6,14 @@ from django.contrib import auth
 from tardis.tardis_portal.logger import logger
 
 
-class AuthService:
+class AuthService():
     def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []
         self._authentication_backends = {}
         self._initialised = False
         self.settings = settings
-        
+
     def _manual_init(self):
         """Manual init had to be called by all the functions of the AuthService
         class to initialise the instance variables. This block of code used to
@@ -60,7 +60,7 @@ class AuthService:
 
         if not self._initialised:
             self._manual_init()
-            
+
         if authMethod:
             if authMethod in self._authentication_backends:
                 # note that it's the backend's job to create a user entry
@@ -81,7 +81,7 @@ class AuthService:
             self._manual_init()
         grouplist = []
         for gp in self._group_providers:
-            logger.debug("group provider: " + gp.name)
+            # logger.debug("group provider: " + gp.name)
             for group in gp.getGroups(request):
                 grouplist.append((gp.name, group))
         return grouplist
@@ -174,3 +174,5 @@ class AuthService:
         if not self._initialised:
             self._manual_init()
         pass
+
+
