@@ -113,6 +113,11 @@ def stage_files(datafiles,
                 ):
     """
     move files from the staging area to the dataset.
+
+    :param datafiles: one or more dataset files
+    :type datafiles: :class:`tardis.tardis_portal.models.Dataset_File`
+    :param experiment_id: the id of the experiment that the datafiles belong to
+    :type experiment_id: string or int
     """
     experiment_path = path.join(store, str(experiment_id))
     if not path.exists(experiment_path):
