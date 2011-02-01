@@ -217,14 +217,11 @@ def add_datafile_to_dataset(dataset, filepath, size):
                                 str(dataset.experiment.id))
 
     dataset_path = path.join(experiment_path, str(dataset.id))
-    print experiment_path
     urlpath = 'file:/' + filepath[len(experiment_path):]
-    print urlpath
     filename = urlpath.rpartition('/')[2]
 
     datafile = Dataset_File(dataset=dataset, filename=filename,
                             url=urlpath, size=size, protocol='')
-
     datafile.save()
 
     return datafile
