@@ -1,8 +1,8 @@
 '''
 Created on 10/12/2010
 
-@author: Ulrich Felzmann
-@author: Gerson Galang
+.. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
 
@@ -10,8 +10,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.conf import settings
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider
-from tardis.tardis_portal.models import *
-from tardis.tardis_portal.logger import logger
+from tardis.tardis_portal.models import UserAuthentication, UserProfile
 
 from suds.client import Client
 

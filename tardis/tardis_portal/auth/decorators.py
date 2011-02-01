@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 
 from tardis.tardis_portal.models import Experiment, Dataset_File, GroupAdmin
-from tardis.tardis_portal.shortcuts import *
+from tardis.tardis_portal.shortcuts import return_response_error
 
 
 def get_accessible_experiments(request):

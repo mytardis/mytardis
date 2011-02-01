@@ -1,3 +1,9 @@
+"""
+
+.. moduleauthor:: Russell Sim <russell.sim@gmail.com>
+"""
+
+
 class AuthProvider:
     def authenticate(self, request):
         """
