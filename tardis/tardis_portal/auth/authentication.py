@@ -4,13 +4,17 @@ views.py.
 
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
+from django.conf import settings
 from django.http import HttpResponse
-from tardis.tardis_portal.models import *
+from django.template import Context
+
+from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
+    ExperimentACL, Group
 from tardis.tardis_portal.auth import localdb_auth
 from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
-from django.template import Context
-from tardis.tardis_portal.shortcuts import *
+from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.logger import logger
+
 
 def list_auth_methods(request):
     '''Generate a list of authentication methods that request.user uses to
@@ -149,7 +153,7 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
     :returns: The data dictionary
 
     '''
-    data= {}
+    data = {}
     username = authForm.cleaned_data['username']
     data['username'] = username
     data['authenticationMethod'] = authenticationMethod
@@ -206,7 +210,8 @@ def merge_auth_method(request):
         # "request.user" to them
 
         # check if the "request.user" has a userProfile
-        userProfile, created = UserProfile.objects.get_or_create(user=request.user)
+        userProfile, created = UserProfile.objects.get_or_create(
+            user=request.user)
 
         # if he has, link 'user's UserAuthentication to it
         userAuths = UserAuthentication.objects.filter(
@@ -288,8 +293,8 @@ def _getSupportedAuthMethods():
     # the list of supported non-local DB authentication methods
     supportedAuthMethods = {}
 
-    for authKey, authDisplayName, authBackend  in settings.AUTH_PROVIDERS:
-        # we will only add non-localDB authentication methods to the 
+    for authKey, authDisplayName, authBackend in settings.AUTH_PROVIDERS:
+        # we will only add non-localDB authentication methods to the
         # supportedAuthMethods list.
         if authKey != localdb_auth.auth_key:
             supportedAuthMethods[authKey] = authDisplayName
