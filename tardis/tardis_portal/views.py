@@ -164,7 +164,7 @@ def view_experiment(request, experiment_id):
                  })
 
     try:
-        experiment = Experiment.safe.get(pk=experiment_id)
+        experiment = Experiment.safe.get(request, experiment_id)
     except PermissionDenied:
         return return_response_error(request)
     except Experiment.DoesNotExist:
