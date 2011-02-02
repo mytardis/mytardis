@@ -30,9 +30,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+
 from django.db import models
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User
 from django.utils.safestring import SafeUnicode
+
 
 
 class UserProfile(models.Model):
@@ -138,6 +141,7 @@ class Dataset_File(models.Model):
     :attribute created_time: time the file was added to tardis
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
+    :attribute md5sum: digest of length 32, containing only hexadecimal digits
     """
 
     dataset = models.ForeignKey(Dataset)
@@ -145,24 +149,95 @@ class Dataset_File(models.Model):
     url = models.CharField(blank=True, max_length=400)
     size = models.CharField(blank=False, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
-    created_time = models.DateTimeField(auto_now_add=True)
+    created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
+    md5sum = models.CharField(blank=True, max_length=32)
 
     def __unicode__(self):
         return self.filename
 
-    def Mimetype(self):
+    def get_mimetype(self):
         if self.mimetype:
             return self.mimetype
         else:
             suffix = self.filename.split('.')[-1]
-            print suffix
             try:
                 import mimetypes
                 return mimetypes.types_map['.%s' % suffix.lower()]
             except KeyError:
                 return 'application/octet-stream'
+
+    def get_absolute_filepath(self):
+
+        # check for empty protocol field (historical reason) or
+        # 'tardis' which indicates a location within the tardis file
+        # store
+        if self.protocol == '' or self.protocol == 'tardis':
+            from django.conf import settings
+            try:
+                FILE_STORE_PATH = settings.FILE_STORE_PATH
+            except AttributeError:
+                return ''
+
+            from os.path import abspath, join
+            return abspath(join(FILE_STORE_PATH,
+                                str(self.dataset.experiment.id),
+                                self.url.partition('://')[2]))
+
+        # file should refer to an absolute location
+        elif self.protocol == 'file':
+            return self.url.partition('://')[2]
+
+        # ok, it doesn't look like the file is stored locally
+        else:
+            return ''
+
+
+def _set_size(df):
+
+    from os.path import getsize
+    df.size = getsize(df.get_absolute_filepath())
+
+
+def _set_mimetype(df):
+
+    from magic import Magic
+    df.mimetype = Magic(mime=True).from_file(df.get_absolute_filepath())
+
+
+def _set_md5sum(df):
+
+    f = open(df.get_absolute_filepath(),'rb')
+    import hashlib
+    md5 = hashlib.new('md5')
+    for chunk in iter(lambda: f.read(128*md5.block_size), ''):
+        md5.update(chunk)
+    f.close()
+    df.md5sum = md5.hexdigest()
+
+
+def save_DatasetFile(sender, **kwargs):
+
+    # the object can be accessed via kwargs 'instance' key.
+    df = kwargs['instance']
+
+    if not df.get_absolute_filepath():
+        return
+
+    try:
+        if not df.size:
+            _set_size(df)
+        if not df.md5sum:
+            _set_md5sum(df)
+        if not df.mimetype:
+            _set_mimetype(df)
+
+    except IOError:
+        pass
+
+
+pre_save.connect(save_DatasetFile, sender=Dataset_File)
 
 
 class Schema(models.Model):
@@ -319,3 +394,5 @@ class Equipment(models.Model):
 
     def __unicode__(self):
         return self.key
+
+

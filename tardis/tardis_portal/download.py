@@ -7,6 +7,8 @@ download.py
 .. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
 
 """
+from os.path import join
+
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
@@ -15,8 +17,6 @@ from tardis.tardis_portal.models import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, has_datafile_access, experiment_access_required
 from tardis.tardis_portal.logger import logger
-
-from os.path import join
 
 import subprocess
 import urllib
@@ -34,18 +34,14 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
         else:
-            file_path = join(settings.FILE_STORE_PATH,
-                             str(datafile.dataset.experiment.id),
-                             url.partition('//')[2])
+            file_path = datafile.get_absolute_filepath()
 
             try:
                 wrapper = FileWrapper(file(file_path))
-
                 response = HttpResponse(wrapper,
-                                        mimetype=datafile.Mimetype())
+                                        mimetype=datafile.get_mimetype())
                 response['Content-Disposition'] = \
-                    'attachment; filename=' + datafile.filename
-
+                    'attachment; filename="%s"' % datafile.filename
                 return response
 
             except IOError:
@@ -64,7 +60,8 @@ def download_experiment(request, experiment_id):
 
     cmd = 'tar -C %s -c %s/' % (settings.FILE_STORE_PATH,
                                 str(experiment.id))
-    #logger.debug('TAR COMMAND: ' + tar_command)
+
+    logger.info('TAR COMMAND: ' + cmd)
 
     response = HttpResponse(FileWrapper(subprocess.Popen(cmd,
                             stdout=subprocess.PIPE,
