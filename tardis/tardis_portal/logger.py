@@ -77,6 +77,9 @@ def init_logging():
 
     hd.setFormatter(fm)
     logger.addHandler(hd)
+
+    logging.getLogger('suds').setLevel(logging.INFO)
+
     return logger
 
 

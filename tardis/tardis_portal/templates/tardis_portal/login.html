@@ -35,18 +35,10 @@
     <h1 class="title"><a href="#">Welcome</a></h1>
     <div class="entry">
       <p>
-	{% if form.errors %}
-          <p class="error">Sorry, that's not a valid username or password</p>
-        {% endif %}
-	  <form action='.' method='post'>
-	    <label for="username">User name:</label>
-	    <input type="text" name="username" value="" id="username">
-	    <label for="password">Password:</label>
-	    <input type="password" name="password" value="" id="password">
-
-	    <input type="submit" value="login" />
-	    <input type="hidden" name="next" value="/" />
-	    <form action='.' method='post'>
+	<form action='' method='post'>
+	  {{ loginForm.as_p }}
+	  <input type="submit" value="login" />
+	</form>
       </p>
     </div> <!-- entry -->
   </div> <!-- post -->

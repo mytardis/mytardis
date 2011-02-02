@@ -1,30 +1,26 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
 views.py
 
-.. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
-.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 
 """
 
-from base64 import b64decode
 from urllib import urlencode
 
 from django.template import Context
-from django.http import HttpResponse
-
 from django.conf import settings
+from django.db import transaction
 
 from django.shortcuts import render_to_response
-from django.template import RequestContext
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User, Group
-from django.http import HttpResponseRedirect, HttpResponseForbidden, \
-    HttpResponseNotFound, HttpResponseServerError
+from django.contrib.auth.models import User, Group, AnonymousUser
+from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.core.exceptions import PermissionDenied
 
 from tardis.tardis_portal import ProcessExperiment
 from tardis.tardis_portal.forms import *
@@ -32,22 +28,19 @@ from tardis.tardis_portal.errors import *
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
     staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
-from django.core.paginator import Paginator, InvalidPage, EmptyPage
-
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal import constants
-
-import urllib
-import urllib2
-import datetime
-
-from tardis.tardis_portal import ldap_auth
-
+from tardis.tardis_portal.auth import localdb_auth, ldap_auth
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.auth import auth_service
+from tardis.tardis_portal.shortcuts import *
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
-
 from tardis.tardis_portal.metsparser import parseMets
 
-from django.db import transaction
+from base64 import b64decode
+import urllib
+import urllib2
 
 
 def getNewSearchDatafileSelectionForm():
@@ -55,301 +48,20 @@ def getNewSearchDatafileSelectionForm():
     return DatafileSelectionForm()
 
 
-def render_response_index(request, *args, **kwargs):
-
-    kwargs['context_instance'] = RequestContext(request)
-
-    kwargs['context_instance']['is_authenticated'] = \
-        request.user.is_authenticated()
-    kwargs['context_instance']['username'] = request.user.username
-
-    if request.mobile:
-        template_path = args[0]
-        split = template_path.partition('/')
-        args = (split[0] + '/mobile/' + split[2], ) + args[1:]
-
-    return render_to_response(*args, **kwargs)
-
-
-def return_response_error(request):
-    c = Context({'status': 'ERROR: Forbidden', 'error': True})
-    return HttpResponseForbidden(render_response_index(request,
-                                 'tardis_portal/blank_status.html', c))
-
-
-def return_response_not_found(request):
-    c = Context({'status': 'ERROR: Not Found', 'error': True})
-
-    return HttpResponseNotFound(render_response_index(request,
-                                'tardis_portal/blank_status.html', c))
-
-
-def return_response_error_message(request, redirect_path, message):
-    c = Context({'status': message, 'error': True})
-
-    return HttpResponseServerError(render_response_index(request,
-                                   redirect_path, c))
-
-
 def logout(request):
-    try:
-        del request.session['username']
-        del request.session['password']
-        if 'datafileResults' in request.session:
-            del request.session['datafileResults']
-    except KeyError:
-        pass
+    if 'datafileResults' in request.session:
+        del request.session['datafileResults']
 
     c = Context({})
-
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
-
-
-def get_accessible_experiments(user_id):
-
-    experiments = None
-
-    # from stackoverflow question 852414
-
-    from django.db.models import Q
-
-    user = User.objects.get(id=user_id)
-
-    queries = [Q(id=group.name) for group in user.groups.all()]
-
-    if queries:
-        query = queries.pop()
-
-        for item in queries:
-            query |= item
-
-        experiments = Experiment.objects.filter(query)
-
-    return experiments
-
-
-def get_accessible_datafiles_for_user(experiments):
-
-    # from stackoverflow question 852414
-
-    from django.db.models import Q
-
-    if experiments is not None:
-        queries = [Q(dataset__experiment__id=e.id) for e in experiments]
-
-        query = queries.pop()
-
-        for item in queries:
-            query |= item
-
-        dataset_files = Dataset_File.objects.filter(query)
-
-        return dataset_files
-    else:
-        return []
-
-
-def get_owned_experiments(user_id):
-
-    experiments = \
-        Experiment.objects.filter(experiment_owner__user__pk=user_id)
-
-    return experiments
-
-
-def has_experiment_ownership(experiment_id, user_id):
-    try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist, e:
-        return False
-
-    eo = Experiment_Owner.objects.filter(experiment=experiment,
-            user=user_id)
-
-    if eo:
-        return True
-    else:
-        return False
-
-
-# custom decorator
-def experiment_ownership_required(f):
-
-    def wrap(request, *args, **kwargs):
-
-        # if user isn't logged in it will redirect to login page
-
-        if not request.user.is_authenticated():
-            return HttpResponseRedirect('/login')
-        if not has_experiment_ownership(kwargs['experiment_id'],
-                request.user.pk):
-            return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def experiment_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-
-        if not has_experiment_access(kwargs['experiment_id'],
-                request.user):
-
-            # if user isn't logged in it will redirect to login page
-
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def dataset_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not has_dataset_access(kwargs['dataset_id'], request.user):
-
-            # if user isn't logged in it will redirect to login page
-
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-# custom decorator
-def datafile_access_required(f):
-
-    def wrap(request, *args, **kwargs):
-        if not has_datafile_access(kwargs['dataset_file_id'],
-                                   request.user):
-
-            # if user isn't logged in it will redirect to login page
-
-            if not request.user.is_authenticated():
-                return HttpResponseRedirect('/login')
-            else:
-                return return_response_error(request)
-
-        return f(request, *args, **kwargs)
-
-    wrap.__doc__ = f.__doc__
-    wrap.__name__ = f.__name__
-    return wrap
-
-
-def has_experiment_access(experiment_id, user):
-
-    # public route
-    try:
-        e = Experiment.objects.get(id=experiment_id)
-
-        if e.public:
-            return True
-    except Experiment.DoesNotExist, ge:
-        pass
-
-    if not user.is_authenticated():
-        return False
-
-    g = Group.objects.filter(name=experiment_id, user__id=user.pk)
-
-    if g:
-        return True
-    else:
-        return False
-
-
-def has_dataset_access(dataset_id, user):
-
-    experiment = Experiment.objects.get(dataset__pk=dataset_id)
-
-    if experiment.public:
-        return True
-
-    if not user.is_authenticated():
-        return False
-
-    g = Group.objects.filter(name=str(experiment.id), user__pk=user.pk)
-
-    if g:
-        return True
-    else:
-        return False
-
-
-def has_datafile_access(dataset_file_id, user):
-
-    df = Dataset_File.objects.get(id=dataset_file_id)
-
-    if df.dataset.experiment.public:
-        return True
-
-    if not user.is_authenticated():
-        return False
-
-    g = Group.objects.filter(name=df.dataset.experiment.id,
-                             user__pk=user.pk)
-
-    if g:
-        return True
-    else:
-        return False
-
-
-def in_group(user, group):
-    """Returns True/False if the user is in the given group(s).
-    Usage::
-
-        {% if user|in_group:"Friends" %}
-        or
-        {% if user|in_group:"Friends,Enemies" %}
-        {% endif %}
-
-    You can specify a single group or comma-delimited list.
-    No white space allowed.
-
-    """
-
-    group_list = [group.name]
-
-    user_groups = []
-
-    for group in user.groups.all():
-        user_groups.append(str(group.name))
-
-    #logger.debug(group_list)
-    #logger.debug(user_groups)
-
-    if filter(lambda x: x in user_groups, group_list):
-        return True
-    else:
-        return False
 
 
 def index(request):
 
     status = ''
     c = Context(
-        {'status': status,
+    {'status': status,
          'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
@@ -363,40 +75,29 @@ def site_settings(request):
             username = request.POST['username']
             password = request.POST['password']
 
-            user = authenticate(username=username, password=password)
+            user = auth_service.authenticate(username=username, password=password)
             if user is not None:
                 if user.is_staff:
 
                     x509 = open(settings.GRID_PROXY_FILE, 'r')
 
-                    c = Context({'baseurl'
-                                : request.build_absolute_uri('/'),
-                                'proxy': x509.read(), 'filestorepath'
-                                : settings.FILE_STORE_PATH})
+                    c = Context({'baseurl': request.build_absolute_uri('/'),
+                        'proxy': x509.read(), 'filestorepath':
+                        settings.FILE_STORE_PATH})
                     return HttpResponse(render_response_index(request,
                             'tardis_portal/site_settings.xml', c),
                             mimetype='application/xml')
-                else:
-                    return return_response_error(request)
-            else:
-                return return_response_error(request)
-        else:
-            return return_response_error(request)
-    else:
-        return return_response_error(request)
+
+    return return_response_error(request)
 
 
+@experiment_access_required
 def display_experiment_image(
-    request,
-    experiment_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, experiment_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
-    experiment = Experiment.objects.get(pk=experiment_id)
-    if not has_experiment_access(experiment.id, request.user):
+    if not has_experiment_access(request, experiment_id):
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
@@ -405,65 +106,43 @@ def display_experiment_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
+@dataset_access_required
 def display_dataset_image(
-    request,
-    dataset_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, dataset_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
-    dataset = Dataset.objects.get(pk=dataset_id)
-    if has_experiment_access(dataset.experiment.id, request.user):
-
-        image = DatasetParameter.objects.get(name__name=parameter_name,
-                parameterset=parameterset_id)
-
-        import base64
-
-        data = base64.b64decode(image.string_value)
-
-        response = HttpResponse(data, mimetype='image/jpeg')
-
-        return response
-    else:
+    if not has_dataset_access(request, dataset_id):
         return return_response_error(request)
 
+    image = DatasetParameter.objects.get(name__name=parameter_name,
+                                         parameterset=parameterset_id)
 
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+
+
+@datafile_access_required
 def display_datafile_image(
-    request,
-    dataset_file_id,
-    parameterset_id,
-    parameter_name,
-    ):
+    request, dataset_file_id, parameterset_id, parameter_name):
 
     # todo handle not exist
 
-    datafile = Dataset_File.objects.get(pk=dataset_file_id)
-    if has_experiment_access(datafile.dataset.experiment.id,
-                             request.user):
-        image = \
-            DatafileParameter.objects.get(name__name=parameter_name,
-                parameterset=parameterset_id)
-
-        import base64
-
-        data = base64.b64decode(image.string_value)
-
-        response = HttpResponse(data, mimetype='image/jpeg')
-
-        return response
-    else:
+    if not has_datafile_access(request, dataset_file_id):
         return return_response_error(request)
+
+    image = DatafileParameter.objects.get(name__name=parameter_name,
+                                          parameterset=parameterset_id)
+
+    return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
 def about(request):
 
-    c = Context({'subtitle': 'About', 'about_pressed': True,
-                'nav': [{'name': 'About', 'link': '/about/'}],
-                'searchDatafileSelectionForm':
-                getNewSearchDatafileSelectionForm()})
+    c = Context({'subtitle': 'About',
+                 'about_pressed': True,
+                 'nav': [{'name': 'About', 'link': '/about/'}],
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -471,7 +150,6 @@ def about(request):
 def partners(request):
 
     c = Context({})
-
     return HttpResponse(render_response_index(request,
                         'tardis_portal/partners.html', c))
 
@@ -486,7 +164,9 @@ def view_experiment(request, experiment_id):
                  })
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
+        experiment = Experiment.safe.get(pk=experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
@@ -495,8 +175,6 @@ def view_experiment(request, experiment_id):
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
-
-    c['is_owner'] = has_experiment_ownership(experiment.id, request.user.id)
 
     c['authors'] = experiment.author_experiment_set.all()
 
@@ -512,11 +190,12 @@ def view_experiment(request, experiment_id):
             pass
     c['size'] = size
 
-    try:
-        c['owners'] = \
-            Experiment_Owner.objects.filter(experiment=experiment)
-    except Experiment_Owner.DoesNotExist:
-        c['owners'] = None
+    acl = ExperimentACL.objects.filter(pluginId=django_user,
+                                       experiment=experiment,
+                                       isOwner=True)
+
+    # TODO: resolve usernames through UserProvider!
+    c['owners'] = [User.objects.get(pk=str(a.entityId)) for a in acl]
 
     c['protocols'] = [df['protocol'] for df in
                       c['datafiles'].values('protocol').distinct()]
@@ -537,7 +216,7 @@ def experiment_index(request):
     # if logged in
 
     if request.user.is_authenticated():
-        experiments = get_accessible_experiments(request.user.id)
+        experiments = get_accessible_experiments(request)
         if experiments:
             experiments = experiments.order_by('-update_time')
 
@@ -551,129 +230,75 @@ def experiment_index(request):
         'subtitle': 'Experiment Index',
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
+        'next': '/experiment/view/',
         'data_pressed': True,
         'searchDatafileSelectionForm':
             getNewSearchDatafileSelectionForm()})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/experiment_index.html', c))
 
 
 # todo complete....
-def ldap_login(request):
-    from django.contrib.auth import authenticate, login
+def login(request):
+    from tardis.tardis_portal.auth import login, auth_service
 
-    # if user exists then check if ldap: try log in through ldap, else try log
-    # in usual way, either way login
+    if type(request.user) is not AnonymousUser:
+        # redirect the user to the home page if he is trying to go to the
+        # login page
+        return HttpResponseRedirect('/')
 
     # TODO: put me in SETTINGS
+    if 'username' in request.POST and \
+            'password' in request.POST:
+        authMethod = request.POST['authMethod']
 
-    if 'username' in request.POST and 'password' in request.POST:
-        username = request.POST['username']
-        password = request.POST['password']
-
-        next = '/'
-
-        # TODO: this block will need fixing later as the expected functionality
-        #       this condition is supposed to provide does not work
-
-        if 'next' in request.POST:
-            next = request.POST['next']
-
-        c = Context({'searchDatafileSelectionForm'
-                    : getNewSearchDatafileSelectionForm()})
-
-        error_template_redirect = 'tardis_portal/login.html'
-
-        if settings.LDAP_ENABLE:
-            try:
-                u = User.objects.get(username=username)
-
-                try:
-                    if u.get_profile().authcate_user:
-                        if ldap_auth.authenticate_user_ldap(username,
-                                password):
-                            u.backend = \
-                                'django.contrib.auth.backends.ModelBackend'
-                            login(request, u)
-                            return HttpResponseRedirect(next)
-                        else:
-                            return return_response_error_message(request,
-                                    error_template_redirect,
-                                    "Sorry, username and password don't match"
-                                    )
-                    else:
-                        if authenticate(username=username,
-                                password=password):
-                            u.backend = \
-                                'django.contrib.auth.backends.ModelBackend'
-                            login(request, u)
-                            return HttpResponseRedirect(next)
-                        else:
-                            return return_response_error_message(request,
-                                    error_template_redirect,
-                                    "Sorry, username and password don't match"
-                                    )
-                except UserProfile.DoesNotExist, ue:
-                    if authenticate(username=username,
-                                    password=password):
-                        u.backend = \
-                            'django.contrib.auth.backends.ModelBackend'
-                        login(request, u)
-                        return HttpResponseRedirect(next)
-                    else:
-                        return return_response_error_message(request,
-                                error_template_redirect,
-                                "Sorry, username and password don't match"
-                                )
-            except User.DoesNotExist, ue:
-                if ldap_auth.authenticate_user_ldap(username, password):
-                    email = ldap_auth.get_ldap_email_for_user(username)
-
-                    from random import choice
-                    import string
-
-                    # random password todo make function
-
-                    random_password = ''
-                    chars = string.letters + string.digits
-
-                    for i in range(8):
-                        random_password = random_password \
-                            + choice(chars)
-
-                    u = User.objects.create_user(username, email,
-                            random_password)
-                    up = UserProfile(authcate_user=True, user=u)
-                    up.save()
-
-                    u.backend = \
-                        'django.contrib.auth.backends.ModelBackend'
-
-                    # TODO: consolidate
-
-                    login(request, u)
-                    return HttpResponseRedirect(next)
-                else:
-                    return return_response_error_message(request,
-                            error_template_redirect,
-                            "Sorry, username and password don't match")
-        u = authenticate(username=username, password=password)
-        if u:
-            u.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, u)
-            return HttpResponseRedirect(next)
+        if 'next' not in request.GET:
+            next = '/'
         else:
-            return return_response_error_message(request,
-                    error_template_redirect,
-                    "Sorry, username and password don't match")
+            next = request.GET['next']
 
-    c = Context({'searchDatafileSelectionForm'
-                : getNewSearchDatafileSelectionForm()})
+        user = auth_service.authenticate(
+            authMethod=authMethod, request=request)
+
+        if user:
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            return HttpResponseRedirect(next)
+
+        c = Context({'status': "Sorry, username and password don't match.",
+                     'error': True,
+                     'loginForm': LoginForm(),})
+        return return_response_error_message(
+            request, 'tardis_portal/login.html', c)
+
+    c = Context({'loginForm': LoginForm()})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
 
+@login_required()
+def manage_auth_methods(request):
+    '''Manage the user's authentication methods using AJAX.'''
+    from tardis.tardis_portal.auth.authentication import add_auth_method, \
+        merge_auth_method, remove_auth_method, edit_auth_method, \
+        list_auth_methods
 
-@transaction.commit_on_success()
+    if request.method == 'POST':
+        operation = request.POST['operation']
+        if operation == 'addAuth':
+            return add_auth_method(request)
+        elif operation == 'mergeAuth':
+            return merge_auth_method(request)
+        elif operation == 'removeAuth':
+            return remove_auth_method(request)
+        else:
+            return edit_auth_method(request)
+    else:
+        # if GET, we'll just give the initial list of auth methods for the user
+        return list_auth_methods(request)
+
+
 def register_experiment_ws_xmldata_internal(request):
     logger.debug('def register_experiment_ws_xmldata_internal')
     if request.method == 'POST':
@@ -696,8 +321,8 @@ def register_experiment_ws_xmldata_internal(request):
 
         response = HttpResponse('Finished cataloging: %s' % eid,
                                 status=200)
-        response['Location'] = \
-            request.build_absolute_uri('/experiment/view/' + str(eid))
+        response['Location'] = request.build_absolute_uri(
+            '/experiment/view/' + str(eid))
 
         return response
 
@@ -723,35 +348,52 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
-    if firstline.startswith('<experiment'):
-        logger.debug('processing simple xml')
-        processExperiment = ProcessExperiment()
-        eid = processExperiment.process_simple(filename, created_by, expid)
+    try:
+        if firstline.startswith('<experiment'):
+            logger.debug('processing simple xml')
+            processExperiment = ProcessExperiment()
+            eid = processExperiment.process_simple(filename, created_by, expid)
+        else:
+            logger.debug('processing METS')
+            eid = parseMets(filename, created_by, expid)
+    except:
+        logger.debug('rolling back ingestion')
+        transaction.rollback()
+        # TODO: uncomment this bit if we hear back from Steve that returning
+        #       the experiment ID won't be needed anymore
+        #Experiment.objects.get(id=expid).delete()
+        return expid
     else:
-        logger.debug('processing METS')
-        eid = parseMets(filename, created_by, expid)
-
-    g = Group(name=eid)
-    g.save()
+        logger.debug('committing ingestion')
+        transaction.commit()
+        return eid
 
     # for each PI
     for owner in owners:
+        # is the use of the urllib really neccessary???
         owner = urllib.unquote_plus(owner)
-        u = None
+
         # try get user from email
         if settings.LDAP_ENABLE:
             u = ldap_auth.get_or_create_user_ldap(owner)
-        else:
-            u = User.objects.get(username=username)
 
-        # if exist, assign to group
-        if u:
-            logger.debug('registering owner: ' + owner)
-            e = Experiment.objects.get(pk=eid)
-            exp_owner = Experiment_Owner(experiment=e,
-                                         user=u)
-            exp_owner.save()
-            u.groups.add(g)
+            # if exist, create ACL
+            if u:
+                logger.debug('registering owner: ' + owner)
+                e = Experiment.objects.get(pk=eid)
+                #exp_owner = Experiment_Owner(experiment=e,
+                #                             user=u)
+                #exp_owner.save()
+                #u.groups.add(g)
+                acl = ExperimentACL(experiment=e,
+                                    pluginId=django_user,
+                                    entityId=str(u.id),
+                                    canRead=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl.save()
 
     return eid
 
@@ -842,9 +484,8 @@ def register_experiment_ws_xmldata(request):
                         data = urllib.urlencode({
                             'originid': str(originid),
                             'eid': str(eid),
-                            'site_settings_url'
-                                : request.build_absolute_uri('/site-settings.xml/'
-                                    ),
+                            'site_settings_url': request.build_absolute_uri(
+                                    '/site-settings.xml/'),
                             'username': str('synchrotron'),
                             'password': str('tardis'),
                             })
@@ -855,9 +496,8 @@ def register_experiment_ws_xmldata(request):
 
             logger.debug('returning response from main call')
             response = HttpResponse(str(eid), status=200)
-            response['Location'] = \
-                request.build_absolute_uri('/experiment/view/'
-                    + str(eid))
+            response['Location'] = request.build_absolute_uri(
+                '/experiment/view/' + str(eid))
             return response
     else:
         form = RegisterExperimentForm()  # An unbound form
@@ -866,9 +506,7 @@ def register_experiment_ws_xmldata(request):
         'form': form,
         'status': status,
         'subtitle': 'Register Experiment',
-        'searchDatafileSelectionForm'
-            : getNewSearchDatafileSelectionForm(),
-        })
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/register_experiment.html', c))
 
@@ -877,8 +515,7 @@ def register_experiment_ws_xmldata(request):
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
-    parametersets = \
-        parametersets.filter(dataset_file__pk=dataset_file_id)
+    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
 
     c = Context({'parametersets': parametersets})
 
@@ -912,7 +549,8 @@ def retrieve_datafile_list(request, dataset_id):
 
     filename_search = None
 
-    if 'filename' in request.GET and len(request.GET['filename']) > 0:
+    if 'filename' in request.GET and len(request.GET['filename']) \
+        > 0:
         filename_search = request.GET['filename']
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
@@ -957,17 +595,17 @@ def retrieve_datafile_list(request, dataset_id):
 @login_required()
 def control_panel(request):
 
-    experiments = get_owned_experiments(request.user.id)
+    experiments = Experiment.safe.owned(request)
     if experiments:
         experiments = experiments.order_by('title')
 
-    c = Context({'experiments': experiments, 'subtitle'
-                : 'Experiment Control Panel'})
+    c = Context({'experiments': experiments,
+                 'subtitle': 'Experiment Control Panel'})
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/control_panel.html', c))
 
 
-@login_required()
 def search_experiment(request):
     """Either show the search experiment form or the result of the search
     experiment query.
@@ -994,25 +632,24 @@ def search_experiment(request):
     return HttpResponse(render_response_index(request, url, c))
 
 
-@login_required()
 def search_quick(request):
     get = False
-    experiments = Experiment.objects.all()
-    experiments = Experiment.objects.order_by('title')
+    experiments = Experiment.objects.all().order_by('title')
 
     if 'results' in request.GET:
         get = True
         if 'quicksearch' in request.GET \
             and len(request.GET['quicksearch']) > 0:
             experiments = \
-                experiments.filter(title__icontains=request.GET['quicksearch'
-                                   ]) \
-                | experiments.filter(institution_name__icontains=request.GET['quicksearch'
-                    ]) \
-                | experiments.filter(author_experiment__author__name__icontains=request.GET['quicksearch'
-                    ]) \
-                | experiments.filter(pdbid__pdbid__icontains=request.GET['quicksearch'
-                    ])
+                experiments.filter(
+                title__icontains=request.GET['quicksearch']) | \
+                experiments.filter(
+                institution_name__icontains=request.GET['quicksearch']) | \
+                experiments.filter(
+                author_experiment__author__name__icontains=request.GET[
+                'quicksearch']) | \
+                experiments.filter(
+                pdbid__pdbid__icontains=request.GET['quicksearch'])
 
             experiments = experiments.distinct()
 
@@ -1024,7 +661,6 @@ def search_quick(request):
                         'tardis_portal/search_experiment.html', c))
 
 
-@login_required()
 def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     """Filter the list of datafiles for the provided searchQueryType using the
     cleaned up searchFilterData.
@@ -1040,16 +676,12 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     """
 
-    # from django.db.models import Q
+    datafile_results = get_accessible_datafiles_for_user(request)
     logger.info('__getFilteredDatafiles: searchFilterData {0}'.format(searchFilterData))
-
-    datafile_results = \
-        get_accessible_datafiles_for_user(get_accessible_experiments(request.user.id))
 
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
-
-    if len(datafile_results) == 0:
+    if not datafile_results:
         logger.info("__getFilteredDatafiles: user ",
                     "{0} ({1}) doesn\'t".format(request.user,
                                                 request.user.id),
@@ -1057,34 +689,34 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
         return datafile_results
 
     datafile_results = \
-        datafile_results.filter(datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['datafile'
-                                ]).distinct()
+        datafile_results.filter(
+datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[
+        searchQueryType]['datafile']).distinct()
 
     # if filename is searchable which i think will always be the case...
-
     if searchFilterData['filename'] != '':
         datafile_results = \
-            datafile_results.filter(filename__icontains=searchFilterData['filename'
-                                    ])
-
+            datafile_results.filter(
+            filename__icontains=searchFilterData['filename'])
     # TODO: might need to cache the result of this later on
 
     # get all the datafile parameters for the given schema
     parameters = [p for p in
-                  ParameterName.objects.filter(schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['datafile'
-                  ])]
+        ParameterName.objects.filter(
+        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
+        ['datafile'])]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'datafileparameterset__datafileparameter')
 
     # get all the dataset parameters for given schema
     parameters = [p for p in
-                  ParameterName.objects.filter(schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]['dataset'
-                  ])]
+        ParameterName.objects.filter(
+        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
+        ['dataset'])]
 
     datafile_results = __filterParameters(parameters, datafile_results,
-            searchFilterData,
-            'dataset__datasetparameterset__datasetparameter')
+            searchFilterData, 'dataset__datasetparameterset__datasetparameter')
 
     # let's sort it in the end
 
@@ -1094,7 +726,6 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     return datafile_results
 
 
-@login_required()
 def __getFilteredExperiments(request, searchFilterData):
     """Filter the list of experiments using the cleaned up searchFilterData.
 
@@ -1108,9 +739,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     """
 
-    #from django.db.models import Q
-
-    experiments = get_accessible_experiments(request.user.id)
+    experiments = get_accessible_experiments(request)
 
     if experiments is None:
         return []
@@ -1184,30 +813,24 @@ def __filterParameters(
         try:
 
             # if parameter is a string...
-
             if not parameter.is_numeric:
                 if searchFilterData[parameter.name] != '':
-
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
-
                     if parameter.choices != '':
                         if searchFilterData[parameter.name] != '-':
-                            kwargs[paramType + '__string_value__iexact'
-                                   ] = searchFilterData[parameter.name]
+                            kwargs[paramType + '__string_value__iexact'] = \
+                                searchFilterData[parameter.name]
                     else:
-                        if parameter.comparison_type \
-                            == ParameterName.EXACT_VALUE_COMPARISON:
-                            kwargs[paramType + '__string_value__iexact'
-                                   ] = searchFilterData[parameter.name]
-                        elif parameter.comparison_type \
-                            == ParameterName.CONTAINS_COMPARISON:
-
+                        if parameter.comparison_type == \
+                                ParameterName.EXACT_VALUE_COMPARISON:
+                            kwargs[paramType + '__string_value__iexact'] = \
+                                searchFilterData[parameter.name]
+                        elif parameter.comparison_type == \
+                                ParameterName.CONTAINS_COMPARISON:
                             # we'll implement exact comparison as 'icontains'
                             # for now
-
-                            kwargs[paramType
-                                   + '__string_value__icontains'] = \
+                            kwargs[paramType + '__string_value__icontains'] = \
                                 searchFilterData[parameter.name]
                         else:
                             # if comparison_type on a string is a comparison
@@ -1218,19 +841,14 @@ def __filterParameters(
                                 searchFilterData[parameter.name]
                 else:
                     pass
-            else:
-
-                   # parameter.is_numeric:
-
-                if parameter.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fromParam = searchFilterData[parameter.name + 'From'
-                            ]
+            else:  # parameter.is_numeric:
+                if parameter.comparison_type == \
+                        ParameterName.RANGE_COMPARISON:
+                    fromParam = searchFilterData[parameter.name + 'From']
                     toParam = searchFilterData[parameter.name + 'To']
                     if fromParam is None and toParam is None:
                         pass
                     else:
-
                         # if parameters are provided and we want to do a range
                         # comparison
                         # note that we're using '1' as the lower range as using
@@ -1239,24 +857,20 @@ def __filterParameters(
                         #       happening
                         # TODO: we should probably move the static value here
                         #       to the constants module
+                        kwargs[paramType + '__numerical_value__range'] = \
+                            (fromParam is None and
+                             constants.FORM_RANGE_LOWEST_NUM or fromParam,
+                             toParam is not None and toParam or
+                             constants.FORM_RANGE_HIGHEST_NUM)
 
-                        kwargs[paramType + '__numerical_value__range'
-                               ] = (fromParam is None
-                                    and constants.FORM_RANGE_LOWEST_NUM
-                                    or fromParam, toParam is not None
-                                    and toParam
-                                    or constants.FORM_RANGE_HIGHEST_NUM)
                 elif searchFilterData[parameter.name] is not None:
 
                     # if parameter is an number and we want to handle other
                     # type of number comparisons
-
-                    if parameter.comparison_type \
-                        == ParameterName.EXACT_VALUE_COMPARISON:
-                        kwargs[paramType + '__numerical_value__exact'
-                               ] = searchFilterData[parameter.name]
-                    elif parameter.comparison_type \
-                        == ParameterName.GREATER_THAN_COMPARISON:
+                    if parameter.comparison_type == \
+                            ParameterName.EXACT_VALUE_COMPARISON:
+                        kwargs[paramType + '__numerical_value__exact'] = \
+                            searchFilterData[parameter.name]
 
                     # TODO: is this really how not equal should be declared?
                     # elif parameter.comparison_type ==
@@ -1268,38 +882,35 @@ def __filterParameters(
                     #  ~Q(datafileparameter__numerical_value=searchFilterData[
                     #       parameter.name]))
 
+                    elif parameter.comparison_type == \
+                            ParameterName.GREATER_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__gt'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type \
-                        == ParameterName.GREATER_THAN_EQUAL_COMPARISON:
+                    elif parameter.comparison_type == \
+                            ParameterName.GREATER_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__gte'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type \
-                        == ParameterName.LESS_THAN_COMPARISON:
+                    elif parameter.comparison_type == \
+                            ParameterName.LESS_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__lt'] = \
                             searchFilterData[parameter.name]
-                    elif parameter.comparison_type \
-                        == ParameterName.LESS_THAN_EQUAL_COMPARISON:
+                    elif parameter.comparison_type == \
+                            ParameterName.LESS_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__lte'] = \
                             searchFilterData[parameter.name]
                     else:
-
                         # if comparison_type on a numeric is a comparison type
                         # that can only be applied to a string value, we'll
                         # default to just using 'exact' comparison
-
-                        kwargs[paramType + '__numerical_value__exact'
-                               ] = searchFilterData[parameter.name]
+                        kwargs[paramType + '__numerical_value__exact'] = \
+                            searchFilterData[parameter.name]
                 else:
-
                     # ignore...
-
                     pass
 
             # we will only update datafile_results if we have an additional
             # filter (based on the 'passed' condition) in addition to the
             # initial value of kwargs
-
             if len(kwargs) > 1:
                 logger.debug(kwargs)
                 datafile_results = datafile_results.filter(**kwargs)
@@ -1318,14 +929,12 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
         #if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
-
-        # else:
+        #else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
 
     # TODO: remove this later on when we have a more generic search form
-
     if searchQueryType == 'mx':
         url = 'tardis_portal/search_datafile_form_mx.html'
 
@@ -1333,16 +942,12 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     # sort the fields in the form as it will make grouping the related fields
     # together in the next step easier
-
-    sortedSearchForm = sorted(searchForm, lambda x, y: cmp(x.name,
-                              y.name))
+    sortedSearchForm = sorted(searchForm, lambda x, y: cmp(x.name, y.name))
 
     # modifiedSearchForm will be used to customise how the range type of fields
     # will be displayed. range type of fields will be displayed side by side.
-
-    modifiedSearchForm = [list(g) for (k, g) in
-                          groupby(sortedSearchForm, lambda x: \
-                          x.name.rsplit('To')[0].rsplit('From')[0])]
+    modifiedSearchForm = [list(g) for k, g in groupby(
+        sortedSearchForm, lambda x: x.name.rsplit('To')[0].rsplit('From')[0])]
 
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
@@ -1360,8 +965,9 @@ def __forwardToSearchExperimentFormPage(request):
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({'searchForm': searchForm, 'searchDatafileSelectionForm'
-                : getNewSearchDatafileSelectionForm()})
+    c = Context({
+        'searchForm': searchForm,
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_experiment_form.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -1429,12 +1035,11 @@ def __processDatafileParameters(request, searchQueryType, form):
     if form.is_valid():
 
         datafile_results = __getFilteredDatafiles(request,
-                searchQueryType, form.cleaned_data)
+            searchQueryType, form.cleaned_data)
 
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
         # by the paginator
-
         request.session['datafileResults'] = datafile_results
         return datafile_results
     else:
@@ -1456,9 +1061,7 @@ def __processExperimentParameters(request, form):
     """
 
     if form.is_valid():
-
         experiments = __getFilteredExperiments(request, form.cleaned_data)
-
         # let's cache the query with all the filters in the session so
         # we won't have to keep running the query all the time it is needed
         # by the paginator
@@ -1468,7 +1071,6 @@ def __processExperimentParameters(request, form):
         return None
 
 
-@login_required()
 def search_datafile(request):
     """Either show the search datafile form or the result of the search
     datafile query.
@@ -1478,20 +1080,16 @@ def search_datafile(request):
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
     else:
-
         # for now we'll default to MX if nothing is provided
         # TODO: should we forward the page to experiment search page if
         #       nothing is provided in the future?
-
         searchQueryType = 'mx'
     logger.info('search_datafile: searchQueryType {0}'.format(searchQueryType))
     # TODO: check if going to /search/datafile will flag an error in unit test
-
     bodyclass = None
 
-    if 'page' not in request.GET and 'type' in request.GET \
-        and len(request.GET) > 1:
-
+    if 'page' not in request.GET and 'type' in request.GET and \
+            len(request.GET) > 1:
         # display the 1st page of the results
 
         form = __getSearchDatafileForm(request, searchQueryType)
@@ -1500,14 +1098,12 @@ def search_datafile(request):
         if datafile_results is not None:
             bodyclass = 'list'
         else:
-            return __forwardToSearchDatafileFormPage(request,
-                    searchQueryType, form)
+            return __forwardToSearchDatafileFormPage(
+                request, searchQueryType, form)
+
     else:
-
         if 'page' in request.GET:
-
             # succeeding pages of pagination
-
             if 'datafileResults' in request.session:
                 datafile_results = request.session['datafileResults']
             else:
@@ -1518,18 +1114,14 @@ def search_datafile(request):
                     bodyclass = 'list'
                 else:
                     return __forwardToSearchDatafileFormPage(request,
-                            searchQueryType, form)
+                        searchQueryType, form)
         else:
-
             # display the form
-
             if 'datafileResults' in request.session:
                 del request.session['datafileResults']
-            return __forwardToSearchDatafileFormPage(request,
-                    searchQueryType)
+            return __forwardToSearchDatafileFormPage(request, searchQueryType)
 
     # process the files to be displayed by the paginator...
-
     paginator = Paginator(datafile_results,
                           constants.DATAFILE_RESULTS_PER_PAGE)
 
@@ -1539,7 +1131,6 @@ def search_datafile(request):
         page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
-
     try:
         datafiles = paginator.page(page)
     except (EmptyPage, InvalidPage):
@@ -1547,20 +1138,17 @@ def search_datafile(request):
 
     import re
     cleanedUpQueryString = re.sub('&page=\d+', '',
-                                  request.META['QUERY_STRING'])
+        request.META['QUERY_STRING'])
 
     c = Context({
         'datafiles': datafiles,
         'paginator': paginator,
         'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
-        'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'
-                }],
+        'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
         'bodyclass': bodyclass,
         'search_pressed': True,
-        'searchDatafileSelectionForm'
-            : getNewSearchDatafileSelectionForm(),
-        })
+        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_datafile_results.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -1569,82 +1157,414 @@ def search_datafile(request):
 def retrieve_user_list(request):
 
     users = User.objects.all().order_by('username')
-
     c = Context({'users': users})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/user_list.html', c))
 
 
+@login_required()
+def retrieve_group_list(request):
+
+    groups = Group.objects.all().order_by('name')
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_list.html', c))
+
+
 @experiment_ownership_required
-def retrieve_access_list(request, experiment_id):
+def retrieve_access_list_user(request, experiment_id):
 
-    users = \
-        User.objects.filter(groups__name=experiment_id).order_by('username'
-            )
-
+    users = Experiment.safe.users(request, experiment_id)
     c = Context({'users': users, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list.html', c))
+                        'tardis_portal/ajax/access_list_user.html', c))
 
 
 @experiment_ownership_required
-def add_access_experiment(request, experiment_id, username):
+def retrieve_access_list_group(request, experiment_id):
+
+    user_owned_groups = Experiment.safe.user_owned_groups(request,
+                                                          experiment_id)
+    system_owned_groups = Experiment.safe.system_owned_groups(request,
+                                                            experiment_id)
+
+    c = Context({'user_owned_groups': user_owned_groups,
+                 'system_owned_groups': system_owned_groups,
+                 'experiment_id': experiment_id})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_group.html', c))
+
+
+@experiment_ownership_required
+def retrieve_access_list_external(request, experiment_id):
+
+    groups = Experiment.safe.external_users(request, experiment_id)
+    c = Context({'groups': groups, 'experiment_id': experiment_id})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_external.html', c))
+
+
+@group_ownership_required
+def retrieve_group_userlist(request, group_id):
+
+    users = User.objects.filter(groups__id=group_id)
+    c = Context({'users': users, 'group_id': group_id})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_user_list.html', c))
+
+
+@login_required()
+def manage_groups(request):
+
+    groups = Group.objects.filter(groupadmin__user=request.user)
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_group_members.html', c))
+
+
+@group_ownership_required
+def add_user_to_group(request, group_id, username):
+
+    isAdmin = False
+
+    if 'isAdmin' in request.GET:
+        if request.GET['isAdmin'] == 'true':
+            isAdmin = True
+
     try:
-        u = User.objects.get(username=username)
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
 
-        g = Group.objects.get(name=experiment_id)
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
 
-        if not in_group(u, g):
-            u.groups.add(g)
+    if user.groups.filter(name=group.name).count() > 0:
+        return return_response_error(request)
 
-            c = Context({'user': u, 'experiment_id': experiment_id})
-            return HttpResponse(render_response_index(request,
-                                'tardis_portal/ajax/add_user_result.html'
-                                , c))
-        else:
-            return return_response_error(request)
-    except User.DoesNotExist, ue:
+    user.groups.add(group)
+    user.save()
 
-        return return_response_not_found(request)
-    except Group.DoesNotExist, ge:
-        return return_response_not_found(request)
+    if isAdmin:
+        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin.save()
+
+    c = Context({'user': user, 'group_id': group_id, 'isAdmin': isAdmin})
+    return HttpResponse(render_response_index(request,
+         'tardis_portal/ajax/add_user_to_group_result.html', c))
+
+
+@group_ownership_required
+def remove_user_from_group(request, group_id, username):
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    if user.groups.filter(name=group.name).count() == 0:
+        return return_response_error(request)
+
+    user.groups.remove(group)
+    user.save()
+
+    try:
+        groupadmin = GroupAdmin.objects.filter(user=user, group=group)
+        groupadmin.delete()
+    except GroupAdmin.DoesNotExist:
+        pass
+
+    c = Context({})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/remove_member_result.html', c))
+
+
+@experiment_ownership_required
+def add_experiment_access_user(request, experiment_id, username):
+
+    canRead = False
+    canWrite = False
+    canDelete = False
+
+    if 'canRead' in request.GET:
+        if request.GET['canRead'] == 'true':
+            canRead = True
+
+    if 'canWrite' in request.GET:
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
+
+    if 'canDelete' in request.GET:
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId=django_user,
+                                       entityId=str(user.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+    if acl.count() == 0:
+        acl = ExperimentACL(experiment=experiment,
+                            pluginId=django_user,
+                            entityId=str(user.id),
+                            canRead=canRead,
+                            canWrite=canWrite,
+                            canDelete=canDelete,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
+        c = Context({'user': user, 'experiment_id': experiment_id})
+        return HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/add_user_result.html', c))
 
     return return_response_error(request)
 
 
 @experiment_ownership_required
-def remove_access_experiment(request, experiment_id, username):
+def remove_experiment_access_user(request, experiment_id, username):
 
     try:
-        u = User.objects.get(username=username)
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
 
-        g = Group.objects.get(name=experiment_id)
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
 
-        e = Experiment.objects.get(pk=experiment_id)
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId=django_user,
+                                       entityId=str(user.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
-        if in_group(u, g):
-            u.groups.remove(g)
+    if acl.count() == 1:
+        acl[0].delete()
+        c = Context({})
+        return HttpResponse(render_response_index(request,
+                'tardis_portal/ajax/remove_member_result.html', c))
 
-            try:
-                eo = Experiment_Owner.objects.filter(experiment=e,
-                        user=u)
-                eo.delete()
-            except Experiment_Owner.DoesNotExist, eo:
-                pass
+    return return_response_error(request)
 
-            c = Context({})
-            return HttpResponse(render_response_index(request,
-                                'tardis_portal/ajax/remove_user_result.html'
-                                , c))
-        else:
+
+@experiment_ownership_required
+def change_user_permissions(request, experiment_id, username):
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId=django_user,
+                                        entityId=str(user.id),
+                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    except ExperimentACL.DoesNotExist:
+        return return_response_error(request)
+
+    if request.method == 'POST':
+        form = ChangeUserPermissionsForm(request.POST, instance=acl)
+
+        if form.is_valid:
+            form.save()
+            return HttpResponseRedirect('/experiment/control_panel/')
+
+    else:
+        form = ChangeUserPermissionsForm(instance=acl)
+        c = Context({'form': form,
+                     'header': "Change User Permissions for '%s'" % user.username})
+
+    return HttpResponse(render_response_index(request,
+                            'tardis_portal/form_template.html', c))
+
+
+@experiment_ownership_required
+def change_group_permissions(request, experiment_id, group_id):
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId=django_group,
+                                        entityId=str(group.id),
+                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    except ExperimentACL.DoesNotExist:
+        return return_response_error(request)
+
+    if request.method == 'POST':
+        form = ChangeGroupPermissionsForm(request.POST)
+
+        if form.is_valid():
+            acl.canRead = form.cleaned_data['canRead']
+            acl.canWrite = form.cleaned_data['canWrite']
+            acl.canDelete = form.cleaned_data['canDelete']
+            acl.effectiveDate = form.cleaned_data['effectiveDate']
+            acl.expiryDate = form.cleaned_data['expiryDate']
+            acl.save()
+            return HttpResponseRedirect('/experiment/control_panel/')
+
+    else:
+        form = ChangeGroupPermissionsForm(initial={'canRead': acl.canRead,
+                                                   'canWrite': acl.canWrite,
+                                                   'canDelete': acl.canDelete,
+                                                   'effectiveDate': acl.effectiveDate,
+                                                   'expiryDate': acl.expiryDate})
+
+    c = Context({'form': form,
+                 'header': "Change Group Permissions for '%s'" % group.name})
+
+    return HttpResponse(render_response_index(request,
+                            'tardis_portal/change_group_permissions.html', c))
+
+
+@experiment_ownership_required
+def add_experiment_access_group(request, experiment_id, groupname):
+
+    create = False
+    canRead = False
+    canWrite = False
+    canDelete = False
+    admin = ''
+
+    if 'canRead' in request.GET:
+        if request.GET['canRead'] == 'true':
+            canRead = True
+
+    if 'canWrite' in request.GET:
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
+
+    if 'canDelete' in request.GET:
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
+
+    if 'admin' in request.GET:
+        admin = request.GET['admin']
+
+    if 'create' in request.GET:
+        if request.GET['create'] == 'true':
+            create = True
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    if create:
+        try:
+            group = Group(name=groupname)
+            group.save()
+        except:
             return return_response_error(request)
-    except User.DoesNotExist, ue:
+    else:
+        try:
+            group = Group.objects.get(name=groupname)
+        except Group.DoesNotExist:
+            return return_response_error(request)
 
-        return return_response_not_found(request)
-    except Group.DoesNotExist, ge:
-        return return_response_not_found(request)
-    except Experiment.DoesNotExist, ge:
-        return return_response_not_found(request)
+        if admin and not is_group_admin(request, group.id):
+            return return_response_error(request)
+
+
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId=django_group,
+                                       entityId=str(group.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    if acl.count() > 0:
+        # an acl role already exists
+        return return_response_error(request)
+
+    acl = ExperimentACL(experiment=experiment,
+                        pluginId=django_group,
+                        entityId=str(group.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
+
+    adminuser = None
+    if admin:
+        try:
+            adminuser = User.objects.get(username=admin)
+        except User.DoesNotExist:
+            return return_response_error(request)
+
+        # create admin for this group and add it to the group
+        groupadmin = GroupAdmin(user=adminuser, group=group)
+        groupadmin.save()
+
+        adminuser.groups.add(group)
+        adminuser.save()
+
+    # add the current user as admin as well for newly created groups
+    if create and not request.user == adminuser:
+        user = request.user
+
+        groupadmin = GroupAdmin(user=user, group=group)
+        groupadmin.save()
+
+        user.groups.add(group)
+        user.save()
+
+    c = Context({'group': group})
+    return HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/add_group_result.html', c))
+
+
+@experiment_ownership_required
+def remove_experiment_access_group(request, experiment_id, group_id):
+
+    try:
+        group = Group.objects.get(pk=group_id)
+    except Group.DoesNotExist:
+        return return_response_error(request)
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_error(request)
+
+    acl = ExperimentACL.objects.filter(experiment=experiment,
+                                       pluginId=django_group,
+                                       entityId=str(group.id),
+                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+    if acl.count() == 1:
+        acl[0].delete()
+        c = Context({})
+        return HttpResponse(render_response_index(request,
+                'tardis_portal/ajax/remove_member_result.html', c))
 
     return return_response_error(request)
 
@@ -1655,8 +1575,8 @@ def publish_experiment(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
 
     if not experiment.public:
-        filename = settings.FILE_STORE_PATH + '/' + experiment_id \
-            + '/METS.XML'
+        filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
+            '/METS.XML'
 
         mpform = MultiPartForm()
         mpform.add_field('username', settings.TARDIS_USERNAME)
@@ -1676,8 +1596,7 @@ def publish_experiment(request, experiment_id):
 
         requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
         requestmp.add_header('User-agent',
-                             'PyMOTW (http://www.doughellmann.com/PyMOTW/)'
-                             )
+                             'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
         body = str(mpform)
         requestmp.add_header('Content-type', mpform.get_content_type())
         requestmp.add_header('Content-length', len(body))
@@ -1715,8 +1634,9 @@ def stats(request):
 
     public_datafile_size = size
 
-    c = Context({'public_datafiles': len(public_datafiles),
-                'public_experiments': len(public_experiments),
+    # using count() is more efficient than using len() on a query set
+    c = Context({'public_datafiles': public_datafiles.count(),
+                'public_experiments': public_experiments.count(),
                 'public_datafile_size': public_datafile_size})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
@@ -1726,7 +1646,6 @@ def import_params(request):
     if request.method == 'POST':  # If the form has been submitted...
 
         # A form bound to the POST data
-
         form = ImportParamsForm(request.POST, request.FILES)
         if form.is_valid():  # All validation rules pass
 
@@ -1754,7 +1673,7 @@ def import_params(request):
                     try:
                         Schema.objects.get(namespace=schema)
                         return HttpResponse('Schema already exists.')
-                    except Schema.DoesNotExist, s:
+                    except Schema.DoesNotExist:
                         schema_db = Schema(namespace=schema)
                         schema_db.save()
                 else:
@@ -1928,15 +1847,13 @@ def search_equipment(request):
                 q = q.filter(type__icontains=data['type'])
 
             c = Context({'object_list': q,
-                         'searchDatafileSelectionForm':
-                         getNewSearchDatafileSelectionForm()})
+                         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
             return render_to_response('tardis_portal/equipment_list.html', c)
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
-                 'searchDatafileSelectionForm':
-                 getNewSearchDatafileSelectionForm()})
+                 'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
 
 
