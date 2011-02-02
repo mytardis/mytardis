@@ -259,12 +259,7 @@
 
 		<div id="fullpage">
 			<div class="post">
-				<h1 class="title">
-					{{ experiment.title }}
-
-				</h1>
-
-
+				<h1 class="title">{{ experiment.title }}</h1>
 
 					<div class="demo">
 
@@ -356,28 +351,30 @@
 							{% for p in protocols %}
 							<p>
 							{% if p %}
-							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
 							{% endif %}
 							</p>
 							{% endfor %}
                             <p align="right">
 							<br/>
+			    {% if owners %}
                             <strong>Experiment Administrators </strong><br/>
                             {% for owner in owners %}
-                                    {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+                                    {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
                             </p>
+			    {% endif %}
 
 						</div>
 						<div id="tabs-2">
 							{% for p in protocols %}
 							<p>
 							{% if p %}
-							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
-							<strong><a href="/download/experiment/{{experiment.id}}">Download Entire Experiment</a></strong><br/>
+							<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
 							{% endif %}
 							</p>
 							{% endfor %}
@@ -395,7 +392,7 @@
 									<div class="dataset_description">
 									<strong>Dataset Description</strong>: {{ dataset.description|safe }} <br>
 									<strong>Dataset Equipment</strong>:
-									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}">{{ eq.key }}</a>
+									{% for eq in dataset.equipment_set.all %}																	<a href="/equipment/{{eq.id}}/">{{ eq.key }}</a>
 									{% endfor %}
 									</div>
 									<div class="dataset_extrainfo">
