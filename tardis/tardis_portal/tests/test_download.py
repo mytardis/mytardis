@@ -72,6 +72,9 @@ class DownloadTestCase(TestCase):
                                           url='tardis://%s' % filename)
         self.dataset_file2.save()
 
+        # check pdf mimetype
+        # self.dataset_file3 = ...
+
     def tearDown(self):
         self.user.delete()
         self.experiment1.delete()
@@ -82,9 +85,16 @@ class DownloadTestCase(TestCase):
     def testDownload(self):
         client = Client()
 
+        # check download for experiment1
+        response = client.get('/download/experiment/%i/' % self.experiment1.id)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="experiment%s-complete.tar"' % self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+
         # check download of file1
         response = client.get('/download/datafile/%i/' % self.dataset_file1.id)
-        self.assertEqual(response['Content-Disposition'], 'attachment; filename="%s"' % self.dataset_file2.filename)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="%s"' % self.dataset_file2.filename)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'Hello World!\n')
 
@@ -92,6 +102,38 @@ class DownloadTestCase(TestCase):
         response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
         self.assertEqual(response.status_code, 403)
 
-        # check download for experiment1
-        response = client.get('/download/experiment/%i/' % self.experiment1.id)
+        # check dataset1 download
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment1.id,
+                                'dataset': [self.dataset1.id],
+                                'datafile': []})
         self.assertEqual(response.status_code, 200)
+
+        # check dataset2 download
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment2.id,
+                                'dataset': [self.dataset2.id],
+                                'datafile': []})
+        self.assertEqual(response.status_code, 403)
+
+        # check datafile1 download via POST
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment1.id,
+                                'dataset': [],
+                                'datafile': [self.dataset_file1.id]})
+        self.assertEqual(response.status_code, 200)
+
+        # check datafile2 download via POST
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment2.id,
+                                'dataset': [],
+                                'datafile': [self.dataset_file2.id]})
+        self.assertEqual(response.status_code, 403)
+
+    def testDatasetFile(self):
+        df = Dataset_File.objects.get(pk=self.dataset_file1.id)
+
+        self.assertEqual(df.mimetype, u'text/plain; charset=us-ascii')
+        self.assertEqual(df.size, str(13))
+        self.assertEqual(df.md5sum, u'8ddd8be4b179a529afa5f2ffae4b9858')
+
