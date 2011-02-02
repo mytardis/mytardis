@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -296,8 +295,8 @@ class MetsExperimentStructCreatorTestCase(TestCase):
             'A-7'].name == 'ment0005.osc',
             'metadata A-7 should have ment0005.osc as the name')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].url == 'file://Images/ment0005.osc',
-            'metadata A-7 should have file://Images/ment0005.osc as the url')
+            'A-7'].url == 'tardis://Images/ment0005.osc',
+            'metadata A-7 should have tardis://Images/ment0005.osc as the url')
         self.assertTrue(self.dataHolder.metadataMap[
             'A-7'].dataset.id == 'J-2',
             'metadata A-7 should have dataset id J-2')
