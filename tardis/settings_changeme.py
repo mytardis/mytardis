@@ -83,6 +83,7 @@ MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.minidetector.Middleware',
+    'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.middleware.transaction.TransactionMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
@@ -97,11 +98,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 # Don't forget to use absolute paths, not relative paths.
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__),
-    'tardis_portal').replace('\\', '/'),
-    os.path.join(os.path.dirname(__file__),
-    'tardis_portal/astemplates').replace('\\', '/'),
-    os.path.join(os.path.dirname(__file__),
-    'tardis_portal/templates/tardis_portal').replace('\\', '/'),
+    'tardis_portal/templates/').replace('\\', '/'),
 )
 
 LDAP_ENABLE = False
@@ -116,11 +113,13 @@ DISABLE_TRANSACTION_MANAGEMENT = False
 STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')
 
-ADMIN_MEDIA_STATIC_DOC_ROOT = \
-    '/Library/Frameworks/Python.framework/Versions/2.5/lib/python2.5/'\
-    'site-packages/django/contrib/admin/media'
+ADMIN_MEDIA_STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
+                                           '../parts/django-admin.py/django/contrib/admin/media/')
+
 FILE_STORE_PATH = '/path/to/store'
 STAGING_PATH = '/path/to/staging'
+
+
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 
@@ -144,6 +143,24 @@ INSTALLED_APPS = (
     'registration',
     'tardis.tardis_portal.templatetags',
     )
+
+USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
+GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                   'tardis.tardis_portal.auth.vbl_auth.VblGroupProvider',)
+
+# AUTH_PROVIDERS entry format:
+#('name', 'display name', 'backend implementation')
+#   name - used as the key for the entry
+#   display name - used as the displayed value in the login form
+#   backend implementation points to the actual backend implementation
+# We will assumem that localdb will always be a default AUTH_PROVIDERS entry
+AUTH_PROVIDERS = (
+    ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('vbl', 'VBL', 'tardis.tardis_portal.auth.vbl_auth.Backend'),
+    )
+
+VBLSTORAGEGATEWAY = \
+'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
 
 ACCOUNT_ACTIVATION_DAYS = 3
 

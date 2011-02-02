@@ -10,6 +10,8 @@ FORM_RANGE_HIGHEST_NUM = 9999999999
 
 FORM_RANGE_LOWEST_NUM = 0
 
+RANDOM_PASSWORD_LENGTH = 8
+
 SCHEMA_DICT = {
     'mx':
         {'datafile': 'http://www.tardis.edu.au/schemas/trdDatafile/1',
@@ -24,4 +26,6 @@ SCHEMA_DICT = {
     }
 
 EXPERIMENT_SCHEMAS = \
-    ['http://www.tardis.edu.au/schemas/as/experiment/2010/09/21', ]
+    ['http://www.tardis.edu.au/schemas/as/experiment/2010/09/21',
+     'http://www.tardis.edu.au/schemas/as/sample/2011/01/24'
+]

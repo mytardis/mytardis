@@ -57,6 +57,13 @@
     },
     {
         "fields": {
+            "namespace": "http://www.tardis.edu.au/schemas/as/sample/2011/01/24"
+        },
+        "model": "tardis_portal.schema",
+        "pk": 9
+    },
+    {
+        "fields": {
             "choices": "",
             "comparison_type": 1,
             "full_name": "Collection Date",
@@ -1510,6 +1517,76 @@
         },
         "model": "tardis_portal.parametername",
         "pk": 105
+    },
+    {
+        "fields": {
+            "choices": "",
+            "comparison_type": 8,
+            "full_name": "SampleCAS",
+            "is_numeric": false,
+            "is_searchable": true,
+            "name": "SampleCAS",
+            "schema": 9,
+            "units": ""
+        },
+        "model": "tardis_portal.parametername",
+        "pk": 106
+    },
+    {
+        "fields": {
+            "choices": "",
+            "comparison_type": 8,
+            "full_name": "SampleDescription",
+            "is_numeric": false,
+            "is_searchable": true,
+            "name": "SampleDescription ",
+            "schema": 9,
+            "units": ""
+        },
+        "model": "tardis_portal.parametername",
+        "pk": 107
+    },
+    {
+        "fields": {
+            "choices": "",
+            "comparison_type": 8,
+            "full_name": "SampleFormula",
+            "is_numeric": false,
+            "is_searchable": true,
+            "name": "SampleFormula",
+            "schema": 9,
+            "units": ""
+        },
+        "model": "tardis_portal.parametername",
+        "pk": 108
+    },
+    {
+        "fields": {
+            "choices": "",
+            "comparison_type": 8,
+            "full_name": "SampleName",
+            "is_numeric": false,
+            "is_searchable": true,
+            "name": "SampleName",
+            "schema": 9,
+            "units": ""
+        },
+        "model": "tardis_portal.parametername",
+        "pk": 109
+    },
+    {
+        "fields": {
+            "choices": "",
+            "comparison_type": 8,
+            "full_name": "SampleSafty",
+            "is_numeric": false,
+            "is_searchable": true,
+            "name": "SampleSafty",
+            "schema": 9,
+            "units": ""
+        },
+        "model": "tardis_portal.parametername",
+        "pk": 110
     },
     {
         "fields": {

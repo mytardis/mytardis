@@ -1,0 +1,14 @@
+<div class="access_list_user">
+  <p>
+    {% if user.groupadmin_set.count %}
+      <img src="/site_media/images/icon_adminstrator.jpg">
+    {% else %}
+      <img src="/site_media/images/icon_user.jpg">
+    {% endif %}
+    <strong>{{ user.username }}</strong> ({{user.email}})
+    <a class="remove_user" href="/group/{{group_id}}/remove/{{user.username}}/"><img src="/site_media/images/icon_deletelink.gif"></a>
+    </div>
+    <br/>
+  </p>
+</div> <!-- access_list_user -->
+

@@ -27,17 +27,17 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %}
-
-{% block content %}
-<div id="content">
-  <div class="post">
-    <h1 class="title"><a href="#">Account Activation</a></h1>
-    <div class="entry">
-      <p>
-	<b>Successfully activated. <a href="/login">Click here to Log In.</a></br>
-      </p>
-    </div>
-  </div>
-</div>
-{% endblock content %}
+<div class="users">
+{% for user in users %}
+  {% include "tardis_portal/ajax/add_user_result.html" %}
+{% endfor %}
+</div> <!-- users -->
+<p>
+  <label>Add user: </label>
+  <input type="text" class="usersuggest" name="adduser" />
+  <a class="form_submit" id="user" href="">Submit</a><br/>
+  <input type="checkbox" name="read" class="canRead"  checked="yes" /> READ <br/>
+  <input type="checkbox" name="write" class="canWrite" /> WRITE <br/>
+  <input type="checkbox" name="delete" class="canDelete" /> DELETE <br/>
+  <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
+</p>

@@ -49,10 +49,149 @@ from django.forms.forms import BoundField
 from django.forms.models import ModelChoiceField
 from django.forms.models import inlineformset_factory
 from django.forms.models import BaseInlineFormSet
+from django.forms import ModelForm
+from django.contrib.auth.forms import AuthenticationForm
+from django.conf import settings
+from django.db import transaction
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
+from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
+
+from tardis.tardis_portal.models import UserProfile, UserAuthentication
+from tardis.tardis_portal.auth.localdb_auth \
+    import auth_key as locabdb_auth_key
+
+
+from registration.models import RegistrationProfile
+
+
+
+class LoginForm(AuthenticationForm):
+    authMethod = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+        self.fields['username'] = \
+             forms.CharField(required=True,
+                             label="Username",
+                             max_length=75)
+
+        authMethodChoices = ()
+        for authMethods in settings.AUTH_PROVIDERS:
+            authMethodChoices += ((authMethods[0], authMethods[1]),)
+
+        self.fields['authMethod'] = \
+            forms.CharField(required=True,
+                            widget=forms.Select(choices=authMethodChoices),
+                            label='Authentication Method')
+
+
+attrs_dict = {'class': 'required'}
+
+
+class RegistrationForm(forms.Form):
+    """
+    Form for registering a new user account.
+
+    Validates that the requested username is not already in use, and
+    requires the password to be entered twice to catch typos.
+
+    Subclasses should feel free to add any additional validation they
+    need, but should avoid defining a ``save()`` method -- the actual
+    saving of collected user data is delegated to the active
+    registration backend.
+
+    """
+
+    username = forms.RegexField(regex=r'^[\w\.]+$',
+                                max_length=30-1-len(locabdb_auth_key),
+                                widget=forms.TextInput(attrs=attrs_dict),
+                                label=_("Username"),
+                                error_messages={'invalid': _("This value must contain only letters, numbers and underscores.")})
+    email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
+                                                               maxlength=75)),
+                             label=_("Email address"))
+
+    password1 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+                                label=_("Password"))
+
+    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+                                label=_("Password (again)"))
+
+    def clean_username(self):
+        """
+        Validate that the username is alphanumeric and is not already
+        in use.
+
+        """
+        username = '%s_%s' % (locabdb_auth_key, self.cleaned_data['username'])
+
+        try:
+            user = User.objects.get(username__iexact=username)
+        except User.DoesNotExist:
+            return username
+        raise forms.ValidationError(_("A user with that username already exists."))
+
+    def clean(self):
+        """
+        Verifiy that the values entered into the two password fields
+        match. Note that an error here will end up in
+        ``non_field_errors()`` because it doesn't apply to a single
+        field.
+
+        """
+        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
+            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
+                raise forms.ValidationError(_("The two password fields didn't match."))
+
+        return self.cleaned_data
+
+    @transaction.commit_on_success()
+    def save(self, profile_callback=None):
+        user = RegistrationProfile.objects.create_inactive_user(
+            username=self.cleaned_data['username'],
+            password=self.cleaned_data['password1'],
+            email=self.cleaned_data['email'])
+
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile.save()
+
+        authentication = \
+            UserAuthentication(userProfile=userProfile,
+                               username=self.cleaned_data['username'].split(locabdb_auth_key)[1],
+                               authenticationMethod=locabdb_auth_key)
+        authentication.save()
+
+        return user
+
+
+class ChangeUserPermissionsForm(ModelForm):
+    class Meta:
+        from django.forms.extras.widgets import SelectDateWidget
+        from tardis.tardis_portal.models import ExperimentACL
+        model = ExperimentACL
+        exclude = ('entityId', 'pluginId', 'experiment', 'aclOwnershipType',)
+        widgets = {
+            'expiryDate': SelectDateWidget(),
+            'effectiveDate': SelectDateWidget()
+        }
+
+
+class ChangeGroupPermissionsForm(forms.Form):
+
+    from django.forms.extras.widgets import SelectDateWidget
+
+    canRead = forms.BooleanField(label='canRead', required=False)
+    canWrite = forms.BooleanField(label='canWrite', required=False)
+    canDelete = forms.BooleanField(label='canDelete', required=False)
+
+    effectiveDate = forms.DateTimeField(label='Effective Date',
+            widget=SelectDateWidget(), required=False)
+    expiryDate = forms.DateTimeField(label='Expiry Date',
+            widget=SelectDateWidget(), required=False)
 
 
 class DatafileSearchForm(forms.Form):
@@ -83,6 +222,31 @@ class MXDatafileSearchForm(DatafileSearchForm):
     xrayWavelengthTo = forms.IntegerField(
         required=False, label='X-ray Wavelength To',
         widget=forms.TextInput(attrs={'size': '4'}))
+
+
+def createLinkedUserAuthenticationForm(authMethods):
+    """Create a LinkedUserAuthenticationForm and use the contents of
+    authMethods to the list of options in the dropdown menu for
+    authenticationMethod.
+
+    """
+    _authenticationMethodChoices = ()
+    for authMethodKey in authMethods.keys():
+        _authenticationMethodChoices += (
+            (authMethodKey, authMethods[authMethodKey]), )
+
+    fields = {}
+    fields['authenticationMethod'] = \
+        forms.CharField(label='Authentication Method',
+        widget=forms.Select(choices=_authenticationMethodChoices),
+        required=True)
+    fields['username'] = forms.CharField(label='Username',
+        max_length=75, required=True)
+    fields['password'] = forms.CharField(required=True,
+        widget=forms.PasswordInput(), label='Password', max_length=12)
+
+    return type('LinkedUserAuthenticationForm', (forms.BaseForm, ),
+                    {'base_fields': fields})
 
 
 # infrared
@@ -527,34 +691,34 @@ def __getParameterChoices(choicesString):
 
     import string
     import re
-    paramChoices = []
+    paramChoices = ()
 
     # we'll always add '-' as the default value for a dropdown menu just
     # incase the user doesn't specify a value they'd like to search for
-    paramChoices.append(('-', '-'))
+    paramChoices += (('-', '-'),)
     dropDownEntryPattern = re.compile(r'\((.*):(.*)\)')
 
     dropDownEntryStrings = string.split(choicesString, ',')
     for dropDownEntry in dropDownEntryStrings:
         dropDownEntry = string.strip(dropDownEntry)
         (key, value) = dropDownEntryPattern.search(dropDownEntry).groups()
-        paramChoices.append((str(key), str(value)))
+        paramChoices += ((str(key), str(value)),)
 
-    return tuple(paramChoices)
+    return paramChoices
 
 
 def createSearchDatafileSelectionForm():
 
     from tardis.tardis_portal import constants
 
-    supportedDatafileSearches = [('-', 'Datafile')]
+    supportedDatafileSearches = (('-', 'Datafile'),)
     for key in constants.SCHEMA_DICT:
-        supportedDatafileSearches.append((key, key.upper()))
+        supportedDatafileSearches += ((key, key.upper()),)
 
     fields = {}
     fields['type'] = \
         forms.CharField(label='type',
-        widget=forms.Select(choices=tuple(supportedDatafileSearches)),
+        widget=forms.Select(choices=supportedDatafileSearches),
         required=False)
     fields['type'].widget.attrs['class'] = 'searchdropdown'
 

@@ -9,12 +9,14 @@ download.py
 
 """
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.conf import settings
 
 from tardis.tardis_portal.models import *
+from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
-    return_response_error, has_datafile_access, experiment_access_required
+    return_response_error
 from tardis.tardis_portal.logger import logger
 
 from os.path import join
@@ -28,7 +30,8 @@ def download_datafile(request, datafile_id):
     # todo handle missing file, general error
     datafile = Dataset_File.objects.get(pk=datafile_id)
 
-    if has_datafile_access(datafile.id, request.user):
+    if has_datafile_access(request=request,
+                           dataset_file_id=datafile.id):
         url = datafile.url
 
         if url.startswith('http://') or url.startswith('https://') \
@@ -104,7 +107,8 @@ def download_datafiles(request):
 
             for dsid in datasets:
                 for datafile in Dataset_File.objects.filter(dataset=dsid):
-                    if has_datafile_access(datafile.id, request.user):
+                    if has_datafile_access(request=request,
+                                           dataset_file_id=datafile.id):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
@@ -117,7 +121,8 @@ def download_datafiles(request):
                 datafile = Dataset_File.objects.get(pk=dfid)
                 if datafile.dataset.id in datasets:
                     continue
-                if has_datafile_access(dfid, request.user):
+                if has_datafile_access(request=request,
+                                        dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
@@ -136,7 +141,8 @@ def download_datafiles(request):
                 datafile = \
                     Dataset_File.objects.get(url=urllib.unquote(url),
                         dataset__experiment__id=request.POST['expid'])
-                if has_datafile_access(datafile.id, request.user):
+                if has_datafile_access(request=request,
+                                       dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
