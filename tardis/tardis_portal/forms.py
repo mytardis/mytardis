@@ -340,10 +340,16 @@ class DataFileFormSet(BaseInlineFormSet):
         datafile = super(DataFileFormSet, self).save_new(form, commit=False)
 
         filepath = form.cleaned_data['filename']
-        datafile.url = 'file://' + filepath
         datafile.filename = basename(filepath)
-        datafile.size = 0
-        datafile.protocol = u''
+
+        if not 'url' in form.cleaned_data:
+            datafile.url = 'file://' + filepath
+
+        if not 'size' in form.cleaned_data:
+            datafile.size = 0
+
+        if not 'protocol' in form.cleaned_data:
+            datafile.protocol = u''
 
         if commit == True:
             datafile = super(DataFileFormSet, self).save_new(form,

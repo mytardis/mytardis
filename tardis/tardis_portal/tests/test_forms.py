@@ -322,6 +322,7 @@ class ExperimentFormTestCase(TestCase):
         t = Template(template)
         output = t.render(Context({'form': f}))
         value = "value=\"%s\""
+        span = ">%s</span>"
         text_area = ">%s</textarea>"
         # test experiment fields
         self.assertTrue(value % "test experiment" in output)
@@ -329,12 +330,12 @@ class ExperimentFormTestCase(TestCase):
         self.assertTrue(text_area % "desc....." in output)
 
         self.assertTrue(text_area % "second" in output, output)
-        self.assertTrue(value % "file1.py" in output)
+        self.assertTrue(span % "file1.py" in output)
         self.assertTrue(value % "file://second_ds/file.py" in output)
 
-        self.assertEqual(output.count('0-datafile-0-filename" value'), 1)
-        self.assertEqual(output.count('0-datafile-1-filename" value'), 1)
-        self.assertEqual(output.count('1-datafile-0-filename" value'), 1)
+        self.assertEqual(output.count('0-datafile-0-url" value'), 1)
+        self.assertEqual(output.count('0-datafile-1-url" value'), 1)
+        self.assertEqual(output.count('1-datafile-0-url" value'), 1)
         self.assertEqual(output.count('description">first one</text'), 1)
         self.assertEqual(output.count('description">second</text'), 1)
 
