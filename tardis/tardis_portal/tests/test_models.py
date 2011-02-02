@@ -56,7 +56,7 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
         self.assertEqual(exp.title, 'test exp1')
-        self.assertEqual(exp.url, '')
+        self.assertEqual(exp.url, None)
         self.assertEqual(exp.institution_name, 'monash')
         self.assertEqual(exp.approved, False)
         self.assertEqual(exp.handle, None)
