@@ -46,7 +46,7 @@ class UploadTestCase(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        
+
     def testFileUpload(self):
         from django.http import QueryDict, HttpRequest
         from tardis.tardis_portal.views import upload
@@ -55,8 +55,8 @@ class UploadTestCase(TestCase):
         from os import path, mkdir
         from tempfile import mkdtemp
         from shutil import rmtree
-        from django.conf import settings      
-        from django.utils.datastructures import MultiValueDict  
+        from django.conf import settings
+        from django.utils.datastructures import MultiValueDict
 
         test_dir = mkdtemp()
 
@@ -69,7 +69,7 @@ class UploadTestCase(TestCase):
 
         dataset = models.Dataset(description="dataset description...",
                                  experiment=exp)
-        dataset.save()      
+        dataset.save()
 
         experiment_path = path.join(settings.FILE_STORE_PATH,
                                     str(dataset.experiment.id))
@@ -78,7 +78,7 @@ class UploadTestCase(TestCase):
                    str(dataset.id))
 
         mkdir(experiment_path)
-        mkdir(dataset_path)                    
+        mkdir(dataset_path)
 
         #write test file
         filename = "testfile.txt"
@@ -107,7 +107,8 @@ class UploadTestCase(TestCase):
         request.method = "POST"
         response = upload(request, dataset.id)
 
-        test_files_db = models.Dataset_File.objects.filter(dataset__id=dataset.id)
+        test_files_db = models.Dataset_File.objects.filter(
+            dataset__id=dataset.id)
 
         self.assertTrue(path.exists(path.join(dataset_path, filename)))
         self.assertTrue(dataset.id == 1)
@@ -117,8 +118,7 @@ class UploadTestCase(TestCase):
         rmtree(test_dir)
         rmtree(dataset_path)
         rmtree(experiment_path)
-        exp.delete()        
-
+        exp.delete()
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
