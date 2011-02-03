@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from tardis.tardis_portal.auth.AuthService import AuthService
+from tardis.tardis_portal.auth.authservice import AuthService
 
 GROUPS = "_group_list"
 

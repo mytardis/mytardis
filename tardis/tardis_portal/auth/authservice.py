@@ -50,8 +50,7 @@ class AuthService():
         return auth_instance
 
     def authenticate(self, authMethod, **credentials):
-        """
-        Try and authenticate the user using the auth type he/she specified to
+        """Try and authenticate the user using the auth type he/she specified to
         use and if authentication didn't work using that method, try each
         Django AuthProvider.
         """
@@ -72,8 +71,8 @@ class AuthService():
             return auth.authenticate(**credentials)
 
     def getGroups(self, request):
-        """
-        return a list of tuples containing pluginname and group id
+        """Return a list of tuples containing pluginname and group id
+
         """
         if not self._initialised:
             self._manual_init()
@@ -85,29 +84,30 @@ class AuthService():
         return grouplist
 
     def searchEntities(self, filter):
-        """
-        return a list of users and/or groups
+        """Return a list of users and/or groups
+
         """
         if not self._initialised:
             self._manual_init()
         pass
 
     def searchUsers(self, filter):
-        """
-        return a list of users and/or groups
+        """Return a list of users and/or groups
+
         """
         if not self._initialised:
             self._manual_init()
         pass
 
     def searchGroups(self, **kw):
-        """
-        return a list of users and/or groups
+        """Return a list of users and/or groups
+
         :param id: the value of the id to search for
         :param name: the value of the displayname to search for
         :param max_results: the maximum number of elements to return
         :param sort_by: the attribute the users should be sorted on
         :param plugin: restrict the search to the specific group provider
+
         """
         if not self._initialised:
             self._manual_init()
@@ -147,8 +147,12 @@ class AuthService():
         return result
 
     def getGroupsForEntity(self, entity):
-        """
-        return a list of the groups an entity belongs to::
+        """Return a list of the groups an entity belongs to
+
+        :param entity: the entity to earch for, user or group.
+        :type entity: string
+
+        The groups will be reurned as a list similar to::
 
            [{'name': 'Group 456', 'id': '2'},
            {'name': 'Group 123', 'id': '1'}]
@@ -162,12 +166,12 @@ class AuthService():
                 yield group
 
     def getUser(self, user_dict):
-        """
-        return a user model based on the user dict.
+        """Return a user model based on the user dict.
 
         This function is responsible for creating the
         user within the Django DB and returning the resulting
         user model.
+
         """
         if not self._initialised:
             self._manual_init()
