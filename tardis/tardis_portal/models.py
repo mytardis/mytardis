@@ -31,8 +31,9 @@
 """
 models.py
 
-@author Steve Androulakis
-@author Gerson Galang
+.. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
 """
 
@@ -78,7 +79,8 @@ class GroupAdmin(models.Model):
     GroupAdmin links the Django User and Group tables for group administrators
     :attribute user: a forign key to the
        :class:`django.contrib.auth.models.User`
-    :attribute group: a forign key to the :class:`django.contrib.auth.models.Group`
+    :attribute group: a forign key to the
+       :class:`django.contrib.auth.models.Group`
     """
 
     user = models.ForeignKey(User)
@@ -121,8 +123,25 @@ class XSLT_docs(models.Model):
 
 
 class Experiment(models.Model):
+    """
+    The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
-    url = models.URLField(verify_exists=False, max_length=255, null=True, blank=True)
+    :attribute url: **Undocumented**
+    :attribute approved: **Undocumented**
+    :attribute title: the title of the experiment.
+    :attribute institution_name: the name of the institution who created
+       the dataset.
+    :attribute start_time: **Undocumented**
+    :attribute end_time: **Undocumented**
+    :attribute created_time: **Undocumented**
+    :attribute handle: **Undocumented**
+    :attribute public: **Undocumented**
+    :attribute objects: default model manager
+    :attribute safe: ACL aware model manager
+
+    """
+    url = models.URLField(verify_exists=False, max_length=255,
+                          null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -142,11 +161,17 @@ class Experiment(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
+        """
+        Return the absolute url to the current ``Experiment``
+        """
         return ('tardis.tardis_portal.views.view_experiment', (),
                 {'experiment_id': self.id})
 
     @models.permalink
     def get_edit_url(self):
+        """
+        Return the absolute url to the edit view of the current ``Experiment``
+        """
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
@@ -154,11 +179,13 @@ class Experiment(models.Model):
 class ExperimentACL(models.Model):
 
     """
-    The ExperimentACL table is the core of the Tardis Authorisation framework
-    http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt
+    The ExperimentACL table is the core of the `Tardis Authorisation framework
+    <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
+
     :attribute pluginId: the the name of the auth plugin being used
     :attribute entityId: a foreign key to auth plugins
-    :attribute experimentId: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute experimentId: a forign key to the
+       :class:`tardis.tardis_portal.models.Experiment`
     :attribute canRead: gives the user read access
     :attribute canWrite: gives the user write access
     :attribute canDelete: gives the user delete permission
@@ -166,10 +193,12 @@ class ExperimentACL(models.Model):
     :attribute effectiveDate: the date when access takes into effect
     :attribute expiryDate: the date when access ceases
     :attribute aclOwnershipType: system-owned or user-owned.
+
     System-owned ACLs will prevent users from removing or
     editing ACL entries to a particular experiment they
     own. User-owned ACLs will allow experiment owners to
     remove/add/edit ACL entries to the experiments they own.
+
     """
 
     OWNER_OWNED = 1

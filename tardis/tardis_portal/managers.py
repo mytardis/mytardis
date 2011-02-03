@@ -1,3 +1,11 @@
+
+"""
+managers.py
+
+.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+
+"""
+
 from datetime import datetime
 
 from django.db import models
@@ -18,7 +26,7 @@ class ExperimentManager(models.Manager):
     functions. The username and the group memberships are then
     resolved via the request.groups and request.user objects.
 
-    The :py:tardis.tardis_portal.auth.AuthService: is responsible for
+    The :py:mod:`tardis.tardis_portal.auth.AuthService` is responsible for
     filling the request.groups object.
 
     """
@@ -27,6 +35,9 @@ class ExperimentManager(models.Manager):
         """
         Returns all experiments a user - either authenticated or
         anonymous - is allowed to see and search
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
         """
 
         # experiment is public?
@@ -67,6 +78,12 @@ class ExperimentManager(models.Manager):
         """
         Returns an experiment under the consideration of the ACL rules
         Raises PermissionDenied if the user does not have access.
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment to be edited
+        :type experiment_id: string
+
         """
         experiment = \
             super(ExperimentManager, self).get(pk=experiment_id)
@@ -117,6 +134,10 @@ class ExperimentManager(models.Manager):
     def owned(self, request):
         """
         Return all experiments which are owned by a particular user
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+
         """
 
         # the user must be authenticated
@@ -137,6 +158,12 @@ class ExperimentManager(models.Manager):
         """
         returns a list of users which have ACL rules associated with
         this to this experiment
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment to be edited
+        :type experiment_id: string
+
         """
 
         from tardis.tardis_portal.models import ExperimentACL
@@ -149,6 +176,12 @@ class ExperimentManager(models.Manager):
         """
         returns a list of user owned-groups which have ACL rules
         associated with this experiment
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment to be edited
+        :type experiment_id: string
+
         """
 
         from tardis.tardis_portal.models import ExperimentACL
@@ -162,6 +195,12 @@ class ExperimentManager(models.Manager):
         """
         returns a list of sytem-owned groups which have ACL rules
         associated with this experiment
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment to be edited
+        :type experiment_id: string
+
         """
 
         from tardis.tardis_portal.models import ExperimentACL
@@ -174,6 +213,12 @@ class ExperimentManager(models.Manager):
     def external_users(self, request, experiment_id):
         """
         returns a list of groups which have external ACL rules
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment to be edited
+        :type experiment_id: string
+
         """
 
         from tardis.tardis_portal.models import ExperimentACL
