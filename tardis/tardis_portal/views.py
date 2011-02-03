@@ -154,6 +154,36 @@ def partners(request):
                         'tardis_portal/partners.html', c))
 
 
+def experiment_index(request):
+
+    experiments = None
+
+    # if logged in
+
+    if request.user.is_authenticated():
+        experiments = get_accessible_experiments(request)
+        if experiments:
+            experiments = experiments.order_by('-update_time')
+
+    public_experiments = Experiment.objects.filter(public=True)
+    if public_experiments:
+        public_experiments = public_experiments.order_by('-update_time')
+
+    c = Context({
+        'experiments': experiments,
+        'public_experiments': public_experiments,
+        'subtitle': 'Experiment Index',
+        'bodyclass': 'list',
+        'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
+        'next': '/experiment/view/',
+        'data_pressed': True,
+        'searchDatafileSelectionForm':
+            getNewSearchDatafileSelectionForm()})
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/experiment_index.html', c))
+
+
 @experiment_access_required
 def view_experiment(request, experiment_id):
 
@@ -209,34 +239,100 @@ def view_experiment(request, experiment_id):
                         'tardis_portal/view_experiment.html', c))
 
 
-def experiment_index(request):
+@login_required
+def create_experiment(request,
+                      template_name='tardis_portal/create_experiment.html'):
+    """
+    Create a new experiment view.
 
-    experiments = None
-
-    # if logged in
-
-    if request.user.is_authenticated():
-        experiments = get_accessible_experiments(request)
-        if experiments:
-            experiments = experiments.order_by('-update_time')
-
-    public_experiments = Experiment.objects.filter(public=True)
-    if public_experiments:
-        public_experiments = public_experiments.order_by('-update_time')
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
 
     c = Context({
-        'experiments': experiments,
-        'public_experiments': public_experiments,
-        'subtitle': 'Experiment Index',
-        'bodyclass': 'list',
-        'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
-        'next': '/experiment/view/',
-        'data_pressed': True,
-        'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+        'subtitle': 'Create Experiment',
+        'directory_listing': staging_traverse(),
+        'user_id': request.user.id,
+        })
+
+    if request.method == 'POST':
+        form = ExperimentForm(request.POST, request.FILES)
+        if form.is_valid():
+            full_experiment = form.save(commit=False)
+
+            # group/owner assignment stuff, soon to be replaced
+
+            experiment = full_experiment['experiment']
+            experiment.created_by = request.user
+            full_experiment.save_m2m()
+
+            g = Group(name=experiment.id)
+            g.save()
+            exp_owner = Experiment_Owner(experiment=experiment,
+                                         user=request.user)
+            exp_owner.save()
+            request.user.groups.add(g)
+            stage_files(full_experiment['dataset_files'], experiment.id)
+            params = urlencode({'status': "Experiment Saved."})
+            return HttpResponseRedirect(
+                '?'.join([experiment.get_absolute_url(), params]))
+
+        c['status'] = "Errors exist in form."
+        c["error"] = 'true'
+
+    else:
+        form = ExperimentForm(extra=1)
+
+    c['form'] = form
+
+    return HttpResponse(render_response_index(request, template_name, c))
+
+
+@login_required
+def edit_experiment(request, experiment_id,
+                      template="tardis_portal/create_experiment.html"):
+    """
+    Edit and existing experiment.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be edited
+    :type experiment_id: string
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
+    experiment = Experiment.objects.get(id=experiment_id)
+
+    c = Context({'subtitle': 'Edit Experiment',
+                 'user_id': request.user.id,
+              })
+
+    if request.method == 'POST':
+        staging = StagingHook(None, experiment_id)
+        form = ExperimentForm(request.POST, request.FILES,
+                              instance=experiment, extra=0,
+                              datafile_post_save_cb=staging)
+        if form.is_valid():
+            form.save()
+            params = urlencode({'status': "Experiment Saved."})
+            return HttpResponseRedirect(
+                '?'.join([experiment.get_absolute_url(),
+                          params]))
+
+        c['status'] = "Errors exist in form."
+        c["error"] = 'true'
+    else:
+        form = ExperimentForm(instance=experiment, extra=0)
+
+    c['directory_listing'] = staging_traverse()
+    c['form'] = form
 
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/experiment_index.html', c))
+                        template, c))
 
 
 # todo complete....
@@ -276,6 +372,7 @@ def login(request):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
+
 
 @login_required()
 def manage_auth_methods(request):
@@ -1700,58 +1797,6 @@ def import_params(request):
                         'tardis_portal/import_params.html', c))
 
 
-@login_required
-def create_experiment(request,
-                      template_name='tardis_portal/create_experiment.html'):
-    """
-    Create a new experiment view.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param template_name: the path of the template to render
-    :type template_name: string
-    :rtype: :class:`django.http.HttpResponse`
-    """
-
-    c = Context({
-        'subtitle': 'Create Experiment',
-        'directory_listing': staging_traverse(),
-        'user_id': request.user.id,
-        })
-
-    if request.method == 'POST':
-        form = ExperimentForm(request.POST, request.FILES)
-        if form.is_valid():
-            full_experiment = form.save(commit=False)
-
-            # group/owner assignment stuff, soon to be replaced
-
-            experiment = full_experiment['experiment']
-            experiment.created_by = request.user
-            full_experiment.save_m2m()
-
-            g = Group(name=experiment.id)
-            g.save()
-            exp_owner = Experiment_Owner(experiment=experiment,
-                                         user=request.user)
-            exp_owner.save()
-            request.user.groups.add(g)
-            stage_files(full_experiment['dataset_files'], experiment.id)
-            params = urlencode({'status': "Experiment Saved."})
-            return HttpResponseRedirect(
-                '?'.join([experiment.get_absolute_url(), params]))
-
-        c['status'] = "Errors exist in form."
-        c["error"] = 'true'
-
-    else:
-        form = ExperimentForm(extra=1)
-
-    c['form'] = form
-
-    return HttpResponse(render_response_index(request, template_name, c))
-
-
 def upload_complete(request,
                     template_name='tardis_portal/upload_complete.html'):
     """
@@ -1856,46 +1901,3 @@ def search_equipment(request):
                  'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
 
-
-@login_required
-def edit_experiment(request, experiment_id,
-                      template="tardis_portal/create_experiment.html"):
-    """
-    Edit and existing experiment.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment to be edited
-    :type experiment_id: string
-    :param template_name: the path of the template to render
-    :type template_name: string
-    :rtype: :class:`django.http.HttpResponse`
-    """
-    experiment = Experiment.objects.get(id=experiment_id)
-
-    c = Context({'subtitle': 'Edit Experiment',
-                 'user_id': request.user.id,
-              })
-
-    if request.method == 'POST':
-        staging = StagingHook(None, experiment_id)
-        form = ExperimentForm(request.POST, request.FILES,
-                              instance=experiment, extra=0,
-                              datafile_post_save_cb=staging)
-        if form.is_valid():
-            form.save()
-            params = urlencode({'status': "Experiment Saved."})
-            return HttpResponseRedirect(
-                '?'.join([experiment.get_absolute_url(),
-                          params]))
-
-        c['status'] = "Errors exist in form."
-        c["error"] = 'true'
-    else:
-        form = ExperimentForm(instance=experiment, extra=0)
-
-    c['directory_listing'] = staging_traverse()
-    c['form'] = form
-
-    return HttpResponse(render_response_index(request,
-                        template, c))
