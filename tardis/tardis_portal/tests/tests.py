@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
