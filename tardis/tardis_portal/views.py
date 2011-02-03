@@ -804,8 +804,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     # datafiles that the user has access to
     if not datafile_results:
         logger.info("__getFilteredDatafiles: user ",
-                    "{0} ({1}) doesn\'t".format(request.user,
-                                                request.user.id),
+                    "{0} doesn\'t".format(request.user),
                     "access to any experiments")
         return datafile_results
 
