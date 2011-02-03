@@ -82,7 +82,7 @@ class AuthServiceTestCase(TestCase):
         from tardis.tardis_portal.auth import AuthService, auth_service
         s = MockSettings()
         s.GROUP_PROVIDERS = \
-            ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+            ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
         a = AuthService(settings=s)
         a._manual_init()
         self._auth_service_group_providers = auth_service._group_providers
@@ -133,7 +133,7 @@ class AuthServiceTestCase(TestCase):
         from tardis.tardis_portal.auth import AuthService
         s = MockSettings()
         s.GROUP_PROVIDERS = \
-            ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+            ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
         a = AuthService(settings=s)
         a._manual_init()
         # check the correct group provider is registered
@@ -156,7 +156,7 @@ class AuthServiceTestCase(TestCase):
         from tardis.tardis_portal.auth import AuthService
         s = MockSettings()
         s.GROUP_PROVIDERS = \
-            ('tardis.tardis_portal.tests.test_AuthService.MockGroupProvider',)
+            ('tardis.tardis_portal.tests.test_authservice.MockGroupProvider',)
         a = AuthService(settings=s)
         a._manual_init()
 
@@ -173,7 +173,7 @@ class AuthServiceTestCase(TestCase):
         s.USER_PROVIDERS = ()
         s.GROUP_PROVIDERS = ()
         s.AUTH_PROVIDERS = (('mockauth', 'Mock Auth',
-            'tardis.tardis_portal.tests.test_AuthService.MockAuthProvider'),)
+            'tardis.tardis_portal.tests.test_authservice.MockAuthProvider'),)
         a = AuthService(settings=s)
 
         request = MockRequest()
