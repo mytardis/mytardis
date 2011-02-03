@@ -29,25 +29,26 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from tardis.tardis_portal.models import *
+
+from tardis.tardis_portal import models
 from django.contrib import admin
 
-admin.site.register(XML_data)
-admin.site.register(XSLT_docs)
-admin.site.register(Experiment)
-admin.site.register(Dataset)
-admin.site.register(Dataset_File)
-admin.site.register(Schema)
-admin.site.register(ParameterName)
-admin.site.register(DatafileParameter)
-admin.site.register(DatasetParameter)
-admin.site.register(Author_Experiment)
-admin.site.register(UserProfile)
-admin.site.register(ExperimentParameter)
-admin.site.register(DatafileParameterSet)
-admin.site.register(DatasetParameterSet)
-admin.site.register(ExperimentParameterSet)
-admin.site.register(GroupAdmin)
-admin.site.register(UserAuthentication)
-admin.site.register(ExperimentACL)
-admin.site.register(Equipment)
+admin.site.register(models.XML_data)
+admin.site.register(models.XSLT_docs)
+admin.site.register(models.Experiment)
+admin.site.register(models.Dataset)
+admin.site.register(models.Dataset_File)
+admin.site.register(models.Schema)
+admin.site.register(models.ParameterName)
+admin.site.register(models.DatafileParameter)
+admin.site.register(models.DatasetParameter)
+admin.site.register(models.Author_Experiment)
+admin.site.register(models.UserProfile)
+admin.site.register(models.ExperimentParameter)
+admin.site.register(models.DatafileParameterSet)
+admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.ExperimentParameterSet)
+admin.site.register(models.GroupAdmin)
+admin.site.register(models.UserAuthentication)
+admin.site.register(models.ExperimentACL)
+admin.site.register(models.Equipment)
