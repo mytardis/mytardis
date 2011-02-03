@@ -39,63 +39,67 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 from django.test import TestCase
 
 
-class UploadTestCase(TestCase):
+class UploadTestCase(TestCase):    
+    
     def setUp(self):
         from django.contrib.auth.models import User
+        from os import path, mkdir
+        from tempfile import mkdtemp
+        from shutil import rmtree
+        from django.conf import settings    
+        from tardis.tardis_portal import models            
+        
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
+        
+        self.test_dir = mkdtemp()
+
+        self.exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        self.exp.save()
+
+        self.dataset = models.Dataset(description="dataset description...",
+                                 experiment=self.exp)
+        self.dataset.save()
+
+        self.experiment_path = path.join(settings.FILE_STORE_PATH,
+                                    str(self.dataset.experiment.id))
+
+        self.dataset_path = path.join(self.experiment_path,
+                   str(self.dataset.id))
+
+        mkdir(self.experiment_path)
+        mkdir(self.dataset_path)
+
+        #write test file
+        self.filename = "testfile.txt"
+
+        self.f1 = open(path.join(self.test_dir, self.filename), 'w')
+        self.f1.write("Test file 1")
+        self.f1.close()
+
+        self.f1_size = path.getsize(path.join(self.test_dir, self.filename))
+
+        self.f1 = open(path.join(self.test_dir, self.filename), 'r')        
 
     def testFileUpload(self):
         from django.http import QueryDict, HttpRequest
         from tardis.tardis_portal.views import upload
         from django.core.files import File
         from django.core.files.uploadedfile import UploadedFile
-        from os import path, mkdir
-        from tempfile import mkdtemp
-        from shutil import rmtree
-        from django.conf import settings
         from django.utils.datastructures import MultiValueDict
-
-        test_dir = mkdtemp()
-
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
-        exp.save()
-
-        dataset = models.Dataset(description="dataset description...",
-                                 experiment=exp)
-        dataset.save()
-
-        experiment_path = path.join(settings.FILE_STORE_PATH,
-                                    str(dataset.experiment.id))
-
-        dataset_path = path.join(experiment_path,
-                   str(dataset.id))
-
-        mkdir(experiment_path)
-        mkdir(dataset_path)
-
-        #write test file
-        filename = "testfile.txt"
-
-        f1 = open(path.join(test_dir, filename), 'w')
-        f1.write("Test file 1")
-        f1.close()
-
-        f1_size = path.getsize(path.join(test_dir, filename))
-
-        f1 = open(path.join(test_dir, filename), 'r')
+        from tardis.tardis_portal import models 
+        from os import path               
 
         #create request.FILES object
-        django_file = File(f1)
+        django_file = File(self.f1)
         uploaded_file = UploadedFile(file=django_file)
-        uploaded_file.name = filename
-        uploaded_file.size = f1_size
+        uploaded_file.name = self.filename
+        uploaded_file.size = self.f1_size
 
         post_data = [('enctype', "multipart/form-data")]
         post = QueryDict('&'.join(['%s=%s' % (k, v) for k, v in post_data]))
@@ -105,20 +109,23 @@ class UploadTestCase(TestCase):
         request.FILES = files
         request.POST = post
         request.method = "POST"
-        response = upload(request, dataset.id)
+        response = upload(request, self.dataset.id)
 
         test_files_db = models.Dataset_File.objects.filter(
-            dataset__id=dataset.id)
+            dataset__id=self.dataset.id)
 
-        self.assertTrue(path.exists(path.join(dataset_path, filename)))
-        self.assertTrue(dataset.id == 1)
+        self.assertTrue(path.exists(path.join(self.dataset_path, self.filename)))
+        self.assertTrue(self.dataset.id == 1)
         self.assertTrue(test_files_db[0].url == "file://1/testfile.txt")
 
-        f1.close()
-        rmtree(test_dir)
-        rmtree(dataset_path)
-        rmtree(experiment_path)
-        exp.delete()
+    def tearDown(self):
+        from shutil import rmtree     
+           
+        self.f1.close()
+        rmtree(self.test_dir)
+        rmtree(self.dataset_path)
+        rmtree(self.experiment_path)
+        self.exp.delete()        
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
