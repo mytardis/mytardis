@@ -33,7 +33,7 @@ from tardis.tardis_portal.auth.authservice import AuthService
 
 GROUPS = "_group_list"
 
-
+# The auth_service ``singleton``
 auth_service = AuthService()
 
 
