@@ -665,8 +665,8 @@ def retrieve_xml_data(request, dataset_file_id):
 def retrieve_datafile_list(request, dataset_id):
 
     dataset_results = \
-        Dataset_File.objects.filter(dataset__pk=dataset_id).order_by('filename'
-            )
+        Dataset_File.objects.filter(
+        dataset__pk=dataset_id).order_by('filename')
 
     filename_search = None
 
@@ -1842,12 +1842,7 @@ def upload_complete(request,
     return render_to_response(template_name, c)
 
 
-def upload(
-    request,
-    dataset_id,
-    *args,
-    **kwargs
-    ):
+def upload(request, dataset_id, *args, **kwargs):
     """
     Uploads a datafile to the store and datafile metadata
 
