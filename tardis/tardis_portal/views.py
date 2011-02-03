@@ -464,20 +464,22 @@ def register_experiment_ws_xmldata_internal(request):
         return response
 
 
+# TODO removed username from arguments
 def _registerExperimentDocument(filename, created_by, expid=None,
                                 owners=[], username=None):
     '''
-    Register the experiment document.
+    Register the experiment document and return the experiment id.
 
-    Arguments:
-    filename -- path of the document to parse (METS or notMETS)
-    created_by -- a User instance
-    expid -- the experiment ID to use
-    owner -- a list of owners
-    username -- the user who is the owner
-
-    Returns:
-    The experiment ID
+    :param filename: path of the document to parse (METS or notMETS)
+    :type filename: string
+    :param created_by: a User instance
+    :type created_by: :py:class:`django.contrib.auth.models.User`
+    :param expid: the experiment ID to use
+    :type expid: int
+    :param owners: a list of owners
+    :type owner: list
+    :param username: **UNUSED**
+    :rtype: int
 
     '''
 
@@ -918,24 +920,22 @@ def __getFilteredExperiments(request, searchFilterData):
     return experiments
 
 
-def __filterParameters(
-    parameters,
-    datafile_results,
-    searchFilterData,
-    paramType,
-    ):
+def __filterParameters(parameters, datafile_results,
+                       searchFilterData, paramType):
     """Go through each parameter and apply it as a filter (together with its
     specified comparator) on the provided list of datafiles.
 
-    Arguments:
-    parameters -- list of ParameterNames model
-    datafile_results -- list of datafile to apply the filter
-    searchFilterData -- the cleaned up search form data
-    paramType -- either 'datafile' or 'dataset'
+    :param parameters: list of ParameterNames model
+    :type parameters: list containing
+       :py:class:`tardis.tardis_portal.models.ParameterNames`
+    :param datafile_results: list of datafile to apply the filter
+    :param searchFilterData: the cleaned up search form data
+    :param paramType: either ``datafile`` or ``dataset``
+    :type paramType: :py:class:`tardis.tardis_portal.models.Dataset` or
+       :py:class:`tardis.tardis_portal.models.Dataset_File`
 
-    Returns:
-    A list of datafiles as a result of the query or None if the provided search
-      request is invalid
+    :returns: A list of datafiles as a result of the query or None if the
+      provided search request is invalid
 
     """
 
@@ -1106,16 +1106,13 @@ def __forwardToSearchExperimentFormPage(request):
 def __getSearchDatafileForm(request, searchQueryType):
     """Create the search datafile form based on the HTTP GET request.
 
-    Arguments:
-    request -- The HTTP request object
-    searchQueryType -- The search query type: 'mx' or 'saxs'
-
-    Returns:
-    The supported search datafile form
-
-    Throws:
-    UnsupportedSearchQueryTypeError is the provided searchQueryType is not
-    supported
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param searchQueryType: The search query type: 'mx' or 'saxs'
+    :raises:
+       :py:class:`tardis.tardis_portal.errors.UnsupportedSearchQueryTypeError`
+       is the provided searchQueryType is not supported.
+    :returns: The supported search datafile form
 
     """
 
@@ -1130,11 +1127,9 @@ def __getSearchDatafileForm(request, searchQueryType):
 def __getSearchExperimentForm(request):
     """Create the search experiment form.
 
-    Arguments:
-    request -- The HTTP request object
-
-    Returns:
-    The search experiment form
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :returns: The search experiment form.
 
     """
 
@@ -1146,20 +1141,20 @@ def __getSearchExperimentForm(request):
 def __processDatafileParameters(request, searchQueryType, form):
     """Validate the provided datafile search request and return search results.
 
-    Arguments:
-    request -- The HTTP request object
-    searchQueryType -- The search query type
-    form -- The search form to use
-
-    Returns:
-    A list of datafiles as a result of the query or None if the provided search
-      request is invalid
-
-    Throws:
-    SearchQueryTypeUnprovidedError if searchQueryType is not in the HTTP GET
-        request
-    UnsupportedSearchQueryTypeError is the provided searchQueryType is not
-        supported
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param searchQueryType: The search query type
+    :param form: The search form to use
+    :raises:
+       :py:class:`tardis.tardis_portal.errors.SearchQueryTypeUnprovidedError`
+       if searchQueryType is not in the HTTP GET request
+    :raises:
+       :py:class:`tardis.tardis_portal.errors.UnsupportedSearchQueryTypeError`
+       is the provided searchQueryType is not supported
+    :returns: A list of datafiles as a result of the query or None if the
+       provided search request is invalid.
+    :rtype: list of :py:class:`tardis.tardis_portal.models.Dataset_Files` or
+       None
 
     """
 
@@ -1181,13 +1176,11 @@ def __processExperimentParameters(request, form):
     """Validate the provided experiment search request and return search
     results.
 
-    Arguments:
-    request -- The HTTP request object
-    form -- The search form to use
-
-    Returns:
-    A list of experiments as a result of the query or None if the provided
-      search request is invalid
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param form: The search form to use
+    :returns: A list of experiments as a result of the query or None if the
+      provided search request is invalid.
 
     """
 
@@ -1867,7 +1860,8 @@ def upload(request, dataset_id, *args, **kwargs):
     :type request: :class:`django.http.HttpRequest`
     :param dataset_id: the dataset_id
     :type dataset_id: integer
-    :rtype: boolean true if successful
+    :returns: boolean true if successful
+    :rtype: bool
     """
 
     dataset = Dataset.objects.get(id=dataset_id)
@@ -1903,7 +1897,7 @@ def upload_files(request, dataset_id,
     :param template_name: the path of the template to render
     :param dataset_id: the dataset_id
     :type dataset_id: integer
-    :rtype: A view containing an Uploadify *create files* button
+    :returns: A view containing an Uploadify *create files* button
     """
     url = reverse('tardis.tardis_portal.views.upload_complete')
     c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
