@@ -312,12 +312,17 @@ def create_experiment(request,
             experiment.created_by = request.user
             full_experiment.save_m2m()
 
-            g = Group(name=experiment.id)
-            g.save()
-            exp_owner = Experiment_Owner(experiment=experiment,
-                                         user=request.user)
-            exp_owner.save()
-            request.user.groups.add(g)
+            # add defaul ACL
+            acl = ExperimentACL(experiment=experiment,
+                                pluginId=django_user,
+                                entityId=str(request.user.id),
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl.save()
+
             stage_files(full_experiment['dataset_files'], experiment.id)
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
