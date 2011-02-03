@@ -36,12 +36,13 @@ views.py
 
 """
 
-from urllib import urlencode
+from base64 import b64decode
+import urllib2
+from urllib import urlencode, unquote_plus, urlopen
 
 from django.template import Context
 from django.conf import settings
 from django.db import transaction
-
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse
@@ -51,24 +52,29 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
 
 from tardis.tardis_portal import ProcessExperiment
-from tardis.tardis_portal.forms import *
-from tardis.tardis_portal.errors import *
+from tardis.tardis_portal.forms import ExperimentForm, \
+    createSearchDatafileForm, createSearchDatafileSelectionForm, \
+    LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
+    ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
+    ImportParamsForm, EquipmentSearchForm
+from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
     staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
-from tardis.tardis_portal.models import *
+from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
+    DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
+    DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
+    Dataset, Equipment
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth import localdb_auth, ldap_auth
+from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
-from tardis.tardis_portal.shortcuts import *
+from tardis.tardis_portal.shortcuts import render_response_index, \
+    return_response_error, return_response_not_found, \
+    return_response_error_message
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
-
-from base64 import b64decode
-import urllib
-import urllib2
 
 
 def getNewSearchDatafileSelectionForm():
@@ -88,22 +94,23 @@ def logout(request):
 def index(request):
 
     status = ''
-    c = Context(
-    {'status': status,
-         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'status': status,
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
 
 def site_settings(request):
 
-    if request.method == 'POST':  # If the form has been submitted...
+    if request.method == 'POST':
         if 'username' in request.POST and 'password' in request.POST:
 
             username = request.POST['username']
             password = request.POST['password']
 
-            user = auth_service.authenticate(username=username, password=password)
+            user = auth_service.authenticate(username=username,
+                                             password=password)
             if user is not None:
                 if user.is_staff:
 
@@ -119,13 +126,13 @@ def site_settings(request):
     return return_response_error(request)
 
 
-@experiment_access_required
+@authz.experiment_access_required
 def display_experiment_image(
     request, experiment_id, parameterset_id, parameter_name):
 
-    # todo handle not exist
+    # TODO handle not exist
 
-    if not has_experiment_access(request, experiment_id):
+    if not authz.has_experiment_access(request, experiment_id):
         return return_response_error(request)
 
     image = ExperimentParameter.objects.get(name__name=parameter_name,
@@ -134,13 +141,13 @@ def display_experiment_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-@dataset_access_required
+@authz.dataset_access_required
 def display_dataset_image(
     request, dataset_id, parameterset_id, parameter_name):
 
-    # todo handle not exist
+    # TODO handle not exist
 
-    if not has_dataset_access(request, dataset_id):
+    if not authz.has_dataset_access(request, dataset_id):
         return return_response_error(request)
 
     image = DatasetParameter.objects.get(name__name=parameter_name,
@@ -149,13 +156,13 @@ def display_dataset_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-@datafile_access_required
+@authz.datafile_access_required
 def display_datafile_image(
     request, dataset_file_id, parameterset_id, parameter_name):
 
-    # todo handle not exist
+    # TODO handle not exist
 
-    if not has_datafile_access(request, dataset_file_id):
+    if not authz.has_datafile_access(request, dataset_file_id):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,
@@ -186,10 +193,8 @@ def experiment_index(request):
 
     experiments = None
 
-    # if logged in
-
     if request.user.is_authenticated():
-        experiments = get_accessible_experiments(request)
+        experiments = authz.get_accessible_experiments(request)
         if experiments:
             experiments = experiments.order_by('-update_time')
 
@@ -212,9 +217,18 @@ def experiment_index(request):
                         'tardis_portal/experiment_index.html', c))
 
 
-@experiment_access_required
+@authz.experiment_access_required
 def view_experiment(request, experiment_id):
+    """View an existing experiment.
 
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be edited
+    :type experiment_id: string
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+    """
     c = Context({'upload_complete_url':
                      reverse('tardis.tardis_portal.views.upload_complete'),
                  'searchDatafileSelectionForm':
@@ -270,8 +284,7 @@ def view_experiment(request, experiment_id):
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
-    """
-    Create a new experiment view.
+    """Create a new experiment view.
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
@@ -322,8 +335,7 @@ def create_experiment(request,
 @login_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
-    """
-    Edit and existing experiment.
+    """Edit an existing experiment.
 
     :param request: a HTTP Request instance
     :type request: :class:`django.http.HttpRequest`
@@ -392,7 +404,7 @@ def login(request):
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
-                     'loginForm': LoginForm(),})
+                     'loginForm': LoginForm()})
         return return_response_error_message(
             request, 'tardis_portal/login.html', c)
 
@@ -496,7 +508,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     # for each PI
     for owner in owners:
         # is the use of the urllib really neccessary???
-        owner = urllib.unquote_plus(owner)
+        owner = unquote_plus(owner)
 
         # try get user from email
         if settings.LDAP_ENABLE:
@@ -603,7 +615,7 @@ def register_experiment_ws_xmldata(request):
                         # todo remove hard coded u/p for sync transfer....
                         logger.debug('started transfer thread')
                         file_transfer_url = from_url + '/file_transfer/'
-                        data = urllib.urlencode({
+                        data = urlencode({
                             'originid': str(originid),
                             'eid': str(eid),
                             'site_settings_url': request.build_absolute_uri(
@@ -611,7 +623,7 @@ def register_experiment_ws_xmldata(request):
                             'username': str('synchrotron'),
                             'password': str('tardis'),
                             })
-                        urllib.urlopen(file_transfer_url, data)
+                        urlopen(file_transfer_url, data)
 
                 FileTransferThread().start()
 
@@ -632,7 +644,7 @@ def register_experiment_ws_xmldata(request):
                         'tardis_portal/register_experiment.html', c))
 
 
-@datafile_access_required
+@authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
@@ -644,7 +656,7 @@ def retrieve_parameters(request, dataset_file_id):
                         'tardis_portal/ajax/parameters.html', c))
 
 
-@datafile_access_required
+@authz.datafile_access_required
 def retrieve_xml_data(request, dataset_file_id):
     from pygments import highlight
     from pygments.lexers import XmlLexer
@@ -661,7 +673,7 @@ def retrieve_xml_data(request, dataset_file_id):
                         'tardis_portal/ajax/xml_data.html', c))
 
 
-@dataset_access_required
+@authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
 
     dataset_results = \
@@ -699,7 +711,7 @@ def retrieve_datafile_list(request, dataset_id):
 
     if request.user.is_authenticated():
         experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
-        is_owner = has_experiment_ownership(experiment_id, request.user.id)
+        is_owner = authz.has_experiment_ownership(experiment_id, request.user.id)
 
     c = Context({
         'dataset': dataset,
@@ -796,7 +808,7 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     """
 
-    datafile_results = get_accessible_datafiles_for_user(request)
+    datafile_results = authz.get_accessible_datafiles_for_user(request)
     logger.info('__getFilteredDatafiles: searchFilterData {0}'.format(searchFilterData))
 
     # there's no need to do any filtering if we didn't find any
@@ -858,7 +870,7 @@ def __getFilteredExperiments(request, searchFilterData):
 
     """
 
-    experiments = get_accessible_experiments(request)
+    experiments = authz.get_accessible_experiments(request)
 
     if experiments is None:
         return []
@@ -1290,7 +1302,7 @@ def retrieve_group_list(request):
                         'tardis_portal/ajax/group_list.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
 
     users = Experiment.safe.users(request, experiment_id)
@@ -1299,7 +1311,7 @@ def retrieve_access_list_user(request, experiment_id):
                         'tardis_portal/ajax/access_list_user.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
     user_owned_groups = Experiment.safe.user_owned_groups(request,
@@ -1314,7 +1326,7 @@ def retrieve_access_list_group(request, experiment_id):
                         'tardis_portal/ajax/access_list_group.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
     groups = Experiment.safe.external_users(request, experiment_id)
@@ -1323,7 +1335,7 @@ def retrieve_access_list_external(request, experiment_id):
                         'tardis_portal/ajax/access_list_external.html', c))
 
 
-@group_ownership_required
+@authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
     users = User.objects.filter(groups__id=group_id)
@@ -1341,7 +1353,7 @@ def manage_groups(request):
                         'tardis_portal/manage_group_members.html', c))
 
 
-@group_ownership_required
+@authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
     isAdmin = False
@@ -1375,7 +1387,7 @@ def add_user_to_group(request, group_id, username):
          'tardis_portal/ajax/add_user_to_group_result.html', c))
 
 
-@group_ownership_required
+@authz.group_ownership_required
 def remove_user_from_group(request, group_id, username):
 
     try:
@@ -1405,7 +1417,7 @@ def remove_user_from_group(request, group_id, username):
                         'tardis_portal/ajax/remove_member_result.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
 
     canRead = False
@@ -1434,10 +1446,11 @@ def add_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return return_response_error(request)
 
-    acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId=django_user,
-                                       entityId=str(user.id),
-                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_user,
+        entityId=str(user.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 0:
         acl = ExperimentACL(experiment=experiment,
@@ -1455,7 +1468,7 @@ def add_experiment_access_user(request, experiment_id, username):
     return return_response_error(request)
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
 
     try:
@@ -1468,10 +1481,11 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return return_response_error(request)
 
-    acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId=django_user,
-                                       entityId=str(user.id),
-                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_user,
+        entityId=str(user.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 1:
         acl[0].delete()
@@ -1482,7 +1496,7 @@ def remove_experiment_access_user(request, experiment_id, username):
     return return_response_error(request)
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def change_user_permissions(request, experiment_id, username):
 
     try:
@@ -1496,10 +1510,11 @@ def change_user_permissions(request, experiment_id, username):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId=django_user,
-                                        entityId=str(user.id),
-                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL.objects.get(
+            experiment=experiment,
+            pluginId=django_user,
+            entityId=str(user.id),
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
         return return_response_error(request)
 
@@ -1513,13 +1528,14 @@ def change_user_permissions(request, experiment_id, username):
     else:
         form = ChangeUserPermissionsForm(instance=acl)
         c = Context({'form': form,
-                     'header': "Change User Permissions for '%s'" % user.username})
+                     'header':
+                         "Change User Permissions for '%s'" % user.username})
 
     return HttpResponse(render_response_index(request,
                             'tardis_portal/form_template.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def change_group_permissions(request, experiment_id, group_id):
 
     try:
@@ -1533,10 +1549,11 @@ def change_group_permissions(request, experiment_id, group_id):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId=django_group,
-                                        entityId=str(group.id),
-                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL.objects.get(
+            experiment=experiment,
+            pluginId=django_group,
+            entityId=str(group.id),
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
     except ExperimentACL.DoesNotExist:
         return return_response_error(request)
 
@@ -1553,11 +1570,12 @@ def change_group_permissions(request, experiment_id, group_id):
             return HttpResponseRedirect('/experiment/control_panel/')
 
     else:
-        form = ChangeGroupPermissionsForm(initial={'canRead': acl.canRead,
-                                                   'canWrite': acl.canWrite,
-                                                   'canDelete': acl.canDelete,
-                                                   'effectiveDate': acl.effectiveDate,
-                                                   'expiryDate': acl.expiryDate})
+        form = ChangeGroupPermissionsForm(
+            initial={'canRead': acl.canRead,
+                     'canWrite': acl.canWrite,
+                     'canDelete': acl.canDelete,
+                     'effectiveDate': acl.effectiveDate,
+                     'expiryDate': acl.expiryDate})
 
     c = Context({'form': form,
                  'header': "Change Group Permissions for '%s'" % group.name})
@@ -1566,7 +1584,7 @@ def change_group_permissions(request, experiment_id, group_id):
                             'tardis_portal/change_group_permissions.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def add_experiment_access_group(request, experiment_id, groupname):
 
     create = False
@@ -1611,14 +1629,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
         except Group.DoesNotExist:
             return return_response_error(request)
 
-        if admin and not is_group_admin(request, group.id):
+        if admin and not authz.is_group_admin(request, group.id):
             return return_response_error(request)
 
-
-    acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId=django_group,
-                                       entityId=str(group.id),
-                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_group,
+        entityId=str(group.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
     if acl.count() > 0:
         # an acl role already exists
         return return_response_error(request)
@@ -1661,7 +1679,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         'tardis_portal/ajax/add_group_result.html', c))
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def remove_experiment_access_group(request, experiment_id, group_id):
 
     try:
@@ -1674,10 +1692,11 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     except Experiment.DoesNotExist:
         return return_response_error(request)
 
-    acl = ExperimentACL.objects.filter(experiment=experiment,
-                                       pluginId=django_group,
-                                       entityId=str(group.id),
-                                       aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_group,
+        entityId=str(group.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 1:
         acl[0].delete()
@@ -1688,7 +1707,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     return return_response_error(request)
 
 
-@experiment_ownership_required
+@authz.experiment_ownership_required
 def publish_experiment(request, experiment_id):
 
     experiment = Experiment.objects.get(id=experiment_id)
@@ -1909,11 +1928,13 @@ def search_equipment(request):
                 q = q.filter(type__icontains=data['type'])
 
             c = Context({'object_list': q,
-                         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+                         'searchDatafileSelectionForm':
+                             getNewSearchDatafileSelectionForm()})
             return render_to_response('tardis_portal/equipment_list.html', c)
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
-                 'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
     return render_to_response('tardis_portal/search_equipment.html', c)
