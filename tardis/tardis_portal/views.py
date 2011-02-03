@@ -228,6 +228,7 @@ def view_experiment(request, experiment_id):
     :param template_name: the path of the template to render
     :type template_name: string
     :rtype: :class:`django.http.HttpResponse`
+
     """
     c = Context({'upload_complete_url':
                      reverse('tardis.tardis_portal.views.upload_complete'),
@@ -291,6 +292,7 @@ def create_experiment(request,
     :param template_name: the path of the template to render
     :type template_name: string
     :rtype: :class:`django.http.HttpResponse`
+
     """
 
     c = Context({
@@ -344,6 +346,7 @@ def edit_experiment(request, experiment_id,
     :param template_name: the path of the template to render
     :type template_name: string
     :rtype: :class:`django.http.HttpResponse`
+
     """
     experiment = Experiment.objects.get(id=experiment_id)
 
