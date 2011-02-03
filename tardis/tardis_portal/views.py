@@ -670,8 +670,7 @@ def retrieve_datafile_list(request, dataset_id):
 
     filename_search = None
 
-    if 'filename' in request.GET and len(request.GET['filename']) \
-        > 0:
+    if 'filename' in request.GET and len(request.GET['filename']):
         filename_search = request.GET['filename']
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
