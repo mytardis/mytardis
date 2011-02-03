@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -30,24 +29,84 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+"""
+models.py
+
+.. moduleauthor: Steve Androulakis
+.. moduleauthor: Gerson Galang
+.. moduleauthor: Ulrich Felzmann
+
+"""
+
 
 from django.db import models
 from django.db.models.signals import pre_save
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
+from django.conf import settings
 
+from tardis.tardis_portal.managers import ExperimentManager
 
 
 class UserProfile(models.Model):
     """
     UserProfile class is an extension to the Django standard user model.
 
-    :attribute authcate_user: is the user an external user
+    :attribute isDjangoAccount: is the user a local DB user
+    :attribute user: a foreign key to the :class:`django.contrib.auth.models.User`
+    """
+    user = models.ForeignKey(User, unique=True)
+
+    # This flag will tell us if the main User account was created using any
+    # non localdb auth methods. For example, if a first time user authenticates
+    # to the system using the VBL auth method, an account will be created for
+    # him, say "vbl_user001" and the field isDjangoAccount will be set to
+    # False.
+    isDjangoAccount = models.BooleanField(
+        null=False, blank=False, default=True)
+
+    def getUserAuthentications(self):
+        return self.userAuthentication_set.all()
+
+    def __unicode__(self):
+        return self.user.username
+
+
+class GroupAdmin(models.Model):
+    """
+    GroupAdmin links the Django User and Group tables for group administrators
     :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
+    :attribute group: a forign key to the :class:`django.contrib.auth.models.Group`
     """
 
-    authcate_user = models.BooleanField()
-    user = models.ForeignKey(User, unique=True)
+    user = models.ForeignKey(User)
+    group = models.ForeignKey(Group)
+
+    def __unicode__(self):
+        return '%s: %s' % (self.user.username, self.group.name)
+
+
+# TODO: Generalise auth methods
+class UserAuthentication(models.Model):
+    CHOICES = ()
+    userProfile = models.ForeignKey(UserProfile)
+    username = models.CharField(max_length=50)
+    authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
+
+    def __init__(self, *args, **kwargs):
+        # instantiate comparisonChoices based on settings.AUTH PROVIDERS
+        self.CHOICES = ()
+        for authMethods in settings.AUTH_PROVIDERS:
+            self.CHOICES += ((authMethods[0], authMethods[1]),)
+        self._comparisonChoicesDict = dict(self.CHOICES)
+
+        super(UserAuthentication, self).__init__(*args, **kwargs)
+
+    def getAuthMethodDescription(self):
+        return self._comparisonChoicesDict[self.authenticationMethod]
+
+    def __unicode__(self):
+        return self.username + ' - ' + self.getAuthMethodDescription()
 
 
 class XSLT_docs(models.Model):
@@ -69,7 +128,7 @@ class Author(models.Model):
 
 class Experiment(models.Model):
 
-    url = models.URLField(blank=True, verify_exists=False, max_length=255)
+    url = models.URLField(verify_exists=False, max_length=255, null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -81,19 +140,58 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
+    objects = models.Manager()  # The default manager.
+    safe = ExperimentManager()  # The acl-aware specific manager.
 
     def __unicode__(self):
         return self.title
 
 
-class Experiment_Owner(models.Model):
+class ExperimentACL(models.Model):
 
+    """
+    The ExperimentACL table is the core of the Tardis Authodrisation framework
+    http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt
+    :attribute pluginId: the the name of the auth plugin being used
+    :attribute entityId: a foreign key to auth plugins
+    :attribute experimentId: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute canRead: gives the user read access
+    :attribute canWrite: gives the user write access
+    :attribute canDelete: gives the user delete permission
+    :attribute owner: the experiment owner flag.
+    :attribute effectiveDate: the date when access takes into effect
+    :attribute expiryDate: the date when access ceases
+    :attribute aclOwnershipType: system-owned or user-owned.
+    System-owned ACLs will prevent users from removing or
+    editing ACL entries to a particular experiment they
+    own. User-owned ACLs will allow experiment owners to
+    remove/add/edit ACL entries to the experiments they own.
+    """
+
+    OWNER_OWNED = 1
+    SYSTEM_OWNED = 2
+    __COMPARISON_CHOICES = (
+        (OWNER_OWNED, 'Owner-owned'),
+        (SYSTEM_OWNED, 'System-owned'),
+    )
+
+    pluginId = models.CharField(null=False, blank=False, max_length=30)
+    entityId = models.CharField(null=False, blank=False, max_length=320)
     experiment = models.ForeignKey(Experiment)
-    user = models.ForeignKey(User)
+    canRead = models.BooleanField(default=False)
+    canWrite = models.BooleanField(default=False)
+    canDelete = models.BooleanField(default=False)
+    isOwner = models.BooleanField(default=False)
+    effectiveDate = models.DateField(null=True, blank=True)
+    expiryDate = models.DateField(null=True, blank=True)
+    aclOwnershipType = models.IntegerField(
+        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
 
     def __unicode__(self):
-        return SafeUnicode(self.experiment.id) + ' | ' \
-            + SafeUnicode(self.user.username)
+        return '%i | %s' % (self.experiment.id, self.experiment.title)
+
+    class Meta:
+        ordering = ['experiment__id']
 
 
 class Author_Experiment(models.Model):
@@ -146,7 +244,7 @@ class Dataset_File(models.Model):
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    url = models.CharField(blank=True, max_length=400)
+    url = models.CharField(max_length=400)
     size = models.CharField(blank=False, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
     created_time = models.DateTimeField(null=True, blank=True)
@@ -193,28 +291,26 @@ class Dataset_File(models.Model):
         else:
             return ''
 
+    def _set_size(self):
 
-def _set_size(df):
+        from os.path import getsize
+        self.size = str(getsize(self.get_absolute_filepath()))
 
-    from os.path import getsize
-    df.size = getsize(df.get_absolute_filepath())
+    def _set_mimetype(self):
 
-
-def _set_mimetype(df):
-
-    from magic import Magic
-    df.mimetype = Magic(mime=True).from_file(df.get_absolute_filepath())
+        from magic import Magic
+        self.mimetype = Magic(mime=True).from_file(self.get_absolute_filepath())
 
 
-def _set_md5sum(df):
+    def _set_md5sum(self):
 
-    f = open(df.get_absolute_filepath(),'rb')
-    import hashlib
-    md5 = hashlib.new('md5')
-    for chunk in iter(lambda: f.read(128*md5.block_size), ''):
-        md5.update(chunk)
-    f.close()
-    df.md5sum = md5.hexdigest()
+        f = open(self.get_absolute_filepath(), 'rb')
+        import hashlib
+        md5 = hashlib.new('md5')
+        for chunk in iter(lambda: f.read(128 * md5.block_size), ''):
+            md5.update(chunk)
+        f.close()
+        self.md5sum = md5.hexdigest()
 
 
 def save_DatasetFile(sender, **kwargs):
@@ -227,11 +323,11 @@ def save_DatasetFile(sender, **kwargs):
 
     try:
         if not df.size:
-            _set_size(df)
+            df._set_size()
         if not df.md5sum:
-            _set_md5sum(df)
+            df._set_md5sum()
         if not df.mimetype:
-            _set_mimetype(df)
+            df._set_mimetype()
 
     except IOError:
         pass
@@ -253,7 +349,7 @@ class DatafileParameterSet(models.Model):
     dataset_file = models.ForeignKey(Dataset_File)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.dataset_file.filename
+        return '%s / %s' % (self.schema.namespace, self.dataset_file.filename)
 
     class Meta:
         ordering = ['id']
@@ -264,7 +360,7 @@ class DatasetParameterSet(models.Model):
     dataset = models.ForeignKey(Dataset)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.dataset.description
+        return '%s / %s' % (self.schema.namespace, self.dataset.description)
 
     class Meta:
         ordering = ['id']
@@ -275,7 +371,7 @@ class ExperimentParameterSet(models.Model):
     experiment = models.ForeignKey(Experiment)
 
     def __unicode__(self):
-        return self.schema.namespace + " / " + self.experiment.title
+        return '%s / %s' % (self.schema.namespace, self.experiment.title)
 
     class Meta:
         ordering = ['id']
@@ -390,9 +486,9 @@ class Equipment(models.Model):
     serial = models.CharField(max_length=60, blank=True)
     comm = models.DateField(null=True, blank=True)
     decomm = models.DateField(null=True, blank=True)
-    url = models.URLField(null=True, blank=True, verify_exists=False, max_length=255)
+    url = models.URLField(null=True, blank=True,
+                          verify_exists=False,
+                          max_length=255)
 
     def __unicode__(self):
         return self.key
-
-
