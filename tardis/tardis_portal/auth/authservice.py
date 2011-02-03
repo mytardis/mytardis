@@ -50,9 +50,10 @@ class AuthService():
         return auth_instance
 
     def authenticate(self, authMethod, **credentials):
-        """Try and authenticate the user using the auth type he/she specified to
-        use and if authentication didn't work using that method, try each
-        Django AuthProvider.
+        """Try and authenticate the user using the auth type he/she
+        specified to use and if authentication didn't work using that
+        method, try each Django AuthProvider.
+
         """
 
         if not self._initialised:
