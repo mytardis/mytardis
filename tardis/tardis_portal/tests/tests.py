@@ -35,8 +35,8 @@ from tardis.tardis_portal.models import *
 tests.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
-.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
-.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+@author Ulrich Felzmann
+@author Gerson Galang
 
 """
 from django.test import TestCase
@@ -45,6 +45,7 @@ from django.test.client import Client
 from tardis.tardis_portal.views import _registerExperimentDocument
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 from os import path
 import unittest
@@ -71,10 +72,17 @@ class SearchTestCase(TestCase):
             filename = path.join(path.abspath(path.dirname(__file__)), f)
             expid = _registerExperimentDocument(filename=filename,
                                                 created_by=user,
-                                                expid=None,
-                                                owners=[user.username],
-                                                username=user.username)
+                                                expid=None)
             experiment = Experiment.objects.get(pk=expid)
+
+            acl = ExperimentACL(pluginId=django_user,
+                                entityId=str(user.id),
+                                experiment=experiment,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True)
+            acl.save()
             self.experiments += [experiment]
 
         from tardis.tardis_portal.constants import SCHEMA_DICT
@@ -93,13 +101,6 @@ class SearchTestCase(TestCase):
             experiment.delete()
 
     def testSearchDatafileForm(self):
-        response = self.client.get('/search/datafile/', {'type': 'saxs', })
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-                             '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
@@ -116,18 +117,13 @@ class SearchTestCase(TestCase):
         response = self.client.get('/search/datafile/',
                                    {'type': 'saxs', 'filename': '', })
 
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
-        self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+        # check if the response is zero since the user is not logged in
         self.assertEqual(response.status_code, 200)
-        self.client.logout()
+        self.assertEqual(len(response.context['paginator'].object_list), 0)
 
     def testSearchDatafileResults(self):
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/datafile/',
             {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
@@ -167,31 +163,17 @@ class SearchTestCase(TestCase):
         self.client.logout()
 
     def testSearchExperimentForm(self):
-        response = self.client.get('/search/experiment/')
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-            '/accounts/login/?next=/search/experiment/')
-
-        # let's try to login this time...
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/experiment/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
             None)
         self.assertTemplateUsed(response,
             'tardis_portal/search_experiment_form.html')
-
         self.client.logout()
 
     def testSearchExperimentAuthentication(self):
-        response = self.client.get('/search/experiment/',
-            {'title': 'cookson', })
-
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/experiment/',
             {'title': 'cookson', })
@@ -447,9 +429,11 @@ def suite():
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     equipmentSuite = \
         unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
+
     allTests = unittest.TestSuite([parserSuite1,
                                    parserSuite2,
                                    userInterfaceSuite,
                                    searchSuite,
-                                   equipmentSuite])
+                                   equipmentSuite,
+                                   ])
     return allTests

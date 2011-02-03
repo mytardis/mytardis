@@ -1,1 +1,1 @@
-Thanks for signing up to TARDIS.edu.au. Use this link to activate your registration: https://vera061.its.monash.edu.au/accounts/activate/{{ activation_key }}/
+Thanks for signing up to {{ site }}. Use this link to activate your registration: {{ site }}/accounts/activate/{{ activation_key }}/

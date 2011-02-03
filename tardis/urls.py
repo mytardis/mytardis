@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 from django.contrib import admin
 admin.autodiscover()
 from django.contrib.auth.views import logout
@@ -11,7 +9,7 @@ from django.views.generic import list_detail
 from tardis.tardis_portal.models import Equipment
 from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
 
-from registration.forms import RegistrationFormUniqueEmail
+from tardis.tardis_portal.forms import RegistrationForm
 
 
 urlpatterns = patterns(
@@ -66,13 +64,26 @@ urlpatterns = patterns(
     (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_datafile_image'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/'
-     '(?P<username>\w+)$', 'tardis.tardis_portal.views.add_access_experiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/'
-     '(?P<username>\w+)$',
-     'tardis.tardis_portal.views.remove_access_experiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/$',
-     'tardis.tardis_portal.views.retrieve_access_list'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
+     '(?P<username>[\w\.]+)$', 'tardis.tardis_portal.views.add_experiment_access_user'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
+     '(?P<username>[\w\.]+)/$',
+     'tardis.tardis_portal.views.remove_experiment_access_user'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
+     '(?P<username>[\w\.]+)/$', 'tardis.tardis_portal.views.change_user_permissions'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/user/$',
+     'tardis.tardis_portal.views.retrieve_access_list_user'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
+     '(?P<groupname>[\w\s\.]+)$', 'tardis.tardis_portal.views.add_experiment_access_group'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
+     '(?P<group_id>\d+)/$',
+     'tardis.tardis_portal.views.remove_experiment_access_group'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
+     '(?P<group_id>\d+)/$', 'tardis.tardis_portal.views.change_group_permissions'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/group/$',
+     'tardis.tardis_portal.views.retrieve_access_list_group'),
+    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/external/$',
+     'tardis.tardis_portal.views.retrieve_access_list_external'),
     (r'^experiment/control_panel/$',
      'tardis.tardis_portal.views.control_panel'),
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$',
@@ -83,11 +94,22 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.retrieve_datafile_list'),
     (r'^ajax/user_list/$',
      'tardis.tardis_portal.views.retrieve_user_list'),
-    (r'^login/$', 'tardis.tardis_portal.views.ldap_login'),
-    (r'^accounts/login/$', 'tardis.tardis_portal.views.ldap_login'),
+    (r'^ajax/group_list/$',
+     'tardis.tardis_portal.views.retrieve_group_list'),
+    (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
+    (r'^group/(?P<group_id>\d+)/$',
+     'tardis.tardis_portal.views.retrieve_group_userlist'),
+    (r'^group/(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
+     'tardis.tardis_portal.views.add_user_to_group'),
+    (r'^group/(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
+     'tardis.tardis_portal.views.remove_user_from_group'),
     (r'^logout/$', logout, {'next_page': '/'}),
-    (r'^accounts/register/', include('registration.urls'),
-     {'form_class': RegistrationFormUniqueEmail}),
+    (r'^login/$', 'tardis.tardis_portal.views.login'),
+    (r'^accounts/login/$', 'tardis.tardis_portal.views.login'),
+    (r'^accounts/manage_auth_methods/$',
+     'tardis.tardis_portal.views.manage_auth_methods'),
+    (r'^accounts/register/$', 'registration.views.register',
+     {'form_class': RegistrationForm}),
     (r'^accounts/', include('registration.urls')),
     (r'site_media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.STATIC_DOC_ROOT}),

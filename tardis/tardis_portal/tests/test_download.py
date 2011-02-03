@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from os import mkdir
-from os.path import abspath, basename, dirname, join, getsize
-from shutil import copyfile, rmtree
+from os.path import abspath, basename, dirname, join
+from shutil import rmtree
 
 from django.test import TestCase
 from django.test.client import Client
@@ -11,7 +11,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
-from tardis.tardis_portal.logger import logger
 
 
 class DownloadTestCase(TestCase):
@@ -44,8 +43,10 @@ class DownloadTestCase(TestCase):
 
         # absolute path first
         filename = 'testfile.txt'
-        self.dest1 = abspath(join(settings.FILE_STORE_PATH, '%s' % self.experiment1.id))
-        self.dest2 = abspath(join(settings.FILE_STORE_PATH, '%s' % self.experiment2.id))
+        self.dest1 = abspath(join(settings.FILE_STORE_PATH, '%s'
+                                  % self.experiment1.id))
+        self.dest2 = abspath(join(settings.FILE_STORE_PATH, '%s'
+                                  % self.experiment2.id))
 
         mkdir(self.dest1)
         mkdir(self.dest2)
@@ -72,9 +73,6 @@ class DownloadTestCase(TestCase):
                                           url='tardis://%s' % filename)
         self.dataset_file2.save()
 
-        # check pdf mimetype
-        # self.dataset_file3 = ...
-
     def tearDown(self):
         self.user.delete()
         self.experiment1.delete()
@@ -88,13 +86,15 @@ class DownloadTestCase(TestCase):
         # check download for experiment1
         response = client.get('/download/experiment/%i/' % self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.tar"' % self.experiment1.id)
+                         'attachment; filename="experiment%s-complete.tar"'
+                         % self.experiment1.id)
         self.assertEqual(response.status_code, 200)
 
         # check download of file1
         response = client.get('/download/datafile/%i/' % self.dataset_file1.id)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="%s"' % self.dataset_file2.filename)
+                         'attachment; filename="%s"'
+                         % self.dataset_file2.filename)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'Hello World!\n')
 
@@ -131,9 +131,45 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def testDatasetFile(self):
+
+        # check registered text file for physical file meta information
         df = Dataset_File.objects.get(pk=self.dataset_file1.id)
 
-        self.assertEqual(df.mimetype, u'text/plain; charset=us-ascii')
+        self.assertEqual(df.mimetype, 'text/plain; charset=us-ascii')
         self.assertEqual(df.size, str(13))
-        self.assertEqual(df.md5sum, u'8ddd8be4b179a529afa5f2ffae4b9858')
+        self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
+        # now check a pdf file
+        filename = join(abspath(dirname(__file__)),
+                        '../site_media/downloads/DatasetDepositionGuide.pdf')
+
+        dataset = Dataset.objects.get(pk=self.dataset1.id)
+
+        pdf1 = Dataset_File(dataset=dataset,
+                            filename=basename(filename),
+                            url='file://%s' % filename,
+                            protocol='file')
+        pdf1.save()
+
+        self.assertEqual(pdf1.mimetype, 'application/pdf')
+        self.assertEqual(pdf1.size, str(1008475))
+        self.assertEqual(pdf1.md5sum, '9192b3d3e0056412b1d21d3e33562eba')
+
+        # now check that we can override the physical file meta information
+        pdf2 = Dataset_File(dataset=dataset,
+                            filename=basename(filename),
+                            url='file://%s' % filename,
+                            protocol='file',
+                            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                            size=str(0),
+                            md5sum='md5sum')
+        pdf2.save()
+
+        self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+        self.assertEqual(pdf2.size, str(0))
+        self.assertEqual(pdf2.md5sum, 'md5sum')
+
+        pdf2.mimetype = ''
+        pdf2.save()
+
+        self.assertEqual(pdf2.mimetype, 'application/pdf')
