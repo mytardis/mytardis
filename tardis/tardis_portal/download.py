@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -8,6 +7,8 @@ download.py
 .. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
 
 """
+from os.path import abspath
+
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
@@ -18,8 +19,6 @@ from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error
 from tardis.tardis_portal.logger import logger
-
-from os.path import join
 
 import subprocess
 import urllib
@@ -38,27 +37,19 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
         else:
-            file_path = join(settings.FILE_STORE_PATH,
-                             str(datafile.dataset.experiment.id),
-                             datafile.url.partition('//')[2])
+            file_path = datafile.get_absolute_filepath()
+
             try:
-                logger.debug(file_path)
                 wrapper = FileWrapper(file(file_path))
-
                 response = HttpResponse(wrapper,
-                        mimetype='application/octet-stream')
+                                        mimetype=datafile.get_mimetype())
                 response['Content-Disposition'] = \
-                    'attachment; filename=' + datafile.filename
-
-                # import os
-                # response['Content-Length'] = os.path.getsize(file_path)
-
+                    'attachment; filename="%s"' % datafile.filename
                 return response
 
             except IOError:
                 return return_response_not_found(request)
     else:
-
         return return_response_error(request)
 
 
@@ -70,20 +61,19 @@ def download_experiment(request, experiment_id):
     # (tarfile count?)
     experiment = Experiment.objects.get(pk=experiment_id)
 
-    cmd = 'tar -C %s -c %s/' % (settings.FILE_STORE_PATH,
+    cmd = 'tar -C %s -c %s/' % (abspath(settings.FILE_STORE_PATH),
                                 str(experiment.id))
-    #logger.debug('TAR COMMAND: ' + tar_command)
 
+    #logger.info('TAR COMMAND: ' + cmd)
     response = HttpResponse(FileWrapper(subprocess.Popen(cmd,
                             stdout=subprocess.PIPE,
                             shell=True).stdout),
                             mimetype='application/x-tar')
 
-    response['Content-Disposition'] = 'attachment; filename=experiment' \
-        + str(experiment.id) + '-complete.tar'
+    response['Content-Disposition'] = 'attachment; filename="experiment' \
+        + str(experiment.id) + '-complete.tar"'
 
     # response['Content-Length'] = fileSize + 5120
-
     return response
 
 
@@ -96,6 +86,9 @@ def download_datafiles(request):
     protocols = []
     fileString = ''
     fileSize = 0
+
+    # the following protocols can be handled by this module
+    protocols = ['', 'file', 'tardis']
 
     if 'datafile' or 'dataset' in request.POST:
 
@@ -112,10 +105,10 @@ def download_datafiles(request):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
-                        if datafile.url.startswith('file://'):
-                            absolute_filename = datafile.url.partition('//')[2]
-                            fileString += expid + '/' + absolute_filename + ' '
-                            fileSize += long(datafile.size)
+
+                        absolute_filename = datafile.url.partition('//')[2]
+                        fileString += '%s/%s ' % (expid, absolute_filename)
+                        fileSize += long(datafile.size)
 
             for dfid in datafiles:
                 datafile = Dataset_File.objects.get(pk=dfid)
@@ -126,14 +119,14 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString += expid + '/' + absolute_filename + ' '
-                        fileSize += long(datafile.size)
+                    absolute_filename = datafile.url.partition('//')[2]
+                    fileString += '%s/%s ' % (expid, absolute_filename)
+                    fileSize += long(datafile.size)
 
         else:
             return return_response_not_found(request)
 
+    # TODO: check if we really still need this method
     elif 'url' in request.POST:
 
         if not len(request.POST.getlist('url')) == 0:
@@ -146,27 +139,26 @@ def download_datafiles(request):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
-                    if datafile.url.startswith('file://'):
-                        absolute_filename = datafile.url.partition('//')[2]
-                        fileString += expid + '/' + absolute_filename + ' '
-                        fileSize += long(datafile.size)
+                    absolute_filename = datafile.url.partition('//')[2]
+                    fileString += '%s/%s ' % (expid, absolute_filename)
+                    fileSize += long(datafile.size)
 
         else:
             return return_response_not_found(request)
     else:
         return return_response_not_found(request)
 
-    # more than one download location?
-    if len(protocols) > 1:
+    # more than one external download location?
+    if len(protocols) > 4:
         response = HttpResponseNotFound()
         response.write('<p>Different locations selected!</p>\n')
         response.write('Please limit your selection and try again.\n')
         return response
 
-    # redirect request if download protocol found
-    if protocols[0] != '':
+    # redirect request if another (external) download protocol was found
+    elif len(protocols) == 4:
         from django.core.urlresolvers import resolve
-        view, args, kwargs = resolve('/%s%s' % (protocols[0],
+        view, args, kwargs = resolve('/%s%s' % (protocols[4],
                                                 request.path))
         kwargs['request'] = request
         return view(*args, **kwargs)
@@ -174,15 +166,19 @@ def download_datafiles(request):
     else:
         # tarfile class doesn't work on large files being added and
         # streamed on the fly, so going command-line-o
+        if not fileString:
+            return return_response_error(request)
+
         cmd = 'tar -C %s -c %s' % (settings.FILE_STORE_PATH,
                                    fileString)
 
+        # logger.info(cmd)
         response = \
             HttpResponse(FileWrapper(subprocess.Popen(cmd,
                                                       stdout=subprocess.PIPE,
                                                       shell=True).stdout),
                          mimetype='application/x-tar')
         response['Content-Disposition'] = \
-                'attachment; filename=experiment%s.tar' % expid
+                'attachment; filename="experiment%s.tar"' % expid
         response['Content-Length'] = fileSize + 5120
         return response
