@@ -34,20 +34,21 @@
       <li>
     <h2>Browse Experiments</h2>
     <ul>
-      <li><a href="/experiment/view">Index</a></li>
-      <li><a href="/search/experiment">Search</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Index</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.search_experiment %}">Search</a></li>
     </ul>
     {% if user.is_authenticated %}
         <br/>
         <h2>Controls</h2>
         <ul>
-          <li><a href="/experiment/control_panel">Control Panel</a></li>
-          <li><a href="/groups/">Group Management</a></li>
+          <li><a href="{% url tardis.tardis_portal.views.create_experiment %}">Create Experiment</a></li>
+          <li><a href="{% url tardis.tardis_portal.views.control_panel %}">Control Panel</a></li>
+          <li><a href="{% url tardis.tardis_portal.views.manage_groups %}">Group Management</a></li>
         </ul>
         <br/>
         <h2>Account Management</h2>
         <ul>
-          <li><a href="/accounts/manage_auth_methods">Authentication Panel</a></li>
+          <li><a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">Authentication Panel</a></li>
         </ul>
     {% endif %}
       </li>
