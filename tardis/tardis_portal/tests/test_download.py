@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import mkdir
-from os.path import abspath, basename, dirname, join
+from os.path import abspath, basename, dirname, join, exists
 from shutil import rmtree
 
 from django.test import TestCase
@@ -47,9 +47,10 @@ class DownloadTestCase(TestCase):
                                   % self.experiment1.id))
         self.dest2 = abspath(join(settings.FILE_STORE_PATH, '%s'
                                   % self.experiment2.id))
-
-        mkdir(self.dest1)
-        mkdir(self.dest2)
+        if not exists(self.dest1):
+            mkdir(self.dest1)
+        if not exists(self.dest2):
+            mkdir(self.dest2)
 
         testfile1 = abspath(join(self.dest1, filename))
         f = open(testfile1, 'w')
