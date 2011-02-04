@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 """
 models.py
 
@@ -40,12 +41,11 @@ models.py
 from os import path
 from urlparse import urlparse
 
-from django.db import models
 from django.conf import settings
-from django.db import transaction
+from django.db import models
+from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
-from django.conf import settings
 
 from tardis.tardis_portal.managers import ExperimentManager
 
@@ -55,7 +55,8 @@ class UserProfile(models.Model):
     UserProfile class is an extension to the Django standard user model.
 
     :attribute isDjangoAccount: is the user a local DB user
-    :attribute user: a foreign key to the :class:`django.contrib.auth.models.User`
+    :attribute user: a foreign key to the
+       :class:`django.contrib.auth.models.User`
     """
     user = models.ForeignKey(User, unique=True)
 
@@ -75,8 +76,9 @@ class UserProfile(models.Model):
 
 
 class GroupAdmin(models.Model):
-    """
-    GroupAdmin links the Django User and Group tables for group administrators
+    """GroupAdmin links the Django User and Group tables for group
+    administrators
+
     :attribute user: a forign key to the
        :class:`django.contrib.auth.models.User`
     :attribute group: a forign key to the
@@ -123,8 +125,7 @@ class XSLT_docs(models.Model):
 
 
 class Experiment(models.Model):
-    """
-    The ``Experiment`` model inherits from :class:`django.db.models.Model`
+    """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
     :attribute url: **Undocumented**
     :attribute approved: **Undocumented**
@@ -161,25 +162,22 @@ class Experiment(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        """
-        Return the absolute url to the current ``Experiment``
-        """
+        """Return the absolute url to the current ``Experiment``"""
         return ('tardis.tardis_portal.views.view_experiment', (),
                 {'experiment_id': self.id})
 
     @models.permalink
     def get_edit_url(self):
-        """
-        Return the absolute url to the edit view of the current ``Experiment``
+        """Return the absolute url to the edit view of the current
+        ``Experiment``
+
         """
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
 
 class ExperimentACL(models.Model):
-
-    """
-    The ExperimentACL table is the core of the `Tardis Authorisation framework
+    """The ExperimentACL table is the core of the `Tardis Authorisation framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
@@ -247,15 +245,20 @@ class Author_Experiment(models.Model):
 
 
 class Dataset(models.Model):
+    """Class to link datasets to experiments
+
+    :attribute experiment: a forign key to the
+       :class:`tardis.tardis_portal.models.Experiment`
+    :attribute description: description of this dataset
+    """
 
     experiment = models.ForeignKey(Experiment)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     def addDatafile(self, filepath,
                     protocol='', url='',
                     size=None, commit=True):
-        """
-        Add Datafile helper function
+        """Add Datafile helper function
 
         :param filepath: the file path within the repository
         :type filepath: string
@@ -284,13 +287,18 @@ class Dataset(models.Model):
 
 
 class Dataset_File(models.Model):
-    """
-    :attribute: dataset: the foreign key to the
-       :class:`tardis.tardis_portal.models.Dataset`
-    :attribute: filename: the name of the file, excluding the path.
-    :attribute: url: the url that the datafile is located at
-    :attribute: size: the size of the file.
-    :attribute: protocol: the protocol used to access the file.
+    """Class to store meta-data about a physical file
+
+    :attribute dataset: the foreign key to the
+       :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
+    :attribute filename: the name of the file, excluding the path.
+    :attribute url: the url that the datafile is located at
+    :attribute size: the size of the file.
+    :attribute protocol: the protocol used to access the file.
+    :attribute created_time: time the file was added to tardis
+    :attribute modification_time: last modification time of the file
+    :attribute mimetype: for example 'application/pdf'
+    :attribute md5sum: digest of length 32, containing only hexadecimal digits
 
     The `protocol` field is only used for rendering the download link, this
     done by insterting the protocol into the url generated to the download
@@ -301,12 +309,26 @@ class Dataset_File(models.Model):
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
     url = models.CharField(max_length=400)
-    size = models.CharField(blank=True, max_length=400)
+    size = models.CharField(blank=False, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
     created_time = models.DateTimeField(null=True, blank=True)
+    modification_time = models.DateTimeField(null=True, blank=True)
+    mimetype = models.CharField(blank=True, max_length=80)
+    md5sum = models.CharField(blank=True, max_length=32)
 
     def __unicode__(self):
         return self.filename
+
+    def get_mimetype(self):
+        if self.mimetype:
+            return self.mimetype
+        else:
+            suffix = self.filename.split('.')[-1]
+            try:
+                import mimetypes
+                return mimetypes.types_map['.%s' % suffix.lower()]
+            except KeyError:
+                return 'application/octet-stream'
 
     def get_download_url(self):
         from django.core.urlresolvers import reverse, get_script_prefix
@@ -323,6 +345,75 @@ class Dataset_File(models.Model):
                                                   self.protocol,
                                                   url[prefix_len:]])
         return url
+
+    def get_absolute_filepath(self):
+
+        # check for empty protocol field (historical reason) or
+        # 'tardis' which indicates a location within the tardis file
+        # store
+        if self.protocol == '' or self.protocol == 'tardis':
+            from django.conf import settings
+            try:
+                FILE_STORE_PATH = settings.FILE_STORE_PATH
+            except AttributeError:
+                return ''
+
+            from os.path import abspath, join
+            return abspath(join(FILE_STORE_PATH,
+                                str(self.dataset.experiment.id),
+                                self.url.partition('://')[2]))
+
+        # file should refer to an absolute location
+        elif self.protocol == 'file':
+            return self.url.partition('://')[2]
+
+        # ok, it doesn't look like the file is stored locally
+        else:
+            return ''
+
+    def _set_size(self):
+
+        from os.path import getsize
+        self.size = str(getsize(self.get_absolute_filepath()))
+
+    def _set_mimetype(self):
+
+        from magic import Magic
+        self.mimetype = Magic(mime=True).from_file(
+            self.get_absolute_filepath())
+
+    def _set_md5sum(self):
+
+        f = open(self.get_absolute_filepath(), 'rb')
+        import hashlib
+        md5 = hashlib.new('md5')
+        for chunk in iter(lambda: f.read(128 * md5.block_size), ''):
+            md5.update(chunk)
+        f.close()
+        self.md5sum = md5.hexdigest()
+
+
+def save_DatasetFile(sender, **kwargs):
+
+    # the object can be accessed via kwargs 'instance' key.
+    df = kwargs['instance']
+
+    if not df.get_absolute_filepath():
+        return
+
+    try:
+        if not df.size:
+            df._set_size()
+        if not df.md5sum:
+            df._set_md5sum()
+        if not df.mimetype:
+            df._set_mimetype()
+
+    except IOError:
+        pass
+
+
+pre_save.connect(save_DatasetFile, sender=Dataset_File)
 
 
 class Schema(models.Model):
