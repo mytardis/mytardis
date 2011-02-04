@@ -33,7 +33,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
-    'tardis.tardis_portal.minidetector.Middleware'
+    'tardis.tardis_portal.minidetector.Middleware',
 )
 
 INSTALLED_APPS = (
