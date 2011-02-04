@@ -378,7 +378,11 @@ class Dataset_File(models.Model):
 
     def _set_mimetype(self):
 
-        from magic import Magic
+        try:
+            from magic import Magic
+        except:
+            # TODO log that this failed
+            return
         self.mimetype = Magic(mime=True).from_file(
             self.get_absolute_filepath())
 
