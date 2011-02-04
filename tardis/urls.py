@@ -37,7 +37,7 @@ experiment_urls = patterns(
      '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
      '(?P<groupname>[\w\s\.]+)$', 'add_experiment_access_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
@@ -88,10 +88,10 @@ search_urls = patterns(
 
 group_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^group/(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
-    (r'^group/(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
+    (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
+    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
      'add_user_to_group'),
-    (r'^group/(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
+    (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'remove_user_from_group'),
     )
 
