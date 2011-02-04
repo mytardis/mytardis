@@ -41,11 +41,7 @@ from os.path import basename
 from UserDict import UserDict
 
 from django import forms
-from django.utils.html import conditional_escape
-from django.utils.encoding import force_unicode
-from django.utils.safestring import mark_safe
 from django.forms.util import ErrorList
-from django.forms.forms import BoundField
 from django.forms.models import ModelChoiceField
 from django.forms.models import inlineformset_factory
 from django.forms.models import BaseInlineFormSet
@@ -53,20 +49,17 @@ from django.forms import ModelForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.db import transaction
+from django.contrib.auth.models import User
+from django.utils.translation import ugettext_lazy as _
+
+from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
-from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
-
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
-
-
-from registration.models import RegistrationProfile
-
 
 
 class LoginForm(AuthenticationForm):
@@ -106,20 +99,24 @@ class RegistrationForm(forms.Form):
 
     """
 
-    username = forms.RegexField(regex=r'^[\w\.]+$',
-                                max_length=30-1-len(locabdb_auth_key),
-                                widget=forms.TextInput(attrs=attrs_dict),
-                                label=_("Username"),
-                                error_messages={'invalid': _("This value must contain only letters, numbers and underscores.")})
+    username = forms.RegexField(
+        regex=r'^[\w\.]+$',
+        max_length=31 - len(locabdb_auth_key),  # 31, max pw len with _ char
+        widget=forms.TextInput(attrs=attrs_dict),
+        label=_("Username"),
+        error_messages={'invalid':
+                            _("This value must contain only letters, numbers and underscores.")})
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
                              label=_("Email address"))
 
-    password1 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
-                                label=_("Password"))
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+        label=_("Password"))
 
-    password2 = forms.CharField(widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
-                                label=_("Password (again)"))
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs=attrs_dict, render_value=False),
+        label=_("Password (again)"))
 
     def clean_username(self):
         """
@@ -133,7 +130,8 @@ class RegistrationForm(forms.Form):
             user = User.objects.get(username__iexact=username)
         except User.DoesNotExist:
             return username
-        raise forms.ValidationError(_("A user with that username already exists."))
+        raise forms.ValidationError(
+            _("A user with that username already exists."))
 
     def clean(self):
         """
@@ -143,9 +141,12 @@ class RegistrationForm(forms.Form):
         field.
 
         """
-        if 'password1' in self.cleaned_data and 'password2' in self.cleaned_data:
-            if self.cleaned_data['password1'] != self.cleaned_data['password2']:
-                raise forms.ValidationError(_("The two password fields didn't match."))
+        if 'password1' in self.cleaned_data and \
+                'password2' in self.cleaned_data:
+            if self.cleaned_data['password1'] != \
+                    self.cleaned_data['password2']:
+                raise forms.ValidationError(
+                    _("The two password fields didn't match."))
 
         return self.cleaned_data
 
@@ -159,10 +160,10 @@ class RegistrationForm(forms.Form):
         userProfile = UserProfile(user=user, isDjangoAccount=True)
         userProfile.save()
 
-        authentication = \
-            UserAuthentication(userProfile=userProfile,
-                               username=self.cleaned_data['username'].split(locabdb_auth_key)[1],
-                               authenticationMethod=locabdb_auth_key)
+        authentication = UserAuthentication(
+            userProfile=userProfile,
+            username=self.cleaned_data['username'].split(locabdb_auth_key)[1],
+            authenticationMethod=locabdb_auth_key)
         authentication.save()
 
         return user
@@ -176,8 +177,7 @@ class ChangeUserPermissionsForm(ModelForm):
         exclude = ('entityId', 'pluginId', 'experiment', 'aclOwnershipType',)
         widgets = {
             'expiryDate': SelectDateWidget(),
-            'effectiveDate': SelectDateWidget()
-        }
+            'effectiveDate': SelectDateWidget()}
 
 
 class ChangeGroupPermissionsForm(forms.Form):
