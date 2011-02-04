@@ -261,7 +261,7 @@ def login(request):
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
-                     'loginForm': LoginForm(),})
+                     'loginForm': LoginForm()})
         return return_response_error_message(
             request, 'tardis_portal/login.html', c)
 
@@ -269,6 +269,7 @@ def login(request):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
+
 
 @login_required()
 def manage_auth_methods(request):
@@ -1471,7 +1472,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
         if admin and not is_group_admin(request, group.id):
             return return_response_error(request)
-
 
     acl = ExperimentACL.objects.filter(experiment=experiment,
                                        pluginId=django_group,

@@ -34,6 +34,7 @@
 forms module
 
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
 
 '''
 
@@ -50,9 +51,7 @@ from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
-
 from registration.models import RegistrationProfile
-
 
 
 class LoginForm(AuthenticationForm):
@@ -93,7 +92,7 @@ class RegistrationForm(forms.Form):
     """
 
     username = forms.RegexField(regex=r'^[\w\.]+$',
-                                max_length=30-1-len(locabdb_auth_key),
+                                max_length=30 - 1 - len(locabdb_auth_key),
                                 widget=forms.TextInput(attrs=attrs_dict),
                                 label=_("Username"),
                                 error_messages={'invalid': _("This value must contain only letters, numbers and underscores.")})
@@ -279,7 +278,7 @@ def createSearchDatafileForm(searchQueryType):
     if searchQueryType in constants.SCHEMA_DICT:
         parameterNames = \
             ParameterName.objects.filter(
-            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType]\
+            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType]
             ['datafile'], constants.SCHEMA_DICT[searchQueryType]['dataset']],
             is_searchable='True')
 
