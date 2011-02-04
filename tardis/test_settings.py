@@ -25,7 +25,7 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
 )
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
-                   'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
+                   'tardis.tardis_portal.auth.ip_auth.IPGroupProvider',
 )
 
 MIDDLEWARE_CLASSES = (
