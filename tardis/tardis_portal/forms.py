@@ -161,7 +161,7 @@ class ChangeUserPermissionsForm(ModelForm):
         exclude = ('entityId', 'pluginId', 'experiment', 'aclOwnershipType',)
         widgets = {
             'expiryDate': SelectDateWidget(),
-            'effectiveDate': SelectDateWidget()
+            'effectiveDate': SelectDateWidget(),
         }
 
 
