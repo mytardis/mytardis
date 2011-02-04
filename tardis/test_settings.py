@@ -7,7 +7,8 @@ ROOT_URLCONF = 'tardis.urls'
 DEBUG = True
 STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
                             'tardis_portal/site_media')
-
+FILE_STORE_PATH = path.join(path.abspath(path.dirname(__file__)),
+                            '../var/store/')
 # LDAP configuration
 LDAP_ENABLE = False
 
@@ -64,7 +65,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 LOG_FILENAME = None
 # LOG_FILENAME = '/var/log/tardis/tardis.log'
 
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+LOG_FORMAT = "%(asctime)s - %(levelname)-8s - %(message)s"
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 LOG_LEVEL = logging.ERROR
