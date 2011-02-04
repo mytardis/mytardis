@@ -415,6 +415,8 @@ def save_DatasetFile(sender, **kwargs):
 
     except IOError:
         pass
+    except OSError:
+        pass
 
 
 pre_save.connect(save_DatasetFile, sender=Dataset_File)
