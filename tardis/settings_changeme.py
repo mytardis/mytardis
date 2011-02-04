@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -117,8 +116,6 @@ ADMIN_MEDIA_STATIC_DOC_ROOT = os.path.join(os.path.dirname(__file__),
                                            '../parts/django-admin.py/django/contrib/admin/media/')
 
 FILE_STORE_PATH = '/path/to/store'
-
-
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"

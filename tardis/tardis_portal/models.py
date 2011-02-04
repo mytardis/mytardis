@@ -301,7 +301,6 @@ class Dataset_File(models.Model):
         from magic import Magic
         self.mimetype = Magic(mime=True).from_file(self.get_absolute_filepath())
 
-
     def _set_md5sum(self):
 
         f = open(self.get_absolute_filepath(), 'rb')

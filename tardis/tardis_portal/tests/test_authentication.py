@@ -10,6 +10,7 @@ from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.vbl_auth import EPN_LIST
 from django.utils import simplejson
 
+
 class AuthenticationTestCase(TestCase):
 
     def setUp(self):
