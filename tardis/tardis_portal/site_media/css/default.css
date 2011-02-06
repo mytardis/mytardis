@@ -1,7 +1,7 @@
 body {
 	margin: 0;
 	padding: 0;
-	background: #FFFFFF url(../images/mimg01.jpg) repeat-x left top;
+	background: #232323 url(../images/mimg01.jpg) repeat-x left top;
 	text-align: left;
 	font-family: Tahoma, Arial, Helvetica, sans-serif;
 	font-size: 12px;
@@ -118,7 +118,7 @@ img.right {
 	margin: 0 auto;
 	height: 71px;
 	letter-spacing: -1px;
-	font-family: Georgia, "Times New Roman", Times, serif;
+
 }
 
 
@@ -156,11 +156,11 @@ img.right {
 }
 
 #logo h1 {
-	background: url(../images/mimg04.jpg) no-repeat left 50%;
-	padding-left: 60px;
+	background: no-repeat left 50%;
+	padding-left: 10px;
 	text-align: center;
 	font-size: 3.2em;
-	color: #113E9E;
+
 }
 
 #logo h1 a {
@@ -170,9 +170,8 @@ img.right {
 #logo p {
 	padding-top: 24px;
 	padding-left: 10px;
-	text-transform: uppercase;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-size:12px;
+	font-size:14px;
 	color: #000000;
 }
 
@@ -539,3 +538,111 @@ table.experiment-table th {
 		margin-top: 10px;
 		padding: 5px;
 	}
+	
+	.msg_list {
+	margin: 10px;
+	padding: 0px;
+	width: 90%;
+	}
+	
+	.msg_head {
+	padding: 5px 10px;
+	cursor: pointer;
+	position: relative;
+	background-color: #dcdcdc;
+    color: #404040;
+	margin:1px;
+	font-size: 14px;
+	font-weight: bold;
+	}
+	
+	.add_new_dataset {
+	padding: 5px 10px;
+	cursor: pointer;
+	position: relative;
+	background-color: #878787;
+	color: white;
+	
+	margin:1px;
+	font-size: 14px;
+	font-weight: bold;
+	text-align: center;
+	}	
+	
+	.msg_body {
+	padding: 5px 10px 15px 20px;
+	background-color:white;
+	}
+	
+	.staging_dataset {
+		background-color: white; padding: 5px;
+	}
+	
+	.remove_dataset {
+		font-size: 12px;
+		font-weight: normal;
+		cursor: pointer;		
+	}
+	
+	.remove_file {
+		font-size: 12px;
+		font-weight: normal;
+		cursor: pointer;
+	}	
+	
+	.dataset {
+		border-width: 1px;
+		border-color: black;
+		border-style: dashed;
+		padding: 10px 30px 10px 30px;
+		width: 80%;
+	}
+	
+    .fieldWrapper {
+        padding: 0 0 15px 0;
+
+    }	
+    
+    .fieldWrapper input {
+        width: 500px;
+
+    }	
+    
+    .fieldWrapper textarea {
+        width: 500px;
+
+    }    
+    
+    .upload_files_link
+    {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    
+    .upload_files_box
+    {
+        background-color: #F5EFEF;
+        padding: 10px;
+        width: 95%;
+    }
+    
+    .download_entire_experiment
+    {
+        text-align: right;
+    }
+
+ul.errorlist {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.errorlist li {
+    font-size: 12px !important;
+    display: block;
+    padding: 4px 5px 4px 25px;
+    margin: 0 0 3px 0;
+    border: 1px solid red;
+    color: white;
+    background: red url(/media/img/admin/icon_alert.gif) 5px .3em no-repeat;
+}

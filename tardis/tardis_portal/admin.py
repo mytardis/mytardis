@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -30,26 +29,26 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-from tardis.tardis_portal.models import *
+
+from tardis.tardis_portal import models
 from django.contrib import admin
 
-admin.site.register(XML_data)
-admin.site.register(XSLT_docs)
-admin.site.register(Experiment)
-admin.site.register(Author)
-admin.site.register(Dataset)
-admin.site.register(Dataset_File)
-admin.site.register(Schema)
-admin.site.register(ParameterName)
-admin.site.register(DatafileParameter)
-admin.site.register(DatasetParameter)
-admin.site.register(Author_Experiment)
-admin.site.register(UserProfile)
-admin.site.register(ExperimentParameter)
-admin.site.register(DatafileParameterSet)
-admin.site.register(DatasetParameterSet)
-admin.site.register(ExperimentParameterSet)
-admin.site.register(GroupAdmin)
-admin.site.register(UserAuthentication)
-admin.site.register(ExperimentACL)
-admin.site.register(Equipment)
+admin.site.register(models.XML_data)
+admin.site.register(models.XSLT_docs)
+admin.site.register(models.Experiment)
+admin.site.register(models.Dataset)
+admin.site.register(models.Dataset_File)
+admin.site.register(models.Schema)
+admin.site.register(models.ParameterName)
+admin.site.register(models.DatafileParameter)
+admin.site.register(models.DatasetParameter)
+admin.site.register(models.Author_Experiment)
+admin.site.register(models.UserProfile)
+admin.site.register(models.ExperimentParameter)
+admin.site.register(models.DatafileParameterSet)
+admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.ExperimentParameterSet)
+admin.site.register(models.GroupAdmin)
+admin.site.register(models.UserAuthentication)
+admin.site.register(models.ExperimentACL)
+admin.site.register(models.Equipment)

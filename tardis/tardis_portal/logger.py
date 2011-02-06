@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -31,10 +30,12 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-# $Author$
-# $Revision$
-# $Date$
+"""
+logger.py
 
+.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+
+"""
 
 import logging.handlers
 

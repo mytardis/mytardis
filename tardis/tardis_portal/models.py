@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -32,18 +32,20 @@
 """
 models.py
 
-.. moduleauthor: Steve Androulakis
-.. moduleauthor: Gerson Galang
-.. moduleauthor: Ulrich Felzmann
+.. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
 """
 
+from os import path
+from urlparse import urlparse
 
+from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
-from django.conf import settings
 
 from tardis.tardis_portal.managers import ExperimentManager
 
@@ -53,7 +55,8 @@ class UserProfile(models.Model):
     UserProfile class is an extension to the Django standard user model.
 
     :attribute isDjangoAccount: is the user a local DB user
-    :attribute user: a foreign key to the :class:`django.contrib.auth.models.User`
+    :attribute user: a foreign key to the
+       :class:`django.contrib.auth.models.User`
     """
     user = models.ForeignKey(User, unique=True)
 
@@ -73,10 +76,13 @@ class UserProfile(models.Model):
 
 
 class GroupAdmin(models.Model):
-    """
-    GroupAdmin links the Django User and Group tables for group administrators
-    :attribute user: a forign key to the :class:`django.contrib.auth.models.User`
-    :attribute group: a forign key to the :class:`django.contrib.auth.models.Group`
+    """GroupAdmin links the Django User and Group tables for group
+    administrators
+
+    :attribute user: a forign key to the
+       :class:`django.contrib.auth.models.User`
+    :attribute group: a forign key to the
+       :class:`django.contrib.auth.models.Group`
     """
 
     user = models.ForeignKey(User)
@@ -118,17 +124,25 @@ class XSLT_docs(models.Model):
         return self.xmlns
 
 
-class Author(models.Model):
-
-    name = models.CharField(max_length=255)
-
-    def __unicode__(self):
-        return self.name
-
-
 class Experiment(models.Model):
+    """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
-    url = models.URLField(verify_exists=False, max_length=255, null=True, blank=True)
+    :attribute url: **Undocumented**
+    :attribute approved: **Undocumented**
+    :attribute title: the title of the experiment.
+    :attribute institution_name: the name of the institution who created
+       the dataset.
+    :attribute start_time: **Undocumented**
+    :attribute end_time: **Undocumented**
+    :attribute created_time: **Undocumented**
+    :attribute handle: **Undocumented**
+    :attribute public: **Undocumented**
+    :attribute objects: default model manager
+    :attribute safe: ACL aware model manager
+
+    """
+    url = models.URLField(verify_exists=False, max_length=255,
+                          null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
     institution_name = models.CharField(max_length=400)
@@ -146,15 +160,30 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
+    @models.permalink
+    def get_absolute_url(self):
+        """Return the absolute url to the current ``Experiment``"""
+        return ('tardis.tardis_portal.views.view_experiment', (),
+                {'experiment_id': self.id})
+
+    @models.permalink
+    def get_edit_url(self):
+        """Return the absolute url to the edit view of the current
+        ``Experiment``
+
+        """
+        return ('tardis.tardis_portal.views.edit_experiment', (),
+                {'experiment_id': self.id})
+
 
 class ExperimentACL(models.Model):
+    """The ExperimentACL table is the core of the `Tardis Authorisation framework
+    <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
-    """
-    The ExperimentACL table is the core of the Tardis Authodrisation framework
-    http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt
     :attribute pluginId: the the name of the auth plugin being used
     :attribute entityId: a foreign key to auth plugins
-    :attribute experimentId: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute experimentId: a forign key to the
+       :class:`tardis.tardis_portal.models.Experiment`
     :attribute canRead: gives the user read access
     :attribute canWrite: gives the user write access
     :attribute canDelete: gives the user delete permission
@@ -162,10 +191,12 @@ class ExperimentACL(models.Model):
     :attribute effectiveDate: the date when access takes into effect
     :attribute expiryDate: the date when access ceases
     :attribute aclOwnershipType: system-owned or user-owned.
+
     System-owned ACLs will prevent users from removing or
     editing ACL entries to a particular experiment they
     own. User-owned ACLs will allow experiment owners to
     remove/add/edit ACL entries to the experiments they own.
+
     """
 
     OWNER_OWNED = 1
@@ -197,8 +228,11 @@ class ExperimentACL(models.Model):
 class Author_Experiment(models.Model):
 
     experiment = models.ForeignKey(Experiment)
-    author = models.ForeignKey(Author)
+    author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ('order', )
 
     def __unicode__(self):
         return SafeUnicode(self.author.name) + ' | ' \
@@ -211,41 +245,71 @@ class Author_Experiment(models.Model):
 
 
 class Dataset(models.Model):
+    """Class to link datasets to experiments
 
-    """
-    Class to link datasets to experiments
-
-    :attribute experiment: a forign key to the :class:`tardis.tardis_portal.models.Experiment`
+    :attribute experiment: a forign key to the
+       :class:`tardis.tardis_portal.models.Experiment`
     :attribute description: description of this dataset
     """
 
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
 
+    def addDatafile(self, filepath,
+                    protocol='', url='',
+                    size=None, commit=True):
+        """Add Datafile helper function
+
+        :param filepath: the file path within the repository
+        :type filepath: string
+        """
+        full_file_path = path.join(settings.FILE_STORE_PATH,
+                                   str(self.experiment.id),
+                                   filepath)
+
+        datafile = Dataset_File(dataset=self)
+        datafile.filename = path.basename(filepath)
+        if protocol:
+            datafile.protocol = protocol
+
+        if url:
+            datafile.url = url
+        else:
+            datafile.url = 'file:/' + filepath
+
+        if size:
+            datafile.size = size
+        elif path.exists(full_file_path):
+            datafile.size = path.getsize(full_file_path)
+
     def __unicode__(self):
         return self.description
 
 
 class Dataset_File(models.Model):
+    """Class to store meta-data about a physical file
 
-    """
-    Class to store meta-data about a physical file
-
-    :attribute dataset: a forign key to the :class:`tardis.tardis_portal.models.Dataset`
-    :attribute filename: basename of the file
-    :attribute url: location (path) of the file
-    :attribute size: file size
-    :attribute protocol: special download protocol to be used
+    :attribute dataset: the foreign key to the
+       :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
+    :attribute filename: the name of the file, excluding the path.
+    :attribute url: the url that the datafile is located at
+    :attribute size: the size of the file.
+    :attribute protocol: the protocol used to access the file.
     :attribute created_time: time the file was added to tardis
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     :attribute md5sum: digest of length 32, containing only hexadecimal digits
+
+    The `protocol` field is only used for rendering the download link, this
+    done by insterting the protocol into the url generated to the download
+    location. If the `protocol` field is blank then the `file` protocol will
+    be used.
     """
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
     url = models.CharField(max_length=400)
-    size = models.CharField(blank=False, max_length=400)
+    size = models.CharField(blank=True, max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
@@ -265,6 +329,22 @@ class Dataset_File(models.Model):
                 return mimetypes.types_map['.%s' % suffix.lower()]
             except KeyError:
                 return 'application/octet-stream'
+
+    def get_download_url(self):
+        from django.core.urlresolvers import reverse, get_script_prefix
+
+        if urlparse(self.url).scheme and not self.url.startswith('file://'):
+            return self.url
+
+        url = reverse('tardis.tardis_portal.download.download_datafile',
+                      None, (), {'datafile_id': self.id})
+
+        if self.protocol:
+            prefix_len = len(get_script_prefix())
+            url = '/'.join(s.strip('/') for s in [url[:prefix_len],
+                                                  self.protocol,
+                                                  url[prefix_len:]])
+        return url
 
     def get_absolute_filepath(self):
 
@@ -298,8 +378,13 @@ class Dataset_File(models.Model):
 
     def _set_mimetype(self):
 
-        from magic import Magic
-        self.mimetype = Magic(mime=True).from_file(self.get_absolute_filepath())
+        try:
+            from magic import Magic
+        except:
+            # TODO log that this failed
+            return
+        self.mimetype = Magic(mime=True).from_file(
+            self.get_absolute_filepath())
 
     def _set_md5sum(self):
 
@@ -329,6 +414,8 @@ def save_DatasetFile(sender, **kwargs):
             df._set_mimetype()
 
     except IOError:
+        pass
+    except OSError:
         pass
 
 

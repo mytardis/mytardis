@@ -48,9 +48,18 @@
     </span>
 </div>
 <br/>
-<div style="margin-left: 15px">
+
+<div style="">
+{# uploadify here #}
+{% if is_owner %}
+<a class="upload_files_link">Upload Files To Dataset</a>
+
+<div class="upload_files_container"></div>
+
 <input class="dataset_id" type="hidden" value="{{dataset_id}}">
-Filename filter: <input type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}">
+{% endif %}
+
+File path search: <input type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"> <em>(eg. enter 'test' to show the '/Frames/test/' directory)</em>
 </div>
 <br/>
 Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
