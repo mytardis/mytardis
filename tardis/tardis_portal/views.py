@@ -553,7 +553,6 @@ def register_experiment_ws_xmldata(request):
     if request.method == 'POST':  # If the form has been submitted...
 
         # A form bound to the POST data
-
         form = RegisterExperimentForm(request.POST, request.FILES)
         if form.is_valid():  # All validation rules pass
 

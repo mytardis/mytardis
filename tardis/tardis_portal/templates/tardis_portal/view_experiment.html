@@ -415,12 +415,9 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>
 							</p>
-
                                                         <div class="download_entire_experiment">
 							{% for p in protocols %}
-
 							<p>
-
 							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
@@ -437,8 +434,6 @@
                             {% for owner in owners %}
                                     {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
-
-
                             </p>
 			    {% endif %}
 
@@ -449,7 +444,6 @@
                                                         {% for p in protocols %}
 
 							<p>
-
 							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
 							{% else %}
@@ -513,7 +507,6 @@
 
 										</div>
 									</div>
-
 								</div>
 							</div>
 							{% endfor %}
