@@ -33,6 +33,7 @@
 		{% block content %}
 
 		<div id="content">
+			{% if user.is_authenticated %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">My Experiments</a>
@@ -48,8 +49,8 @@
 						{% for experiment in experiments %}
 							<tr>
 								<th>
-									<a href="../view/{{ experiment.id }}">{{ experiment.title }}									
-										
+									<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}
+
 										</a>
 								</th>
 								
@@ -75,6 +76,7 @@
 				{% endif %}
 			</div>
 			<br/><br/><br/>
+		        {% endif %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">Public Experiments</a>

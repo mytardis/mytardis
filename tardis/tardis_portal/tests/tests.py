@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -28,29 +28,29 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from django.contrib.auth.models import User
-from tardis.tardis_portal.models import *
 
 """
 tests.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
-@author Ulrich Felzmann
-@author Gerson Galang
+.. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 
 """
-from django.test import TestCase
-from django.test.client import Client
-
-from tardis.tardis_portal.views import _registerExperimentDocument
-from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
-from tardis.tardis_portal.metsparser import MetsDataHolder
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-
 from os import path
 import unittest
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
+
+from django.test import TestCase
+from django.test.client import Client
+from django.contrib.auth.models import User
+
+from tardis.tardis_portal.models import *
+from tardis.tardis_portal.views import _registerExperimentDocument
+from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
+from tardis.tardis_portal.metsparser import MetsDataHolder
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 
 class SearchTestCase(TestCase):
@@ -335,7 +335,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         authors = models.Author_Experiment.objects.filter(
             experiment=self.experiment)
         self.assertTrue(len(authors) == 3)
-        authorNames = [author.author.name for author in authors]
+        authorNames = [author.author for author in authors]
         self.assertTrue('Moscatto Brothers' in authorNames)
 
     def testIngestedDatasetFields(self):

@@ -30,10 +30,55 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load parametertypecheck %}
+{% load uploadify_tags %}
 
-		{% block script %}
+{% block script %}
 
-		<script language="JavaScript">
+		<script type="text/javascript">
+
+		$("#uploadify").live("allUploadsComplete", function(e, data){
+
+			dataset_id = $(this).parents('.upload_files_container').siblings('.dataset_id').val();
+
+			$(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id,function(){
+					$(document).ready(function(){
+
+						var datafile_info_selectors =
+							$(this).find('.datafile_info').hide().end().find('.datafile_info_toggle');
+
+						datafile_info_selectors.text("[Show Metadata]");
+
+						// datafile metadata
+						 datafile_info_selectors.toggle(function(){
+			 				$(this).text("[Hide Metadata]");
+							var href = $(this).attr("href");
+
+							//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
+							//{
+								$(this).next().html(loadingHTML);
+							//}
+							$(this).next().load(href);
+
+						 },function(){
+							$(this).text("[Show Metadata]");
+						 });
+
+						   datafile_info_selectors.click(function() {
+							$(this).next().toggle();
+						   });
+
+							// file selectors
+							$(this).find('.dataset_selector_all').click(function() {
+								$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+						   });
+
+					 });
+
+				 });
+
+
+		});
 
 		function disableEnterKey(e)
 		{
@@ -56,6 +101,27 @@
 
 		<script type="text/javascript">
 			$(document).ready(function() {
+
+				$('.upload_files_link').live('click', function( event ){
+
+					$('.upload_files_container').each(function(index) {
+					    $(this).html("");
+					  });
+
+					$('.upload_files_link').each(function(index) {
+						$(this).show();
+					    $(this).html('Upload Files To Dataset');
+					  });
+
+					$(this).hide();
+
+					dataset_id = $(this).siblings('.dataset_id').val();
+
+					$(this).siblings(".upload_files_container").load("/ajax/upload_files/" + dataset_id + "/");
+
+
+				});
+
 
 				$('.filename_search').live('keyup', function(e) {
 					e.preventDefault();
@@ -260,9 +326,10 @@
 		<div id="fullpage">
 			<div class="post">
 				<h1 class="title">{{ experiment.title }}</h1>
+					<a href="{{ experiment.get_edit_url }}">[Edit]</a>
+				</h1>
 
-					<div class="demo">
-
+					<div class="tabcontainer">
 					<div id="tabs">
 						<ul>
 							<li><a href="#tabs-1">Description</a></li>
@@ -274,7 +341,7 @@
                             <p>
                             <strong>Authors: </strong><br/>
                             {% for author in authors %}
-                                    {{ author.author.name }}{% if not forloop.last %},{% endif %}
+                                    {{ author.author }}{% if not forloop.last %},{% endif %}
                             {% endfor %}
                             </p>
 
@@ -348,6 +415,7 @@
 							<strong>Experiment Last Updated:</strong>
 							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>
 							</p>
+                                                        <div class="download_entire_experiment">
 							{% for p in protocols %}
 							<p>
 							{% if p %}
@@ -357,6 +425,8 @@
 							{% endif %}
 							</p>
 							{% endfor %}
+                                                        </div>
+
                             <p align="right">
 							<br/>
 			    {% if owners %}
@@ -367,9 +437,12 @@
                             </p>
 			    {% endif %}
 
-						</div>
-						<div id="tabs-2">
-							{% for p in protocols %}
+
+                                                </div>
+                                                <div id="tabs-2">
+                                                        <div class="download_entire_experiment">
+                                                        {% for p in protocols %}
+
 							<p>
 							{% if p %}
 							<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
@@ -378,10 +451,12 @@
 							{% endif %}
 							</p>
 							{% endfor %}
+                                                        </div>
 							<form method="POST" action="/download/datafiles/" target="_blank">
 							<input type="hidden" name="expid" value="{{experiment.id}}">
-							<div id="datasets">
-							{% for dataset in experiment.dataset_set.all %}
+
+                                                        <div id="datasets">
+                                                        {% for dataset in experiment.dataset_set.all %}
 							<div class="dataset">
 								<div class="dataset_title">
 		                                                        <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" >
@@ -442,7 +517,9 @@
 
 					</div>
 
-					</div><!-- End demo -->
+
+
+					</div><!-- End tab container -->
 
 			</div>
 			</div>

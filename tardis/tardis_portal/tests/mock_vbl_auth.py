@@ -7,10 +7,8 @@ from tardis.tardis_portal.models import *
 from django.contrib.auth.models import User, AnonymousUser
 from tardis.tardis_portal.auth.vbl_auth import auth_key, EPN_LIST
 
-
 auth_key = auth_key
 EPN_LIST = EPN_LIST
-
 
 class MockBackend():
     """
