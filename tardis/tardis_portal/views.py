@@ -720,7 +720,7 @@ def retrieve_datafile_list(request, dataset_id):
 
     if request.user.is_authenticated():
         experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
-        is_owner = authz.has_experiment_ownership(experiment_id, request.user.id)
+        is_owner = authz.has_experiment_ownership(request, experiment_id)
 
     c = Context({
         'dataset': dataset,
