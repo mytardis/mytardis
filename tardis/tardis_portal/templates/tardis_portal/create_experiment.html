@@ -82,9 +82,8 @@
 	});
 
 	//Get checked
-	$('.add_files').click(function(){
-	    file_list = $(this).parents(".dataset_container").find(".dataset");
-	    local_id = $(this).parents(".dataset_container").attr("id");
+	$('.add_files').live('click', function(){
+	    file_list = $(this).parents(".datasets").find(".dataset_container").find(".dataset");
 
 	    $(".jstree-leaf.jstree-checked").each(function(){
 		exists = false;
@@ -162,7 +161,7 @@
 	var id_regex = new RegExp('(' + prefix + '-\\d+)');
 	var total_input = parent.find('input:first');
 	// find the number of the parent dataset
-	var dataset_number = $(total_input).attr('id').match(new RegExp("id_" + prefix + "-(\\d+)-.*"))[1];
+	var dataset_number = total_input.attr('id').match(new RegExp("id_" + prefix + "-(\\d+)-.*"))[1];
 
 	// if the -DELETE field exists then fold the area and mark it for deletion
 	if ($('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).length > 0) {
@@ -195,7 +194,7 @@
 	var id_regex = new RegExp("id_dataset-(\\d+)-" + prefix + "-(\\d+)-.*");
 	var total_input = parent.find('input:first');
 
-	var match = $(total_input).attr('id').match(id_regex);
+	var match = total_input.attr('id').match(id_regex);
 	var ds_id = match[1];
 	var df_id = match[2];
 
