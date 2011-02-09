@@ -56,7 +56,7 @@
 	var name2 = container_type + dataset_number + '-datafile-' + total + '-url';
 	var id2 = 'id_' + name2;
 
-	var li = $(document.createElement('<li>')).attr({'class': 'datafile'});
+	var li = $('<li></li>').attr({'class': 'datafile'});
 	var file = $('<input type="hidden"/>').attr({'value': filename, 'name': name, 'id': id});
 	li.append(file);
 	var file1 = $('<input type="hidden"/>').attr({'value': '', 'name': name1, 'id': id1});
