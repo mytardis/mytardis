@@ -19,6 +19,7 @@ setup(
         'django-extensions',
         'suds',
         'python-ldap',
-        'python-magic'
+        'python-magic',
+        'south'
         ],
 )
