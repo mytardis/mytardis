@@ -156,7 +156,8 @@ urlpatterns = patterns(
      {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
 
     # Admin
-    (r'^admin/(.*)', admin.site.root),
+    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    (r'^admin/(.*)', include(admin.site.urls)),
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 )
