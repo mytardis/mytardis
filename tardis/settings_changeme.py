@@ -141,6 +141,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'registration',
     'tardis.tardis_portal.templatetags',
+    'south'
     )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
