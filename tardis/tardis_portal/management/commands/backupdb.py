@@ -75,8 +75,14 @@ class Command(BaseCommand):
             args += ["--port=%s" % self.port]
         args += [self.db]
 
-        subprocess.call('mysqldump %s' % ' '.join(args),
-                        stdout=open(outfile, 'w'))
+        pipe = subprocess.Popen('mysqldump %s' % ' '.join(args),
+                               shell=True,
+                               stdout=open(outfile, 'w'),
+                               stderr=subprocess.PIPE)
+
+        stdout, stderr = pipe.communicate()
+        if stderr:
+            print stderr
 
     def do_mysql_restore(self, infile):
         args = []
@@ -90,10 +96,17 @@ class Command(BaseCommand):
             args += ["--port=%s" % self.port]
         args += [self.db]
 
-        subprocess.call('mysql - %s' % ' '.join(args),
-                        stdin=open(infile),
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+        pipe = subprocess.Popen('mysql %s' % ' '.join(args),
+                                shell=True,
+                                stdin=open(infile),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+
+        stdout, stderr = pipe.communicate()
+        if stdout:
+            print stdout
+        if stderr:
+            print stderr
 
     def do_postgresql_backup(self, outfile):
         args = []
