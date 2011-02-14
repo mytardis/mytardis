@@ -154,7 +154,7 @@ urlpatterns = patterns(
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    (r'^admin/(.*)', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 )
