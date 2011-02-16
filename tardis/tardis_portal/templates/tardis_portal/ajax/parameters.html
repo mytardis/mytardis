@@ -30,6 +30,7 @@
 {% load parametertypecheck %}
 {% for parameterset in parametersets %}
 	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+    {% autoescape off %}
 	{% for parameter in parameterset.datafileparameter_set.all %}
 		<li><strong>{{ parameter.name.full_name }}: </strong>
 			{% if parameter.name.is_numeric %}
@@ -39,5 +40,6 @@
 			{% endif %}
 		</li>
 	{% endfor %}
+    {% endautoescape %}
 	<br/><br/>
 {% endfor %}

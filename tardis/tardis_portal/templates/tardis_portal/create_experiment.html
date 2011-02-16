@@ -1,0 +1,365 @@
+<!--
+ Copyright (c) 2010, Monash e-Research Centre
+   (Monash University, Australia)
+ Copyright (c) 2010, VeRSI Consortium
+   (Victorian eResearch Strategic Initiative, Australia)
+ All rights reserved.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block script %}
+
+  <script type="text/javascript">
+
+    function addDatafile(file_list, filename) {
+	var total_input = file_list.children('input:first');
+	var container_type = "dataset-";
+
+	// get the total number of childforms
+	var total = file_list.children('input:first').val();
+	var type = 'dataset-0-datafile-0-filename';
+
+	// find the number of the parent dataset
+	var dataset_number = total_input.attr('name').substring(container_type.length,
+								total_input.attr('name').indexOf('-', container_type.length));
+
+	var name = container_type + dataset_number + '-datafile-' + total + '-filename';
+	var id = 'id_' + name;
+
+
+	var name1 = container_type + dataset_number + '-datafile-' + total + '-id';
+	var id1 = 'id_' + name1;
+
+
+	var name2 = container_type + dataset_number + '-datafile-' + total + '-url';
+	var id2 = 'id_' + name2;
+
+	var li = $('<li></li>').attr({'class': 'datafile'});
+	var file = $('<input type="hidden"/>').attr({'value': filename, 'name': name, 'id': id});
+	li.append(file);
+	var file1 = $('<input type="hidden"/>').attr({'value': '', 'name': name1, 'id': id1});
+	li.append(file1);
+	var file2 = $('<input type="hidden"/>').attr({'value': '', 'name': name2, 'id': id2});
+	li.append(file2);
+	li.append($('<span class="file"></span>').text(filename));
+	var delete_file = $('<span class="remove_file">[x]</span>').click(function() {
+    	    deleteDatafile(li, container_type + dataset_number + '-datafile');
+	});
+	li.append(delete_file);
+	file_list.append(li);
+
+	// increment the form count
+	total++;
+	total_input.val(total);
+    }
+
+    $(document).ready(function() {
+        $("#demo1").jstree({
+	    core : { /* core options go here */ },
+	    plugins : [ "themes", "html_data", "checkbox" ]
+	});
+
+	//Get checked
+	$('.add_files').live('click', function(){
+	    file_list = $(this).parents(".dataset_container").find(".dataset");
+
+	    $(".jstree-leaf.jstree-checked").each(function(){
+		exists = false;
+		filename = $(this).attr('id');
+
+		file_list.find(".file").each(function(){
+		    if(filename == $(this).html()) {
+			exists = true;
+		    }
+		});
+
+		if(!exists) {
+		    addDatafile(file_list, filename);
+		}
+	    });
+	});
+    });
+  </script>
+
+  <script type="text/javascript">
+
+    function updateElementIndex(el, prefix, ndx) {
+        var id_regex = new RegExp('(' + prefix + '-\\d+)');
+        var replacement = prefix + '-' + ndx;
+        if ($(el).attr("for")) $(el).attr("for", $(el).attr("for").replace(id_regex, replacement));
+        if (el.id) el.id = el.id.replace(id_regex, replacement);
+        if (el.name) el.name = el.name.replace(id_regex, replacement);
+    }
+
+    function addDataset(btn, prefix) {
+        var formCount = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
+        var row = $('.dataset_container:first').clone(true).get(0);
+        $(row).removeAttr('id').insertAfter($('.dataset_container:first')).children('.hidden').removeClass('hidden');
+
+        // delete datafiles
+        $('ul.dataset > li', row).remove();
+
+        // update field ids and names
+        $(row).find(':input').not('.add_files').each(function() {
+            updateElementIndex(this, prefix, formCount);
+            switch(this.type) {
+                case 'password':
+                case 'select-multiple':
+                case 'select-one':
+                case 'text':
+                case 'textarea':
+                    $(this).val('');
+                    break;
+            }
+        });
+
+	// reset primary key field
+	$('#id_' + prefix + '-' + formCount + '-id', row).val('');
+	$('#id_' + prefix + '-' + formCount + '-datafile-INITIAL_FORMS', row).val('0');
+
+	// remove the delete field because this won't be bound to real data
+	$('#id_' + prefix + '-' + formCount + '-DELETE', row).remove();
+
+        // reset the datafile counts to 0
+        $('ul.dataset > input:first', row).val('0');
+
+        // add delete function to each dataset
+        $(row).find('.remove_dataset').click(function() {
+            deleteDataset(this, prefix);
+        });
+
+        //increment the form count
+        $('#id_' + prefix + '-TOTAL_FORMS').val(formCount + 1);
+        return false;
+    }
+
+    function deleteDataset(btn, prefix) {
+
+	var parent = $(btn).parents('.dataset_container');
+	var id_regex = new RegExp('(' + prefix + '-\\d+)');
+	var total_input = parent.find('input:first');
+	// find the number of the parent dataset
+	var dataset_number = total_input.attr('id').match(new RegExp("id_" + prefix + "-(\\d+)-.*"))[1];
+
+	// if the -DELETE field exists then fold the area and mark it for deletion
+	if ($('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).length > 0) {
+	    var head = parent.find('.msg_head');
+            $(head).css('background-color', '#FF0000');
+            $(head).css('color', 'white');
+            $(head).next(".msg_body").hide();
+	    $('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).attr('value', '1');
+	    for (i=0; i < $('#id_' + prefix + "-" + dataset_number + "-datafile-TOTAL_FORMS", parent).val(); i++) {
+		$('#id_' + prefix + "-" + dataset_number + "-datafile-" + i + "-DELETE", parent).attr('value', '1');
+	    }
+	} else {
+            $(parent).remove();
+            var forms = $('.dataset_container');
+            $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
+            for (var i=0, formCount=forms.length; i<formCount; i++) {
+		$(forms.get(i)).find(':input').children().not(':last').children().each(function() {
+                    updateElementIndex(this, prefix, i);
+		});
+            }
+	}
+        return false;
+    }
+
+    function deleteDatafile(btn, prefix) {
+
+        var dataset = $(btn).parents('.dataset');
+        var parent = $(btn).parents('.datafile');
+
+	var id_regex = new RegExp("id_dataset-(\\d+)-" + prefix + "-(\\d+)-.*");
+	var total_input = parent.find('input:first');
+
+	var match = total_input.attr('id').match(id_regex);
+	var ds_id = match[1];
+	var df_id = match[2];
+
+	if ($('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).length > 0) {
+	    $('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).attr('value', '1');
+            $(parent).css('background-color', '#FF0000');
+
+	} else {
+            var forms = $('li', dataset);
+            $('#id_' + prefix + '-TOTAL_FORMS', dataset).val(forms.length);
+            for (var i=0, formCount=forms.length; i<formCount; i++) {
+		$(forms.get(i)).find(':input').each(function() {
+                    updateElementIndex(this, prefix, i);
+		});
+            }
+	    $(parent).remove();
+	}
+        return false;
+    }
+
+    $(document).ready(
+        function()
+        {
+            //hide the all of the element with class msg_body
+            //toggle the componenet with class msg_body
+
+            $(".msg_head").live('click', function() {
+                if ($(this).next(".msg_body").is(':visible')) {
+                    $(this).css('background-color', '#878787');
+                    $(this).css('color', 'white');
+                    $(this).next(".msg_body").hide();
+                } else {
+		    var dataset_number = $(this).parent().find(":input").attr('id').match(new RegExp("id_dataset-(\\d+)-.*"))[1];
+		    $('#id_dataset-' + dataset_number + "-DELETE", $(this).parent()).attr('value', '0');
+                    $(this).css('background-color', '#dcdcdc');
+                    $(this).css('color', '#404040');
+                    $(this).next(".msg_body").show();
+                }
+            });
+
+            $(".add_new_dataset").click(function() {
+                //cloneDataset('div.dataset_container:last', 'dataset');
+                addDataset('div.dataset_container:last', 'dataset');
+            });
+
+            $(".remove_dataset").live('click', function() {
+                if($(".dataset_container").size() > 1) {
+                    //$(this).parents(".dataset_container").remove();
+                    // TODO needs to have the correct prefix
+                    deleteDataset(this,'dataset')
+                } else {
+                    alert('experiments must have at least one dataset!');
+                }
+            });
+
+            $(".remove_file").live('click', function() {
+		deleteDatafile(this, 'datafile')
+                //$(this).parent().remove()
+            });
+
+        });
+  </script>
+
+{% endblock %}
+
+{% block content %}
+  <div id="content">
+    <div class="post">
+      <h1 class="title"><a name="abouttardis">{{ subtitle }}</a></h1>
+      <div class="entry">
+        <form action="" method="POST">
+          {{ form.non_field_errors }}
+          <div class="msg_list">
+            <p class="msg_head">Experiment Information</p>
+            <div class="msg_body">
+              <div class="fieldWrapper">
+                {{ form.title.errors }}
+                <label for="id_title">Title:</label><br/>
+                {{ form.title }}
+              </div>
+
+              <div class="fieldWrapper">
+                {{ form.authors.errors }}
+                <label for="id_title">Authors (comma separate):</label><br/>
+                {{ form.authors }}
+              </div>
+
+              <div class="fieldWrapper">
+                {{ form.institution_name.errors }}
+                <label for="id_institution">Institution Name:</label><br/>
+                {{ form.institution_name }}
+              </div>
+
+              <div class="fieldWrapper">
+                {{ form.description.errors }}
+                <label for="id_description">Description:</label><br/>
+                {{ form.description }}
+              </div>
+            </div>
+            <p class="add_new_dataset">Add New Dataset</p>
+            <p class="my_files">My Files</p>
+            <div class="msg_body">
+              <p><strong>Select Files For New Dataset</strong></p>
+              <div id="demo1" class="demo">
+                {{directory_listing|safe}}
+              </div>
+              <br/>
+            </div>
+            <div class="datasets">
+              {{ form.datasets.management_form }}
+              {% for dataset_form, file_forms in form.get_datasets %}
+                <div class="dataset_container">
+                  <p class="msg_head">Dataset</p>
+                  <div class="msg_body">
+                    <div class="fieldWrapper">
+                      {{ dataset_form.description.errors }}
+                      <p>Dataset Description: <br/>
+                      {% if form.instance %}
+			{{ dataset_form.id }}
+                        {{ dataset_form.DELETE.as_hidden }}
+		      {% endif %}
+                      {{dataset_form.description}}
+                      </p>
+                    </div>
+                    <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+                    <p><strong>Files</strong></p>
+                    <div>
+
+                      <ul class="dataset">
+                        {{ file_forms.management_form }}
+			{% for file_form in file_forms.forms %}
+                          <li class="datafile">
+			    {{ file_form.id.as_hidden }}
+                            {{ file_form.DELETE.as_hidden }}
+			    {{ file_form.url.as_hidden }}
+			    {{ file_form.filename.as_hidden }}
+                          <span class="file">{{ file_form.filename }}</span>
+                          <span class="remove_file">[x]</span><br/>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                    <div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
+		  </div>
+		</div>
+	      {% endfor %}
+	    </div>
+	    <br/>
+	    <input id="button" type="submit" value="Save"/>
+	  </div>
+
+	</form>
+      </div>
+    </div>
+  </div>
+  <br/>
+{% endblock %}
+
+{% block sidebar %}
+  <ul>
+    <li>
+      <h2></h2>
+      <ul>
+      </ul>
+    </li>
+  </ul>
+  <p>
+{% endblock %}

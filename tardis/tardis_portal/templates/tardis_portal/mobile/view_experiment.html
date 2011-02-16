@@ -308,7 +308,7 @@
 							<br/>
 							<span class="header">Experiment Administrators</span>
                             {% for owner in owners %}
-                                    {{ owner.user.username }} {% if owner.user.email %}(<a href="mailto:{{owner.user.email}}">{{ owner.user.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+                                    {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
 							{% endif %}
                             </p>																			

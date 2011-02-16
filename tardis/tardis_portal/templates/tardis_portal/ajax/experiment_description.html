@@ -1,0 +1,104 @@
+{% load parametertypecheck %}
+
+<div id="experiment_description">
+
+  <p>
+    <strong>Authors: </strong><br/>
+    {% for author in authors %}
+      {{ author.author }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  </p>
+
+  <p>
+    <strong>Abstract: </strong>
+    <div class="abstract">
+      {{ experiment.description|safe }}
+    </div>
+  </p>
+
+  {% if experiment.handle %}
+    <p>
+      <strong>Persistent Handle:</strong>
+      <a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>
+    </p>
+  {% endif %}
+
+  <p>
+    <strong>Institution:</strong>
+    {{experiment.institution_name}}<br/>
+  </p>
+
+  {% if experiment.start_time and experiment.end_time %}
+    <p>
+      <strong>Date:</strong>
+      {{ experiment.start_time|date:"jS F Y H:i" }} - {{ experiment.end_time|date:"jS F Y H:i" }}<br/>
+    </p>
+  {% endif %}
+
+  <p>
+    {% if experiment.experimentparameterset_set.count %}
+      <div class="dataset_extrainfo">
+	<strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
+	<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
+	  <ul>
+	    {% for parameterset in experiment.experimentparameterset_set.all %}
+              <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
+
+	      {% for parameter in parameterset.experimentparameter_set.all %}
+                <li><strong>{{ parameter.name.full_name }}: </strong>
+		{% if parameter.name.is_numeric %}
+                  {{ parameter.numerical_value }} {{ parameter.name.units }}
+                {% else %}
+                  {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
+                {% endif %}
+		</li>
+              {% endfor %}
+	      <br/><br/>
+            {% endfor %}
+	  </ul>
+	</div>
+      </div>
+    {% endif %}
+  </p>
+
+  <p>
+    <strong>Dataset Information:</strong>
+    <div>
+      <!-- <strong>Dataset Metadata: </strong>	 -->
+      <div class="dataset_information">
+	<ul>
+	  <li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
+	  <li><strong>Files:</strong> {{datafiles.count}}</li>
+	  <li><strong>Size:</strong> {{size|filesizeformat}}</li>
+	</ul>
+      </div>
+    </div>
+  </p>
+
+  <p>
+    <strong>Experiment Last Updated:</strong>
+    {{ experiment.update_time|date:"jS F Y H:i" }}<br/>
+  </p>
+  <div class="download_entire_experiment">
+    {% for p in protocols %}
+      <p>
+	{% if p %}
+	  <strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+	{% else %}
+	  <strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
+	{% endif %}
+      </p>
+    {% endfor %}
+  </div>
+
+  <p align="right">
+    <br/>
+    {% if owners %}
+      <strong>Experiment Administrators </strong><br/>
+      {% for owner in owners %}
+        {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+      {% endfor %}
+  </p>
+{% endif %}
+
+</div>

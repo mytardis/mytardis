@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -29,28 +28,29 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from django.contrib.auth.models import User
-from tardis.tardis_portal.models import *
 
 """
 tests.py
 http://docs.djangoproject.com/en/dev/topics/testing/
 
-.. moduleauthor::  Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
-.. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 
 """
-from django.test import TestCase
-from django.test.client import Client
-
-from tardis.tardis_portal.views import _registerExperimentDocument
-from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
-from tardis.tardis_portal.metsparser import MetsDataHolder
-
 from os import path
 import unittest
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
+
+from django.test import TestCase
+from django.test.client import Client
+from django.contrib.auth.models import User
+
+from tardis.tardis_portal.models import *
+from tardis.tardis_portal.views import _registerExperimentDocument
+from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
+from tardis.tardis_portal.metsparser import MetsDataHolder
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 
 class SearchTestCase(TestCase):
@@ -72,10 +72,17 @@ class SearchTestCase(TestCase):
             filename = path.join(path.abspath(path.dirname(__file__)), f)
             expid = _registerExperimentDocument(filename=filename,
                                                 created_by=user,
-                                                expid=None,
-                                                owners=[user.username],
-                                                username=user.username)
+                                                expid=None)
             experiment = Experiment.objects.get(pk=expid)
+
+            acl = ExperimentACL(pluginId=django_user,
+                                entityId=str(user.id),
+                                experiment=experiment,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True)
+            acl.save()
             self.experiments += [experiment]
 
         schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
@@ -93,13 +100,6 @@ class SearchTestCase(TestCase):
             experiment.delete()
 
     def testSearchDatafileForm(self):
-        response = self.client.get('/search/datafile/', {'type': 'saxs', })
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-                             '/accounts/login/?next=/search/datafile/%3Ftype%3Dsaxs')
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/datafile/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
@@ -116,18 +116,13 @@ class SearchTestCase(TestCase):
         response = self.client.get('/search/datafile/',
                                    {'type': 'saxs', 'filename': '', })
 
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
-        self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+        # check if the response is zero since the user is not logged in
         self.assertEqual(response.status_code, 200)
-        self.client.logout()
+        self.assertEqual(len(response.context['paginator'].object_list), 0)
 
     def testSearchDatafileResults(self):
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/datafile/',
             {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
@@ -167,31 +162,17 @@ class SearchTestCase(TestCase):
         self.client.logout()
 
     def testSearchExperimentForm(self):
-        response = self.client.get('/search/experiment/')
-
-        # check if the response is a redirect to the login page
-        self.assertRedirects(response,
-            '/accounts/login/?next=/search/experiment/')
-
-        # let's try to login this time...
-        self.client.login(username='test', password='test')
+        login = self.client.login(username='test', password='test')
+        self.assertEqual(login, True)
         response = self.client.get('/search/experiment/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
             None)
         self.assertTemplateUsed(response,
             'tardis_portal/search_experiment_form.html')
-
         self.client.logout()
 
     def testSearchExperimentAuthentication(self):
-        response = self.client.get('/search/experiment/',
-            {'title': 'cookson', })
-
-        # check if the response is a redirect to the login page
-        self.assertEqual(response.status_code, 302)
-
-        # let's try to login this time...
         self.client.login(username='test', password='test')
         response = self.client.get('/search/experiment/',
             {'title': 'cookson', })
@@ -295,8 +276,8 @@ class MetsExperimentStructCreatorTestCase(TestCase):
             'A-7'][0].name == 'ment0005.osc',
             'metadata A-7 should have ment0005.osc as the name')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'][0].url == 'file://Images/ment0005.osc',
-            'metadata A-7 should have file://Images/ment0005.osc as the url')
+            'A-7'][0].url == 'tardis://Images/ment0005.osc',
+            'metadata A-7 should have tardis://Images/ment0005.osc as the url')
         self.assertTrue(self.dataHolder.metadataMap[
             'A-7'][0].dataset.id == 'J-2',
             'metadata A-7 should have dataset id J-2')
@@ -353,7 +334,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         authors = models.Author_Experiment.objects.filter(
             experiment=self.experiment)
         self.assertTrue(len(authors) == 3)
-        authorNames = [author.author.name for author in authors]
+        authorNames = [author.author for author in authors]
         self.assertTrue('Moscatto Brothers' in authorNames)
 
     def testIngestedDatasetFields(self):
@@ -447,9 +428,11 @@ def suite():
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
     equipmentSuite = \
         unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
+
     allTests = unittest.TestSuite([parserSuite1,
                                    parserSuite2,
                                    userInterfaceSuite,
                                    searchSuite,
-                                   equipmentSuite])
+                                   equipmentSuite,
+                                   ])
     return allTests

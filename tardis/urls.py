@@ -1,31 +1,129 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 from django.contrib import admin
 admin.autodiscover()
 from django.contrib.auth.views import logout
-
-from django.conf.urls.defaults import *
-from django.conf import settings
+from django.conf.urls.defaults import patterns, include
 from django.views.generic import list_detail
+from django.conf import settings
+from registration.views import register
 
 from tardis.tardis_portal.models import Equipment
 from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
+from tardis.tardis_portal.forms import RegistrationForm
 
-from registration.forms import RegistrationFormUniqueEmail
+core_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^$', 'index'),
+    (r'^site-settings.xml/$', 'site_settings'),
+    (r'^about/$', 'about'),
+    (r'^partners/$', 'partners'),
+    (r'^stats/$', 'stats'),
+    (r'^import_params/$', 'import_params'),
+)
+
+experiment_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
+    (r'^view/$', 'experiment_index'),
+    (r'^register/$', 'register_experiment_ws_xmldata'),
+    (r'^register/internal/$', 'register_experiment_ws_xmldata_internal'),
+    (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
+    (r'^create/$', 'create_experiment'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
+     '(?P<username>[\w\.]+)$', 'add_experiment_access_user'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
+     '(?P<username>[\w\.]+)/$', 'remove_experiment_access_user'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
+     '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
+     'retrieve_access_list_user'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
+     '(?P<groupname>[\w\s\.]+)$', 'add_experiment_access_group'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
+     '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
+     '(?P<group_id>\d+)/$', 'change_group_permissions'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
+     'retrieve_access_list_group'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
+     'retrieve_access_list_external'),
+    (r'^control_panel/$', 'control_panel'),
+
+    )
+
+accounts_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^login/$', 'login'),
+    (r'^manage_auth_methods/$', 'manage_auth_methods'),
+    (r'^register/$', register,
+     {'form_class': RegistrationForm}),
+    (r'', include('registration.urls')),
+    )
+
+ajax_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
+    (r'^xml_data/(?P<dataset_file_id>\d+)/$', 'retrieve_xml_data'),
+    (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
+    (r'^user_list/$', 'retrieve_user_list'),
+    (r'^group_list/$', 'retrieve_group_list'),
+    (r'^upload_complete/$', 'upload_complete'),
+    (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
+    (r'^experiment_description/(?P<experiment_id>\d+)/$',
+     'experiment_description'),
+    (r'^experiment_datasets/(?P<experiment_id>\d+)/$', 'experiment_datasets'),
+    )
+
+download_urls = patterns(
+    'tardis.tardis_portal.download',
+    (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
+    #(r'^dataset/(?P<dataset_id>\d+)/$', 'download_dataset'),
+    (r'^experiment/(?P<experiment_id>\d+)/$', 'download_experiment'),
+    (r'^datafiles/$', 'download_datafiles'),
+    )
+
+search_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^equipment/$', 'search_equipment'),
+    (r'^experiment/$', 'search_experiment'),
+    (r'^datafile/$', 'search_datafile'),
+    )
+
+group_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
+    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
+     'add_user_to_group'),
+    (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
+     'remove_user_from_group'),
+    )
 
 
 urlpatterns = patterns(
     # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
-    # to INSTALLED_APPS to enable admin documentation:
-    # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     '',
-    (r'^$', 'tardis.tardis_portal.views.index'),
-    (r'^site-settings.xml/$', 'tardis.tardis_portal.views.site_settings'),
-    (r'^about/$', 'tardis.tardis_portal.views.about'),
-    (r'^partners/$', 'tardis.tardis_portal.views.partners'),
-    (r'^stats/$', 'tardis.tardis_portal.views.stats'),
-    (r'^import_params/$', 'tardis.tardis_portal.views.import_params'),
+    (r'', include(core_urls)),
+
+    # Experiment Views
+    (r'^experiment/', include(experiment_urls)),
+
+    # Download Views
+    (r'^download/', include(download_urls)),
+
+    # Ajax Views
+    (r'^ajax/', include(ajax_urls)),
+
+    # Seach Views
+    (r'^search/', include(search_urls)),
+
+    # Account Views
+    (r'^accounts/', include(accounts_urls)),
+
+    # Group Views
+    (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
+    (r'^group/', include(group_urls)),
+
+    # Equipment Views
     (r'^equipment/$', list_detail.object_list,
      {'queryset': Equipment.objects.all(),
       'paginate_by': 15,
@@ -33,30 +131,8 @@ urlpatterns = patterns(
       {'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()}}),
     (r'^equipment/(?P<object_id>\d+)/$', list_detail.object_detail,
      {'queryset': Equipment.objects.all()}),
-    (r'^search/equipment/$',
-     'tardis.tardis_portal.views.search_equipment'),
-    (r'^experiment/view/(?P<experiment_id>\d+)/$',
-     'tardis.tardis_portal.views.view_experiment'),
-    (r'^experiment/view/$',
-     'tardis.tardis_portal.views.experiment_index'),
-    (r'^experiment/register/$',
-     'tardis.tardis_portal.views.register_experiment_ws_xmldata'),
-    (r'^experiment/register/internal/$',
-     'tardis.tardis_portal.views.register_experiment_ws_xmldata_internal'),
-    (r'^experiment/view/(?P<experiment_id>\d+)/publish/$',
-     'tardis.tardis_portal.views.publish_experiment'),
-    (r'^search/experiment/$',
-     'tardis.tardis_portal.views.search_experiment'),
-    (r'^search/datafile/$',
-     'tardis.tardis_portal.views.search_datafile'),
-    (r'^download/datafile/(?P<datafile_id>\d+)/$',
-     'tardis.tardis_portal.download.download_datafile'),
-    #(r'^download/dataset/(?P<dataset_id>\d+)/$',
-    # 'tardis.tardis_portal.download.download_dataset'),
-    (r'^download/experiment/(?P<experiment_id>\d+)/$',
-     'tardis.tardis_portal.download.download_experiment'),
-    (r'^download/datafiles/$',
-     'tardis.tardis_portal.download.download_datafiles'),
+
+    # Display Views
     (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_experiment_image'),
@@ -66,32 +142,20 @@ urlpatterns = patterns(
     (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_datafile_image'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/add/'
-     '(?P<username>\w+)$', 'tardis.tardis_portal.views.add_access_experiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/remove/'
-     '(?P<username>\w+)$',
-     'tardis.tardis_portal.views.remove_access_experiment'),
-    (r'^experiment/control_panel/(?P<experiment_id>\d+)/access_list/$',
-     'tardis.tardis_portal.views.retrieve_access_list'),
-    (r'^experiment/control_panel/$',
-     'tardis.tardis_portal.views.control_panel'),
-    (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$',
-     'tardis.tardis_portal.views.retrieve_parameters'),
-    (r'^ajax/xml_data/(?P<dataset_file_id>\d+)/$',
-     'tardis.tardis_portal.views.retrieve_xml_data'),
-    (r'^ajax/datafile_list/(?P<dataset_id>\d+)/$',
-     'tardis.tardis_portal.views.retrieve_datafile_list'),
-    (r'^ajax/user_list/$',
-     'tardis.tardis_portal.views.retrieve_user_list'),
-    (r'^login/$', 'tardis.tardis_portal.views.ldap_login'),
-    (r'^accounts/login/$', 'tardis.tardis_portal.views.ldap_login'),
+
+    # Login/out
+    (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^logout/$', logout, {'next_page': '/'}),
-    (r'^accounts/register/', include('registration.urls'),
-     {'form_class': RegistrationFormUniqueEmail}),
-    (r'^accounts/', include('registration.urls')),
+
+    # Media
     (r'site_media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.STATIC_DOC_ROOT}),
     (r'media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
-    (r'^admin/(.*)', admin.site.root),
+
+    # Admin
+    (r'^admin/doc/', include('django.contrib.admindocs.urls')),
+    (r'^admin/', include(admin.site.urls)),
+
+    (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 )

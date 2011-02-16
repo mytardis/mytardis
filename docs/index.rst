@@ -14,6 +14,8 @@ Contents:
    install
    contributing
 
+   ref/auth_framework
+
    changes
 
 Indices and tables
