@@ -141,6 +141,7 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.display_dataset_image'),
     (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+    'tardis.tardis_portal.views.display_datafile_image'),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
