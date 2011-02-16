@@ -27,12 +27,13 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/data_browsing_template.html" %}
 {% load experimentstats %}
 
 		{% block content %}
 
 		<div id="content">
+			{% if user.is_authenticated %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">My Experiments</a>
@@ -48,8 +49,8 @@
 						{% for experiment in experiments %}
 							<tr>
 								<th>
-									<a href="../view/{{ experiment.id }}">{{ experiment.title }}									
-										
+									<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}
+
 										</a>
 								</th>
 								
@@ -75,6 +76,7 @@
 				{% endif %}
 			</div>
 			<br/><br/><br/>
+		        {% endif %}
 			<div class="post">
 				<h1 class="title">
 					<a href="#">Public Experiments</a>
@@ -119,34 +121,3 @@
 		</div>
 
 		{% endblock %}
-		{% block sidebar %}
-
-		<ul>
-			<li>
-				<h2>
-					Browse Experiments
-				</h2>
-				<ul>
-					<li>
-						<a href="/experiment/view">Index</a>
-					</li>
-					<li>
-						<a href="/search/experiment">Search</a>
-					</li>					
-				</ul>
-				{% if user.is_authenticated %}
-				<br/>
-				<h2>
-					Controls
-				</h2>
-				<ul>
-					<li>
-						<a href="/experiment/control_panel">Control Panel</a>
-					</li>					
-				</ul>
-				{% endif %}
-			</li>			
-		</ul>
-		<p>
-			
-			{% endblock %}
