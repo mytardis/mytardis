@@ -544,7 +544,8 @@ class MetsMetadataInfoHandler(ContentHandler):
                             if createParamSetFlag['experiment']:
                                 # create a new parameter set for the metadata
                                 parameterSet = \
-                                    models.ExperimentParameterSet(schema=schema)
+                                    models.ExperimentParameterSet(schema=schema,
+                                    experiment=self.modelExperiment)
                                 parameterSet.save()
             
                                 # now let's process the experiment parameters
@@ -558,9 +559,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterSet)
                                 
                                 createParamSetFlag['experiment'] = False
-        
-                                # now link this parameterset with the experiment
-                                parameterSet.experiment.add(self.modelExperiment)
+
                             else:
                                 # this is not even allowed as there's only going
                                 # to be one experiment per METS file
@@ -569,9 +568,13 @@ class MetsMetadataInfoHandler(ContentHandler):
             
                         elif metsObjectClassName == 'Dataset':
                             if createParamSetFlag['dataset']:
+                                dataset = self.datasetLookupDict[self.metsObject.id]
+                                
                                 # create a new parameter set for the dataset metadata
                                 datasetParameterSet = \
-                                    models.DatasetParameterSet(schema=schema)
+                                    models.DatasetParameterSet(schema=schema,
+                                    dataset=dataset)
+                                
                                 datasetParameterSet.save()
             
                                 # now let's process the dataset parameters
@@ -586,12 +589,6 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 
                                 # disable creation for the next visit
                                 createParamSetFlag['dataset'] = False
-    
-                            
-                            dataset = self.datasetLookupDict[self.metsObject.id]
-                            
-                            # now link this parameterset with the dataset
-                            datasetParameterSet.dataset.add(dataset)
             
                         elif metsObjectClassName == 'Datafile':
                             # this will be a good time to save the "hard" metadata of this
@@ -629,7 +626,8 @@ class MetsMetadataInfoHandler(ContentHandler):
                             if createParamSetFlag['datafile']:
                                 # create a new parameter set for the metadata
                                 datafileParameterSet = \
-                                    models.DatafileParameterSet(schema=schema)
+                                    models.DatafileParameterSet(schema=schema,
+                                    dataset_file=self.modelDatafile)
                                 datafileParameterSet.save()
             
                                 # now let's process the datafile parameters
@@ -642,9 +640,6 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterName, parameterValue,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
-        
-                            # now link this parameterset with the datafile
-                            datafileParameterSet.dataset_file.add(self.modelDatafile)
                     
 
             except models.Schema.DoesNotExist:
