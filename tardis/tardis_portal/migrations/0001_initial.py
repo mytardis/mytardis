@@ -1,13 +1,16 @@
 # encoding: utf-8
+
+
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'UserProfile'
         db.create_table('tardis_portal_userprofile', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -218,9 +221,8 @@ class Migration(SchemaMigration):
         ))
         db.create_unique('tardis_portal_equipment_dataset', ['equipment_id', 'dataset_id'])
 
-
     def backwards(self, orm):
-        
+
         # Removing unique constraint on 'Author_Experiment', fields ['experiment', 'author']
         db.delete_unique('tardis_portal_author_experiment', ['experiment_id', 'author'])
 
@@ -283,7 +285,6 @@ class Migration(SchemaMigration):
 
         # Removing M2M table for field dataset on 'Equipment'
         db.delete_table('tardis_portal_equipment_dataset')
-
 
     models = {
         'auth.group': {
