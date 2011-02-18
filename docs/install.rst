@@ -11,7 +11,7 @@ Redhat::
 
 Debian/Ubuntu::
 
-   sudo apt-get install libssl-dev libsasl2-dev libldap-2.4-2 libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1
+   sudo apt-get install libssl-dev libsasl2-dev libldap-2.4-2 libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
 
 Configuration
 -------------
