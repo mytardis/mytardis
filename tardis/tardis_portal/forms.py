@@ -342,11 +342,11 @@ class DataFileFormSet(BaseInlineFormSet):
         filepath = form.cleaned_data['filename']
         datafile.filename = basename(filepath)
 
-        if not 'url' in form.cleaned_data:
+        if not 'url' in form.cleaned_data or not form.cleaned_data['url']:
             datafile.url = 'file://' + filepath
 
-        if not 'size' in form.cleaned_data:
-            datafile.size = 0
+        if not 'size' in form.cleaned_data or not form.cleaned_data['size']:
+            datafile.size = u'0'
 
         if not 'protocol' in form.cleaned_data:
             datafile.protocol = u''

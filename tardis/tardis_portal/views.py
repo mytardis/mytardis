@@ -230,11 +230,42 @@ def view_experiment(request, experiment_id):
     :rtype: :class:`django.http.HttpResponse`
 
     """
-    c = Context({'upload_complete_url':
-                     reverse('tardis.tardis_portal.views.upload_complete'),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm(),
-                 })
+    c = Context({})
+
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+
+    c['experiment'] = experiment
+    c['subtitle'] = experiment.title
+    c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
+                {'name': experiment.title,
+                 'link': experiment.get_absolute_url()}]
+
+    if 'status' in request.GET:
+        c['status'] = request.GET['status']
+    if 'error' in request.GET:
+        c['error'] = request.GET['error']
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/view_experiment.html', c))
+
+
+@authz.experiment_access_required
+def experiment_description(request, experiment_id):
+    """View an existing experiment's description. To be loaded via ajax.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be edited
+    :type experiment_id: string
+    :rtype: :class:`django.http.HttpResponse`
+
+    """
+    c = Context({})
 
     try:
         experiment = Experiment.safe.get(request, experiment_id)
@@ -254,6 +285,13 @@ def view_experiment(request, experiment_id):
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
+    acl = ExperimentACL.objects.filter(pluginId=django_user,
+                                       experiment=experiment,
+                                       isOwner=True)
+
+    # TODO: resolve usernames through UserProvider!
+    c['owners'] = [User.objects.get(pk=str(a.entityId)) for a in acl]
+
     # calculate the sum of the datafile sizes
     size = 0
     for df in c['datafiles']:
@@ -262,13 +300,6 @@ def view_experiment(request, experiment_id):
         except:
             pass
     c['size'] = size
-
-    acl = ExperimentACL.objects.filter(pluginId=django_user,
-                                       experiment=experiment,
-                                       isOwner=True)
-
-    # TODO: resolve usernames through UserProvider!
-    c['owners'] = [User.objects.get(pk=str(a.entityId)) for a in acl]
 
     c['protocols'] = [df['protocol'] for df in
                       c['datafiles'].values('protocol').distinct()]
@@ -279,7 +310,49 @@ def view_experiment(request, experiment_id):
         c['error'] = request.GET['error']
 
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/view_experiment.html', c))
+                        'tardis_portal/ajax/experiment_description.html', c))
+
+
+@authz.experiment_access_required
+def experiment_datasets(request, experiment_id):
+    """View a listing of dataset of an existing experiment as ajax loaded tab.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be edited
+    :type experiment_id: string
+    :param template_name: the path of the template to render
+    :type template_name: string
+    :rtype: :class:`django.http.HttpResponse`
+
+    """
+    c = Context({'upload_complete_url':
+                     reverse('tardis.tardis_portal.views.upload_complete'),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm(),
+                 })
+
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+
+    c['experiment'] = experiment
+    c['datafiles'] = \
+        Dataset_File.objects.filter(dataset__experiment=experiment_id)
+
+    c['protocols'] = [df['protocol'] for df in
+                      c['datafiles'].values('protocol').distinct()]
+
+    if 'status' in request.GET:
+        c['status'] = request.GET['status']
+    if 'error' in request.GET:
+        c['error'] = request.GET['error']
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/experiment_datasets.html', c))
 
 
 @login_required
@@ -473,6 +546,7 @@ def register_experiment_ws_xmldata_internal(request):
 
 
 # TODO removed username from arguments
+
 def _registerExperimentDocument(filename, created_by, expid=None,
                                 owners=[], username=None):
     '''
@@ -495,43 +569,31 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
-    try:
-        if firstline.startswith('<experiment'):
-            logger.debug('processing simple xml')
-            processExperiment = ProcessExperiment()
-            eid = processExperiment.process_simple(filename, created_by, expid)
-        else:
-            logger.debug('processing METS')
-            eid = parseMets(filename, created_by, expid)
-    except:
-        logger.debug('rolling back ingestion')
-        transaction.rollback()
-        # TODO: uncomment this bit if we hear back from Steve that returning
-        #       the experiment ID won't be needed anymore
-        #Experiment.objects.get(id=expid).delete()
-        return expid
+    if firstline.startswith('<experiment'):
+        logger.debug('processing simple xml')
+        processExperiment = ProcessExperiment()
+        eid = processExperiment.process_simple(filename, created_by, expid)
     else:
-        logger.debug('committing ingestion')
-        transaction.commit()
-        return eid
+        logger.debug('processing METS')
+        eid = parseMets(filename, created_by, expid)
 
     # for each PI
     for owner in owners:
-        # is the use of the urllib really neccessary???
+        # TODO: is the use of the urllib really neccessary???
+        # TODO: replace with a form!
         owner = unquote_plus(owner)
 
         # try get user from email
         if settings.LDAP_ENABLE:
             u = ldap_auth.get_or_create_user_ldap(owner)
+        else:
+            u = User.objects.get(username=owner)
 
             # if exist, create ACL
             if u:
                 logger.debug('registering owner: ' + owner)
                 e = Experiment.objects.get(pk=eid)
-                #exp_owner = Experiment_Owner(experiment=e,
-                #                             user=u)
-                #exp_owner.save()
-                #u.groups.add(g)
+
                 acl = ExperimentACL(experiment=e,
                                     pluginId=django_user,
                                     entityId=str(u.id),
@@ -546,6 +608,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
 
 # web service
+@transaction.commit_manually
 def register_experiment_ws_xmldata(request):
     import threading
 
@@ -568,7 +631,7 @@ def register_experiment_ws_xmldata(request):
 
             from django.contrib.auth import authenticate
             user = authenticate(username=username, password=password)
-            if user is not None:
+            if user:
                 if not user.is_active:
                     return return_response_error(request)
             else:
@@ -579,19 +642,21 @@ def register_experiment_ws_xmldata(request):
                 approved=True,
                 created_by=user,
                 )
-
             e.save()
+            transaction.commit()
+
             eid = e.id
 
-            dir = settings.FILE_STORE_PATH + '/' + str(eid)
 
             # TODO: this entire function needs a fancy class with functions for
             # each part..
 
-            import os
-            if not os.path.exists(dir):
-                os.makedirs(dir)
-                os.system('chmod g+w ' + dir)
+            from os import makedirs, system
+            from os.path import exists, join
+            dir = join(settings.FILE_STORE_PATH, str(eid))
+            if not exists(dir):
+                makedirs(dir)
+                system('chmod g+w ' + dir)
 
             filename = dir + '/METS.xml'
             file = open(filename, 'wb+')
@@ -600,21 +665,22 @@ def register_experiment_ws_xmldata(request):
             file.close()
 
             class RegisterThread(threading.Thread):
+
+                @transaction.commit_manually
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
                     owners = request.POST.getlist('experiment_owner')
                     try:
                         _registerExperimentDocument(filename=filename,
-                                                    created_by=user, expid=eid,
+                                                    created_by=user,
+                                                    expid=eid,
                                                     owners=owners,
                                                     username=username)
+                        transaction.commit()
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
-
             RegisterThread().start()
-
-            logger.debug('Sending file request')
 
             if from_url:
 
@@ -634,6 +700,7 @@ def register_experiment_ws_xmldata(request):
                             })
                         urlopen(file_transfer_url, data)
 
+                logger.debug('Sending file request')
                 FileTransferThread().start()
 
             logger.debug('returning response from main call')
