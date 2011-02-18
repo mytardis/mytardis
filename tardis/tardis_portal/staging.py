@@ -142,8 +142,8 @@ def stage_files(datafiles,
 
         logger.debug('staging file: %s to %s' % (copyfrom, copyto))
         datafile.size = path.getsize(copyfrom)
-        datafile.save()
         shutil.move(copyfrom, copyto)
+        datafile.save()
 
 
 def duplicate_file_check_rename(copyto):

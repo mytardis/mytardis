@@ -177,7 +177,8 @@ class Experiment(models.Model):
 
 
 class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis Authorisation framework
+    """The ExperimentACL table is the core of the `Tardis
+    Authorisation framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
