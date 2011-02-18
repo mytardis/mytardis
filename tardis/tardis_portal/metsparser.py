@@ -432,8 +432,11 @@ class MetsMetadataInfoHandler(ContentHandler):
                 self.metsObject.institution = self.institution
 
                 # let's save the experiment in the DB
-                self.modelExperiment = models.Experiment.objects.get(
-                    pk=self.tardisExpId)
+                if self.tardisExpId:
+                    self.modelExperiment = models.Experiment.objects.get(
+                        pk=self.tardisExpId)
+                else:
+                    self.modelExperiment = models.Experiment()
                 self.modelExperiment.id = self.tardisExpId
                 self.modelExperiment.url = self.metsObject.url
                 self.modelExperiment.approved = True
