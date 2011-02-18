@@ -555,7 +555,17 @@ table.experiment-table th {
 	font-size: 14px;
 	font-weight: bold;
 	}
-	
+
+	.my_files {
+	padding: 5px 10px;
+	position: relative;
+	background-color: #dcdcdc;
+    color: #404040;
+	margin:1px;
+	font-size: 14px;
+	font-weight: bold;
+	}
+
 	.add_new_dataset {
 	padding: 5px 10px;
 	cursor: pointer;

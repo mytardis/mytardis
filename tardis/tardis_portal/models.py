@@ -187,7 +187,7 @@ class ExperimentACL(models.Model):
     :attribute canRead: gives the user read access
     :attribute canWrite: gives the user write access
     :attribute canDelete: gives the user delete permission
-    :attribute owner: the experiment owner flag.
+    :attribute isOwner: the experiment owner flag.
     :attribute effectiveDate: the date when access takes into effect
     :attribute expiryDate: the date when access ceases
     :attribute aclOwnershipType: system-owned or user-owned.
