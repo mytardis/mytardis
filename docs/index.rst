@@ -12,6 +12,7 @@ Contents:
 
    introduction
    install
+   ingesting
    contributing
 
    ref/auth_framework
