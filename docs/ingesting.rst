@@ -70,12 +70,14 @@ To use this script simple paste it into a new file called
 `./register.sh file.xml` there are several example XML and METS files
 within the tardis tests.
 
+
 Post Processing
 ---------------
 
 TARDIS takes advantage of the Django signal framework to provide post
 porcessing of files. The only default post processing step that is
 enabled by default operates on newly created Dataset Files.
+
 
 Staging Hook
 ^^^^^^^^^^^^
@@ -88,6 +90,7 @@ in a newly created file.
 The saging hook is only triggerd on files that have a protocol of
 `staging` which dignifies that the file is in the in the TARDIS
 staging area.
+
 
 .. py:currentmodule:: tardis.tardis_portal.filters.exif
 
