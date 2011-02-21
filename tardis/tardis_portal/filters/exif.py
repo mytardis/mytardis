@@ -47,6 +47,19 @@ from tardis.tardis_portal.models import ParameterName, DatafileParameter
 
 
 class EXIFFilter(object):
+    """This filter provides simple metadata extraction of EXIF tags
+    from images.
+
+    If a white list is specified then it takes precidence and all
+    other tags will be ignored.
+
+    :param schema: the name of the schema to load the EXIF data into.
+    :type schema: string
+    :param tagsToFind: a list of the tags to include.
+    :type tagsToFind: list of strings
+    :param tagsToExclude: a list of the tags to exclude.
+    :type tagsToExclude: list of strings
+    """
     def __init__(self, schema, tagsToFind=None, tagsToExclude=None):
         self.schema = schema
         self.tagsToFind = tagsToFind
@@ -54,14 +67,12 @@ class EXIFFilter(object):
 
     def __call__(self, sender, **kwargs):
         """
-        post save callback
+        post save callback entry point.
 
-        sender
-            The model class.
-        instance
-            The actual instance being saved.
-        created
-            A boolean; True if a new record was created.
+        :param sender: The model class.
+        :param instance: The actual instance being saved.
+        :param created: A boolean; True if a new record was created.
+        :type created: bool
         """
         instance = kwargs.get('instance')
         created = kwargs.get('created')
@@ -77,6 +88,8 @@ class EXIFFilter(object):
         self.saveExifMetadata(instance, schema, metadata)
 
     def saveExifMetadata(self, instance, schema, metadata):
+        """Save all the metadata to a Dataset_Files paramamter set.
+        """
         try:
             ps = DatafileParameterSet.objects.get(schema=schema,
                                                   dataset_file=instance)
@@ -98,6 +111,8 @@ class EXIFFilter(object):
         return ps
 
     def getParamaters(self, schema, metadata):
+        """Return a list of the paramaters that will be saved.
+        """
         param_objects = ParameterName.objects.filter(schema=schema)
         parameters = []
         for p in metadata:
@@ -142,6 +157,8 @@ class EXIFFilter(object):
         return parameters
 
     def getSchema(self):
+        """Return the schema object that the paramaterset will use.
+        """
         try:
             return Schema.objects.get(namespace__exact=self.schema)
         except Schema.DoesNotExist:
@@ -150,6 +167,8 @@ class EXIFFilter(object):
             return schema
 
     def getExif(self, filename):
+        """Return a dictionary of the metadata.
+        """
         ret = {}
         image = ImageMetadata(filename)
         image.read()
