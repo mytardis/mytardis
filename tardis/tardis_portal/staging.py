@@ -41,7 +41,6 @@ from os import path, makedirs, listdir
 
 from django.conf import settings
 
-from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.logger import logger
 
 
@@ -130,7 +129,6 @@ def stage_file(datafile):
     """
 
     experiment_path = datafile.dataset.experiment.get_absolute_filepath()
-    urlpath = datafile.url
     copyfrom = datafile.url
     copyto = path.join(experiment_path, relative_staging_path(datafile))
 
@@ -239,6 +237,7 @@ def add_datafile_to_dataset(dataset, filepath, size):
     :type size: string
     :rtype: The new datafile object
     """
+    from tardis.tardis_portal.models import Dataset_File
 
     experiment_path = path.join(settings.FILE_STORE_PATH,
                                 str(dataset.experiment.id))
