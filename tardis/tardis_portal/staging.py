@@ -94,56 +94,83 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
 
 
 class StagingHook():
-    def __init__(self, user, experimentId, staging=None, store=None):
+    def __init__(self, staging=None, store=None):
         self.staging = staging or settings.STAGING_PATH
         self.store = store or settings.FILE_STORE_PATH
-        self.user = user
-        self.experimentId = experimentId
 
-    def __call__(self, datafile, created=False):
-        if created == False:
+    def __call__(self, sender, **kwargs):
+        """
+        post save callback
+
+        sender
+            The model class.
+        instance
+            The actual instance being saved.
+        created
+            A boolean; True if a new record was created.
+        """
+        instance = kwargs.get('instance')
+        created = kwargs.get('created')
+        if not created:
+            # Don't extract on edit
             return
-        stage_files(datafile, self.experimentId, self.staging, self.store)
+        if not instance.protocol == "staging":
+            return
+        filepath = instance.get_absolute_filepath()
+        experiment_id = instance.dataset.experiment.id
+        stage_file(instance)
 
 
-def stage_files(datafiles,
-                experiment_id,
-                staging=settings.STAGING_PATH,
-                store=settings.FILE_STORE_PATH,
-                ):
+def stage_file(datafile):
     """
     move files from the staging area to the dataset.
 
-    :param datafiles: one or more dataset files
-    :type datafiles: :class:`tardis.tardis_portal.models.Dataset_File`
-    :param experiment_id: the id of the experiment that the datafiles belong to
-    :type experiment_id: string or int
+    :param datafile: a datafile to be staged
+    :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
     """
-    experiment_path = path.join(store, str(experiment_id))
-    if not path.exists(experiment_path):
-        makedirs(experiment_path)
 
-    if not isinstance(datafiles, list):
-        datafiles = [datafiles]
-    for datafile in datafiles:
-        urlpath = datafile.url.partition('//')[2]
-        todir = path.join(experiment_path, path.split(urlpath)[0])
-        if not path.exists(todir):
-            makedirs(todir)
+    experiment_path = datafile.dataset.experiment.get_absolute_filepath()
+    urlpath = datafile.url
+    copyfrom = datafile.url
+    copyto = path.join(experiment_path, relative_staging_path(datafile))
 
-        copyfrom = path.join(staging, urlpath)  # to be url
-        copyto = path.join(experiment_path, urlpath)
-        if path.exists(copyto):
-            logger.error("can't stage %s destination exists" % copyto)
+    if path.exists(copyto):
+        logger.error("can't stage %s destination exists" % copyto)
+        # TODO raise error
+        return
 
-            # TODO raise error
+    logger.debug('staging file: %s to %s' % (copyfrom, copyto))
 
-            continue
+    if not path.exists(path.dirname(copyto)):
+        makedirs(path.dirname(copyto))
 
-        logger.debug('staging file: %s to %s' % (copyfrom, copyto))
-        datafile.size = path.getsize(copyfrom)
-        shutil.move(copyfrom, copyto)
-        datafile.save()
+    shutil.move(copyfrom, copyto)
+    datafile.url = copyto
+    datafile.size = path.getsize(datafile.url)
+    datafile.save()
+
+
+def get_staging_path():
+    """
+    return the path to the staging directory
+    """
+    return settings.STAGING_PATH
+
+
+def relative_staging_path(datafile):
+    """
+    return the relative path to the datafile, that is the absolute path
+    minus the staging directory information.
+
+    :param datafile: a datafile
+    :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
+    """
+    if datafile.protocol == "staging":
+        staging = settings.STAGING_PATH
+        if datafile.url.startswith(staging):
+            rpath = datafile.url[len(staging):]
+            return rpath.lstrip(path.sep)
+        logger.error("the staging path of the file %s is invalid!" % datafile)
 
 
 def duplicate_file_check_rename(copyto):

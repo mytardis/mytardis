@@ -39,6 +39,7 @@ views.py
 from base64 import b64decode
 import urllib2
 from urllib import urlencode, unquote_plus, urlopen
+from os import path
 
 from django.template import Context
 from django.conf import settings
@@ -60,7 +61,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
+    staging_traverse, write_uploaded_file_to_dataset
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
@@ -310,6 +311,9 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH, df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -323,7 +327,6 @@ def create_experiment(request,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
-            stage_files(full_experiment['dataset_files'], experiment.id)
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(), params]))
@@ -360,10 +363,8 @@ def edit_experiment(request, experiment_id,
               })
 
     if request.method == 'POST':
-        staging = StagingHook(None, experiment_id)
         form = ExperimentForm(request.POST, request.FILES,
-                              instance=experiment, extra=0,
-                              datafile_post_save_cb=staging)
+                              instance=experiment, extra=0)
         if form.is_valid():
             form.save()
             params = urlencode({'status': "Experiment Saved."})

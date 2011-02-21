@@ -160,6 +160,10 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
+    def get_absolute_filepath(self):
+        store = settings.FILE_STORE_PATH
+        return path.join(store, str(self.id))
+
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
@@ -363,6 +367,8 @@ class Dataset_File(models.Model):
             return abspath(join(FILE_STORE_PATH,
                                 str(self.dataset.experiment.id),
                                 self.url.partition('://')[2]))
+        elif self.protocol == 'staging':
+            return self.url
 
         # file should refer to an absolute location
         elif self.protocol == 'file':
