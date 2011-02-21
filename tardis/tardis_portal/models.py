@@ -43,10 +43,11 @@ from urlparse import urlparse
 
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode
 
+from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import ExperimentManager
 
 
@@ -427,6 +428,9 @@ def save_DatasetFile(sender, **kwargs):
 
 
 pre_save.connect(save_DatasetFile, sender=Dataset_File)
+
+staging_hook = StagingHook()
+post_save.connect(staging_hook, sender=Dataset_File)
 
 
 class Schema(models.Model):
