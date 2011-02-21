@@ -1,4 +1,4 @@
-'''
+"""
 The METS document parser.
 
 Experiment/Dataset/Datafile metadata of this format can be easily parsed
@@ -47,7 +47,7 @@ recommends.
 
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 
-'''
+"""
 
 from xml.sax import SAXParseException, ContentHandler
 from tardis.tardis_portal import metsstruct
@@ -432,14 +432,19 @@ class MetsMetadataInfoHandler(ContentHandler):
                 self.metsObject.institution = self.institution
 
                 # let's save the experiment in the DB
-                self.modelExperiment = models.Experiment(
-                    id=self.tardisExpId,
-                    url=self.metsObject.url,
-                    approved=True,
-                    title=self.metsObject.title,
-                    institution_name=self.metsObject.institution,
-                    description=self.metsObject.description,
-                    created_by=self.createdBy)
+                if self.tardisExpId:
+                    self.modelExperiment = models.Experiment.objects.get(
+                        pk=self.tardisExpId)
+                else:
+                    self.modelExperiment = models.Experiment()
+                self.modelExperiment.id = self.tardisExpId
+                self.modelExperiment.url = self.metsObject.url
+                self.modelExperiment.approved = True
+                self.modelExperiment.title = self.metsObject.title
+                self.modelExperiment.institution_name = \
+                                            self.metsObject.institution
+                self.modelExperiment.description = self.metsObject.description
+                self.modelExperiment.created_by = self.createdBy
 
                 self.modelExperiment.save()
 

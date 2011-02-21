@@ -69,6 +69,9 @@ ajax_urls = patterns(
     (r'^group_list/$', 'retrieve_group_list'),
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
+    (r'^experiment_description/(?P<experiment_id>\d+)/$',
+     'experiment_description'),
+    (r'^experiment_datasets/(?P<experiment_id>\d+)/$', 'experiment_datasets'),
     )
 
 download_urls = patterns(
@@ -93,19 +96,6 @@ group_urls = patterns(
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'remove_user_from_group'),
-    )
-
-display_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^(?P<experiment_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'display_experiment_image'),
-    (r'^(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
-     '(?P<parameter_name>\w+)/$',
-     'display_dataset_image'),
-    (r'^/(?P<dataset_file_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'display_datafile_image'),
     )
 
 
@@ -143,7 +133,15 @@ urlpatterns = patterns(
      {'queryset': Equipment.objects.all()}),
 
     # Display Views
-    (r'^displayDatafileImage/', include(display_urls)),
+    (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'tardis.tardis_portal.views.display_experiment_image'),
+    (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
+     '(?P<parameter_name>\w+)/$',
+     'tardis.tardis_portal.views.display_dataset_image'),
+    (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+    'tardis.tardis_portal.views.display_datafile_image'),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
@@ -157,7 +155,7 @@ urlpatterns = patterns(
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    (r'^admin/(.*)', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
 )
