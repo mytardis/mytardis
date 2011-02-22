@@ -28,12 +28,14 @@ Changelog
 1.07 - 01/06/2010
 -----------------
 
-* Publish to tardis.edu.au interface created, though not implemented, pending legal text
+* Publish to tardis.edu.au interface created, though not implemented,
+  pending legal text
 
 
 1.06 - 15/03/2010
 -----------------
-* Parameter import interface for creation of new parameter/schema definitions
+* Parameter import interface for creation of new parameter/schema
+  definitions
 * iPhone Interface
 
 
@@ -42,7 +44,7 @@ Changelog
 
 * Images as parameters supported
 * Data / metadata transfer from synchrotron is now 'threaded' using
-* asynchronous web service transfers
+  asynchronous web service transfers.
 
 
 1.0 - 01/02/2010
@@ -50,12 +52,14 @@ Changelog
 
 * MyTARDIS created from existing TARDIS python / django codebase
 * Allows private data to be stored
-* Open key/value parameter model, replacing current crystallography one
+* Open key/value parameter model, replacing current crystallography
+  one
 * Internal data store for data
 * LDAP Login
 * Pagination of files
-* Creation of synchrotron-tardis from MyTARDIS codebase including specific
-* code for the VBL login service and data transfer to MyTARDIS deployments
+* Creation of synchrotron-tardis from MyTARDIS codebase including
+  specific code for the VBL login service and data transfer to
+  MyTARDIS deployments.
 * Web server changed to apache and mod_wsgi
 
 
@@ -63,7 +67,8 @@ Changelog
 ----------
 
 * Re-wrote federated index (python / django)
-* Federated stores are now simple web server based with optional FTP access
+* Federated stores are now simple web server based with optional FTP
+  access
 * Runs on Jython / Tomcat
 
 
@@ -71,6 +76,6 @@ Changelog
 ----------
 
 * Federated index (php) running on Apache HTTP Server
-* Crystallography data deposition and packaging tools for Fedora Commons (java
-* swing desktop)
+* Crystallography data deposition and packaging tools for Fedora
+  Commons (java swing desktop)
 * Search Interface via web
