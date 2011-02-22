@@ -142,9 +142,12 @@ def stage_file(datafile):
     if not path.exists(path.dirname(copyto)):
         makedirs(path.dirname(copyto))
 
+    # TODO change to protocol to tardis
     shutil.move(copyfrom, copyto)
-    datafile.url = copyto
-    datafile.size = path.getsize(datafile.url)
+    datafile.url = "file://" + copyto
+    datafile.protocol = "file"
+    datafile.size = path.getsize(datafile.get_absolute_filepath())
+
     datafile.save()
 
 
