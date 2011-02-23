@@ -27,6 +27,9 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
+
+{% comment %}
+<!-- This section is commented out because it no longer works and complicates the interface -->
 <div class="pagination">
     <span class="step-links">
         {% if dataset.has_previous %}
@@ -48,6 +51,7 @@
     </span>
 </div>
 <br/>
+{% endcomment %}
 
 <div style="">
 {# uploadify here #}
@@ -84,6 +88,9 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 </li>
 {% endfor %}
 <br/>
+
+{% comment %}
+<!-- This section is commented out because it no longer works and complicates the interface -->
 <div class="pagination">
     <span class="step-links">
         {% if dataset.has_previous %}
@@ -104,3 +111,4 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
         </span>
     </span>
 </div>
+{% endcomment %}
