@@ -439,7 +439,15 @@ def edit_experiment(request, experiment_id,
         form = ExperimentForm(request.POST, request.FILES,
                               instance=experiment, extra=0)
         if form.is_valid():
-            form.save()
+            full_experiment = form.save(commit=False)
+
+            experiment = full_experiment['experiment']
+            experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH, df.url)
+            full_experiment.save_m2m()
+
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(),
