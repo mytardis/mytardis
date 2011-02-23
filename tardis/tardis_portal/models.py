@@ -330,21 +330,10 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
+    @models.permalink
     def get_download_url(self):
-        from django.core.urlresolvers import reverse, get_script_prefix
-
-        if urlparse(self.url).scheme and not self.url.startswith('file://'):
-            return self.url
-
-        url = reverse('tardis.tardis_portal.download.download_datafile',
-                      None, (), {'datafile_id': self.id})
-
-        if self.protocol:
-            prefix_len = len(get_script_prefix())
-            url = '/'.join(s.strip('/') for s in [url[:prefix_len],
-                                                  self.protocol,
-                                                  url[prefix_len:]])
-        return url
+        return ('tardis.tardis_portal.download.download_datafile',
+                      (), {'datafile_id': self.id})
 
     def get_absolute_filepath(self):
 
