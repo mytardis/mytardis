@@ -288,17 +288,8 @@
 
 <div id="experiment_datasets">
   <div class="download_entire_experiment">
-  {% for p in protocols %}
-
-    <p>
-      {% if p %}
-	<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
-      {% else %}
-	<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
-      {% endif %}
-    </p>
-  {% endfor %}
-</div>
+    <strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
+  </div>
 <form method="POST" action="/download/datafiles/" target="_blank">
   <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
