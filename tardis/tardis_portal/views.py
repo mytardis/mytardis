@@ -355,6 +355,14 @@ def experiment_datasets(request, experiment_id):
                         'tardis_portal/ajax/experiment_datasets.html', c))
 
 
+@authz.dataset_access_required
+def retrieve_dataset_metadata(request, dataset_id):
+    dataset = Dataset.objects.get(pk=dataset_id)
+    c = Context({'dataset': dataset, })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/dataset_metadata.html', c))
+
+
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -969,7 +977,7 @@ def __getFilteredExperiments(request, searchFilterData):
     if searchFilterData['creator'] != '':
         experiments = \
             experiments.filter(
-        author_experiment__author__name__icontains=searchFilterData['creator'])
+            author_experiment__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if not date == None:
@@ -1741,7 +1749,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group})
+    c = Context({'group': group,
+                 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
@@ -1900,9 +1909,9 @@ def import_params(request):
     else:
         form = ImportParamsForm()
 
-    c = Context({'form': form, 'subtitle': 'Import Parameters'})
+    c = Context({'form': form, 'header': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/import_params.html', c))
+                        'tardis_portal/form_template.html', c))
 
 
 def upload_complete(request,
@@ -1978,6 +1987,24 @@ def upload_files(request, dataset_id,
     return render_to_response(template_name, c)
 
 
+def equipment_index(request):
+
+    c = Context({'object_list': Equipment.objects.all(),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_list.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def view_equipment(request, object_id):
+
+    c = Context({'object': Equipment.objects.get(pk=object_id),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_detail.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
 def search_equipment(request):
     if request.method == 'POST':
         form = EquipmentSearchForm(request.POST)
@@ -1998,11 +2025,13 @@ def search_equipment(request):
             c = Context({'object_list': q,
                          'searchDatafileSelectionForm':
                              getNewSearchDatafileSelectionForm()})
-            return render_to_response('tardis_portal/equipment_list.html', c)
+            url = 'tardis_portal/equipment_list.html'
+            return HttpResponse(render_response_index(request, url, c))
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
-    return render_to_response('tardis_portal/search_equipment.html', c)
+    url = 'tardis_portal/search_equipment.html'
+    return HttpResponse(render_response_index(request, url, c))

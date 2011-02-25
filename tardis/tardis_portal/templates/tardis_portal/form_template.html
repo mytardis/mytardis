@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>{{ header }}</h1>
+{{ header }}
 
 {% if form.errors %}
 <p class="form-error" style="color: red;">
@@ -10,23 +10,32 @@
 </p>
 {% endif %}
 
-<form action="" method="post">
-  <table width="100%">
-    <tr valign="top">
-      <td>
-        {% for field in form %}
-        {{ field.label }}
-	<br>
-	{{ field }}
-	{{ field.errors }}
-	<br>
-	<br>
-        {% endfor %}
-      </td>
-    </tr>
-  </table>
-  <input type="submit" value="Submit">
-</form>
+  <div id="content">
+    <div class="post">
+      <h1 class="title"><a href="#">{{ header }}</a></h1>
+      <div class="entry">
+	<p>
+	<form action="" method="post">
+	  <table width="100%">
+	    <tr valign="top">
+	      <td>
+		{% for field in form %}
+		{{ field.label }}
+		<br>
+		{{ field }}
+		{{ field.errors }}
+		<br>
+		<br>
+		{% endfor %}
+	      </td>
+	    </tr>
+	  </table>
+	  <input type="submit" value="Submit">
+	</form>
+	</p>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
 
