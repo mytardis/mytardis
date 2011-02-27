@@ -127,7 +127,9 @@ def stage_file(datafile):
 
     experiment_path = datafile.dataset.experiment.get_absolute_filepath()
     copyfrom = datafile.url
-    copyto = path.join(experiment_path, relative_staging_path(datafile))
+    copyto = path.join(experiment_path,
+                       calculate_relative_path(datafile.protocol,
+                                               datafile.url))
 
     if path.exists(copyto):
         logger.error("can't stage %s destination exists" % copyto)
@@ -141,8 +143,8 @@ def stage_file(datafile):
 
     # TODO change to protocol to tardis
     shutil.move(copyfrom, copyto)
-    datafile.url = "file://" + copyto
-    datafile.protocol = "file"
+    datafile.url = "tardis://" + calculate_relative_path("tardis", copyto)
+    datafile.protocol = "tardis"
     datafile.size = path.getsize(datafile.get_absolute_filepath())
 
     datafile.save()
@@ -155,20 +157,28 @@ def get_staging_path():
     return settings.STAGING_PATH
 
 
-def relative_staging_path(datafile):
-    """
-    return the relative path to the datafile, that is the absolute path
+def calculate_relative_path(protocol, filepath):
+    """return the relative path to the datafile, that is the absolute path
     minus the staging directory information.
 
-    :param datafile: a datafile
-    :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
+    :param protocol: a protocol
+    :type protocol: string
+    :param url: a url like path
+    :type url: string
     """
-    if datafile.protocol == "staging":
+    if protocol == "staging":
         staging = settings.STAGING_PATH
-        if datafile.url.startswith(staging):
-            rpath = datafile.url[len(staging):]
-            return rpath.lstrip(path.sep)
-        logger.error("the staging path of the file %s is invalid!" % datafile)
+    elif protocol == "tardis":
+        staging = settings.FILE_STORE_PATH
+    else:
+        logger.error("the staging path of the file %s is invalid!" % url)
+        raise ValueError("Unknown protocol, there is no way to calculate a relative url for %s urls." % protocol)
+
+    if not filepath.startswith(staging):
+        raise ValueError("URL is either already relative or invalid.")
+
+    rpath = filepath[len(staging):]
+    return rpath.lstrip(path.sep)
 
 
 def duplicate_file_check_rename(copyto):
