@@ -132,3 +132,32 @@ class TraverseTestCase(TestCase):
         self.assertTrue('dir2/file3' in result)
         self.assertTrue('dir2/subdir/file4' in result)
         self.assertTrue('dir3' in result)
+
+
+class TestPathResolution(TestCase):
+    paths = ["dir123/file123",
+             "file.txt"]
+
+    def test_absolute_to_relative(self):
+        from tardis.tardis_portal import staging
+        from django.conf import settings
+        from os import path
+        for p in self.paths:
+            ap = path.join(settings.STAGING_PATH,
+                            p)
+            self.assertRaises(ValueError,
+                              staging.calculate_relative_path,
+                              'staging', p)
+            sp = staging.calculate_relative_path('staging',
+                                               ap)
+            self.assertEqual(sp, p)
+
+        for p in self.paths:
+            ap = path.join(settings.FILE_STORE_PATH,
+                            p)
+            self.assertRaises(ValueError,
+                              staging.calculate_relative_path,
+                              'tardis', p)
+            sp = staging.calculate_relative_path('tardis',
+                                               ap)
+            self.assertEqual(sp, p)
