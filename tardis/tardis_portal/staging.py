@@ -45,8 +45,7 @@ from tardis.tardis_portal.logger import logger
 
 
 def staging_traverse(staging=settings.STAGING_PATH):
-    """
-    Recurse through directories and form HTML list tree for jtree
+    """Recurse through directories and form HTML list tree for jtree
 
     :param staging: the path to begin traversing
     :type staging: string
@@ -60,8 +59,7 @@ def staging_traverse(staging=settings.STAGING_PATH):
 
 
 def traverse(pathname, dirname=settings.STAGING_PATH):
-    """
-    Traverse a path and return a nested group of unordered list HTML tags::
+    """Traverse a path and return a nested group of unordered list HTML tags::
 
        <ul>
          <li id="dir2/file2"><a>file2</a></li>
@@ -121,8 +119,7 @@ class StagingHook():
 
 
 def stage_file(datafile):
-    """
-    move files from the staging area to the dataset.
+    """move files from the staging area to the dataset.
 
     :param datafile: a datafile to be staged
     :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
