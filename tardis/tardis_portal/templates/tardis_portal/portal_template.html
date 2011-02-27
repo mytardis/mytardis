@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
-
+    
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
-
+ 
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -32,17 +32,17 @@
 <head>
 	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+	<title>Squirrel {% if subtitle %}- {{ subtitle }} {% endif %}</title>
 	<meta name="keywords" content="">
 	<meta name="description" content="">
 	<link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
-
+	
 	<link type="text/css" href="/site_media/css/theme/ui.all.css" rel="Stylesheet" />
 
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <link type="text/css" href="/site_media/css/smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
-
+	
 	<script type="text/javascript">
 	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
 	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
@@ -62,7 +62,7 @@ $(document).ready(function() {
   });
 });
 </script>
-
+	
 	{% block script %}{% endblock %}
 
 </head>
@@ -70,8 +70,7 @@ $(document).ready(function() {
 <!-- start header -->
 <div id="header">
 	<div id="logo">
-				<h1>MyTARDIS</h1>
-				<p>Large Scientific Dataset Repository</p>
+				<h1><img src="/site_media/images/squirrel_logo.png"></h1>
 			</div>
 			<div id="menu">
 				<ul>
@@ -97,7 +96,7 @@ $(document).ready(function() {
 		{% else %}
 		<a href="/accounts/register"> [Register] </a> <a href="/login?next={{ next }}"> [Log In]</a>
 		{% endif %}
-
+	
 	</div>
 </div>
 <!-- start page -->
@@ -117,10 +116,10 @@ $(document).ready(function() {
 			{% endif %}
 		</div>
 		{% endif %}
-
+		
 		{% block content %}
 		<!-- start latest-post -->
-
+		
 		{% endblock %}
 		<!-- end latest-post -->
 		<!-- start recent-posts -->
@@ -130,22 +129,22 @@ $(document).ready(function() {
 			</div>
 		</div>
 		<!-- end recent-posts -->
-
+	
 	<!-- end content -->
-
+	
 	<div style="clear: both; width: 700px;">
-
+		
 		{% block bottom %}{% endblock %}
-
+	
 	</div>
 		{% block fullpage %}
-
+		
 		{% endblock %}
 	</div>
-
+	
 	<!-- start sidebar -->
-	<div id="bottombar">
-		©2010 All Rights Reserved. &nbsp;•&nbsp; <a href="mailto:%20steve.androulakis@med.monash.edu.au">Designed by Steve Androulakis</a> - Version v1.07
+	<div id="bottombar" style="padding-bottom: 3px">
+	&nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:%20steve.androulakis@med.monash.edu.au">Created by Ashley Buckle, Steve Androulakis and the MyTARDIS Team</a> - Version 1.00
 	</div>
 	</div>
 </body>
