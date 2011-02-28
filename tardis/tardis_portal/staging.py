@@ -113,8 +113,6 @@ class StagingHook():
             return
         if not instance.protocol == "staging":
             return
-        filepath = instance.get_absolute_filepath()
-        experiment_id = instance.dataset.experiment.id
         stage_file(instance)
 
 
@@ -127,9 +125,11 @@ def stage_file(datafile):
 
     experiment_path = datafile.dataset.experiment.get_absolute_filepath()
     copyfrom = datafile.url
-    copyto = path.join(experiment_path,
-                       calculate_relative_path(datafile.protocol,
-                                               datafile.url))
+
+    relpath = calculate_relative_path(datafile.protocol,
+                                      datafile.url)
+
+    copyto = path.join(experiment_path, relpath)
 
     if path.exists(copyto):
         logger.error("can't stage %s destination exists" % copyto)
@@ -141,9 +141,8 @@ def stage_file(datafile):
     if not path.exists(path.dirname(copyto)):
         makedirs(path.dirname(copyto))
 
-    # TODO change to protocol to tardis
     shutil.move(copyfrom, copyto)
-    datafile.url = "tardis://" + calculate_relative_path("tardis", copyto)
+    datafile.url = "tardis://" + relpath
     datafile.protocol = "tardis"
     datafile.size = path.getsize(datafile.get_absolute_filepath())
 
@@ -171,11 +170,11 @@ def calculate_relative_path(protocol, filepath):
     elif protocol == "tardis":
         staging = settings.FILE_STORE_PATH
     else:
-        logger.error("the staging path of the file %s is invalid!" % url)
+        logger.error("the staging path of the file %s is invalid!" % filepath)
         raise ValueError("Unknown protocol, there is no way to calculate a relative url for %s urls." % protocol)
 
     if not filepath.startswith(staging):
-        raise ValueError("URL is either already relative or invalid.")
+        raise ValueError("filepath %s is either already relative or invalid." % filepath)
 
     rpath = filepath[len(staging):]
     return rpath.lstrip(path.sep)
