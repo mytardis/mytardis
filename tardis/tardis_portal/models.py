@@ -235,7 +235,7 @@ class Author_Experiment(models.Model):
         ordering = ('order', )
 
     def __unicode__(self):
-        return SafeUnicode(self.author.name) + ' | ' \
+        return SafeUnicode(self.author) + ' | ' \
             + SafeUnicode(self.experiment.id) + ' | ' \
             + SafeUnicode(self.order)
 
