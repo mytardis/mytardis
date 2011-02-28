@@ -1,0 +1,19 @@
+{% load parametertypecheck %}
+
+<ul>
+  {% for parameterset in dataset.datasetparameterset_set.all %}
+     <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
+
+     {% for parameter in parameterset.datasetparameter_set.all %}
+         <li><strong>{{ parameter.name.full_name }}: </strong>
+	   {% if parameter.name.is_numeric %}
+	     {{ parameter.numerical_value }} {{ parameter.name.units }}
+	   {% else %}
+	     {{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
+	   {% endif %}
+         </li>
+     {% endfor %}
+     <br/>
+     <br/>
+  {% endfor %}
+</ul>
