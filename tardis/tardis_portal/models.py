@@ -231,9 +231,6 @@ class Author_Experiment(models.Model):
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
 
-    class Meta:
-        ordering = ('order', )
-
     def __unicode__(self):
         return SafeUnicode(self.author) + ' | ' \
             + SafeUnicode(self.experiment.id) + ' | ' \
