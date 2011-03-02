@@ -272,7 +272,7 @@ class Dataset(models.Model):
         if url:
             datafile.url = url
         else:
-            datafile.url = 'file:/' + filepath
+            datafile.url = 'file://' + filepath
 
         if size:
             datafile.size = size
