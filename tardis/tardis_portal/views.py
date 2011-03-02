@@ -554,7 +554,6 @@ def register_experiment_ws_xmldata_internal(request):
 
 
 # TODO removed username from arguments
-
 def _registerExperimentDocument(filename, created_by, expid=None,
                                 owners=[], username=None):
     '''
@@ -587,15 +586,12 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
     # for each PI
     for owner in owners:
-        # TODO: is the use of the urllib really neccessary???
-        # TODO: replace with a form!
-        owner = unquote_plus(owner)
-
-        # try get user from email
-        if settings.LDAP_ENABLE:
-            u = ldap_auth.get_or_create_user_ldap(owner)
-        else:
-            u = User.objects.get(username=owner)
+        if owner:
+            # try get user from email
+            if settings.LDAP_ENABLE:
+                u = ldap_auth.get_or_create_user_ldap(owner)
+            else:
+                u = User.objects.get(username=owner)
 
             # if exist, create ACL
             if u:
@@ -687,6 +683,7 @@ def register_experiment_ws_xmldata(request):
                         transaction.commit()
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
+                        transaction.rollback()
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
             RegisterThread().start()
 
