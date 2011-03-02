@@ -1023,7 +1023,7 @@ def __filterParameters(parameters, datafile_results,
         try:
 
             # if parameter is a string...
-            if not parameter.is_numeric:
+            if not parameter.data_type == ParameterName.NUMERIC:
                 if searchFilterData[parameter.name] != '':
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form

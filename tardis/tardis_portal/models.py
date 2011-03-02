@@ -474,11 +474,22 @@ class ParameterName(models.Model):
         (LESS_THAN_EQUAL_COMPARISON, 'Less than or equal'),
     )
 
+    NUMERIC = 1
+    STRING = 2
+    URL = 3
+    DATETIME = 4
+
+    __TYPE_CHOICES = (
+        (NUMERIC, 'NUMERIC'),
+        (STRING, 'STRING'),
+        (URL, 'URL'),
+        (DATETIME, 'DATETIME'))
+
     schema = models.ForeignKey(Schema)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
-    is_numeric = models.BooleanField()
+    data_type = models.IntegerField(choices=__TYPE_CHOICES, default=STRING)
     comparison_type = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
     is_searchable = models.BooleanField(default=False)
@@ -486,8 +497,33 @@ class ParameterName(models.Model):
     #       represented in the DB. doing it this way is just a bit wasteful.
     choices = models.CharField(max_length=500, blank=True)
 
+
     def __unicode__(self):
         return self.name
+
+    def isNumeric(self):
+        if self.data_type == self.NUMERIC:
+            return True
+        else:
+            return False
+
+    def isString(self):
+        if self.data_type == self.STRING:
+            return True
+        else:
+            return False
+
+    def isURL(self):
+        if self.data_type == self.URL:
+            return True
+        else:
+            return False
+
+    def isDateTime(self):
+        if self.data_type == self.DATETIME:
+            return True
+        else:
+            return False
 
 
 class DatafileParameter(models.Model):
@@ -496,12 +532,20 @@ class DatafileParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        value = ''
+        if self.name.isNumeric():
+            value = str(self.numerical_value)
+        elif self.name.isString() or self.name.isURL():
+            value = self.string_value
+        elif self.name.isDateTime():
+            value = str(self.datetime_value)
+        return value
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Datafile Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Datafile Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
@@ -513,12 +557,20 @@ class DatasetParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        value = ''
+        if self.name.isNumeric():
+            value = str(self.numerical_value)
+        elif self.name.isString() or self.name.isURL():
+            value = self.string_value
+        elif self.name.isDateTime():
+            value = str(self.datetime_value)
+        return value
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Dataset Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Dataset Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
@@ -529,12 +581,20 @@ class ExperimentParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        value = ''
+        if self.name.isNumeric():
+            value = str(self.numerical_value)
+        elif self.name.isString() or self.name.isURL():
+            value = self.string_value
+        elif self.name.isDateTime():
+            value = str(self.datetime_value)
+        return value
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Experiment Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Experiment Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Experiment Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']

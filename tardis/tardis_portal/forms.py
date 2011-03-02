@@ -589,7 +589,7 @@ def createSearchDatafileForm(searchQueryType):
                 initial=searchQueryType)
 
         for parameterName in parameterNames:
-            if parameterName.is_numeric:
+            if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
                     fields[parameterName.name + 'From'] = \
@@ -653,7 +653,7 @@ def createSearchExperimentForm():
             widget=SelectDateWidget(), required=False)
 
     for parameterName in parameterNames:
-        if parameterName.is_numeric:
+        if parameterName.data_type == ParameterName.NUMERIC:
             if parameterName.comparison_type \
                 == ParameterName.RANGE_COMPARISON:
                 fields[parameterName.name + 'From'] = \
