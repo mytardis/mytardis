@@ -6,11 +6,7 @@
 
      {% for parameter in parameterset.datasetparameter_set.all %}
          <li><strong>{{ parameter.name.full_name }}: </strong>
-	   {% if parameter.name.is_numeric %}
-	     {{ parameter.numerical_value }} {{ parameter.name.units }}
-	   {% else %}
-	     {{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
-	   {% endif %}
+	   {{ parameter.get|dsparametertypecheck:parameter.id|safe }}
          </li>
      {% endfor %}
      <br/>

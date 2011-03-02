@@ -636,7 +636,7 @@ class MetsMetadataInfoHandler(ContentHandler):
         '''
         logger.debug('saving parameter %s: %s' %
             (parameterName, parameterValue))
-        if parameterName.is_numeric:
+        if parameterName.isNumeric():
             parameter = \
                 getattr(models, parameterTypeClass)(
                 parameterset=parameterSet,
