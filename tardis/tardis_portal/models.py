@@ -39,13 +39,12 @@ models.py
 """
 
 from os import path
-from urlparse import urlparse
 
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
-from django.utils.safestring import SafeUnicode
+from django.utils.safestring import SafeUnicode, mark_safe
 
 from tardis.tardis_portal.managers import ExperimentManager
 
@@ -177,7 +176,8 @@ class Experiment(models.Model):
 
 
 class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis Authorisation framework
+    """The ExperimentACL table is the core of the `Tardis Authorisation
+    framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
@@ -526,6 +526,62 @@ class ParameterName(models.Model):
             return False
 
 
+def _getParameter(parameter):
+    value = ''
+    if parameter.name.isNumeric():
+        value = parameter.numerical_value
+        units = parameter.name.units
+        if units:
+            value += ' %s' % units
+    elif parameter.name.isString():
+        parset = type(parameter.parameterset).__name__
+        if parameter.name.units.startswith('image'):
+            if parset == 'DatafileParameterSet':
+                value = "<img src='/display/DatafileImage/load/%i/' />" \
+                % parameter.id
+                return mark_safe(value)
+            elif parset == 'DatasetParameterSet':
+                value = "<img src='/display/DatasetImage/load/%i/' />" \
+                % parameter.id
+                return mark_safe(value)
+            elif parset == 'ExperimentParameterSet':
+                value = "<img src='/display/ExperimentImage/load/%i/' />" \
+                % parameter.id
+                return mark_safe(value)
+        elif parameter.name.name.endswith('Image'):
+            if parset == 'DatafileParameterSet':
+                dfid = parameter.parameterset.dataset_file.id
+                psid = parameter.parameterset.id
+                value = "<img src='/displayDatafileImage/%s/%s/%s/' />" \
+                    % (dfid, psid, parameter.name)
+                return mark_safe(value)
+            elif parset == 'DatasetParameterSet':
+                dsid = parameter.parameterset.dataset.id
+                psid = parameter.parameterset.id
+                value = "<img src='/displayDatasetImage/%s/%s/%s/' />" \
+                    % (dsid, psid, parameter.name)
+                return mark_safe(value)
+            elif parset == 'ExperimentParameterSet':
+                eid = parameter.parameterset.dataset.id
+                psid = parameter.parameterset.id
+                value = "<img src='/displayExperimentImage/%s/%s/%s/' />" \
+                    % (eid, psid, parameter.name)
+                return mark_safe(value)
+        value = parameter.string_value
+    elif parameter.name.isURL():
+        units = parameter.name.units
+        if units:
+            url = units + parameter.string_value
+        else:
+            url = parameter.string_value
+        print value
+        value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
+        return mark_safe(value)
+    elif parameter.name.isDateTime():
+        value = str(parameter.datetime_value)
+    return value
+
+
 class DatafileParameter(models.Model):
 
     parameterset = models.ForeignKey(DatafileParameterSet)
@@ -535,14 +591,7 @@ class DatafileParameter(models.Model):
     datetime_value = models.DateTimeField(null=True, blank=True)
 
     def get(self):
-        value = ''
-        if self.name.isNumeric():
-            value = str(self.numerical_value)
-        elif self.name.isString() or self.name.isURL():
-            value = self.string_value
-        elif self.name.isDateTime():
-            value = str(self.datetime_value)
-        return value
+        return _getParameter(self)
 
     def __unicode__(self):
         return 'Datafile Param: %s=%s' % (self.name.name, self.get())
@@ -560,14 +609,7 @@ class DatasetParameter(models.Model):
     datetime_value = models.DateTimeField(null=True, blank=True)
 
     def get(self):
-        value = ''
-        if self.name.isNumeric():
-            value = str(self.numerical_value)
-        elif self.name.isString() or self.name.isURL():
-            value = self.string_value
-        elif self.name.isDateTime():
-            value = str(self.datetime_value)
-        return value
+        return _getParameter(self)
 
     def __unicode__(self):
         return 'Dataset Param: %s=%s' % (self.name.name, self.get())
@@ -584,14 +626,7 @@ class ExperimentParameter(models.Model):
     datetime_value = models.DateTimeField(null=True, blank=True)
 
     def get(self):
-        value = ''
-        if self.name.isNumeric():
-            value = str(self.numerical_value)
-        elif self.name.isString() or self.name.isURL():
-            value = self.string_value
-        elif self.name.isDateTime():
-            value = str(self.datetime_value)
-        return value
+        return _getParameter(self)
 
     def __unicode__(self):
         return 'Experiment Param: %s=%s' % (self.name.name, self.get())
