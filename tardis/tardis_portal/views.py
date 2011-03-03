@@ -56,7 +56,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
-    ImportParamsForm, EquipmentSearchForm
+    ImportParamsForm
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -64,7 +64,7 @@ from tardis.tardis_portal.staging import add_datafile_to_dataset,\
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
-    Dataset, Equipment
+    Dataset
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -1982,53 +1982,3 @@ def upload_files(request, dataset_id,
     url = reverse('tardis.tardis_portal.views.upload_complete')
     c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
     return render_to_response(template_name, c)
-
-
-def equipment_index(request):
-
-    c = Context({'object_list': Equipment.objects.all(),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/equipment_list.html'
-    return HttpResponse(render_response_index(request, url, c))
-
-
-def view_equipment(request, object_id):
-
-    c = Context({'object': Equipment.objects.get(pk=object_id),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/equipment_detail.html'
-    return HttpResponse(render_response_index(request, url, c))
-
-
-def search_equipment(request):
-    if request.method == 'POST':
-        form = EquipmentSearchForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            q = Equipment.objects.all()
-            if data['key']:
-                q = q.filter(key__icontains=data['key'])
-            if data['description']:
-                q = q.filter(description__icontains=data['description'])
-            if data['make']:
-                q = q.filter(make__icontains=data['make'])
-            if data['serial']:
-                q = q.filter(serial__icontains=data['serial'])
-            if data['type']:
-                q = q.filter(type__icontains=data['type'])
-
-            c = Context({'object_list': q,
-                         'searchDatafileSelectionForm':
-                             getNewSearchDatafileSelectionForm()})
-            url = 'tardis_portal/equipment_list.html'
-            return HttpResponse(render_response_index(request, url, c))
-    else:
-        form = EquipmentSearchForm()
-
-    c = Context({'form': form,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/search_equipment.html'
-    return HttpResponse(render_response_index(request, url, c))

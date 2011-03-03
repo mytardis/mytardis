@@ -83,7 +83,6 @@ download_urls = patterns(
 
 search_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^equipment/$', 'search_equipment'),
     (r'^experiment/$', 'search_experiment'),
     (r'^datafile/$', 'search_datafile'),
     )
@@ -121,11 +120,6 @@ urlpatterns = patterns(
     # Group Views
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
-
-    # Equipment Views
-    (r'^equipment/$', 'tardis.tardis_portal.views.equipment_index'),
-    (r'^equipment/(?P<object_id>\d+)/$',
-     'tardis.tardis_portal.views.view_equipment'),
 
     # Display Views
     (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
