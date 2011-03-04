@@ -61,7 +61,6 @@ accounts_urls = patterns(
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^xml_data/(?P<dataset_file_id>\d+)/$', 'retrieve_xml_data'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
@@ -102,6 +101,9 @@ urlpatterns = patterns(
     '',
     (r'', include(core_urls)),
 
+    # Equipment views
+    (r'^equipment/', include('tardis.apps.equipment.urls')),
+
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
 
@@ -122,13 +124,13 @@ urlpatterns = patterns(
     (r'^group/', include(group_urls)),
 
     # Display Views
-    (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
+    (r'^display/ExperimentImage/(?P<experiment_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_experiment_image'),
-    (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
+    (r'^display/DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
      '(?P<parameter_name>\w+)/$',
      'tardis.tardis_portal.views.display_dataset_image'),
-    (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
+    (r'^display/DatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
     'tardis.tardis_portal.views.display_datafile_image'),
 

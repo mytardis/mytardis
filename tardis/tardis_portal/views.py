@@ -38,7 +38,7 @@ views.py
 
 from base64 import b64decode
 import urllib2
-from urllib import urlencode, unquote_plus, urlopen
+from urllib import urlencode, urlopen
 
 from django.template import Context
 from django.conf import settings
@@ -63,7 +63,7 @@ from tardis.tardis_portal.staging import add_datafile_to_dataset,\
     staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
-    DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
+    DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
@@ -651,10 +651,8 @@ def register_experiment_ws_xmldata(request):
 
             eid = e.id
 
-
             # TODO: this entire function needs a fancy class with functions for
             # each part..
-
             from os import makedirs, system
             from os.path import exists, join
             dir = join(settings.FILE_STORE_PATH, str(eid))
@@ -735,23 +733,6 @@ def retrieve_parameters(request, dataset_file_id):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
-
-
-@authz.datafile_access_required
-def retrieve_xml_data(request, dataset_file_id):
-    from pygments import highlight
-    from pygments.lexers import XmlLexer
-    from pygments.formatters import HtmlFormatter
-
-    xml_data = XML_data.objects.get(datafile__pk=dataset_file_id)
-
-    formatted_xml = highlight(xml_data.data, XmlLexer(),
-                              HtmlFormatter(style='default',
-                              noclasses=True))
-
-    c = Context({'formatted_xml': formatted_xml})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/xml_data.html', c))
 
 
 @authz.dataset_access_required
@@ -838,6 +819,7 @@ def search_experiment(request):
         return __forwardToSearchExperimentFormPage(request)
 
     c = Context({
+        'header': 'Search Experiment',
         'experiments': experiments,
         'bodyclass': bodyclass,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
@@ -1162,11 +1144,11 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    c = Context({
-        'searchForm': searchForm,
-        'modifiedSearchForm': modifiedSearchForm,
-        'searchDatafileSelectionForm':
-        getNewSearchDatafileSelectionForm()})
+    c = Context({'header': 'Search Datafile',
+                 'searchForm': searchForm,
+                 'modifiedSearchForm': modifiedSearchForm,
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
     return HttpResponse(render_response_index(request, url, c))
 
 

@@ -1,0 +1,27 @@
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block content %}
+<div id="content">
+  <div class="post">
+    <h1 class="title"><a href="#">Search Equipment</a></h1>
+    <div class="entry">
+      {% if not object_list.count %}
+      <p>No equipment found.</p>
+      {% endif %}
+      <p>
+	<table calss "equipment-table">
+          {% for eq in object_list %}
+	  <tr>
+	    <td align="left"><a href="/equipment/{{ eq.id }}/">{{ eq.key }}</a></td>
+	    <td align="left">{{ eq.type }}</td>
+	    <td align="left">{{ eq.make }}</td>
+	    <td align="left">{{ eq.model }}</td>
+	    <td align="left">{{ eq.serial }}</td>
+          </tr>
+	  {% endfor %}
+	</table>
+      </p>
+    </div> <!-- entry -->
+  </div> <!-- post -->
+</div> <!-- content -->
+{% endblock content %}

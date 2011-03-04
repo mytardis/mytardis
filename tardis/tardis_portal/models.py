@@ -114,15 +114,6 @@ class UserAuthentication(models.Model):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
 
-class XSLT_docs(models.Model):
-
-    xmlns = models.URLField(max_length=255, primary_key=True)
-    data = models.TextField()
-
-    def __unicode__(self):
-        return self.xmlns
-
-
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
@@ -551,19 +542,19 @@ def _getParameter(parameter):
             if parset == 'DatafileParameterSet':
                 dfid = parameter.parameterset.dataset_file.id
                 psid = parameter.parameterset.id
-                value = "<img src='/displayDatafileImage/%s/%s/%s/' />" \
+                value = "<img src='/display/DatafileImage/%s/%s/%s/' />" \
                     % (dfid, psid, parameter.name)
                 return mark_safe(value)
             elif parset == 'DatasetParameterSet':
                 dsid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                value = "<img src='/displayDatasetImage/%s/%s/%s/' />" \
+                value = "<img src='/display/DatasetImage/%s/%s/%s/' />" \
                     % (dsid, psid, parameter.name)
                 return mark_safe(value)
             elif parset == 'ExperimentParameterSet':
                 eid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                value = "<img src='/displayExperimentImage/%s/%s/%s/' />" \
+                value = "<img src='/display/ExperimentImage/%s/%s/%s/' />" \
                     % (eid, psid, parameter.name)
                 return mark_safe(value)
         value = parameter.string_value
@@ -632,14 +623,3 @@ class ExperimentParameter(models.Model):
 
     class Meta:
         ordering = ['id']
-
-
-class XML_data(models.Model):
-    datafile = models.OneToOneField(Dataset_File, null=True, blank=True)
-    dataset = models.OneToOneField(Dataset, null=True, blank=True)
-    experiment = models.OneToOneField(Experiment, null=True, blank=True)
-    xmlns = models.URLField(max_length=400)
-    data = models.TextField()
-
-    def __unicode__(self):
-        return self.xmlns
