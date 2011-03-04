@@ -421,6 +421,7 @@ def create_experiment(request,
 
 
 @login_required
+@authz.write_permissions_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
     """Edit an existing experiment.
@@ -1653,7 +1654,7 @@ def change_group_permissions(request, experiment_id, group_id):
                  'header': "Change Group Permissions for '%s'" % group.name})
 
     return HttpResponse(render_response_index(request,
-                            'tardis_portal/change_group_permissions.html', c))
+                            'tardis_portal/form_template.html', c))
 
 
 @authz.experiment_ownership_required
