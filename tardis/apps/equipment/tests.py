@@ -42,8 +42,6 @@ import unittest
 from django.test import TestCase
 from django.test.client import Client
 
-from tardis.apps.equipment.models import Equipment
-
 
 class EquipmentTestCase(TestCase):
 

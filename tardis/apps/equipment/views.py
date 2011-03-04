@@ -3,7 +3,8 @@
 from django.http import HttpResponse
 from django.template import Context
 
-from tardis.tardis_portal.shortcuts import render_response_index
+from tardis.tardis_portal.shortcuts import render_response_index, \
+    render_response_search
 from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
 
 from tardis.apps.equipment.forms import EquipmentSearchForm
@@ -26,8 +27,6 @@ def view(request, object_id):
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
     url = 'equipment/equipment_detail.html'
-
-
     return HttpResponse(render_response_index(request, url, c))
 
 
@@ -61,4 +60,4 @@ def search(request):
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
     url = 'equipment/equipment_search.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_search(request, url, c))

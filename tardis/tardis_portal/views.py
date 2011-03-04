@@ -72,7 +72,7 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    return_response_error_message
+    return_response_error_message, render_response_search
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
@@ -124,6 +124,46 @@ def site_settings(request):
                             mimetype='application/xml')
 
     return return_response_error(request)
+
+
+def load_image(request, experiment_id, parameter):
+    from os.path import abspath, join
+    file_path = abspath(join(settings.FILE_STORE_PATH,
+                             str(experiment_id),
+                             parameter.string_value))
+
+    from django.core.servers.basehttp import FileWrapper
+    wrapper = FileWrapper(file(file_path))
+    return HttpResponse(wrapper, mimetype=parameter.name.units)
+
+
+def load_experiment_image(request, parameter_id):
+    parameter = ExperimentParameter.objects.get(pk=parameter_id)
+    experiment_id = parameter.parameterset.experiment.id
+    if authz.has_experiment_access(request, experiment_id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
+
+
+def load_dataset_image(request, parameter_id):
+    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    dataset = parameter.parameterset.dataset
+    experiment_id = dataset.experiment.id
+    if  authz.has_dataset_access(request, dataset.id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
+
+
+def load_datafile_image(request, parameter_id):
+    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    dataset_file = parameter.parameterset.dataset_file
+    experiment_id = dataset_file.dataset.experiment.id
+    if authz.has_datafile_access(request, dataset_file.id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
 
 
 @authz.experiment_access_required
@@ -209,11 +249,9 @@ def experiment_index(request):
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'next': '/experiment/view/',
-        'data_pressed': True,
-        'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+        'data_pressed': True,})
 
-    return HttpResponse(render_response_index(request,
+    return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment_index.html', c))
 
 
@@ -818,13 +856,12 @@ def search_experiment(request):
     else:
         return __forwardToSearchExperimentFormPage(request)
 
-    c = Context({
-        'header': 'Search Experiment',
-        'experiments': experiments,
-        'bodyclass': bodyclass,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'header': 'Search Experiment',
+                 'experiments': experiments,
+                 'bodyclass': bodyclass})
+
     url = 'tardis_portal/search_experiment_results.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def search_quick(request):
@@ -1146,10 +1183,8 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # dynamic search datafiles form uses.
     c = Context({'header': 'Search Datafile',
                  'searchForm': searchForm,
-                 'modifiedSearchForm': modifiedSearchForm,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    return HttpResponse(render_response_index(request, url, c))
+                 'modifiedSearchForm': modifiedSearchForm})
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def __forwardToSearchExperimentFormPage(request):
@@ -1157,11 +1192,9 @@ def __forwardToSearchExperimentFormPage(request):
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({
-        'searchForm': searchForm,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'searchForm': searchForm})
     url = 'tardis_portal/search_experiment_form.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def __getSearchDatafileForm(request, searchQueryType):

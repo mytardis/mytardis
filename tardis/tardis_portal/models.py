@@ -518,46 +518,50 @@ class ParameterName(models.Model):
 
 def _getParameter(parameter):
     value = ''
+
     if parameter.name.isNumeric():
         value = parameter.numerical_value
         units = parameter.name.units
         if units:
             value += ' %s' % units
+
     elif parameter.name.isString():
+
+        from django.core.urlresolvers import reverse
         parset = type(parameter.parameterset).__name__
+
         if parameter.name.units.startswith('image'):
             if parset == 'DatafileParameterSet':
-                value = "<img src='/display/DatafileImage/load/%i/' />" \
-                % parameter.id
-                return mark_safe(value)
+                view = 'tardis.tardis_portal.views.load_datafile_image'
             elif parset == 'DatasetParameterSet':
-                value = "<img src='/display/DatasetImage/load/%i/' />" \
-                % parameter.id
-                return mark_safe(value)
+                view = reverse('tardis.tardis_portal.views.load_dataset_image')
             elif parset == 'ExperimentParameterSet':
-                value = "<img src='/display/ExperimentImage/load/%i/' />" \
-                % parameter.id
-                return mark_safe(value)
+                view = 'tardis.tardis_portal.views.load_experiment_image'
+            value = "<img src='%s' />" % reverse(viewname=view,
+                                                 args=[parameter.id])
+            return mark_safe(value)
+
         elif parameter.name.name.endswith('Image'):
             if parset == 'DatafileParameterSet':
                 dfid = parameter.parameterset.dataset_file.id
                 psid = parameter.parameterset.id
-                value = "<img src='/display/DatafileImage/%s/%s/%s/' />" \
-                    % (dfid, psid, parameter.name)
-                return mark_safe(value)
+                view = 'tardis.tardis_portal.views.display_datafile_image'
+                args = [dfid, psid, parameter.name]
             elif parset == 'DatasetParameterSet':
                 dsid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                value = "<img src='/display/DatasetImage/%s/%s/%s/' />" \
-                    % (dsid, psid, parameter.name)
-                return mark_safe(value)
+                view = 'tardis.tardis_portal.views.display_dataset_image'
+                args = [dsid, psid, parameter.name]
             elif parset == 'ExperimentParameterSet':
                 eid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                value = "<img src='/display/ExperimentImage/%s/%s/%s/' />" \
-                    % (eid, psid, parameter.name)
-                return mark_safe(value)
-        value = parameter.string_value
+                view = 'tardis.tardis_portal.views.display_experiment_image'
+                args = [eid, psid, parameter.name]
+            value = "<img src='%s' />" % reverse(viewname=view, args=args)
+            return mark_safe(value)
+
+        return parameter.string_value
+
     elif parameter.name.isURL():
         units = parameter.name.units
         if units:
@@ -567,8 +571,10 @@ def _getParameter(parameter):
         print value
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
+
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
+
     return value
 
 
