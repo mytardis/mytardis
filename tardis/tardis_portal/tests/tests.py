@@ -388,34 +388,6 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
-class EquipmentTestCase(TestCase):
-
-    fixtures = ['AS_Equipment.json']
-
-    def setUp(self):
-        self.client = Client()
-
-    def testSearchEquipmentForm(self):
-        response = self.client.get('/search/equipment/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['form'] is not None)
-
-    def testSearchEquipmentResult(self):
-        response = self.client.post('/search/equipment/', {'key': 'PIL', })
-        self.assertEqual(len(response.context['object_list']), 2)
-
-    def testEquipmentDetail(self):
-        response = self.client.get('/equipment/1/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['object'].make, 'Dectris')
-        self.assertEqual(response.context['object'].type, 'X-ray detector')
-
-    def testEquipmentList(self):
-        response = self.client.get('/equipment/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['object_list']), 2)
-
-
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
@@ -427,8 +399,6 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
-    equipmentSuite = \
-        unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
 
     allTests = unittest.TestSuite([parserSuite1,
                                    parserSuite2,
