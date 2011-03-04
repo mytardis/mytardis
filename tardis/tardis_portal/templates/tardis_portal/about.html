@@ -1,80 +1,54 @@
-<!--
- Copyright (c) 2010, Monash e-Research Centre
-   (Monash University, Australia)
- Copyright (c) 2010, VeRSI Consortium
-   (Victorian eResearch Strategic Initiative, Australia)
- All rights reserved.
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
-    *  Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    *  Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--->
 {% extends "tardis_portal/portal_template.html" %}
 
-		{% block content %}
-			<div id="content">
-				<div class="post">
-					<h1 class="title"><a name="abouttardis">About TARDIS</a></h1>
-					<div class="entry">
+{% block content %}
+  <div id="content">
+    <div class="post">
+      <h1 class="title"><a name="abouttardis">About Squirrel</a></h1>
+      <div class="entry">
+	<p>
+	  Here's some text!
+	</p>
+      </div> <!-- entry -->
+    </div> <!-- post -->
 
-		    <p>There is a pressing need for the archival and curation of raw data. However, the relatively large size of such data has presented challenges for storage in a single worldwide repository.  This problem can be avoided by using a federated approach, where each institution or university utilizes its institutional repository.</p>
+    <br/>
 
-		<p>In addition to ensuring that valuable data is not lost, the provision of raw data has several uses for scientific communities. Often, results can only be truly repeated or verified when the raw data is available.  In addition, the availability of raw data is extremely useful for the development of improved methods of analysis and data processing.</p>
+    <div class="post">
+      <h1 class="title"><a name="citation">Citation</a></h1>
+      <div class="entry">
+	<p>
+	  Please cite the following when referring to Squirrel:<br/>
 
+	  <small>
+	    <br/> Androulakis S, Schmidberger J, Bate MA, Degori R,
+	    Beitz A, Keong C, Cameron B, McGowan S, Porter CJ,
+	    Harrison A, Hunter J, Martin JL, Kobe B, Dobson RC, Parker
+	    MW, Whisstock JC, Gray J, Treloar A, Groenewegen D,
+	    Dickson N, Buckle AM. (2008) Federated repositories of
+	    X-ray diffraction images. Acta Crystallogr D Biol
+	    Crystallogr. Jul;64(Pt
+	    7):810-4.
+	    <a href="http://www.ncbi.nlm.nih.gov/pubmed/18566516?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_RVDocSum">[PubMed]</a></small>
+	</p>
 
+	<p>
+	  For more information on the TARDIS project please
+	  contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate
+	  Professor Ashley Buckle</a>.</p>
+      </div> <!-- entry -->
+    </div> <!-- post -->
+  </div> <!-- content -->
 
-		    </div>
-		    </div>
-		    <br/>
-		    <div class="post">
-		    <h1 class="title"><a name="citation">Citation</a></h1>
-		    <div class="entry">
+{% endblock content %}
 
-
-		<p>
-		Please cite the following when referring to TARDIS:<br/>
-
-		<small><br/>Androulakis S, Schmidberger J, Bate MA, Degori R, Beitz A, Keong C, Cameron B, McGowan S, Porter CJ, Harrison A, Hunter J, Martin JL, Kobe B, Dobson RC, Parker MW, Whisstock JC, Gray J, Treloar A, Groenewegen D, Dickson N, Buckle AM. (2008) Federated repositories of X-ray diffraction images. Acta Crystallogr D Biol Crystallogr. Jul;64(Pt 7):810-4. <a href="http://www.ncbi.nlm.nih.gov/pubmed/18566516?ordinalpos=1&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_RVDocSum">[PubMed]</a></small>
-		</p>
-		<p>
-		  For more information on the TARDIS project please contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate Professor Ashley Buckle</a>.</p>
-
-		  	</div>
-		  </div>
-
-		</div>
-
-
-			{% endblock %} {% block sidebar %}
-
-				<ul>
-					<li>
-						<h2>About</h2>
-
-							<ul>
-								<li><a href="#abouttardis">About TARDIS</a></li>
-								<li><a href="#citation">Citation</a></li>
-							</ul>
-					</li>
-				</ul>		
-
-		<p>
-			{% endblock %}
+{% block sidebar %}
+  <ul>
+    <li>
+      <h2>About</h2>
+      <ul>
+	<li><a href="#abouttardis">About TARDIS</a></li>
+	<li><a href="#citation">Citation</a></li>
+      </ul>
+    </li>
+  </ul>
+{% endblock sidebar %}

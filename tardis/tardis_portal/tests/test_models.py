@@ -144,7 +144,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
-                         '/vbl/download/datafile/2')
+                         '/download/datafile/2/')
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
@@ -159,4 +159,4 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
-                         'http://localhost:8080/filestore/file1.txt')
+                         '/download/datafile/3/')

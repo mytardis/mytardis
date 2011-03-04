@@ -1,79 +1,61 @@
-<!--
- Copyright (c) 2010, Monash e-Research Centre
-   (Monash University, Australia)
- Copyright (c) 2010, VeRSI Consortium
-   (Victorian eResearch Strategic Initiative, Australia)
- All rights reserved.
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
-    *  Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    *  Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--->
 {% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+
+  {% include "tardis_portal/javascript_libraries.html" %}
+
+{% endblock %}
+
+
 {% block content %}
 <div id="content">
-    <div id="authList">
-	<p/>
-	{% for userAuth in userAuthMethodList %}
-	    <div class="authMethod" id="{{ userAuth.2 }}">
-	    <table>
+  <div id="authList">
+
+    <p>
+      {% for userAuth in userAuthMethodList %}
+        <div class="authMethod" id="{{ userAuth.2 }}">
+	  <table>
 	    <tr>
-		<td><strong>username:</strong></td><td> {{ userAuth.0 }} &nbsp;
-		{% if userAuth.1 == 'Local DB' %}
+	      <td><strong>username:</strong></td><td> {{ userAuth.0 }} &nbsp;
+	      {% if userAuth.1 == 'Local DB' %}
 		<a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_changelink.gif"></a>
-        {% else %}
-	        {% if isADjangoAccount %}
-	        <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a>
+              {% else %}
+	        {% if isDjangoAccount %}
+	          <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a>
 	        {% endif %}
-        {% endif %}
-		</td>
-        </tr>
-		<tr>
-        <td><strong>auth method:</strong></td><td>{{ userAuth.1 }}</td>
-        </tr>
-        <tr><td rowspan="2">&nbsp;</td></tr>
-        </table>
-		</div> <!-- authMethod -->
-	{% endfor %}
-	</div> <!--  authList -->
-	<p/>
-	<div id="authForm">
-	{% if supportedAuthMethods|length > 0 %}
-		Add a new account:
-		<form action="." method="POST"">
-		<table>
+              {% endif %}
+	      </td>
+            </tr>
+	    <tr>
+              <td><strong>auth method:</strong></td><td>{{ userAuth.1 }}</td>
+            </tr>
+            <tr><td rowspan="2">&nbsp;</td></tr>
+          </table>
+	</div> <!-- authMethod -->
+      {% endfor %}
+    <p/>
+
+  </div> <!--  authList -->
+
+  <div id="authForm">
+    {% if supportedAuthMethods|length > 0 %}
+      <p>Add a new account:</p>
+      <form action="." method="POST">
+        <table>
           {% for field in authForm %}
-          <tr>
-            <td style="text-align:right">{{ field.label_tag }}:</td><td>{{ field }}</td> 
-          </tr>
+            <tr>
+              <td style="text-align:right">{{ field.label_tag }}:</td><td>{{ field }}</td>
+            </tr>
           {% endfor %}
           <tr>
             <td>&nbsp;</td><td><input type="submit" value="Link the Accounts" id="link"></td>
           </tr>
         </table>
-		</form>
-		
-	{% endif %}
-	</div>
-</div>
+      </form>
+
+    {% endif %}
+  </div> <!-- authForm -->
+</div> <!-- content -->
 
 <script>
 var showChangePasswordForm = 0;
@@ -86,7 +68,7 @@ var remove_auth = function(event) {
     if (confirm("Are you sure you want to delete this authentication method?")) {
         var divId = this.id;
         var data = { operation: 'removeAuth', authMethod: divId };
-		$.post("/accounts/manage_auth_methods/", data, function(data) {
+		$.post("{% url tardis.tardis_portal.views.manage_auth_methods %}", data, function(data) {
 	        var status = data.status;
 	        if (status == "success") {
 	        	$('div').remove('#' + divId + '.authMethod');
@@ -94,7 +76,7 @@ var remove_auth = function(event) {
 	        }
 	        else {
 	            display_error(data.errorMessage, $("div #" + divId + ".authMethod"));
-	        }   
+	        }
 	    }, "json");
     }
 }
@@ -102,14 +84,14 @@ var remove_auth = function(event) {
 var edit_auth = function(event) {
 	var divId = this.id;
 	if (showChangePasswordForm == 0) {
-		var changePasswordFormStr = 
+		var changePasswordFormStr =
 		'<div class="changePassword">' +
 		'<form action="." method="POST">' +
 	    '<table>' +
-	    '<tr><td><label for="id_currentPassword">Current Password:</label></td><td><input id="id_currentPassword" type="password" name="currentPassword" /></td></tr>' + 
-		'<tr><td><label for="id_password">New Password:</label></td><td><input id="id_password" type="password" name="password" /></td></tr>' + 
-		'<tr><td><label for="id_password1">Confirm Password:</label></td><td><input id="id_password1" type="password" name="password1" /></td></tr>' + 
-	    '<tr><td>&nbsp;</td><td><input type="submit" value="Change Password" id="edit"></td></tr>' + 
+	    '<tr><td><label for="id_currentPassword">Current Password:</label></td><td><input id="id_currentPassword" type="password" name="currentPassword" /></td></tr>' +
+		'<tr><td><label for="id_password">New Password:</label></td><td><input id="id_password" type="password" name="password" /></td></tr>' +
+		'<tr><td><label for="id_password1">Confirm Password:</label></td><td><input id="id_password1" type="password" name="password1" /></td></tr>' +
+	    '<tr><td>&nbsp;</td><td><input type="submit" value="Change Password" id="edit"></td></tr>' +
 	    '</table>' +
 	    '</form>' +
 	    '</div>';
@@ -150,7 +132,7 @@ var process_new_auth_entry = function(data) {
         $("#id_username").val("");
         $("#id_password").val("");
     }
-	
+
 };
 
 var edit_account = function() {
@@ -173,12 +155,12 @@ var edit_account = function() {
                 $('div').remove('.changePassword');
                 var replacementImg = '<img src="/site_media/images/icon_changelink.gif">';
                 $('a img').replaceWith(replacementImg);
-                var msg_div = $('<div"><b>Password successfully changed</b></div>');
+                var msg_div = $('<div><b>Password successfully changed</b></div>');
                 msg_div.insertAfter('.authMethod').fadeIn("slow").animate({opacity: 1.0}, 5000).fadeOut("slow",function() { msg_div.remove(); });
             }
             else {
                 display_error(data.errorMessage, $("div .changePassword"));
-            }   
+            }
         }, "json");
     }
     return false;
@@ -200,7 +182,7 @@ var link_account = function() {
             	var confirmMessage = "This process would involve merging the two accounts you own.\nWould you like to continue?"
                 if (confirm(confirmMessage)) {
                 	data = { operation: 'mergeAuth', username: username, password: password, authenticationMethod: authenticationMethod };
-                	$.post("/accounts/manage_auth_methods/", data, function(data) {
+                	$.post("{% url tardis.tardis_portal.views.manage_auth_methods %}", data, function(data) {
                     	var status = data.status
                 		if (status == "success") {
                 			process_new_auth_entry(data);
@@ -213,7 +195,7 @@ var link_account = function() {
             }
             else {
             	display_error(data.errorMessage, $("#authForm"));
-            }   
+            }
         }, "json");
     }
     else {
@@ -233,5 +215,5 @@ $(".edit_auth").live('click', edit_auth);
 $(".remove_auth").live('click', remove_auth);
 
 </script>
-{% endblock %}
-</p><p/>
+{% endblock content %}
+

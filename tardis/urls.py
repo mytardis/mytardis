@@ -2,12 +2,10 @@ from django.contrib import admin
 admin.autodiscover()
 from django.contrib.auth.views import logout
 from django.conf.urls.defaults import patterns, include
-from django.views.generic import list_detail
 from django.conf import settings
+
 from registration.views import register
 
-from tardis.tardis_portal.models import Equipment
-from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
 from tardis.tardis_portal.forms import RegistrationForm
 
 core_urls = patterns(
@@ -64,6 +62,7 @@ ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
     (r'^xml_data/(?P<dataset_file_id>\d+)/$', 'retrieve_xml_data'),
+    (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
     (r'^group_list/$', 'retrieve_group_list'),
@@ -124,13 +123,9 @@ urlpatterns = patterns(
     (r'^group/', include(group_urls)),
 
     # Equipment Views
-    (r'^equipment/$', list_detail.object_list,
-     {'queryset': Equipment.objects.all(),
-      'paginate_by': 15,
-      'extra_context':
-      {'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()}}),
-    (r'^equipment/(?P<object_id>\d+)/$', list_detail.object_detail,
-     {'queryset': Equipment.objects.all()}),
+    (r'^equipment/$', 'tardis.tardis_portal.views.equipment_index'),
+    (r'^equipment/(?P<object_id>\d+)/$',
+     'tardis.tardis_portal.views.view_equipment'),
 
     # Display Views
     (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
@@ -141,7 +136,7 @@ urlpatterns = patterns(
      'tardis.tardis_portal.views.display_dataset_image'),
     (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_datafile_image'),
+    'tardis.tardis_portal.views.display_datafile_image'),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),

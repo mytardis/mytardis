@@ -355,6 +355,14 @@ def experiment_datasets(request, experiment_id):
                         'tardis_portal/ajax/experiment_datasets.html', c))
 
 
+@authz.dataset_access_required
+def retrieve_dataset_metadata(request, dataset_id):
+    dataset = Dataset.objects.get(pk=dataset_id)
+    c = Context({'dataset': dataset, })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/dataset_metadata.html', c))
+
+
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -413,6 +421,7 @@ def create_experiment(request,
 
 
 @login_required
+@authz.write_permissions_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
     """Edit an existing experiment.
@@ -568,6 +577,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
+<<<<<<< .working
     # a bug fix -- there are times when the thread that runs this function
     # is faster than the main thread. so for the main thread to catch up and
     # create a placeholder experiment that the parser will modify, we'll
@@ -591,29 +601,31 @@ def _registerExperimentDocument(filename, created_by, expid=None,
         #       the experiment ID won't be needed anymore
         #Experiment.objects.get(id=expid).delete()
         return expid
+=======
+    if firstline.startswith('<experiment'):
+        logger.debug('processing simple xml')
+        processExperiment = ProcessExperiment()
+        eid = processExperiment.process_simple(filename, created_by, expid)
+>>>>>>> .merge-right.r925
 
     else:
-        logger.debug('committing ingestion')
-        transaction.commit()
-        return eid
+        logger.debug('processing METS')
+        eid = parseMets(filename, created_by, expid)
 
     # for each PI
     for owner in owners:
-        # is the use of the urllib really neccessary???
-        owner = unquote_plus(owner)
-
-        # try get user from email
-        if settings.LDAP_ENABLE:
-            u = ldap_auth.get_or_create_user_ldap(owner)
+        if owner:
+            # try get user from email
+            if settings.LDAP_ENABLE:
+                u = ldap_auth.get_or_create_user_ldap(owner)
+            else:
+                u = User.objects.get(username=owner)
 
             # if exist, create ACL
             if u:
                 logger.debug('registering owner: ' + owner)
                 e = Experiment.objects.get(pk=eid)
-                #exp_owner = Experiment_Owner(experiment=e,
-                #                             user=u)
-                #exp_owner.save()
-                #u.groups.add(g)
+
                 acl = ExperimentACL(experiment=e,
                                     pluginId=django_user,
                                     entityId=str(u.id),
@@ -628,6 +640,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
 
 # web service
+@transaction.commit_manually
 def register_experiment_ws_xmldata(request):
     import threading
 
@@ -650,7 +663,7 @@ def register_experiment_ws_xmldata(request):
 
             from django.contrib.auth import authenticate
             user = authenticate(username=username, password=password)
-            if user is not None:
+            if user:
                 if not user.is_active:
                     return return_response_error(request)
             else:
@@ -661,19 +674,21 @@ def register_experiment_ws_xmldata(request):
                 approved=True,
                 created_by=user,
                 )
-
             e.save()
+            transaction.commit()
+
             eid = e.id
 
-            dir = settings.FILE_STORE_PATH + '/' + str(eid)
 
             # TODO: this entire function needs a fancy class with functions for
             # each part..
 
-            import os
-            if not os.path.exists(dir):
-                os.makedirs(dir)
-                os.system('chmod g+w ' + dir)
+            from os import makedirs, system
+            from os.path import exists, join
+            dir = join(settings.FILE_STORE_PATH, str(eid))
+            if not exists(dir):
+                makedirs(dir)
+                system('chmod g+w ' + dir)
 
             filename = dir + '/METS.xml'
             file = open(filename, 'wb+')
@@ -683,21 +698,22 @@ def register_experiment_ws_xmldata(request):
 
             class RegisterThread(threading.Thread):
 
+                @transaction.commit_manually
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
                     owners = request.POST.getlist('experiment_owner')
                     try:
                         _registerExperimentDocument(filename=filename,
-                                                    created_by=user, expid=eid,
+                                                    created_by=user,
+                                                    expid=eid,
                                                     owners=owners,
                                                     username=username)
+                        transaction.commit()
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
+                        transaction.rollback()
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
-
             RegisterThread().start()
-
-            logger.debug('Sending file request')
 
             if from_url:
 
@@ -717,6 +733,7 @@ def register_experiment_ws_xmldata(request):
                             })
                         urlopen(file_transfer_url, data)
 
+                logger.debug('Sending file request')
                 FileTransferThread().start()
 
             logger.debug('returning response from main call')
@@ -985,7 +1002,7 @@ def __getFilteredExperiments(request, searchFilterData):
     if searchFilterData['creator'] != '':
         experiments = \
             experiments.filter(
-        author_experiment__author__name__icontains=searchFilterData['creator'])
+            author_experiment__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if not date == None:
@@ -1664,7 +1681,7 @@ def change_group_permissions(request, experiment_id, group_id):
                  'header': "Change Group Permissions for '%s'" % group.name})
 
     return HttpResponse(render_response_index(request,
-                            'tardis_portal/change_group_permissions.html', c))
+                            'tardis_portal/form_template.html', c))
 
 
 @authz.experiment_ownership_required
@@ -1757,7 +1774,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group})
+    c = Context({'group': group,
+                 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
@@ -1918,9 +1936,9 @@ def import_params(request):
     else:
         form = ImportParamsForm()
 
-    c = Context({'form': form, 'subtitle': 'Import Parameters'})
+    c = Context({'form': form, 'header': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/import_params.html', c))
+                        'tardis_portal/form_template.html', c))
 
 
 def upload_complete(request,
@@ -1996,6 +2014,24 @@ def upload_files(request, dataset_id,
     return render_to_response(template_name, c)
 
 
+def equipment_index(request):
+
+    c = Context({'object_list': Equipment.objects.all(),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_list.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def view_equipment(request, object_id):
+
+    c = Context({'object': Equipment.objects.get(pk=object_id),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_detail.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
 def search_equipment(request):
     if request.method == 'POST':
         form = EquipmentSearchForm(request.POST)
@@ -2016,11 +2052,13 @@ def search_equipment(request):
             c = Context({'object_list': q,
                          'searchDatafileSelectionForm':
                              getNewSearchDatafileSelectionForm()})
-            return render_to_response('tardis_portal/equipment_list.html', c)
+            url = 'tardis_portal/equipment_list.html'
+            return HttpResponse(render_response_index(request, url, c))
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
-    return render_to_response('tardis_portal/search_equipment.html', c)
+    url = 'tardis_portal/search_equipment.html'
+    return HttpResponse(render_response_index(request, url, c))
