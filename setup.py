@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="tardis",
+    name="MyTARDIS",
     version="1.0",
     url='http://code.google.com/p/mytardis/',
     license='BSD',
