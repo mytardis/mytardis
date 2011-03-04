@@ -26,6 +26,9 @@
 	    {{ searchDatafileSelectionForm.type }}
 	    <noscript><input type="submit" value="Submit"></noscript>
 	  </form>
+	  {% for key,value in links.items %}
+	    | <a href="{{ links.value }}">{{ key|capfirst }}</a>
+          {% endfor %}
 	  <span style="display: inline">
 	</div> <!-- searchmenu -->
 	<br/>

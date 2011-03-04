@@ -95,6 +95,25 @@ group_urls = patterns(
      'remove_user_from_group'),
     )
 
+display_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
+     'load_experiment_image'),
+    (r'^DatasetImage/load/(?P<parameter_id>\d+)/'
+     '(?P<parameter_name>\w+)/$',
+     'load_dataset_image'),
+    (r'^DatafileImage/load/(?P<parameter_id>\d+)/$',
+     'load_datafile_image'),
+    (r'^ExperimentImage/(?P<experiment_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'display_experiment_image'),
+    (r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
+     '(?P<parameter_name>\w+)/$',
+     'display_dataset_image'),
+    (r'^DatafileImage/(?P<dataset_file_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'display_datafile_image'),
+    )
 
 urlpatterns = patterns(
     # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
@@ -124,15 +143,7 @@ urlpatterns = patterns(
     (r'^group/', include(group_urls)),
 
     # Display Views
-    (r'^display/ExperimentImage/(?P<experiment_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_experiment_image'),
-    (r'^display/DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
-     '(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_dataset_image'),
-    (r'^display/DatafileImage/(?P<dataset_file_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-    'tardis.tardis_portal.views.display_datafile_image'),
+    (r'^display/', include(display_urls)),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
