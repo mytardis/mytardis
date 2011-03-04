@@ -531,20 +531,20 @@ table.experiment-table th {
 		padding: 10px 0 10px 0;
 	}
 
-	.access_list
+	.access_list, .access_list1, .access_list2, .access_list3
 	{
 		background-color: white;
 		margin-left: 10px;
 		margin-top: 10px;
 		padding: 5px;
 	}
-	
+
 	.msg_list {
 	margin: 10px;
 	padding: 0px;
 	width: 90%;
 	}
-	
+
 	.msg_head {
 	padding: 5px 10px;
 	cursor: pointer;
@@ -572,34 +572,34 @@ table.experiment-table th {
 	position: relative;
 	background-color: #878787;
 	color: white;
-	
+
 	margin:1px;
 	font-size: 14px;
 	font-weight: bold;
 	text-align: center;
-	}	
-	
+	}
+
 	.msg_body {
 	padding: 5px 10px 15px 20px;
 	background-color:white;
 	}
-	
+
 	.staging_dataset {
 		background-color: white; padding: 5px;
 	}
-	
+
 	.remove_dataset {
 		font-size: 12px;
 		font-weight: normal;
-		cursor: pointer;		
+		cursor: pointer;
 	}
-	
+
 	.remove_file {
 		font-size: 12px;
 		font-weight: normal;
 		cursor: pointer;
-	}	
-	
+	}
+
 	.dataset {
 		border-width: 1px;
 		border-color: black;
@@ -607,36 +607,36 @@ table.experiment-table th {
 		padding: 10px 30px 10px 30px;
 		width: 80%;
 	}
-	
+
     .fieldWrapper {
         padding: 0 0 15px 0;
 
-    }	
-    
+    }
+
     .fieldWrapper input {
         width: 500px;
 
-    }	
-    
+    }
+
     .fieldWrapper textarea {
         width: 500px;
 
-    }    
-    
+    }
+
     .upload_files_link
     {
         display: block;
         font-weight: bold;
         margin-bottom: 20px;
     }
-    
+
     .upload_files_box
     {
         background-color: #F5EFEF;
         padding: 10px;
         width: 95%;
     }
-    
+
     .download_entire_experiment
     {
         text-align: right;
