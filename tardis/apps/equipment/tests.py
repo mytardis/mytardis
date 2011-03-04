@@ -29,23 +29,54 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+"""
+tests.py
+http://docs.djangoproject.com/en/dev/topics/testing/
 
-from tardis.tardis_portal import models
-from django.contrib import admin
+.. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 
-admin.site.register(models.Experiment)
-admin.site.register(models.Dataset)
-admin.site.register(models.Dataset_File)
-admin.site.register(models.Schema)
-admin.site.register(models.ParameterName)
-admin.site.register(models.DatafileParameter)
-admin.site.register(models.DatasetParameter)
-admin.site.register(models.Author_Experiment)
-admin.site.register(models.UserProfile)
-admin.site.register(models.ExperimentParameter)
-admin.site.register(models.DatafileParameterSet)
-admin.site.register(models.DatasetParameterSet)
-admin.site.register(models.ExperimentParameterSet)
-admin.site.register(models.GroupAdmin)
-admin.site.register(models.UserAuthentication)
-admin.site.register(models.ExperimentACL)
+"""
+import unittest
+
+from django.test import TestCase
+from django.test.client import Client
+
+from tardis.apps.equipment.models import Equipment
+
+
+class EquipmentTestCase(TestCase):
+
+    fixtures = ['initial_data.json']
+
+    def setUp(self):
+        self.client = Client()
+
+    def testSearchEquipmentForm(self):
+        response = self.client.get('/equipment/search/')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['form'] is not None)
+
+    def testSearchEquipmentResult(self):
+        response = self.client.post('/equipment/search/', {'key': 'PIL', })
+        self.assertEqual(len(response.context['object_list']), 2)
+
+    def testEquipmentDetail(self):
+        response = self.client.get('/equipment/1/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['object'].make, 'Dectris')
+        self.assertEqual(response.context['object'].type, 'X-ray detector')
+
+    def testEquipmentList(self):
+        response = self.client.get('/equipment/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['object_list']), 2)
+
+
+def suite():
+
+    equipmentSuite = \
+        unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
+
+    allTests = unittest.TestSuite([equipmentSuite])
+    return allTests

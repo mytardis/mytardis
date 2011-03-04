@@ -93,5 +93,3 @@ class GroupProvider:
         return a list of groups associated with a particular entity id
         """
         raise NotImplemented()
-
-

@@ -1144,7 +1144,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Counting_Secs",
+            "full_name": "Exposure Time",
             "data_type": 1,
             "is_searchable": false,
             "name": "countingSecs",
@@ -1158,7 +1158,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Positioner_String",
+            "full_name": "Positioner Value Label",
             "data_type": 2,
             "is_searchable": false,
             "name": "positionerString",
@@ -1172,7 +1172,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Ibs",
+            "full_name": "Beamstop Itensity",
             "data_type": 1,
             "is_searchable": false,
             "name": "ibs",
@@ -1186,7 +1186,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Ibs_bgnd",
+            "full_name": "Beamstop Detector Dark Current",
             "data_type": 1,
             "is_searchable": false,
             "name": "ibsBgnd",
@@ -1200,7 +1200,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Io",
+            "full_name": "Incident Intensity",
             "data_type": 1,
             "is_searchable": false,
             "name": "io",
@@ -1214,7 +1214,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Io_bgnd",
+            "full_name": "Incident Detector Dark Current",
             "data_type": 1,
             "is_searchable": false,
             "name": "ioBgnd",
@@ -1228,7 +1228,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "It",
+            "full_name": "Transmission Intensity",
             "data_type": 1,
             "is_searchable": false,
             "name": "it",
@@ -1242,7 +1242,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "It_bgnd",
+            "full_name": "Transmission Detector Dark Current",
             "data_type": 1,
             "is_searchable": false,
             "name": "itBgnd",
@@ -1256,7 +1256,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "Positioner_Values",
+            "full_name": "User Defined PV Values",
             "data_type": 2,
             "is_searchable": false,
             "name": "positionerValues",
@@ -1270,7 +1270,7 @@
         "fields": {
             "choices": "",
             "comparison_type": 1,
-            "full_name": "TimeStampString",
+            "full_name": "TimeStamp",
             "data_type": 2,
             "is_searchable": false,
             "name": "timeStampString",
