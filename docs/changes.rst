@@ -21,8 +21,9 @@ Changelog
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
 * New METS parser [Gerson]
-
 * Dist/Buildout infrastructure [Russell]
+* Through the web creation and editing of experiments [Steve, Russell]
+* Through the web upload of files [Steve]
 
 
 1.07 - 01/06/2010
