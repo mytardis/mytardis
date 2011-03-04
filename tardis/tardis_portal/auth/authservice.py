@@ -5,6 +5,7 @@ from django.contrib import auth
 
 
 class AuthService():
+
     def __init__(self, settings=settings):
         self._group_providers = []
         self._user_providers = []

@@ -500,10 +500,9 @@ class Schema(models.Model):
             self.subtype.upper() or '') + ': ' + self.namespace
 
     class UnsupportedType(Exception):
+
         def __init__(self, msg):
             Exception.__init__(self, msg)
-
-
 
 
 class DatafileParameterSet(models.Model):

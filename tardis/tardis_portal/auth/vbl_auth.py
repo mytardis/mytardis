@@ -151,6 +151,7 @@ class Backend():
     session key used for downloads as well as the user's EPN list
 
     """
+
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']
