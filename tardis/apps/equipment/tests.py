@@ -47,8 +47,6 @@ from tardis.apps.equipment.models import Equipment
 
 class EquipmentTestCase(TestCase):
 
-    fixtures = ['initial_data.json']
-
     def setUp(self):
         self.client = Client()
 

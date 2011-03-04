@@ -26,6 +26,8 @@ def view(request, object_id):
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
     url = 'equipment/equipment_detail.html'
+
+
     return HttpResponse(render_response_index(request, url, c))
 
 
