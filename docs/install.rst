@@ -91,3 +91,10 @@ Repository
 
    The path to the staging path. This is where new files to be
    included in datasets will be sourced.
+
+
+
+.. seealso::
+
+   http://www.buildout.org
+      The Buildout homepage.
