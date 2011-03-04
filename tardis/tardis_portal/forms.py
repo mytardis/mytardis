@@ -52,6 +52,8 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from form_utils import forms as formutils
+
 from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
@@ -60,6 +62,13 @@ from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
+
+
+def getAuthMethodChoices():
+    authMethodChoices = ()
+    for authMethods in settings.AUTH_PROVIDERS:
+        authMethodChoices += ((authMethods[0], authMethods[1]),)
+    return authMethodChoices
 
 
 class LoginForm(AuthenticationForm):
@@ -72,13 +81,9 @@ class LoginForm(AuthenticationForm):
                              label="Username",
                              max_length=75)
 
-        authMethodChoices = ()
-        for authMethods in settings.AUTH_PROVIDERS:
-            authMethodChoices += ((authMethods[0], authMethods[1]),)
-
         self.fields['authMethod'] = \
             forms.CharField(required=True,
-                            widget=forms.Select(choices=authMethodChoices),
+                            widget=forms.Select(choices=getAuthMethodChoices()),
                             label='Authentication Method')
 
 
@@ -192,6 +197,21 @@ class ChangeGroupPermissionsForm(forms.Form):
             widget=SelectDateWidget(), required=False)
     expiryDate = forms.DateTimeField(label='Expiry Date',
             widget=SelectDateWidget(), required=False)
+
+
+class AddUserPermissionsForm(forms.Form):
+
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+    adduser = forms.CharField(label='User', required=False, max_length=100)
+    adduser.widget.attrs['class'] = 'usersuggest'
+    read = forms.BooleanField(label='READ', required=False, initial=True)
+    read.widget.attrs['class'] = 'canRead'
+    write = forms.BooleanField(label='WRITE', required=False)
+    write.widget.attrs['class'] = 'canWrite'
+    delete = forms.BooleanField(label='DELETE', required=False)
+    delete.widget.attrs['class'] = 'canDelete'    
 
 
 class DatafileSearchForm(forms.Form):
@@ -631,13 +651,17 @@ def createSearchExperimentForm():
     from tardis.tardis_portal.models import ParameterName
     from tardis.tardis_portal import constants
 
-    parameterNames = []
+    parameterNameGroups = {}
 
     for experimentSchema in constants.EXPERIMENT_SCHEMAS:
-        parameterNames += \
-            ParameterName.objects.filter(
+        parameterName = ParameterName.objects.filter(
             schema__namespace__iexact=experimentSchema,
             is_searchable='True')
+        if experimentSchema in parameterNameGroups:
+            parameterNameGroups[experimentSchema] += parameterName
+        else:
+            parameterNameGroups[experimentSchema] = []
+            parameterNameGroups[experimentSchema] += parameterName
 
     fields = {}
 
@@ -651,38 +675,59 @@ def createSearchExperimentForm():
             max_length=20, required=False)
     fields['date'] = forms.DateTimeField(label='Experiment Date',
             widget=SelectDateWidget(), required=False)
+    
+    formutilFields = {}
+    
+    formutilFields['main fields'] = ['title', 'description', 'institutionName', 'creator', 'date']
+    
+    for schema, parameterNames in parameterNameGroups.items():       
+        formutilFields[schema] = []
 
-    for parameterName in parameterNames:
-        if parameterName.is_numeric:
-            if parameterName.comparison_type \
-                == ParameterName.RANGE_COMPARISON:
-                fields[parameterName.name + 'From'] = \
-                    forms.DecimalField(label=parameterName.full_name
-                        + ' From', required=False)
-                fields[parameterName.name + 'To'] = \
-                    forms.DecimalField(label=parameterName.full_name
-                        + ' To', required=False)
-            else:
-                # note that we'll also ignore the choices text box entry
-                # even if it's filled if the parameter is of numeric type
-                # TODO: decide if we are to raise an exception if
-                #       parameterName.choices is not empty
-                fields[parameterName.name] = \
-                    forms.DecimalField(label=parameterName.full_name,
-                        required=False)
-        else:  # parameter is a string
-            if parameterName.choices != '':
-                fields[parameterName.name] = \
-                    forms.CharField(label=parameterName.full_name,
-                    widget=forms.Select(choices=__getParameterChoices(
-                    parameterName.choices)), required=False)
-            else:
-                fields[parameterName.name] = \
-                    forms.CharField(label=parameterName.full_name,
-                    max_length=255, required=False)
+        for parameterName in parameterNames:
+            if parameterName.is_numeric:
+                if parameterName.comparison_type \
+                    == ParameterName.RANGE_COMPARISON:
+                    fields[parameterName.name + 'From'] = \
+                        forms.DecimalField(label=parameterName.full_name
+                            + ' From', required=False)
+                    fields[parameterName.name + 'To'] = \
+                        forms.DecimalField(label=parameterName.full_name
+                            + ' To', required=False)
+                    formutilFields[schema].append(parameterName.name + 'From')
+                    formutilFields[schema].append(parameterName.name + 'To')
+                else:
+                    # note that we'll also ignore the choices text box entry
+                    # even if it's filled if the parameter is of numeric type
+                    # TODO: decide if we are to raise an exception if
+                    #       parameterName.choices is not empty
+                    fields[parameterName.name] = \
+                        forms.DecimalField(label=parameterName.full_name,
+                            required=False)
+                    formutilFields[schema].append(parameterName.name)
+            else:  # parameter is a string
+                if parameterName.choices != '':
+                    fields[parameterName.name] = \
+                        forms.CharField(label=parameterName.full_name,
+                        widget=forms.Select(choices=__getParameterChoices(
+                        parameterName.choices)), required=False)
+                else:
+                    fields[parameterName.name] = \
+                        forms.CharField(label=parameterName.full_name,
+                        max_length=255, required=False)
+                formutilFields[schema].append(parameterName.name)
 
-    return type('SearchExperimentForm', (forms.BaseForm, ),
-                    {'base_fields': fields})
+    fieldsets = []
+
+    for groupName, fieldlist in formutilFields.items():
+        fieldsets.append((groupName, {'fields': fieldlist}))
+
+#    class Meta:
+#        fieldsets = [('first', {'fields': ['key', 'description']}),
+#                     ('second', {'fields': ['make', 'model', 'type', 'serial']})]
+
+    return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
+                    {'base_fields': fields, 'base_fieldsets': fieldsets,
+                     'base_row_attrs': {}})
 
 
 def __getParameterChoices(choicesString):

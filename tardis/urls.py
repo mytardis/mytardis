@@ -30,7 +30,8 @@ experiment_urls = patterns(
     (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>[\w\.]+)$', 'add_experiment_access_user'),
+     '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)$',
+     'add_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
      '(?P<username>[\w\.]+)/$', 'remove_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'

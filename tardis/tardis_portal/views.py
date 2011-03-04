@@ -64,7 +64,7 @@ from tardis.tardis_portal.staging import add_datafile_to_dataset,\
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
-    Dataset, Equipment
+    Dataset, Equipment, UserProfile, UserAuthentication
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -969,7 +969,7 @@ def __getFilteredExperiments(request, searchFilterData):
     if searchFilterData['creator'] != '':
         experiments = \
             experiments.filter(
-        author_experiment__author__name__icontains=searchFilterData['creator'])
+        author_experiment__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if not date == None:
@@ -1353,8 +1353,17 @@ def search_datafile(request):
 
 @login_required()
 def retrieve_user_list(request):
+    authMethod = request.GET['authMethod']
 
-    users = User.objects.all().order_by('username')
+    if authMethod == 'localdb':
+        users = [userProfile.user for userProfile in UserProfile.objects.filter(isDjangoAccount=True)]
+        users =  sorted(users, key=lambda user: user.username)
+    else:
+        users = [userAuth for userAuth in UserAuthentication.objects.filter(authenticationMethod=authMethod) if userAuth.userProfile.isDjangoAccount == False]
+        if users:
+            users =  sorted(users, key=lambda userAuth: userAuth.username)
+        else:
+            users = User.objects.none()
     c = Context({'users': users})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/user_list.html', c))
@@ -1372,8 +1381,11 @@ def retrieve_group_list(request):
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
 
+    from tardis.tardis_portal.forms import AddUserPermissionsForm
     users = Experiment.safe.users(request, experiment_id)
-    c = Context({'users': users, 'experiment_id': experiment_id})
+    
+    c = Context({'users': users, 'experiment_id': experiment_id,
+                 'addUserPermissionsForm': AddUserPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
@@ -1486,11 +1498,11 @@ def remove_user_from_group(request, group_id, username):
 
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
-
+    authMethod = 'localdb'
     canRead = False
     canWrite = False
     canDelete = False
-
+    
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
@@ -1502,10 +1514,18 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
-
+    
     try:
-        user = User.objects.get(username=username)
+        authMethod = request.GET['authMethod']
+        if authMethod == 'localdb':
+            username = 'localdb_' + username
+            user = User.objects.get(username=username)
+        else:
+            user = UserAuthentication.objects.get(username=username,
+                authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
+        return return_response_error(request)
+    except UserAuthentication.DoesNotExist:
         return return_response_error(request)
 
     try:
@@ -1528,7 +1548,7 @@ def add_experiment_access_user(request, experiment_id, username):
                             canDelete=canDelete,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
-        c = Context({'user': user, 'experiment_id': experiment_id})
+        c = Context({'authMethod': authMethod, 'user': user, 'experiment_id': experiment_id})
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
