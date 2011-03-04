@@ -4,6 +4,7 @@ from django.forms.widgets import TextInput, Widget
 
 
 class CommaSeparatedInput(TextInput):
+
     def render(self, name, value, attrs=None):
         if isinstance(value, list):
             value = ', '.join(value)

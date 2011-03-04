@@ -682,6 +682,7 @@ def register_experiment_ws_xmldata(request):
             file.close()
 
             class RegisterThread(threading.Thread):
+
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
                     owners = request.POST.getlist('experiment_owner')

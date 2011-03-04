@@ -122,7 +122,7 @@ class MetsExperimentStructCreator(ContentHandler):
             # easily look it up later on when we do our second parse
             if fileMetadataIds is not None:
                 for fileMetadataId in fileMetadataIds.split():
-                    if self.metadataMap.has_key(fileMetadataId):
+                    if fileMetadataId in self.metadataMap:
                         self.metadataMap[fileMetadataId].append(self.datafile)
                     else:
                         self.metadataMap[fileMetadataId] = [self.datafile]
@@ -157,7 +157,7 @@ class MetsExperimentStructCreator(ContentHandler):
             # easily look it up later on when we do our second parse
             if experimentMetadataIds is not None:
                 for experimentMetadataId in experimentMetadataIds.split():
-                    if self.metadataMap.has_key(experimentMetadataId):
+                    if experimentMetadataId in self.metadataMap:
                         self.metadataMap[
                             experimentMetadataId].append(self.experiment)
                     else:
@@ -189,7 +189,7 @@ class MetsExperimentStructCreator(ContentHandler):
             # easily look it up later on when we do our second parse
             if datasetMetadataIds is not None:
                 for datasetMetadataId in datasetMetadataIds.split():
-                    if self.metadataMap.has_key(datasetMetadataId):
+                    if datasetMetadataId in self.metadataMap:
                         self.metadataMap[
                             datasetMetadataId].append(self.dataset)
                     else:
@@ -282,7 +282,7 @@ class MetsMetadataInfoHandler(ContentHandler):
         self.processDatasetStruct = False
 
         self.processMetadata = False
-        
+
         # this will hold the techMD ID
         self.metadataId = None
 
@@ -520,48 +520,51 @@ class MetsMetadataInfoHandler(ContentHandler):
                 # let's create a trigger holder which we can use to check
                 # if we still need to create another parameterset entry in the
                 # DB
-                createParamSetFlag = {'experiment': True, 'dataset': True, 'datafile': True}
+                createParamSetFlag = {'experiment': True, 'dataset': True,
+                                      'datafile': True}
                 datasetParameterSet = None
                 datafileParameterSet = None
 
-                if self.holder.metadataMap.has_key(self.metadataId):
+                if self.metadataId  in self.holder.metadataMap:
                     for metsObject in self.holder.metadataMap[self.metadataId]:
                         self.metsObject = metsObject
-        
+
                         metsObjectClassName = self.metsObject.__class__.__name__
-            
+
                         if metsObjectClassName == 'Experiment':
-    
                             if createParamSetFlag['experiment']:
                                 # create a new parameter set for the metadata
                                 parameterSet = \
-                                    models.ExperimentParameterSet(schema=schema,
+                                    models.ExperimentParameterSet(
+                                    schema=schema,
                                     experiment=self.modelExperiment)
                                 parameterSet.save()
-            
+
                                 # now let's process the experiment parameters
                                 for parameterName in parameterNames:
-                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                    if parameterName.name in \
+                                            self.tempMetadataHolder:
                                         parameterValue = self.tempMetadataHolder[
                                             parameterName.name]
                                         if parameterValue != '':
                                             self._saveParameter('ExperimentParameter',
                                                 parameterName, parameterValue,
                                                 parameterSet)
-                                
+
                                 createParamSetFlag['experiment'] = False
 
                             else:
                                 # this is not even allowed as there's only going
                                 # to be one experiment per METS file
                                 raise Exception('forbidden state!')
-    
-            
+
                         elif metsObjectClassName == 'Dataset':
                             if createParamSetFlag['dataset']:
-                                dataset = self.datasetLookupDict[self.metsObject.id]
+                                dataset = self.datasetLookupDict[
+                                    self.metsObject.id]
                                 
-                                # create a new parameter set for the dataset metadata
+                                # create a new parameter set for the 
+                                # dataset metadata
                                 datasetParameterSet = \
                                     models.DatasetParameterSet(schema=schema,
                                     dataset=dataset)
@@ -570,7 +573,8 @@ class MetsMetadataInfoHandler(ContentHandler):
             
                                 # now let's process the dataset parameters
                                 for parameterName in parameterNames:
-                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                    if parameterName.name in \
+                                            self.tempMetadataHolder:
                                         parameterValue = self.tempMetadataHolder[
                                             parameterName.name]
                                         if parameterValue != '':
@@ -623,7 +627,8 @@ class MetsMetadataInfoHandler(ContentHandler):
             
                                 # now let's process the datafile parameters
                                 for parameterName in parameterNames:
-                                    if self.tempMetadataHolder.has_key(parameterName.name):
+                                    if parameterName.name in \
+                                            self.tempMetadataHolder:
                                         parameterValue = self.tempMetadataHolder[
                                             parameterName.name]
                                         if parameterValue != '':

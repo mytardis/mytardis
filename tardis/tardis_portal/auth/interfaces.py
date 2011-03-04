@@ -35,6 +35,7 @@
 
 
 class AuthProvider:
+
     def authenticate(self, request):
         """
         from a request authenticate try to authenticate the user.
@@ -44,6 +45,7 @@ class AuthProvider:
 
 
 class UserProvider:
+
     def getUserById(self, id):
         """
         return the user dictionary in the format of::
@@ -70,6 +72,7 @@ class UserProvider:
 
 
 class GroupProvider:
+
     def getGroups(self, request):
         """
         return an iteration of the available groups.
@@ -93,5 +96,3 @@ class GroupProvider:
         return a list of groups associated with a particular entity id
         """
         raise NotImplemented()
-
-

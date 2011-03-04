@@ -42,6 +42,7 @@ class DjangoAuthBackend():
     """Authenticate against Django's Model Backend.
 
     """
+
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']
