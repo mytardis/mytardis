@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="MyTARDIS",
-    version="1.0",
+    version="1.99",
     url='http://code.google.com/p/mytardis/',
     license='BSD',
     description="Next iteration of the TARDIS framework. No digital " + \

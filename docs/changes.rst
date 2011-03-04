@@ -50,7 +50,7 @@ Changelog
 1.0 - 01/02/2010
 ----------------
 
-* MyTARDIS created from existing TARDIS python / django codebase
+* MyTARDIS created from existin MyTARDIS python / django codebase
 * Allows private data to be stored
 * Open key/value parameter model, replacing current crystallography
   one
