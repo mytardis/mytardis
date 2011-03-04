@@ -18,7 +18,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-The backupdb command allows to backup and to restore of the Tardis
+The backupdb command allows to backup and to restore of the MyTARDIS
 database.  The command uses the corresponding database tool to
 facilitate this task. Currently implemented are PostgreSQL and
 MySQL. In case of backup, a directory called ``backups`` is created
@@ -55,4 +55,4 @@ http://djangosnippets.org/snippets/823/
 LICENSE
 -------
 For the full license text refer to the COPYING.txt file in the
-Tardis distribution.
+MyTARDIS distribution.

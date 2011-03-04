@@ -8,12 +8,14 @@ Development
 Source
 ------
 
-The TARDIS project is hosted on Google Code and uses an subversion repository for source code control.
+The MyTARDIS project is hosted on Google Code and uses an subversion
+repository for source code control.
 
 Creating a Patch with SVN
 -------------------------
 
-SVN users who whish to contribute code please checkout a copy of the current source::
+SVN users who whish to contribute code please checkout a copy of the
+current source::
 
    svn checkout http://mytardis.googlecode.com/svn/trunk/ mytardis-read-only
 
@@ -25,13 +27,15 @@ Make the patch using::
 
    svn diff > feature_name_or_bugfix.diff
 
-and then add an issue to the `issue tracker <http://code.google.com/p/mytardis/issues/list>`_
+and then add an issue to the `issue tracker
+<http://code.google.com/p/mytardis/issues/list>`_
 
 
 Generating Documentation
 ------------------------
 
-Documentation is done in sphinx and can be built using the commands provided by the sphinx buildout recipe::
+Documentation is done in sphinx and can be built using the commands
+provided by the sphinx buildout recipe::
 
    ./bin/sphinxbuilder
 
@@ -39,7 +43,10 @@ Documentation is done in sphinx and can be built using the commands provided by 
 Hudson
 ------
 
-Hudson is a continuous intergration server that is used within the TARDIS development process to help maintain the quality of the project. Within Hudson we run use the following script to execute the build and run the tests.
+Hudson is a continuous intergration server that is used within the
+MyTARDIS development process to help maintain the quality of the
+project. Within Hudson we run use the following script to execute the
+build and run the tests.
 
 ::
 
@@ -54,11 +61,16 @@ Hudson is a continuous intergration server that is used within the TARDIS develo
    python setup.py sdist
 
 
-Enable the Publish JUnit test result report in the Post-Build Actions section and use specify the nost tests results output::
+Enable the Publish JUnit test result report in the Post-Build Actions
+section and use specify the nost tests results output::
 
    nosetest.xml
 
-To enable reporting of the code coverage you'll need to install the `Hudson Cobertura plugin <http://wiki.hudson-ci.org/display/HUDSON/Cobertura+Plugin>`_, once that is installed you can specify the location of the coverage.xml file::
+To enable reporting of the code coverage you'll need to install the
+`Hudson Cobertura plugin
+<http://wiki.hudson-ci.org/display/HUDSON/Cobertura+Plugin>`_, once
+that is installed you can specify the location of the coverage.xml
+file::
 
    **/coverage.xml
 

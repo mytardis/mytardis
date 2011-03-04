@@ -2,10 +2,11 @@
 Ingesting
 =========
 
-TARDIS supports 2 different XML schemas for importing data. One method
-is METS and the other is a Tardis specific XML format. METS is the
-preferred format because it is supported by systems other than TARDIS
-so will provide more versatility in the long run.
+MyTARDIS supports 2 different XML schemas for importing data. One
+method is METS and the other is using a MyTARDIS specific XML
+format. METS is the preferred format because it is supported by
+systems other that MyTARDIS so will provide more versatility in the
+long run.
 
 
 METS
@@ -13,15 +14,15 @@ METS
 
 The Meta-data Encoding and Transmission Standard was recommended by
 Monash Librarians and ANU in 2008 as the XML description format for
-TARDIS datasets.
+MyTARDIS datasets.
 
 
-TARDIS XML
-----------
+MyTARDIS XML
+------------
 
-The TARDIS XML format matches to the data model that is being used
-within TARDIS so it provides a truer mapping between the XML elements
-and TARDIS.::
+The MyTARDIS XML format matches to the data model that is being used
+within MyTARDIS so it provides a truer mapping between the XML elements
+and MyTARDIS.::
 
    <experiment>
            <title>Specialist Crystallography at the Australian Synchrotron</title>
