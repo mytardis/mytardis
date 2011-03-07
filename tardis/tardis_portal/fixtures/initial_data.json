@@ -1,4 +1,4 @@
-[
+d[
     {
         "fields": {
             "name": null,
@@ -1144,7 +1144,7 @@
             "choices": "",
             "comparison_type": 1,
             "full_name": "FRTYPE",
-            "data_type": 2,
+            "data_type": 4,
             "is_searchable": false,
             "name": "frtype",
             "schema": 5,
