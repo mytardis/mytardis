@@ -101,7 +101,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileForm(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/', {'type': 'saxs', })
+        response = self.client.get('/datafile/search/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchForm'] is not None)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
@@ -113,7 +113,7 @@ class SearchTestCase(TestCase):
         self.client.logout()
 
     def testSearchDatafileAuthentication(self):
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
 
         # check if the response is zero since the user is not logged in
@@ -123,8 +123,8 @@ class SearchTestCase(TestCase):
     def testSearchDatafileResults(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': 'air_0_001.tif', })
+        response = self.client.get('/datafile/search/',
+                                   {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -148,15 +148,15 @@ class SearchTestCase(TestCase):
         # TODO: check if the schema is correct
 
         # check if searching for nothing would result to returning everything
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+        response = self.client.get('/datafile/search/',
+                                   {'type': 'saxs', 'filename': '', })
         self.assertEqual(len(response.context['paginator'].object_list), 129)
 
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'io': '123', })
         self.assertEqual(len(response.context['paginator'].object_list), 0)
 
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'frqimn': '0.0450647', })
         self.assertEqual(len(response.context['paginator'].object_list), 125)
         self.client.logout()
@@ -164,7 +164,7 @@ class SearchTestCase(TestCase):
     def testSearchExperimentForm(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
-        response = self.client.get('/search/experiment/')
+        response = self.client.get('/experiment/search/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
             None)
@@ -174,14 +174,14 @@ class SearchTestCase(TestCase):
 
     def testSearchExperimentAuthentication(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': 'cookson', })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
     def testSearchExperimentResults(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': 'cookson'})
 
         # check for the existence of the contexts..
@@ -197,7 +197,7 @@ class SearchTestCase(TestCase):
             len(response.context['experiments']) == 1)
 
         # check if searching for nothing would result to returning everything
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': '', })
         self.assertEqual(len(response.context['experiments']), 3)
 
@@ -212,13 +212,13 @@ class UserInterfaceTestCase(TestCase):
 
     def test_urls(self):
         c = Client()
-        urls = ['/login', '/about', '/partners', '/stats']
-        urls += ['/experiment/register', '/experiment/view']
-        urls += ['/search/experiment', '/search/datafile?type=saxs']
+        urls = ['/login/', '/about/', '/partners/', '/stats/']
+        urls += ['/experiment/register/', '/experiment/view/']
+        urls += ['/experiment/search/', '/datafile/search/?type=saxs']
 
         for u in urls:
             response = c.get(u)
-            self.failUnlessEqual(response.status_code, 301)
+            self.failUnlessEqual(response.status_code, 200)
 
     def test_login(self):
         from django.contrib.auth.models import User
