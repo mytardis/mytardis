@@ -19,8 +19,8 @@ def multi_file_upload(context, upload_complete_url, dataset_id):
     * speed - The average speed of all uploaded files
     """
     return { 
-        'upload_complete_url' : upload_complete_url,
-        'uploadify_path' : settings.UPLOADIFY_PATH,
-        'upload_path' : settings.UPLOADIFY_UPLOAD_PATH,
-        'dataset_id' : dataset_id,
+        'upload_complete_url': upload_complete_url,
+        'uploadify_path': settings.UPLOADIFY_PATH,
+        'upload_path': settings.UPLOADIFY_UPLOAD_PATH,
+        'dataset_id': dataset_id,
     }

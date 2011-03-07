@@ -130,6 +130,7 @@ def _get_or_create_user_with_username(username):
 
 
 class LdapBackend():
+
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']

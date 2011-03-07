@@ -581,6 +581,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
         logger.debug('processing simple xml')
         processExperiment = ProcessExperiment()
         eid = processExperiment.process_simple(filename, created_by, expid)
+
     else:
         logger.debug('processing METS')
         eid = parseMets(filename, created_by, expid)
@@ -903,8 +904,8 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     datafile_results = \
         datafile_results.filter(
-datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[
-        searchQueryType]['datafile']).distinct()
+datafileparameterset__datafileparameter__name__schema__namespace__in=Schema.getNamespaces(
+        Schema.DATAFILE, searchQueryType)).distinct()
 
     # if filename is searchable which i think will always be the case...
     if searchFilterData['filename'] != '':
@@ -916,8 +917,8 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # get all the datafile parameters for the given schema
     parameters = [p for p in
         ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['datafile'])]
+        schema__namespace__in=Schema.getNamespaces(Schema.DATAFILE,
+        searchQueryType))]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'datafileparameterset__datafileparameter')
@@ -925,8 +926,8 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # get all the dataset parameters for given schema
     parameters = [p for p in
         ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['dataset'])]
+        schema__namespace__in=Schema.getNamespaces(Schema.DATASET,
+        searchQueryType))]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'dataset__datasetparameterset__datasetparameter')
@@ -986,7 +987,7 @@ def __getFilteredExperiments(request, searchFilterData):
     parameters = []
 
     # get all the experiment parameters
-    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+    for experimentSchema in Schema.getNamespaces(Schema.EXPERIMENT):
         parameters += ParameterName.objects.filter(
             schema__namespace__exact=experimentSchema)
 
@@ -1887,6 +1888,8 @@ def import_params(request):
                         return HttpResponse('Schema already exists.')
                     except Schema.DoesNotExist:
                         schema_db = Schema(namespace=schema)
+                        # TODO: add the extra info that the Schema instance
+                        #       needs
                         schema_db.save()
                 else:
                     part = line.split('^')
