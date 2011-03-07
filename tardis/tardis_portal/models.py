@@ -40,6 +40,7 @@ models.py
 
 from os import path
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
@@ -468,12 +469,16 @@ class ParameterName(models.Model):
     NUMERIC = 1
     STRING = 2
     URL = 3
-    DATETIME = 4
+    LINK = 4
+    FILENAME = 5
+    DATETIME = 6
 
     __TYPE_CHOICES = (
         (NUMERIC, 'NUMERIC'),
         (STRING, 'STRING'),
         (URL, 'URL'),
+        (LINK, 'LINK'),
+        (FILENAME, 'FILENAME'),
         (DATETIME, 'DATETIME'))
 
     schema = models.ForeignKey(Schema)
@@ -509,6 +514,18 @@ class ParameterName(models.Model):
         else:
             return False
 
+    def isLink(self):
+        if self.data_type == self.LINK:
+            return True
+        else:
+            return False
+
+    def isFilename(self):
+        if self.data_type == self.FILENAME:
+            return True
+        else:
+            return False
+
     def isDateTime(self):
         if self.data_type == self.DATETIME:
             return True
@@ -517,65 +534,76 @@ class ParameterName(models.Model):
 
 
 def _getParameter(parameter):
-    value = ''
 
     if parameter.name.isNumeric():
         value = parameter.numerical_value
         units = parameter.name.units
         if units:
             value += ' %s' % units
+        return value
 
     elif parameter.name.isString():
-
-        from django.core.urlresolvers import reverse
-        parset = type(parameter.parameterset).__name__
-
-        if parameter.name.units.startswith('image'):
-            if parset == 'DatafileParameterSet':
-                view = 'tardis.tardis_portal.views.load_datafile_image'
-            elif parset == 'DatasetParameterSet':
-                view = reverse('tardis.tardis_portal.views.load_dataset_image')
-            elif parset == 'ExperimentParameterSet':
-                view = 'tardis.tardis_portal.views.load_experiment_image'
-            value = "<img src='%s' />" % reverse(viewname=view,
-                                                 args=[parameter.id])
-            return mark_safe(value)
-
-        elif parameter.name.name.endswith('Image'):
+        if parameter.name.name.endswith('Image'):
+            parset = type(parameter.parameterset).__name__
+            viewname = ''
+            args = []
             if parset == 'DatafileParameterSet':
                 dfid = parameter.parameterset.dataset_file.id
                 psid = parameter.parameterset.id
-                view = 'tardis.tardis_portal.views.display_datafile_image'
+                viewname = 'tardis.tardis_portal.views.display_datafile_image'
                 args = [dfid, psid, parameter.name]
             elif parset == 'DatasetParameterSet':
                 dsid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                view = 'tardis.tardis_portal.views.display_dataset_image'
+                viewname = 'tardis.tardis_portal.views.display_dataset_image'
                 args = [dsid, psid, parameter.name]
             elif parset == 'ExperimentParameterSet':
                 eid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                view = 'tardis.tardis_portal.views.display_experiment_image'
+                viewname = 'tardis.tardis_portal.views.display_experiment_image'
                 args = [eid, psid, parameter.name]
-            value = "<img src='%s' />" % reverse(viewname=view, args=args)
-            return mark_safe(value)
-
+            if viewname:
+                value = "<img src='%s' />" % reverse(viewname=viewname, args=args)
+                return mark_safe(value)
         return parameter.string_value
 
     elif parameter.name.isURL():
+        url = parameter.string_value
+        value = "<a href='%s'>%s</a>" % (url, url)
+        return mark_safe(value)
+
+    elif parameter.name.isLink():
         units = parameter.name.units
         if units:
             url = units + parameter.string_value
         else:
             url = parameter.string_value
-        print value
         value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
         return mark_safe(value)
 
+    elif parameter.name.isFilename():
+        if parameter.name.units.startswith('image'):
+            parset = type(parameter.parameterset).__name__
+            viewname = ''
+            if parset == 'DatafileParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_datafile_image'
+            elif parset == 'DatasetParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_dataset_image'
+            elif parset == 'ExperimentParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_experiment_image'
+            if viewname:
+                value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                     args=[parameter.id])
+                return mark_safe(value)
+
+        return parameter.string_value
+
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
+        return value
 
-    return value
+    else:
+        return None
 
 
 class DatafileParameter(models.Model):
