@@ -23,6 +23,7 @@ experiment_urls = patterns(
     (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^view/$', 'experiment_index'),
+    (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^register/internal/$', 'register_experiment_ws_xmldata_internal'),
     (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
@@ -58,6 +59,11 @@ accounts_urls = patterns(
     (r'', include('registration.urls')),
     )
 
+datafile_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^search/$', 'search_datafile')
+)
+
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
@@ -78,12 +84,6 @@ download_urls = patterns(
     #(r'^dataset/(?P<dataset_id>\d+)/$', 'download_dataset'),
     (r'^experiment/(?P<experiment_id>\d+)/$', 'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
-    )
-
-search_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^experiment/$', 'search_experiment'),
-    (r'^datafile/$', 'search_datafile'),
     )
 
 group_urls = patterns(
@@ -126,14 +126,14 @@ urlpatterns = patterns(
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
 
+    # Experiment Views
+    (r'^datafile/', include(datafile_urls)),
+
     # Download Views
     (r'^download/', include(download_urls)),
 
     # Ajax Views
     (r'^ajax/', include(ajax_urls)),
-
-    # Seach Views
-    (r'^search/', include(search_urls)),
 
     # Account Views
     (r'^accounts/', include(accounts_urls)),

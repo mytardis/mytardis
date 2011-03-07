@@ -57,6 +57,7 @@ def render_response_search(request, *args, **kwargs):
     kwargs['context_instance']['searchDatafileSelectionForm'] = \
         getNewSearchDatafileSelectionForm()
     kwargs['context_instance']['links'] = links
+    print links
 
     if request.mobile:
         template_path = args[0]
