@@ -33,5 +33,6 @@ from django.forms.fields import MultiValueField
 
 
 class MultiValueCommaSeparatedField(MultiValueField):
+
     def compress(self, data_list):
         return ','.join(data_list)

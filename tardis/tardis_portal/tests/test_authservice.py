@@ -9,6 +9,7 @@ from tardis.tardis_portal.auth.interfaces import GroupProvider
 
 
 class MockSettings(object):
+
     def __init__(self):
         self.AUTH_PROVIDERS = ()
         self.USER_PROVIDERS = ()
@@ -16,6 +17,7 @@ class MockSettings(object):
 
 
 class MockGroupProvider(GroupProvider):
+
     def __init__(self):
         self.name = u'mockdb'
         self.groups = [{"name": "Group 456", 'id': '2',
@@ -54,6 +56,7 @@ class MockGroupProvider(GroupProvider):
 
 
 class MockRequest(HttpRequest):
+
     def __init__(self):
         super(MockRequest, self).__init__()
 
@@ -62,6 +65,7 @@ class MockRequest(HttpRequest):
 
 
 class MockAuthProvider():
+
     def __init__(self):
         pass
 
@@ -71,6 +75,7 @@ class MockAuthProvider():
 
 
 class AuthServiceTestCase(TestCase):
+
     urls = 'tardis.tardis_portal.tests.urls'
 
     def setUp(self):

@@ -105,7 +105,8 @@ class RegistrationForm(forms.Form):
         widget=forms.TextInput(attrs=attrs_dict),
         label=_("Username"),
         error_messages={'invalid':
-                            _("This value must contain only letters, numbers and underscores.")})
+            _("This value must contain only letters, \
+            numbers and underscores.")})
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
                              label=_("Email address"))
@@ -170,6 +171,7 @@ class RegistrationForm(forms.Form):
 
 
 class ChangeUserPermissionsForm(ModelForm):
+
     class Meta:
         from django.forms.extras.widgets import SelectDateWidget
         from tardis.tardis_portal.models import ExperimentACL
@@ -295,6 +297,7 @@ class FullExperimentModel(UserDict):
     the :func:`tardis.tardis_portal.forms.FullExperiment.save` function.
     It provides a convience method for saving the model objects.
     """
+
     def save_m2m(self):
         """
         {'experiment': experiment,
@@ -413,21 +416,23 @@ class ExperimentForm(forms.ModelForm):
                                                 models.Dataset,
                                                 extra=extra, can_delete=True)
         datafile_formset = inlineformset_factory(models.Dataset,
-                                                 models.Dataset_File,
-                                                 formset=DataFileFormSet,
-                                                 formfield_callback=custom_field_cb,
-                                                 extra=0, can_delete=True)
+                                         models.Dataset_File,
+                                         formset=DataFileFormSet,
+                                         formfield_callback=custom_field_cb,
+                                         extra=0, can_delete=True)
 
         # fix up experiment form
         post_authors = self._parse_authors(data)
         self._fill_authors(post_authors)
         if instance:
             authors = instance.author_experiment_set.all()
-            self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
+            self.authors_experiments = [Author_Experiment(instance=a) for a
+                                        in authors]
             self.initial['authors'] = ', '.join([a.author for a in authors])
             self.fields['authors'] = \
-                MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
-                                              widget=CommaSeparatedInput())
+                MultiValueCommaSeparatedField([author.fields['author'] for
+                                            author in self.author_experiments],
+                                            widget=CommaSeparatedInput())
 
         # fill formsets
         self.datasets = dataset_formset(data=data,
@@ -435,9 +440,9 @@ class ExperimentForm(forms.ModelForm):
                                         prefix="dataset")
         for i, df in enumerate(self.datasets.forms):
             self.dataset_files[i] = datafile_formset(data=data,
-                                                     instance=df.instance,
-                                                     post_save_cb=datafile_post_save_cb,
-                                                     prefix="dataset-%s-datafile" % i)
+                                         instance=df.instance,
+                                         post_save_cb=datafile_post_save_cb,
+                                         prefix="dataset-%s-datafile" % i)
 
     def _parse_authors(self, data=None):
         """
@@ -469,8 +474,9 @@ class ExperimentForm(forms.ModelForm):
             self.author_experiments.append(f)
 
         self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
-                                          widget=CommaSeparatedInput())
+            MultiValueCommaSeparatedField([author.fields['author'] for
+                                        author in self.author_experiments],
+                                        widget=CommaSeparatedInput())
 
     def get_dataset_files(self, number):
         """
@@ -570,16 +576,16 @@ def createSearchDatafileForm(searchQueryType):
 
     from errors import UnsupportedSearchQueryTypeError
     from tardis.tardis_portal.models import ParameterName
-    from tardis.tardis_portal import constants
 
     parameterNames = None
 
-    if searchQueryType in constants.SCHEMA_DICT:
+    if searchQueryType in models.Schema.getSubTypes():
         parameterNames = \
             ParameterName.objects.filter(
-            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType]\
-            ['datafile'], constants.SCHEMA_DICT[searchQueryType]['dataset']],
-            is_searchable='True')
+            schema__namespace__in=models.Schema.getNamespaces(
+            models.Schema.DATAFILE, searchQueryType) +
+            models.Schema.getNamespaces(models.Schema.DATASET,
+            searchQueryType), is_searchable='True')
 
         fields = {}
 
@@ -629,11 +635,11 @@ def createSearchExperimentForm():
 
     from django.forms.extras.widgets import SelectDateWidget
     from tardis.tardis_portal.models import ParameterName
-    from tardis.tardis_portal import constants
 
     parameterNames = []
 
-    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+    for experimentSchema in models.Schema.getNamespaces(
+            type=models.Schema.EXPERIMENT):
         parameterNames += \
             ParameterName.objects.filter(
             schema__namespace__iexact=experimentSchema,
@@ -718,7 +724,7 @@ def createSearchDatafileSelectionForm():
     from tardis.tardis_portal import constants
 
     supportedDatafileSearches = (('-', 'Datafile'),)
-    for key in constants.SCHEMA_DICT:
+    for key in models.Schema.getSubTypes():
         supportedDatafileSearches += ((key, key.upper()),)
 
     fields = {}
