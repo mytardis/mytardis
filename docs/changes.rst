@@ -21,8 +21,9 @@ Changelog
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
 * New METS parser [Gerson]
-
 * Dist/Buildout infrastructure [Russell]
+* Through the web creation and editing of experiments [Steve, Russell]
+* Through the web upload of files [Steve]
 
 
 1.07 - 01/06/2010
@@ -50,7 +51,7 @@ Changelog
 1.0 - 01/02/2010
 ----------------
 
-* MyTARDIS created from existing TARDIS python / django codebase
+* MyTARDIS created from existin MyTARDIS python / django codebase
 * Allows private data to be stored
 * Open key/value parameter model, replacing current crystallography
   one

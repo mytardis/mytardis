@@ -356,6 +356,14 @@ def experiment_datasets(request, experiment_id):
                         'tardis_portal/ajax/experiment_datasets.html', c))
 
 
+@authz.dataset_access_required
+def retrieve_dataset_metadata(request, dataset_id):
+    dataset = Dataset.objects.get(pk=dataset_id)
+    c = Context({'dataset': dataset, })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/dataset_metadata.html', c))
+
+
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -416,6 +424,7 @@ def create_experiment(request,
 
 
 @login_required
+@authz.write_permissions_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
     """Edit an existing experiment.
@@ -555,7 +564,6 @@ def register_experiment_ws_xmldata_internal(request):
 
 
 # TODO removed username from arguments
-
 def _registerExperimentDocument(filename, created_by, expid=None,
                                 owners=[], username=None):
     '''
@@ -582,21 +590,19 @@ def _registerExperimentDocument(filename, created_by, expid=None,
         logger.debug('processing simple xml')
         processExperiment = ProcessExperiment()
         eid = processExperiment.process_simple(filename, created_by, expid)
+
     else:
         logger.debug('processing METS')
         eid = parseMets(filename, created_by, expid)
 
     # for each PI
     for owner in owners:
-        # TODO: is the use of the urllib really neccessary???
-        # TODO: replace with a form!
-        owner = unquote_plus(owner)
-
-        # try get user from email
-        if settings.LDAP_ENABLE:
-            u = ldap_auth.get_or_create_user_ldap(owner)
-        else:
-            u = User.objects.get(username=owner)
+        if owner:
+            # try get user from email
+            if settings.LDAP_ENABLE:
+                u = ldap_auth.get_or_create_user_ldap(owner)
+            else:
+                u = User.objects.get(username=owner)
 
             # if exist, create ACL
             if u:
@@ -688,6 +694,7 @@ def register_experiment_ws_xmldata(request):
                         transaction.commit()
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
+                        transaction.rollback()
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
             RegisterThread().start()
 
@@ -906,8 +913,8 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
 
     datafile_results = \
         datafile_results.filter(
-datafileparameterset__datafileparameter__name__schema__namespace__exact=constants.SCHEMA_DICT[
-        searchQueryType]['datafile']).distinct()
+datafileparameterset__datafileparameter__name__schema__namespace__in=Schema.getNamespaces(
+        Schema.DATAFILE, searchQueryType)).distinct()
 
     # if filename is searchable which i think will always be the case...
     if searchFilterData['filename'] != '':
@@ -919,8 +926,8 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # get all the datafile parameters for the given schema
     parameters = [p for p in
         ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['datafile'])]
+        schema__namespace__in=Schema.getNamespaces(Schema.DATAFILE,
+        searchQueryType))]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'datafileparameterset__datafileparameter')
@@ -928,8 +935,8 @@ datafileparameterset__datafileparameter__name__schema__namespace__exact=constant
     # get all the dataset parameters for given schema
     parameters = [p for p in
         ParameterName.objects.filter(
-        schema__namespace__exact=constants.SCHEMA_DICT[searchQueryType]
-        ['dataset'])]
+        schema__namespace__in=Schema.getNamespaces(Schema.DATASET,
+        searchQueryType))]
 
     datafile_results = __filterParameters(parameters, datafile_results,
             searchFilterData, 'dataset__datasetparameterset__datasetparameter')
@@ -978,7 +985,7 @@ def __getFilteredExperiments(request, searchFilterData):
     if searchFilterData['creator'] != '':
         experiments = \
             experiments.filter(
-        author_experiment__author__name__icontains=searchFilterData['creator'])
+            author_experiment__author__icontains=searchFilterData['creator'])
 
     date = searchFilterData['date']
     if not date == None:
@@ -989,7 +996,7 @@ def __getFilteredExperiments(request, searchFilterData):
     parameters = []
 
     # get all the experiment parameters
-    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+    for experimentSchema in Schema.getNamespaces(Schema.EXPERIMENT):
         parameters += ParameterName.objects.filter(
             schema__namespace__exact=experimentSchema)
 
@@ -1657,7 +1664,7 @@ def change_group_permissions(request, experiment_id, group_id):
                  'header': "Change Group Permissions for '%s'" % group.name})
 
     return HttpResponse(render_response_index(request,
-                            'tardis_portal/change_group_permissions.html', c))
+                            'tardis_portal/form_template.html', c))
 
 
 @authz.experiment_ownership_required
@@ -1750,7 +1757,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group})
+    c = Context({'group': group,
+                 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
@@ -1889,6 +1897,8 @@ def import_params(request):
                         return HttpResponse('Schema already exists.')
                     except Schema.DoesNotExist:
                         schema_db = Schema(namespace=schema)
+                        # TODO: add the extra info that the Schema instance
+                        #       needs
                         schema_db.save()
                 else:
                     part = line.split('^')
@@ -1909,9 +1919,9 @@ def import_params(request):
     else:
         form = ImportParamsForm()
 
-    c = Context({'form': form, 'subtitle': 'Import Parameters'})
+    c = Context({'form': form, 'header': 'Import Parameters'})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/import_params.html', c))
+                        'tardis_portal/form_template.html', c))
 
 
 def upload_complete(request,
@@ -1987,6 +1997,24 @@ def upload_files(request, dataset_id,
     return render_to_response(template_name, c)
 
 
+def equipment_index(request):
+
+    c = Context({'object_list': Equipment.objects.all(),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_list.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def view_equipment(request, object_id):
+
+    c = Context({'object': Equipment.objects.get(pk=object_id),
+                 'searchDatafileSelectionForm':
+                     getNewSearchDatafileSelectionForm()})
+    url = 'tardis_portal/equipment_detail.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
 def search_equipment(request):
     if request.method == 'POST':
         form = EquipmentSearchForm(request.POST)
@@ -2007,11 +2035,13 @@ def search_equipment(request):
             c = Context({'object_list': q,
                          'searchDatafileSelectionForm':
                              getNewSearchDatafileSelectionForm()})
-            return render_to_response('tardis_portal/equipment_list.html', c)
+            url = 'tardis_portal/equipment_list.html'
+            return HttpResponse(render_response_index(request, url, c))
     else:
         form = EquipmentSearchForm()
 
     c = Context({'form': form,
                  'searchDatafileSelectionForm':
                      getNewSearchDatafileSelectionForm()})
-    return render_to_response('tardis_portal/search_equipment.html', c)
+    url = 'tardis_portal/search_equipment.html'
+    return HttpResponse(render_response_index(request, url, c))

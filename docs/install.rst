@@ -16,8 +16,8 @@ Debian/Ubuntu::
 Configuration
 -------------
 
-Configuring TARDIS is done through a standard Django *settings.py* file
-there are some extra config options that are specific to TARDIS.
+Configuring MyTARDIS is done through a standard Django *settings.py*
+file there are some extra config options that are specific to MyTARDIS.
 
 .. attribute:: tardis.settings_changeme.FILE_STORE_PATH
 
@@ -29,7 +29,7 @@ Database
 
 .. attribute:: tardis.settings_changeme.DATABASE_ENGINE
 
-   The database server engine that will be used to store the TARDIS
+   The database server engine that will be used to store the MyTARDIS
    metadata, possible values are *postgresql_psycopg2*, *postgresql*,
    *mysql*, *sqlite3* or *oracle*.
 
@@ -45,8 +45,8 @@ Database
 
 .. attribute:: tardis.settings_changeme.DATABASE_PASSWORD
 
-   The password used to authenticate to the database. If you are
-   using SQLite this field is not used.
+   The password used to authenticate to the database. If you are using
+   SQLite this field is not used.
 
 .. attribute:: tardis.settings_changeme.DATABASE_HOST
 
@@ -56,9 +56,10 @@ Database
 
 .. attribute:: tardis.settings_changeme.DATABASE_PORT
 
-   The port the database is running on. If this is empty then the default
-   port for the database engine will be used. If you are using SQLite then
-   this field is ignored.
+   The port the database is running on. If this is empty then the
+   default port for the database engine will be used. If you are using
+   SQLite then this field is ignored.
+
 
 LDAP
 ~~~~
@@ -69,9 +70,31 @@ LDAP
 
 .. attribute:: tardis.settings_changeme.LDAP_URL
 
-   LDAP the DNS name of your LDAP directory, for example *directory.example.com*
+   LDAP the DNS name of your LDAP directory, for example
+   *directory.example.com*
 
 
 .. attribute:: tardis.settings_changeme.BASE_DN
 
    The DN Base of the LDAP server.
+
+
+Repository
+~~~~~~~~~~
+
+.. attribute:: tardis.settings_changeme.FILE_STORE_PATH
+
+   The path to the MyTARDIS repository. This i where files will be
+   copied to once they are ingested into the system.
+
+.. attribute:: tardis.settings_changeme.STAGING_PATH
+
+   The path to the staging path. This is where new files to be
+   included in datasets will be sourced.
+
+
+
+.. seealso::
+
+   http://www.buildout.org
+      The Buildout homepage.

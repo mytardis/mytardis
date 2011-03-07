@@ -28,6 +28,27 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 {% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".dataset_metadata_toggle").toggle(
+        function(){
+            $(this).text("[Show]");
+            var href= $(this).attr("href");
+            $(href).hide();
+        },
+        function(){
+            $(this).text("[Hide]");
+            var href= $(this).attr("href");
+            $(href).show();
+        }
+        );
+        $(".dataset_metadata_toggle").click();
+    });
+</script>
+{% endblock %}
+
 {% load experimentstats %}
 
 		{% block content %}
