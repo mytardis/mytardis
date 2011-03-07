@@ -160,7 +160,7 @@ class Experiment(models.Model):
     safe = ExperimentManager()  # The acl-aware specific manager.
 
     def getParameterSets(self, schemaType=None):
-        """Return the experiment parametersets associated with this 
+        """Return the experiment parametersets associated with this
         experiment.
 
         """
@@ -266,7 +266,7 @@ class Dataset(models.Model):
     description = models.TextField(blank=True)
 
     def getParameterSets(self, schemaType=None):
-        """Return the dataset parametersets associated with this 
+        """Return the dataset parametersets associated with this
         experiment.
 
         """
@@ -478,7 +478,7 @@ class Schema(models.Model):
         schemas.
 
         """
-        return [schema.namespace for schema in 
+        return [schema.namespace for schema in
             Schema.objects.filter(type=type, subtype=subtype or '')]
 
     def __unicode__(self):
