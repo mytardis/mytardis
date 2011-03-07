@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 from django.test.client import Client
 
@@ -112,7 +114,7 @@ class ExperimentACLTestCase(TestCase):
         self.user3.delete()
         self.user4.delete()
 
-    def testAccessControl(self):
+    def testReadAccess(self):
         login = self.client1.login(username='testuser1', password='secret')
         self.assertTrue(login)
 
@@ -202,7 +204,6 @@ class ExperimentACLTestCase(TestCase):
         self.client3.logout()
 
         # ok, now do some tricky stuff
-        import datetime
         today = datetime.datetime.today()
         yesterday = today - datetime.timedelta(days=1)
         tomorrow = today + datetime.timedelta(days=1)
@@ -223,13 +224,13 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # give user3 read permissions for experiment1 effictive TOMORROW
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
                           {'canRead': True,
                            'effectiveDate_year': tomorrow.year,
                            'effectiveDate_month': tomorrow.month,
                            'effectiveDate_day': tomorrow.day,
                            })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
 
         # check permissions for user3
         login = self.client3.login(username='testuser3', password='secret')
@@ -240,12 +241,13 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
         # change effictive date to TODAY
-        self.client1.post(url % (self.experiment1.id, self.user3.username),
+        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
                           {'canRead': True,
                            'effectiveDate_year': today.year,
-                           'effectiveDate_year': today.month,
-                           'effectiveDate_year': today.day,
+                           'effectiveDate_month': today.month,
+                           'effectiveDate_day': today.day,
                            })
+        self.assertEqual(response.status_code, 302)
 
         response = self.client3.get('/experiment/view/%i/'
                                    % (self.experiment1.id))
@@ -255,8 +257,8 @@ class ExperimentACLTestCase(TestCase):
         self.client1.post(url % (self.experiment1.id, self.user3.username),
                           {'canRead': True,
                            'effectiveDate_year': yesterday.year,
-                           'effectiveDate_year': yesterday.month,
-                           'effectiveDate_year': yesterday.day,
+                           'effectiveDate_month': yesterday.month,
+                           'effectiveDate_day': yesterday.day,
                            })
 
         response = self.client3.get('/experiment/view/%i/'
@@ -303,4 +305,127 @@ class ExperimentACLTestCase(TestCase):
         self.client1.logout()
         self.client3.logout()
 
-        # TODO: Unit Tests to check write and delete permissions!
+    def testWriteAccess(self):
+        # without logging in the request should be redirected
+        response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 302)
+
+        # now check access for user1
+        login = self.client1.login(username='testuser1', password='secret')
+        self.assertTrue(login)
+        response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # write access has not been granted for experiment2
+        response = self.client1.get('/experiment/edit/%i/' % (self.experiment2.id))
+        self.assertEqual(response.status_code, 403)
+
+        # neither experiment3 which is public
+        response = self.client1.get('/experiment/edit/%i/' % (self.experiment3.id))
+        self.assertEqual(response.status_code, 403)
+
+        # create a group 'group1w' with write permissions
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/group/%s?canRead=true&canWrite=true&create=true'
+                                    % (self.experiment1.id, 'group1w'))
+        self.assertEqual(response.status_code, 200)
+
+        # add user2 to 'group1w' which gives him write permissions
+        group = Group.objects.get(name='group1w')
+        response = self.client1.get('/group/%i/add/%s?isAdmin=false'
+                                   % (group.id, self.user2.username))
+        self.assertEqual(response.status_code, 200)
+
+        # add user3 explicitly to experiment1
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s?canRead=true&canWrite=true'
+                                    % (self.experiment1.id, self.user3.username))
+        self.assertEqual(response.status_code, 200)
+
+        # check newly created permissions for user2 and user3
+        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 302)
+
+        login = self.client2.login(username='testuser2', password='secret')
+        self.assertTrue(login)
+
+        login = self.client3.login(username='testuser3', password='secret')
+        self.assertTrue(login)
+
+        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # now the fancy stuff with timestamps
+        today = datetime.datetime.today()
+        yesterday = today - datetime.timedelta(days=1)
+        tomorrow = today + datetime.timedelta(days=1)
+
+        url = '/experiment/control_panel/%i/access_list/change/group/%i/'
+
+        # give group 'group1w' write permissions for experiment1 effictive TOMORROW
+        response = self.client1.post(url % (self.experiment1.id, group.id),
+                                     {'canRead': True,
+                                      'canWrite': True,
+                                      'effectiveDate_year': tomorrow.year,
+                                      'effectiveDate_month': tomorrow.month,
+                                      'effectiveDate_day': tomorrow.day,
+                                      })
+
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+        # change effictive date to TODAY
+        response = self.client1.post(url % (self.experiment1.id, group.id),
+                          {'canRead': True,
+                           'canWrite': True,
+                           'effectiveDate_year': today.year,
+                           'effectiveDate_month': today.month,
+                           'effectiveDate_day': today.day,
+                           })
+        self.assertEqual(response.status_code, 302)
+
+        # now user2 should have write access again
+        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        # repeat all the tests with timestamps for user3
+        url = '/experiment/control_panel/%i/access_list/change/user/%s/'
+
+        # give user3 write permissions for experiment1 effictive TOMORROW
+        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
+                                     {'canRead': True,
+                                      'canWrite': True,
+                                      'effectiveDate_year': tomorrow.year,
+                                      'effectiveDate_month': tomorrow.month,
+                                      'effectiveDate_day': tomorrow.day,
+                                      })
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 403)
+
+        # change effictive date to TODAY
+        response = self.client1.post(url % (self.experiment1.id, self.user3.username),
+                                     {'canRead': True,
+                                      'canWrite': True,
+                                      'effectiveDate_year': today.year,
+                                      'effectiveDate_month': today.month,
+                                      'effectiveDate_day': today.day,
+                                      })
+        self.assertEqual(response.status_code, 302)
+
+        # now user3 should have write access again
+        response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
+
+        self.client1.logout()
+        self.client2.logout()
+        self.client3.logout()

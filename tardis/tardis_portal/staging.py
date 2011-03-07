@@ -94,6 +94,7 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
 
 
 class StagingHook():
+
     def __init__(self, user, experimentId, staging=None, store=None):
         self.staging = staging or settings.STAGING_PATH
         self.store = store or settings.FILE_STORE_PATH
