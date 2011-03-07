@@ -44,7 +44,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'TARDIS'
+project = u'MyTARDIS'
 copyright = u'2010, Steve Androulakis'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -52,7 +52,7 @@ copyright = u'2010, Steve Androulakis'
 # built documents.
 #
 # The short X.Y version.
-version = '1.0'
+version = '1.99'
 
 # The full version, including alpha/beta/rc tags.
 
@@ -174,7 +174,7 @@ htmlhelp_basename = 'tardis'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'tardis.tex', ur'TARDIS Documentation',
+  ('index', 'tardis.tex', ur'MyTARDIS Documentation',
    ur'Steve Androulakis', 'manual'),
 ]
 
