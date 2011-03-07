@@ -565,15 +565,15 @@ class MetsMetadataInfoHandler(ContentHandler):
                             if createParamSetFlag['dataset']:
                                 dataset = self.datasetLookupDict[
                                     self.metsObject.id]
-                                
-                                # create a new parameter set for the 
+
+                                # create a new parameter set for the
                                 # dataset metadata
                                 datasetParameterSet = \
                                     models.DatasetParameterSet(schema=schema,
                                     dataset=dataset)
-                                
+
                                 datasetParameterSet.save()
-            
+
                                 # now let's process the dataset parameters
                                 for parameterName in parameterNames:
                                     if parameterName.name in \
@@ -584,23 +584,25 @@ class MetsMetadataInfoHandler(ContentHandler):
                                             self._saveParameter('DatasetParameter',
                                                 parameterName, parameterValue,
                                                 datasetParameterSet)
-                                
+
                                 # disable creation for the next visit
                                 createParamSetFlag['dataset'] = False
-            
+
                         elif metsObjectClassName == 'Datafile':
-                            # this will be a good time to save the "hard" metadata of this
-                            # datafile so that when we start adding "soft" metadata
-                            # parameters to it, we already have an entry for it in the DB
-            
+                            # this will be a good time to save the
+                            # "hard" metadata of this datafile so that
+                            # when we start adding "soft" metadata
+                            # parameters to it, we already have an
+                            # entry for it in the DB
+
                             # look up the dataset this file belongs to
                             thisFilesDataset = self.datasetLookupDict[
                                 self.metsObject.dataset.id]
-            
+
                             # also check if the file already exists
                             datafile = thisFilesDataset.dataset_file_set.filter(
                                 filename=self.metsObject.name, size=self.metsObject.size)
-            
+
                             if datafile.count() == 0:
                                 self.modelDatafile = models.Dataset_File(
                                     dataset=thisFilesDataset,
@@ -608,26 +610,27 @@ class MetsMetadataInfoHandler(ContentHandler):
                                     url=self.metsObject.url,
                                     size=self.metsObject.size,
                                     protocol=self.metsObject.url.split('://')[0])
-                
+
                                 self.modelDatafile.save()
                             else:
                                 self.modelDatafile = thisFilesDataset.dataset_file_set.get(
                                     filename=self.metsObject.name, size=self.metsObject.size)
-            
-                            # TODO: we need to note here that we are only creating a
-                            #       datafile entry in the DB for files that have
-                            #       corresponding metadata. if we are to create a file
-                            #       entry for files with no metadata, we'll need to
-                            #       get the unaccessed datafiles from datasetLookupDict.
-    
-    
+
+                            # TODO: we need to note here that we are
+                            # only creating a datafile entry in the DB
+                            # for files that have corresponding
+                            # metadata. if we are to create a file
+                            # entry for files with no metadata, we'll
+                            # need to get the unaccessed datafiles
+                            # from datasetLookupDict.
+
                             if createParamSetFlag['datafile']:
                                 # create a new parameter set for the metadata
                                 datafileParameterSet = \
                                     models.DatafileParameterSet(schema=schema,
                                     dataset_file=self.modelDatafile)
                                 datafileParameterSet.save()
-            
+
                                 # now let's process the datafile parameters
                                 for parameterName in parameterNames:
                                     if parameterName.name in \
@@ -639,7 +642,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterName, parameterValue,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
-                    
+
 
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested' +
