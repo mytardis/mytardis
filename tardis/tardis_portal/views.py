@@ -394,7 +394,8 @@ def create_experiment(request,
             experiment.created_by = request.user
             for df in full_experiment['dataset_files']:
                 if not df.url.startswith(path.sep):
-                    df.url = path.join(settings.STAGING_PATH, df.url)
+                    df.url = path.join(settings.STAGING_PATH,
+                                       df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
