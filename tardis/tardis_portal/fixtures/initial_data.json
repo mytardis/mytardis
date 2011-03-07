@@ -1,66 +1,93 @@
 [
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/trdDatafile/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 1
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/trdDataset/2"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 2
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/mxautoprocessingresults/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 3
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/opusDataset/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 6
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/opusDatafile/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 7
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/as/experiment/2010/09/21"
+            "name": null,
+            "namespace": "http://www.tardis.edu.au/schemas/as/experiment/2010/09/21",
+            "subtype": null,
+            "type": 1
         },
         "model": "tardis_portal.schema",
         "pk": 8
     },
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10"
+            "name": null,
+            "namespace": "http://www.tardis.edu.au/schemas/as/sample/2011/01/24",
+            "subtype": null,
+            "type": 1
+        },
+        "model": "tardis_portal.schema",
+        "pk": 9
+    },
+    {
+        "fields": {
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/opusDatafile/1",
+            "subtype": "ir",
+            "type": 3
+        },
+        "model": "tardis_portal.schema",
+        "pk": 7
+    },
+    {
+        "fields": {
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/opusDataset/1",
+            "subtype": "ir",
+            "type": 2
+        },
+        "model": "tardis_portal.schema",
+        "pk": 6
+    },
+    {
+        "fields": {
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10",
+            "subtype": "saxs",
+            "type": 2
         },
         "model": "tardis_portal.schema",
         "pk": 5
     },
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10"
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10",
+            "subtype": "saxs",
+            "type": 3
         },
         "model": "tardis_portal.schema",
         "pk": 4
     },
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/as/sample/2011/01/24"
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/mxautoprocessingresults/1",
+            "subtype": "mx",
+            "type": 2
         },
         "model": "tardis_portal.schema",
-        "pk": 9
+        "pk": 3
+    },
+    {
+        "fields": {
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/trdDataset/2",
+            "subtype": "mx",
+            "type": 2
+        },
+        "model": "tardis_portal.schema",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "name": "",
+            "namespace": "http://www.tardis.edu.au/schemas/trdDatafile/1",
+            "subtype": "mx",
+            "type": 3
+        },
+        "model": "tardis_portal.schema",
+        "pk": 1
     },
     {
         "fields": {

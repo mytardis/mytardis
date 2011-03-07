@@ -85,13 +85,12 @@ class SearchTestCase(TestCase):
             acl.save()
             self.experiments += [experiment]
 
-        from tardis.tardis_portal.constants import SCHEMA_DICT
-        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['datafile'])
+        schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='io')
         parameter.is_searchable = True
         parameter.save()
 
-        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['dataset'])
+        schema = Schema.objects.get(type=Schema.DATASET, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='frqimn')
         parameter.is_searchable = True
         parameter.save()
@@ -255,44 +254,44 @@ class MetsExperimentStructCreatorTestCase(TestCase):
     def testMetsMetadataMapContents(self):
         self.assertTrue(len(self.dataHolder.metadataMap) == 7,
             'metadataMap size should be 7')
-        self.assertTrue(self.dataHolder.metadataMap['A-2'].id == 'J-2',
+        self.assertTrue(self.dataHolder.metadataMap['A-2'][0].id == 'J-2',
             'id for metadata A-2 should be J-2')
-        self.assertTrue(len(self.dataHolder.metadataMap['A-2'].datafiles) == 8,
+        self.assertTrue(len(self.dataHolder.metadataMap['A-2'][0].datafiles) == 8,
             'there should be 8 datafiles within dataset A-2')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].experiment.id == 'J-1',
+            'A-2'][0].experiment.id == 'J-1',
             'id for dataset A-2 parent experiment should be J-1')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].__class__.__name__ == 'Dataset',
+            'A-2'][0].__class__.__name__ == 'Dataset',
             'metadata A-2 should be a Dataset type')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-1'].__class__.__name__ == 'Experiment',
+            'A-1'][0].__class__.__name__ == 'Experiment',
             'metadata A-1 should be an Experiment type')
         self.assertTrue(len(self.dataHolder.metadataMap[
-            'A-1'].datasets) == 1,
+            'A-1'][0].datasets) == 1,
             'there should be 1 dataset under experiment A-1')
-        self.assertTrue(self.dataHolder.metadataMap['A-7'].id == 'F-8',
+        self.assertTrue(self.dataHolder.metadataMap['A-7'][0].id == 'F-8',
             'metadata A-7 does not have F-8 as the Id')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].name == 'ment0005.osc',
+            'A-7'][0].name == 'ment0005.osc',
             'metadata A-7 should have ment0005.osc as the name')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].url == 'tardis://Images/ment0005.osc',
+            'A-7'][0].url == 'tardis://Images/ment0005.osc',
             'metadata A-7 should have tardis://Images/ment0005.osc as the url')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].dataset.id == 'J-2',
+            'A-7'][0].dataset.id == 'J-2',
             'metadata A-7 should have dataset id J-2')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].__class__.__name__ == 'Datafile',
+            'A-7'][0].__class__.__name__ == 'Datafile',
             'metadata A-7 should be a Datafile type')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].metadataId == 'A-7',
+            'A-7'][0].metadataIds[0] == 'A-7',
             'metadata A-7 should have metadata Id A-7')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-1'].metadataId == 'A-1',
+            'A-1'][0].metadataIds[0] == 'A-1',
             'metadata A-1 should have metadata Id A-1')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].metadataId == 'A-2',
+            'A-2'][0].metadataIds[0] == 'A-2',
             'metadata A-2 should have metadata Id A-2')
 
 

@@ -140,6 +140,8 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(null=True, blank=True,
+        auto_now_add=True)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
@@ -147,6 +149,17 @@ class Experiment(models.Model):
     public = models.BooleanField()
     objects = models.Manager()  # The default manager.
     safe = ExperimentManager()  # The acl-aware specific manager.
+
+    def getParameterSets(self, schemaType=None):
+        """Return the experiment parametersets associated with this
+        experiment.
+
+        """
+        if schemaType == Schema.EXPERIMENT or schemaType is None:
+            return self.experimentparameterset_set.filter(
+                schema__type=Schema.EXPERIMENT)
+        else:
+            raise Schema.UnsupportedType
 
     def __unicode__(self):
         return self.title
@@ -223,9 +236,6 @@ class Author_Experiment(models.Model):
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
 
-    class Meta:
-        ordering = ('order', )
-
     def __unicode__(self):
         return SafeUnicode(self.author) + ' | ' \
             + SafeUnicode(self.experiment.id) + ' | ' \
@@ -247,6 +257,17 @@ class Dataset(models.Model):
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
 
+    def getParameterSets(self, schemaType=None):
+        """Return the dataset parametersets associated with this
+        experiment.
+
+        """
+        if schemaType == Schema.DATASET or schemaType is None:
+            return self.datasetparameterset_set.filter(
+                schema__type=Schema.DATASET)
+        else:
+            raise Schema.UnsupportedType
+
     def addDatafile(self, filepath,
                     protocol='', url='',
                     size=None, commit=True):
@@ -267,7 +288,7 @@ class Dataset(models.Model):
         if url:
             datafile.url = url
         else:
-            datafile.url = 'file:/' + filepath
+            datafile.url = 'file://' + filepath
 
         if size:
             datafile.size = size
@@ -307,6 +328,16 @@ class Dataset_File(models.Model):
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
+
+    def getParameterSets(self, schemaType=None):
+        """Return datafile parametersets associated with this experiment.
+
+        """
+        if schemaType == Schema.DATAFILE or schemaType is None:
+            return self.datafileparameterset_set.filter(
+                schema__type=Schema.DATAFILE)
+        else:
+            raise Schema.UnsupportedType
 
     def __unicode__(self):
         return self.filename
@@ -405,10 +436,51 @@ pre_save.connect(save_DatasetFile, sender=Dataset_File)
 
 class Schema(models.Model):
 
+    EXPERIMENT = 1
+    DATASET = 2
+    DATAFILE = 3
+    _SCHEMA_TYPES = (
+        (EXPERIMENT, 'Experiment schema'),
+        (DATASET, 'Dataset schema'),
+        (DATAFILE, 'Datafile schema'),
+    )
+
     namespace = models.URLField(verify_exists=False, max_length=400)
+    name = models.CharField(blank=True, null=True, max_length=50)
+    type = models.IntegerField(
+        choices=_SCHEMA_TYPES, default=EXPERIMENT)
+
+    # subtype will be used for categorising the type of experiment, dataset
+    # or datafile schemas. for example, the type of beamlines are usually used
+    # further categorise the experiment, dataset, and datafile schemas. the
+    # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
+    subtype = models.CharField(blank=True, null=True, max_length=30)
+
+    def _getSchemaTypeName(self, typeNum):
+        return dict(self._SCHEMA_TYPES)[typeNum]
+
+    @classmethod
+    def getSubTypes(cls):
+        return set([schema.subtype for schema in Schema.objects.all() \
+            if schema.subtype])
+
+    @classmethod
+    def getNamespaces(cls, type, subtype=None):
+        """Return the list of namespaces for equipment, sample, and experiment
+        schemas.
+
+        """
+        return [schema.namespace for schema in
+            Schema.objects.filter(type=type, subtype=subtype or '')]
 
     def __unicode__(self):
-        return self.namespace
+        return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
+            self.subtype.upper() or '') + ': ' + self.namespace
+
+    class UnsupportedType(Exception):
+
+        def __init__(self, msg):
+            Exception.__init__(self, msg)
 
 
 class DatafileParameterSet(models.Model):
@@ -494,7 +566,10 @@ class ParameterName(models.Model):
     choices = models.CharField(max_length=500, blank=True)
 
     def __unicode__(self):
-        return self.name
+        return (self.schema.name or self.schema.namespace) + ": " + self.name
+
+    class Meta:
+        unique_together = (('schema', 'name'),)
 
     def isNumeric(self):
         if self.data_type == self.NUMERIC:
@@ -563,8 +638,10 @@ def _getParameter(parameter):
                 viewname = 'tardis.tardis_portal.views.display_experiment_image'
                 args = [eid, psid, parameter.name]
             if viewname:
-                value = "<img src='%s' />" % reverse(viewname=viewname, args=args)
+                value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                     args=args)
                 return mark_safe(value)
+
         return parameter.string_value
 
     elif parameter.name.isURL():

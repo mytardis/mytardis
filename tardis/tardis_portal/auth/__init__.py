@@ -45,6 +45,7 @@ def login(request, user):
 
 
 class LazyGroups(object):
+
     def __get__(self, request, obj_type=None):
         if not hasattr(request, '_cached_groups'):
             if GROUPS in request.session:
@@ -54,6 +55,7 @@ class LazyGroups(object):
 
 
 class AuthorizationMiddleware(object):
+
     def process_request(self, request):
         assert hasattr(request, 'session'), "The Django authorization middleware requires session middleware to be installed. Edit your MIDDLEWARE_CLASSES setting to insert 'django.contrib.sessions.middleware.SessionMiddleware'."
         request.__class__.groups = LazyGroups()
