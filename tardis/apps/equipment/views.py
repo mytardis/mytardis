@@ -14,18 +14,21 @@ from tardis.apps.equipment.models import Equipment
 def index(request):
 
     c = Context({'object_list': Equipment.objects.all(),
-                 'paginate_by': 15,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+                 'paginate_by': 15})
     url = 'equipment/equipment_list.html'
     return HttpResponse(render_response_index(request, url, c))
 
 
-def view(request, object_id):
+def view_id(request, object_id):
 
-    c = Context({'object': Equipment.objects.get(pk=object_id),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+    c = Context({'object': Equipment.objects.get(pk=object_id)})
+    url = 'equipment/equipment_detail.html'
+    return HttpResponse(render_response_index(request, url, c))
+
+
+def view_key(request, object_key):
+
+    c = Context({'object': Equipment.objects.get(key=object_key)})
     url = 'equipment/equipment_detail.html'
     return HttpResponse(render_response_index(request, url, c))
 
@@ -48,16 +51,12 @@ def search(request):
                 q = q.filter(type__icontains=data['type'])
 
             c = Context({'header': 'Search Equipment',
-                         'object_list': q,
-                         'searchDatafileSelectionForm':
-                             getNewSearchDatafileSelectionForm()})
+                         'object_list': q})
             url = 'equipment/equipment_list.html'
-            return HttpResponse(render_response_index(request, url, c))
+            return HttpResponse(render_response_search(request, url, c))
     else:
         form = EquipmentSearchForm()
 
-    c = Context({'form': form,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+    c = Context({'form': form})
     url = 'equipment/equipment_search.html'
     return HttpResponse(render_response_search(request, url, c))
