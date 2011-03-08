@@ -72,6 +72,40 @@ class ExifFilterTestCase(TestCase):
                     'Exif.Image.Software': 'Adobe Photoshop Elements 2.0'}
         self.assertEqual(f.getExif(filename), metadata)
 
+    def test_parameter_filters(self):
+        from os import path
+        import datetime
+        from fractions import Fraction
+        from tardis.tardis_portal.filters.exif import EXIFFilter
+
+        metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
+                    'Exif.Photo.ColorSpace': 65535,
+                    'Exif.Image.Orientation': 1,
+                    'Exif.Photo.PixelYDimension': 768L,
+                    'Exif.Image.XResolution': Fraction(72, 1),
+                    'Exif.Photo.PixelXDimension': 978L,
+                    'Exif.Image.ExifTag': 164L,
+                    'Exif.Thumbnail.Compression': 6,
+                    'Exif.Image.DateTime': datetime.datetime(2005, 7, 8,
+                                                             19, 17, 44),
+                    'Exif.Image.YResolution': Fraction(72, 1),
+                    'Exif.Image.ResolutionUnit': 2,
+                    'Exif.Thumbnail.YResolution': Fraction(72, 1),
+                    'Exif.Thumbnail.XResolution': Fraction(72, 1),
+                    'Exif.Image.Software': 'Adobe Photoshop Elements 2.0'}
+
+        f = EXIFFilter("EXIF", "http://exif.schema",
+                       tagsToFind=["Exif.Photo.ColorSpace",
+                                   'Exif.Image.Orientation'])
+        s = f.getSchema()
+        self.assertEqual(len(f.getParamaters(s, metadata)), 2)
+
+        f = EXIFFilter("EXIF", "http://exif.schema",
+                       tagsToExclude=["Exif.Photo.ColorSpace",
+                                      'Exif.Image.Orientation'])
+        s = f.getSchema()
+        self.assertEqual(len(f.getParamaters(s, metadata)), 12)
+
     def test_create_schema(self):
         from tardis.tardis_portal.filters.exif import EXIFFilter
         f = EXIFFilter("EXIF", "http://exif.schema")
