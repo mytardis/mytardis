@@ -119,8 +119,11 @@ class EXIFFilter(object):
         for p in metadata:
             # TODO need to check if the paramter exists
             # or if it should be skipped
-            if False:
-                raise Exception()
+            parameter = filter(lambda x: x.name == p, param_objects)
+
+            if parameter:
+                parameters.append(parameter[0])
+                continue
 
             # detect type of parameter
             is_numeric = False
