@@ -1566,7 +1566,7 @@
             "full_name": "SampleDescription",
             "data_type": 2,
             "is_searchable": true,
-            "name": "SampleDescription ",
+            "name": "SampleDescription",
             "schema": 9,
             "units": ""
         },
@@ -1605,10 +1605,10 @@
         "fields": {
             "choices": "",
             "comparison_type": 8,
-            "full_name": "SampleSafty",
+            "full_name": "SampleSafety",
             "data_type": 2,
             "is_searchable": true,
-            "name": "SampleSafty",
+            "name": "SampleSafety",
             "schema": 9,
             "units": ""
         },
