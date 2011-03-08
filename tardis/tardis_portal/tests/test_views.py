@@ -71,8 +71,10 @@ class UploadTestCase(TestCase):
         self.dataset_path = path.join(self.experiment_path,
                                       str(self.dataset.id))
 
-        mkdir(self.experiment_path)
-        mkdir(self.dataset_path)
+        if not path.exists(self.experiment_path):
+            mkdir(self.experiment_path)
+        if not path.exists(self.dataset_path):
+            mkdir(self.dataset_path)
 
         #write test file
         self.filename = "testfile.txt"
@@ -84,6 +86,15 @@ class UploadTestCase(TestCase):
         self.f1_size = path.getsize(path.join(self.test_dir, self.filename))
 
         self.f1 = open(path.join(self.test_dir, self.filename), 'r')
+
+    def tearDown(self):
+        from shutil import rmtree
+
+        self.f1.close()
+        rmtree(self.test_dir)
+        rmtree(self.dataset_path)
+        rmtree(self.experiment_path)
+        self.exp.delete()
 
     def testFileUpload(self):
         from django.http import QueryDict, HttpRequest
@@ -115,15 +126,6 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path, self.filename)))
         self.assertTrue(self.dataset.id == 1)
         self.assertTrue(test_files_db[0].url == "file://1/testfile.txt")
-
-    def tearDown(self):
-        from shutil import rmtree
-
-        self.f1.close()
-        rmtree(self.test_dir)
-        rmtree(self.dataset_path)
-        rmtree(self.experiment_path)
-        self.exp.delete()
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest

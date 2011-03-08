@@ -44,6 +44,15 @@ from django.contrib import auth
 
 
 class AuthService():
+    """The AuthService provides an intreface for querying the
+    auth(n|z) framwork within MyTARDIS. The auth service works by
+    reading the class path to plugins from the settings file.
+
+    :param settings: the settings object that contains the list of
+       user and group plugins.
+    :type settings: :py:class:`django.conf.settings`
+
+    """
 
     def __init__(self, settings=settings):
         self._group_providers = []
@@ -94,6 +103,10 @@ class AuthService():
         specified to use and if authentication didn't work using that
         method, try each Django AuthProvider.
 
+        :param authMethod: the shortname of the auth method.
+        :type authMethod: string
+        :param **credentials: the credentials as expected by the auth plugin
+        :type **credentials: kwargs
         """
 
         if not self._initialised:
@@ -114,6 +127,8 @@ class AuthService():
     def getGroups(self, request):
         """Return a list of tuples containing pluginname and group id
 
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
         """
         if not self._initialised:
             self._manual_init()
@@ -148,7 +163,6 @@ class AuthService():
         :param max_results: the maximum number of elements to return
         :param sort_by: the attribute the users should be sorted on
         :param plugin: restrict the search to the specific group provider
-
         """
         if not self._initialised:
             self._manual_init()
@@ -212,7 +226,6 @@ class AuthService():
         This function is responsible for creating the
         user within the Django DB and returning the resulting
         user model.
-
         """
         if not self._initialised:
             self._manual_init()
