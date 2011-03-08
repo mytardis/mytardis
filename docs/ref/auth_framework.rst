@@ -10,7 +10,7 @@
 
 
 :py:class:`AuthService` Objects
-----------------------------------------
+-------------------------------
 .. autoclass:: AuthService
    :members:
    :undoc-members:
@@ -18,7 +18,7 @@
 Auth Plugins
 ------------
 
-* :py:mod:`tardis.tardis_portal_auth.localdb_auth`
-* :py:mod:`tardis.tardis_portal_auth.ldap_auth`
-* :py:mod:`tardis.tardis_portal_auth.ip_auth`
-* :py:mod:`tardis.tardis_portal_auth.vbl_auth`
+* :py:mod:`tardis.tardis_portal.auth.localdb_auth`
+* :py:mod:`tardis.tardis_portal.auth.ldap_auth`
+* :py:mod:`tardis.tardis_portal.auth.ip_auth`
+* :py:mod:`tardis.tardis_portal.auth.vbl_auth`
