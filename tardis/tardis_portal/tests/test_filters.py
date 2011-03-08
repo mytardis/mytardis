@@ -53,7 +53,7 @@ class ExifFilterTestCase(TestCase):
         import datetime
         from fractions import Fraction
         from tardis.tardis_portal.filters.exif import EXIFFilter
-        f = EXIFFilter('http://exif.schema')
+        f = EXIFFilter("EXIF", "http://exif.schema")
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
         metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
                     'Exif.Photo.ColorSpace': 65535,
@@ -74,13 +74,14 @@ class ExifFilterTestCase(TestCase):
 
     def test_create_schema(self):
         from tardis.tardis_portal.filters.exif import EXIFFilter
-        f = EXIFFilter('http://exif.schema')
-        self.assertEqual(str(f.getSchema()), 'http://exif.schema')
+        f = EXIFFilter("EXIF", "http://exif.schema")
+        self.assertEqual(str(f.getSchema()),
+                         "Datafile schema: http://exif.schema")
 
     def test_update_schema(self):
         from os import path
         from tardis.tardis_portal.filters.exif import EXIFFilter
-        f = EXIFFilter('http://exif.schema')
+        f = EXIFFilter("EXIF", "http://exif.schema")
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
         self.assertEqual(len(f.getParamaters(f.getSchema(),
                                              f.getExif(filename))),
@@ -109,7 +110,7 @@ class ExifFilterTestCase(TestCase):
                                       protocol='')
         df_file.save()
 
-        f = EXIFFilter('http://exif.schema')
+        f = EXIFFilter("EXIF", "http://exif.schema")
 
         metadata = f.getExif(filename)
         parameters = f.getParamaters(f.getSchema(), metadata)

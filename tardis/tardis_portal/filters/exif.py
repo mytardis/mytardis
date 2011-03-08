@@ -60,7 +60,8 @@ class EXIFFilter(object):
     :param tagsToExclude: a list of the tags to exclude.
     :type tagsToExclude: list of strings
     """
-    def __init__(self, schema, tagsToFind=None, tagsToExclude=None):
+    def __init__(self, name, schema, tagsToFind=None, tagsToExclude=None):
+        self.name = name
         self.schema = schema
         self.tagsToFind = tagsToFind
         self.tagsToExclude = tagsToExclude
@@ -162,7 +163,8 @@ class EXIFFilter(object):
         try:
             return Schema.objects.get(namespace__exact=self.schema)
         except Schema.DoesNotExist:
-            schema = Schema(namespace=self.schema)
+            schema = Schema(namespace=self.schema, name=self.name,
+                            type=Schema.DATAFILE)
             schema.save()
             return schema
 
