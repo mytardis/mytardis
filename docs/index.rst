@@ -26,7 +26,7 @@ important, which can be summarised as:
    the best ways of ensuring that this data is not lost (laboratory
    archives are typically volatile).
 
-Download
+Homepage
 --------
 
 You can get a copy of MyTARDIS from http://code.google.com/p/mytardis/
@@ -45,6 +45,14 @@ Redhat::
 Debian/Ubuntu::
 
    sudo apt-get install libsasl2-dev libldap libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1
+
+Download
+--------
+
+To get the current trunk::
+
+   svn co https://mytardis.googlecode.com/svn/trunk/ mytardis
+   cd mytardis
 
 Building
 --------
