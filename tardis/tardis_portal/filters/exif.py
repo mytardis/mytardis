@@ -62,7 +62,7 @@ class EXIFFilter(object):
     :param tagsToExclude: a list of the tags to exclude.
     :type tagsToExclude: list of strings
     """
-    def __init__(self, name, schema, tagsToFind=None, tagsToExclude=None):
+    def __init__(self, name, schema, tagsToFind=[], tagsToExclude=[]):
         self.name = name
         self.schema = schema
         self.tagsToFind = tagsToFind
@@ -118,8 +118,13 @@ class EXIFFilter(object):
         param_objects = ParameterName.objects.filter(schema=schema)
         parameters = []
         for p in metadata:
-            # TODO need to check if the paramter exists
-            # or if it should be skipped
+
+            if self.tagsToFind and not p in self.tagsToFind:
+                continue
+
+            if p in self.tagsToExclude:
+                continue
+
             parameter = filter(lambda x: x.name == p, param_objects)
 
             if parameter:
