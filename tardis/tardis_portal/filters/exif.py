@@ -53,6 +53,8 @@ class EXIFFilter(object):
     If a white list is specified then it takes precidence and all
     other tags will be ignored.
 
+    :param name: the short name of the schema.
+    :type name: string
     :param schema: the name of the schema to load the EXIF data into.
     :type schema: string
     :param tagsToFind: a list of the tags to include.
@@ -67,8 +69,7 @@ class EXIFFilter(object):
         self.tagsToExclude = tagsToExclude
 
     def __call__(self, sender, **kwargs):
-        """
-        post save callback entry point.
+        """post save callback entry point.
 
         :param sender: The model class.
         :param instance: The actual instance being saved.
