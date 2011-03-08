@@ -92,7 +92,21 @@ Repository
    The path to the staging path. This is where new files to be
    included in datasets will be sourced.
 
+Filters
+~~~~~~~
 
+.. attribute:: tardis.settings_changeme.POST_SAVE_FILTERS
+
+   This contains a list of post save filters that are execute when a
+   new data file is created.
+
+   The **POST_SAVE_FILTERS** variable is specified like::
+
+      POST_SAVE_FILTERS = [
+          ("tardis.tardis_portal.filters.exif.EXIFFilter", ["EXIF", "http://exif.schema"]),
+          ]
+
+   For further details please see the :ref:`ref-filterframework` section.
 
 .. seealso::
 
