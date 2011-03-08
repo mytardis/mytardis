@@ -17,7 +17,8 @@ Configuration
 -------------
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
-file there are some extra config options that are specific to MyTARDIS.
+file there are some extra configuration options that are specific to
+MyTARDIS.
 
 .. attribute:: tardis.settings_changeme.FILE_STORE_PATH
 
