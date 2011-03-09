@@ -92,6 +92,10 @@ class EXIFFilter(object):
     def saveExifMetadata(self, instance, schema, metadata):
         """Save all the metadata to a Dataset_Files paramamter set.
         """
+        parameters = self.getParamaters(schema, metadata)
+        if not parameters:
+            return None
+
         try:
             ps = DatafileParameterSet.objects.get(schema=schema,
                                                   dataset_file=instance)
@@ -100,7 +104,7 @@ class EXIFFilter(object):
             ps = DatafileParameterSet(schema=schema,
                                       dataset_file=instance)
             ps.save()
-        parameters = self.getParamaters(schema, metadata)
+
         for p in parameters:
             if p.name in metadata:
                 dfp = DatafileParameter(parameterset=ps,
