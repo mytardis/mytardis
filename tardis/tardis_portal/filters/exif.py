@@ -182,7 +182,10 @@ class EXIFFilter(object):
         """
         ret = {}
         image = ImageMetadata(filename)
-        image.read()
+        try:
+            image.read()
+        except IOError:
+            return ret
         for tag in image.values():
             ret[tag.key] = tag.value
         return ret
