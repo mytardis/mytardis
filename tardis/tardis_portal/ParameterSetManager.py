@@ -1,61 +1,110 @@
 from django.core.exceptions import ObjectDoesNotExist
 
 from tardis.tardis_portal.models import DatasetParameterSet
+from tardis.tardis_portal.models import DatafileParameterSet
+from tardis.tardis_portal.models import ExperimentParameterSet
 from tardis.tardis_portal.models import ParameterName
 from tardis.tardis_portal.models import DatasetParameter
-from tardis.tardis_portal.models import Dataset
+from tardis.tardis_portal.models import DatafileParameter
+from tardis.tardis_portal.models import ExperimentParameter
 from tardis.tardis_portal.models import Schema
 
 
 class ParameterSetManager():
     parameterset = None
     parameters = None # queryset of parameters
-    parentObject = None
+    blank_param = None
 
     # parameterset OR schema / datafile / dataset / experiment
     # delete dataset creation code
     # make parameterset / object arguments generic and test type
-    def __init__(self, dataset=None, dataset_id=None,
-                 description="", experiment_id=None):
+    # create function to return generic parameter type for setting/getting
+    def __init__(self, parameterset=None, parentObject=None,
+                 schema=None):
         """
-        instantiate new task or existing task
+        instantiate new task or existing ParameterSet
         :param dataset: optional parameter to instanciate task from
           metadata, will be tested for completeness and copied into
           new task if complete
         :type dataset: Dataset
         """
-        if dataset:
-            self.dataset = dataset
-        elif dataset_id:
-            self.dataset = Dataset.objects.get(pk=dataset_id)
+
+        if parameterset:
+            self.parameterset = parameterset
+            self.schema = self.parameterset.schema.namespace
+
+            if type(self.parameterset).__name__ == "DatafileParameterSet":
+                self.parameters = DatafileParameter.objects.filter(\
+                   parameterset=self.parameterset)
+
+                self.blank_param = DatafileParameter
+
+            elif type(self.parameterset).__name__ == "DatasetParameterSet":
+                self.parameters = DatasetParameter.objects.filter(\
+                   parameterset=self.parameterset)
+
+                self.blank_param = DatasetParameter
+
+            elif type(self.parameterset).__name__ == "ExperimentParameterSet":
+                self.parameters = ExperimentParameter.objects.filter(\
+                   parameterset=self.parameterset)
+
+                self.blank_param = ExperimentParameter
+
+            else:
+                raise TypeError("Invalid parameterset object given.")
+
+        elif parentObject and schema:
+
+            self.schema = schema
+
+            if type(parentObject).__name__ == "Dataset_File":
+                self.parameterset = DatafileParameterSet(\
+                    schema=self.get_schema(), dataset_file=parentObject)
+
+                self.parameterset.save()
+
+                self.parameters = DatafileParameter.objects.filter(
+                    parameterset=self.parameterset)
+
+                self.blank_param = DatafileParameter
+
+            elif type(parentObject).__name__ == "Dataset":
+                self.parameterset = DatasetParameterSet(\
+                    schema=self.get_schema(), dataset=parentObject)
+
+                self.parameterset.save()
+
+                self.parameters = DatasetParameter.objects.filter(
+                    parameterset=self.parameterset)
+
+                self.blank_param = DatasetParameter
+
+            elif type(parentObject).__name__ == "Experiment":
+                self.parameterset = ExperimentParameterSet(\
+                    schema=self.get_schema(), experiment=parentObject)
+
+                self.parameterset.save()
+
+                self.parameters = ExperimentParameter.objects.filter(
+                    parameterset=self.parameterset)
+
+                self.blank_param = ExperimentParameter
+
+            else:
+                raise TypeError("Invalid parent object." + \
+                    "Must be an experiment/dataset/datafile")
+
         else:
-            if description == "":
-                raise TypeError("No description given")
-            if not experiment_id:
-                raise TypeError("No experiment id given")
-            self.dataset = Dataset()
-            self.dataset.experiment_id = experiment_id
-            self.dataset.description = description
-            self.dataset.save()
-        try:
-            self.DPS = DatasetParameterSet.objects.get(
-                dataset=self.dataset,
-                schema__namespace__endswith=self.type)
-        except ObjectDoesNotExist:
-            self.DPS = DatasetParameterSet()
-            self.DPS.dataset = self.dataset
-            self.DPS.schema = self.get_schema()
-            self.DPS.save()
-        self.parameters = DatasetParameter.objects.filter(
-            parameterset=self.DPS)
+            raise TypeError("Missing arguments")
 
     def get_schema(self):
         try:
             schema = Schema.objects.get(
-                namespace="%s/%s" % (self.baseschema, self.type))
+                namespace=self.schema)
         except ObjectDoesNotExist:
             schema = Schema()
-            schema.namespace = "%s/%s" % (self.baseschema, self.type)
+            schema.namespace = self.schema
             schema.save()
         return schema
 
@@ -83,9 +132,10 @@ class ParameterSetManager():
         try:
             param = self.get_param(parname)
         except ObjectDoesNotExist:
-            param = DatasetParameter()
-            param.parameterset = self.DPS
-            param.name = self._get_create_parname(parname, fullparname)
+            param = self.blank_param()
+            param.parameterset = self.parameterset
+            param.name = self._get_create_parname(parname, fullparname,
+                example_value=value)
             param.string_value = value
             param.save()
         if param.name.is_numeric:
@@ -95,8 +145,8 @@ class ParameterSetManager():
         param.save()
 
     def new_param(self, parname, value, fullparname=None):
-        param = DatasetParameter()
-        param.parameterset = self.DPS
+        param = self.blank_param()
+        param.parameterset = self.parameterset
         param.name = self._get_create_parname(parname, fullparname)
         param.string_value = value
         param.save()
@@ -118,6 +168,7 @@ class ParameterSetManager():
             if type(value) is list:
                 self.set_param_list(key, value)
             else:
+                self.delete_params(key)
                 self.set_param(key, value)
 
     def delete_params(self, parname):
