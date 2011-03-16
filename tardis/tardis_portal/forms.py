@@ -57,7 +57,8 @@ from registration.models import RegistrationProfile
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
-from tardis.tardis_portal.models import UserProfile, UserAuthentication
+from tardis.tardis_portal.models import UserProfile, UserAuthentication,\
+    DatafileParameterSet, DatafileParameter
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
@@ -736,3 +737,26 @@ def createSearchDatafileSelectionForm():
 
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
+
+
+def create_datafile_edit_form(dataset_file_id):
+
+    fields = {}
+
+    dfs = None
+    try:
+        dfs = DatafileParameterSet.objects.get(dataset_file=dataset_file_id)
+    except:
+        return None
+
+    for dfp in DatafileParameter.objects.filter(parameterset=dfs):
+        if dfp.name.is_numeric:
+            fields[dfp.name.name] = \
+            forms.DecimalField(label=dfp.name.full_name,\
+            required=False, initial=dfp.numerical_value)
+        else:
+            fields[dfp.name.name] = \
+            forms.CharField(label=dfp.name.full_name,\
+            max_length=255, required=False, initial=dfp.string_value)
+
+    return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
