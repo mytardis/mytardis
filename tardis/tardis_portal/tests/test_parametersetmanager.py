@@ -38,6 +38,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.test import TestCase
 from tardis.tardis_portal import models
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 class ParameterSetManagerTestCase(TestCase):
 
@@ -109,34 +110,48 @@ class ParameterSetManagerTestCase(TestCase):
         self.parametername2.delete()
         self.schema.delete()
 
-    def test_get_schema(self):
+    def test_existing_parameterset(self):
 
-        self.assertTrue(True)
+        psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-    def test_get_param(self):
+        self.assertTrue(psm.get_schema().namespace\
+            == "http://localhost/psmtest/df/")
 
-        self.assertTrue(True)
+        self.assertTrue(psm.get_param("parameter1").string_value == "test1")
 
-    def get_params(self):
+        self.assertTrue(psm.get_param("parameter2", True) == 2)
 
-        self.assertTrue(True)
+    def test_new_parameterset(self):
 
-    def set_param(self):
+        psm = ParameterSetManager(parentObject=self.datafile,\
+            schema="http://localhost/psmtest/df2/")
 
-        self.assertTrue(True)
+        self.assertTrue(psm.get_schema().namespace\
+            == "http://localhost/psmtest/df2/")
 
-    def new_param(self):
+        psm.set_param("newparam1", "test3", "New Parameter 1")
 
-        self.assertTrue(True)
+        self.assertTrue(psm.get_param("newparam1").string_value\
+            == "test3")
 
-    def set_param_list(self):
+        self.assertTrue(psm.get_param("newparam1").name.full_name\
+            == "New Parameter 1")
 
-        self.assertTrue(True)
+        psm.new_param("newparam1", "test4")
 
-    def set_params_from_dict(self):
+        self.assertTrue(len(psm.get_params("newparam1", True)) == 2)
 
-        self.assertTrue(True)
+        psm.set_param_list("newparam2", ("a", "b", "c", "d"))
 
-    def delete_params(self):
+        self.assertTrue(len(psm.get_params("newparam2")) == 4)
 
-        self.assertTrue(True)
+        psm.set_params_from_dict(
+            {"newparam2": "test5", "newparam3": 3})
+
+        self.assertTrue(psm.get_param("newparam2", True) == "test5")
+
+        self.assertTrue(psm.get_param("newparam3").numerical_value == 3)
+
+        psm.delete_params("newparam1")
+
+        self.assertTrue(len(psm.get_params("newparam1", True)) == 0)
