@@ -739,24 +739,47 @@ def createSearchDatafileSelectionForm():
                     {'base_fields': fields})
 
 
-def create_datafile_edit_form(dataset_file_id):
+def create_datafile_edit_form(
+    parameterset_id,
+    request=None):
 
-    fields = {}
+    from tardis.tardis_portal.models import ParameterName
 
-    dfs = None
-    try:
-        dfs = DatafileParameterSet.objects.get(dataset_file=dataset_file_id)
-    except:
-        return None
+    parameterset = DatafileParameterSet.objects.get(
+        id=parameterset_id)
 
-    for dfp in DatafileParameter.objects.filter(parameterset=dfs):
-        if dfp.name.is_numeric:
-            fields[dfp.name.name] = \
-            forms.DecimalField(label=dfp.name.full_name,\
-            required=False, initial=dfp.numerical_value)
-        else:
-            fields[dfp.name.name] = \
-            forms.CharField(label=dfp.name.full_name,\
-            max_length=255, required=False, initial=dfp.string_value)
+    if request:
+        fields = {}
 
-    return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+        for key, value in request.POST.iteritems():
+            parameter_name = ParameterName.objects.get(
+                schema=parameterset.schema,
+                name=key)
+
+            if parameter_name.is_numeric:
+                fields[parameter_name.name] = \
+                forms.DecimalField(label=parameter_name.full_name,\
+                    required=False,
+                    initial=value)
+            else:
+                fields[parameter_name.name] = \
+                forms.CharField(label=parameter_name.full_name,\
+                    max_length=255, required=False,
+                    initial=value)
+
+        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+    else:
+        fields = {}
+
+        for dfp in DatafileParameter.objects.filter(
+            parameterset=parameterset):
+            if dfp.name.is_numeric:
+                fields[dfp.name.name] = \
+                forms.DecimalField(label=dfp.name.full_name,\
+                required=False, initial=dfp.numerical_value)
+            else:
+                fields[dfp.name.name] = \
+                forms.CharField(label=dfp.name.full_name,\
+                max_length=255, required=False, initial=dfp.string_value)
+
+        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
