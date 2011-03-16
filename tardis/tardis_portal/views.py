@@ -2038,12 +2038,16 @@ def search_equipment(request):
     return HttpResponse(render_response_index(request, url, c))
 
 
-@authz.datafile_access_required
-def edit_parameters(request, dataset_file_id):
+def edit_parameters(request, parameterset_id):
 
-    # define form dynamically
-    class DynamicForm(create_datafile_edit_form(dataset_file_id)):
-        pass
+    if request.method == 'POST':
+
+        class DynamicForm(create_datafile_edit_form(parameterset_id, request=request)):
+            pass
+    else:
+
+        class DynamicForm(create_datafile_edit_form(parameterset_id)):
+            pass
 
     form = DynamicForm()
 
