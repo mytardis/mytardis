@@ -115,17 +115,18 @@ class LdapBackend():
 
             l = ldap.initialize(settings.LDAP_URL)
             l.protocol_version = ldap.VERSION3
-            l.simple_bind(userRDN+','+settings.BASE_DN, password)
-            ldap_result_id = l.search(settings.BASE_DN, searchScope, 
+            l.simple_bind(userRDN + ',' + settings.BASE_DN, password)
+            ldap_result_id = l.search(settings.BASE_DN, searchScope,
                                       userRDN, retrieveAttributes)
 
             result_type, result_data = l.result(ldap_result_id, 0)
 
-            if result_data[0][1][settings.LDAP_USER_RDN][0]==username:
+            if result_data[0][1][settings.LDAP_USER_RDN][0] == username:
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
-                return get_or_create_user_with_username(request, username, auth_key)
-            return None           
+                return get_or_create_user_with_username(request, username,
+                                                        auth_key)
+            return None
 
         except ldap.LDAPError:
             logger.error("ldap error")

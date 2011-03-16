@@ -8,7 +8,8 @@ Created on 15/03/2011
 from django.contrib.auth.models import User, AnonymousUser
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 
-def get_or_create_user_with_username(request, username, auth_key):    
+
+def get_or_create_user_with_username(request, username, auth_key):
     isDjangoAccount = True
 
     try:
@@ -27,8 +28,8 @@ def get_or_create_user_with_username(request, username, auth_key):
         # else, create a new user with a random password
         else:
             isDjangoAccount = False
-            
-            if username.find('@') > 0:                
+
+            if username.find('@') > 0:
                 # the username to be used on the User table
                 name = username.partition('@')[0]
             else:
