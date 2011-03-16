@@ -71,6 +71,7 @@ ajax_urls = patterns(
     (r'^experiment_description/(?P<experiment_id>\d+)/$',
      'experiment_description'),
     (r'^experiment_datasets/(?P<experiment_id>\d+)/$', 'experiment_datasets'),
+    (r'^edit_parameters/(?P<dataset_file_id>\d+)/$', 'edit_parameters'),
     )
 
 download_urls = patterns(

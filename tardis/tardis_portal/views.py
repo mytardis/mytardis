@@ -56,7 +56,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
-    ImportParamsForm, EquipmentSearchForm
+    ImportParamsForm, EquipmentSearchForm, create_datafile_edit_form
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -2036,3 +2036,20 @@ def search_equipment(request):
                      getNewSearchDatafileSelectionForm()})
     url = 'tardis_portal/search_equipment.html'
     return HttpResponse(render_response_index(request, url, c))
+
+
+@authz.datafile_access_required
+def edit_parameters(request, dataset_file_id):
+
+    # define form dynamically
+    class DynamicForm(create_datafile_edit_form(dataset_file_id)):
+        pass
+
+    form = DynamicForm()
+
+    print form
+
+    c = Context({'form': form})
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/parameteredit.html', c))
