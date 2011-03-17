@@ -1,37 +1,43 @@
 # encoding: utf-8
 from south.db import db
 from south.v2 import SchemaMigration
+from django.db import models
 
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
-        # Adding field 'Schema.name'
-        db.add_column('tardis_portal_schema', 'name', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True), keep_default=False)
+        # Deleting model 'Equipment'
+        db.delete_table('tardis_portal_equipment')
 
-        # Adding field 'Schema.type'
-        db.add_column('tardis_portal_schema', 'type', self.gf('django.db.models.fields.IntegerField')(default=1), keep_default=False)
-
-        # Adding field 'Schema.subtype'
-        db.add_column('tardis_portal_schema', 'subtype', self.gf('django.db.models.fields.CharField')(max_length=30, null=True, blank=True), keep_default=False)
-
-        # Adding unique constraint on 'ParameterName', fields ['name', 'schema']
-        db.create_unique('tardis_portal_parametername', ['name', 'schema_id'])
+        # Removing M2M table for field dataset on 'Equipment'
+        db.delete_table('tardis_portal_equipment_dataset')
 
     def backwards(self, orm):
 
-        # Removing unique constraint on 'ParameterName', fields ['name', 'schema']
-        db.delete_unique('tardis_portal_parametername', ['name', 'schema_id'])
+        # Adding model 'Equipment'
+        db.create_table('tardis_portal_equipment', (
+            ('decomm', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
+            ('description', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('comm', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
+            ('key', self.gf('django.db.models.fields.CharField')(max_length=30, unique=True)),
+            ('serial', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('url', self.gf('django.db.models.fields.URLField')(max_length=255, null=True, blank=True)),
+            ('make', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
+            ('model', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
+            ('type', self.gf('django.db.models.fields.CharField')(max_length=60, blank=True)),
+        ))
+        db.send_create_signal('tardis_portal', ['Equipment'])
 
-        # Deleting field 'Schema.name'
-        db.delete_column('tardis_portal_schema', 'name')
-
-        # Deleting field 'Schema.type'
-        db.delete_column('tardis_portal_schema', 'type')
-
-        # Deleting field 'Schema.subtype'
-        db.delete_column('tardis_portal_schema', 'subtype')
+        # Adding M2M table for field dataset on 'Equipment'
+        db.create_table('tardis_portal_equipment_dataset', (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('equipment', models.ForeignKey(orm['tardis_portal.equipment'], null=False)),
+            ('dataset', models.ForeignKey(orm['tardis_portal.dataset'], null=False))
+        ))
+        db.create_unique('tardis_portal_equipment_dataset', ['equipment_id', 'dataset_id'])
 
     models = {
         'auth.group': {
@@ -79,6 +85,7 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.datafileparameter': {
             'Meta': {'ordering': "['id']", 'object_name': 'DatafileParameter'},
+            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
             'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
@@ -112,6 +119,7 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.datasetparameter': {
             'Meta': {'ordering': "['id']", 'object_name': 'DatasetParameter'},
+            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
             'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
@@ -123,20 +131,6 @@ class Migration(SchemaMigration):
             'dataset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"})
-        },
-        'tardis_portal.equipment': {
-            'Meta': {'object_name': 'Equipment'},
-            'comm': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'dataset': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['tardis_portal.Dataset']", 'null': 'True', 'blank': 'True'}),
-            'decomm': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
-            'make': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'serial': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'type': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'}),
-            'url': ('django.db.models.fields.URLField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
         'tardis_portal.experiment': {
             'Meta': {'object_name': 'Experiment'},
@@ -170,6 +164,7 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.experimentparameter': {
             'Meta': {'ordering': "['id']", 'object_name': 'ExperimentParameter'},
+            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
             'numerical_value': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
@@ -189,12 +184,12 @@ class Migration(SchemaMigration):
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
         'tardis_portal.parametername': {
-            'Meta': {'unique_together': "(('schema', 'name'),)", 'object_name': 'ParameterName'},
+            'Meta': {'object_name': 'ParameterName'},
             'choices': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
             'comparison_type': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'data_type': ('django.db.models.fields.IntegerField', [], {'default': '2'}),
             'full_name': ('django.db.models.fields.CharField', [], {'max_length': '60'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_numeric': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_searchable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '60'}),
             'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
@@ -203,10 +198,7 @@ class Migration(SchemaMigration):
         'tardis_portal.schema': {
             'Meta': {'object_name': 'Schema'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
-            'namespace': ('django.db.models.fields.URLField', [], {'max_length': '400'}),
-            'subtype': ('django.db.models.fields.CharField', [], {'max_length': '30', 'null': 'True', 'blank': 'True'}),
-            'type': ('django.db.models.fields.IntegerField', [], {'default': '1'})
+            'namespace': ('django.db.models.fields.URLField', [], {'max_length': '400'})
         },
         'tardis_portal.userauthentication': {
             'Meta': {'object_name': 'UserAuthentication'},

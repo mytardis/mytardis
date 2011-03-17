@@ -1,6 +1,7 @@
+from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext, Context
-
 from django.http import HttpResponseForbidden, HttpResponseNotFound, \
     HttpResponseServerError
 
@@ -19,6 +20,43 @@ def render_response_index(request, *args, **kwargs):
     kwargs['context_instance']['is_authenticated'] = is_authenticated
     kwargs['context_instance']['is_superuser'] = is_superuser
     kwargs['context_instance']['username'] = email
+
+    if request.mobile:
+        template_path = args[0]
+        split = template_path.partition('/')
+        args = (split[0] + '/mobile/' + split[2], ) + args[1:]
+
+    return render_to_response(*args, **kwargs)
+
+
+def render_response_search(request, *args, **kwargs):
+
+    from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
+
+    is_authenticated = request.user.is_authenticated()
+    if is_authenticated:
+        is_superuser = request.user.is_superuser
+        email = request.user.email
+    else:
+        is_superuser = False
+        email = ''
+
+    links = {}
+    for app in settings.INSTALLED_APPS:
+        if app.startswith('tardis.apps.'):
+            view = '%s.views.search' % app
+            try:
+                links[app.split('.')[2]] = reverse(view)
+            except:
+                pass
+
+    kwargs['context_instance'] = RequestContext(request)
+    kwargs['context_instance']['is_authenticated'] = is_authenticated
+    kwargs['context_instance']['is_superuser'] = is_superuser
+    kwargs['context_instance']['username'] = email
+    kwargs['context_instance']['searchDatafileSelectionForm'] = \
+        getNewSearchDatafileSelectionForm()
+    kwargs['context_instance']['links'] = links
 
     if request.mobile:
         template_path = args[0]

@@ -1,5 +1,3 @@
-{% load parametertypecheck %}
-
 <div id="experiment_description">
 
   <p>
@@ -43,17 +41,11 @@
 	  <ul>
 	    {% for parameterset in experiment.experimentparameterset_set.all %}
               <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
-
 	      {% for parameter in parameterset.experimentparameter_set.all %}
-                <li><strong>{{ parameter.name.full_name }}: </strong>
-		{% if parameter.name.is_numeric %}
-                  {{ parameter.numerical_value }} {{ parameter.name.units }}
-                {% else %}
-                  {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
-                {% endif %}
-		</li>
+                <li><strong>{{ parameter.name.full_name }}: </strong>{{ parameter.get }}</li>
               {% endfor %}
-	      <br/><br/>
+	      <br/>
+	      <br/>
             {% endfor %}
 	  </ul>
 	</div>

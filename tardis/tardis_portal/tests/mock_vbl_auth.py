@@ -10,6 +10,7 @@ from tardis.tardis_portal.auth.vbl_auth import auth_key, EPN_LIST
 auth_key = auth_key
 EPN_LIST = EPN_LIST
 
+
 class MockBackend():
     """
     Authenticate against the VBL SOAP Webservice. It is assumed that the
