@@ -26,8 +26,6 @@ setup(
         'suds',
         'python-ldap',
         'python-magic',
-        'psycopg2',
-        'python-memcached',
         'south',
         ],
 )
