@@ -1,5 +1,141 @@
 {% extends "tardis_portal/portal_template.html" %}
 
+{% block script %}
+
+{% include "tardis_portal/javascript_libraries.html" %}
+
+<script type="text/javascript" src="/site_media/js/jqmodal.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+  
+  // select + reference "triggering element" -- will pass to $.jqm()
+  var triggers = $('a.ex3bTrigger')[0];
+  
+  // NOTE; we could have used document.getElementById(), or selected
+  //  multiple elemets with $(..selector..) and passed the trigger
+  //  as a jQuery object. OR, just include the string '#ex3btrigger' 
+  //  as the trigger parameter (as typically demonstrated).
+  
+  //  NOTE; we supply a target for the ajax return. This allows us
+  //   to keep the structure of the alert window. An element can 
+  //   also be passed (see the documentation) as target.
+  
+  $('#ex3b').jqm({
+    trigger: triggers,
+    ajax: 'examples/3b.html',
+    target: 'div.jqmAlertContent',
+    overlay: 0
+    });
+  
+  // Close Button Highlighting. IE doesn't support :hover. Surprise?
+  if($.browser.msie) {
+  $('div.jqmAlert .jqmClose')
+  .hover(
+    function(){ $(this).addClass('jqmCloseHover'); }, 
+    function(){ $(this).removeClass('jqmCloseHover'); });
+  }
+});
+</script>
+
+<style type="text/css">
+/* jqModal alert CSS courtesy of;
+   Alexandre Plennevaux <alexandre@pixeline.be>,
+   Brice Burgess <bhb@iceburg.net> */
+
+
+div.jqmAlert { /* contains + positions the alert window */
+  display: none;
+  
+  position: fixed;
+  top: 17%;
+  width: 100%;
+}
+    
+/* Fixed posistioning emulation for IE6
+     Star selector used to hide definition from browsers other than IE6
+     For valid CSS, use a conditional include instead */
+* html div.jqmAlert {
+     position: absolute;
+     top: expression((document.documentElement.scrollTop || document.body.scrollTop) + Math.round(17 * (document.documentElement.offsetHeight || document.body.clientHeight) / 100) + 'px');
+}
+
+div.jqmAlertWindow {
+  height:auto;
+  width: auto;
+  margin: auto;
+  
+  max-width:400px;
+  padding: 0 10px 10px;
+  
+  background:#111;
+  border:1px dotted #FFF;
+}
+
+.jqmAlertTitle{
+  margin:5px 2px;
+  height:20px;
+  color:#FFF;
+  background:#000;
+}
+.jqmAlertTitle h1{
+  margin:5px 2px;
+  padding-left:5px;
+  padding:0;
+  font-size:14px;
+  text-transform:capitalize;
+  letter-spacing:-1px;
+  font-weight:bold;
+  color:#FFF;
+
+  float:left;
+  height:20px;
+}
+
+div.jqmAlert .jqmClose em{display:none;}
+div.jqmAlert .jqmClose {
+  width:20px;
+  height:20px;
+  display:block;
+  float:right;
+  clear:right;
+  background:transparent url(alert/close_icon_double.png) 0 0 no-repeat;
+}
+
+div.jqmAlert a.jqmClose:hover,div.jqmAlert a.jqmCloseHover{ background-position: 0 -20px; }
+
+div.jqmAlertContent{
+  border-top:px;
+  color:#FFF;
+  font:11px/14pt arial;
+  padding:5px 20px 5px;
+  margin:5px;
+  border:1px dotted #111;
+  letter-spacing:0px;
+  background:#111 url(alert/darkgrid.png);
+}
+
+/*Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°Â°
+  clearing a float without additional markup
+   http://www.positioniseverything.net/easyclearing.html */
+
+.clearfix:after {
+    content: "."; 
+    display: block; 
+    height: 0; 
+    clear: both; 
+    visibility: hidden;
+}
+
+.clearfix {display: inline-block;}
+
+/* Hides from IE-mac \*/
+* html .clearfix {height: 1%;}
+.clearfix {display: block;}
+/* End hide from IE-mac */
+</style>
+{% endblock script %}
+
 {% block content %}
 
 <div id="content">
@@ -39,6 +175,23 @@
 	contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate
 	Professor Ashley Buckle</a>.
       </p>
+	  <p>
+		<a href="#" class="ex3bTrigger">view</a> (alert)
+		
+	  	<div class="jqmAlert" id="ex3b">
+
+		<div id="ex3b" class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Did you know?</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent">
+		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+		  </div>
+		</div>
+
+		</div>
+	  </p>
     </div>
   </div>
 </div>

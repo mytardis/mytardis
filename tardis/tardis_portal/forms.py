@@ -752,17 +752,22 @@ def create_datafile_edit_form(
         fields = {}
 
         for key, value in request.POST.iteritems():
+            x = 1
+
+            stripped_key = key.rpartition('__')[0]
+
             parameter_name = ParameterName.objects.get(
                 schema=parameterset.schema,
-                name=key)
+                name=stripped_key)
 
+            # if not valid, spit back as exact
             if parameter_name.is_numeric:
-                fields[parameter_name.name] = \
+                fields[key] = \
                 forms.DecimalField(label=parameter_name.full_name,\
                     required=False,
                     initial=value)
             else:
-                fields[parameter_name.name] = \
+                fields[key] = \
                 forms.CharField(label=parameter_name.full_name,\
                     max_length=255, required=False,
                     initial=value)
@@ -773,12 +778,21 @@ def create_datafile_edit_form(
 
         for dfp in DatafileParameter.objects.filter(
             parameterset=parameterset):
+
+            x = 1
+
+            form_id = dfp.name.name + "__" + str(x)
+
+            while form_id in fields:
+                x = x + 1
+                form_id = dfp.name.name + "__" + str(x)
+
             if dfp.name.is_numeric:
-                fields[dfp.name.name] = \
+                fields[form_id] = \
                 forms.DecimalField(label=dfp.name.full_name,\
                 required=False, initial=dfp.numerical_value)
             else:
-                fields[dfp.name.name] = \
+                fields[form_id] = \
                 forms.CharField(label=dfp.name.full_name,\
                 max_length=255, required=False, initial=dfp.string_value)
 
