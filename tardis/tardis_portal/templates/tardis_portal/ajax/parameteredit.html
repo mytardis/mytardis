@@ -1,5 +1,49 @@
+{% include "tardis_portal/javascript_libraries.html" %}
+
+<script type="text/javascript">	
+	
+	function get_new_parameter_name(name)
+	{
+		new_name = name
+		
+		i = 1
+		while($("input[name=" + new_name + "__" + i + "]").length == 1)
+		{
+			i = i + 1
+		}
+		return new_name + "__" + i
+	}
+
+	function get_form_input_html(label, name)
+	{
+		return '<p><label for="' + name + '">' + label + '</label> <input type="text" name="' + name + '" value="" id="' + name + '" /></p> '
+	}
+	
+	$('#add_new_parameter').live('click', function(){		
+		
+		$("#parameternameselect option:selected").each(function () {
+			
+			new_element_name = get_new_parameter_name($(this).val())
+			
+			$("#parameternameselect").prev().append(get_form_input_html($(this).text(), new_element_name))
+		});
+	});	
+	
+</script>
+
 <form action='.' method='post'>
   {{ form.as_p }}
-<p><label for="id_imageSizeY">Image Size Y:</label> <input type="text" name="imageSizeY" value="" id="id_imageSizeY" /></p> 
-  <input type="submit" value="submit" />
+{# <p><label for="id_imageSizeY">Image Size Y:</label> <input type="text" name="imageSizeY__103" value="" id="id_imageSizeY" /></p>  #}
+
+	<select id="parameternameselect">
+	{% for pn in parameternames %}
+		
+		<option value="{{pn.name}}">{{pn.full_name}}</option>
+	
+	{% endfor %}
+	</select>
+	
+	<a id="add_new_parameter">Add Metadata Parameter</a>
+  
+	<p><input type="submit" value="submit" /></p>
 </form>

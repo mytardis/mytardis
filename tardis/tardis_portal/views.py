@@ -2037,8 +2037,12 @@ def search_equipment(request):
     url = 'tardis_portal/search_equipment.html'
     return HttpResponse(render_response_index(request, url, c))
 
-
+#only for datafile right now
 def edit_parameters(request, parameterset_id):
+
+    parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=parameterset.schema.namespace)
 
     if request.method == 'POST':
 
@@ -2053,7 +2057,10 @@ def edit_parameters(request, parameterset_id):
 
     print form
 
-    c = Context({'form': form})
+    c = Context({
+        'form': form,
+        'parameternames': parameternames,
+    })
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteredit.html', c))
