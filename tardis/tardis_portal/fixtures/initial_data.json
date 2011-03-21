@@ -1540,7 +1540,7 @@
             "is_searchable": false, 
             "name": "previewImage", 
             "schema": 4, 
-            "units": ""
+            "units": "image"
         }, 
         "model": "tardis_portal.parametername", 
         "pk": 105
