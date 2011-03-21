@@ -26,16 +26,6 @@
 		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>'
 	}
 
-	$('.add_new_parameter').live('click', function(){		
-
-		$("#parameternameselect option:selected").each(function () {
-
-			new_element_name = get_new_parameter_name($(this).val())
-
-			$("#parameternameselect").before(get_form_input_html($(this).text(), new_element_name))
-		});
-	});	
-
 </script>
 
   <script type="text/javascript">
