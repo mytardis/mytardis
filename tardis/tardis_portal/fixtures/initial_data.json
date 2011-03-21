@@ -1148,7 +1148,7 @@
             "is_searchable": false, 
             "name": "frtype", 
             "schema": 5, 
-            "units": ""
+            "units": "/equipment/"
         }, 
         "model": "tardis_portal.parametername", 
         "pk": 77
