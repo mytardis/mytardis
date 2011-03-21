@@ -1,49 +1,45 @@
-{% include "tardis_portal/javascript_libraries.html" %}
+{# {% include "tardis_portal/javascript_libraries.html" %} #}
 
-<script type="text/javascript">	
+{% if success %}
+	Parameters saved successfully.
 	
-	function get_new_parameter_name(name)
-	{
-		new_name = name
+{% else %}
+	<p><strong>Schema: </strong>{{schema}}</strong></p>
+	<form id="edit_form_{{type}}_{{parameterset_id}}" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>
+		{{ form.non_field_errors }}
+	    {% for field in form %}
+	        <div class="fieldWrapper">
+	            {{ field.errors }}
+	            {{ field.label_tag }}:
+				<br/>{{ field }}
+	        </div>
+	    {% endfor %}
+		<span/>
 		
-		i = 1
-		while($("input[name=" + new_name + "__" + i + "]").length == 1)
-		{
-			i = i + 1
-		}
-		return new_name + "__" + i
-	}
+		<select id="parameternameselect">
+		{% for pn in parameternames %}
+		
+			<option value="{{pn.name}}">{{pn.full_name}}</option>
+	
+		{% endfor %}
+		</select>
 
-	function get_form_input_html(label, name)
-	{
-		return '<p><label for="' + name + '">' + label + '</label> <input type="text" name="' + name + '" value="" id="' + name + '" /></p> '
-	}
-	
-	$('#add_new_parameter').live('click', function(){		
-		
-		$("#parameternameselect option:selected").each(function () {
-			
-			new_element_name = get_new_parameter_name($(this).val())
-			
-			$("#parameternameselect").prev().append(get_form_input_html($(this).text(), new_element_name))
+		<a class="add_new_parameter">Add Metadata Parameter</a>
+  		
+		<p><em>Leave a parameter blank to remove</em></p>
+		<p><input id="submit" type="submit" value="submit" /></p>
+	</form>
+	<script type="text/javascript">
+		$('#edit_form_{{type}}_{{parameterset_id}}').submit(function(e) {
+			e.preventDefault();
+
+			$.post("/ajax/edit_{{type}}_parameters/{{parameterset_id}}/", $("#edit_form_{{type}}_{{parameterset_id}}").serialize(),
+			      function( data ) {
+			          $("#jqmAlertContent{{type}}{{parameterset_id}}").html( data );
+						return false;
+			      });
+
+			return false;
 		});
-	});	
-	
-</script>
-
-<form action='.' method='post'>
-  {{ form.as_p }}
-{# <p><label for="id_imageSizeY">Image Size Y:</label> <input type="text" name="imageSizeY__103" value="" id="id_imageSizeY" /></p>  #}
-
-	<select id="parameternameselect">
-	{% for pn in parameternames %}
-		
-		<option value="{{pn.name}}">{{pn.full_name}}</option>
-	
-	{% endfor %}
-	</select>
-	
-	<a id="add_new_parameter">Add Metadata Parameter</a>
-  
-	<p><input type="submit" value="submit" /></p>
-</form>
+	</script>
+{% endif %}

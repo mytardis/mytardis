@@ -57,11 +57,11 @@ from registration.models import RegistrationProfile
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span
-from tardis.tardis_portal.models import UserProfile, UserAuthentication,\
-    DatafileParameterSet, DatafileParameter
+from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 class LoginForm(AuthenticationForm):
     authMethod = forms.CharField()
@@ -740,14 +740,12 @@ def createSearchDatafileSelectionForm():
 
 
 def create_datafile_edit_form(
-    parameterset_id,
+    parameterset,
     request=None):
 
     from tardis.tardis_portal.models import ParameterName
 
-    parameterset = DatafileParameterSet.objects.get(
-        id=parameterset_id)
-
+    # if POST data to save
     if request:
         fields = {}
 
@@ -760,15 +758,19 @@ def create_datafile_edit_form(
                 schema=parameterset.schema,
                 name=stripped_key)
 
+            units = ""
+            if parameter_name.units:
+                units = " (" + parameter_name.units + ")"
+
             # if not valid, spit back as exact
             if parameter_name.is_numeric:
                 fields[key] = \
-                forms.DecimalField(label=parameter_name.full_name,\
+                forms.DecimalField(label=parameter_name.full_name + units,
                     required=False,
                     initial=value)
             else:
                 fields[key] = \
-                forms.CharField(label=parameter_name.full_name,\
+                forms.CharField(label=parameter_name.full_name + units,
                     max_length=255, required=False,
                     initial=value)
 
@@ -776,8 +778,9 @@ def create_datafile_edit_form(
     else:
         fields = {}
 
-        for dfp in DatafileParameter.objects.filter(
-            parameterset=parameterset):
+        psm = ParameterSetManager(parameterset=parameterset)
+
+        for dfp in psm.parameters:
 
             x = 1
 
@@ -787,13 +790,29 @@ def create_datafile_edit_form(
                 x = x + 1
                 form_id = dfp.name.name + "__" + str(x)
 
+            units = ""
+            if dfp.name.units:
+                units = " (" + dfp.name.units + ")"
+
             if dfp.name.is_numeric:
                 fields[form_id] = \
-                forms.DecimalField(label=dfp.name.full_name,\
+                forms.DecimalField(label=dfp.name.full_name + units,
                 required=False, initial=dfp.numerical_value)
             else:
                 fields[form_id] = \
-                forms.CharField(label=dfp.name.full_name,\
+                forms.CharField(label=dfp.name.full_name + units,
                 max_length=255, required=False, initial=dfp.string_value)
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+
+def save_datafile_edit_form(parameterset, request):
+
+    psm = ParameterSetManager(parameterset=parameterset)
+
+    psm.delete_all_params()
+
+    for key, value in request.POST.iteritems():
+        if value:
+            stripped_key = key.rpartition('__')[0]
+
+            psm.new_param(stripped_key, value)

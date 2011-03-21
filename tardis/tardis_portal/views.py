@@ -56,7 +56,8 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
-    ImportParamsForm, EquipmentSearchForm, create_datafile_edit_form
+    ImportParamsForm, EquipmentSearchForm, create_datafile_edit_form, \
+    save_datafile_edit_form
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -64,7 +65,7 @@ from tardis.tardis_portal.staging import add_datafile_to_dataset,\
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
-    Dataset, Equipment
+    Dataset, Equipment, ExperimentParameterSet, DatasetParameterSet
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2037,29 +2038,54 @@ def search_equipment(request):
     url = 'tardis_portal/search_equipment.html'
     return HttpResponse(render_response_index(request, url, c))
 
-#only for datafile right now
-def edit_parameters(request, parameterset_id):
+def edit_experiment_par(request, parameterset_id):
+    parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
 
+    return edit_parameters(request, parameterset, otype="experiment")
+
+def edit_dataset_par(request, parameterset_id):
+    parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
+
+    return edit_parameters(request, parameterset, otype="dataset")
+
+def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
+
+    return edit_parameters(request, parameterset, otype="datafile")
+
+def edit_parameters(request, parameterset, otype):
+
     parameternames = ParameterName.objects.filter(
         schema__namespace=parameterset.schema.namespace)
 
+    success = False
+
     if request.method == 'POST':
 
-        class DynamicForm(create_datafile_edit_form(parameterset_id, request=request)):
+        class DynamicForm(create_datafile_edit_form(parameterset, request=request)):
             pass
+
+        form = DynamicForm(request.POST)
+
+        if form.is_valid():
+            save_datafile_edit_form(parameterset, request)
+
+            success = True
+
     else:
 
-        class DynamicForm(create_datafile_edit_form(parameterset_id)):
+        class DynamicForm(create_datafile_edit_form(parameterset)):
             pass
 
-    form = DynamicForm()
-
-    print form
+        form = DynamicForm()
 
     c = Context({
+        'schema': parameterset.schema.namespace,
         'form': form,
         'parameternames': parameternames,
+        'type': otype,
+        'success': success,
+        'parameterset_id': parameterset.id,
     })
 
     return HttpResponse(render_response_index(request,
