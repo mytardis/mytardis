@@ -176,6 +176,10 @@ class ParameterSetManager():
         for param in params:
             param.delete()
 
+    def delete_all_params(self):
+        for param in self.parameters:
+            param.delete()
+
     def _get_create_parname(self, parname,
                             fullparname=None, example_value=None):
         try:
