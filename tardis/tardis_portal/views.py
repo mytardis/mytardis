@@ -2038,20 +2038,24 @@ def search_equipment(request):
     url = 'tardis_portal/search_equipment.html'
     return HttpResponse(render_response_index(request, url, c))
 
+
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
 
     return edit_parameters(request, parameterset, otype="experiment")
+
 
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
 
     return edit_parameters(request, parameterset, otype="dataset")
 
+
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
 
     return edit_parameters(request, parameterset, otype="datafile")
+
 
 def edit_parameters(request, parameterset, otype):
 
@@ -2062,7 +2066,8 @@ def edit_parameters(request, parameterset, otype):
 
     if request.method == 'POST':
 
-        class DynamicForm(create_datafile_edit_form(parameterset, request=request)):
+        class DynamicForm(create_datafile_edit_form(
+            parameterset, request=request)):
             pass
 
         form = DynamicForm(request.POST)
@@ -2074,7 +2079,8 @@ def edit_parameters(request, parameterset, otype):
 
     else:
 
-        class DynamicForm(create_datafile_edit_form(parameterset)):
+        class DynamicForm(create_datafile_edit_form(
+            parameterset)):
             pass
 
         form = DynamicForm()
