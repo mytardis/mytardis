@@ -16,7 +16,7 @@
 	    {% endfor %}
 		<span/>
 		
-		<select id="parameternameselect">
+		<select id="parameternameselect_{{type}}_{{parameterset_id}}">
 		{% for pn in parameternames %}
 		
 			<option value="{{pn.name}}">{{pn.full_name}}</option>
@@ -24,12 +24,22 @@
 		{% endfor %}
 		</select>
 
-		<a class="add_new_parameter">Add Metadata Parameter</a>
+		<a id="add_new_parameter_{{type}}_{{parameterset_id}}">Add Metadata Parameter</a>
   		
 		<p><em>Leave a parameter blank to remove</em></p>
 		<p><input id="submit" type="submit" value="submit" /></p>
-	</form>
+	</form>	
 	<script type="text/javascript">
+	$('#add_new_parameter_{{type}}_{{parameterset_id}}').click(function(){		
+
+		$("#parameternameselect_{{type}}_{{parameterset_id}} option:selected").each(function () {
+
+			new_element_name = get_new_parameter_name($(this).val())
+
+			$("#parameternameselect_{{type}}_{{parameterset_id}}").before(get_form_input_html($(this).text(), new_element_name))
+		});
+	});
+		
 		$('#edit_form_{{type}}_{{parameterset_id}}').submit(function(e) {
 			e.preventDefault();
 
