@@ -747,9 +747,11 @@ def create_datafile_edit_form(
 
     # if POST data to save
     if request:
-        fields = {}
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
 
-        for key, value in request.POST.iteritems():
+        for key, value in sorted(request.POST.iteritems()):
+
             x = 1
 
             stripped_key = key.replace('_s47_', '/')
@@ -777,7 +779,8 @@ def create_datafile_edit_form(
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
     else:
-        fields = {}
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
 
         psm = ParameterSetManager(parameterset=parameterset)
 
@@ -806,7 +809,8 @@ def create_datafile_edit_form(
                 forms.CharField(label=dfp.name.full_name + units,
                 max_length=255, required=False, initial=dfp.string_value)
 
-        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+        return type('DynamicForm', (forms.BaseForm, ),
+            {'base_fields': fields})
 
 
 def save_datafile_edit_form(parameterset, request):
@@ -815,7 +819,7 @@ def save_datafile_edit_form(parameterset, request):
 
     psm.delete_all_params()
 
-    for key, value in request.POST.iteritems():
+    for key, value in sorted(request.POST.iteritems()):
         if value:
             stripped_key = key.replace('_s47_', '/')
             stripped_key = stripped_key.rpartition('__')[0]

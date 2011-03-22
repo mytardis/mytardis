@@ -2063,6 +2063,7 @@ def edit_parameters(request, parameterset, otype):
         schema__namespace=parameterset.schema.namespace)
 
     success = False
+    valid = True
 
     if request.method == 'POST':
 
@@ -2076,6 +2077,8 @@ def edit_parameters(request, parameterset, otype):
             save_datafile_edit_form(parameterset, request)
 
             success = True
+        else:
+            valid = False
 
     else:
 
@@ -2092,6 +2095,7 @@ def edit_parameters(request, parameterset, otype):
         'type': otype,
         'success': success,
         'parameterset_id': parameterset.id,
+        'valid': valid,
     })
 
     return HttpResponse(render_response_index(request,

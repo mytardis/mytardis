@@ -35,19 +35,19 @@ class ParameterSetManager():
 
             if type(self.parameterset).__name__ == "DatafileParameterSet":
                 self.parameters = DatafileParameter.objects.filter(\
-                   parameterset=self.parameterset)
+                   parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatafileParameter
 
             elif type(self.parameterset).__name__ == "DatasetParameterSet":
                 self.parameters = DatasetParameter.objects.filter(\
-                   parameterset=self.parameterset)
+                   parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatasetParameter
 
             elif type(self.parameterset).__name__ == "ExperimentParameterSet":
                 self.parameters = ExperimentParameter.objects.filter(\
-                   parameterset=self.parameterset)
+                   parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = ExperimentParameter
 

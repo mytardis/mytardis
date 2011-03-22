@@ -28,7 +28,11 @@
 		<a id="add_new_parameter_{{type}}_{{parameterset_id}}">Add Metadata Parameter</a>
   		
 		<p><em>Leave a parameter blank to remove</em></p>
+		{% if not valid %}
+			<p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
+		{% endif %}		
 		<p><input id="submit" type="submit" value="submit" /></p>
+		
 	</form>	
 	<script type="text/javascript">
 	$('#add_new_parameter_{{type}}_{{parameterset_id}}').click(function(){		
