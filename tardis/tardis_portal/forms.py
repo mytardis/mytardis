@@ -825,3 +825,90 @@ def save_datafile_edit_form(parameterset, request):
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
+
+
+def create_datafile_add_form(
+    schema, parentObject,
+    request=None):
+
+    from tardis.tardis_portal.models import ParameterName
+
+    # if POST data to save
+    if request:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+
+        for key, value in sorted(request.POST.iteritems()):
+
+            x = 1
+
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            parameter_name = ParameterName.objects.get(
+                schema=schema,
+                name=stripped_key)
+
+            units = ""
+            if parameter_name.units:
+                units = " (" + parameter_name.units + ")"
+
+            # if not valid, spit back as exact
+            if parameter_name.is_numeric:
+                fields[key] = \
+                forms.DecimalField(label=parameter_name.full_name + units,
+                    required=False,
+                    initial=value)
+            else:
+                fields[key] = \
+                forms.CharField(label=parameter_name.full_name + units,
+                    max_length=255, required=False,
+                    initial=value)
+
+        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+    else:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+
+        parameternames = ParameterName.objects.filter(
+            schema__namespace=schema.namespace)
+
+        for dfp in parameternames:
+
+            x = 1
+
+            form_id = dfp.name + "__" + str(x)
+
+            while form_id in fields:
+                x = x + 1
+                form_id = dfp.name + "__" + str(x)
+
+            units = ""
+            if dfp.units:
+                units = " (" + dfp.units + ")"
+
+            form_id = form_id.replace('/', '_s47_')
+
+            if dfp.is_numeric:
+                fields[form_id] = \
+                forms.DecimalField(label=dfp.full_name + units,
+                required=False)
+            else:
+                fields[form_id] = \
+                forms.CharField(label=dfp.full_name + units,
+                max_length=255, required=False)
+
+        return type('DynamicForm', (forms.BaseForm, ),
+            {'base_fields': fields})
+
+
+def save_datafile_add_form(schema, parentObject, request):
+
+    psm = ParameterSetManager(schema=schema, parentObject=parentObject)
+
+    for key, value in sorted(request.POST.iteritems()):
+        if value:
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            psm.new_param(stripped_key, value)

@@ -35,7 +35,7 @@
 		
 	</form>	
 	<script type="text/javascript">
-	$('#add_new_parameter_{{type}}_{{parameterset_id}}').click(function(){		
+	$('#add_new_parameter_{{type}}_{{parameterset_id}}').live('click', function(){		
 
 		$("#parameternameselect_{{type}}_{{parameterset_id}} option:selected").each(function () {
 

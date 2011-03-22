@@ -6,23 +6,49 @@
 	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
 	// metadata text / ajax toggle
+	
+	$(document).ready(function(){
+
+		$(".experiment_metadata_toggle").live('click', function(e){
+			e.preventDefault();
+
+			if($(this).text() == "[Show]")
+			{
+
+				$(this).text("[Hide]");
+				var href= $(this).attr("href");
+
+		    	$(this).next().html(loadingHTML + "</br>");
+		        $(this).next().load(href);
+				$(this).next().show();
+			}
+			else 
+			{
+				$(this).text("[Show]");
+				var href= $(this).attr("href");
+				$(this).next().hide();
+			}
+			return false;
+		});
+	});
+	
 
     // experiment md
-    $(".experiment_metadata_toggle").toggle(function(){
-	$(this).text("[Hide]");
-	var href= $(this).attr("href");
-
-    	$(this).next().html(loadingHTML + "</br>");
-        $(this).next().load(href, function() {
-          $(this).show();
-        });
-
-    },function(){
-	$(this).text("[Show]");
-	var href= $(this).attr("href");
-
-	$(this).next().hide();
-    });	
+	//     $(".experiment_metadata_toggle").toggle(function(){
+	// $(this).text("[Hide]");
+	// var href= $(this).attr("href");
+	// 
+	//     	$(this).next().html(loadingHTML + "</br>");
+	//         $(this).next().load(href, function() {
+	//           $(this).show();
+	//         });
+	// 
+	//     },function(){
+	// $(this).text("[Show]");
+	// var href= $(this).attr("href");
+	// 
+	// $(this).next().hide();
+	//     });	
 </script>
 
 <div id="experiment_description">
@@ -64,6 +90,31 @@
     {% if experiment.experimentparameterset_set.count %}
 	<div class="experiment_md_container">
 	<strong>Experiment Metadata:</strong>
+	
+	<a href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
+	 class="jqModalExpA{{experiment.id}}">[Add]</a>
+	<script type="text/javascript">
+	$('#jqmAlertExpA{{experiment.id}}').die();
+	$('#jqmAlertExpA{{experiment.id}}').jqm({
+	  trigger: '.jqModalExpA{{experiment.id}}',
+	  ajax: '@href',
+	  target: '#jqmAlertContentexperimentA{{experiment.id}}',
+	  overlay: 0,
+	  });
+	</script>
+	<div class="jqmAlert" id="jqmAlertExpA{{experiment.id}}">
+
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
+		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+		  </div>
+		</div>
+	</div>	
+	
 	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
 	<span class="experiment_metadata"></span>
 	</div>
