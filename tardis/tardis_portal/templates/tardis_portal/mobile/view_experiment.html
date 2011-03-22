@@ -36,7 +36,6 @@
 <script type="text/javascript">
 	$(document).ready(function(e) {	
 		
-		
 		$('.filterform').live('submit', function(e) {
 				e.preventDefault();
 
@@ -141,16 +140,16 @@
 	// metadata text / ajax toggle
 
 	// dataset md
-	 $(".dataset_metadata_toggle").toggle(function(){
-	   $(this).text("Hide Dataset Metadata");
-	    var href= $(this).attr("href");
-		$(href).show();
-	
-	 },function(){
-	   $(this).text("Show Dataset Metadata");
-	    var href= $(this).attr("href");
-		$(href).hide();		
-	 });
+	 // $(".dataset_metadata_toggle").toggle(function(){
+	 //   $(this).text("Hide Dataset Metadata");
+	 //    var href= $(this).attr("href");
+	 // 		$(href).show();
+	 // 	
+	 // },function(){
+	 //   $(this).text("Show Dataset Metadata");
+	 //    var href= $(this).attr("href");
+	 // 		$(href).hide();		
+	 // });
 	
 	// datafile list
 	 $(".datafile_list_toggle").toggle(function(e){

@@ -1,8 +1,11 @@
 {% load parametertypecheck %}
+{% if not dataset.datasetparameterset_set.all %}
+	There is no metadata for this dataset.
+{% endif %}
 <ul>
   {% for parameterset in dataset.datasetparameterset_set.all %}
 	<p><a href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}"
-	 class="jqModalDs{{parameterset.id}}">[Edit Parameters]</a></p>
+	 class="jqModalDs{{parameterset.id}}">[Edit Metadata]</a></p>
 
      <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
 

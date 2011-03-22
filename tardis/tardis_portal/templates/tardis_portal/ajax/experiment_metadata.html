@@ -1,11 +1,14 @@
 {% load parametertypecheck %}
+{% if not experiment.experimentparameterset_set.all %}
+	There is no metadata for this experiment.
+{% endif %}
 <div class="dataset_metadata">
   <ul>
     {% for parameterset in experiment.experimentparameterset_set.all %}
           <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
 
 		<p><a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
-		 class="jqModalExp{{parameterset.id}}">[Edit Parameters]</a></p>
+		 class="jqModalExp{{parameterset.id}}">[Edit Metadata]</a></p>
 
       {% for parameter in parameterset.experimentparameter_set.all %}
             <li><strong>{{ parameter.name.full_name }}: </strong>

@@ -1,9 +1,12 @@
 {% load parametertypecheck %}
+{% if not parametersets %}
+	There is no metadata for this datafile.
+{% endif %}
 {% for parameterset in parametersets %}
 	<div class="datafile_parameters">
 	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
 	<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
-	 class="jqModalDf{{parameterset.id}}">[Edit Parameters]</a></p>
+	 class="jqModalDf{{parameterset.id}}">[Edit Metadata]</a></p>
     {% autoescape off %}
 	{% for parameter in parameterset.datafileparameter_set.all %}
 		<li><strong>{{ parameter.name.full_name }}: </strong>

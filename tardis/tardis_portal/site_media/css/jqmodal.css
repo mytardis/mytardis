@@ -9,10 +9,10 @@
     
     position: fixed;
     top: 17%;
-    left: 50%;
+    left: 30%;
     
     margin-left: -300px;
-    width: 600px;
+    width: 500px;
     
     background-color: #EEE;
     color: #333;
@@ -57,7 +57,7 @@ div.jqmAlertWindow {
   width: auto;
   margin: auto;
   
-  max-width:500px;
+  max-width:650px;
   padding: 0 10px 10px;
   
   background:#111;

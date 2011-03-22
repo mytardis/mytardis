@@ -57,7 +57,8 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, EquipmentSearchForm, create_datafile_edit_form, \
-    save_datafile_edit_form
+    save_datafile_edit_form, create_datafile_add_form,\
+    save_datafile_add_form
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -2108,3 +2109,73 @@ def edit_parameters(request, parameterset, otype):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteredit.html', c))
+
+def add_par(request, parentObject, otype):
+
+    all_schema = Schema.objects.all()
+
+    if 'schema_id' in request.GET:
+        schema_id = request.GET['schema_id']
+    else:
+        schema_id = all_schema[0].id
+
+    schema = Schema.objects.get(id=schema_id)
+
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=schema.namespace)
+
+    success = False
+    valid = True
+
+    if request.method == 'POST':
+
+        class DynamicForm(create_datafile_add_form(
+            schema, parentObject, request=request)):
+            pass
+
+        form = DynamicForm(request.POST)
+
+        if form.is_valid():
+            save_datafile_add_form(schema, parentObject, request)
+
+            success = True
+        else:
+            valid = False
+
+    else:
+
+        class DynamicForm(create_datafile_add_form(
+            schema, parentObject)):
+            pass
+
+        form = DynamicForm()
+
+    c = Context({
+        'schema': schema,
+        'form': form,
+        'parameternames': parameternames,
+        'type': otype,
+        'success': success,
+        'valid': valid,
+        'parentObject': parentObject,
+        'all_schema': all_schema,
+        'schema_id': schema_id,
+    })
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/parameteradd.html', c))
+
+def add_datafile_par(request, datafile_id):
+    parentObject = Dataset_File.objects.get(id=datafile_id)
+
+    return add_par(request, parentObject, otype="datafile")
+
+def add_dataset_par(request, dataset_id):
+    parentObject = Dataset.objects.get(id=dataset_id)
+
+    return add_par(request, parentObject, otype="dataset")
+
+def add_experiment_par(request, experiment_id):
+    parentObject = Experiment.objects.get(id=experiment_id)
+
+    return add_par(request, parentObject, otype="experiment")
