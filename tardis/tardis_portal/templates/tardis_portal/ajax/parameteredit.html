@@ -1,4 +1,5 @@
 {# {% include "tardis_portal/javascript_libraries.html" %} #}
+{% load formfieldfilters %}
 
 {% if success %}
 	Parameters saved successfully.
@@ -19,7 +20,7 @@
 		<select id="parameternameselect_{{type}}_{{parameterset_id}}">
 		{% for pn in parameternames %}
 		
-			<option value="{{pn.name}}">{{pn.full_name}}</option>
+			<option value="{{pn.name|parametername_form}}">{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
 	
 		{% endfor %}
 		</select>
@@ -34,9 +35,13 @@
 
 		$("#parameternameselect_{{type}}_{{parameterset_id}} option:selected").each(function () {
 
-			new_element_name = get_new_parameter_name($(this).val())
+			new_element_name = get_new_parameter_name($(this).val());
 
-			$("#parameternameselect_{{type}}_{{parameterset_id}}").before(get_form_input_html($(this).text(), new_element_name))
+			$("#parameternameselect_{{type}}_{{parameterset_id}}").before(get_form_input_html($(this).text(), new_element_name));
+			
+			alert(new_element_name);
+			
+			$("#" + new_element_name).focus();
 		});
 	});
 		

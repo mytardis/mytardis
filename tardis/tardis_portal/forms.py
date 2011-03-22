@@ -752,7 +752,8 @@ def create_datafile_edit_form(
         for key, value in request.POST.iteritems():
             x = 1
 
-            stripped_key = key.rpartition('__')[0]
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
 
             parameter_name = ParameterName.objects.get(
                 schema=parameterset.schema,
@@ -794,6 +795,8 @@ def create_datafile_edit_form(
             if dfp.name.units:
                 units = " (" + dfp.name.units + ")"
 
+            form_id = form_id.replace('/', '_s47_')
+
             if dfp.name.is_numeric:
                 fields[form_id] = \
                 forms.DecimalField(label=dfp.name.full_name + units,
@@ -814,6 +817,7 @@ def save_datafile_edit_form(parameterset, request):
 
     for key, value in request.POST.iteritems():
         if value:
-            stripped_key = key.rpartition('__')[0]
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
