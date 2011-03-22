@@ -1376,19 +1376,19 @@ def search_datafile(request):
 @login_required()
 def retrieve_user_list(request):
 
-    users = User.objects.all().order_by('username')
-    c = Context({'users': users})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/user_list.html', c))
+    response = ''
+    for user in User.objects.all().order_by('username'):
+        response += '%s ' % user.username
+    return HttpResponse(response)
 
 
 @login_required()
 def retrieve_group_list(request):
 
-    groups = Group.objects.all().order_by('name')
-    c = Context({'groups': groups})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_list.html', c))
+    response = ''
+    for group in Group.objects.all().order_by('name'):
+        response += '%s ~ ' % group
+    return HttpResponse(response)
 
 
 @authz.experiment_ownership_required
@@ -1482,15 +1482,15 @@ def remove_user_from_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('User does not exist!')
 
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Group does not exist!')
 
     if user.groups.filter(name=group.name).count() == 0:
-        return return_response_error(request)
+        return HttpResponse('No such user within this group!')
 
     user.groups.remove(group)
     user.save()
@@ -1501,9 +1501,7 @@ def remove_user_from_group(request, group_id, username):
     except GroupAdmin.DoesNotExist:
         pass
 
-    c = Context({})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/remove_member_result.html', c))
+    return HttpResponse('OK')
 
 
 @authz.experiment_ownership_required
@@ -1563,12 +1561,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('User does not exist!')
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Experiment does not exist!')
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
@@ -1579,8 +1577,7 @@ def remove_experiment_access_user(request, experiment_id, username):
     if acl.count() == 1:
         acl[0].delete()
         c = Context({})
-        return HttpResponse(render_response_index(request,
-                'tardis_portal/ajax/remove_member_result.html', c))
+        return HttpResponse('OK')
 
     return return_response_error(request)
 
