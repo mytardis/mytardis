@@ -46,13 +46,32 @@
 			$("#" + new_element_name).focus();
 		});
 	});
+	
+	$('.jqmClose').click(function(){
+		// yeah perhaps I shouldn't let this try and find and fail silently..
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.datafile');
+		var href= parentdatafile.children('.datafile_info_toggle').attr("href");
+		parentdatafile.children('.datafile_info').html(loadingHTML);
+		parentdatafile.children('.datafile_info').load(href);
+	
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.dataset_extrainfo');
+		var href = parentdatafile.children('.dataset_metadata_toggle').attr("href");
+		parentdatafile.children('.dataset_metadata').html(loadingHTML);
+		parentdatafile.children('.dataset_metadata').load(href);
 		
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.experiment_md_container');
+		var href = parentdatafile.children('.experiment_metadata_toggle').attr("href");
+		parentdatafile.children('.experiment_metadata').html(loadingHTML);
+		parentdatafile.children('.experiment_metadata').load(href);		
+	});
+	
 		$('#edit_form_{{type}}_{{parameterset_id}}').submit(function(e) {
 			e.preventDefault();
 
 			$.post("/ajax/edit_{{type}}_parameters/{{parameterset_id}}/", $("#edit_form_{{type}}_{{parameterset_id}}").serialize(),
 			      function( data ) {
-			          $("#jqmAlertContent{{type}}{{parameterset_id}}").html( data );
+			          $("#jqmAlertContent{{type}}{{parameterset_id}}").html( data );					
+							
 						return false;
 			      });
 

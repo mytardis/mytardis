@@ -1,5 +1,6 @@
 {% load parametertypecheck %}
 {% for parameterset in parametersets %}
+	<div class="datafile_parameters">
 	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
 	<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
 	 class="jqModalDf{{parameterset.id}}">[Edit Parameters]</a></p>
@@ -14,6 +15,7 @@
 		</li>
 	{% endfor %}
     {% endautoescape %}
+	</div>
 	<br/><br/>
 	<script type="text/javascript">
 	$('#jqmAlertDf{{parameterset.id}}').die();

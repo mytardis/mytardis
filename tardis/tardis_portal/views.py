@@ -364,6 +364,14 @@ def retrieve_dataset_metadata(request, dataset_id):
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
 
+@authz.experiment_access_required
+def retrieve_experiment_metadata(request, experiment_id):
+    experiment = Experiment.objects.get(pk=experiment_id)
+    c = Context({'experiment': experiment, })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/experiment_metadata.html', c))
+
+
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
