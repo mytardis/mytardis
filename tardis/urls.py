@@ -23,6 +23,7 @@ experiment_urls = patterns(
     (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^view/$', 'experiment_index'),
+    (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^register/internal/$', 'register_experiment_ws_xmldata_internal'),
     (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
@@ -58,10 +59,14 @@ accounts_urls = patterns(
     (r'', include('registration.urls')),
     )
 
+datafile_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^search/$', 'search_datafile')
+)
+
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^xml_data/(?P<dataset_file_id>\d+)/$', 'retrieve_xml_data'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
@@ -81,13 +86,6 @@ download_urls = patterns(
     (r'^datafiles/$', 'download_datafiles'),
     )
 
-search_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^equipment/$', 'search_equipment'),
-    (r'^experiment/$', 'search_experiment'),
-    (r'^datafile/$', 'search_datafile'),
-    )
-
 group_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
@@ -97,23 +95,45 @@ group_urls = patterns(
      'remove_user_from_group'),
     )
 
+display_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
+     'load_experiment_image'),
+    (r'^DatasetImage/load/(?P<parameter_id>\d+)/'
+     '(?P<parameter_name>\w+)/$',
+     'load_dataset_image'),
+    (r'^DatafileImage/load/(?P<parameter_id>\d+)/$',
+     'load_datafile_image'),
+    (r'^ExperimentImage/(?P<experiment_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'display_experiment_image'),
+    (r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
+     '(?P<parameter_name>\w+)/$',
+     'display_dataset_image'),
+    (r'^DatafileImage/(?P<dataset_file_id>\d+)/'
+     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
+     'display_datafile_image'),
+    )
 
 urlpatterns = patterns(
     # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
     '',
     (r'', include(core_urls)),
 
+    # Equipment views
+    (r'^equipment/', include('tardis.apps.equipment.urls')),
+
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
+
+    # Experiment Views
+    (r'^datafile/', include(datafile_urls)),
 
     # Download Views
     (r'^download/', include(download_urls)),
 
     # Ajax Views
     (r'^ajax/', include(ajax_urls)),
-
-    # Seach Views
-    (r'^search/', include(search_urls)),
 
     # Account Views
     (r'^accounts/', include(accounts_urls)),
@@ -122,21 +142,8 @@ urlpatterns = patterns(
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
 
-    # Equipment Views
-    (r'^equipment/$', 'tardis.tardis_portal.views.equipment_index'),
-    (r'^equipment/(?P<object_id>\d+)/$',
-     'tardis.tardis_portal.views.view_equipment'),
-
     # Display Views
-    (r'^displayExperimentImage/(?P<experiment_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_experiment_image'),
-    (r'^displayDatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
-     '(?P<parameter_name>\w+)/$',
-     'tardis.tardis_portal.views.display_dataset_image'),
-    (r'^displayDatafileImage/(?P<dataset_file_id>\d+)/'
-     '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
-    'tardis.tardis_portal.views.display_datafile_image'),
+    (r'^display/', include(display_urls)),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
