@@ -644,7 +644,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 createParamSetFlag['datafile'] = False
 
             except models.Schema.DoesNotExist:
-                logger.warning('unsupported schema being ingested' +
+                logger.warning('unsupported schema being ingested ' +
                     self.elementNamespace)
 
             # reset the current xmlData child element so that if a new
