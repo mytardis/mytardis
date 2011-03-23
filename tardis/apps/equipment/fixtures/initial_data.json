@@ -1,0 +1,34 @@
+[
+    {
+        "fields": {
+            "comm": null,
+            "dataset": [],
+            "decomm": null,
+            "description": "Technology: bumpbonded hybrid-pixel\r\nCounting detector\r\nMulti-modules (2 modules in 2 x 1 array with 7 pixel gap)\r\nSize: 169 x 33 mm; 981 x 195 pixels (0.7% = intermodule gap)\r\nPixel size: 172 x 172 micron\r\nDynamic range: 6 orders of magnitude\r\nFrame rate: 150 Hz\r\nReadout time: 10 ms\r\nThreshold range: 2 - 20 KeV",
+            "key": "PIL200K",
+            "make": "Dectris",
+            "model": "Pilatus 200k",
+            "serial": "",
+            "type": "X-ray detector",
+            "url": ""
+        },
+        "model": "equipment.equipment",
+        "pk": 2
+    },
+    {
+        "fields": {
+            "comm": null,
+            "dataset": [],
+            "decomm": null,
+            "description": "Technology: bumpbonded hybrid-pixel\r\nCounting detector\r\nMulti-module (10 modules in 2 x 5 array with 7 x 17 pixel gap between each)\r\nSize: 169 x 179 mm; 981 x 1043 pixels (8.4% = intermodule gap)\r\nPixel size: 172 x 172 micron\r\nDynamic range: 6 orders of magnitude\r\nFrame rate: 30 Hz\r\nReadout time: 30 ms\r\nThreshold range: 2 - 20 KeV",
+            "key": "PIL1000K",
+            "make": "Dectris",
+            "model": "Pilatus 1M",
+            "serial": "",
+            "type": "X-ray detector",
+            "url": ""
+        },
+        "model": "equipment.equipment",
+        "pk": 1
+    }
+]
