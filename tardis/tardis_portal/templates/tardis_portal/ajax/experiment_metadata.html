@@ -1,6 +1,8 @@
 {% load parametertypecheck %}
 {% if not experiment.experimentparameterset_set.all %}
+<div class="dataset_metadata">
 	There is no metadata for this experiment.
+</div>
 {% endif %}
 <div class="dataset_metadata">
   <ul>

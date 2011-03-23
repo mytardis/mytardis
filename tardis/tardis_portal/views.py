@@ -780,11 +780,13 @@ def retrieve_datafile_list(request, dataset_id):
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
 
-    pgresults = 500
-    if request.mobile:
-        pgresults = 30
-    else:
-        pgresults = 500
+    # pagination was removed by someone in the interface but not here.
+    # need to fix.
+    pgresults = 10000
+    # if request.mobile:
+    #     pgresults = 30
+    # else:
+    #     pgresults = 25
 
     paginator = Paginator(dataset_results, pgresults)
 

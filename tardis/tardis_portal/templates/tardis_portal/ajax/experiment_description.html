@@ -87,7 +87,7 @@
   {% endif %}
 
   <p>
-    {% if experiment.experimentparameterset_set.count %}
+    {# {% if experiment.experimentparameterset_set.count %} #}
 	<div class="experiment_md_container">
 	<strong>Experiment Metadata:</strong>
 	
@@ -118,7 +118,7 @@
 	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
 	<span class="experiment_metadata"></span>
 	</div>
-    {% endif %}
+    {# {% endif %} #}
   </p>
 
   <p>
