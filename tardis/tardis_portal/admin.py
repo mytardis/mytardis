@@ -33,8 +33,6 @@
 from tardis.tardis_portal import models
 from django.contrib import admin
 
-admin.site.register(models.XML_data)
-admin.site.register(models.XSLT_docs)
 admin.site.register(models.Experiment)
 admin.site.register(models.Dataset)
 admin.site.register(models.Dataset_File)
@@ -51,4 +49,3 @@ admin.site.register(models.ExperimentParameterSet)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
 admin.site.register(models.ExperimentACL)
-admin.site.register(models.Equipment)

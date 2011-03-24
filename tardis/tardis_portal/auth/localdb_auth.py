@@ -42,7 +42,15 @@ class DjangoAuthBackend():
     """Authenticate against Django's Model Backend.
 
     """
+
     def authenticate(self, request):
+        """authenticate a user, this expect the user will be using
+        form based auth and the *username* and *password* will be
+        passed in as **POST** variables.
+
+        :param request: a HTTP Request instance
+        :type request: :class:`django.http.HttpRequest`
+        """
         username = request.POST['username']
         password = request.POST['password']
         if not username or not password:
@@ -58,15 +66,13 @@ class DjangoGroupProvider(GroupProvider):
     name = u'django_group'
 
     def getGroups(self, request):
-        """
-        return an iteration of the available groups.
+        """return an iteration of the available groups.
         """
         groups = request.user.groups.all()
         return [g.id for g in groups]
 
     def getGroupById(self, id):
-        """
-        return the group associated with the id::
+        """return the group associated with the id::
 
             {"id": 123,
             "display": "Group Name",}

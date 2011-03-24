@@ -1,0 +1,44 @@
+{% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+
+    {% include "tardis_portal/javascript_libraries.html" %}
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+      $("#id_type").change(function () {
+	  if ($("#id_type").val() != '-') {
+	     $(this).parent().submit();
+	  }
+      });
+    });
+    </script>
+
+{% endblock script %}
+
+
+{% block content %}
+    <div id="content">
+      <div class="post">
+	<h1 class="title"><a href="#">Search</a></h1>
+	<div class="searchmenu" style="padding-left: 10px">Search <a href="{% url tardis.tardis_portal.views.search_experiment %}">Experiment</a>
+	  | <form action="{% url tardis.tardis_portal.views.search_datafile %}" method="GET" style="display: inline">
+	    {{ searchDatafileSelectionForm.type }}
+	    <noscript><input type="submit" value="Submit"></noscript>
+	  </form>
+	  {% for key,value in links.items %}
+	    | <a href="{{ value }}">{{ key|capfirst }}</a>
+          {% endfor %}
+	  <span style="display: inline">
+	</div> <!-- searchmenu -->
+	<br/>
+	<div class="entry">
+	  <p>
+	    {% block searchPageBody %}{% endblock %}
+	  </p>
+	</div> <!-- entry -->
+      </div> <!-- post -->
+    </div> <!-- content -->
+{% endblock content%}
+
+

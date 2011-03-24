@@ -1,1623 +1,1660 @@
 [
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/trdDatafile/1"
-        },
-        "model": "tardis_portal.schema",
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/trdDatafile/1", 
+            "subtype": "mx", 
+            "type": 3
+        }, 
+        "model": "tardis_portal.schema", 
         "pk": 1
-    },
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/trdDataset/2"
-        },
-        "model": "tardis_portal.schema",
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/trdDataset/2", 
+            "subtype": "mx", 
+            "type": 2
+        }, 
+        "model": "tardis_portal.schema", 
         "pk": 2
-    },
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/mxautoprocessingresults/1"
-        },
-        "model": "tardis_portal.schema",
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/mxautoprocessingresults/1", 
+            "subtype": "mx", 
+            "type": 2
+        }, 
+        "model": "tardis_portal.schema", 
         "pk": 3
-    },
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/opusDataset/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 6
-    },
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10", 
+            "subtype": "saxs", 
+            "type": 3
+        }, 
+        "model": "tardis_portal.schema", 
+        "pk": 4
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/opusDatafile/1"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 7
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/as/experiment/2010/09/21"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 8
-    },
-    {
-        "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10"
-        },
-        "model": "tardis_portal.schema",
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/saxs/dataset/2010/08/10", 
+            "subtype": "saxs", 
+            "type": 2
+        }, 
+        "model": "tardis_portal.schema", 
         "pk": 5
-    },
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/saxs/datafile/2010/08/10"
-        },
-        "model": "tardis_portal.schema",
-        "pk": 4
-    },
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/opusDataset/1", 
+            "subtype": "ir", 
+            "type": 2
+        }, 
+        "model": "tardis_portal.schema", 
+        "pk": 6
+    }, 
     {
         "fields": {
-            "namespace": "http://www.tardis.edu.au/schemas/as/sample/2011/01/24"
-        },
-        "model": "tardis_portal.schema",
+            "name": "", 
+            "namespace": "http://www.tardis.edu.au/schemas/opusDatafile/1", 
+            "subtype": "ir", 
+            "type": 3
+        }, 
+        "model": "tardis_portal.schema", 
+        "pk": 7
+    }, 
+    {
+        "fields": {
+            "name": null, 
+            "namespace": "http://www.tardis.edu.au/schemas/as/experiment/2010/09/21", 
+            "subtype": null, 
+            "type": 1
+        }, 
+        "model": "tardis_portal.schema", 
+        "pk": 8
+    }, 
+    {
+        "fields": {
+            "name": null, 
+            "namespace": "http://www.tardis.edu.au/schemas/as/sample/2011/01/24", 
+            "subtype": null, 
+            "type": 1
+        }, 
+        "model": "tardis_portal.schema", 
         "pk": 9
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Collection Date",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "collectionDate",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Collection Date", 
+            "is_searchable": false, 
+            "name": "collectionDate", 
+            "schema": 1, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 1
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Image Type",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "imageType",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Image Type", 
+            "is_searchable": false, 
+            "name": "imageType", 
+            "schema": 1, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 2
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Oscillation Range Start",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "oscillationRange/start",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Oscillation Range Start", 
+            "is_searchable": false, 
+            "name": "oscillationRange/start", 
+            "schema": 1, 
             "units": "\u00b0"
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 3
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Oscillation Range End",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "oscillationRange/end",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Oscillation Range End", 
+            "is_searchable": false, 
+            "name": "oscillationRange/end", 
+            "schema": 1, 
             "units": "\u00b0"
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 4
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Exposure Time",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "exposureTime",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Exposure Time", 
+            "is_searchable": false, 
+            "name": "exposureTime", 
+            "schema": 1, 
             "units": "s"
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 5
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Detector S/N",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "detectorSN",
-            "schema": 1,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Detector S/N", 
+            "is_searchable": false, 
+            "name": "detectorSN", 
+            "schema": 1, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 6
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Direct Beam X-Pos",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "directBeamXPos",
-            "schema": 1,
-            "units": "mm"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 8
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Direct Beam Y-Pos",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "directBeamYPos",
-            "schema": 1,
-            "units": "mm"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 9
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Detector Distance",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "detectorDistance",
-            "schema": 1,
-            "units": "mm"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 10
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Image Size X",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "imageSizeX",
-            "schema": 1,
-            "units": "px"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 11
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Image Size Y",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "imageSizeY",
-            "schema": 1,
-            "units": "px"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 12
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Two Theta",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "twoTheta",
-            "schema": 1,
-            "units": "\u00b0"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 13
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Mosaic Spread",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "mosaicSpread",
-            "schema": 2,
-            "units": "\u00b0"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 18
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Chi Angle",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "chiAngle",
-            "schema": 2,
-            "units": "\u00b0"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 19
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Frames Directory",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "framesDir",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 21
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Processing Dir",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "processingDir",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 22
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Root Name",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "rootName",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 23
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Run Number",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "runNumber",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 24
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "First Image",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "firstImage",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 25
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Last Image",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "lastImage",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 26
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Space Group",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "spacegroup",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 27
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell A",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellA",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 28
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell B",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellB",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 29
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell C",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellC",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 30
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell Alpha",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellAlpha",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 31
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell Beta",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellBeta",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 32
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Cell Gamma",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "cellGamma",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 33
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "midslopeAnomNormProb",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "midslopeAnomNormProb",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 34
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "delanomCorrelationBettweenHalfSetsAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "delanomCorrelationBettweenHalfSetsAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 35
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "delanomCorrelationBettweenHalfSetsLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "delanomCorrelationBettweenHalfSetsLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 36
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "delanomCorrelationBettweenHalfSetsHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "delanomCorrelationBettweenHalfSetsHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 37
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "anomMultiplicityAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "anomMultiplicityAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 38
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "anomMultiplicityLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "anomMultiplicityLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 39
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "anomMultiplicityHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "anomMultiplicityHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 40
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "completenessAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "completenessAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 41
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "completenessLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "completenessLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 42
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "completenessHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "completenessHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 43
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "meanIOverSdIAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "meanIOverSdIAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 44
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "meanIOverSdILow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "meanIOverSdILow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 45
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalUniqueAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalUniqueAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 46
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalUniqueLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalUniqueLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 47
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalUniqueHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalUniqueHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 48
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalObsAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalObsAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 49
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalObsLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalObsLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 50
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "totalObsHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "totalObsHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 51
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimIplusAndIminusAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimIplusAndIminusAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 52
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimIplusAndIminusLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimIplusAndIminusLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 53
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimIplusAndIminusHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimIplusAndIminusHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 54
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimWithinIplusAndIminusAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimWithinIplusAndIminusAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 55
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimWithinIplusAndIminusLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimWithinIplusAndIminusLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 56
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rpimWithinIplusAndIminusHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rpimWithinIplusAndIminusHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 57
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rmeasIplusAndIminusAll",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rmeasIplusAndIminusAll",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 58
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rmeasIplusAndIminusLow",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rmeasIplusAndIminusLow",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 59
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rmeasIplusAndIminusHigh",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rmeasIplusAndIminusHigh",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 60
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "pointlessLog",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "pointlessLog",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 62
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "xdsLog",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "xdsLog",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 61
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "scalaLog",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "scalaLog",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 63
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "highRes",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "highRes",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 64
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "rMerge",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "rMerge",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 65
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "completeness",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "completeness",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 66
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "ranom",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "ranom",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 67
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "created",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "created",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 68
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "isigImage",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "isigImage",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 69
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "mergeImage",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "mergeImage",
-            "schema": 3,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 70
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "X-Ray Source",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "xraySource",
-            "schema": 2,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 16
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Crystal Name",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "crystalName",
-            "schema": 2,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 17
-    },
-    {
-        "fields": {
-            "choices": "(Synchrotron:Synchrotron), (Rotating Anode:Rotating Anode), (Tube:Tube)",
-            "comparison_type": 1,
-            "full_name": "Diffractometer Type",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "diffractometerType",
-            "schema": 2,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 15
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Resolution Limit",
-            "is_numeric": true,
-            "is_searchable": true,
-            "name": "resolutionLimit",
-            "schema": 2,
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "X-Ray Wavelength", 
+            "is_searchable": true, 
+            "name": "xrayWavelength", 
+            "schema": 1, 
             "units": "\u00c5"
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 14
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "X-Ray Wavelength",
-            "is_numeric": true,
-            "is_searchable": true,
-            "name": "xrayWavelength",
-            "schema": 1,
-            "units": "\u00c5"
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 7
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRQIMN",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frqimn",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Direct Beam X-Pos", 
+            "is_searchable": false, 
+            "name": "directBeamXPos", 
+            "schema": 1, 
+            "units": "mm"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 8
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Direct Beam Y-Pos", 
+            "is_searchable": false, 
+            "name": "directBeamYPos", 
+            "schema": 1, 
+            "units": "mm"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 9
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Detector Distance", 
+            "is_searchable": false, 
+            "name": "detectorDistance", 
+            "schema": 1, 
+            "units": "mm"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 10
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Image Size X", 
+            "is_searchable": false, 
+            "name": "imageSizeX", 
+            "schema": 1, 
+            "units": "px"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 11
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Image Size Y", 
+            "is_searchable": false, 
+            "name": "imageSizeY", 
+            "schema": 1, 
+            "units": "px"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 12
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Two Theta", 
+            "is_searchable": false, 
+            "name": "twoTheta", 
+            "schema": 1, 
+            "units": "\u00b0"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 13
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Resolution Limit", 
+            "is_searchable": true, 
+            "name": "resolutionLimit", 
+            "schema": 2, 
+            "units": "\u00c5"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 14
+    }, 
+    {
+        "fields": {
+            "choices": "(Synchrotron:Synchrotron), (Rotating Anode:Rotating Anode), (Tube:Tube)", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Diffractometer Type", 
+            "is_searchable": true, 
+            "name": "diffractometerType", 
+            "schema": 2, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 15
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "X-Ray Source", 
+            "is_searchable": true, 
+            "name": "xraySource", 
+            "schema": 2, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 16
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Crystal Name", 
+            "is_searchable": true, 
+            "name": "crystalName", 
+            "schema": 2, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 17
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Mosaic Spread", 
+            "is_searchable": false, 
+            "name": "mosaicSpread", 
+            "schema": 2, 
+            "units": "\u00b0"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 18
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Chi Angle", 
+            "is_searchable": false, 
+            "name": "chiAngle", 
+            "schema": 2, 
+            "units": "\u00b0"
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 19
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Frames Directory", 
+            "is_searchable": false, 
+            "name": "framesDir", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 21
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Processing Dir", 
+            "is_searchable": false, 
+            "name": "processingDir", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 22
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Root Name", 
+            "is_searchable": false, 
+            "name": "rootName", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 23
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Run Number", 
+            "is_searchable": false, 
+            "name": "runNumber", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 24
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "First Image", 
+            "is_searchable": false, 
+            "name": "firstImage", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 25
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Last Image", 
+            "is_searchable": false, 
+            "name": "lastImage", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 26
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Space Group", 
+            "is_searchable": false, 
+            "name": "spacegroup", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 27
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell A", 
+            "is_searchable": false, 
+            "name": "cellA", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 28
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell B", 
+            "is_searchable": false, 
+            "name": "cellB", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 29
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell C", 
+            "is_searchable": false, 
+            "name": "cellC", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 30
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell Alpha", 
+            "is_searchable": false, 
+            "name": "cellAlpha", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 31
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell Beta", 
+            "is_searchable": false, 
+            "name": "cellBeta", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 32
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Cell Gamma", 
+            "is_searchable": false, 
+            "name": "cellGamma", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 33
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "midslopeAnomNormProb", 
+            "is_searchable": false, 
+            "name": "midslopeAnomNormProb", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 34
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "delanomCorrelationBettweenHalfSetsAll", 
+            "is_searchable": false, 
+            "name": "delanomCorrelationBettweenHalfSetsAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 35
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "delanomCorrelationBettweenHalfSetsLow", 
+            "is_searchable": false, 
+            "name": "delanomCorrelationBettweenHalfSetsLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 36
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "delanomCorrelationBettweenHalfSetsHigh", 
+            "is_searchable": false, 
+            "name": "delanomCorrelationBettweenHalfSetsHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 37
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "anomMultiplicityAll", 
+            "is_searchable": false, 
+            "name": "anomMultiplicityAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 38
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "anomMultiplicityLow", 
+            "is_searchable": false, 
+            "name": "anomMultiplicityLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 39
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "anomMultiplicityHigh", 
+            "is_searchable": false, 
+            "name": "anomMultiplicityHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 40
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "completenessAll", 
+            "is_searchable": false, 
+            "name": "completenessAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 41
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "completenessLow", 
+            "is_searchable": false, 
+            "name": "completenessLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 42
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "completenessHigh", 
+            "is_searchable": false, 
+            "name": "completenessHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 43
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "meanIOverSdIAll", 
+            "is_searchable": false, 
+            "name": "meanIOverSdIAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 44
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "meanIOverSdILow", 
+            "is_searchable": false, 
+            "name": "meanIOverSdILow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 45
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalUniqueAll", 
+            "is_searchable": false, 
+            "name": "totalUniqueAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 46
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalUniqueLow", 
+            "is_searchable": false, 
+            "name": "totalUniqueLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 47
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalUniqueHigh", 
+            "is_searchable": false, 
+            "name": "totalUniqueHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 48
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalObsAll", 
+            "is_searchable": false, 
+            "name": "totalObsAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 49
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalObsLow", 
+            "is_searchable": false, 
+            "name": "totalObsLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 50
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "totalObsHigh", 
+            "is_searchable": false, 
+            "name": "totalObsHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 51
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimIplusAndIminusAll", 
+            "is_searchable": false, 
+            "name": "rpimIplusAndIminusAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 52
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimIplusAndIminusLow", 
+            "is_searchable": false, 
+            "name": "rpimIplusAndIminusLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 53
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimIplusAndIminusHigh", 
+            "is_searchable": false, 
+            "name": "rpimIplusAndIminusHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 54
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimWithinIplusAndIminusAll", 
+            "is_searchable": false, 
+            "name": "rpimWithinIplusAndIminusAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 55
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimWithinIplusAndIminusLow", 
+            "is_searchable": false, 
+            "name": "rpimWithinIplusAndIminusLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 56
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rpimWithinIplusAndIminusHigh", 
+            "is_searchable": false, 
+            "name": "rpimWithinIplusAndIminusHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 57
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rmeasIplusAndIminusAll", 
+            "is_searchable": false, 
+            "name": "rmeasIplusAndIminusAll", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 58
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rmeasIplusAndIminusLow", 
+            "is_searchable": false, 
+            "name": "rmeasIplusAndIminusLow", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 59
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rmeasIplusAndIminusHigh", 
+            "is_searchable": false, 
+            "name": "rmeasIplusAndIminusHigh", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 60
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "xdsLog", 
+            "is_searchable": false, 
+            "name": "xdsLog", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 61
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "pointlessLog", 
+            "is_searchable": false, 
+            "name": "pointlessLog", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 62
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "scalaLog", 
+            "is_searchable": false, 
+            "name": "scalaLog", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 63
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "highRes", 
+            "is_searchable": false, 
+            "name": "highRes", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 64
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "rMerge", 
+            "is_searchable": false, 
+            "name": "rMerge", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 65
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "completeness", 
+            "is_searchable": false, 
+            "name": "completeness", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 66
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "ranom", 
+            "is_searchable": false, 
+            "name": "ranom", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 67
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "created", 
+            "is_searchable": false, 
+            "name": "created", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 68
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "isigImage", 
+            "is_searchable": false, 
+            "name": "isigImage", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 69
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "mergeImage", 
+            "is_searchable": false, 
+            "name": "mergeImage", 
+            "schema": 3, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 70
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRQIMN", 
+            "is_searchable": false, 
+            "name": "frqimn", 
+            "schema": 5, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 71
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRXCEN",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frxcen",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRXCEN", 
+            "is_searchable": false, 
+            "name": "frxcen", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 72
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRLENG",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frleng",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRLENG", 
+            "is_searchable": false, 
+            "name": "frleng", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 73
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRWLEN",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frwlen",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRWLEN", 
+            "is_searchable": false, 
+            "name": "frwlen", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 74
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRQIMX",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frqimx",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRQIMX", 
+            "is_searchable": false, 
+            "name": "frqimx", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 75
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRYCEN",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "frycen",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "FRYCEN", 
+            "is_searchable": false, 
+            "name": "frycen", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 76
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "FRTYPE",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "frtype",
-            "schema": 5,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 4, 
+            "full_name": "FRTYPE", 
+            "is_searchable": false, 
+            "name": "frtype", 
+            "schema": 5, 
+            "units": "/equipment/"
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 77
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "DETANG",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "detang",
-            "schema": 5,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "DETANG", 
+            "is_searchable": false, 
+            "name": "detang", 
+            "schema": 5, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 78
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Counting_Secs",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "countingSecs",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Exposure Time", 
+            "is_searchable": false, 
+            "name": "countingSecs", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 79
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Positioner_String",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "positionerString",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Positioner Value Label", 
+            "is_searchable": false, 
+            "name": "positionerString", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 80
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Ibs",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "ibs",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Beamstop Itensity", 
+            "is_searchable": false, 
+            "name": "ibs", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 81
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Ibs_bgnd",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "ibsBgnd",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Beamstop Detector Dark Current", 
+            "is_searchable": false, 
+            "name": "ibsBgnd", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 82
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Io",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "io",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Incident Intensity", 
+            "is_searchable": false, 
+            "name": "io", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 83
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Io_bgnd",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "ioBgnd",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Incident Detector Dark Current", 
+            "is_searchable": false, 
+            "name": "ioBgnd", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 84
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "It",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "it",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Transmission Intensity", 
+            "is_searchable": false, 
+            "name": "it", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 85
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "It_bgnd",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "itBgnd",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 1, 
+            "full_name": "Transmission Detector Dark Current", 
+            "is_searchable": false, 
+            "name": "itBgnd", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 86
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "Positioner_Values",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "positionerValues",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "User Defined PV Values", 
+            "is_searchable": false, 
+            "name": "positionerValues", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 87
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "TimeStampString",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "timeStampString",
-            "schema": 4,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "TimeStamp", 
+            "is_searchable": false, 
+            "name": "timeStampString", 
+            "schema": 4, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 88
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "BLOCKS",
-            "is_numeric": true,
-            "is_searchable": true,
-            "name": "BLOCKS",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "BLOCKS", 
+            "is_searchable": true, 
+            "name": "BLOCKS", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 89
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "TITLE",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "TITLE",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "TITLE", 
+            "is_searchable": false, 
+            "name": "TITLE", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 90
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "DATATYPE",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "DATATYPE",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "DATATYPE", 
+            "is_searchable": false, 
+            "name": "DATATYPE", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 91
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "DATE",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "DATE",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "DATE", 
+            "is_searchable": false, 
+            "name": "DATE", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 92
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SAMPLINGPROCEDURE",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SAMPLINGPROCEDURE",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "SAMPLINGPROCEDURE", 
+            "is_searchable": true, 
+            "name": "SAMPLINGPROCEDURE", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 93
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "ORIGIN",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "ORIGIN",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "ORIGIN", 
+            "is_searchable": false, 
+            "name": "ORIGIN", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 94
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "XUNITS",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "XUNITS",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "XUNITS", 
+            "is_searchable": false, 
+            "name": "XUNITS", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 95
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "YUNITS",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "YUNITS",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "YUNITS", 
+            "is_searchable": false, 
+            "name": "YUNITS", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 96
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "LASTX",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "LASTX",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 1, 
+            "full_name": "RESOLUTION", 
+            "is_searchable": false, 
+            "name": "RESOLUTION", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 99
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "DELTAX",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "DELTAX",
-            "schema": 7,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 100
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "NPOINTS",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "NPOINTS",
-            "schema": 7,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 101
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 3,
-            "full_name": "FIRSTX",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "FIRSTX",
-            "schema": 7,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 98
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "RESOLUTION",
-            "is_numeric": true,
-            "is_searchable": false,
-            "name": "RESOLUTION",
-            "schema": 7,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 97
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "previewImage",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "previewImage",
-            "schema": 7,
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "FIRSTX", 
+            "is_searchable": false, 
+            "name": "FIRSTX", 
+            "schema": 7, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 98
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "LASTX", 
+            "is_searchable": false, 
+            "name": "LASTX", 
+            "schema": 7, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 99
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "DELTAX", 
+            "is_searchable": false, 
+            "name": "DELTAX", 
+            "schema": 7, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 100
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "NPOINTS", 
+            "is_searchable": false, 
+            "name": "NPOINTS", 
+            "schema": 7, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 101
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 5, 
+            "full_name": "previewImage", 
+            "is_searchable": false, 
+            "name": "previewImage", 
+            "schema": 7, 
+            "units": "image/png"
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 102
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "EPN",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "EPN",
-            "schema": 8,
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "EPN", 
+            "is_searchable": true, 
+            "name": "EPN", 
+            "schema": 8, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 103
-    },
+    }, 
     {
         "fields": {
-            "choices": "(MX:MX), (SAXS:SAXS), (IR:IR)",
-            "comparison_type": 1,
-            "full_name": "Beamline",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "beamline",
-            "schema": 8,
+            "choices": "(MX:MX), (SAXS:SAXS), (IR:IR)", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "Beamline", 
+            "is_searchable": true, 
+            "name": "beamline", 
+            "schema": 8, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 104
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 1,
-            "full_name": "previewImage",
-            "is_numeric": false,
-            "is_searchable": false,
-            "name": "previewImage",
-            "schema": 4,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 5, 
+            "full_name": "previewImage", 
+            "is_searchable": false, 
+            "name": "previewImage", 
+            "schema": 4, 
+            "units": "image"
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 105
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SampleCAS",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SampleCAS",
-            "schema": 9,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "SampleDescription", 
+            "is_searchable": true, 
+            "name": "SampleDescription", 
+            "schema": 9, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 106
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SampleDescription",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SampleDescription ",
-            "schema": 9,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 107
-    },
+    }, 
     {
         "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SampleFormula",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SampleFormula",
-            "schema": 9,
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "SampleSafety", 
+            "is_searchable": true, 
+            "name": "SampleSafety", 
+            "schema": 9, 
             "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 108
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SampleName",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SampleName",
-            "schema": 9,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
-        "pk": 109
-    },
-    {
-        "fields": {
-            "choices": "",
-            "comparison_type": 8,
-            "full_name": "SampleSafty",
-            "is_numeric": false,
-            "is_searchable": true,
-            "name": "SampleSafty",
-            "schema": 9,
-            "units": ""
-        },
-        "model": "tardis_portal.parametername",
+        }, 
+        "model": "tardis_portal.parametername", 
         "pk": 110
-    },
+    }, 
     {
         "fields": {
-            "comm": null,
-            "dataset": [],
-            "decomm": null,
-            "description": "Technology: bumpbonded hybrid-pixel\r\nCounting detector\r\nMulti-modules (2 modules in 2 x 1 array with 7 pixel gap)\r\nSize: 169 x 33 mm; 981 x 195 pixels (0.7% = intermodule gap)\r\nPixel size: 172 x 172 micron\r\nDynamic range: 6 orders of magnitude\r\nFrame rate: 150 Hz\r\nReadout time: 10 ms\r\nThreshold range: 2 - 20 KeV",
-            "key": "PIL200K",
-            "make": "Dectris",
-            "model": "Pilatus 200k",
-            "serial": "",
-            "type": "X-ray detector",
-            "url": ""
-        },
-        "model": "tardis_portal.equipment",
-        "pk": 2
-    },
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 1, 
+            "full_name": "PEAK", 
+            "is_searchable": true, 
+            "name": "PEAK", 
+            "schema": 7, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 111
+    }, 
     {
         "fields": {
-            "comm": null,
-            "dataset": [],
-            "decomm": null,
-            "description": "Technology: bumpbonded hybrid-pixel\r\nCounting detector\r\nMulti-module (10 modules in 2 x 5 array with 7 x 17 pixel gap between each)\r\nSize: 169 x 179 mm; 981 x 1043 pixels (8.4% = intermodule gap)\r\nPixel size: 172 x 172 micron\r\nDynamic range: 6 orders of magnitude\r\nFrame rate: 30 Hz\r\nReadout time: 30 ms\r\nThreshold range: 2 - 20 KeV",
-            "key": "PIL1000K",
-            "make": "Dectris",
-            "model": "Pilatus 1M",
-            "serial": "",
-            "type": "X-ray detector",
-            "url": ""
-        },
-        "model": "tardis_portal.equipment",
-        "pk": 1
+            "choices": "", 
+            "comparison_type": 8, 
+            "data_type": 2, 
+            "full_name": "ChemicalName", 
+            "is_searchable": true, 
+            "name": "ChemicalName", 
+            "schema": 9, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 112
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 2, 
+            "full_name": "ChemicalPercent", 
+            "is_searchable": false, 
+            "name": "ChemicalPercent", 
+            "schema": 9, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 113
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 3, 
+            "data_type": 2, 
+            "full_name": "ChemicalAmount", 
+            "is_searchable": false, 
+            "name": "ChemicalAmount", 
+            "schema": 9, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 114
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "ChemicalFormula", 
+            "is_searchable": false, 
+            "name": "ChemicalFormula", 
+            "schema": 9, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 115
+    }, 
+    {
+        "fields": {
+            "choices": "", 
+            "comparison_type": 1, 
+            "data_type": 2, 
+            "full_name": "ChemicalCAS", 
+            "is_searchable": false, 
+            "name": "ChemicalCAS", 
+            "schema": 9, 
+            "units": ""
+        }, 
+        "model": "tardis_portal.parametername", 
+        "pk": 116
     }
 ]

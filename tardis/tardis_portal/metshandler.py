@@ -7,6 +7,7 @@ that do not conform to the recommended key-value pair metadata format.
 
 
 class CustomHandler():
+
     def __init__(self):
         self.metadataDict = {}
 

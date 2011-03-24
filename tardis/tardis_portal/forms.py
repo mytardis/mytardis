@@ -52,8 +52,6 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from form_utils import forms as formutils
-
 from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
@@ -110,7 +108,8 @@ class RegistrationForm(forms.Form):
         widget=forms.TextInput(attrs=attrs_dict),
         label=_("Username"),
         error_messages={'invalid':
-                            _("This value must contain only letters, numbers and underscores.")})
+            _("This value must contain only letters, \
+            numbers and underscores.")})
     email = forms.EmailField(widget=forms.TextInput(attrs=dict(attrs_dict,
                                                                maxlength=75)),
                              label=_("Email address"))
@@ -175,6 +174,7 @@ class RegistrationForm(forms.Form):
 
 
 class ChangeUserPermissionsForm(ModelForm):
+
     class Meta:
         from django.forms.extras.widgets import SelectDateWidget
         from tardis.tardis_portal.models import ExperimentACL
@@ -274,18 +274,6 @@ class IRDatafileSearchForm(DatafileSearchForm):
     pass
 
 
-class EquipmentSearchForm(forms.Form):
-
-    key = forms.CharField(label='Short Name',
-        max_length=30, required=False)
-    description = forms.CharField(label='Description',
-        required=False)
-    make = forms.CharField(label='Make', max_length=60, required=False)
-    model = forms.CharField(label='Model', max_length=60, required=False)
-    type = forms.CharField(label='Type', max_length=60, required=False)
-    serial = forms.CharField(label='Serial No', max_length=60, required=False)
-
-
 class ImportParamsForm(forms.Form):
 
     username = forms.CharField(max_length=400, required=True)
@@ -315,6 +303,7 @@ class FullExperimentModel(UserDict):
     the :func:`tardis.tardis_portal.forms.FullExperiment.save` function.
     It provides a convience method for saving the model objects.
     """
+
     def save_m2m(self):
         """
         {'experiment': experiment,
@@ -433,21 +422,23 @@ class ExperimentForm(forms.ModelForm):
                                                 models.Dataset,
                                                 extra=extra, can_delete=True)
         datafile_formset = inlineformset_factory(models.Dataset,
-                                                 models.Dataset_File,
-                                                 formset=DataFileFormSet,
-                                                 formfield_callback=custom_field_cb,
-                                                 extra=0, can_delete=True)
+                                         models.Dataset_File,
+                                         formset=DataFileFormSet,
+                                         formfield_callback=custom_field_cb,
+                                         extra=0, can_delete=True)
 
         # fix up experiment form
         post_authors = self._parse_authors(data)
         self._fill_authors(post_authors)
         if instance:
             authors = instance.author_experiment_set.all()
-            self.authors_experiments = [Author_Experiment(instance=a) for a in authors]
+            self.authors_experiments = [Author_Experiment(instance=a) for a
+                                        in authors]
             self.initial['authors'] = ', '.join([a.author for a in authors])
             self.fields['authors'] = \
-                MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
-                                              widget=CommaSeparatedInput())
+                MultiValueCommaSeparatedField([author.fields['author'] for
+                                            author in self.author_experiments],
+                                            widget=CommaSeparatedInput())
 
         # fill formsets
         self.datasets = dataset_formset(data=data,
@@ -455,9 +446,9 @@ class ExperimentForm(forms.ModelForm):
                                         prefix="dataset")
         for i, df in enumerate(self.datasets.forms):
             self.dataset_files[i] = datafile_formset(data=data,
-                                                     instance=df.instance,
-                                                     post_save_cb=datafile_post_save_cb,
-                                                     prefix="dataset-%s-datafile" % i)
+                                         instance=df.instance,
+                                         post_save_cb=datafile_post_save_cb,
+                                         prefix="dataset-%s-datafile" % i)
 
     def _parse_authors(self, data=None):
         """
@@ -489,8 +480,9 @@ class ExperimentForm(forms.ModelForm):
             self.author_experiments.append(f)
 
         self.fields['authors'] = \
-            MultiValueCommaSeparatedField([author.fields['author'] for author in self.author_experiments],
-                                          widget=CommaSeparatedInput())
+            MultiValueCommaSeparatedField([author.fields['author'] for
+                                        author in self.author_experiments],
+                                        widget=CommaSeparatedInput())
 
     def get_dataset_files(self, number):
         """
@@ -590,16 +582,16 @@ def createSearchDatafileForm(searchQueryType):
 
     from errors import UnsupportedSearchQueryTypeError
     from tardis.tardis_portal.models import ParameterName
-    from tardis.tardis_portal import constants
 
     parameterNames = None
 
-    if searchQueryType in constants.SCHEMA_DICT:
+    if searchQueryType in models.Schema.getSubTypes():
         parameterNames = \
             ParameterName.objects.filter(
-            schema__namespace__in=[constants.SCHEMA_DICT[searchQueryType]\
-            ['datafile'], constants.SCHEMA_DICT[searchQueryType]['dataset']],
-            is_searchable='True')
+            schema__namespace__in=models.Schema.getNamespaces(
+            models.Schema.DATAFILE, searchQueryType) +
+            models.Schema.getNamespaces(models.Schema.DATASET,
+            searchQueryType), is_searchable='True')
 
         fields = {}
 
@@ -609,7 +601,7 @@ def createSearchDatafileForm(searchQueryType):
                 initial=searchQueryType)
 
         for parameterName in parameterNames:
-            if parameterName.is_numeric:
+            if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
                     fields[parameterName.name + 'From'] = \
@@ -649,11 +641,11 @@ def createSearchExperimentForm():
 
     from django.forms.extras.widgets import SelectDateWidget
     from tardis.tardis_portal.models import ParameterName
-    from tardis.tardis_portal import constants
 
     parameterNameGroups = {}
 
-    for experimentSchema in constants.EXPERIMENT_SCHEMAS:
+    for experimentSchema in models.Schema.getNamespaces(
+            type=models.Schema.EXPERIMENT):
         parameterName = ParameterName.objects.filter(
             schema__namespace__iexact=experimentSchema,
             is_searchable='True')
@@ -684,7 +676,7 @@ def createSearchExperimentForm():
         formutilFields[schema] = []
 
         for parameterName in parameterNames:
-            if parameterName.is_numeric:
+            if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
                     fields[parameterName.name + 'From'] = \
@@ -763,7 +755,7 @@ def createSearchDatafileSelectionForm():
     from tardis.tardis_portal import constants
 
     supportedDatafileSearches = (('-', 'Datafile'),)
-    for key in constants.SCHEMA_DICT:
+    for key in models.Schema.getSubTypes():
         supportedDatafileSearches += ((key, key.upper()),)
 
     fields = {}

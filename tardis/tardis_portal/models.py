@@ -39,13 +39,13 @@ models.py
 """
 
 from os import path
-from urlparse import urlparse
 
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.contrib.auth.models import User, Group
-from django.utils.safestring import SafeUnicode
+from django.utils.safestring import SafeUnicode, mark_safe
 
 from tardis.tardis_portal.managers import ExperimentManager
 
@@ -115,15 +115,6 @@ class UserAuthentication(models.Model):
         return self.username + ' - ' + self.getAuthMethodDescription()
 
 
-class XSLT_docs(models.Model):
-
-    xmlns = models.URLField(max_length=255, primary_key=True)
-    data = models.TextField()
-
-    def __unicode__(self):
-        return self.xmlns
-
-
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
@@ -149,6 +140,8 @@ class Experiment(models.Model):
     description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
+    created_time = models.DateTimeField(null=True, blank=True,
+        auto_now_add=True)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
@@ -156,6 +149,17 @@ class Experiment(models.Model):
     public = models.BooleanField()
     objects = models.Manager()  # The default manager.
     safe = ExperimentManager()  # The acl-aware specific manager.
+
+    def getParameterSets(self, schemaType=None):
+        """Return the experiment parametersets associated with this
+        experiment.
+
+        """
+        if schemaType == Schema.EXPERIMENT or schemaType is None:
+            return self.experimentparameterset_set.filter(
+                schema__type=Schema.EXPERIMENT)
+        else:
+            raise Schema.UnsupportedType
 
     def __unicode__(self):
         return self.title
@@ -177,7 +181,8 @@ class Experiment(models.Model):
 
 
 class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis Authorisation framework
+    """The ExperimentACL table is the core of the `Tardis Authorisation
+    framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
@@ -252,6 +257,17 @@ class Dataset(models.Model):
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
 
+    def getParameterSets(self, schemaType=None):
+        """Return the dataset parametersets associated with this
+        experiment.
+
+        """
+        if schemaType == Schema.DATASET or schemaType is None:
+            return self.datasetparameterset_set.filter(
+                schema__type=Schema.DATASET)
+        else:
+            raise Schema.UnsupportedType
+
     def addDatafile(self, filepath,
                     protocol='', url='',
                     size=None, commit=True):
@@ -272,7 +288,7 @@ class Dataset(models.Model):
         if url:
             datafile.url = url
         else:
-            datafile.url = 'file:/' + filepath
+            datafile.url = 'file://' + filepath
 
         if size:
             datafile.size = size
@@ -312,6 +328,16 @@ class Dataset_File(models.Model):
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
+
+    def getParameterSets(self, schemaType=None):
+        """Return datafile parametersets associated with this experiment.
+
+        """
+        if schemaType == Schema.DATAFILE or schemaType is None:
+            return self.datafileparameterset_set.filter(
+                schema__type=Schema.DATAFILE)
+        else:
+            raise Schema.UnsupportedType
 
     def __unicode__(self):
         return self.filename
@@ -410,10 +436,51 @@ pre_save.connect(save_DatasetFile, sender=Dataset_File)
 
 class Schema(models.Model):
 
+    EXPERIMENT = 1
+    DATASET = 2
+    DATAFILE = 3
+    _SCHEMA_TYPES = (
+        (EXPERIMENT, 'Experiment schema'),
+        (DATASET, 'Dataset schema'),
+        (DATAFILE, 'Datafile schema'),
+    )
+
     namespace = models.URLField(verify_exists=False, max_length=400)
+    name = models.CharField(blank=True, null=True, max_length=50)
+    type = models.IntegerField(
+        choices=_SCHEMA_TYPES, default=EXPERIMENT)
+
+    # subtype will be used for categorising the type of experiment, dataset
+    # or datafile schemas. for example, the type of beamlines are usually used
+    # further categorise the experiment, dataset, and datafile schemas. the
+    # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
+    subtype = models.CharField(blank=True, null=True, max_length=30)
+
+    def _getSchemaTypeName(self, typeNum):
+        return dict(self._SCHEMA_TYPES)[typeNum]
+
+    @classmethod
+    def getSubTypes(cls):
+        return set([schema.subtype for schema in Schema.objects.all() \
+            if schema.subtype])
+
+    @classmethod
+    def getNamespaces(cls, type, subtype=None):
+        """Return the list of namespaces for equipment, sample, and experiment
+        schemas.
+
+        """
+        return [schema.namespace for schema in
+            Schema.objects.filter(type=type, subtype=subtype or '')]
 
     def __unicode__(self):
-        return self.namespace
+        return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
+            self.subtype.upper() or '') + ': ' + self.namespace
+
+    class UnsupportedType(Exception):
+
+        def __init__(self, msg):
+            Exception.__init__(self, msg)
 
 
 class DatafileParameterSet(models.Model):
@@ -471,11 +538,26 @@ class ParameterName(models.Model):
         (LESS_THAN_EQUAL_COMPARISON, 'Less than or equal'),
     )
 
+    NUMERIC = 1
+    STRING = 2
+    URL = 3
+    LINK = 4
+    FILENAME = 5
+    DATETIME = 6
+
+    __TYPE_CHOICES = (
+        (NUMERIC, 'NUMERIC'),
+        (STRING, 'STRING'),
+        (URL, 'URL'),
+        (LINK, 'LINK'),
+        (FILENAME, 'FILENAME'),
+        (DATETIME, 'DATETIME'))
+
     schema = models.ForeignKey(Schema)
     name = models.CharField(max_length=60)
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
-    is_numeric = models.BooleanField()
+    data_type = models.IntegerField(choices=__TYPE_CHOICES, default=STRING)
     comparison_type = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
     is_searchable = models.BooleanField(default=False)
@@ -484,7 +566,121 @@ class ParameterName(models.Model):
     choices = models.CharField(max_length=500, blank=True)
 
     def __unicode__(self):
-        return self.name
+        return (self.schema.name or self.schema.namespace) + ": " + self.name
+
+    class Meta:
+        unique_together = (('schema', 'name'),)
+
+    def isNumeric(self):
+        if self.data_type == self.NUMERIC:
+            return True
+        else:
+            return False
+
+    def isString(self):
+        if self.data_type == self.STRING:
+            return True
+        else:
+            return False
+
+    def isURL(self):
+        if self.data_type == self.URL:
+            return True
+        else:
+            return False
+
+    def isLink(self):
+        if self.data_type == self.LINK:
+            return True
+        else:
+            return False
+
+    def isFilename(self):
+        if self.data_type == self.FILENAME:
+            return True
+        else:
+            return False
+
+    def isDateTime(self):
+        if self.data_type == self.DATETIME:
+            return True
+        else:
+            return False
+
+
+def _getParameter(parameter):
+
+    if parameter.name.isNumeric():
+        value = parameter.numerical_value
+        units = parameter.name.units
+        if units:
+            value += ' %s' % units
+        return value
+
+    elif parameter.name.isString():
+        if parameter.name.name.endswith('Image'):
+            parset = type(parameter.parameterset).__name__
+            viewname = ''
+            args = []
+            if parset == 'DatafileParameterSet':
+                dfid = parameter.parameterset.dataset_file.id
+                psid = parameter.parameterset.id
+                viewname = 'tardis.tardis_portal.views.display_datafile_image'
+                args = [dfid, psid, parameter.name]
+            elif parset == 'DatasetParameterSet':
+                dsid = parameter.parameterset.dataset.id
+                psid = parameter.parameterset.id
+                viewname = 'tardis.tardis_portal.views.display_dataset_image'
+                args = [dsid, psid, parameter.name]
+            elif parset == 'ExperimentParameterSet':
+                eid = parameter.parameterset.dataset.id
+                psid = parameter.parameterset.id
+                viewname = 'tardis.tardis_portal.views.display_experiment_image'
+                args = [eid, psid, parameter.name]
+            if viewname:
+                value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                     args=args)
+                return mark_safe(value)
+
+        return parameter.string_value
+
+    elif parameter.name.isURL():
+        url = parameter.string_value
+        value = "<a href='%s'>%s</a>" % (url, url)
+        return mark_safe(value)
+
+    elif parameter.name.isLink():
+        units = parameter.name.units
+        if units:
+            url = units + parameter.string_value
+        else:
+            url = parameter.string_value
+        value = "<a href='%s'>%s</a>" % (url, parameter.string_value)
+        return mark_safe(value)
+
+    elif parameter.name.isFilename():
+        if parameter.name.units.startswith('image'):
+            parset = type(parameter.parameterset).__name__
+            viewname = ''
+            if parset == 'DatafileParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_datafile_image'
+            elif parset == 'DatasetParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_dataset_image'
+            elif parset == 'ExperimentParameterSet':
+                viewname = 'tardis.tardis_portal.views.load_experiment_image'
+            if viewname:
+                value = "<img src='%s' />" % reverse(viewname=viewname,
+                                                     args=[parameter.id])
+                return mark_safe(value)
+
+        return parameter.string_value
+
+    elif parameter.name.isDateTime():
+        value = str(parameter.datetime_value)
+        return value
+
+    else:
+        return None
 
 
 class DatafileParameter(models.Model):
@@ -493,12 +689,13 @@ class DatafileParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        return _getParameter(self)
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Datafile Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Datafile Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
@@ -510,12 +707,13 @@ class DatasetParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        return _getParameter(self)
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Dataset Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Dataset Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
@@ -526,41 +724,13 @@ class ExperimentParameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
+    datetime_value = models.DateTimeField(null=True, blank=True)
+
+    def get(self):
+        return _getParameter(self)
 
     def __unicode__(self):
-        if self.name.is_numeric:
-            return 'Experiment Param: %s=%s' % (self.name.name,
-                self.numerical_value)
-        return 'Experiment Param: %s=%s' % (self.name.name, self.string_value)
+        return 'Experiment Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
-
-
-class XML_data(models.Model):
-    datafile = models.OneToOneField(Dataset_File, null=True, blank=True)
-    dataset = models.OneToOneField(Dataset, null=True, blank=True)
-    experiment = models.OneToOneField(Experiment, null=True, blank=True)
-    xmlns = models.URLField(max_length=400)
-    data = models.TextField()
-
-    def __unicode__(self):
-        return self.xmlns
-
-
-class Equipment(models.Model):
-    key = models.CharField(unique=True, max_length=30)
-    dataset = models.ManyToManyField(Dataset, null=True, blank=True)
-    description = models.TextField(blank=True)
-    make = models.CharField(max_length=60, blank=True)
-    model = models.CharField(max_length=60, blank=True)
-    type = models.CharField(max_length=60, blank=True)
-    serial = models.CharField(max_length=60, blank=True)
-    comm = models.DateField(null=True, blank=True)
-    decomm = models.DateField(null=True, blank=True)
-    url = models.URLField(null=True, blank=True,
-                          verify_exists=False,
-                          max_length=255)
-
-    def __unicode__(self):
-        return self.key
