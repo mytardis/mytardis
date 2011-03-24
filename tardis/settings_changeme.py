@@ -150,7 +150,8 @@ EMAIL_USE_TLS = True
 
 # Post Save Filters
 POST_SAVE_FILTERS = [
-    ("tardis.tardis_portal.filters.exif.EXIFFilter", ["http://exif.schema"]),
+    ("tardis.tardis_portal.filters.exif.EXIFFilter",
+     ["EXIF", "http://exif.schema"]),
     ]
 
 
