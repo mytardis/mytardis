@@ -109,7 +109,7 @@ class EXIFFilter(object):
             if p.name in metadata:
                 dfp = DatafileParameter(parameterset=ps,
                                         name=p)
-                if p.is_numeric:
+                if p.isNumeric():
                     dfp.numerical_value = metadata[p.name]
                 else:
                     dfp.string_value = metadata[p.name]
@@ -136,7 +136,7 @@ class EXIFFilter(object):
                 continue
 
             # detect type of parameter
-            is_numeric = False
+            datatype = ParameterName.STRING
 
             # Int test
             try:
@@ -146,11 +146,11 @@ class EXIFFilter(object):
             except TypeError:
                 pass
             else:
-                is_numeric = True
+                datatype = ParameterName.NUMERIC
 
             # Fraction test
             if isinstance(metadata[p], Fraction):
-                is_numeric = True
+                datatype = ParameterName.NUMERIC
 
             # Float test
             try:
@@ -160,12 +160,12 @@ class EXIFFilter(object):
             except TypeError:
                 pass
             else:
-                is_numeric = True
+                datatype = ParameterName.NUMERIC
 
             new_param = ParameterName(schema=schema,
                                       name=p,
                                       full_name=p,
-                                      is_numeric=is_numeric)
+                                      data_type=datatype)
             new_param.save()
             parameters.append(new_param)
         return parameters
