@@ -1,7 +1,7 @@
 '''
 Created on 19/01/2011
 
-@author: gerson
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 from django.test import TestCase
 from django.test.client import Client
@@ -10,6 +10,7 @@ from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.vbl_auth import EPN_LIST
 from django.utils import simplejson
 
+
 class AuthenticationTestCase(TestCase):
 
     def setUp(self):
@@ -17,7 +18,7 @@ class AuthenticationTestCase(TestCase):
         self.loginUrl = "/login/"
         self.manageAuthMethodsUrl = "/accounts/manage_auth_methods/"
 
-        self.user = User.objects.create_user('localdb_test', '', 'test')
+        self.user = User.objects.create_user('test', '', 'test')
 
     def testSimpleAuthenticate(self):
         response = self.client.post(self.loginUrl, {'username': 'test',
@@ -92,7 +93,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
-        self.assertEqual(len(response.context['userAuthMethodList']), 1)
+        self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] == True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
         self.assertTrue(len(response.context['allAuthMethods']), 1)
@@ -105,3 +106,51 @@ class AuthenticationTestCase(TestCase):
 
         self.assertTrue(simplejson.loads(response.content)['status'])
         self.client.logout()
+
+    def test_djangoauth(self):
+        from django.core.handlers.wsgi import WSGIRequest
+        from django.contrib.auth.models import User
+        from tardis.tardis_portal.auth.localdb_auth import DjangoAuthBackend
+        dj_auth = DjangoAuthBackend()
+        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req._post = {'username': 'test',
+                     'password': 'test',
+                     'authMethod': 'localdb'}
+        user = dj_auth.authenticate(req)
+        self.assertTrue(isinstance(user, User))
+
+
+server = None
+
+
+class LDAPTest(TestCase):
+    def setUp(self):
+        from tardis.tardis_portal.tests.ldap_ldif import test_ldif
+        import slapd
+        global server
+        server = slapd.Slapd()
+        server.set_port(38911)
+        server.set_dn_suffix("dc=example, dc=com")
+        server.start()
+        base = server.get_dn_suffix()
+
+        server.ldapadd("\n".join(test_ldif) + "\n")
+
+        self.server = server
+
+    def tearDown(self):
+        self.server.stop()
+
+    def test_authenticate(self):
+        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        from django.core.handlers.wsgi import WSGIRequest
+
+        l = ldap_auth()
+        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req._post = {'username': 'testuser1',
+                     'password': 'kklk',
+                     'authMethod': 'localdb'}
+        u = l.authenticate(req)
+        u1 = {'email': 't.user@example.com',
+              'display': 'Test', 'id': 'testuser1'}
+        self.failUnlessEqual(u, u1)

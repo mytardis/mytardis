@@ -125,6 +125,7 @@ class RegistrationForm(forms.Form):
         in use.
 
         """
+        # TODO this needs to be fixed RUSSELL!
         username = '%s_%s' % (locabdb_auth_key, self.cleaned_data['username'])
 
         try:

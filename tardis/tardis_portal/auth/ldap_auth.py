@@ -28,11 +28,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+'''
+LDAP Authentication module.
+
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Russell Sim <russell.sim@monash.edu>
+'''
+
+
 import ldap
 
 from django.conf import settings
 
-from tardis.tardis_portal.auth.utils import get_or_create_user_with_username
+from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider
+from tardis.tardis_portal.auth.interfaces import UserProvider
 from tardis.tardis_portal.logger import logger
 
 
@@ -98,8 +107,68 @@ def get_ldap_email_for_user(username):
             l.unbind_s()
 
 
-class LdapBackend():
+class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
+    def __init__(self, name, url, base, login_attr, user_base,
+                 user_attr_map, group_base, admin_user='', admin_pass=''):
+        self.name = name
 
+        # Basic info
+        self._url = url
+        self._base = base
+
+        # Authenticated bind
+        self._admin_user = admin_user
+        self._admin_pass = admin_pass
+
+        # Login attribute
+        self._login_attr = login_attr
+
+        # User Search
+        self._user_base = user_base
+        self._user_attr_map = user_attr_map
+
+        # Group Search
+        self._group_base = group_base
+
+    def _query(self, base, filterstr, attrlist):
+        """Safely query LDAP
+        """
+        l = None
+        searchScope = ldap.SCOPE_SUBTREE
+
+        try:
+            l = ldap.initialize(self._url)
+        except ldap.LDAPError, e:
+            logger.error(e.message['desc'], ": ", self._url)
+            return None
+        print self._url
+        l.protocol_version = ldap.VERSION3
+
+        try:
+            if self._admin_user and self._admin_pass:
+                l.simple_bind(self._admin_user, self._admin_pass)
+            else:
+                l.simple_bind()
+        except ldap.LDAPError, e:
+            logger.error(e.args[0]['desc'])
+            if l:
+                l.unbind_s()
+            return None
+
+        try:
+            ldap_result_id = l.search(base, searchScope,
+                                      filterstr, attrlist)
+            result_type, result_data = l.result(ldap_result_id, 1)
+            return result_data
+        except ldap.LDAPError, e:
+            logger.error(e.message['desc'])
+        finally:
+            l and l.unbind_s()
+        return None
+
+    #
+    # AuthProvider
+    #
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']
@@ -110,22 +179,25 @@ class LdapBackend():
 
         try:
             searchScope = ldap.SCOPE_SUBTREE
-            retrieveAttributes = None
-            userRDN = settings.LDAP_USER_RDN + '=' + username
+            retrieveAttributes = self._user_attr_map.values() + \
+                                 [self._login_attr]
+            userRDN = self._login_attr + '=' + username
 
-            l = ldap.initialize(settings.LDAP_URL)
+            l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
-            l.simple_bind(userRDN + ',' + settings.BASE_DN, password)
-            ldap_result_id = l.search(settings.BASE_DN, searchScope,
+            l.simple_bind(userRDN + ',' + self._base, password)
+            ldap_result_id = l.search(self._user_base, searchScope,
                                       userRDN, retrieveAttributes)
 
-            result_type, result_data = l.result(ldap_result_id, 0)
+            result_type, result_data = l.result(ldap_result_id, 1)
 
-            if result_data[0][1][settings.LDAP_USER_RDN][0] == username:
+            if result_data[0][1][self._login_attr][0] == username:
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
-                return get_or_create_user_with_username(request, username,
-                                                        auth_key)
+                user = result_data[0][1]
+                return {'display': user['givenName'][0],
+                        "id": user['uid'][0],
+                        "email": user['mail'][0]}
             return None
 
         except ldap.LDAPError:
@@ -140,3 +212,103 @@ class LdapBackend():
 
     def get_user(self, user_id):
         raise NotImplemented()
+
+    #
+    # User Provider
+    #
+    def getUserById(self, id):
+        """
+        return the user dictionary in the format of::
+
+            {"id": 123,
+            "display": "John Smith",
+            "email": "john@example.com"}
+
+        """
+        userObj = User.objects.get(id=id)
+        if userObj:
+            return {'id': id, 'display': userObj.first_name + ' ' +
+                userObj.last_name, 'email': userObj.email}
+        return None
+
+    #
+    # Group Provider
+    #
+    def getGroups(self, request):
+        """return an iteration of the available groups.
+        """
+        groups = request.user.groups.all()
+        return [g.id for g in groups]
+
+    def getGroupById(self, id):
+        """return the group associated with the id::
+
+            {"id": 123,
+            "display": "Group Name",}
+
+        """
+        groupObj = Group.objects.get(id=id)
+        if groupObj:
+            return {'id': id, 'display': groupObj.name}
+        return None
+
+    def searchGroups(self, **filter):
+        result = []
+        groups = Group.objects.filter(**filter)
+        for g in groups:
+            users = [u.username for u in User.objects.filter(groups=g)]
+            result += [{'id': g.id,
+                        'display': g.name,
+                        'members': users}]
+        return result
+
+
+_ldap_auth = None
+
+
+def ldap_auth():
+    global _ldap_auth
+    if _ldap_auth:
+        return _ldap_auth
+    try:
+        base = settings.LDAP_BASE
+    except:
+        raise ValueError('LDAP_BASE must be specified in settings.py')
+
+    try:
+        url = settings.LDAP_URL
+    except:
+        raise ValueError('LDAP_URL must be specified in settings.py')
+
+    try:
+        admin_user = settings.LDAP_ADMIN_USER
+    except:
+        admin_user = ''
+
+    try:
+        admin_password = settings.LDAP_ADMIN_PASSWORD
+    except:
+        admin_password = ''
+
+    try:
+        user_login_attr = settings.LDAP_USER_LOGIN_ATTR
+    except:
+        raise ValueError('LDAP_USER_LOGIN_ATTR must be specified in settings.py')
+
+    try:
+        user_base = settings.LDAP_USER_BASE
+    except:
+        raise ValueError('LDAP_USER_BASE must be specified in settings.py')
+
+    try:
+        user_attr_map = settings.LDAP_USER_ATTR_MAP
+    except:
+        raise ValueError('LDAP_USER_ATTR_MAP must be specified in settings.py')
+
+    try:
+        group_base = settings.LDAP_GROUP_BASE
+    except:
+        raise ValueError('LDAP_GROUP_BASE must be specified in settings.py')
+    _ldap_auth = LDAPBackend("ldap", url, base, user_login_attr,
+                             user_base, user_attr_map, group_base)
+    return _ldap_auth

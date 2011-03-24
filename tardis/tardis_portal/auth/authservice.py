@@ -111,14 +111,18 @@ class AuthService():
 
         if not self._initialised:
             self._manual_init()
-
+        # if authMethod, else fall back to Django internal auth
         if authMethod:
             if authMethod in self._authentication_backends:
                 # note that it's the backend's job to create a user entry
                 # for a user in the DB if he has successfully logged in using
                 # the auth method he has picked and he doesn't exist in the DB
-                return self._authentication_backends[
+                user = self._authentication_backends[
                     authMethod].authenticate(**credentials)
+                if isinstance(user, dict):
+                    user['pluginname'] = authMethod
+                    return self.getUser(user)
+                return user
             else:
                 return None
         else:
@@ -229,4 +233,11 @@ class AuthService():
         """
         if not self._initialised:
             self._manual_init()
-        pass
+
+        plugin = user_dict['pluginname']
+        try:
+            user = UserAuthentication.objects.filter(username=username,
+                            authenticationMethod=plugin).userProfile.user
+            return user
+        except UserAuthentication.DoesNotExist:
+            pass
