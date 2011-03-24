@@ -420,6 +420,14 @@ def create_experiment(request,
     return HttpResponse(render_response_index(request, template_name, c))
 
 
+def metsexport_experiment(request, experiment_id):
+    from tardis.tardis_portal.metsexporter import exporter
+    exporter.export(experiment_id)
+
+    c = Context({})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/index.html', c))
+
 @login_required
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
@@ -593,6 +601,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
             if settings.LDAP_ENABLE:
                 u = ldap_auth.get_or_create_user_ldap(owner)
             else:
+                print "owner", owner
                 u = User.objects.get(username=owner)
 
             # if exist, create ACL
