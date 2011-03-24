@@ -7,8 +7,6 @@ ROOT_URLCONF = 'tardis.urls'
 DEBUG = True
 STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
                             'tardis_portal/site_media')
-# LDAP configuration
-LDAP_ENABLE = False
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
@@ -57,6 +55,24 @@ INSTALLED_APPS = (
 # TODO: move to mecat settings module
 VBLSTORAGEGATEWAY = \
 'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
+
+
+# LDAP configuration
+LDAP_ENABLE = False
+
+LDAP_USE_TLS = False
+LDAP_URL = "ldap://localhost:38911/"
+
+LDAP_USER_LOGIN_ATTR = "uid"
+LDAP_GROUP_ID_ATTR = "cn"
+LDAP_USER_ATTR_MAP = {"display": "givenName", "email": "mail"}
+
+#LDAP_ADMIN_USER = ''
+#LDAP_ADMIN_PASSWORD = ''
+LDAP_BASE = 'dc=example, dc=com'
+LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
+LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
+
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
