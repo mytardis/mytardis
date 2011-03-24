@@ -201,3 +201,4 @@ def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
     if not schema:
         raise ValueError("EXIFFilter required a schema to be specified")
     return EXIFFilter(name, schema, tagsToFind, tagsToExclude)
+make_filter.__doc__ = EXIFFilter.__doc__

@@ -26,13 +26,13 @@ Where **args** and **kwargs** are both optional.
 Filter Plugins
 --------------
 
-* :py:class:`tardis.tardis_portal.filters.exif.EXIFFilter`
+* :py:class:`tardis.tardis_portal.filters.exif.make_filter`
 
 
 .. py:currentmodule:: tardis.tardis_portal.filters.exif
 
-:py:mod:`tardis.tardis_portal.filters.exif`
--------------------------------------------
+EXIF Filter
+-----------
 
-.. autoclass:: EXIFFilter
+.. autofunction:: make_filter
 
