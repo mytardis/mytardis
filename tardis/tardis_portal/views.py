@@ -263,8 +263,6 @@ def view_experiment(request, experiment_id):
     :type request: :class:`django.http.HttpRequest`
     :param experiment_id: the ID of the experiment to be edited
     :type experiment_id: string
-    :param template_name: the path of the template to render
-    :type template_name: string
     :rtype: :class:`django.http.HttpResponse`
 
     """
@@ -1376,19 +1374,21 @@ def search_datafile(request):
 @login_required()
 def retrieve_user_list(request):
 
-    users = User.objects.all().order_by('username')
-    c = Context({'users': users})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/user_list.html', c))
+    userlist = ''
+    for user in  User.objects.all().order_by('username'):
+        userlist += '%s ' % user
+    
+    return HttpResponse(userlist)
 
 
 @login_required()
 def retrieve_group_list(request):
 
-    groups = Group.objects.all().order_by('name')
-    c = Context({'groups': groups})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/group_list.html', c))
+    grouplist = ''
+    for group in Group.objects.all().order_by('name'):
+        grouplist += '%s ~ ' % group
+
+    return HttpResponse(grouplist)
 
 
 @authz.experiment_ownership_required
@@ -1563,12 +1563,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('User does not exist')
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Experiment does not exist')
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
@@ -1577,12 +1577,16 @@ def remove_experiment_access_user(request, experiment_id, username):
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() == 1:
+        if int(acl[0].entityId) == request.user.id:
+            return HttpResponse('Cannot remove your own user access')
+        
         acl[0].delete()
-        c = Context({})
-        return HttpResponse(render_response_index(request,
-                'tardis_portal/ajax/remove_member_result.html', c))
-
-    return return_response_error(request)
+        return HttpResponse('OK')
+    elif acl.count() == 0:
+        return HttpResponse('No ACL available. ' \
+		'It is likely the user doesnt have access to this experiment.')
+    else:
+        return HttpResponse('Multiple ACLs found')
 
 
 @authz.experiment_ownership_required
@@ -1775,12 +1779,12 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Group does not exist')
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Experiment does not exist')
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
@@ -1790,11 +1794,14 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
     if acl.count() == 1:
         acl[0].delete()
-        c = Context({})
-        return HttpResponse(render_response_index(request,
-                'tardis_portal/ajax/remove_member_result.html', c))
+        return HttpResponse('OK')
+    elif acl.count() == 0:
+        return HttpResponse('No ACL available.' \
+		'It is likely the group doesnt have access to this experiment.')
+    else:
+        return HttpResponse('Multiple ACLs found')
 
-    return return_response_error(request)
+    return HttpResponse('')
 
 
 @authz.experiment_ownership_required

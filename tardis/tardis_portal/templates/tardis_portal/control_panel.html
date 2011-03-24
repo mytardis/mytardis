@@ -95,7 +95,7 @@
 			      if(val == "OK") {
 				remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
 			      }
-			      else { alert('Error removing user.'); }
+			      else { alert(val); }
 			    }
 			  }); // end ajax
 			  return false;
@@ -126,7 +126,7 @@
 		      if(val == "OK") {
 			remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
 		      }
-		    else { alert('Error removing user.'); }
+		    else { alert(val); }
 		    }
 		  }); // end ajax
 
@@ -224,7 +224,7 @@
 				  remove_group.parents('.access_list_group').remove();
 				});
 			      }
-			      else { alert('Error removing group.'); }
+			      else { alert(val); }
 			    }
 			  }); // end ajax
 			  return false;
@@ -255,7 +255,7 @@
 			  remove_group.parents('.access_list_group').remove();
 			});
 		      }
-		      else { alert('Error removing group.'); }
+		      else { alert(val); }
 		    }
 		  }); // end ajax
 		  return false;
