@@ -193,3 +193,11 @@ class EXIFFilter(object):
         for tag in image.values():
             ret[tag.key] = tag.value
         return ret
+
+
+def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
+    if not name:
+        raise ValueError("EXIFFilter requires a name to be specified")
+    if not schema:
+        raise ValueError("EXIFFilter required a schema to be specified")
+    return EXIFFilter(name, schema, tagsToFind, tagsToExclude)
