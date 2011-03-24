@@ -10,6 +10,7 @@ from tardis.tardis_portal.auth.vbl_auth import auth_key, EPN_LIST
 auth_key = auth_key
 EPN_LIST = EPN_LIST
 
+
 class MockBackend():
     """
     Authenticate against the VBL SOAP Webservice. It is assumed that the
@@ -22,6 +23,7 @@ class MockBackend():
     session key used for downloads as well as the user's EPN list
 
     """
+
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']

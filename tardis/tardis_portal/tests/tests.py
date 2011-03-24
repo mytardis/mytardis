@@ -85,13 +85,12 @@ class SearchTestCase(TestCase):
             acl.save()
             self.experiments += [experiment]
 
-        from tardis.tardis_portal.constants import SCHEMA_DICT
-        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['datafile'])
+        schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='io')
         parameter.is_searchable = True
         parameter.save()
 
-        schema = Schema.objects.get(namespace=SCHEMA_DICT['saxs']['dataset'])
+        schema = Schema.objects.get(type=Schema.DATASET, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='frqimn')
         parameter.is_searchable = True
         parameter.save()
@@ -102,7 +101,7 @@ class SearchTestCase(TestCase):
 
     def testSearchDatafileForm(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/datafile/', {'type': 'saxs', })
+        response = self.client.get('/datafile/search/', {'type': 'saxs', })
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchForm'] is not None)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
@@ -114,7 +113,7 @@ class SearchTestCase(TestCase):
         self.client.logout()
 
     def testSearchDatafileAuthentication(self):
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
 
         # check if the response is zero since the user is not logged in
@@ -124,8 +123,8 @@ class SearchTestCase(TestCase):
     def testSearchDatafileResults(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': 'air_0_001.tif', })
+        response = self.client.get('/datafile/search/',
+                                   {'type': 'saxs', 'filename': 'air_0_001.tif', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -149,15 +148,15 @@ class SearchTestCase(TestCase):
         # TODO: check if the schema is correct
 
         # check if searching for nothing would result to returning everything
-        response = self.client.get('/search/datafile/',
-            {'type': 'saxs', 'filename': '', })
+        response = self.client.get('/datafile/search/',
+                                   {'type': 'saxs', 'filename': '', })
         self.assertEqual(len(response.context['paginator'].object_list), 129)
 
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'io': '123', })
         self.assertEqual(len(response.context['paginator'].object_list), 0)
 
-        response = self.client.get('/search/datafile/',
+        response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'frqimn': '0.0450647', })
         self.assertEqual(len(response.context['paginator'].object_list), 125)
         self.client.logout()
@@ -165,7 +164,7 @@ class SearchTestCase(TestCase):
     def testSearchExperimentForm(self):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
-        response = self.client.get('/search/experiment/')
+        response = self.client.get('/experiment/search/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
             None)
@@ -175,14 +174,14 @@ class SearchTestCase(TestCase):
 
     def testSearchExperimentAuthentication(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': 'cookson', })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
 
     def testSearchExperimentResults(self):
         self.client.login(username='test', password='test')
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': 'cookson'})
 
         # check for the existence of the contexts..
@@ -198,7 +197,7 @@ class SearchTestCase(TestCase):
             len(response.context['experiments']) == 1)
 
         # check if searching for nothing would result to returning everything
-        response = self.client.get('/search/experiment/',
+        response = self.client.get('/experiment/search/',
             {'title': '', })
         self.assertEqual(len(response.context['experiments']), 3)
 
@@ -213,13 +212,13 @@ class UserInterfaceTestCase(TestCase):
 
     def test_urls(self):
         c = Client()
-        urls = ['/login', '/about', '/partners', '/stats']
-        urls += ['/experiment/register', '/experiment/view']
-        urls += ['/search/experiment', '/search/datafile?type=saxs']
+        urls = ['/login/', '/about/', '/partners/', '/stats/']
+        urls += ['/experiment/register/', '/experiment/view/']
+        urls += ['/experiment/search/', '/datafile/search/?type=saxs']
 
         for u in urls:
             response = c.get(u)
-            self.failUnlessEqual(response.status_code, 301)
+            self.failUnlessEqual(response.status_code, 200)
 
     def test_login(self):
         from django.contrib.auth.models import User
@@ -255,44 +254,44 @@ class MetsExperimentStructCreatorTestCase(TestCase):
     def testMetsMetadataMapContents(self):
         self.assertTrue(len(self.dataHolder.metadataMap) == 7,
             'metadataMap size should be 7')
-        self.assertTrue(self.dataHolder.metadataMap['A-2'].id == 'J-2',
+        self.assertTrue(self.dataHolder.metadataMap['A-2'][0].id == 'J-2',
             'id for metadata A-2 should be J-2')
-        self.assertTrue(len(self.dataHolder.metadataMap['A-2'].datafiles) == 8,
+        self.assertTrue(len(self.dataHolder.metadataMap['A-2'][0].datafiles) == 8,
             'there should be 8 datafiles within dataset A-2')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].experiment.id == 'J-1',
+            'A-2'][0].experiment.id == 'J-1',
             'id for dataset A-2 parent experiment should be J-1')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].__class__.__name__ == 'Dataset',
+            'A-2'][0].__class__.__name__ == 'Dataset',
             'metadata A-2 should be a Dataset type')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-1'].__class__.__name__ == 'Experiment',
+            'A-1'][0].__class__.__name__ == 'Experiment',
             'metadata A-1 should be an Experiment type')
         self.assertTrue(len(self.dataHolder.metadataMap[
-            'A-1'].datasets) == 1,
+            'A-1'][0].datasets) == 1,
             'there should be 1 dataset under experiment A-1')
-        self.assertTrue(self.dataHolder.metadataMap['A-7'].id == 'F-8',
+        self.assertTrue(self.dataHolder.metadataMap['A-7'][0].id == 'F-8',
             'metadata A-7 does not have F-8 as the Id')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].name == 'ment0005.osc',
+            'A-7'][0].name == 'ment0005.osc',
             'metadata A-7 should have ment0005.osc as the name')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].url == 'tardis://Images/ment0005.osc',
+            'A-7'][0].url == 'tardis://Images/ment0005.osc',
             'metadata A-7 should have tardis://Images/ment0005.osc as the url')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].dataset.id == 'J-2',
+            'A-7'][0].dataset.id == 'J-2',
             'metadata A-7 should have dataset id J-2')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].__class__.__name__ == 'Datafile',
+            'A-7'][0].__class__.__name__ == 'Datafile',
             'metadata A-7 should be a Datafile type')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'].metadataId == 'A-7',
+            'A-7'][0].metadataIds[0] == 'A-7',
             'metadata A-7 should have metadata Id A-7')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-1'].metadataId == 'A-1',
+            'A-1'][0].metadataIds[0] == 'A-1',
             'metadata A-1 should have metadata Id A-1')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-2'].metadataId == 'A-2',
+            'A-2'][0].metadataIds[0] == 'A-2',
             'metadata A-2 should have metadata Id A-2')
 
 
@@ -388,34 +387,6 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
 
-class EquipmentTestCase(TestCase):
-
-    fixtures = ['AS_Equipment.json']
-
-    def setUp(self):
-        self.client = Client()
-
-    def testSearchEquipmentForm(self):
-        response = self.client.get('/search/equipment/')
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context['form'] is not None)
-
-    def testSearchEquipmentResult(self):
-        response = self.client.post('/search/equipment/', {'key': 'PIL', })
-        self.assertEqual(len(response.context['object_list']), 2)
-
-    def testEquipmentDetail(self):
-        response = self.client.get('/equipment/1/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.context['object'].make, 'Dectris')
-        self.assertEqual(response.context['object'].type, 'X-ray detector')
-
-    def testEquipmentList(self):
-        response = self.client.get('/equipment/')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['object_list']), 2)
-
-
 def suite():
     userInterfaceSuite = \
         unittest.TestLoader().loadTestsFromTestCase(UserInterfaceTestCase)
@@ -427,8 +398,6 @@ def suite():
         MetsMetadataInfoHandlerTestCase)
     searchSuite = \
         unittest.TestLoader().loadTestsFromTestCase(SearchTestCase)
-    equipmentSuite = \
-        unittest.TestLoader().loadTestsFromTestCase(EquipmentTestCase)
 
     allTests = unittest.TestSuite([parserSuite1,
                                    parserSuite2,

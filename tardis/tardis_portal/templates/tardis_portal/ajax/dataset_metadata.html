@@ -1,0 +1,13 @@
+<ul>
+  {% for parameterset in dataset.datasetparameterset_set.all %}
+     <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
+
+     {% for parameter in parameterset.datasetparameter_set.all %}
+         <li><strong>{{ parameter.name.full_name }}: </strong>
+	   {{ parameter.get }}
+         </li>
+     {% endfor %}
+     <br/>
+     <br/>
+  {% endfor %}
+</ul>

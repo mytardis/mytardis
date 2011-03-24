@@ -1,10 +1,11 @@
 {% load uploadify_tags %}
 <div class="upload_files_box">
-<b>Upload Files To Dataset</b>
-<br/><br/>
-{% multi_file_upload upload_complete_url dataset_id %}
-<br/>
-<strong><a id="upload_go" href="javascript:$('#fileInput').uploadifyUpload();">Upload Now</a></strong>
-<br/>
-</div>
+  <b>Upload Files To Dataset</b>
+  <br/>
+  <br/>
+  {% multi_file_upload upload_complete_url dataset_id %}
+  <br/>
+  <strong><a id="upload_go" href="javascript:$('#fileInput').uploadifyUpload();">Upload Now</a></strong>
+  <br/>
+</div> <!-- upload_files box -->
 <br/>

@@ -6,9 +6,8 @@
       <img src="/site_media/images/icon_user.jpg">
     {% endif %}
     <strong>{{ user.username }}</strong> ({{user.email}})
-    <a class="remove_user" href="/group/{{group_id}}/remove/{{user.username}}/"><img src="/site_media/images/icon_deletelink.gif"></a>
+    <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}"><img src="/site_media/images/icon_deletelink.gif"></a>
     </div>
     <br/>
   </p>
 </div> <!-- access_list_user -->
-

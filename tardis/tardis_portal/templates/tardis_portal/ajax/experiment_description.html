@@ -1,4 +1,23 @@
-{% load parametertypecheck %}
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function() {
+    $(".dataset_metadata_toggle").toggle(
+	function(){
+	    $(this).text("[Show]");
+	    var href= $(this).attr("href");
+	    $(href).hide();
+	},
+	function(){
+	    $(this).text("[Hide]");
+	    var href= $(this).attr("href");
+	    $(href).show();
+	}
+    );
+    $(".dataset_metadata_toggle").click();
+});
+
+</script>
+{% endblock %}
 
 <div id="experiment_description">
 
@@ -43,17 +62,11 @@
 	  <ul>
 	    {% for parameterset in experiment.experimentparameterset_set.all %}
               <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
-
 	      {% for parameter in parameterset.experimentparameter_set.all %}
-                <li><strong>{{ parameter.name.full_name }}: </strong>
-		{% if parameter.name.is_numeric %}
-                  {{ parameter.numerical_value }} {{ parameter.name.units }}
-                {% else %}
-                  {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
-                {% endif %}
-		</li>
+                <li><strong>{{ parameter.name.full_name }}: </strong>{{ parameter.get }}</li>
               {% endfor %}
-	      <br/><br/>
+	      <br/>
+	      <br/>
             {% endfor %}
 	  </ul>
 	</div>

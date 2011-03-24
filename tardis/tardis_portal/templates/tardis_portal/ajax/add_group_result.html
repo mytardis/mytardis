@@ -1,9 +1,7 @@
 <div class="access_list_group">
   <p>
     <strong>{{ group.name }}</strong>
-    <a class="change_group" href="{{experiment_id}}/access_list/change/group/{{group.id}}"><img src="/site_media/images/icon_changelink.gif"></a>
-    <a class="remove_group" href="{{experiment_id}}/access_list/remove/group/{{group.id}}"><img src="/site_media/images/icon_deletelink.gif"></a>
-    <br/>
-    <br/>
+    <a class="change_group" href="{% url tardis.tardis_portal.views.change_group_permissions experiment_id group.id %}"><img src="/site_media/images/icon_changelink.gif"></a>
+    <a class="remove_group" href="{% url tardis.tardis_portal.views.remove_experiment_access_group experiment_id group.id %}"><img src="/site_media/images/icon_deletelink.gif"></a>
   </p>
 </div> <!-- access_list_group -->

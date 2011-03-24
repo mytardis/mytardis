@@ -65,14 +65,15 @@ class ExperimentManager(models.Manager):
             # based on GROUP permissions
             for name, group in request.groups:
                 query |= Q(experimentacl__pluginId=name,
-                           experimentacl__entityId=str(group),
-                           experimentacl__canRead=True)\
-                           & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                              | Q(experimentacl__effectiveDate__isnull=True))\
-                           & (Q(experimentacl__expiryDate__gte=datetime.today())
-                              | Q(experimentacl__expiryDate__isnull=True))
+                    experimentacl__entityId=str(group),
+                    experimentacl__canRead=True)\
+                    & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                    | Q(experimentacl__effectiveDate__isnull=True))\
+                    & (Q(experimentacl__expiryDate__gte=datetime.today())
+                    | Q(experimentacl__expiryDate__isnull=True))
 
-        return super(ExperimentManager, self).get_query_set().filter(query).distinct()
+        return super(ExperimentManager, self).get_query_set().filter(
+            query).distinct()
 
     def get(self, request, experiment_id):
         """
@@ -168,8 +169,8 @@ class ExperimentManager(models.Manager):
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(pluginId=django_user,
-                                           experiment__id=experiment_id,
-                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                                   experiment__id=experiment_id,
+                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
         return [User.objects.get(pk=int(a.entityId)) for a in acl]
 
     def user_owned_groups(self, request, experiment_id):
@@ -186,8 +187,8 @@ class ExperimentManager(models.Manager):
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(pluginId=django_group,
-                                           experiment__id=experiment_id,
-                                           aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                                   experiment__id=experiment_id,
+                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
 
@@ -205,8 +206,8 @@ class ExperimentManager(models.Manager):
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.filter(pluginId=django_group,
-                                           experiment__id=experiment_id,
-                                           aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+                                   experiment__id=experiment_id,
+                                   aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
 
         return [Group.objects.get(pk=str(a.entityId)) for a in acl]
 

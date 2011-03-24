@@ -1,0 +1,5 @@
+include *.txt
+recursive-include docs *.rst *.py
+recursive-include tardis *.xml *.xsd *.txt  
+recursive-include tardis *.html *.js *.json *.css *.swf
+recursive-include tardis *.png *.gif *.jpg *.ico
