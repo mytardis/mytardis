@@ -64,11 +64,12 @@ class Slapd:
     _log = logging.getLogger("Slapd")
 
     # Use /var/tmp to placate apparmour on Ubuntu:
+    TEST_UTILS_DIR = os_path.abspath(os_path.split(__file__)[0])
     PATH_TMPDIR = "/var/tmp/python-ldap-test"
     PATH_TMPDIR = tempfile.mkdtemp()
     PATH_SBINDIR = "/usr/sbin"
     PATH_BINDIR = "/usr/bin"
-    PATH_SCHEMA_CORE = "/etc/ldap/schema/core.schema"
+    PATH_SCHEMA_DIR = TEST_UTILS_DIR + "/ldap_schemas/"
     PATH_LDAPADD = os.path.join(PATH_BINDIR, "ldapadd")
     PATH_LDAPSEARCH = os.path.join(PATH_BINDIR, "ldapsearch")
     PATH_SLAPD = os.path.join(PATH_SBINDIR, "slapd")
@@ -156,7 +157,11 @@ class Slapd:
         """
 
         # Global
-        cfg.append("include " + quote(self.PATH_SCHEMA_CORE))
+        schema_list = os.listdir(self.PATH_SCHEMA_DIR)
+        schema_list.sort()
+        for schema in schema_list:
+            cfg.append("include " + quote(self.PATH_SCHEMA_DIR + schema))
+
         cfg.append("allow bind_v2")
 
         # Database
