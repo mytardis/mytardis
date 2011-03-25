@@ -232,6 +232,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         user = {}
 
+        if not result:
+            return None
+
         for k, v in result[0][1].items():
             user[self._user_attr_map[k]] = v[0]
         return user
