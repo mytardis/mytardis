@@ -118,39 +118,3 @@ class AuthenticationTestCase(TestCase):
                      'authMethod': 'localdb'}
         user = dj_auth.authenticate(req)
         self.assertTrue(isinstance(user, User))
-
-
-server = None
-
-
-class LDAPTest(TestCase):
-    def setUp(self):
-        from tardis.tardis_portal.tests.ldap_ldif import test_ldif
-        import slapd
-        global server
-        server = slapd.Slapd()
-        server.set_port(38911)
-        server.set_dn_suffix("dc=example, dc=com")
-        server.start()
-        base = server.get_dn_suffix()
-
-        server.ldapadd("\n".join(test_ldif) + "\n")
-
-        self.server = server
-
-    def tearDown(self):
-        self.server.stop()
-
-    def test_authenticate(self):
-        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
-        from django.core.handlers.wsgi import WSGIRequest
-
-        l = ldap_auth()
-        req = WSGIRequest({"REQUEST_METHOD": "POST"})
-        req._post = {'username': 'testuser1',
-                     'password': 'kklk',
-                     'authMethod': 'localdb'}
-        u = l.authenticate(req)
-        u1 = {'email': 't.user@example.com',
-              'display': 'Test', 'id': 'testuser1'}
-        self.failUnlessEqual(u, u1)
