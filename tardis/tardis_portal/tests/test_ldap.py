@@ -58,6 +58,15 @@ class LDAPTest(TestCase):
                  {'cn': ['systems']})]
         self.assertEqual(res, res1)
 
+    def test_getuserbyid(self):
+        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        l = ldap_auth()
+        user = l.getUserById('testuser1')
+        user1 = {'id': 'testuser1',
+                 'email': 't.user@example.com',
+                 'display': 'Test'}
+        self.assertEqual(user, user1)
+
     def test_authenticate(self):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
         from django.core.handlers.wsgi import WSGIRequest

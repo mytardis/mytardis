@@ -65,7 +65,7 @@ LDAP_URL = "ldap://localhost:38911/"
 
 LDAP_USER_LOGIN_ATTR = "uid"
 LDAP_GROUP_ID_ATTR = "cn"
-LDAP_USER_ATTR_MAP = {"display": "givenName", "email": "mail"}
+LDAP_USER_ATTR_MAP = {"givenName": "display", "mail": "email"}
 
 #LDAP_ADMIN_USER = ''
 #LDAP_ADMIN_PASSWORD = ''
