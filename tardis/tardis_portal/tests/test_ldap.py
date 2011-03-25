@@ -67,6 +67,9 @@ class LDAPTest(TestCase):
                  'display': 'Test'}
         self.assertEqual(user, user1)
 
+        user = l.getUserById('nulluser')
+        self.assertEqual(user, None)
+
     def test_authenticate(self):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
         from django.core.handlers.wsgi import WSGIRequest
