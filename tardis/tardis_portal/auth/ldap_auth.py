@@ -229,10 +229,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         result = self._query(self._user_base,
                              '(%s=%s)' % (self._login_attr, id),
                              self._user_attr_map.keys() + [self._login_attr])
-        assert(len(result) < 2)
+
         user = {}
-        print result
-        print self._user_attr_map
+
         for k, v in result[0][1].items():
             user[self._user_attr_map[k]] = v[0]
         return user
