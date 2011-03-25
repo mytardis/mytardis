@@ -73,6 +73,7 @@ class LDAPTest(TestCase):
     def test_authenticate(self):
         from tardis.tardis_portal.auth.ldap_auth import ldap_auth
         from django.core.handlers.wsgi import WSGIRequest
+        from django.contrib.auth.models import User
 
         # Tests Authenticate API
         l = ldap_auth()
@@ -84,3 +85,12 @@ class LDAPTest(TestCase):
         u1 = {'email': 't.user@example.com',
               'display': 'Test', 'id': 'testuser1'}
         self.failUnlessEqual(u, u1)
+
+        # Test authservice API
+        from tardis.tardis_portal.auth import auth_service
+        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req._post = {'username': 'testuser1',
+                     'password': 'kklk',
+                     'authMethod': 'ldap'}
+        user = auth_service.authenticate('ldap', request=req)
+        self.assertTrue(isinstance(user, User))
