@@ -126,6 +126,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         # User Search
         self._user_base = user_base
         self._user_attr_map = user_attr_map
+        self._user_attr_map[self._login_attr] = "id"
 
         # Group Search
         self._group_base = group_base
@@ -179,7 +180,7 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
 
         try:
             searchScope = ldap.SCOPE_SUBTREE
-            retrieveAttributes = self._user_attr_map.values() + \
+            retrieveAttributes = self._user_attr_map.keys() + \
                                  [self._login_attr]
             userRDN = self._login_attr + '=' + username
 
@@ -225,11 +226,16 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             "email": "john@example.com"}
 
         """
-        userObj = User.objects.get(id=id)
-        if userObj:
-            return {'id': id, 'display': userObj.first_name + ' ' +
-                userObj.last_name, 'email': userObj.email}
-        return None
+        result = self._query(self._user_base,
+                             '(%s=%s)' % (self._login_attr, id),
+                             self._user_attr_map.keys() + [self._login_attr])
+        assert(len(result) < 2)
+        user = {}
+        print result
+        print self._user_attr_map
+        for k, v in result[0][1].items():
+            user[self._user_attr_map[k]] = v[0]
+        return user
 
     #
     # Group Provider
@@ -310,5 +316,6 @@ def ldap_auth():
     except:
         raise ValueError('LDAP_GROUP_BASE must be specified in settings.py')
     _ldap_auth = LDAPBackend("ldap", url, base, user_login_attr,
-                             user_base, user_attr_map, group_base)
+                             user_base, user_attr_map, group_base,
+                             admin_user, admin_password)
     return _ldap_auth
