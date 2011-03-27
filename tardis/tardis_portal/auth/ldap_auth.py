@@ -42,6 +42,7 @@ from django.conf import settings
 
 from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider
 from tardis.tardis_portal.auth.interfaces import UserProvider
+from tardis.tardis_portal.models import UserAuthentication
 from tardis.tardis_portal.logger import logger
 
 
@@ -109,7 +110,8 @@ def get_ldap_email_for_user(username):
 
 class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     def __init__(self, name, url, base, login_attr, user_base,
-                 user_attr_map, group_base, admin_user='', admin_pass=''):
+                 user_attr_map, group_id_attr, group_base,
+                 group_attr_map, admin_user='', admin_pass=''):
         self.name = name
 
         # Basic info
@@ -129,7 +131,10 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         self._user_attr_map[self._login_attr] = "id"
 
         # Group Search
+        self._group_id = group_id_attr
         self._group_base = group_base
+        self._group_attr_map = group_attr_map
+        self._group_attr_map[self._group_id] = "id"
 
     def _query(self, base, filterstr, attrlist):
         """Safely query LDAP
@@ -245,8 +250,23 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     def getGroups(self, request):
         """return an iteration of the available groups.
         """
-        groups = request.user.groups.all()
-        return [g.id for g in groups]
+        try:
+            # check if a user exists that can authenticate using the VBL
+            # auth method
+            userAuth = UserAuthentication.objects.get(
+                userProfile__user=request.user,
+                authenticationMethod=self.name)
+        except UserAuthentication.DoesNotExist:
+            return
+        result = self._query(self._group_base,
+                             "(&(objectClass=posixGroup)(%s=%s))" % \
+                             ("memberUid", userAuth.username),
+                             self._group_attr_map.keys())
+        if not result:
+            return
+
+        for g, a in result:
+            yield a[self._group_id][0]
 
     def getGroupById(self, id):
         """return the group associated with the id::
@@ -314,10 +334,22 @@ def ldap_auth():
         raise ValueError('LDAP_USER_ATTR_MAP must be specified in settings.py')
 
     try:
+        group_id_attr = settings.LDAP_GROUP_ID_ATTR
+    except:
+        raise ValueError('LDAP_GROUP_ID_ATTR must be specified in settings.py')
+
+    try:
         group_base = settings.LDAP_GROUP_BASE
     except:
         raise ValueError('LDAP_GROUP_BASE must be specified in settings.py')
+
+    try:
+        group_attr_map = settings.LDAP_GROUP_ATTR_MAP
+    except:
+        raise ValueError('LDAP_GROUP_ATTR_MAP must be specified in settings.py')
+
     _ldap_auth = LDAPBackend("ldap", url, base, user_login_attr,
-                             user_base, user_attr_map, group_base,
-                             admin_user, admin_password)
+                             user_base, user_attr_map, group_id_attr,
+                             group_base, group_attr_map, admin_user,
+                             admin_password)
     return _ldap_auth

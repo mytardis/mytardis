@@ -94,3 +94,30 @@ class LDAPTest(TestCase):
                      'authMethod': 'ldap'}
         user = auth_service.authenticate('ldap', request=req)
         self.assertTrue(isinstance(user, User))
+
+        # Check that there is an entry in the user authentication table
+        from tardis.tardis_portal.models import UserAuthentication
+        userAuth = UserAuthentication.objects.get(
+            userProfile__user=user,
+            authenticationMethod=l.name)
+
+        user1 = UserAuthentication.objects.get(username=user.username,
+                        authenticationMethod='ldap').userProfile.user
+        self.assertEqual(user, user1)
+
+    def test_getgroups(self):
+        from django.contrib.auth.models import User
+        from django.core.handlers.wsgi import WSGIRequest
+        from tardis.tardis_portal.auth import auth_service
+        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req._post = {'username': 'testuser1',
+                     'password': 'kklk',
+                     'authMethod': 'ldap'}
+        user = auth_service.authenticate('ldap', request=req)
+        self.assertTrue(isinstance(user, User))
+        req.user = user
+
+        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        # Tests getGroups
+        l = ldap_auth()
+        self.assertEqual([g for g in l.getGroups(req)], ['full', 'systems'])
