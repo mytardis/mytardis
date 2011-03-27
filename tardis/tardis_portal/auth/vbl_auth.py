@@ -65,7 +65,7 @@ class VblGroupProvider(GroupProvider):
         """
         return an iteration of the available groups.
         """
-        if not request.session.__contains__(EPN_LIST):
+        if not EPN_LIST in request.session:
             # check if the user is linked to any experiments
             if not settings.VBLSTORAGEGATEWAY:
                 return []
