@@ -89,7 +89,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         except ldap.LDAPError, e:
             logger.error(e.message['desc'], ": ", self._url)
             return None
-        print self._url
         l.protocol_version = ldap.VERSION3
 
         try:
