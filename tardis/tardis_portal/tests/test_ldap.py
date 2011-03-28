@@ -135,3 +135,11 @@ class LDAPTest(TestCase):
         self.assertEqual([g for g in l.getGroupsForEntity('testuser1')],
                          [{'id': 'full', 'display': 'Full Group'},
                           {'id': 'systems', 'display': 'Systems Services'}])
+
+    def test_searchgroups(self):
+        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        l = ldap_auth()
+        self.assertEqual([g for g in l.searchGroups(id='fu*')],
+                         [{'id': 'full',
+                           'members': ['testuser1', 'testuser2', 'testuser3'],
+                           'display': 'Full Group'}])
