@@ -40,7 +40,7 @@ from fractions import Fraction
 try:
     from pyexiv2 import ImageMetadata
 except:
-    ImportError("Can't import pyexiv2 please install it")
+    raise ImportError("Can't import pyexiv2 please install it")
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter

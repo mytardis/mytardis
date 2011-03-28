@@ -37,6 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
+from nose.plugins.skip import SkipTest
 
 
 class ExifFilterTestCase(TestCase):
@@ -52,7 +53,10 @@ class ExifFilterTestCase(TestCase):
         from os import path
         import datetime
         from fractions import Fraction
-        from tardis.tardis_portal.filters.exif import EXIFFilter
+        try:
+            from tardis.tardis_portal.filters.exif import EXIFFilter
+        except:
+            raise SkipTest()
         f = EXIFFilter("EXIF", "http://exif.schema")
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
         metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
@@ -76,7 +80,10 @@ class ExifFilterTestCase(TestCase):
         from os import path
         import datetime
         from fractions import Fraction
-        from tardis.tardis_portal.filters.exif import EXIFFilter
+        try:
+            from tardis.tardis_portal.filters.exif import EXIFFilter
+        except:
+            raise SkipTest()
 
         metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
                     'Exif.Photo.ColorSpace': 65535,
@@ -107,14 +114,22 @@ class ExifFilterTestCase(TestCase):
         self.assertEqual(len(f.getParamaters(s, metadata)), 12)
 
     def test_create_schema(self):
-        from tardis.tardis_portal.filters.exif import EXIFFilter
+        try:
+            from tardis.tardis_portal.filters.exif import EXIFFilter
+        except:
+            raise SkipTest()
+
         f = EXIFFilter("EXIF", "http://exif.schema")
         self.assertEqual(str(f.getSchema()),
                          "Datafile schema: http://exif.schema")
 
     def test_update_schema(self):
         from os import path
-        from tardis.tardis_portal.filters.exif import EXIFFilter
+        try:
+            from tardis.tardis_portal.filters.exif import EXIFFilter
+        except:
+            raise SkipTest()
+
         f = EXIFFilter("EXIF", "http://exif.schema")
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
         self.assertEqual(len(f.getParamaters(f.getSchema(),
@@ -123,7 +138,11 @@ class ExifFilterTestCase(TestCase):
 
     def test_save_metadata(self):
         from os import path
-        from tardis.tardis_portal.filters.exif import EXIFFilter
+        try:
+            from tardis.tardis_portal.filters.exif import EXIFFilter
+        except:
+            raise SkipTest()
+
         from tardis.tardis_portal import models
 
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
