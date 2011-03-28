@@ -1,42 +1,15 @@
-<!--
- Copyright (c) 2010, Monash e-Research Centre
-   (Monash University, Australia)
- Copyright (c) 2010, VeRSI Consortium
-   (Victorian eResearch Strategic Initiative, Australia)
- All rights reserved.
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
-    *  Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    *  Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--->
 {% extends "mobile/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load parametertypecheck %}
 
 {% block script %}
 
+{% include "tardis_portal/javascript_libraries.html" %}
+
 <script type="text/javascript">
-	$(document).ready(function(e) {	
-		
-		
+	$(document).ready(function(e) {
+
+
 		$('.filterform').live('submit', function(e) {
 				e.preventDefault();
 
@@ -57,24 +30,24 @@
 
 									//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 									//{
-										$(this).next().html(loadingHTML);									
+										$(this).next().html(loadingHTML);
 									//}
 									$(this).next().load(href);
 
 								 },function(){
 									$(this).text("Show Metadata");
 									$(this).next().hide();
-								 });										
+								 });
 							});
-				
+
 						});
 
 
 			});
-				
-		
+
+
 		// show hide various metadata divs
-		
+
 	   $('#datasets').find('.dataset_info').end().find('h2').click(function() {
 	     $(this).next().toggle();
 	   });
@@ -83,7 +56,7 @@
 		e.preventDefault();
 	 	$(this).next().toggle();
 
-	   });	
+	   });
 
 
 		$('.pagelink').live('click', function( event ){
@@ -103,7 +76,7 @@
 
 										//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 										//{
-											$(this).next().html(loadingHTML);									
+											$(this).next().html(loadingHTML);
 										//}
 										$(this).next().load(href);
 
@@ -111,31 +84,31 @@
 										$(this).text("Show Metadata");
 										$(this).next().hide();
 									 });
-									
+
 									$(".dataset_selector_all").unbind('click');
 									$(".dataset_selector_none").unbind('click');
 									// file selectors
-									$(document).find('.dataset_selector_all').click(function() {	
+									$(document).find('.dataset_selector_all').click(function() {
 										$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
 								   });
 
-									$(document).find('.dataset_selector_none').click(function() {	
+									$(document).find('.dataset_selector_none').click(function() {
 										$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
-								   });											
+								   });
 								});
-												
+
 					//$(this).html(html);
-					
+
 				})
 				return false;
 			});
-	
+
 	// default text set
-	
-	$(".dataset_metadata_toggle").text("Show Dataset Metadata");	
-	
+
+	$(".dataset_metadata_toggle").text("Show Dataset Metadata");
+
 	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
 	// metadata text / ajax toggle
@@ -145,32 +118,32 @@
 	   $(this).text("Hide Dataset Metadata");
 	    var href= $(this).attr("href");
 		$(href).show();
-	
+
 	 },function(){
 	   $(this).text("Show Dataset Metadata");
 	    var href= $(this).attr("href");
-		$(href).hide();		
+		$(href).hide();
 	 });
-	
+
 	// datafile list
 	 $(".datafile_list_toggle").toggle(function(e){
 	   $(this).text("Hide Data Files");
 		var href = $(this).attr("href");
-		
 
-		$(this).next().html(loadingHTML + "<br/>");								
-		
+
+		$(this).next().html(loadingHTML + "<br/>");
+
 		var datafile_info_container = $(this).next();
 
 		// add initialisation for new datafile handlers as callback once ajax has loaded
 		// damn I love jQuery
 		$(this).next().load(href,function(e){
-			
-				$(document).ready(function(e){						
 
-					var datafile_info_selectors = 	
+				$(document).ready(function(e){
+
+					var datafile_info_selectors =
 						datafile_info_container.find('.datafile_info').hide().end().find('.datafile_info_toggle');
-					
+
 					datafile_info_selectors.text("Show Metadata");
 
 					// datafile metadata
@@ -180,40 +153,40 @@
 
 						//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 						//{
-							$(this).next().html(loadingHTML);									
+							$(this).next().html(loadingHTML);
 						//}
 						$(this).next().load(href);
-													
+
 					 },function(){
 						$(this).text("Show Metadata");
-					 });	
-					
+					 });
+
 					   datafile_info_selectors.click(function() {
-						$(this).next().toggle();				
-					   });		
-					
+						$(this).next().toggle();
+					   });
+
 						// file selectors
-						datafile_info_container.find('.dataset_selector_all').click(function() {	
+						datafile_info_container.find('.dataset_selector_all').click(function() {
 							$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
 
 					   });
-					
-						datafile_info_container.find('.dataset_selector_none').click(function() {	
+
+						datafile_info_container.find('.dataset_selector_none').click(function() {
 							$(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
 					   });
-					
+
 				});
-				
+
 			 });
-					
+
 	 },function(e){
 	   $(this).text("Show Data Files");
-	
+
 	 });
 
 	});
-</script>		
+</script>
 
 {% endblock %}
 
@@ -221,15 +194,15 @@
 
 <div class="post">
 	<span class="graytitle">{{experiment.title}}</span>
-	<ul class="pageitem"> 
-			
+	<ul class="pageitem">
+
 			<li class="textbox">
 
 					<div class="demo">
 
 					<div id="tabs">
-						
-						<div id="tabs-1">							
+
+						<div id="tabs-1">
 
                             <p>
                             <span class="header">Authors</span>
@@ -241,48 +214,44 @@
 							<p>
 							<span class="header">Abstract</span>
 							<div class="abstract">
-							{{ experiment.description|safe }}					
+							{{ experiment.description|safe }}
 							</div>
 							</p>
 
 							{% if experiment.handle %}
 							<p>
 							<strong>Persistent Handle:</strong>
-							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>							
-							</p>							
+							<a href="{{ handle }}/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>
+							</p>
 							{% endif %}
 
 							<p>
 							<span class="header">Institution</span>
-							{{experiment.institution_name}}<br/>							
+							{{experiment.institution_name}}<br/>
 							</p>
 
 							<p>
 								<div class="dataset_extrainfo">
 									{% if experiment.experimentparameterset_set.count %}
-									<strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
+									<strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
 									<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 									<ul>
 											{% for parameterset in experiment.experimentparameterset_set.all %}
 											<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-											
+
 											{% for parameter in parameterset.experimentparameter_set.all %}
 												<li><strong>{{ parameter.name.full_name }}: </strong>
-													{% if parameter.name.is_numeric %}
-														{{ parameter.numerical_value }} {{ parameter.name.units }}
-													{% else %}
-														{{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
-													{% endif %}
+												  {{ parameter.get|eparametertypecheck:parameter.id|safe }}
 												</li>
 											{% endfor %}
 											<br/><br/>
-											{% endfor %}									
-									</ul>	
+											{% endfor %}
+									</ul>
 									</div>
 									</div>
-									{% endif %}								
+									{% endif %}
 							</p>
-							
+
 							<p>
 								<span class="header">Dataset Information</span>
 								<div>
@@ -292,18 +261,18 @@
 												<li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
 												<li><strong>Files:</strong> {{datafiles.count}}</li>
 												<li><strong>Size:</strong> {{size|filesizeformat}}</li>
-										</ul>										
-									</div>								
+										</ul>
+									</div>
 								</div>
-							</p>							
+							</p>
 
 							<p>
 							<span class="header">Experiment Last Updated</span>
-							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>							
-							</p>		
+							{{ experiment.update_time|date:"jS F Y H:i" }}<br/>
+							</p>
 
                             <p align="right">
-							
+
 							{% if owners %}
 							<br/>
 							<span class="header">Experiment Administrators</span>
@@ -311,13 +280,13 @@
                                     {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
                             {% endfor %}
 							{% endif %}
-                            </p>																			
+                            </p>
 
 						</div>
 						<div id="tabs-2">
 							<br/>
 
-							<input type="hidden" name="expid" value="{{experiment.id}}">							
+							<input type="hidden" name="expid" value="{{experiment.id}}">
 							<div id="datasets">
 							{% for dataset in experiment.dataset_set.all %}
 								<span class="header" style="color: black;">
@@ -327,35 +296,31 @@
 								<div class="dataset_info">
 
 									<div class="dataset_description">
-									<span class="header">Dataset Description</span>{{ dataset.description|safe }}	
+									<span class="header">Dataset Description</span>{{ dataset.description|safe }}
 									</div>
 									<br/>
 
 									<div class="dataset_extrainfo">
 										{% if dataset.datasetparameterset_set.count %}
-										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>	
+										<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
 												{% for parameterset in dataset.datasetparameterset_set.all %}
 												<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-												
+
 												{% for parameter in parameterset.datasetparameter_set.all %}
 													<li><strong>{{ parameter.name.full_name }}: </strong>
-														{% if parameter.name.is_numeric %}
-															{{ parameter.numerical_value }} {{ parameter.name.units }}
-														{% else %}
-															{{ parameter.string_value|dsparametertypecheck:parameter.id|safe }}
-														{% endif %}
+													  {{ parameter.get|dsparametertypecheck:parameter.id|safe }}
 													</li>
 												{% endfor %}
 												<br/><br/>
 												{% endfor %}
-										</ul>	
+										</ul>
 										</div>
 										{% endif %}
 
 										<div>
-											<a class="button datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">Show Data Files</a>					
+											<a class="button datafile_list_toggle" href="/ajax/datafile_list/{{ dataset.id }}">Show Data Files</a>
 											<ul class="datafile_list">
 
 											</ul>
@@ -364,11 +329,11 @@
 									</div>
 								</div>
 							{% endfor %}
-							</div>									
-			
-			</li> 
-			
+							</div>
+
+			</li>
+
 	</ul>
-</div>	
+</div>
 
 {% endblock %}
