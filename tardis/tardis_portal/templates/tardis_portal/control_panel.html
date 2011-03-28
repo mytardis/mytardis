@@ -103,7 +103,10 @@
 		       }); // end remove user
 		     }
 
-		     else { alert('Error adding user. Perhaps they already have access?'); }
+		     else { 
+                       val = data;
+		       alert(val); 
+		     }
 		   },
 		   error: function(data) { alert('Error adding user'); }
 		  });
