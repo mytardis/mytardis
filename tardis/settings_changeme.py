@@ -137,6 +137,8 @@ VBLSTORAGEGATEWAY = \
 
 ACCOUNT_ACTIVATION_DAYS = 3
 
+# Email Configuration
+
 EMAIL_PORT = 587
 
 EMAIL_HOST = 'smtp.gmail.com'
@@ -146,6 +148,14 @@ EMAIL_HOST_USER = 'bob@bobmail.com'
 EMAIL_HOST_PASSWORD = 'bob'
 
 EMAIL_USE_TLS = True
+
+# Post Save Filters
+#POST_SAVE_FILTERS = [
+#    ("tardis.tardis_portal.filters.exif.make_filter",
+#     ["EXIF", "http://exif.schema"]),  # this filter requires pyexiv2
+#                                       # http://tilloy.net/dev/pyexiv2/
+#    ]
+
 
 LOG_FILENAME = '/var/tmp/tardis.log'
 

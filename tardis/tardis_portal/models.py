@@ -43,10 +43,11 @@ from os import path
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 
+from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import ExperimentManager
 
 
@@ -164,6 +165,10 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
+    def get_absolute_filepath(self):
+        store = settings.FILE_STORE_PATH
+        return path.join(store, str(self.id))
+
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Experiment``"""
@@ -181,8 +186,8 @@ class Experiment(models.Model):
 
 
 class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis Authorisation
-    framework
+    """The ExperimentACL table is the core of the `Tardis
+    Authorisation framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
@@ -374,6 +379,8 @@ class Dataset_File(models.Model):
             return abspath(join(FILE_STORE_PATH,
                                 str(self.dataset.experiment.id),
                                 self.url.partition('://')[2]))
+        elif self.protocol == 'staging':
+            return self.url
 
         # file should refer to an absolute location
         elif self.protocol == 'file':
@@ -432,6 +439,9 @@ def save_DatasetFile(sender, **kwargs):
 
 
 pre_save.connect(save_DatasetFile, sender=Dataset_File)
+
+staging_hook = StagingHook()
+post_save.connect(staging_hook, sender=Dataset_File)
 
 
 class Schema(models.Model):
