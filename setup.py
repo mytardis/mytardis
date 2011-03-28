@@ -21,6 +21,7 @@ setup(
         'setuptools',
         'lxml',
         'feedparser',
+        'elementtree',
         'django-registration',
         'django-extensions',
         'suds',

@@ -193,7 +193,7 @@ class ProcessExperiment:
                                 for pn in parameternames:
                                     # logger.debug("finding parameter %s in metadata" % pn.name)
                                     try:
-                                        if pn.is_numeric:
+                                        if pn.data_type == ParameterName.NUMERIC:
                                             value = \
                                                 getParameterFromTechXML(
                                                 tech_xml, pn.name)
@@ -273,7 +273,7 @@ class ProcessExperiment:
                                             "finding parameter " +
                                             pn.name + " in metadata")
                                         try:
-                                            if pn.is_numeric:
+                                            if pn.data_type == ParameterName.NUMERIC:
                                                 value = \
                                                 getParameterFromTechXML(
                                                     tech_xml, pn.name)
@@ -349,7 +349,7 @@ class ProcessExperiment:
                                     dfile = \
                                         Dataset_File.objects.get(
                                         pk=current_df_id)
-                                    if pn.is_numeric:
+                                    if pn.data_type == ParameterName.NUMERIC:
                                         value = getParameterFromTechXML(
                                             tech_xml, pn.name)
                                         if value != None:
@@ -467,7 +467,7 @@ class ProcessExperiment:
 
                                         dfile = Dataset_File.objects.get(
                                             pk=current_df_id)
-                                        if pn.is_numeric:
+                                        if pn.data_type == ParameterName.NUMERIC:
                                             value = \
                                 getParameterFromTechXML(tech_xml, pn.name)
 
