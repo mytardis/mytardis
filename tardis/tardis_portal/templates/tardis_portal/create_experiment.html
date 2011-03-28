@@ -25,9 +25,11 @@
 	var name1 = container_type + dataset_number + '-datafile-' + total + '-id';
 	var id1 = 'id_' + name1;
 
-
 	var name2 = container_type + dataset_number + '-datafile-' + total + '-url';
 	var id2 = 'id_' + name2;
+
+	var name3 = container_type + dataset_number + '-datafile-' + total + '-protocol';
+	var id3 = 'id_' + name3;
 
 	var li = $('<li></li>').attr({'class': 'datafile'});
 	var file = $('<input type="hidden"/>').attr({'value': filename, 'name': name, 'id': id});
@@ -36,6 +38,8 @@
 	li.append(file1);
 	var file2 = $('<input type="hidden"/>').attr({'value': '', 'name': name2, 'id': id2});
 	li.append(file2);
+	var file3 = $('<input type="hidden"/>').attr({'value': '', 'name': name3, 'id': id3, 'value':'staging'});
+	li.append(file3);
 	li.append($('<span class="file"></span>').text(filename));
 	var delete_file = $('<span class="remove_file">[x]</span>').click(function() {
     	    deleteDatafile(li, container_type + dataset_number + '-datafile');
