@@ -10,7 +10,7 @@
 
 	$(this).parents('.datafile_list'
 		       ).load("/ajax/datafile_list/" +
-			      dataset_id,function(){
+			      dataset_id + "/",function(){
 				  $(document).ready(function(){
 				      var datafile_info_selectors =
 					  $(this).find('.datafile_info'
