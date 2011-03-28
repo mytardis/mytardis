@@ -3,11 +3,14 @@ Created on 16/03/2011
 
 @author: Gerson Galang
 '''
+from datetime import datetime
+from os.path import join
+
+from django.conf import settings
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.schema.mets import *
 from tardis.tardis_portal.ProcessExperiment import getParameterFromTechXML
-from datetime import datetime
 
 
 class MetsExporter():
@@ -144,8 +147,12 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
-        outfile = open('/tmp/hello.g', 'w')
+        filename = join(experiment.get_or_create_directory(),
+                        'mets_expid_%s.xml' %str(experiment.id))
+        outfile = open(filename, 'w')
         _mets.export(outfile=outfile, level=1)
+        outfile.close()
+        return filename
 
     def getXMLDataFromParameterSets(self, parameterSets, type="experiment"):
 
@@ -165,14 +172,14 @@ class MetsExporter():
             elementName = "datafile"
             paramObj = DatafileParameter
 
-        print paramObj
+        # logger.debug(paramObj)
 
         parameters = paramObj.objects.filter(parameterset=parameterSet)
 
         metadataDict = {}
         for parameter in parameters:
-            print parameter.name
-            if parameter.name.is_numeric:
+            # print parameter.name
+            if parameter.name.data_type is ParameterName.NUMERIC:
                 metadataDict[parameter.name.name] = \
                     str(parameter.numerical_value) or 'None'
             else:

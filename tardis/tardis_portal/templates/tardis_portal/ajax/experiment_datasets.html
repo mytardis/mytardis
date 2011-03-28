@@ -1,5 +1,4 @@
 {% load basiccomparisonfilters %}
-{% load parametertypecheck %}
 {% load uploadify_tags %}
 
 {% block script %}
@@ -319,10 +318,6 @@
 	  <div class="dataset_info">
 	    <div class="dataset_description">
 	      <strong>Dataset Description</strong>: {{ dataset.description|safe }} <br />
-	      <strong>Dataset Equipment</strong>:
-	      {% for eq in dataset.equipment_set.all %}
-	        <a href="{% url tardis.tardis_portal.views.view_equipment eq.id %}">{{ eq.key }}</a>
-	      {% endfor %}
 	    </div> <!-- dataset_description -->
 
 	    <div class="dataset_extrainfo">

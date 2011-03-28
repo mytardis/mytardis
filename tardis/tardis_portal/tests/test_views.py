@@ -45,7 +45,6 @@ class UploadTestCase(TestCase):
         from django.contrib.auth.models import User
         from os import path, mkdir
         from tempfile import mkdtemp
-        from shutil import rmtree
         from django.conf import settings
         from tardis.tardis_portal import models
 
@@ -70,7 +69,7 @@ class UploadTestCase(TestCase):
                                     str(self.dataset.experiment.id))
 
         self.dataset_path = path.join(self.experiment_path,
-                   str(self.dataset.id))
+                                      str(self.dataset.id))
 
         if not path.exists(self.experiment_path):
             mkdir(self.experiment_path)
@@ -121,7 +120,6 @@ class UploadTestCase(TestCase):
         request.POST = post
         request.method = "POST"
         response = upload(request, self.dataset.id)
-
         test_files_db = models.Dataset_File.objects.filter(
             dataset__id=self.dataset.id)
 
