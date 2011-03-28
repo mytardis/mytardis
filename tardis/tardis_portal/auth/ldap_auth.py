@@ -50,64 +50,6 @@ auth_key = u'ldap'
 auth_display_name = u'LDAP'
 
 
-def get_ldap_username_for_email(email):
-    # return username if found, otherwise return none
-    l = None
-    try:
-        l = ldap.open(settings.LDAP_URL)
-        searchScope = ldap.SCOPE_SUBTREE
-
-        # retrieve all attributes - again adjust to your needs
-        # see documentation for more options
-        retrieveAttributes = ['uid']
-        searchFilter = '(|(mail=' + email + ')(mailalternateaddress=' \
-            + email + '))'
-
-        l.protocol_version = ldap.VERSION3
-        result = l.search_s(settings.BASE_DN, searchScope,
-                            searchFilter, retrieveAttributes)
-        return result[0][1][settings.LDAP_USER_RDN][0]
-
-    except ldap.LDAPError:
-        return ''
-
-    except IndexError:
-        return ''
-
-    finally:
-        if l:
-            l.unbind_s()
-
-
-def get_ldap_email_for_user(username):
-    # return email if found else return none
-
-    l = None
-    try:
-        l = ldap.open(settings.LDAP_URL)
-
-        searchScope = ldap.SCOPE_SUBTREE
-
-        # retrieve all attributes - again adjust to your needs
-        # see documentation for more options
-        retrieveAttributes = ['mail']
-        searchFilter = settings.LDAP_USER_RDN + '=' + username
-
-        l.protocol_version = ldap.VERSION3
-
-        result = l.search_s(settings.BASE_DN, searchScope,
-                            searchFilter, retrieveAttributes)
-        l.unbind_s()
-        return result[0][1]['mail'][0]
-    except ldap.LDAPError:
-        return ''
-    except IndexError, i:
-        return ''
-    finally:
-        if l:
-            l.unbind_s()
-
-
 class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     def __init__(self, name, url, base, login_attr, user_base,
                  user_attr_map, group_id_attr, group_base,
