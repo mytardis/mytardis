@@ -7,10 +7,22 @@
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 .. moduleauthor:: Russell Sim <russell.sim@gmail.com>
 
+To enable LDAP you'll need to specify which components of the LDAP
+authentication backend are enabled. In the *settings.py* add the
+following to either Authentication, User Provider, Group Provider
+slugs.::
+
+   'tardis.tardis_portal.auth.ldap_auth.ldap_auth'
+
+This is a wrapper function that allows initialisation of the LDAP
+provider using *settings.py* values.
 
 :py:func:`ldap_auth` Function
-------------------------------
+-----------------------------
 .. autofunction:: ldap_auth
+
+The following are configuration settings that are used when
+initialising the LDAP backend.
 
 .. attribute:: tardis.settings_changeme.LDAP_TLS
 
@@ -18,7 +30,7 @@
 
 .. attribute:: tardis.settings_changeme.LDAP_URL
 
-   Set the URL of the LDAP server, e.g. *ldap://localhost:389*
+   Set the URL of the LDAP server, e.g. *ldap://localhost:389/*
 
 .. attribute:: tardis.settings_changeme.LDAP_USER_LOGIN_ATTR
 
