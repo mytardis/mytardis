@@ -39,8 +39,9 @@ class LDAPTest(TestCase):
         from tardis.tardis_portal.tests.ldap_ldif import test_ldif
         import slapd
         global server
-        if which('slapd'):
+        if not which('slapd'):
             raise SkipTest()
+
         server = slapd.Slapd()
         server.set_port(38911)
         server.set_dn_suffix("dc=example, dc=com")
