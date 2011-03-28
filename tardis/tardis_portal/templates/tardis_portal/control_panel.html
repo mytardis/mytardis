@@ -230,9 +230,14 @@
 			  return false;
 			}); // end remove group
 		      }
-		      else { alert('Error adding group.'); }
+		      else { 
+			val = data;
+                        alert(val); 
+                      }
 		    },
-		    error: function(data) { alert('Error adding group. Perhaps the name already exists.'); }
+		    error: function(data) {
+		      alert('The group already has access to this experiment'); 
+                    }
 		  });
 		  return false;
 		});

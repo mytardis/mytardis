@@ -1714,7 +1714,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
             group = Group(name=groupname)
             group.save()
         except:
-	    return HttpResponse('Could not create group \'%s\'' % (groupname))
+	    return HttpResponse('Could not create group \'%s\' ' \
+ 		'(It is likely that it already exists)' % (groupname))
     else:
         try:
             group = Group.objects.get(name=groupname)
@@ -1722,7 +1723,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
 	    return HttpResponse('Group \'%s\' does not exist' % (groupname))
 
         if admin and not authz.is_group_admin(request, group.id):
-            return HttpResponse('Auth error')
+            return HttpResponse('You must be an admin to add permissions')
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
@@ -1731,6 +1732,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     if acl.count() > 0:
         # an acl role already exists
+        #todo: not sure why this was the only error condition 
+        # that returns an error
         return return_response_error(request)
 
     acl = ExperimentACL(experiment=experiment,
@@ -1742,12 +1745,16 @@ def add_experiment_access_group(request, experiment_id, groupname):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
+    # todo if the admin specified doesnt exist then the 'add group + add user'
+    # workflow bails halfway through. This seems to add a group which wont be
+    # displayed in the manage groups view but does appear in the admin
+    # page. Is this the desired behaviour?
     adminuser = None
     if admin:
         try:
             adminuser = User.objects.get(username=admin)
         except User.DoesNotExist:
-            return return_response_error(request)
+            return HttpResponse('User \'%s\' does not exist' % (admin))
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)
