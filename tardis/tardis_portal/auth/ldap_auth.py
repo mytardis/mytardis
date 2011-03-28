@@ -297,6 +297,21 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
                         'members': users}]
         return result
 
+    def getGroupsForEntity(self, id):
+        """return a list of groups associated with a particular entity id
+        """
+        result = self._query(self._group_base,
+                             "(&(objectClass=posixGroup)(%s=%s))" % \
+                             ("memberUid", id),
+                             self._group_attr_map.keys())
+        if not result:
+            return
+
+        for g, a in result:
+            group = {}
+            for k, v in a.items():
+                group[self._group_attr_map[k]] = v[0]
+            yield group
 
 _ldap_auth = None
 
