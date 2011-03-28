@@ -229,14 +229,28 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         return group
 
     def searchGroups(self, **filter):
-        result = []
-        groups = Group.objects.filter(**filter)
-        for g in groups:
-            users = [u.username for u in User.objects.filter(groups=g)]
-            result += [{'id': g.id,
-                        'display': g.name,
-                        'members': users}]
-        return result
+        reverse_attr = {}
+        for k, v in self._group_attr_map.items():
+            reverse_attr[v] = k
+
+        qstr = ""
+        for k, v in filter.items():
+            qstr += "(%s=%s)" % (reverse_attr[k], v)
+        result = self._query(self._group_base,
+                             "(&(objectClass=posixGroup)%s)" % qstr,
+                             self._group_attr_map.keys() + ["memberUid"])
+        print result
+        print "(&(objectClass=posixGroup)%s)" % qstr
+        if not result:
+            return
+
+        for g, a in result:
+            group = {}
+            for k, v in a.items():
+                if k in self._group_attr_map:
+                    group[self._group_attr_map[k]] = v[0]
+            group["members"] = a["memberUid"]
+            yield group
 
     def getGroupsForEntity(self, id):
         """return a list of groups associated with a particular entity id
