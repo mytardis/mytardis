@@ -272,6 +272,8 @@ _ldap_auth = None
 
 
 def ldap_auth():
+    """Return an initialised LDAP backend.
+    """
     global _ldap_auth
     if _ldap_auth:
         return _ldap_auth
