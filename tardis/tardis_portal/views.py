@@ -1554,7 +1554,8 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
-    return HttpResponse('One or more ACLs found for user (user already has experiment access)')
+    return HttpResponse('User already has experiment access.'\
+            'Please delete them if you would like to change user access rights')
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
