@@ -62,8 +62,6 @@ VBLSTORAGEGATEWAY = \
 
 
 # LDAP configuration
-LDAP_ENABLE = False
-
 LDAP_USE_TLS = False
 LDAP_URL = "ldap://localhost:38911/"
 
