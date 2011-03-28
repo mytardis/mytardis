@@ -121,3 +121,11 @@ class LDAPTest(TestCase):
         # Tests getGroups
         l = ldap_auth()
         self.assertEqual([g for g in l.getGroups(req)], ['full', 'systems'])
+
+    def test_getgroupbyid(self):
+        from tardis.tardis_portal.auth.ldap_auth import ldap_auth
+        # Tests getGroups
+        l = ldap_auth()
+        self.assertEqual(l.getGroupById('full'),
+                         {'id': 'full', 'display': 'Full Group'})
+        self.assertEqual(l.getGroupById('invalid'), None)

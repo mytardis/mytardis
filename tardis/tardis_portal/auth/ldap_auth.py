@@ -275,10 +275,17 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             "display": "Group Name",}
 
         """
-        groupObj = Group.objects.get(id=id)
-        if groupObj:
-            return {'id': id, 'display': groupObj.name}
-        return None
+        result = self._query(self._group_base,
+                             "(&(objectClass=posixGroup)(%s=%s))" % \
+                             (self._group_id, id),
+                             self._group_attr_map.keys())
+        if not result:
+            return None
+
+        group = {}
+        for k, v in result[0][1].items():
+            group[self._group_attr_map[k]] = v[0]
+        return group
 
     def searchGroups(self, **filter):
         result = []
