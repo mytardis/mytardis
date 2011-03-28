@@ -1528,12 +1528,12 @@ def add_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
+	return HttpResponse('User %s does not exist' % (username))
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return return_response_error(request)
+	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
@@ -1554,8 +1554,7 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
-    return return_response_error(request)
-
+    return HttpResponse('One or more ACLs found for user (user already has experiment access)')
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
@@ -1708,22 +1707,22 @@ def add_experiment_access_group(request, experiment_id, groupname):
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-        return return_response_error(request)
-
+	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
+    
     if create:
         try:
             group = Group(name=groupname)
             group.save()
         except:
-            return return_response_error(request)
+	    return HttpResponse('Could not create group \'%s\'' % (groupname))
     else:
         try:
             group = Group.objects.get(name=groupname)
         except Group.DoesNotExist:
-            return return_response_error(request)
+	    return HttpResponse('Group \'%s\' does not exist' % (groupname))
 
         if admin and not authz.is_group_admin(request, group.id):
-            return return_response_error(request)
+            return HttpResponse('Auth error')
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
