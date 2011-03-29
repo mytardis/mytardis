@@ -1554,8 +1554,7 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
-    return HttpResponse('User already has experiment access.'\
-            'Please delete them if you would like to change user access rights')
+    return HttpResponse('User already has experiment access')
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
