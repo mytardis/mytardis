@@ -1388,12 +1388,16 @@ def retrieve_user_list(request):
     authMethod = request.GET['authMethod']
 
     if authMethod == 'localdb':
-        users = [userProfile.user for userProfile in UserProfile.objects.filter(isDjangoAccount=True)]
-        users =  sorted(users, key=lambda user: user.username)
+        users = [userProfile.user for userProfile in
+                 UserProfile.objects.filter(isDjangoAccount=True)]
+        users = sorted(users, key=lambda user: user.username)
     else:
-        users = [userAuth for userAuth in UserAuthentication.objects.filter(authenticationMethod=authMethod) if userAuth.userProfile.isDjangoAccount == False]
+        users = [userAuth for userAuth in
+                 UserAuthentication.objects.filter(
+                     authenticationMethod=authMethod)
+                 if userAuth.userProfile.isDjangoAccount == False]
         if users:
-            users =  sorted(users, key=lambda userAuth: userAuth.username)
+            users = sorted(users, key=lambda userAuth: userAuth.username)
         else:
             users = User.objects.none()
     c = Context({'users': users})
