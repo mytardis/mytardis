@@ -90,7 +90,7 @@ download_urls = patterns(
 group_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
-    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
+    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'remove_user_from_group'),

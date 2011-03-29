@@ -62,16 +62,17 @@
           $("#id_adduser").autocomplete(users.split(" "), {
             matchContains: true
           });
+        });
 
-          $("#id_adduser").blur(function(event) {
-            $("#id_adduser").val($("#id_adduser").val());
-          });
+        $("#id_adduser").blur(function(event) {
+          $("#id_adduser").val($("#id_adduser").val());
+        });
 
         $("#user.form_submit").unbind('click');
         $("#user.form_submit").click(function(event) {
           event.preventDefault();
           var usersuggest = $(this).siblings(".usersuggest").val();
-          var authMethod = $("#id_authMethod").val();
+          var authMethod = $(this).siblings("#id_authMethod").val();
           var experiment_id = $(this).siblings(".experiment_id").val();
           var users_div = $(this).parents('.access_list1').children('.users');
           var canRead = $(this).siblings(".canRead").is(':checked');
@@ -158,16 +159,35 @@
         $(this).next().load(href, function(){
 
           $(document).ready(function(){
-        var users = (function () {
-          var val = null;
-          $.ajax({
-            'async': false,
-            'global': false,
-            'url': '/ajax/user_list',
-            'success': function (data) { val = data; }
-          });
-          return val;
-        })();
+
+        	  var users = (function () {
+                var val = null;
+                var authMethod = $("#id_authMethod").val();
+                var data = { authMethod: authMethod };
+                $.ajax({
+                  'async': false,
+                  'global': false,
+                  'data': data,
+                  'url': '/ajax/user_list',
+                  'success': function (data) {
+                     val = data;
+                   }
+                });
+                return val;
+              })();
+
+        // TODO: remove this commented block once we get the new feature with 
+        //       auth dropdown to work.
+        //var users = (function () {
+        //  var val = null;
+        //  $.ajax({
+        //    'async': false,
+        //    'global': false,
+        //    'url': '/ajax/user_list',
+        //    'success': function (data) { val = data; }
+        //  });
+        //  return val;
+        //})();
 
         var groups = (function () {
           var val = null;
@@ -183,12 +203,12 @@
 
         $(".usersuggest").autocomplete(users.split(" "), {
           matchContains: true,
-          minChars: 0
+          //minChars: 0
         });
 
         $(".groupsuggest").autocomplete(groups.split(" ~ "), {
           matchContains: true,
-          minChars: 0
+          //minChars: 0
         });
 
         $("#group.form_submit").unbind('click');
@@ -198,12 +218,13 @@
           var experiment_id = $(this).siblings(".experiment_id").val();
           var usersuggest = $(this).siblings(".usersuggest").val();
           var groupsuggest = $(this).siblings(".groupsuggest").val();
+          var authMethod = $(this).siblings("#id_authMethod").val();
           var groups_div = $(this).parents('.access_list2').children('.groups');
           var create = $(this).siblings(".creategroup").is(':checked');
           var canRead = $(this).siblings(".canRead").is(':checked');
           var canWrite = $(this).siblings(".canWrite").is(':checked');
           var canDelete = $(this).siblings(".canDelete").is(':checked');
-          var permissions = '?create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+          var permissions = '?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
           action = experiment_id + '/access_list/add/group/' + groupsuggest + permissions;
 
           $.ajax({
