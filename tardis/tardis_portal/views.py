@@ -1501,10 +1501,7 @@ def remove_user_from_group(request, group_id, username):
     except GroupAdmin.DoesNotExist:
         pass
 
-    c = Context({})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/remove_member_result.html', c))
-
+    return HttpResponse('OK')
 
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
@@ -1554,7 +1551,8 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
-    return HttpResponse('User already has experiment access')
+    return HttpResponse('User already has experiment access.'\
+            'Please delete them if you would like to change user access rights')
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
