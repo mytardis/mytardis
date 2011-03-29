@@ -50,6 +50,8 @@ class ModelTestCase(TestCase):
 
     def test_experiment(self):
         from tardis.tardis_portal import models
+        from django.conf import settings
+        from os import path
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
                                 created_by=self.user,
@@ -64,6 +66,8 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.public, False)
         self.assertEqual(exp.get_absolute_url(), '/experiment/view/1/',
                          exp.get_absolute_url() + ' != /experiment/view/1/')
+        self.assertEqual(exp.get_absolute_filepath(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
     def test_authors(self):
         from tardis.tardis_portal import models

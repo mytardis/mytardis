@@ -97,21 +97,15 @@ class ExperimentManager(models.Manager):
         if not request.user.is_authenticated():
             raise PermissionDenied
 
-        # does the user own this experiment?
+        # check if there is a user based authorisation role
         query = Q(experiment=experiment,
                   pluginId=django_user,
                   entityId=str(request.user.id),
-                  isOwner=True)
-
-        # check if there is a user based authorisation role
-        query |= Q(experiment=experiment,
-                   pluginId=django_user,
-                   entityId=str(request.user.id),
-                   canRead=True)\
-                   & (Q(effectiveDate__lte=datetime.today())
-                      | Q(effectiveDate__isnull=True))\
-                   & (Q(expiryDate__gte=datetime.today())
-                      | Q(expiryDate__isnull=True))
+                  canRead=True)\
+                  & (Q(effectiveDate__lte=datetime.today())
+                     | Q(effectiveDate__isnull=True))\
+                  & (Q(expiryDate__gte=datetime.today())
+                     | Q(expiryDate__isnull=True))
 
         # and finally check all the group based authorisation roles
         for name, group in request.groups:
@@ -146,14 +140,15 @@ class ExperimentManager(models.Manager):
             return []
 
         # build the query to filter the ACL table
-        from tardis.tardis_portal.models import ExperimentACL
-        experiments = super(ExperimentManager, self).get_query_set().filter(
-            experimentacl__pluginId=django_user,
-            experimentacl__entityId=str(request.user.id),
-            experimentacl__isOwner=True,
-            )
+        query = Q(experimentacl__pluginId=django_user,
+                  experimentacl__entityId=str(request.user.id),
+                  experimentacl__isOwner=True)\
+                  & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                     | Q(experimentacl__effectiveDate__isnull=True))\
+                  & (Q(experimentacl__expiryDate__gte=datetime.today())
+                     | Q(experimentacl__expiryDate__isnull=True))
 
-        return experiments
+        return super(ExperimentManager, self).get_query_set().filter(query)
 
     def users(self, request, experiment_id):
         """
