@@ -212,7 +212,7 @@ class AddUserPermissionsForm(forms.Form):
     write = forms.BooleanField(label='WRITE', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='DELETE', required=False)
-    delete.widget.attrs['class'] = 'canDelete'    
+    delete.widget.attrs['class'] = 'canDelete'
 
 
 class AddGroupPermissionsForm(forms.Form):
@@ -231,7 +231,7 @@ class AddGroupPermissionsForm(forms.Form):
     write = forms.BooleanField(label='WRITE', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='DELETE', required=False)
-    delete.widget.attrs['class'] = 'canDelete'  
+    delete.widget.attrs['class'] = 'canDelete'
 
 class ManageGroupPermissionsForm(forms.Form):
 
@@ -690,12 +690,12 @@ def createSearchExperimentForm():
             max_length=20, required=False)
     fields['date'] = forms.DateTimeField(label='Experiment Date',
             widget=SelectDateWidget(), required=False)
-    
+
     formutilFields = {}
-    
+
     formutilFields['main fields'] = ['title', 'description', 'institutionName', 'creator', 'date']
-    
-    for schema, parameterNames in parameterNameGroups.items():       
+
+    for schema, parameterNames in parameterNameGroups.items():
         formutilFields[schema] = []
 
         for parameterName in parameterNames:

@@ -1415,7 +1415,7 @@ def retrieve_access_list_user(request, experiment_id):
 
     from tardis.tardis_portal.forms import AddUserPermissionsForm
     users = Experiment.safe.users(request, experiment_id)
-    
+
     c = Context({'users': users, 'experiment_id': experiment_id,
                  'addUserPermissionsForm': AddUserPermissionsForm()})
     return HttpResponse(render_response_index(request,
@@ -1548,7 +1548,7 @@ def add_experiment_access_user(request, experiment_id, username):
     canRead = False
     canWrite = False
     canDelete = False
-    
+
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
@@ -1560,7 +1560,7 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
-    
+
     try:
         authMethod = request.GET['authMethod']
         if authMethod == 'localdb':
