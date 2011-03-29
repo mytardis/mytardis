@@ -20,14 +20,16 @@
 {% block content %}
     <div id="content">
       <div class="post">
-	<h1 class="title"><a href="#">Search Datafile</a></h1>
+	<h1 class="title"><a href="#">Search</a></h1>
 	<div class="searchmenu" style="padding-left: 10px">Search <a href="{% url tardis.tardis_portal.views.search_experiment %}">Experiment</a>
 	  | <form action="{% url tardis.tardis_portal.views.search_datafile %}" method="GET" style="display: inline">
 	    {{ searchDatafileSelectionForm.type }}
 	    <noscript><input type="submit" value="Submit"></noscript>
 	  </form>
-	  | <span style="display: inline">
-	  <a href="{% url tardis.tardis_portal.views.search_equipment %}">Equipment</a></span>
+	  {% for key,value in links.items %}
+	    | <a href="{{ value }}">{{ key|capfirst }}</a>
+          {% endfor %}
+	  <span style="display: inline">
 	</div> <!-- searchmenu -->
 	<br/>
 	<div class="entry">

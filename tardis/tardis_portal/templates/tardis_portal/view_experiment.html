@@ -1,6 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
-{% load parametertypecheck %}
 {% load uploadify_tags %}
 
 {% block script %}
@@ -53,8 +52,9 @@
   <div id="fullpage">
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
-      <a href="{{ experiment.get_edit_url }}">[Edit]</a>
-    </h1>
+        <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+      </h1>
+    </div>  
 
     <div class="tabcontainer">
       <div id="tabs">
