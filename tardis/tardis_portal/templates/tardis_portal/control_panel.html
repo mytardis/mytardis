@@ -40,7 +40,7 @@
 
       $(this).next().html(loadingHTML + "</br>");
 
-      $(this).next().load(href, function() {                      
+      $(this).next().load(href, function() {
         $(document).ready(function() {
           $("#id_adduser").unbind('click focus');
           $('#id_adduser').bind('click focus', function() {
@@ -158,9 +158,9 @@
 
         $(this).next().load(href, function(){
 
-          $(document).ready(function(){
+        $(document).ready(function(){
 
-        	  var users = (function () {
+            var users = (function () {
                 var val = null;
                 var authMethod = $("#id_authMethod").val();
                 var data = { authMethod: authMethod };
@@ -176,7 +176,7 @@
                 return val;
               })();
 
-        // TODO: remove this commented block once we get the new feature with 
+        // TODO: remove this commented block once we get the new feature with
         //       auth dropdown to work.
         //var users = (function () {
         //  var val = null;

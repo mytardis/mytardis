@@ -3,7 +3,7 @@
   {% include "tardis_portal/ajax/add_user_to_group_result.html" %}
 {% endfor %}
 </div> <!-- users -->
-<p>  
+<p>
   {% for field in manageGroupPermissionsForm %}
       {% if field.label == "Authentication Method" %}
           {{ field.label }} {{ field }}

@@ -5,7 +5,7 @@
 </div> <!-- users -->
 <p>
   <label>Add user: </label><br/>
-  
+
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
 	      {{ field.label }} {{ field }}
