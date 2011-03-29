@@ -52,6 +52,7 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
 from tardis.tardis_portal import models
@@ -213,6 +214,34 @@ class AddUserPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='DELETE', required=False)
     delete.widget.attrs['class'] = 'canDelete'    
 
+
+class AddGroupPermissionsForm(forms.Form):
+
+    addgroup = forms.CharField(label='Group', required=False, max_length=100)
+    addgroup.widget.attrs['class'] = 'groupsuggest'
+    create = forms.BooleanField(label='CREATE?', required=False)
+    create.widget.attrs['class'] = 'creategroup'
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+    adduser = forms.CharField(label='User', required=False, max_length=100)
+    adduser.widget.attrs['class'] = 'usersuggest'
+    read = forms.BooleanField(label='READ', required=False, initial=True)
+    read.widget.attrs['class'] = 'canRead'
+    write = forms.BooleanField(label='WRITE', required=False)
+    write.widget.attrs['class'] = 'canWrite'
+    delete = forms.BooleanField(label='DELETE', required=False)
+    delete.widget.attrs['class'] = 'canDelete'  
+
+class ManageGroupPermissionsForm(forms.Form):
+
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+    adduser = forms.CharField(label='User', required=False, max_length=100)
+    adduser.widget.attrs['class'] = 'usersuggest'
+    admin = forms.BooleanField(label='Group Admin', required=False, initial=True)
+    admin.widget.attrs['class'] = 'isAdmin'
 
 class DatafileSearchForm(forms.Form):
 

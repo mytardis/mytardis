@@ -1415,6 +1415,8 @@ def retrieve_access_list_user(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
+    from tardis.tardis_portal.forms import AddGroupPermissionsForm
+
     user_owned_groups = Experiment.safe.user_owned_groups(request,
                                                           experiment_id)
     system_owned_groups = Experiment.safe.system_owned_groups(request,
@@ -1422,7 +1424,8 @@ def retrieve_access_list_group(request, experiment_id):
 
     c = Context({'user_owned_groups': user_owned_groups,
                  'system_owned_groups': system_owned_groups,
-                 'experiment_id': experiment_id})
+                 'experiment_id': experiment_id,
+                 'addGroupPermissionsForm': AddGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group.html', c))
 
@@ -1439,8 +1442,10 @@ def retrieve_access_list_external(request, experiment_id):
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
+    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = Context({'users': users, 'group_id': group_id})
+    c = Context({'users': users, 'group_id': group_id,
+                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_user_list.html', c))
 
@@ -1457,6 +1462,7 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
+    authMethod = 'localdb'
     isAdmin = False
 
     if 'isAdmin' in request.GET:
@@ -1464,8 +1470,16 @@ def add_user_to_group(request, group_id, username):
             isAdmin = True
 
     try:
-        user = User.objects.get(username=username)
+        authMethod = request.GET['authMethod']
+        if authMethod == 'localdb':
+            username = 'localdb_' + username
+            user = User.objects.get(username=username)
+        else:
+            user = UserAuthentication.objects.get(username=username,
+                authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
+        return return_response_error(request)
+    except UserAuthentication.DoesNotExist:
         return return_response_error(request)
 
     try:
@@ -1700,7 +1714,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     canRead = False
     canWrite = False
     canDelete = False
-    admin = ''
+    authMethod = 'localdb'
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
@@ -1726,6 +1740,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     except Experiment.DoesNotExist:
         return return_response_error(request)
 
+    # TODO: enable transaction management here...
     if create:
         try:
             group = Group(name=groupname)
@@ -1762,8 +1777,16 @@ def add_experiment_access_group(request, experiment_id, groupname):
     adminuser = None
     if admin:
         try:
-            adminuser = User.objects.get(username=admin)
+            authMethod = request.GET['authMethod']
+            if authMethod == 'localdb':
+                username = 'localdb_' + admin.strip()
+                adminuser = User.objects.get(username=username)
+            else:
+                adminuser = UserAuthentication.objects.get(username=admin,
+                    authenticationMethod=authMethod).userProfile.user
         except User.DoesNotExist:
+            return return_response_error(request)
+        except UserAuthentication.DoesNotExist:
             return return_response_error(request)
 
         # create admin for this group and add it to the group
