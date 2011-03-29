@@ -38,7 +38,8 @@ views.py
 
 from base64 import b64decode
 import urllib2
-from urllib import urlencode, unquote_plus, urlopen
+from urllib import urlencode, urlopen
+from os import path
 
 from django.template import Context
 from django.conf import settings
@@ -62,10 +63,10 @@ from tardis.tardis_portal.forms import ExperimentForm, \
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
+    staging_traverse, write_uploaded_file_to_dataset
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
-    DatafileParameterSet, XML_data, ParameterName, GroupAdmin, Schema, \
+    DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, Equipment, ExperimentParameterSet, DatasetParameterSet
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
@@ -74,7 +75,7 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    return_response_error_message
+    return_response_error_message, render_response_search
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
@@ -126,6 +127,46 @@ def site_settings(request):
                             mimetype='application/xml')
 
     return return_response_error(request)
+
+
+def load_image(request, experiment_id, parameter):
+    from os.path import abspath, join
+    file_path = abspath(join(settings.FILE_STORE_PATH,
+                             str(experiment_id),
+                             parameter.string_value))
+
+    from django.core.servers.basehttp import FileWrapper
+    wrapper = FileWrapper(file(file_path))
+    return HttpResponse(wrapper, mimetype=parameter.name.units)
+
+
+def load_experiment_image(request, parameter_id):
+    parameter = ExperimentParameter.objects.get(pk=parameter_id)
+    experiment_id = parameter.parameterset.experiment.id
+    if authz.has_experiment_access(request, experiment_id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
+
+
+def load_dataset_image(request, parameter_id):
+    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    dataset = parameter.parameterset.dataset
+    experiment_id = dataset.experiment.id
+    if  authz.has_dataset_access(request, dataset.id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
+
+
+def load_datafile_image(request, parameter_id):
+    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    dataset_file = parameter.parameterset.dataset_file
+    experiment_id = dataset_file.dataset.experiment.id
+    if authz.has_datafile_access(request, dataset_file.id):
+        return load_image(request, experiment_id, parameter)
+    else:
+        return return_response_error(request)
 
 
 @authz.experiment_access_required
@@ -211,11 +252,9 @@ def experiment_index(request):
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'next': '/experiment/view/',
-        'data_pressed': True,
-        'searchDatafileSelectionForm':
-            getNewSearchDatafileSelectionForm()})
+        'data_pressed': True})
 
-    return HttpResponse(render_response_index(request,
+    return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment_index.html', c))
 
 
@@ -401,6 +440,10 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH,
+                                       df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -414,7 +457,6 @@ def create_experiment(request,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
-            stage_files(full_experiment['dataset_files'], experiment.id)
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(), params]))
@@ -452,12 +494,18 @@ def edit_experiment(request, experiment_id,
               })
 
     if request.method == 'POST':
-        staging = StagingHook(None, experiment_id)
         form = ExperimentForm(request.POST, request.FILES,
-                              instance=experiment, extra=0,
-                              datafile_post_save_cb=staging)
+                              instance=experiment, extra=0)
         if form.is_valid():
-            form.save()
+            full_experiment = form.save(commit=False)
+
+            experiment = full_experiment['experiment']
+            experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH, df.url)
+            full_experiment.save_m2m()
+
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(),
@@ -663,10 +711,8 @@ def register_experiment_ws_xmldata(request):
 
             eid = e.id
 
-
             # TODO: this entire function needs a fancy class with functions for
             # each part..
-
             from os import makedirs, system
             from os.path import exists, join
             dir = join(settings.FILE_STORE_PATH, str(eid))
@@ -747,23 +793,6 @@ def retrieve_parameters(request, dataset_file_id):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
-
-
-@authz.datafile_access_required
-def retrieve_xml_data(request, dataset_file_id):
-    from pygments import highlight
-    from pygments.lexers import XmlLexer
-    from pygments.formatters import HtmlFormatter
-
-    xml_data = XML_data.objects.get(datafile__pk=dataset_file_id)
-
-    formatted_xml = highlight(xml_data.data, XmlLexer(),
-                              HtmlFormatter(style='default',
-                              noclasses=True))
-
-    c = Context({'formatted_xml': formatted_xml})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/xml_data.html', c))
 
 
 @authz.dataset_access_required
@@ -851,12 +880,12 @@ def search_experiment(request):
     else:
         return __forwardToSearchExperimentFormPage(request)
 
-    c = Context({
-        'experiments': experiments,
-        'bodyclass': bodyclass,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'header': 'Search Experiment',
+                 'experiments': experiments,
+                 'bodyclass': bodyclass})
+
     url = 'tardis_portal/search_experiment_results.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def search_quick(request):
@@ -1037,7 +1066,7 @@ def __filterParameters(parameters, datafile_results,
         try:
 
             # if parameter is a string...
-            if not parameter.is_numeric:
+            if not parameter.data_type == ParameterName.NUMERIC:
                 if searchFilterData[parameter.name] != '':
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
@@ -1176,12 +1205,10 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # the searchForm will be used by custom written templates whereas the
     # modifiedSearchForm will be used by the 'generic template' that the
     # dynamic search datafiles form uses.
-    c = Context({
-        'searchForm': searchForm,
-        'modifiedSearchForm': modifiedSearchForm,
-        'searchDatafileSelectionForm':
-        getNewSearchDatafileSelectionForm()})
-    return HttpResponse(render_response_index(request, url, c))
+    c = Context({'header': 'Search Datafile',
+                 'searchForm': searchForm,
+                 'modifiedSearchForm': modifiedSearchForm})
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def __forwardToSearchExperimentFormPage(request):
@@ -1189,11 +1216,9 @@ def __forwardToSearchExperimentFormPage(request):
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({
-        'searchForm': searchForm,
-        'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
+    c = Context({'searchForm': searchForm})
     url = 'tardis_portal/search_experiment_form.html'
-    return HttpResponse(render_response_index(request, url, c))
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def __getSearchDatafileForm(request, searchQueryType):
@@ -1998,57 +2023,6 @@ def upload_files(request, dataset_id,
     url = reverse('tardis.tardis_portal.views.upload_complete')
     c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
     return render_to_response(template_name, c)
-
-
-def equipment_index(request):
-
-    c = Context({'object_list': Equipment.objects.all(),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/equipment_list.html'
-    return HttpResponse(render_response_index(request, url, c))
-
-
-def view_equipment(request, object_id):
-
-    c = Context({'object': Equipment.objects.get(pk=object_id),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/equipment_detail.html'
-    return HttpResponse(render_response_index(request, url, c))
-
-
-def search_equipment(request):
-    if request.method == 'POST':
-        form = EquipmentSearchForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            q = Equipment.objects.all()
-            if data['key']:
-                q = q.filter(key__icontains=data['key'])
-            if data['description']:
-                q = q.filter(description__icontains=data['description'])
-            if data['make']:
-                q = q.filter(make__icontains=data['make'])
-            if data['serial']:
-                q = q.filter(serial__icontains=data['serial'])
-            if data['type']:
-                q = q.filter(type__icontains=data['type'])
-
-            c = Context({'object_list': q,
-                         'searchDatafileSelectionForm':
-                             getNewSearchDatafileSelectionForm()})
-            url = 'tardis_portal/equipment_list.html'
-            return HttpResponse(render_response_index(request, url, c))
-    else:
-        form = EquipmentSearchForm()
-
-    c = Context({'form': form,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/search_equipment.html'
-    return HttpResponse(render_response_index(request, url, c))
-
 
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)

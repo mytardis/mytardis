@@ -1,4 +1,23 @@
-{% load parametertypecheck %}
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function() {
+    $(".dataset_metadata_toggle").toggle(
+	function(){
+	    $(this).text("[Show]");
+	    var href= $(this).attr("href");
+	    $(href).hide();
+	},
+	function(){
+	    $(this).text("[Hide]");
+	    var href= $(this).attr("href");
+	    $(href).show();
+	}
+    );
+    $(".dataset_metadata_toggle").click();
+});
+
+</script>
+{% endblock %}
 
 <script type="text/javascript" charset="utf-8">
 	$(".experiment_metadata_toggle").text("[Show]");	

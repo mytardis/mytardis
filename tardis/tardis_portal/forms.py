@@ -257,18 +257,6 @@ class IRDatafileSearchForm(DatafileSearchForm):
     pass
 
 
-class EquipmentSearchForm(forms.Form):
-
-    key = forms.CharField(label='Short Name',
-        max_length=30, required=False)
-    description = forms.CharField(label='Description',
-        required=False)
-    make = forms.CharField(label='Make', max_length=60, required=False)
-    model = forms.CharField(label='Model', max_length=60, required=False)
-    type = forms.CharField(label='Type', max_length=60, required=False)
-    serial = forms.CharField(label='Serial No', max_length=60, required=False)
-
-
 class ImportParamsForm(forms.Form):
 
     username = forms.CharField(max_length=400, required=True)
@@ -347,7 +335,7 @@ class DataFileFormSet(BaseInlineFormSet):
         datafile.filename = basename(filepath)
 
         if not 'url' in form.cleaned_data or not form.cleaned_data['url']:
-            datafile.url = 'file://' + filepath
+            datafile.url = filepath
 
         if not 'size' in form.cleaned_data or not form.cleaned_data['size']:
             datafile.size = u'0'
@@ -358,16 +346,12 @@ class DataFileFormSet(BaseInlineFormSet):
         if commit == True:
             datafile = super(DataFileFormSet, self).save_new(form,
                                                              commit=commit)
-        if self._post_save_cb:
-            self._post_save_cb(datafile, True)
         return datafile
 
     def save_existing(self, form, instance, commit=True):
         datafile = super(DataFileFormSet, self).save_existing(form,
                                                               instance,
                                                               commit=commit)
-        if self._post_save_cb:
-            self._post_save_cb(datafile, False)
         return datafile
 
 
@@ -388,8 +372,7 @@ class ExperimentForm(forms.ModelForm):
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
-                 empty_permitted=False, instance=None, extra=0,
-                 datafile_post_save_cb=None):
+                 empty_permitted=False, instance=None, extra=0):
         self.author_experiments = []
         self.datasets = {}
         self.dataset_files = {}
@@ -442,7 +425,6 @@ class ExperimentForm(forms.ModelForm):
         for i, df in enumerate(self.datasets.forms):
             self.dataset_files[i] = datafile_formset(data=data,
                                          instance=df.instance,
-                                         post_save_cb=datafile_post_save_cb,
                                          prefix="dataset-%s-datafile" % i)
 
     def _parse_authors(self, data=None):
@@ -596,7 +578,7 @@ def createSearchDatafileForm(searchQueryType):
                 initial=searchQueryType)
 
         for parameterName in parameterNames:
-            if parameterName.is_numeric:
+            if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
                     fields[parameterName.name + 'From'] = \
@@ -660,7 +642,7 @@ def createSearchExperimentForm():
             widget=SelectDateWidget(), required=False)
 
     for parameterName in parameterNames:
-        if parameterName.is_numeric:
+        if parameterName.data_type == ParameterName.NUMERIC:
             if parameterName.comparison_type \
                 == ParameterName.RANGE_COMPARISON:
                 fields[parameterName.name + 'From'] = \

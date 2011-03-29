@@ -6,9 +6,9 @@ Created on 19/01/2011
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
-from tardis.tardis_portal.models import UserProfile, UserAuthentication
-from tardis.tardis_portal.auth.vbl_auth import EPN_LIST
+from tardis.tardis_portal.models import UserAuthentication
 from django.utils import simplejson
+
 
 class AuthenticationTestCase(TestCase):
 

@@ -1,13 +1,12 @@
 # encoding: utf-8
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding field 'Schema.name'
         db.add_column('tardis_portal_schema', 'name', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, blank=True), keep_default=False)
 
@@ -20,9 +19,8 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'ParameterName', fields ['name', 'schema']
         db.create_unique('tardis_portal_parametername', ['name', 'schema_id'])
 
-
     def backwards(self, orm):
-        
+
         # Removing unique constraint on 'ParameterName', fields ['name', 'schema']
         db.delete_unique('tardis_portal_parametername', ['name', 'schema_id'])
 
@@ -34,7 +32,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'Schema.subtype'
         db.delete_column('tardis_portal_schema', 'subtype')
-
 
     models = {
         'auth.group': {
