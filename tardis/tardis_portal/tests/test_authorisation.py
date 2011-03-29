@@ -141,7 +141,7 @@ class ExperimentACLTestCase(TestCase):
         # create a group and add it to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
                                     '/add/group/%s?canRead=true&create=true'
-                                   % (self.experiment1.id, 'group1'))
+                                    % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
 
         # add user2 as admin to the newly created group
