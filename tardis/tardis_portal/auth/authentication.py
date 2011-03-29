@@ -237,7 +237,7 @@ def merge_auth_method(request):
             entityId=userIdToBeReplaced)
 
         for experimentACL in experimentACLs:
-            
+
             # now let's check if there's already an existing entry in the ACL
             # for the given experiment and replacementUserId
             try:
@@ -245,10 +245,10 @@ def merge_auth_method(request):
                     entityId=replacementUserId, experiment=experimentACL.experiment)
                 acl.canRead = acl.canRead or experimentACL.canRead
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
-                acl.canDelete = acl.canDelete or acl.canDelete  
+                acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
                 experimentACL.delete()
-            except ExperimentACL.DoesNotExist:            
+            except ExperimentACL.DoesNotExist:
                 experimentACL.entityId = replacementUserId
                 experimentACL.save()
 

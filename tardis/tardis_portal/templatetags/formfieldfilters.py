@@ -19,5 +19,5 @@ def size(value, actualSize):
 @register.filter
 def removePrefix(value):
     """Removes the auth prefix (ie 'localdb_' from username)."""
-    
+
     return value.lstrip('localdb_')
