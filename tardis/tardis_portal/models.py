@@ -184,6 +184,27 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
+    def get_download_urls(self):
+        urls = {}
+        kwargs = {'experiment_id': self.id}
+        distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
+        for key_value in distinct:
+            protocol = key_value['protocol']
+            if protocol in ['', 'tardis', 'file', 'http', 'https']:
+                view = 'tardis.tardis_portal.download.download_experiment'
+                if not '' in urls:
+                    urls[''] = reverse(view, kwargs=kwargs)
+            else:
+                try:
+                    for module in settings.DOWNLOAD_PROVIDERS:
+                        if module[0] == protocol:
+                            view = '%s.download_experiment' % module[1]
+                            urls[protocol] = reverse(view, kwargs=kwargs)
+                except AttributeError:
+                    pass
+
+        return urls
+
 
 class ExperimentACL(models.Model):
     """The ExperimentACL table is the core of the `Tardis
@@ -358,10 +379,28 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
-    @models.permalink
     def get_download_url(self):
-        return ('tardis.tardis_portal.download.download_datafile',
-                      (), {'datafile_id': self.id})
+        view = ''
+        kwargs = {'datafile_id': self.id}
+
+        # these are the internally known protocols
+        protocols = ['', 'tardis', 'file', 'http', 'https', 'ftp']
+        if self.protocol in protocols:
+            view = 'tardis.tardis_portal.download.download_datafile'
+
+        # externally handled protocols
+        else:
+            try:
+                for module in settings.DOWNLOAD_PROVIDERS:
+                    if module[0] == self.protocol:
+                        view = '%s.download_datafile' % module[1]
+            except AttributeError:
+                pass
+
+        if view:
+            return reverse(view, kwargs=kwargs)
+        else:
+            return ''
 
     def get_absolute_filepath(self):
 
