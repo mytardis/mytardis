@@ -1729,6 +1729,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     canWrite = False
     canDelete = False
     authMethod = 'localdb'
+    admin = None
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
