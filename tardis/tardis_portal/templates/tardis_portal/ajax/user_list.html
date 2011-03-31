@@ -1,1 +1,2 @@
-{% for user in users %}{{ user.username }} {% endfor %}
+{% load formfieldfilters %}
+{% for user in users %}{{ user.username|removePrefix }} {% endfor %}
