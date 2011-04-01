@@ -1,5 +1,6 @@
 #
 # Generated Thu Mar 17 13:49:32 2011 by generateDS.py version 2.4b.
+# Modified by Gerson Galang to support xsd:anys in xmlData
 #
 
 import sys
@@ -5356,7 +5357,10 @@ class xmlData(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, xsdAny_=None):
-        self.xsdAny_ = xsdAny_
+        if xsdAny_ is None:
+            self.xsdAny_ = []
+        else:
+            self.xsdAny_ = xsdAny_
     def factory(*args_, **kwargs_):
         if xmlData.subclass:
             return xmlData.subclass(*args_, **kwargs_)
@@ -5365,6 +5369,8 @@ class xmlData(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_xsdAny_(self): return self.xsdAny_
     def set_xsdAny_(self, xsdAny_): self.xsdAny_ = xsdAny_
+    def add_xsdAny_(self, value): self.xsdAny_.append(value)
+    def insert_xsdAny_(self, index, value): self.xsdAny_[index] = value
     def export(self, outfile, level, namespace_='', name_='xmlData', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -5372,7 +5378,8 @@ class xmlData(GeneratedsSuper):
         if self.hasContent_():
             outfile.write('>')
             from elementtree.ElementTree import tostring
-            outfile.write(tostring(self.xsdAny_))
+            for xsdAnyContent in self.xsdAny_:
+                outfile.write(tostring(xsdAnyContent))
             self.exportChildren(outfile, level + 1, namespace_, name_)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
