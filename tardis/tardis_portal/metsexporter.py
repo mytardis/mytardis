@@ -36,7 +36,7 @@ class MetsExporter():
         experimentMdWrap = mdWrap(MDTYPE="OTHER",
             OTHERMDTYPE="TARDISEXPERIMENT")
         if parameterSets.count() > 0:
-            _xmlData = self.getXMLDataFromParameterSets(
+            _xmlData = self.getTechMDXmlDataForParameterSets(
                 parameterSets, "experiment")
             experimentMdWrap.set_xmlData(_xmlData)
 
@@ -46,7 +46,7 @@ class MetsExporter():
         _amdSec = amdSecType()
         _amdSec.add_techMD(_techMD)
 
-        _xmlData = self.createXmlDataContentForExperiment(
+        _xmlData = self.getDmdSecXmlDataForExperiment(
             experiment, "http://www.loc.gov./mods/v3")
         experimentMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
         _dmdSec = mdSecType(ID="E-1", mdWrap=experimentMdWrap)
@@ -77,7 +77,7 @@ class MetsExporter():
 
             datasetMdWrap = mdWrap(MDTYPE="OTHER", OTHERMDTYPE="TARDISDATASET")
             if parameterSets.count() > 0:
-                _xmlData = self.getXMLDataFromParameterSets(
+                _xmlData = self.getTechMDXmlDataForParameterSets(
                     parameterSets, "dataset")
                 datasetMdWrap.set_xmlData(_xmlData)
 
@@ -86,7 +86,7 @@ class MetsExporter():
                 mdWrap=datasetMdWrap)
             _amdSec.add_techMD(_techMD)
 
-            _xmlData = self.createXmlDataContentForDataset(
+            _xmlData = self.getDmdSecXmlDataForDataset(
                 dataset, "http://www.loc.gov./mods/v3")
             datasetMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
             _dmdSec = mdSecType(ID="D-{0}".format(datasetCounter),
@@ -120,7 +120,7 @@ class MetsExporter():
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")
                 if parameterSets.count() > 0:
-                    _xmlData = self.getXMLDataFromParameterSets(
+                    _xmlData = self.getTechMDXmlDataForParameterSets(
                         parameterSets, "datafile")
                     datafileMdWrap.set_xmlData(_xmlData)
 
@@ -154,41 +154,39 @@ class MetsExporter():
         outfile.close()
         return filename
 
-    def getXMLDataFromParameterSets(self, parameterSets, type="experiment"):
+    def getTechMDXmlDataForParameterSets(self, parameterSets, type="experiment"):
 
-        # TODO: for now, we'll assume that there's always going to be only one
-        # experiment parameter set for an experiment. main reason for this is
-        # we'll need to discuss with Steve or the METS guys how they would like
-        # the other parameter set to be represented in the METS document
-        parameterSet = parameterSets[0]
-        paramObj = ExperimentParameter
-        if type == "experiment":
-            elementName = "experiment"
+        _xmlData = xmlData()
+        for parameterSet in parameterSets:
             paramObj = ExperimentParameter
-        elif type == "dataset":
-            elementName = "dataset"
-            paramObj = DatasetParameter
-        else:
-            elementName = "datafile"
-            paramObj = DatafileParameter
-
-        # logger.debug(paramObj)
-
-        parameters = paramObj.objects.filter(parameterset=parameterSet)
-
-        metadataDict = {}
-        for parameter in parameters:
-            # print parameter.name
-            if parameter.name.data_type is ParameterName.NUMERIC:
-                metadataDict[parameter.name.name] = \
-                    str(parameter.numerical_value) or 'None'
+            if type == "experiment":
+                elementName = "experiment"
+                paramObj = ExperimentParameter
+            elif type == "dataset":
+                elementName = "dataset"
+                paramObj = DatasetParameter
             else:
-                metadataDict[parameter.name.name] = \
-                    parameter.string_value.strip() or 'None'
+                elementName = "datafile"
+                paramObj = DatafileParameter
+    
+            parameters = paramObj.objects.filter(parameterset=parameterSet)
+    
+            metadataDict = {}
+            for parameter in parameters:
+                # print parameter.name
+                if parameter.name.data_type is ParameterName.NUMERIC:
+                    metadataDict[parameter.name.name] = \
+                        str(parameter.numerical_value) or 'None'
+                else:
+                    metadataDict[parameter.name.name] = \
+                        parameter.string_value.strip() or 'None'
 
-        return self.createXmlDataContentForParameterSets(
-            elementName=elementName, schemaURI=parameterSet.schema.namespace,
-            metadataDict=metadataDict)
+            _xmlData.add_xsdAny_(self.createXmlDataContentForParameterSets(
+                elementName=elementName, 
+                schemaURI=parameterSet.schema.namespace,
+                metadataDict=metadataDict))
+
+        return _xmlData
 
 
     def createXmlDataContentForParameterSets(self, elementName, schemaURI="",
@@ -208,12 +206,11 @@ class MetsExporter():
         for k, v in metadataDict.iteritems():
             metadataField = ET.SubElement(xmlDataContentEl, k)
             metadataField.text = v
+        
+        return xmlDataContentEl
 
-        _xmlData = xmlData(xmlDataContentEl)
-        return _xmlData
 
-
-    def createXmlDataContentForExperiment(self, experiment, schemaURI):
+    def getDmdSecXmlDataForExperiment(self, experiment, schemaURI):
         import elementtree.ElementTree as ET
         ET._namespace_map[schemaURI] = "mods"
 
@@ -250,10 +247,11 @@ class MetsExporter():
 
         # TODO: figure out where I could get the PDB details
 
-        _xmlData = xmlData(xmlDataContentEl)
+        _xmlData = xmlData()
+        _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
 
-    def createXmlDataContentForDataset(self, dataset, schemaURI):
+    def getDmdSecXmlDataForDataset(self, dataset, schemaURI):
         import elementtree.ElementTree as ET
         ET._namespace_map[schemaURI] = "mods"
 
@@ -265,7 +263,8 @@ class MetsExporter():
         title.text = dataset.description
 
         # TODO: figure out where I could get the PDB details
-        _xmlData = xmlData(xmlDataContentEl)
+        _xmlData = xmlData()
+        _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
 
 exporter = MetsExporter()
