@@ -142,3 +142,83 @@ class UploadTestCase(TestCase):
         self.assertTrue("<p>Errors: 0</p>" in response.content)
         self.assertTrue("<p>Bytes: 2</p>" in response.content)
         self.assertTrue("<p>Speed: really fast!</p>" in response.content)
+
+class listTestCase(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import User  
+        from django.contrib.auth.models import Group 
+        from django.conf import settings
+        from tardis.tardis_portal import models
+        from django.test.client import Client
+        
+        access_uname = 'user'
+        access_pwd   = 'pwd'
+  
+        self.access_user = User(username=access_uname, password=access_pwd)
+        self.access_client = Client()
+        self.access_client.login(username=access_uname, password=access_pwd)
+        
+
+    def testGetUserList(self):
+	from django.contrib.auth.models import User
+        from django.http import HttpRequest
+        from tardis.tardis_portal.views import retrieve_user_list
+
+        request = HttpRequest()
+        request.user = self.access_user
+
+        accounts = [('user1', 'pwd1'),
+                         ('user2', 'pwd2'),
+                         ('user3', 'pwd3')]  
+        email = ''
+        
+        for uname, pwd in accounts:
+           user = User.objects.create_user(uname, email, pwd)
+           user.save()
+        response = retrieve_user_list(request)
+
+        ret_names = response.content.split(' ')
+
+        self.assertTrue(len(ret_names) == len(accounts))
+
+        for a,b in zip([u for u,p in accounts], ret_names):
+            self.assertTrue(a == b )
+
+    def testGetGroupList(self):
+
+	from django.contrib.auth.models import User
+	from django.contrib.auth.models import Group
+        from django.http import HttpRequest
+        from tardis.tardis_portal.views import retrieve_group_list
+
+        request = HttpRequest()
+        request.user = self.access_user
+
+        accounts = [('user1', 'pwd1'),
+                    ('user2', 'pwd2'),
+                    ('user3', 'pwd3')]  
+        email = ''
+        
+        for uname, pwd in accounts:
+           user = User.objects.create_user(uname, email, pwd)
+           user.save()
+        groups = [('group1')]         
+
+        for groupname in self.groups:
+            group = Group(name=groupname)
+            group.save()
+ 
+        response = retrieve_group_list(request)
+
+               
+        ret_names = response.content.split(' ~ ')
+
+        self.assertTrue(len(ret_names) == len(accounts))
+
+        for a,b in zip([u for u,p in accounts], ret_names):
+            self.assertTrue(a == b )
+
+    def tearDown(self):
+       self.access_client.logout()
+

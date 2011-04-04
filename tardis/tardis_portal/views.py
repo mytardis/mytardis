@@ -1374,20 +1374,21 @@ def search_datafile(request):
 @login_required()
 def retrieve_user_list(request):
 
-    userlist = ''
-    for user in  User.objects.all().order_by('username'):
-        userlist += '%s ' % user
-    
+    #userlist = ''
+    #for user in  User.objects.all().order_by('username'):
+    #    userlist += '%s ' % user
+    #userlist = userlist.strip()    
+    userlist = ' '.join(map(str,User.objects.all().order_by('username')))
     return HttpResponse(userlist)
 
 
 @login_required()
 def retrieve_group_list(request):
 
-    grouplist = ''
-    for group in Group.objects.all().order_by('name'):
-        grouplist += '%s ~ ' % group
-
+    #grouplist = ''
+    #for group in Group.objects.all().order_by('name'):
+    #    grouplist += '%s ~ ' % group
+    grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))
     return HttpResponse(grouplist)
 
 
