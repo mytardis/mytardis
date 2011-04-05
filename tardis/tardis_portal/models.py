@@ -532,8 +532,12 @@ class Schema(models.Model):
         schemas.
 
         """
-        return [schema.namespace for schema in
-            Schema.objects.filter(type=type, subtype=subtype or '')]
+        if subtype:
+            return [schema.namespace for schema in
+                    Schema.objects.filter(type=type, subtype=subtype)]
+        else:
+            return [schema.namespace for schema in
+                    Schema.objects.filter(type=type)]
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
