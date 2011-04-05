@@ -237,8 +237,20 @@ def merge_auth_method(request):
             entityId=userIdToBeReplaced)
 
         for experimentACL in experimentACLs:
-            experimentACL.entityId = replacementUserId
-            experimentACL.save()
+
+            # now let's check if there's already an existing entry in the ACL
+            # for the given experiment and replacementUserId
+            try:
+                acl = ExperimentACL.objects.get(pluginId='django_user',
+                    entityId=replacementUserId, experiment=experimentACL.experiment)
+                acl.canRead = acl.canRead or experimentACL.canRead
+                acl.canWrite = acl.canWrite or experimentACL.canWrite
+                acl.canDelete = acl.canDelete or acl.canDelete
+                acl.save()
+                experimentACL.delete()
+            except ExperimentACL.DoesNotExist:
+                experimentACL.entityId = replacementUserId
+                experimentACL.save()
 
         # let's also change the group memberships of all the groups that 'user'
         # is a member of

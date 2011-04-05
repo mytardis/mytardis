@@ -23,6 +23,7 @@ setup(
         'feedparser',
         'django-registration',
         'django-extensions',
+        'django-form-utils',
         'suds',
         'python-ldap',
         'python-magic',
