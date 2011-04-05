@@ -34,35 +34,51 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
 				$(this).next().load(href, function(){
 						$(document).ready(function(){
-								var users = (function () {
-								    var val = null;
 
-								    $.ajax({
-								        'async': false,
-								        'global': false,
-								        'url': '/ajax/user_list',
-								        'success': function (data) {
-								            val = data;
-								        }
-								    });
-								    return val;
+				              var users = (function () {
+				                var val = null;
+				                var authMethod = $("#id_authMethod").val();
+				                var data = { authMethod: authMethod };
+				                $.ajax({
+				                  'async': false,
+				                  'global': false,
+				                  'data': data,
+				                  'url': '/ajax/user_list',
+				                  'success': function (data) {
+				                     val = data;
+				                   }
+				                });
+				                return val;
+				              })();
 
-								})();
+								//var users = (function () {
+								//    var val = null;
+                                //
+								//    $.ajax({
+								//        'async': false,
+								//        'global': false,
+								//        'url': '/ajax/user_list',
+								//        'success': function (data) {
+								//            val = data;
+								//        }
+								//    });
+								//    return val;
+								//})();
 
 								$(".usersuggest").autocomplete(users.split(" "), {
 									matchContains: true,
-									minChars: 0
+									//minChars: 0
 								});
 
 								$("#user.form_submit").unbind('click');
 								$("#user.form_submit").click(function(event) {
 									event.preventDefault();
-
+									var authMethod = $(this).siblings("#id_authMethod").val();
 								    var usersuggest = $(this).siblings(".usersuggest").val();
 								    var group_id = $(this).siblings(".group_id").val();
 		                                                    var users_div = $(this).parents('.access_list').children('.users');
 		                                                    var isAdmin = $(this).siblings(".isAdmin").is(':checked');
-		                                                    action = '/group/' + group_id + '/add/' + usersuggest + '?isAdmin=' + isAdmin;
+		                                                    action = '/group/' + group_id + '/add/' + usersuggest + '?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
 								    $.ajax({
 							        'async': false,
 							        'global': true,

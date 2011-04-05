@@ -72,6 +72,38 @@ To use this script simple paste it into a new file called
 within the tardis tests.
 
 
+Post Processing
+---------------
+
+TARDIS takes advantage of the Django signal framework to provide post
+porcessing of files. The only default post processing step that is
+enabled by default operates on newly created Dataset Files.
+
+
+Staging Hook
+^^^^^^^^^^^^
+
+The staging hook is responsible for moving files from the staging area
+to the data store. It operates as a
+:class:`django.db.models.signals.post_save` signal and only triggers
+in a newly created file.
+
+The saging hook is only triggerd on files that have a protocol of
+`staging` which dignifies that the file is in the in the TARDIS
+staging area.
+
+
+.. py:currentmodule:: tardis.tardis_portal.filters.exif
+
+EXIF Metadata extraction
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+.. autoclass:: EXIFFilter
+   :members:
+   :undoc-members:
+
+
 .. seealso::
 
    http://www.loc.gov/standards/mets/
