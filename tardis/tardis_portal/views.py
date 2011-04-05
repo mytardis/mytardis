@@ -462,8 +462,21 @@ def create_experiment(request,
         form = ExperimentForm(extra=1)
 
     c['form'] = form
-
     return HttpResponse(render_response_index(request, template_name, c))
+
+
+@authz.experiment_access_required
+def metsexport_experiment(request, experiment_id):
+
+    from os.path import basename
+    from django.core.servers.basehttp import FileWrapper
+    from tardis.tardis_portal.metsexporter import exporter
+    filename = exporter.export(experiment_id)
+    response = HttpResponse(FileWrapper(file(filename)),
+                            mimetype='application')
+    response['Content-Disposition'] = \
+        'attachment; filename="%s"' % basename(filename)
+    return response
 
 
 @login_required
@@ -645,6 +658,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
             if settings.LDAP_ENABLE:
                 u = ldap_auth.get_or_create_user_ldap(owner)
             else:
+                print "owner", owner
                 u = User.objects.get(username=owner)
 
             # if exist, create ACL

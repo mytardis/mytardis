@@ -386,6 +386,19 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         self.assertTrue(
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
 
+    def testMetsExport(self):
+        client = Client()
+        response = client.login(username='test', password='test')
+        expid = self.experiment.id
+        response = client.get('/experiment/metsexport/%i/' % expid)
+        self.assertEqual(response.status_code, 403)
+        self.experiment.public = True
+        self.experiment.save()
+        response = client.get('/experiment/metsexport/%i/' % expid)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="mets_expid_%s.xml"' % expid)
+
 
 def suite():
     userInterfaceSuite = \
