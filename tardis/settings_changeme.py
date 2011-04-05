@@ -115,9 +115,10 @@ INSTALLED_APPS = (
     'south'
     )
 
-USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
+USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
+)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
-                   'tardis.tardis_portal.auth.vbl_auth.VblGroupProvider',)
+)
 
 # AUTH_PROVIDERS entry format:
 #('name', 'display name', 'backend implementation')
@@ -128,12 +129,7 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
-    ('vbl', 'VBL', 'tardis.tardis_portal.auth.vbl_auth.Backend'),
-    )
-
-# only needed for the VBL authentication
-VBLSTORAGEGATEWAY = \
-'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
+)
 
 ACCOUNT_ACTIVATION_DAYS = 3
 

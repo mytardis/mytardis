@@ -14,13 +14,6 @@
    :undoc-members:
 
 
-:class:`XSLT_docs` Objects
---------------------------
-.. autoclass:: XSLT_docs
-   :members:
-   :undoc-members:
-
-
 :class:`Experiment` Objects
 ---------------------------
 .. autoclass:: Experiment
@@ -110,11 +103,3 @@
 .. autoclass:: ExperimentParameter
    :members:
    :undoc-members:
-
-
-:class:`XML_data` Objects
--------------------------
-.. autoclass:: XML_data
-   :members:
-   :undoc-members:
-

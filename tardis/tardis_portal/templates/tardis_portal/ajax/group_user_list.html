@@ -4,10 +4,18 @@
 {% endfor %}
 </div> <!-- users -->
 <p>
-  <label>Add user: </label>
-  <input type="text" class="usersuggest" name="adduser" />
-  <img src="/site_media/images/icon_adminstrator.jpg">
-  <input type="checkbox" name="admin" class="isAdmin" /> Group Admin
-  <a class="form_submit" id="user" href="">Submit</a><br/>
+  {% for field in manageGroupPermissionsForm %}
+      {% if field.label == "Authentication Method" %}
+          {{ field.label }} {{ field }}
+      {% else %}
+          {% if field.label == "User" %}
+          Add user: {{ field }}
+          {% else %}
+          {{ field }} {{ field.label }}
+          {% endif %}
+      {% endif %}
+      <br/>
+  {% endfor %}
+  <a class="form_submit" id="user" href="">Submit</a>
   <input type="hidden" name="group_id" class="group_id" value="{{group_id}}">
 </p>
