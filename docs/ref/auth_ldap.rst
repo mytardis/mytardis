@@ -1,7 +1,8 @@
+.. _ref-ldap_auth:
+
 :py:mod:`tardis.tardis_portal.auth.ldap_auth` -- LDAP Authentication
 ====================================================================
 
-.. _ref-ldap_auth:
 
 .. py:module:: tardis.tardis_portal.auth.ldap_auth
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
