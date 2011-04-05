@@ -43,10 +43,11 @@ from os import path
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 
+from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import ExperimentManager
 
 
@@ -164,14 +165,16 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
-    def get_or_create_directory(self):
+    def get_absolute_filepath(self):
         """Return the absolute storage path
         to the current ``Experiment``"""
-        from django.conf import settings
-        from os.path import exists, join
-        dirname = join(settings.FILE_STORE_PATH,
-                       str(self.id))
-        if not exists(dirname):
+        store = settings.FILE_STORE_PATH
+        return path.join(store, str(self.id))
+
+    def get_or_create_directory(self):
+        dirname = path.join(settings.FILE_STORE_PATH,
+                            str(self.id))
+        if not path.exists(dirname):
             from os import mkdir
             try:
                 mkdir(dirname)
@@ -194,10 +197,31 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
+    def get_download_urls(self):
+        urls = {}
+        kwargs = {'experiment_id': self.id}
+        distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
+        for key_value in distinct:
+            protocol = key_value['protocol']
+            if protocol in ['', 'tardis', 'file', 'http', 'https']:
+                view = 'tardis.tardis_portal.download.download_experiment'
+                if not '' in urls:
+                    urls[''] = reverse(view, kwargs=kwargs)
+            else:
+                try:
+                    for module in settings.DOWNLOAD_PROVIDERS:
+                        if module[0] == protocol:
+                            view = '%s.download_experiment' % module[1]
+                            urls[protocol] = reverse(view, kwargs=kwargs)
+                except AttributeError:
+                    pass
+
+        return urls
+
 
 class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis Authorisation
-    framework
+    """The ExperimentACL table is the core of the `Tardis
+    Authorisation framework
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
     :attribute pluginId: the the name of the auth plugin being used
@@ -368,10 +392,28 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
-    @models.permalink
     def get_download_url(self):
-        return ('tardis.tardis_portal.download.download_datafile',
-                      (), {'datafile_id': self.id})
+        view = ''
+        kwargs = {'datafile_id': self.id}
+
+        # these are the internally known protocols
+        protocols = ['', 'tardis', 'file', 'http', 'https', 'ftp']
+        if self.protocol in protocols:
+            view = 'tardis.tardis_portal.download.download_datafile'
+
+        # externally handled protocols
+        else:
+            try:
+                for module in settings.DOWNLOAD_PROVIDERS:
+                    if module[0] == self.protocol:
+                        view = '%s.download_datafile' % module[1]
+            except AttributeError:
+                pass
+
+        if view:
+            return reverse(view, kwargs=kwargs)
+        else:
+            return ''
 
     def get_absolute_filepath(self):
 
@@ -389,6 +431,8 @@ class Dataset_File(models.Model):
             return abspath(join(FILE_STORE_PATH,
                                 str(self.dataset.experiment.id),
                                 self.url.partition('://')[2]))
+        elif self.protocol == 'staging':
+            return self.url
 
         # file should refer to an absolute location
         elif self.protocol == 'file':
@@ -447,6 +491,9 @@ def save_DatasetFile(sender, **kwargs):
 
 
 pre_save.connect(save_DatasetFile, sender=Dataset_File)
+
+staging_hook = StagingHook()
+post_save.connect(staging_hook, sender=Dataset_File)
 
 
 class Schema(models.Model):
