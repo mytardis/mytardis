@@ -340,8 +340,10 @@ def experiment_description(request, experiment_id):
             pass
     c['size'] = size
 
-    c['protocols'] = [df['protocol'] for df in
-                      c['datafiles'].values('protocol').distinct()]
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
 
     if 'status' in request.GET:
         c['status'] = request.GET['status']
@@ -382,8 +384,10 @@ def experiment_datasets(request, experiment_id):
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
-    c['protocols'] = [df['protocol'] for df in
-                      c['datafiles'].values('protocol').distinct()]
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
 
     if 'status' in request.GET:
         c['status'] = request.GET['status']
