@@ -8,9 +8,9 @@ import tardis.tardis_portal.schema.mets as supermod
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-    ) = range(3)
+(XMLParser_import_none, XMLParser_import_lxml,
+ XMLParser_import_elementtree
+ ) = range(3)
 XMLParser_import_library = None
 try:
     # lxml
@@ -49,6 +49,7 @@ except ImportError:
                 except ImportError:
                     raise ImportError("Failed to import ElementTree from any known place")
 
+
 def parsexml_(*args, **kwargs):
     if (XMLParser_import_library == XMLParser_import_lxml and
         'parser' not in kwargs):
@@ -67,6 +68,7 @@ ExternalEncoding = 'ascii'
 #
 # Data representation classes
 #
+
 
 class metsTypeSub(supermod.metsType):
     def __init__(self, PROFILE=None, LABEL=None, TYPE=None, ID=None, OBJID=None, metsHdr=None, dmdSec=None, amdSec=None, fileSec=None, structMap=None, structLink=None, behaviorSec=None):
@@ -306,7 +308,6 @@ supermod.mets.subclass = metsSub
 # end class metsSub
 
 
-
 def get_root_tag(node):
     tag = supermod.Tag_pattern_.match(node.tag).groups()[-1]
     rootClass = None
@@ -374,6 +375,7 @@ USAGE_TEXT = """
 Usage: python ???.py <infilename>
 """
 
+
 def usage():
     print USAGE_TEXT
     sys.exit(1)
@@ -390,5 +392,3 @@ def main():
 if __name__ == '__main__':
     #import pdb; pdb.set_trace()
     main()
-
-

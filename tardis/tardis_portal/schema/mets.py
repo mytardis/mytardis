@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 #
 # Generated Thu Mar 17 13:49:32 2011 by generateDS.py version 2.4b.
 # Modified by Gerson Galang to support xsd:anys in xmlData
@@ -12,55 +14,71 @@ from xml.dom import minidom
 
 etree_ = None
 Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-    ) = range(3)
+
+(XMLParser_import_none, XMLParser_import_lxml,
+ XMLParser_import_elementtree) = range(3)
 XMLParser_import_library = None
 try:
+
     # lxml
+
     from lxml import etree as etree_
     XMLParser_import_library = XMLParser_import_lxml
     if Verbose_import_:
-        print("running with lxml.etree")
+        print 'running with lxml.etree'
 except ImportError:
     try:
+
         # cElementTree from Python 2.5+
+
         import xml.etree.cElementTree as etree_
         XMLParser_import_library = XMLParser_import_elementtree
         if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
+            print 'running with cElementTree on Python 2.5+'
     except ImportError:
         try:
+
             # ElementTree from Python 2.5+
+
             import xml.etree.ElementTree as etree_
             XMLParser_import_library = XMLParser_import_elementtree
             if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
+                print 'running with ElementTree on Python 2.5+'
         except ImportError:
             try:
+
                 # normal cElementTree install
+
                 import cElementTree as etree_
                 XMLParser_import_library = XMLParser_import_elementtree
                 if Verbose_import_:
-                    print("running with cElementTree")
+                    print 'running with cElementTree'
             except ImportError:
                 try:
+
                     # normal ElementTree install
+
                     import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
+                    XMLParser_import_library = \
+                        XMLParser_import_elementtree
                     if Verbose_import_:
-                        print("running with ElementTree")
+                        print 'running with ElementTree'
                 except ImportError:
-                    raise ImportError("Failed to import ElementTree from any known place")
+                    raise ImportError('Failed to import ElementTree from any known place'
+                            )
+
 
 def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
+    if XMLParser_import_library == XMLParser_import_lxml and 'parser' \
+        not in kwargs:
+
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
+
         kwargs['parser'] = etree_.ETCompatXMLParser()
     doc = etree_.parse(*args, **kwargs)
     return doc
+
 
 #
 # User methods
@@ -74,73 +92,145 @@ try:
 except ImportError, exp:
 
     class GeneratedsSuper(object):
+
         def gds_format_string(self, input_data, input_name=''):
             return input_data
-        def gds_validate_string(self, input_data, node, input_name=''):
+
+        def gds_validate_string(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             return input_data
+
         def gds_format_integer(self, input_data, input_name=''):
             return '%d' % input_data
-        def gds_validate_integer(self, input_data, node, input_name=''):
+
+        def gds_validate_integer(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             return input_data
+
         def gds_format_integer_list(self, input_data, input_name=''):
             return '%s' % input_data
-        def gds_validate_integer_list(self, input_data, node, input_name=''):
+
+        def gds_validate_integer_list(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             values = input_data.split()
             for value in values:
                 try:
                     fvalue = float(value)
                 except (TypeError, ValueError), exp:
-                    raise_parse_error(node, 'Requires sequence of integers')
+                    raise_parse_error(node,
+                            'Requires sequence of integers')
             return input_data
+
         def gds_format_float(self, input_data, input_name=''):
             return '%f' % input_data
-        def gds_validate_float(self, input_data, node, input_name=''):
+
+        def gds_validate_float(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             return input_data
+
         def gds_format_float_list(self, input_data, input_name=''):
             return '%s' % input_data
-        def gds_validate_float_list(self, input_data, node, input_name=''):
+
+        def gds_validate_float_list(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             values = input_data.split()
             for value in values:
                 try:
                     fvalue = float(value)
                 except (TypeError, ValueError), exp:
-                    raise_parse_error(node, 'Requires sequence of floats')
+                    raise_parse_error(node,
+                            'Requires sequence of floats')
             return input_data
+
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
-        def gds_validate_double(self, input_data, node, input_name=''):
+
+        def gds_validate_double(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             return input_data
+
         def gds_format_double_list(self, input_data, input_name=''):
             return '%s' % input_data
-        def gds_validate_double_list(self, input_data, node, input_name=''):
+
+        def gds_validate_double_list(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             values = input_data.split()
             for value in values:
                 try:
                     fvalue = float(value)
                 except (TypeError, ValueError), exp:
-                    raise_parse_error(node, 'Requires sequence of doubles')
+                    raise_parse_error(node,
+                            'Requires sequence of doubles')
             return input_data
+
         def gds_format_boolean(self, input_data, input_name=''):
             return '%s' % input_data
-        def gds_validate_boolean(self, input_data, node, input_name=''):
+
+        def gds_validate_boolean(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             return input_data
+
         def gds_format_boolean_list(self, input_data, input_name=''):
             return '%s' % input_data
-        def gds_validate_boolean_list(self, input_data, node, input_name=''):
+
+        def gds_validate_boolean_list(
+            self,
+            input_data,
+            node,
+            input_name='',
+            ):
             values = input_data.split()
             for value in values:
-                if value not in ('true', '1', 'false', '0', ):
-                    raise_parse_error(node, 'Requires sequence of booleans ("true", "1", "false", "0")')
+                if value not in ('true', '1', 'false', '0'):
+                    raise_parse_error(node,
+                            'Requires sequence of booleans ("true", "1", "false", "0")'
+                            )
             return input_data
+
         def gds_str_lower(self, instring):
             return instring.lower()
+
         def get_path_(self, node):
             path_list = []
             self.get_path_list_(node, path_list)
             path_list.reverse()
             path = '/'.join(path_list)
             return path
+
         Tag_strip_pattern_ = re_.compile(r'\{.*\}')
+
         def get_path_list_(self, node, path_list):
             if node is None:
                 return
@@ -177,34 +267,36 @@ STRING_CLEANUP_PAT = re_.compile(r"[\n\r\s]+")
 # Support/utility functions.
 #
 
+
 def showIndent(outfile, level):
     for idx in range(level):
         outfile.write('    ')
 
+
 def quote_xml(inStr):
     if not inStr:
         return ''
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = isinstance(inStr, basestring) and inStr or '%s' % inStr
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     return s1
 
+
 def quote_attrib(inStr):
-    s1 = (isinstance(inStr, basestring) and inStr or
-          '%s' % inStr)
+    s1 = isinstance(inStr, basestring) and inStr or '%s' % inStr
     s1 = s1.replace('&', '&amp;')
     s1 = s1.replace('<', '&lt;')
     s1 = s1.replace('>', '&gt;')
     if '"' in s1:
         if "'" in s1:
-            s1 = '"%s"' % s1.replace('"', "&quot;")
+            s1 = '"%s"' % s1.replace('"', '&quot;')
         else:
             s1 = "'%s'" % s1
     else:
         s1 = '"%s"' % s1
     return s1
+
 
 def quote_python(inStr):
     s1 = inStr
@@ -234,23 +326,30 @@ def get_all_text_(node):
 
 
 class GDSParseError(Exception):
+
     pass
+
 
 def raise_parse_error(node, msg):
     if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
+        msg = '%s (element %s/line %d)' % (msg, node.tag,
+                node.sourceline)
     else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+        msg = '%s (element %s)' % (msg, node.tag)
     raise GDSParseError(msg)
 
 
 class MixedContainer:
+
     # Constants for category:
+
     CategoryNone = 0
     CategoryText = 1
     CategorySimple = 2
     CategoryComplex = 3
+
     # Constants for content_type:
+
     TypeNone = 0
     TypeText = 1
     TypeString = 2
@@ -259,66 +358,126 @@ class MixedContainer:
     TypeDecimal = 5
     TypeDouble = 6
     TypeBoolean = 7
-    def __init__(self, category, content_type, name, value):
+
+    def __init__(
+        self,
+        category,
+        content_type,
+        name,
+        value,
+        ):
         self.category = category
         self.content_type = content_type
         self.name = name
         self.value = value
+
     def getCategory(self):
         return self.category
+
     def getContenttype(self, content_type):
         return self.content_type
+
     def getValue(self):
         return self.value
+
     def getName(self):
         return self.name
-    def export(self, outfile, level, name, namespace):
+
+    def export(
+        self,
+        outfile,
+        level,
+        name,
+        namespace,
+        ):
         if self.category == MixedContainer.CategoryText:
+
             # Prevent exporting empty content as empty lines.
-            if self.value.strip(): 
+
+            if self.value.strip():
                 outfile.write(self.value)
         elif self.category == MixedContainer.CategorySimple:
             self.exportSimple(outfile, level, name)
-        else:    # category == MixedContainer.CategoryComplex
-            self.value.export(outfile, level, namespace,name)
-    def exportSimple(self, outfile, level, name):
+        else:
+
+                 # category == MixedContainer.CategoryComplex
+
+            self.value.export(outfile, level, namespace, name)
+
+    def exportSimple(
+        self,
+        outfile,
+        level,
+        name,
+        ):
         if self.content_type == MixedContainer.TypeString:
-            outfile.write('<%s>%s</%s>' % (self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeInteger or \
-                self.content_type == MixedContainer.TypeBoolean:
-            outfile.write('<%s>%d</%s>' % (self.name, self.value, self.name))
-        elif self.content_type == MixedContainer.TypeFloat or \
-                self.content_type == MixedContainer.TypeDecimal:
-            outfile.write('<%s>%f</%s>' % (self.name, self.value, self.name))
+            outfile.write('<%s>%s</%s>' % (self.name, self.value,
+                          self.name))
+        elif self.content_type == MixedContainer.TypeInteger \
+            or self.content_type == MixedContainer.TypeBoolean:
+            outfile.write('<%s>%d</%s>' % (self.name, self.value,
+                          self.name))
+        elif self.content_type == MixedContainer.TypeFloat \
+            or self.content_type == MixedContainer.TypeDecimal:
+            outfile.write('<%s>%f</%s>' % (self.name, self.value,
+                          self.name))
         elif self.content_type == MixedContainer.TypeDouble:
-            outfile.write('<%s>%g</%s>' % (self.name, self.value, self.name))
-    def exportLiteral(self, outfile, level, name):
+            outfile.write('<%s>%g</%s>' % (self.name, self.value,
+                          self.name))
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name,
+        ):
         if self.category == MixedContainer.CategoryText:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
+                           % (self.category, self.content_type,
+                          self.name, self.value))
         elif self.category == MixedContainer.CategorySimple:
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n' % \
-                (self.category, self.content_type, self.name, self.value))
-        else:    # category == MixedContainer.CategoryComplex
+            outfile.write('model_.MixedContainer(%d, %d, "%s", "%s"),\n'
+                           % (self.category, self.content_type,
+                          self.name, self.value))
+        else:
+
+                 # category == MixedContainer.CategoryComplex
+
             showIndent(outfile, level)
-            outfile.write('model_.MixedContainer(%d, %d, "%s",\n' % \
-                (self.category, self.content_type, self.name,))
+            outfile.write('model_.MixedContainer(%d, %d, "%s",\n'
+                          % (self.category, self.content_type,
+                          self.name))
             self.value.exportLiteral(outfile, level + 1)
             showIndent(outfile, level)
             outfile.write(')\n')
 
 
 class MemberSpec_(object):
-    def __init__(self, name='', data_type='', container=0):
+
+    def __init__(
+        self,
+        name='',
+        data_type='',
+        container=0,
+        ):
         self.name = name
         self.data_type = data_type
         self.container = container
-    def set_name(self, name): self.name = name
-    def get_name(self): return self.name
-    def set_data_type(self, data_type): self.data_type = data_type
-    def get_data_type_chain(self): return self.data_type
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
+
+    def set_data_type(self, data_type):
+        self.data_type = data_type
+
+    def get_data_type_chain(self):
+        return self.data_type
+
     def get_data_type(self):
         if isinstance(self.data_type, list):
             if len(self.data_type) > 0:
@@ -327,19 +486,27 @@ class MemberSpec_(object):
                 return 'xs:string'
         else:
             return self.data_type
-    def set_container(self, container): self.container = container
-    def get_container(self): return self.container
+
+    def set_container(self, container):
+        self.container = container
+
+    def get_container(self):
+        return self.container
+
 
 def _cast(typ, value):
     if typ is None or value is None:
         return value
     return typ(value)
 
+
 #
 # Data representation classes.
 #
 
+
 class metsType(GeneratedsSuper):
+
     """metsType: Complex Type for METS Sections A METS document consists of
     seven possible subsidiary sections: metsHdr (METS document
     header), dmdSec (descriptive metadata section), amdSec
@@ -362,9 +529,25 @@ class metsType(GeneratedsSuper):
     etc. PROFILE (string/O): Indicates to which of the registered
     profile(s) the METS document conforms. For additional
     information about PROFILES see Chapter 5 of the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, PROFILE=None, LABEL=None, TYPE=None, ID=None, OBJID=None, metsHdr=None, dmdSec=None, amdSec=None, fileSec=None, structMap=None, structLink=None, behaviorSec=None):
+
+    def __init__(
+        self,
+        PROFILE=None,
+        LABEL=None,
+        TYPE=None,
+        ID=None,
+        OBJID=None,
+        metsHdr=None,
+        dmdSec=None,
+        amdSec=None,
+        fileSec=None,
+        structMap=None,
+        structLink=None,
+        behaviorSec=None,
+        ):
         self.PROFILE = _cast(None, PROFILE)
         self.LABEL = _cast(None, LABEL)
         self.TYPE = _cast(None, TYPE)
@@ -389,48 +572,124 @@ class metsType(GeneratedsSuper):
             self.behaviorSec = []
         else:
             self.behaviorSec = behaviorSec
+
     def factory(*args_, **kwargs_):
         if metsType.subclass:
             return metsType.subclass(*args_, **kwargs_)
         else:
             return metsType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_metsHdr(self): return self.metsHdr
-    def set_metsHdr(self, metsHdr): self.metsHdr = metsHdr
-    def get_dmdSec(self): return self.dmdSec
-    def set_dmdSec(self, dmdSec): self.dmdSec = dmdSec
-    def add_dmdSec(self, value): self.dmdSec.append(value)
-    def insert_dmdSec(self, index, value): self.dmdSec[index] = value
-    def get_amdSec(self): return self.amdSec
-    def set_amdSec(self, amdSec): self.amdSec = amdSec
-    def add_amdSec(self, value): self.amdSec.append(value)
-    def insert_amdSec(self, index, value): self.amdSec[index] = value
-    def get_fileSec(self): return self.fileSec
-    def set_fileSec(self, fileSec): self.fileSec = fileSec
-    def get_structMap(self): return self.structMap
-    def set_structMap(self, structMap): self.structMap = structMap
-    def add_structMap(self, value): self.structMap.append(value)
-    def insert_structMap(self, index, value): self.structMap[index] = value
-    def get_structLink(self): return self.structLink
-    def set_structLink(self, structLink): self.structLink = structLink
-    def get_behaviorSec(self): return self.behaviorSec
-    def set_behaviorSec(self, behaviorSec): self.behaviorSec = behaviorSec
-    def add_behaviorSec(self, value): self.behaviorSec.append(value)
-    def insert_behaviorSec(self, index, value): self.behaviorSec[index] = value
-    def get_PROFILE(self): return self.PROFILE
-    def set_PROFILE(self, PROFILE): self.PROFILE = PROFILE
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_OBJID(self): return self.OBJID
-    def set_OBJID(self, OBJID): self.OBJID = OBJID
-    def export(self, outfile, level, namespace_='', name_='metsType', namespacedef_=''):
+
+    def get_metsHdr(self):
+        return self.metsHdr
+
+    def set_metsHdr(self, metsHdr):
+        self.metsHdr = metsHdr
+
+    def get_dmdSec(self):
+        return self.dmdSec
+
+    def set_dmdSec(self, dmdSec):
+        self.dmdSec = dmdSec
+
+    def add_dmdSec(self, value):
+        self.dmdSec.append(value)
+
+    def insert_dmdSec(self, index, value):
+        self.dmdSec[index] = value
+
+    def get_amdSec(self):
+        return self.amdSec
+
+    def set_amdSec(self, amdSec):
+        self.amdSec = amdSec
+
+    def add_amdSec(self, value):
+        self.amdSec.append(value)
+
+    def insert_amdSec(self, index, value):
+        self.amdSec[index] = value
+
+    def get_fileSec(self):
+        return self.fileSec
+
+    def set_fileSec(self, fileSec):
+        self.fileSec = fileSec
+
+    def get_structMap(self):
+        return self.structMap
+
+    def set_structMap(self, structMap):
+        self.structMap = structMap
+
+    def add_structMap(self, value):
+        self.structMap.append(value)
+
+    def insert_structMap(self, index, value):
+        self.structMap[index] = value
+
+    def get_structLink(self):
+        return self.structLink
+
+    def set_structLink(self, structLink):
+        self.structLink = structLink
+
+    def get_behaviorSec(self):
+        return self.behaviorSec
+
+    def set_behaviorSec(self, behaviorSec):
+        self.behaviorSec = behaviorSec
+
+    def add_behaviorSec(self, value):
+        self.behaviorSec.append(value)
+
+    def insert_behaviorSec(self, index, value):
+        self.behaviorSec[index] = value
+
+    def get_PROFILE(self):
+        return self.PROFILE
+
+    def set_PROFILE(self, PROFILE):
+        self.PROFILE = PROFILE
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_OBJID(self):
+        return self.OBJID
+
+    def set_OBJID(self, OBJID):
+        self.OBJID = OBJID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='metsType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='metsType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -438,77 +697,123 @@ class metsType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='metsType'):
-        if self.PROFILE is not None and 'PROFILE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='metsType',
+        ):
+        if self.PROFILE is not None and 'PROFILE' \
+            not in already_processed:
             already_processed.append('PROFILE')
-            outfile.write(' PROFILE=%s' % (self.gds_format_string(quote_attrib(self.PROFILE).encode(ExternalEncoding), input_name='PROFILE'), ))
+            outfile.write(' PROFILE=%s'
+                          % (self.gds_format_string(quote_attrib(self.PROFILE).encode(ExternalEncoding),
+                          input_name='PROFILE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.OBJID is not None and 'OBJID' not in already_processed:
             already_processed.append('OBJID')
-            outfile.write(' OBJID=%s' % (self.gds_format_string(quote_attrib(self.OBJID).encode(ExternalEncoding), input_name='OBJID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='metsType'):
+            outfile.write(' OBJID=%s'
+                          % (self.gds_format_string(quote_attrib(self.OBJID).encode(ExternalEncoding),
+                          input_name='OBJID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsType',
+        ):
         if self.metsHdr:
-            self.metsHdr.export(outfile, level, namespace_, name_='metsHdr')
+            self.metsHdr.export(outfile, level, namespace_,
+                                name_='metsHdr')
         for dmdSec_ in self.dmdSec:
             dmdSec_.export(outfile, level, namespace_, name_='dmdSec')
         for amdSec_ in self.amdSec:
             amdSec_.export(outfile, level, namespace_, name_='amdSec')
         if self.fileSec:
-            self.fileSec.export(outfile, level, namespace_, name_='fileSec')
+            self.fileSec.export(outfile, level, namespace_,
+                                name_='fileSec')
         for structMap_ in self.structMap:
-            structMap_.export(outfile, level, namespace_, name_='structMap')
+            structMap_.export(outfile, level, namespace_,
+                              name_='structMap')
         if self.structLink:
-            self.structLink.export(outfile, level, namespace_, name_='structLink')
+            self.structLink.export(outfile, level, namespace_,
+                                   name_='structLink')
         for behaviorSec_ in self.behaviorSec:
-            behaviorSec_.export(outfile, level, namespace_, name_='behaviorSec')
+            behaviorSec_.export(outfile, level, namespace_,
+                                name_='behaviorSec')
+
     def hasContent_(self):
-        if (
-            self.metsHdr is not None or
-            self.dmdSec or
-            self.amdSec or
-            self.fileSec is not None or
-            self.structMap or
-            self.structLink is not None or
-            self.behaviorSec
-            ):
+        if self.metsHdr is not None or self.dmdSec or self.amdSec \
+            or self.fileSec is not None or self.structMap \
+            or self.structLink is not None or self.behaviorSec:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='metsType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='metsType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.PROFILE is not None and 'PROFILE' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.PROFILE is not None and 'PROFILE' \
+            not in already_processed:
             already_processed.append('PROFILE')
             showIndent(outfile, level)
-            outfile.write('PROFILE = "%s",\n' % (self.PROFILE,))
+            outfile.write('PROFILE = "%s",\n' % (self.PROFILE, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.OBJID is not None and 'OBJID' not in already_processed:
             already_processed.append('OBJID')
             showIndent(outfile, level)
-            outfile.write('OBJID = "%s",\n' % (self.OBJID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('OBJID = "%s",\n' % (self.OBJID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.metsHdr is not None:
             showIndent(outfile, level)
             outfile.write('metsHdr=model_.metsHdr(\n')
@@ -551,7 +856,8 @@ class metsType(GeneratedsSuper):
         for structMap_ in self.structMap:
             showIndent(outfile, level)
             outfile.write('model_.structMapType(\n')
-            structMap_.exportLiteral(outfile, level, name_='structMapType')
+            structMap_.exportLiteral(outfile, level,
+                    name_='structMapType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -569,18 +875,26 @@ class metsType(GeneratedsSuper):
         for behaviorSec_ in self.behaviorSec:
             showIndent(outfile, level)
             outfile.write('model_.behaviorSecType(\n')
-            behaviorSec_.exportLiteral(outfile, level, name_='behaviorSecType')
+            behaviorSec_.exportLiteral(outfile, level,
+                    name_='behaviorSecType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('PROFILE')
         if value is not None and 'PROFILE' not in already_processed:
             already_processed.append('PROFILE')
@@ -601,39 +915,49 @@ class metsType(GeneratedsSuper):
         if value is not None and 'OBJID' not in already_processed:
             already_processed.append('OBJID')
             self.OBJID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'metsHdr': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'metsHdr':
             obj_ = metsHdr.factory()
             obj_.build(child_)
             self.set_metsHdr(obj_)
-        elif nodeName_ == 'dmdSec': 
+        elif nodeName_ == 'dmdSec':
             obj_ = mdSecType.factory()
             obj_.build(child_)
             self.dmdSec.append(obj_)
-        elif nodeName_ == 'amdSec': 
+        elif nodeName_ == 'amdSec':
             obj_ = amdSecType.factory()
             obj_.build(child_)
             self.amdSec.append(obj_)
-        elif nodeName_ == 'fileSec': 
+        elif nodeName_ == 'fileSec':
             obj_ = fileSec.factory()
             obj_.build(child_)
             self.set_fileSec(obj_)
-        elif nodeName_ == 'structMap': 
+        elif nodeName_ == 'structMap':
             obj_ = structMapType.factory()
             obj_.build(child_)
             self.structMap.append(obj_)
-        elif nodeName_ == 'structLink': 
+        elif nodeName_ == 'structLink':
             obj_ = structLink.factory()
             obj_.build(child_)
             self.set_structLink(obj_)
-        elif nodeName_ == 'behaviorSec': 
+        elif nodeName_ == 'behaviorSec':
             obj_ = behaviorSecType.factory()
             obj_.build(child_)
             self.behaviorSec.append(obj_)
+
+
 # end class metsType
 
 
 class metsHdr(GeneratedsSuper):
+
     """The mets header element <metsHdr> captures metadata about the METS
     document itself, not the digital object the METS document
     encodes. Although it records a more limited set of metadata, it
@@ -656,9 +980,21 @@ class metsHdr(GeneratedsSuper):
     indicate the date/time the METS document was last modified.
     RECORDSTATUS (string/O): Specifies the status of the METS
     document. It is used for internal processing purposes."""
+
     subclass = None
     superclass = None
-    def __init__(self, CREATEDATE=None, RECORDSTATUS=None, ADMID=None, LASTMODDATE=None, ID=None, agent=None, altRecordID=None, metsDocumentID=None):
+
+    def __init__(
+        self,
+        CREATEDATE=None,
+        RECORDSTATUS=None,
+        ADMID=None,
+        LASTMODDATE=None,
+        ID=None,
+        agent=None,
+        altRecordID=None,
+        metsDocumentID=None,
+        ):
         self.CREATEDATE = _cast(None, CREATEDATE)
         self.RECORDSTATUS = _cast(None, RECORDSTATUS)
         self.ADMID = _cast(None, ADMID)
@@ -673,36 +1009,88 @@ class metsHdr(GeneratedsSuper):
         else:
             self.altRecordID = altRecordID
         self.metsDocumentID = metsDocumentID
+
     def factory(*args_, **kwargs_):
         if metsHdr.subclass:
             return metsHdr.subclass(*args_, **kwargs_)
         else:
             return metsHdr(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_agent(self): return self.agent
-    def set_agent(self, agent): self.agent = agent
-    def add_agent(self, value): self.agent.append(value)
-    def insert_agent(self, index, value): self.agent[index] = value
-    def get_altRecordID(self): return self.altRecordID
-    def set_altRecordID(self, altRecordID): self.altRecordID = altRecordID
-    def add_altRecordID(self, value): self.altRecordID.append(value)
-    def insert_altRecordID(self, index, value): self.altRecordID[index] = value
-    def get_metsDocumentID(self): return self.metsDocumentID
-    def set_metsDocumentID(self, metsDocumentID): self.metsDocumentID = metsDocumentID
-    def get_CREATEDATE(self): return self.CREATEDATE
-    def set_CREATEDATE(self, CREATEDATE): self.CREATEDATE = CREATEDATE
-    def get_RECORDSTATUS(self): return self.RECORDSTATUS
-    def set_RECORDSTATUS(self, RECORDSTATUS): self.RECORDSTATUS = RECORDSTATUS
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_LASTMODDATE(self): return self.LASTMODDATE
-    def set_LASTMODDATE(self, LASTMODDATE): self.LASTMODDATE = LASTMODDATE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='metsHdr', namespacedef_=''):
+
+    def get_agent(self):
+        return self.agent
+
+    def set_agent(self, agent):
+        self.agent = agent
+
+    def add_agent(self, value):
+        self.agent.append(value)
+
+    def insert_agent(self, index, value):
+        self.agent[index] = value
+
+    def get_altRecordID(self):
+        return self.altRecordID
+
+    def set_altRecordID(self, altRecordID):
+        self.altRecordID = altRecordID
+
+    def add_altRecordID(self, value):
+        self.altRecordID.append(value)
+
+    def insert_altRecordID(self, index, value):
+        self.altRecordID[index] = value
+
+    def get_metsDocumentID(self):
+        return self.metsDocumentID
+
+    def set_metsDocumentID(self, metsDocumentID):
+        self.metsDocumentID = metsDocumentID
+
+    def get_CREATEDATE(self):
+        return self.CREATEDATE
+
+    def set_CREATEDATE(self, CREATEDATE):
+        self.CREATEDATE = CREATEDATE
+
+    def get_RECORDSTATUS(self):
+        return self.RECORDSTATUS
+
+    def set_RECORDSTATUS(self, RECORDSTATUS):
+        self.RECORDSTATUS = RECORDSTATUS
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_LASTMODDATE(self):
+        return self.LASTMODDATE
+
+    def set_LASTMODDATE(self, LASTMODDATE):
+        self.LASTMODDATE = LASTMODDATE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsHdr',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='metsHdr')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='metsHdr')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -710,65 +1098,117 @@ class metsHdr(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='metsHdr'):
-        if self.CREATEDATE is not None and 'CREATEDATE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='metsHdr',
+        ):
+        if self.CREATEDATE is not None and 'CREATEDATE' \
+            not in already_processed:
             already_processed.append('CREATEDATE')
-            outfile.write(' CREATEDATE=%s' % (self.gds_format_string(quote_attrib(self.CREATEDATE).encode(ExternalEncoding), input_name='CREATEDATE'), ))
-        if self.RECORDSTATUS is not None and 'RECORDSTATUS' not in already_processed:
+            outfile.write(' CREATEDATE=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATEDATE).encode(ExternalEncoding),
+                          input_name='CREATEDATE'), ))
+        if self.RECORDSTATUS is not None and 'RECORDSTATUS' \
+            not in already_processed:
             already_processed.append('RECORDSTATUS')
-            outfile.write(' RECORDSTATUS=%s' % (self.gds_format_string(quote_attrib(self.RECORDSTATUS).encode(ExternalEncoding), input_name='RECORDSTATUS'), ))
+            outfile.write(' RECORDSTATUS=%s'
+                          % (self.gds_format_string(quote_attrib(self.RECORDSTATUS).encode(ExternalEncoding),
+                          input_name='RECORDSTATUS'), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
-        if self.LASTMODDATE is not None and 'LASTMODDATE' not in already_processed:
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
+        if self.LASTMODDATE is not None and 'LASTMODDATE' \
+            not in already_processed:
             already_processed.append('LASTMODDATE')
-            outfile.write(' LASTMODDATE=%s' % (self.gds_format_string(quote_attrib(self.LASTMODDATE).encode(ExternalEncoding), input_name='LASTMODDATE'), ))
+            outfile.write(' LASTMODDATE=%s'
+                          % (self.gds_format_string(quote_attrib(self.LASTMODDATE).encode(ExternalEncoding),
+                          input_name='LASTMODDATE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='metsHdr'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsHdr',
+        ):
         for agent_ in self.agent:
             agent_.export(outfile, level, namespace_, name_='agent')
         for altRecordID_ in self.altRecordID:
-            altRecordID_.export(outfile, level, namespace_, name_='altRecordID')
+            altRecordID_.export(outfile, level, namespace_,
+                                name_='altRecordID')
         if self.metsDocumentID:
-            self.metsDocumentID.export(outfile, level, namespace_, name_='metsDocumentID')
+            self.metsDocumentID.export(outfile, level, namespace_,
+                    name_='metsDocumentID')
+
     def hasContent_(self):
-        if (
-            self.agent or
-            self.altRecordID or
-            self.metsDocumentID is not None
-            ):
+        if self.agent or self.altRecordID or self.metsDocumentID \
+            is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='metsHdr'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='metsHdr',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.CREATEDATE is not None and 'CREATEDATE' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.CREATEDATE is not None and 'CREATEDATE' \
+            not in already_processed:
             already_processed.append('CREATEDATE')
             showIndent(outfile, level)
-            outfile.write('CREATEDATE = "%s",\n' % (self.CREATEDATE,))
-        if self.RECORDSTATUS is not None and 'RECORDSTATUS' not in already_processed:
+            outfile.write('CREATEDATE = "%s",\n' % (self.CREATEDATE, ))
+        if self.RECORDSTATUS is not None and 'RECORDSTATUS' \
+            not in already_processed:
             already_processed.append('RECORDSTATUS')
             showIndent(outfile, level)
-            outfile.write('RECORDSTATUS = "%s",\n' % (self.RECORDSTATUS,))
+            outfile.write('RECORDSTATUS = "%s",\n'
+                          % (self.RECORDSTATUS, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
-        if self.LASTMODDATE is not None and 'LASTMODDATE' not in already_processed:
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
+        if self.LASTMODDATE is not None and 'LASTMODDATE' \
+            not in already_processed:
             already_processed.append('LASTMODDATE')
             showIndent(outfile, level)
-            outfile.write('LASTMODDATE = "%s",\n' % (self.LASTMODDATE,))
+            outfile.write('LASTMODDATE = "%s",\n' % (self.LASTMODDATE,
+                          ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('agent=[\n')
         level += 1
@@ -799,18 +1239,26 @@ class metsHdr(GeneratedsSuper):
             self.metsDocumentID.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('CREATEDATE')
         if value is not None and 'CREATEDATE' not in already_processed:
             already_processed.append('CREATEDATE')
             self.CREATEDATE = value
         value = attrs.get('RECORDSTATUS')
-        if value is not None and 'RECORDSTATUS' not in already_processed:
+        if value is not None and 'RECORDSTATUS' \
+            not in already_processed:
             already_processed.append('RECORDSTATUS')
             self.RECORDSTATUS = value
         value = attrs.get('ADMID')
@@ -825,23 +1273,33 @@ class metsHdr(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'agent': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'agent':
             obj_ = agent.factory()
             obj_.build(child_)
             self.agent.append(obj_)
-        elif nodeName_ == 'altRecordID': 
+        elif nodeName_ == 'altRecordID':
             obj_ = altRecordID.factory()
             obj_.build(child_)
             self.altRecordID.append(obj_)
-        elif nodeName_ == 'metsDocumentID': 
+        elif nodeName_ == 'metsDocumentID':
             obj_ = metsDocumentID.factory()
             obj_.build(child_)
             self.set_metsDocumentID(obj_)
+
+
 # end class metsHdr
 
 
 class agent(GeneratedsSuper):
+
     """agent: The agent element <agent> provides for various parties and
     their roles with respect to the METS record to be documented. ID
     (ID/O): This attribute uniquely identifies the element within
@@ -876,9 +1334,20 @@ class agent(GeneratedsSuper):
     being used in the OTHERTYPE attribute OTHERTYPE (string/O):
     Specifies the type of agent when the value OTHER is indicated in
     the TYPE attribute."""
+
     subclass = None
     superclass = None
-    def __init__(self, TYPE=None, OTHERTYPE=None, ROLE=None, ID=None, OTHERROLE=None, name=None, note=None):
+
+    def __init__(
+        self,
+        TYPE=None,
+        OTHERTYPE=None,
+        ROLE=None,
+        ID=None,
+        OTHERROLE=None,
+        name=None,
+        note=None,
+        ):
         self.TYPE = _cast(None, TYPE)
         self.OTHERTYPE = _cast(None, OTHERTYPE)
         self.ROLE = _cast(None, ROLE)
@@ -889,32 +1358,76 @@ class agent(GeneratedsSuper):
             self.note = []
         else:
             self.note = note
+
     def factory(*args_, **kwargs_):
         if agent.subclass:
             return agent.subclass(*args_, **kwargs_)
         else:
             return agent(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_name(self): return self.name
-    def set_name(self, name): self.name = name
-    def get_note(self): return self.note
-    def set_note(self, note): self.note = note
-    def add_note(self, value): self.note.append(value)
-    def insert_note(self, index, value): self.note[index] = value
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_OTHERTYPE(self): return self.OTHERTYPE
-    def set_OTHERTYPE(self, OTHERTYPE): self.OTHERTYPE = OTHERTYPE
-    def get_ROLE(self): return self.ROLE
-    def set_ROLE(self, ROLE): self.ROLE = ROLE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_OTHERROLE(self): return self.OTHERROLE
-    def set_OTHERROLE(self, OTHERROLE): self.OTHERROLE = OTHERROLE
-    def export(self, outfile, level, namespace_='', name_='agent', namespacedef_=''):
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_note(self):
+        return self.note
+
+    def set_note(self, note):
+        self.note = note
+
+    def add_note(self, value):
+        self.note.append(value)
+
+    def insert_note(self, index, value):
+        self.note[index] = value
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_OTHERTYPE(self):
+        return self.OTHERTYPE
+
+    def set_OTHERTYPE(self, OTHERTYPE):
+        self.OTHERTYPE = OTHERTYPE
+
+    def get_ROLE(self):
+        return self.ROLE
+
+    def set_ROLE(self, ROLE):
+        self.ROLE = ROLE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_OTHERROLE(self):
+        return self.OTHERROLE
+
+    def set_OTHERROLE(self, OTHERROLE):
+        self.OTHERROLE = OTHERROLE
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='agent',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='agent')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='agent')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -922,82 +1435,141 @@ class agent(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='agent'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='agent',
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
-        if self.OTHERTYPE is not None and 'OTHERTYPE' not in already_processed:
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
+        if self.OTHERTYPE is not None and 'OTHERTYPE' \
+            not in already_processed:
             already_processed.append('OTHERTYPE')
-            outfile.write(' OTHERTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERTYPE).encode(ExternalEncoding), input_name='OTHERTYPE'), ))
+            outfile.write(' OTHERTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERTYPE).encode(ExternalEncoding),
+                          input_name='OTHERTYPE'), ))
         if self.ROLE is not None and 'ROLE' not in already_processed:
             already_processed.append('ROLE')
-            outfile.write(' ROLE=%s' % (self.gds_format_string(quote_attrib(self.ROLE).encode(ExternalEncoding), input_name='ROLE'), ))
+            outfile.write(' ROLE=%s'
+                          % (self.gds_format_string(quote_attrib(self.ROLE).encode(ExternalEncoding),
+                          input_name='ROLE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-        if self.OTHERROLE is not None and 'OTHERROLE' not in already_processed:
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+        if self.OTHERROLE is not None and 'OTHERROLE' \
+            not in already_processed:
             already_processed.append('OTHERROLE')
-            outfile.write(' OTHERROLE=%s' % (self.gds_format_string(quote_attrib(self.OTHERROLE).encode(ExternalEncoding), input_name='OTHERROLE'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='agent'):
+            outfile.write(' OTHERROLE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERROLE).encode(ExternalEncoding),
+                          input_name='OTHERROLE'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='agent',
+        ):
         if self.name is not None:
             showIndent(outfile, level)
-            outfile.write('<%sname>%s</%sname>\n' % (namespace_, self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding), input_name='name'), namespace_))
+            outfile.write('<%sname>%s</%sname>\n' % (namespace_,
+                          self.gds_format_string(quote_xml(self.name).encode(ExternalEncoding),
+                          input_name='name'), namespace_))
         for note_ in self.note:
             showIndent(outfile, level)
-            outfile.write('<%snote>%s</%snote>\n' % (namespace_, self.gds_format_string(quote_xml(note_).encode(ExternalEncoding), input_name='note'), namespace_))
+            outfile.write('<%snote>%s</%snote>\n' % (namespace_,
+                          self.gds_format_string(quote_xml(note_).encode(ExternalEncoding),
+                          input_name='note'), namespace_))
+
     def hasContent_(self):
-        if (
-            self.name is not None or
-            self.note
-            ):
+        if self.name is not None or self.note:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='agent'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='agent',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
-        if self.OTHERTYPE is not None and 'OTHERTYPE' not in already_processed:
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
+        if self.OTHERTYPE is not None and 'OTHERTYPE' \
+            not in already_processed:
             already_processed.append('OTHERTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERTYPE = "%s",\n' % (self.OTHERTYPE,))
+            outfile.write('OTHERTYPE = "%s",\n' % (self.OTHERTYPE, ))
         if self.ROLE is not None and 'ROLE' not in already_processed:
             already_processed.append('ROLE')
             showIndent(outfile, level)
-            outfile.write('ROLE = "%s",\n' % (self.ROLE,))
+            outfile.write('ROLE = "%s",\n' % (self.ROLE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-        if self.OTHERROLE is not None and 'OTHERROLE' not in already_processed:
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+        if self.OTHERROLE is not None and 'OTHERROLE' \
+            not in already_processed:
             already_processed.append('OTHERROLE')
             showIndent(outfile, level)
-            outfile.write('OTHERROLE = "%s",\n' % (self.OTHERROLE,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('OTHERROLE = "%s",\n' % (self.OTHERROLE, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.name is not None:
             showIndent(outfile, level)
-            outfile.write('name=%s,\n' % quote_python(self.name).encode(ExternalEncoding))
+            outfile.write('name=%s,\n'
+                          % quote_python(self.name).encode(ExternalEncoding))
         showIndent(outfile, level)
         outfile.write('note=[\n')
         level += 1
         for note_ in self.note:
             showIndent(outfile, level)
-            outfile.write('%s,\n' % quote_python(note_).encode(ExternalEncoding))
+            outfile.write('%s,\n'
+                          % quote_python(note_).encode(ExternalEncoding))
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('TYPE')
         if value is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
@@ -1018,7 +1590,14 @@ class agent(GeneratedsSuper):
         if value is not None and 'OTHERROLE' not in already_processed:
             already_processed.append('OTHERROLE')
             self.OTHERROLE = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         if nodeName_ == 'name':
             name_ = child_.text
             name_ = self.gds_validate_string(name_, node, 'name')
@@ -1027,10 +1606,13 @@ class agent(GeneratedsSuper):
             note_ = child_.text
             note_ = self.gds_validate_string(note_, node, 'note')
             self.note.append(note_)
+
+
 # end class agent
 
 
 class altRecordID(GeneratedsSuper):
+
     """The alternative record identifier element <altRecordID> allows one
     to use alternative record identifier values for the digital
     object represented by the METS document; the primary record
@@ -1042,28 +1624,59 @@ class altRecordID(GeneratedsSuper):
     for internal and external linking see Chapter 4 of the METS
     Primer. TYPE (string/O): A description of the identifier type
     (e.g., OCLC record number, LCCN, etc.)."""
+
     subclass = None
     superclass = None
-    def __init__(self, TYPE=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        TYPE=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.TYPE = _cast(None, TYPE)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if altRecordID.subclass:
             return altRecordID.subclass(*args_, **kwargs_)
         else:
             return altRecordID(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='altRecordID', namespacedef_=''):
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='altRecordID',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='altRecordID')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='altRecordID')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -1071,47 +1684,91 @@ class altRecordID(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='altRecordID'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='altRecordID',
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='altRecordID'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='altRecordID',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='altRecordID'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='altRecordID',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('TYPE')
         if value is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
@@ -1120,12 +1777,22 @@ class altRecordID(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class altRecordID
 
 
 class metsDocumentID(GeneratedsSuper):
+
     """The metsDocument identifier element <metsDocumentID> allows a unique
     identifier to be assigned to the METS document itself. This may
     be different from the OBJID attribute value in the root <mets>
@@ -1137,28 +1804,59 @@ class metsDocumentID(GeneratedsSuper):
     information on using ID attributes for internal and external
     linking see Chapter 4 of the METS Primer. TYPE (string/O): A
     description of the identifier type."""
+
     subclass = None
     superclass = None
-    def __init__(self, TYPE=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        TYPE=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.TYPE = _cast(None, TYPE)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if metsDocumentID.subclass:
             return metsDocumentID.subclass(*args_, **kwargs_)
         else:
             return metsDocumentID(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='metsDocumentID', namespacedef_=''):
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsDocumentID',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='metsDocumentID')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='metsDocumentID')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -1166,47 +1864,91 @@ class metsDocumentID(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='metsDocumentID'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='metsDocumentID',
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='metsDocumentID'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='metsDocumentID',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='metsDocumentID'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='metsDocumentID',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('TYPE')
         if value is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
@@ -1215,12 +1957,22 @@ class metsDocumentID(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class metsDocumentID
 
 
 class fileSec(GeneratedsSuper):
+
     """The overall purpose of the content file section element <fileSec> is
     to provide an inventory of and the location for the content
     files that comprise the digital object being described in the
@@ -1230,30 +1982,56 @@ class fileSec(GeneratedsSuper):
     an IDREF or an XPTR. For more information on using ID attributes
     for internal and external linking see Chapter 4 of the METS
     Primer."""
+
     subclass = None
     superclass = None
+
     def __init__(self, ID=None, fileGrp=None):
         self.ID = _cast(None, ID)
         if fileGrp is None:
             self.fileGrp = []
         else:
             self.fileGrp = fileGrp
+
     def factory(*args_, **kwargs_):
         if fileSec.subclass:
             return fileSec.subclass(*args_, **kwargs_)
         else:
             return fileSec(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_fileGrp(self): return self.fileGrp
-    def set_fileGrp(self, fileGrp): self.fileGrp = fileGrp
-    def add_fileGrp(self, value): self.fileGrp.append(value)
-    def insert_fileGrp(self, index, value): self.fileGrp[index] = value
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='fileSec', namespacedef_=''):
+
+    def get_fileGrp(self):
+        return self.fileGrp
+
+    def set_fileGrp(self, fileGrp):
+        self.fileGrp = fileGrp
+
+    def add_fileGrp(self, value):
+        self.fileGrp.append(value)
+
+    def insert_fileGrp(self, index, value):
+        self.fileGrp[index] = value
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileSec',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='fileSec')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='fileSec')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1261,31 +2039,66 @@ class fileSec(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='fileSec'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='fileSec',
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='fileSec'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileSec',
+        ):
         for fileGrp_ in self.fileGrp:
             fileGrp_.export(outfile, level, namespace_, name_='fileGrp')
+
     def hasContent_(self):
-        if (
-            self.fileGrp
-            ):
+        if self.fileGrp:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='fileSec'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='fileSec',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('fileGrp=[\n')
         level += 1
@@ -1298,25 +2111,42 @@ class fileSec(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'fileGrp': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'fileGrp':
             obj_ = fileGrp.factory()
             obj_.build(child_)
             self.fileGrp.append(obj_)
+
+
 # end class fileSec
 
 
 class amdSecType(GeneratedsSuper):
+
     """amdSecType: Complex Type for Administrative Metadata Sections The
     administrative metadata section consists of four possible
     subsidiary sections: techMD (technical metadata for
@@ -1330,9 +2160,18 @@ class amdSecType(GeneratedsSuper):
     unambiguously from another element or document via an IDREF or
     an XPTR. For more information on using ID attributes for
     internal and external linking see Chapter 4 of the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, ID=None, techMD=None, rightsMD=None, sourceMD=None, digiprovMD=None):
+
+    def __init__(
+        self,
+        ID=None,
+        techMD=None,
+        rightsMD=None,
+        sourceMD=None,
+        digiprovMD=None,
+        ):
         self.ID = _cast(None, ID)
         if techMD is None:
             self.techMD = []
@@ -1350,34 +2189,82 @@ class amdSecType(GeneratedsSuper):
             self.digiprovMD = []
         else:
             self.digiprovMD = digiprovMD
+
     def factory(*args_, **kwargs_):
         if amdSecType.subclass:
             return amdSecType.subclass(*args_, **kwargs_)
         else:
             return amdSecType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_techMD(self): return self.techMD
-    def set_techMD(self, techMD): self.techMD = techMD
-    def add_techMD(self, value): self.techMD.append(value)
-    def insert_techMD(self, index, value): self.techMD[index] = value
-    def get_rightsMD(self): return self.rightsMD
-    def set_rightsMD(self, rightsMD): self.rightsMD = rightsMD
-    def add_rightsMD(self, value): self.rightsMD.append(value)
-    def insert_rightsMD(self, index, value): self.rightsMD[index] = value
-    def get_sourceMD(self): return self.sourceMD
-    def set_sourceMD(self, sourceMD): self.sourceMD = sourceMD
-    def add_sourceMD(self, value): self.sourceMD.append(value)
-    def insert_sourceMD(self, index, value): self.sourceMD[index] = value
-    def get_digiprovMD(self): return self.digiprovMD
-    def set_digiprovMD(self, digiprovMD): self.digiprovMD = digiprovMD
-    def add_digiprovMD(self, value): self.digiprovMD.append(value)
-    def insert_digiprovMD(self, index, value): self.digiprovMD[index] = value
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='amdSecType', namespacedef_=''):
+
+    def get_techMD(self):
+        return self.techMD
+
+    def set_techMD(self, techMD):
+        self.techMD = techMD
+
+    def add_techMD(self, value):
+        self.techMD.append(value)
+
+    def insert_techMD(self, index, value):
+        self.techMD[index] = value
+
+    def get_rightsMD(self):
+        return self.rightsMD
+
+    def set_rightsMD(self, rightsMD):
+        self.rightsMD = rightsMD
+
+    def add_rightsMD(self, value):
+        self.rightsMD.append(value)
+
+    def insert_rightsMD(self, index, value):
+        self.rightsMD[index] = value
+
+    def get_sourceMD(self):
+        return self.sourceMD
+
+    def set_sourceMD(self, sourceMD):
+        self.sourceMD = sourceMD
+
+    def add_sourceMD(self, value):
+        self.sourceMD.append(value)
+
+    def insert_sourceMD(self, index, value):
+        self.sourceMD[index] = value
+
+    def get_digiprovMD(self):
+        return self.digiprovMD
+
+    def set_digiprovMD(self, digiprovMD):
+        self.digiprovMD = digiprovMD
+
+    def add_digiprovMD(self, value):
+        self.digiprovMD.append(value)
+
+    def insert_digiprovMD(self, index, value):
+        self.digiprovMD[index] = value
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='amdSecType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='amdSecType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='amdSecType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1385,40 +2272,76 @@ class amdSecType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='amdSecType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='amdSecType',
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='amdSecType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='amdSecType',
+        ):
         for techMD_ in self.techMD:
             techMD_.export(outfile, level, namespace_, name_='techMD')
         for rightsMD_ in self.rightsMD:
-            rightsMD_.export(outfile, level, namespace_, name_='rightsMD')
+            rightsMD_.export(outfile, level, namespace_,
+                             name_='rightsMD')
         for sourceMD_ in self.sourceMD:
-            sourceMD_.export(outfile, level, namespace_, name_='sourceMD')
+            sourceMD_.export(outfile, level, namespace_,
+                             name_='sourceMD')
         for digiprovMD_ in self.digiprovMD:
-            digiprovMD_.export(outfile, level, namespace_, name_='digiprovMD')
+            digiprovMD_.export(outfile, level, namespace_,
+                               name_='digiprovMD')
+
     def hasContent_(self):
-        if (
-            self.techMD or
-            self.rightsMD or
-            self.sourceMD or
-            self.digiprovMD
-            ):
+        if self.techMD or self.rightsMD or self.sourceMD \
+            or self.digiprovMD:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='amdSecType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='amdSecType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('techMD=[\n')
         level += 1
@@ -1467,37 +2390,54 @@ class amdSecType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'techMD': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'techMD':
             obj_ = mdSecType.factory()
             obj_.build(child_)
             self.techMD.append(obj_)
-        elif nodeName_ == 'rightsMD': 
+        elif nodeName_ == 'rightsMD':
             obj_ = mdSecType.factory()
             obj_.build(child_)
             self.rightsMD.append(obj_)
-        elif nodeName_ == 'sourceMD': 
+        elif nodeName_ == 'sourceMD':
             obj_ = mdSecType.factory()
             obj_.build(child_)
             self.sourceMD.append(obj_)
-        elif nodeName_ == 'digiprovMD': 
+        elif nodeName_ == 'digiprovMD':
             obj_ = mdSecType.factory()
             obj_.build(child_)
             self.digiprovMD.append(obj_)
+
+
 # end class amdSecType
 
 
 class fileGrpType(GeneratedsSuper):
+
     """fileGrpType: Complex Type for File Groups The file group is used to
     cluster all of the digital files composing a digital library
     object in a hierarchical arrangement (fileGrp is recursively
@@ -1530,9 +2470,19 @@ class fileGrpType(GeneratedsSuper):
     USE attribute at the <FLocat> or <FContent> level pertains to
     the particular copy of the file that is either referenced
     (<FLocat>) or wrapped (<FContent>)."""
+
     subclass = None
     superclass = None
-    def __init__(self, VERSDATE=None, ADMID=None, ID=None, USE=None, fileGrp=None, file=None):
+
+    def __init__(
+        self,
+        VERSDATE=None,
+        ADMID=None,
+        ID=None,
+        USE=None,
+        fileGrp=None,
+        file=None,
+        ):
         self.VERSDATE = _cast(None, VERSDATE)
         self.ADMID = _cast(None, ADMID)
         self.ID = _cast(None, ID)
@@ -1545,32 +2495,76 @@ class fileGrpType(GeneratedsSuper):
             self.file = []
         else:
             self.file = file
+
     def factory(*args_, **kwargs_):
         if fileGrpType.subclass:
             return fileGrpType.subclass(*args_, **kwargs_)
         else:
             return fileGrpType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_fileGrp(self): return self.fileGrp
-    def set_fileGrp(self, fileGrp): self.fileGrp = fileGrp
-    def add_fileGrp(self, value): self.fileGrp.append(value)
-    def insert_fileGrp(self, index, value): self.fileGrp[index] = value
-    def get_file(self): return self.file
-    def set_file(self, file): self.file = file
-    def add_file(self, value): self.file.append(value)
-    def insert_file(self, index, value): self.file[index] = value
-    def get_VERSDATE(self): return self.VERSDATE
-    def set_VERSDATE(self, VERSDATE): self.VERSDATE = VERSDATE
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_USE(self): return self.USE
-    def set_USE(self, USE): self.USE = USE
-    def export(self, outfile, level, namespace_='', name_='fileGrpType', namespacedef_=''):
+
+    def get_fileGrp(self):
+        return self.fileGrp
+
+    def set_fileGrp(self, fileGrp):
+        self.fileGrp = fileGrp
+
+    def add_fileGrp(self, value):
+        self.fileGrp.append(value)
+
+    def insert_fileGrp(self, index, value):
+        self.fileGrp[index] = value
+
+    def get_file(self):
+        return self.file
+
+    def set_file(self, file):
+        self.file = file
+
+    def add_file(self, value):
+        self.file.append(value)
+
+    def insert_file(self, index, value):
+        self.file[index] = value
+
+    def get_VERSDATE(self):
+        return self.VERSDATE
+
+    def set_VERSDATE(self, VERSDATE):
+        self.VERSDATE = VERSDATE
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_USE(self):
+        return self.USE
+
+    def set_USE(self, USE):
+        self.USE = USE
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileGrpType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='fileGrpType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='fileGrpType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1578,55 +2572,97 @@ class fileGrpType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='fileGrpType'):
-        if self.VERSDATE is not None and 'VERSDATE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='fileGrpType',
+        ):
+        if self.VERSDATE is not None and 'VERSDATE' \
+            not in already_processed:
             already_processed.append('VERSDATE')
-            outfile.write(' VERSDATE=%s' % (self.gds_format_string(quote_attrib(self.VERSDATE).encode(ExternalEncoding), input_name='VERSDATE'), ))
+            outfile.write(' VERSDATE=%s'
+                          % (self.gds_format_string(quote_attrib(self.VERSDATE).encode(ExternalEncoding),
+                          input_name='VERSDATE'), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
-            outfile.write(' USE=%s' % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding), input_name='USE'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='fileGrpType'):
+            outfile.write(' USE=%s'
+                          % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding),
+                          input_name='USE'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileGrpType',
+        ):
         for fileGrp_ in self.fileGrp:
             fileGrp_.export(outfile, level, namespace_, name_='fileGrp')
         for file_ in self.file:
             file_.export(outfile, level, namespace_, name_='file')
+
     def hasContent_(self):
-        if (
-            self.fileGrp or
-            self.file
-            ):
+        if self.fileGrp or self.file:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='fileGrpType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='fileGrpType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.VERSDATE is not None and 'VERSDATE' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.VERSDATE is not None and 'VERSDATE' \
+            not in already_processed:
             already_processed.append('VERSDATE')
             showIndent(outfile, level)
-            outfile.write('VERSDATE = "%s",\n' % (self.VERSDATE,))
+            outfile.write('VERSDATE = "%s",\n' % (self.VERSDATE, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
             showIndent(outfile, level)
-            outfile.write('USE = "%s",\n' % (self.USE,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('USE = "%s",\n' % (self.USE, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('fileGrp=[\n')
         level += 1
@@ -1651,12 +2687,19 @@ class fileGrpType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('VERSDATE')
         if value is not None and 'VERSDATE' not in already_processed:
             already_processed.append('VERSDATE')
@@ -1673,19 +2716,29 @@ class fileGrpType(GeneratedsSuper):
         if value is not None and 'USE' not in already_processed:
             already_processed.append('USE')
             self.USE = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'fileGrp': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'fileGrp':
             obj_ = fileGrpType.factory()
             obj_.build(child_)
             self.fileGrp.append(obj_)
-        elif nodeName_ == 'file': 
+        elif nodeName_ == 'file':
             obj_ = fileType.factory()
             obj_.build(child_)
             self.file.append(obj_)
+
+
 # end class fileGrpType
 
 
 class structMapType(GeneratedsSuper):
+
     """structMapType: Complex Type for Structural Maps The structural map
     (structMap) outlines a hierarchical structure for the original
     object being encoded, using a series of nested div elements. ID
@@ -1707,31 +2760,67 @@ class structMapType(GeneratedsSuper):
     where more than one <structMap> is provided for a single object.
     A descriptive LABEL value, in that case, could clarify to users
     the purpose of each of the available structMaps."""
+
     subclass = None
     superclass = None
-    def __init__(self, TYPE=None, ID=None, LABEL=None, div=None):
+
+    def __init__(
+        self,
+        TYPE=None,
+        ID=None,
+        LABEL=None,
+        div=None,
+        ):
         self.TYPE = _cast(None, TYPE)
         self.ID = _cast(None, ID)
         self.LABEL = _cast(None, LABEL)
         self.div = div
+
     def factory(*args_, **kwargs_):
         if structMapType.subclass:
             return structMapType.subclass(*args_, **kwargs_)
         else:
             return structMapType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_div(self): return self.div
-    def set_div(self, div): self.div = div
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def export(self, outfile, level, namespace_='', name_='structMapType', namespacedef_=''):
+
+    def get_div(self):
+        return self.div
+
+    def set_div(self, div):
+        self.div = div
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structMapType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='structMapType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='structMapType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1739,57 +2828,103 @@ class structMapType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='structMapType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='structMapType',
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='structMapType'):
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structMapType',
+        ):
         if self.div:
-            self.div.export(outfile, level, namespace_, name_='div', )
+            self.div.export(outfile, level, namespace_, name_='div')
+
     def hasContent_(self):
-        if (
-            self.div is not None
-            ):
+        if self.div is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='structMapType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='structMapType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.div is not None:
             showIndent(outfile, level)
             outfile.write('div=model_.divType(\n')
             self.div.exportLiteral(outfile, level, name_='div')
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('TYPE')
         if value is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
@@ -1802,15 +2937,25 @@ class structMapType(GeneratedsSuper):
         if value is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             self.LABEL = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'div': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'div':
             obj_ = divType.factory()
             obj_.build(child_)
             self.set_div(obj_)
+
+
 # end class structMapType
 
 
 class divType(GeneratedsSuper):
+
     """divType: Complex Type for Divisions The METS standard represents a
     document structurally as a series of nested div elements, that
     is, as a hierarchy (e.g., a book, which is composed of chapters,
@@ -1883,9 +3028,25 @@ class divType(GeneratedsSuper):
     to DIDL DII or Digital Item Identifier, a unique external ID).
     xlink:label - an xlink label to be referred to by an smLink
     element"""
+
     subclass = None
     superclass = None
-    def __init__(self, ADMID=None, TYPE=None, LABEL=None, DMDID=None, ORDERLABEL=None, CONTENTIDS=None, label=None, ORDER=None, ID=None, mptr=None, fptr=None, div=None):
+
+    def __init__(
+        self,
+        ADMID=None,
+        TYPE=None,
+        LABEL=None,
+        DMDID=None,
+        ORDERLABEL=None,
+        CONTENTIDS=None,
+        label=None,
+        ORDER=None,
+        ID=None,
+        mptr=None,
+        fptr=None,
+        div=None,
+        ):
         self.ADMID = _cast(None, ADMID)
         self.TYPE = _cast(None, TYPE)
         self.LABEL = _cast(None, LABEL)
@@ -1907,49 +3068,124 @@ class divType(GeneratedsSuper):
             self.div = []
         else:
             self.div = div
+
     def factory(*args_, **kwargs_):
         if divType.subclass:
             return divType.subclass(*args_, **kwargs_)
         else:
             return divType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_mptr(self): return self.mptr
-    def set_mptr(self, mptr): self.mptr = mptr
-    def add_mptr(self, value): self.mptr.append(value)
-    def insert_mptr(self, index, value): self.mptr[index] = value
-    def get_fptr(self): return self.fptr
-    def set_fptr(self, fptr): self.fptr = fptr
-    def add_fptr(self, value): self.fptr.append(value)
-    def insert_fptr(self, index, value): self.fptr[index] = value
-    def get_div(self): return self.div
-    def set_div(self, div): self.div = div
-    def add_div(self, value): self.div.append(value)
-    def insert_div(self, index, value): self.div[index] = value
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_TYPE(self): return self.TYPE
-    def set_TYPE(self, TYPE): self.TYPE = TYPE
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_DMDID(self): return self.DMDID
-    def set_DMDID(self, DMDID): self.DMDID = DMDID
-    def get_ORDERLABEL(self): return self.ORDERLABEL
-    def set_ORDERLABEL(self, ORDERLABEL): self.ORDERLABEL = ORDERLABEL
-    def get_CONTENTIDS(self): return self.CONTENTIDS
-    def set_CONTENTIDS(self, CONTENTIDS): self.CONTENTIDS = CONTENTIDS
+
+    def get_mptr(self):
+        return self.mptr
+
+    def set_mptr(self, mptr):
+        self.mptr = mptr
+
+    def add_mptr(self, value):
+        self.mptr.append(value)
+
+    def insert_mptr(self, index, value):
+        self.mptr[index] = value
+
+    def get_fptr(self):
+        return self.fptr
+
+    def set_fptr(self, fptr):
+        self.fptr = fptr
+
+    def add_fptr(self, value):
+        self.fptr.append(value)
+
+    def insert_fptr(self, index, value):
+        self.fptr[index] = value
+
+    def get_div(self):
+        return self.div
+
+    def set_div(self, div):
+        self.div = div
+
+    def add_div(self, value):
+        self.div.append(value)
+
+    def insert_div(self, index, value):
+        self.div[index] = value
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_TYPE(self):
+        return self.TYPE
+
+    def set_TYPE(self, TYPE):
+        self.TYPE = TYPE
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_DMDID(self):
+        return self.DMDID
+
+    def set_DMDID(self, DMDID):
+        self.DMDID = DMDID
+
+    def get_ORDERLABEL(self):
+        return self.ORDERLABEL
+
+    def set_ORDERLABEL(self, ORDERLABEL):
+        self.ORDERLABEL = ORDERLABEL
+
+    def get_CONTENTIDS(self):
+        return self.CONTENTIDS
+
+    def set_CONTENTIDS(self, CONTENTIDS):
+        self.CONTENTIDS = CONTENTIDS
+
     def validate_URIs(self, value):
+
         # Validate type URIs, a restriction on xsd:anyURI.
+
         pass
-    def get_label(self): return self.label
-    def set_label(self, label): self.label = label
-    def get_ORDER(self): return self.ORDER
-    def set_ORDER(self, ORDER): self.ORDER = ORDER
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='divType', namespacedef_=''):
+
+    def get_label(self):
+        return self.label
+
+    def set_label(self, label):
+        self.label = label
+
+    def get_ORDER(self):
+        return self.ORDER
+
+    def set_ORDER(self, ORDER):
+        self.ORDER = ORDER
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='divType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='divType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='divType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1957,93 +3193,145 @@ class divType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='divType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='divType',
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
-            outfile.write(' TYPE=%s' % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding), input_name='TYPE'), ))
+            outfile.write(' TYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TYPE).encode(ExternalEncoding),
+                          input_name='TYPE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
-            outfile.write(' DMDID=%s' % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding), input_name='DMDID'), ))
-        if self.ORDERLABEL is not None and 'ORDERLABEL' not in already_processed:
+            outfile.write(' DMDID=%s'
+                          % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding),
+                          input_name='DMDID'), ))
+        if self.ORDERLABEL is not None and 'ORDERLABEL' \
+            not in already_processed:
             already_processed.append('ORDERLABEL')
-            outfile.write(' ORDERLABEL=%s' % (self.gds_format_string(quote_attrib(self.ORDERLABEL).encode(ExternalEncoding), input_name='ORDERLABEL'), ))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write(' ORDERLABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.ORDERLABEL).encode(ExternalEncoding),
+                          input_name='ORDERLABEL'), ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
-            outfile.write(' CONTENTIDS=%s' % (quote_attrib(self.CONTENTIDS), ))
+            outfile.write(' CONTENTIDS=%s'
+                          % (quote_attrib(self.CONTENTIDS), ))
         if self.label is not None and 'label' not in already_processed:
             already_processed.append('label')
-            outfile.write(' label=%s' % (self.gds_format_string(quote_attrib(self.label).encode(ExternalEncoding), input_name='label'), ))
+            outfile.write(' label=%s'
+                          % (self.gds_format_string(quote_attrib(self.label).encode(ExternalEncoding),
+                          input_name='label'), ))
         if self.ORDER is not None and 'ORDER' not in already_processed:
             already_processed.append('ORDER')
-            outfile.write(' ORDER="%s"' % self.gds_format_integer(self.ORDER, input_name='ORDER'))
+            outfile.write(' ORDER="%s"'
+                          % self.gds_format_integer(self.ORDER,
+                          input_name='ORDER'))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='divType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='divType',
+        ):
         for mptr_ in self.mptr:
             mptr_.export(outfile, level, namespace_, name_='mptr')
         for fptr_ in self.fptr:
             fptr_.export(outfile, level, namespace_, name_='fptr')
         for div_ in self.div:
             div_.export(outfile, level, namespace_, name_='div')
+
     def hasContent_(self):
-        if (
-            self.mptr or
-            self.fptr or
-            self.div
-            ):
+        if self.mptr or self.fptr or self.div:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='divType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='divType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
         if self.TYPE is not None and 'TYPE' not in already_processed:
             already_processed.append('TYPE')
             showIndent(outfile, level)
-            outfile.write('TYPE = "%s",\n' % (self.TYPE,))
+            outfile.write('TYPE = "%s",\n' % (self.TYPE, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
             showIndent(outfile, level)
-            outfile.write('DMDID = "%s",\n' % (self.DMDID,))
-        if self.ORDERLABEL is not None and 'ORDERLABEL' not in already_processed:
+            outfile.write('DMDID = "%s",\n' % (self.DMDID, ))
+        if self.ORDERLABEL is not None and 'ORDERLABEL' \
+            not in already_processed:
             already_processed.append('ORDERLABEL')
             showIndent(outfile, level)
-            outfile.write('ORDERLABEL = "%s",\n' % (self.ORDERLABEL,))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write('ORDERLABEL = "%s",\n' % (self.ORDERLABEL, ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
             showIndent(outfile, level)
-            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS,))
+            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS, ))
         if self.label is not None and 'label' not in already_processed:
             already_processed.append('label')
             showIndent(outfile, level)
-            outfile.write('label = "%s",\n' % (self.label,))
+            outfile.write('label = "%s",\n' % (self.label, ))
         if self.ORDER is not None and 'ORDER' not in already_processed:
             already_processed.append('ORDER')
             showIndent(outfile, level)
-            outfile.write('ORDER = %d,\n' % (self.ORDER,))
+            outfile.write('ORDER = %d,\n' % (self.ORDER, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('mptr=[\n')
         level += 1
@@ -2080,12 +3368,19 @@ class divType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ADMID')
         if value is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
@@ -2110,7 +3405,7 @@ class divType(GeneratedsSuper):
         if value is not None and 'CONTENTIDS' not in already_processed:
             already_processed.append('CONTENTIDS')
             self.CONTENTIDS = value
-            self.validate_URIs(self.CONTENTIDS)    # validate type URIs
+            self.validate_URIs(self.CONTENTIDS)  # validate type URIs
         value = attrs.get('label')
         if value is not None and 'label' not in already_processed:
             already_processed.append('label')
@@ -2121,28 +3416,39 @@ class divType(GeneratedsSuper):
             try:
                 self.ORDER = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'mptr': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'mptr':
             obj_ = mptr.factory()
             obj_.build(child_)
             self.mptr.append(obj_)
-        elif nodeName_ == 'fptr': 
+        elif nodeName_ == 'fptr':
             obj_ = fptr.factory()
             obj_.build(child_)
             self.fptr.append(obj_)
-        elif nodeName_ == 'div': 
+        elif nodeName_ == 'div':
             obj_ = divType.factory()
             obj_.build(child_)
             self.div.append(obj_)
+
+
 # end class divType
 
 
 class mptr(GeneratedsSuper):
+
     """Like the <fptr> element, the METS pointer element <mptr> represents
     digital content that manifests its parent <div> element. Unlike
     the <fptr>, which either directly or indirectly points to
@@ -2169,9 +3475,25 @@ class mptr(GeneratedsSuper):
     Chapter 4 of the METS Primer. CONTENTIDS (URI/O): Content IDs
     for the content represented by the <mptr> (equivalent to DIDL
     DII or Digital Item Identifier, a unique external ID)."""
+
     subclass = None
     superclass = None
-    def __init__(self, arcrole=None, show=None, OTHERLOCTYPE=None, title=None, actuate=None, href=None, role=None, LOCTYPE=None, CONTENTIDS=None, type_=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        arcrole=None,
+        show=None,
+        OTHERLOCTYPE=None,
+        title=None,
+        actuate=None,
+        href=None,
+        role=None,
+        LOCTYPE=None,
+        CONTENTIDS=None,
+        type_=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.arcrole = _cast(None, arcrole)
         self.show = _cast(None, show)
         self.OTHERLOCTYPE = _cast(None, OTHERLOCTYPE)
@@ -2184,43 +3506,106 @@ class mptr(GeneratedsSuper):
         self.type_ = _cast(None, type_)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if mptr.subclass:
             return mptr.subclass(*args_, **kwargs_)
         else:
             return mptr(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_OTHERLOCTYPE(self): return self.OTHERLOCTYPE
-    def set_OTHERLOCTYPE(self, OTHERLOCTYPE): self.OTHERLOCTYPE = OTHERLOCTYPE
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_href(self): return self.href
-    def set_href(self, href): self.href = href
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_LOCTYPE(self): return self.LOCTYPE
-    def set_LOCTYPE(self, LOCTYPE): self.LOCTYPE = LOCTYPE
-    def get_CONTENTIDS(self): return self.CONTENTIDS
-    def set_CONTENTIDS(self, CONTENTIDS): self.CONTENTIDS = CONTENTIDS
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_OTHERLOCTYPE(self):
+        return self.OTHERLOCTYPE
+
+    def set_OTHERLOCTYPE(self, OTHERLOCTYPE):
+        self.OTHERLOCTYPE = OTHERLOCTYPE
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_href(self):
+        return self.href
+
+    def set_href(self, href):
+        self.href = href
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_LOCTYPE(self):
+        return self.LOCTYPE
+
+    def set_LOCTYPE(self, LOCTYPE):
+        self.LOCTYPE = LOCTYPE
+
+    def get_CONTENTIDS(self):
+        return self.CONTENTIDS
+
+    def set_CONTENTIDS(self, CONTENTIDS):
+        self.CONTENTIDS = CONTENTIDS
+
     def validate_URIs(self, value):
+
         # Validate type URIs, a restriction on xsd:anyURI.
+
         pass
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='mptr', namespacedef_=''):
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mptr',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='mptr')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='mptr')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -2228,110 +3613,180 @@ class mptr(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='mptr'):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='mptr',
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
-            outfile.write(' OTHERLOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding), input_name='OTHERLOCTYPE'), ))
+            outfile.write(' OTHERLOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding),
+                          input_name='OTHERLOCTYPE'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s' % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding), input_name='href'), ))
+            outfile.write(' href=%s'
+                          % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
+                          input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
-            outfile.write(' LOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding), input_name='LOCTYPE'), ))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write(' LOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding),
+                          input_name='LOCTYPE'), ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
-            outfile.write(' CONTENTIDS=%s' % (quote_attrib(self.CONTENTIDS), ))
+            outfile.write(' CONTENTIDS=%s'
+                          % (quote_attrib(self.CONTENTIDS), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='mptr'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mptr',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='mptr'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='mptr',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write('show = "%s",\n' % (self.show, ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERLOCTYPE = "%s",\n' % (self.OTHERLOCTYPE,))
+            outfile.write('OTHERLOCTYPE = "%s",\n'
+                          % (self.OTHERLOCTYPE, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
             showIndent(outfile, level)
-            outfile.write('href = "%s",\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href, ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write('role = "%s",\n' % (self.role, ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
             showIndent(outfile, level)
-            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE,))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE, ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
             showIndent(outfile, level)
-            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS,))
+            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('arcrole')
         if value is not None and 'arcrole' not in already_processed:
             already_processed.append('arcrole')
@@ -2341,7 +3796,8 @@ class mptr(GeneratedsSuper):
             already_processed.append('show')
             self.show = value
         value = attrs.get('OTHERLOCTYPE')
-        if value is not None and 'OTHERLOCTYPE' not in already_processed:
+        if value is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             self.OTHERLOCTYPE = value
         value = attrs.get('title')
@@ -2368,7 +3824,7 @@ class mptr(GeneratedsSuper):
         if value is not None and 'CONTENTIDS' not in already_processed:
             already_processed.append('CONTENTIDS')
             self.CONTENTIDS = value
-            self.validate_URIs(self.CONTENTIDS)    # validate type URIs
+            self.validate_URIs(self.CONTENTIDS)  # validate type URIs
         value = attrs.get('type')
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
@@ -2377,12 +3833,22 @@ class mptr(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class mptr
 
 
 class fptr(GeneratedsSuper):
+
     """The <fptr> or file pointer element represents digital content that
     manifests its parent <div> element. The content represented by
     an <fptr> element must consist of integral files or parts of
@@ -2412,40 +3878,89 @@ class fptr(GeneratedsSuper):
     CONTENTIDS (URI/O): Content IDs for the content represented by
     the <fptr> (equivalent to DIDL DII or Digital Item Identifier, a
     unique external ID)."""
+
     subclass = None
     superclass = None
-    def __init__(self, CONTENTIDS=None, ID=None, FILEID=None, par=None, seq=None, area=None):
+
+    def __init__(
+        self,
+        CONTENTIDS=None,
+        ID=None,
+        FILEID=None,
+        par=None,
+        seq=None,
+        area=None,
+        ):
         self.CONTENTIDS = _cast(None, CONTENTIDS)
         self.ID = _cast(None, ID)
         self.FILEID = _cast(None, FILEID)
         self.par = par
         self.seq = seq
         self.area = area
+
     def factory(*args_, **kwargs_):
         if fptr.subclass:
             return fptr.subclass(*args_, **kwargs_)
         else:
             return fptr(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_par(self): return self.par
-    def set_par(self, par): self.par = par
-    def get_seq(self): return self.seq
-    def set_seq(self, seq): self.seq = seq
-    def get_area(self): return self.area
-    def set_area(self, area): self.area = area
-    def get_CONTENTIDS(self): return self.CONTENTIDS
-    def set_CONTENTIDS(self, CONTENTIDS): self.CONTENTIDS = CONTENTIDS
+
+    def get_par(self):
+        return self.par
+
+    def set_par(self, par):
+        self.par = par
+
+    def get_seq(self):
+        return self.seq
+
+    def set_seq(self, seq):
+        self.seq = seq
+
+    def get_area(self):
+        return self.area
+
+    def set_area(self, area):
+        self.area = area
+
+    def get_CONTENTIDS(self):
+        return self.CONTENTIDS
+
+    def set_CONTENTIDS(self, CONTENTIDS):
+        self.CONTENTIDS = CONTENTIDS
+
     def validate_URIs(self, value):
+
         # Validate type URIs, a restriction on xsd:anyURI.
+
         pass
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_FILEID(self): return self.FILEID
-    def set_FILEID(self, FILEID): self.FILEID = FILEID
-    def export(self, outfile, level, namespace_='', name_='fptr', namespacedef_=''):
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_FILEID(self):
+        return self.FILEID
+
+    def set_FILEID(self, FILEID):
+        self.FILEID = FILEID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fptr',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='fptr')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='fptr')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2453,51 +3968,92 @@ class fptr(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='fptr'):
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='fptr',
+        ):
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
-            outfile.write(' CONTENTIDS=%s' % (quote_attrib(self.CONTENTIDS), ))
+            outfile.write(' CONTENTIDS=%s'
+                          % (quote_attrib(self.CONTENTIDS), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-        if self.FILEID is not None and 'FILEID' not in already_processed:
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+        if self.FILEID is not None and 'FILEID' \
+            not in already_processed:
             already_processed.append('FILEID')
-            outfile.write(' FILEID=%s' % (self.gds_format_string(quote_attrib(self.FILEID).encode(ExternalEncoding), input_name='FILEID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='fptr'):
+            outfile.write(' FILEID=%s'
+                          % (self.gds_format_string(quote_attrib(self.FILEID).encode(ExternalEncoding),
+                          input_name='FILEID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fptr',
+        ):
         if self.par:
             self.par.export(outfile, level, namespace_, name_='par')
         if self.seq:
             self.seq.export(outfile, level, namespace_, name_='seq')
         if self.area:
             self.area.export(outfile, level, namespace_, name_='area')
+
     def hasContent_(self):
-        if (
-            self.par is not None or
-            self.seq is not None or
-            self.area is not None
-            ):
+        if self.par is not None or self.seq is not None or self.area \
+            is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='fptr'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='fptr',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
             showIndent(outfile, level)
-            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS,))
+            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-        if self.FILEID is not None and 'FILEID' not in already_processed:
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+        if self.FILEID is not None and 'FILEID' \
+            not in already_processed:
             already_processed.append('FILEID')
             showIndent(outfile, level)
-            outfile.write('FILEID = "%s",\n' % (self.FILEID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('FILEID = "%s",\n' % (self.FILEID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.par is not None:
             showIndent(outfile, level)
             outfile.write('par=model_.parType(\n')
@@ -2516,17 +4072,24 @@ class fptr(GeneratedsSuper):
             self.area.exportLiteral(outfile, level, name_='area')
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('CONTENTIDS')
         if value is not None and 'CONTENTIDS' not in already_processed:
             already_processed.append('CONTENTIDS')
             self.CONTENTIDS = value
-            self.validate_URIs(self.CONTENTIDS)    # validate type URIs
+            self.validate_URIs(self.CONTENTIDS)  # validate type URIs
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
@@ -2535,23 +4098,33 @@ class fptr(GeneratedsSuper):
         if value is not None and 'FILEID' not in already_processed:
             already_processed.append('FILEID')
             self.FILEID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'par': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'par':
             obj_ = parType.factory()
             obj_.build(child_)
             self.set_par(obj_)
-        elif nodeName_ == 'seq': 
+        elif nodeName_ == 'seq':
             obj_ = seqType.factory()
             obj_.build(child_)
             self.set_seq(obj_)
-        elif nodeName_ == 'area': 
+        elif nodeName_ == 'area':
             obj_ = areaType.factory()
             obj_.build(child_)
             self.set_area(obj_)
+
+
 # end class fptr
 
 
 class parType(GeneratedsSuper):
+
     """parType: Complex Type for Parallel Files The <par> or parallel files
     element aggregates pointers to files, parts of files, and/or
     sequences of files or parts of files that must be played or
@@ -2562,9 +4135,16 @@ class parType(GeneratedsSuper):
     another element or document via an IDREF or an XPTR. For more
     information on using ID attributes for internal and external
     linking see Chapter 4 of the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, ID=None, area=None, seq=None):
+
+    def __init__(
+        self,
+        ID=None,
+        area=None,
+        seq=None,
+        ):
         self.ID = _cast(None, ID)
         if area is None:
             self.area = []
@@ -2574,26 +4154,58 @@ class parType(GeneratedsSuper):
             self.seq = []
         else:
             self.seq = seq
+
     def factory(*args_, **kwargs_):
         if parType.subclass:
             return parType.subclass(*args_, **kwargs_)
         else:
             return parType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_area(self): return self.area
-    def set_area(self, area): self.area = area
-    def add_area(self, value): self.area.append(value)
-    def insert_area(self, index, value): self.area[index] = value
-    def get_seq(self): return self.seq
-    def set_seq(self, seq): self.seq = seq
-    def add_seq(self, value): self.seq.append(value)
-    def insert_seq(self, index, value): self.seq[index] = value
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='parType', namespacedef_=''):
+
+    def get_area(self):
+        return self.area
+
+    def set_area(self, area):
+        self.area = area
+
+    def add_area(self, value):
+        self.area.append(value)
+
+    def insert_area(self, index, value):
+        self.area[index] = value
+
+    def get_seq(self):
+        return self.seq
+
+    def set_seq(self, seq):
+        self.seq = seq
+
+    def add_seq(self, value):
+        self.seq.append(value)
+
+    def insert_seq(self, index, value):
+        self.seq[index] = value
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='parType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='parType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='parType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2601,34 +4213,68 @@ class parType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='parType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='parType',
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='parType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='parType',
+        ):
         for area_ in self.area:
             area_.export(outfile, level, namespace_, name_='area')
         for seq_ in self.seq:
             seq_.export(outfile, level, namespace_, name_='seq')
+
     def hasContent_(self):
-        if (
-            self.area or
-            self.seq
-            ):
+        if self.area or self.seq:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='parType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='parType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('area=[\n')
         level += 1
@@ -2653,29 +4299,46 @@ class parType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'area': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'area':
             obj_ = areaType.factory()
             obj_.build(child_)
             self.area.append(obj_)
-        elif nodeName_ == 'seq': 
+        elif nodeName_ == 'seq':
             obj_ = seqType.factory()
             obj_.build(child_)
             self.seq.append(obj_)
+
+
 # end class parType
 
 
 class seqType(GeneratedsSuper):
+
     """seqType: Complex Type for Sequences of Files The seq element should
     be used to link a div to a set of content files when those files
     should be played/displayed sequentially to deliver content to a
@@ -2686,9 +4349,16 @@ class seqType(GeneratedsSuper):
     unambiguously from another element or document via an IDREF or
     an XPTR. For more information on using ID attributes for
     internal and external linking see Chapter 4 of the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, ID=None, area=None, par=None):
+
+    def __init__(
+        self,
+        ID=None,
+        area=None,
+        par=None,
+        ):
         self.ID = _cast(None, ID)
         if area is None:
             self.area = []
@@ -2698,26 +4368,58 @@ class seqType(GeneratedsSuper):
             self.par = []
         else:
             self.par = par
+
     def factory(*args_, **kwargs_):
         if seqType.subclass:
             return seqType.subclass(*args_, **kwargs_)
         else:
             return seqType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_area(self): return self.area
-    def set_area(self, area): self.area = area
-    def add_area(self, value): self.area.append(value)
-    def insert_area(self, index, value): self.area[index] = value
-    def get_par(self): return self.par
-    def set_par(self, par): self.par = par
-    def add_par(self, value): self.par.append(value)
-    def insert_par(self, index, value): self.par[index] = value
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='seqType', namespacedef_=''):
+
+    def get_area(self):
+        return self.area
+
+    def set_area(self, area):
+        self.area = area
+
+    def add_area(self, value):
+        self.area.append(value)
+
+    def insert_area(self, index, value):
+        self.area[index] = value
+
+    def get_par(self):
+        return self.par
+
+    def set_par(self, par):
+        self.par = par
+
+    def add_par(self, value):
+        self.par.append(value)
+
+    def insert_par(self, index, value):
+        self.par[index] = value
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='seqType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='seqType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='seqType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -2725,34 +4427,68 @@ class seqType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='seqType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='seqType',
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='seqType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='seqType',
+        ):
         for area_ in self.area:
             area_.export(outfile, level, namespace_, name_='area')
         for par_ in self.par:
             par_.export(outfile, level, namespace_, name_='par')
+
     def hasContent_(self):
-        if (
-            self.area or
-            self.par
-            ):
+        if self.area or self.par:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='seqType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='seqType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('area=[\n')
         level += 1
@@ -2777,29 +4513,46 @@ class seqType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'area': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'area':
             obj_ = areaType.factory()
             obj_.build(child_)
             self.area.append(obj_)
-        elif nodeName_ == 'par': 
+        elif nodeName_ == 'par':
             obj_ = parType.factory()
             obj_.build(child_)
             self.par.append(obj_)
+
+
 # end class seqType
 
 
 class areaType(GeneratedsSuper):
+
     """areaType: Complex Type for Area Linking The area element provides
     for more sophisticated linking between a div element and content
     files representing that div, be they text, image, audio, or
@@ -2890,9 +4643,25 @@ class areaType(GeneratedsSuper):
     Chapter 4 of the METS Primer CONTENTIDS (URI/O): Content IDs for
     the content represented by the <area> (equivalent to DIDL DII or
     Digital Item Identifier, a unique external ID)."""
+
     subclass = None
     superclass = None
-    def __init__(self, BEGIN=None, END=None, BETYPE=None, SHAPE=None, COORDS=None, EXTENT=None, CONTENTIDS=None, ADMID=None, ID=None, EXTTYPE=None, FILEID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        BEGIN=None,
+        END=None,
+        BETYPE=None,
+        SHAPE=None,
+        COORDS=None,
+        EXTENT=None,
+        CONTENTIDS=None,
+        ADMID=None,
+        ID=None,
+        EXTTYPE=None,
+        FILEID=None,
+        valueOf_=None,
+        ):
         self.BEGIN = _cast(None, BEGIN)
         self.END = _cast(None, END)
         self.BETYPE = _cast(None, BETYPE)
@@ -2905,43 +4674,106 @@ class areaType(GeneratedsSuper):
         self.EXTTYPE = _cast(None, EXTTYPE)
         self.FILEID = _cast(None, FILEID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if areaType.subclass:
             return areaType.subclass(*args_, **kwargs_)
         else:
             return areaType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_BEGIN(self): return self.BEGIN
-    def set_BEGIN(self, BEGIN): self.BEGIN = BEGIN
-    def get_END(self): return self.END
-    def set_END(self, END): self.END = END
-    def get_BETYPE(self): return self.BETYPE
-    def set_BETYPE(self, BETYPE): self.BETYPE = BETYPE
-    def get_SHAPE(self): return self.SHAPE
-    def set_SHAPE(self, SHAPE): self.SHAPE = SHAPE
-    def get_COORDS(self): return self.COORDS
-    def set_COORDS(self, COORDS): self.COORDS = COORDS
-    def get_EXTENT(self): return self.EXTENT
-    def set_EXTENT(self, EXTENT): self.EXTENT = EXTENT
-    def get_CONTENTIDS(self): return self.CONTENTIDS
-    def set_CONTENTIDS(self, CONTENTIDS): self.CONTENTIDS = CONTENTIDS
+
+    def get_BEGIN(self):
+        return self.BEGIN
+
+    def set_BEGIN(self, BEGIN):
+        self.BEGIN = BEGIN
+
+    def get_END(self):
+        return self.END
+
+    def set_END(self, END):
+        self.END = END
+
+    def get_BETYPE(self):
+        return self.BETYPE
+
+    def set_BETYPE(self, BETYPE):
+        self.BETYPE = BETYPE
+
+    def get_SHAPE(self):
+        return self.SHAPE
+
+    def set_SHAPE(self, SHAPE):
+        self.SHAPE = SHAPE
+
+    def get_COORDS(self):
+        return self.COORDS
+
+    def set_COORDS(self, COORDS):
+        self.COORDS = COORDS
+
+    def get_EXTENT(self):
+        return self.EXTENT
+
+    def set_EXTENT(self, EXTENT):
+        self.EXTENT = EXTENT
+
+    def get_CONTENTIDS(self):
+        return self.CONTENTIDS
+
+    def set_CONTENTIDS(self, CONTENTIDS):
+        self.CONTENTIDS = CONTENTIDS
+
     def validate_URIs(self, value):
+
         # Validate type URIs, a restriction on xsd:anyURI.
+
         pass
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_EXTTYPE(self): return self.EXTTYPE
-    def set_EXTTYPE(self, EXTTYPE): self.EXTTYPE = EXTTYPE
-    def get_FILEID(self): return self.FILEID
-    def set_FILEID(self, FILEID): self.FILEID = FILEID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='areaType', namespacedef_=''):
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_EXTTYPE(self):
+        return self.EXTTYPE
+
+    def set_EXTTYPE(self, EXTTYPE):
+        self.EXTTYPE = EXTTYPE
+
+    def get_FILEID(self):
+        return self.FILEID
+
+    def set_FILEID(self, FILEID):
+        self.FILEID = FILEID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='areaType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='areaType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='areaType')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -2949,110 +4781,183 @@ class areaType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='areaType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='areaType',
+        ):
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
-            outfile.write(' BEGIN=%s' % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding), input_name='BEGIN'), ))
+            outfile.write(' BEGIN=%s'
+                          % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding),
+                          input_name='BEGIN'), ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
-            outfile.write(' END=%s' % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding), input_name='END'), ))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write(' END=%s'
+                          % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding),
+                          input_name='END'), ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
-            outfile.write(' BETYPE=%s' % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding), input_name='BETYPE'), ))
+            outfile.write(' BETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding),
+                          input_name='BETYPE'), ))
         if self.SHAPE is not None and 'SHAPE' not in already_processed:
             already_processed.append('SHAPE')
-            outfile.write(' SHAPE=%s' % (self.gds_format_string(quote_attrib(self.SHAPE).encode(ExternalEncoding), input_name='SHAPE'), ))
-        if self.COORDS is not None and 'COORDS' not in already_processed:
+            outfile.write(' SHAPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.SHAPE).encode(ExternalEncoding),
+                          input_name='SHAPE'), ))
+        if self.COORDS is not None and 'COORDS' \
+            not in already_processed:
             already_processed.append('COORDS')
-            outfile.write(' COORDS=%s' % (self.gds_format_string(quote_attrib(self.COORDS).encode(ExternalEncoding), input_name='COORDS'), ))
-        if self.EXTENT is not None and 'EXTENT' not in already_processed:
+            outfile.write(' COORDS=%s'
+                          % (self.gds_format_string(quote_attrib(self.COORDS).encode(ExternalEncoding),
+                          input_name='COORDS'), ))
+        if self.EXTENT is not None and 'EXTENT' \
+            not in already_processed:
             already_processed.append('EXTENT')
-            outfile.write(' EXTENT=%s' % (self.gds_format_string(quote_attrib(self.EXTENT).encode(ExternalEncoding), input_name='EXTENT'), ))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write(' EXTENT=%s'
+                          % (self.gds_format_string(quote_attrib(self.EXTENT).encode(ExternalEncoding),
+                          input_name='EXTENT'), ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
-            outfile.write(' CONTENTIDS=%s' % (quote_attrib(self.CONTENTIDS), ))
+            outfile.write(' CONTENTIDS=%s'
+                          % (quote_attrib(self.CONTENTIDS), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-        if self.EXTTYPE is not None and 'EXTTYPE' not in already_processed:
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+        if self.EXTTYPE is not None and 'EXTTYPE' \
+            not in already_processed:
             already_processed.append('EXTTYPE')
-            outfile.write(' EXTTYPE=%s' % (self.gds_format_string(quote_attrib(self.EXTTYPE).encode(ExternalEncoding), input_name='EXTTYPE'), ))
-        if self.FILEID is not None and 'FILEID' not in already_processed:
+            outfile.write(' EXTTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.EXTTYPE).encode(ExternalEncoding),
+                          input_name='EXTTYPE'), ))
+        if self.FILEID is not None and 'FILEID' \
+            not in already_processed:
             already_processed.append('FILEID')
-            outfile.write(' FILEID=%s' % (self.gds_format_string(quote_attrib(self.FILEID).encode(ExternalEncoding), input_name='FILEID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='areaType'):
+            outfile.write(' FILEID=%s'
+                          % (self.gds_format_string(quote_attrib(self.FILEID).encode(ExternalEncoding),
+                          input_name='FILEID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='areaType',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='areaType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='areaType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
             showIndent(outfile, level)
-            outfile.write('BEGIN = "%s",\n' % (self.BEGIN,))
+            outfile.write('BEGIN = "%s",\n' % (self.BEGIN, ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
             showIndent(outfile, level)
-            outfile.write('END = "%s",\n' % (self.END,))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write('END = "%s",\n' % (self.END, ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
             showIndent(outfile, level)
-            outfile.write('BETYPE = "%s",\n' % (self.BETYPE,))
+            outfile.write('BETYPE = "%s",\n' % (self.BETYPE, ))
         if self.SHAPE is not None and 'SHAPE' not in already_processed:
             already_processed.append('SHAPE')
             showIndent(outfile, level)
-            outfile.write('SHAPE = "%s",\n' % (self.SHAPE,))
-        if self.COORDS is not None and 'COORDS' not in already_processed:
+            outfile.write('SHAPE = "%s",\n' % (self.SHAPE, ))
+        if self.COORDS is not None and 'COORDS' \
+            not in already_processed:
             already_processed.append('COORDS')
             showIndent(outfile, level)
-            outfile.write('COORDS = "%s",\n' % (self.COORDS,))
-        if self.EXTENT is not None and 'EXTENT' not in already_processed:
+            outfile.write('COORDS = "%s",\n' % (self.COORDS, ))
+        if self.EXTENT is not None and 'EXTENT' \
+            not in already_processed:
             already_processed.append('EXTENT')
             showIndent(outfile, level)
-            outfile.write('EXTENT = "%s",\n' % (self.EXTENT,))
-        if self.CONTENTIDS is not None and 'CONTENTIDS' not in already_processed:
+            outfile.write('EXTENT = "%s",\n' % (self.EXTENT, ))
+        if self.CONTENTIDS is not None and 'CONTENTIDS' \
+            not in already_processed:
             already_processed.append('CONTENTIDS')
             showIndent(outfile, level)
-            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS,))
+            outfile.write('CONTENTIDS = "%s",\n' % (self.CONTENTIDS, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-        if self.EXTTYPE is not None and 'EXTTYPE' not in already_processed:
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+        if self.EXTTYPE is not None and 'EXTTYPE' \
+            not in already_processed:
             already_processed.append('EXTTYPE')
             showIndent(outfile, level)
-            outfile.write('EXTTYPE = "%s",\n' % (self.EXTTYPE,))
-        if self.FILEID is not None and 'FILEID' not in already_processed:
+            outfile.write('EXTTYPE = "%s",\n' % (self.EXTTYPE, ))
+        if self.FILEID is not None and 'FILEID' \
+            not in already_processed:
             already_processed.append('FILEID')
             showIndent(outfile, level)
-            outfile.write('FILEID = "%s",\n' % (self.FILEID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('FILEID = "%s",\n' % (self.FILEID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('BEGIN')
         if value is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
@@ -3081,7 +4986,7 @@ class areaType(GeneratedsSuper):
         if value is not None and 'CONTENTIDS' not in already_processed:
             already_processed.append('CONTENTIDS')
             self.CONTENTIDS = value
-            self.validate_URIs(self.CONTENTIDS)    # validate type URIs
+            self.validate_URIs(self.CONTENTIDS)  # validate type URIs
         value = attrs.get('ADMID')
         if value is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
@@ -3098,12 +5003,22 @@ class areaType(GeneratedsSuper):
         if value is not None and 'FILEID' not in already_processed:
             already_processed.append('FILEID')
             self.FILEID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class areaType
 
 
 class structLinkType(GeneratedsSuper):
+
     """structLinkType: Complex Type for Structural Map Linking The
     Structural Map Linking section allows for the specification of
     hyperlinks between different components of a METS structure
@@ -3117,9 +5032,16 @@ class structLinkType(GeneratedsSuper):
     document via an IDREF or an XPTR. For more information on using
     ID attributes for internal and external linking see Chapter 4 of
     the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, ID=None, smLink=None, smLinkGrp=None):
+
+    def __init__(
+        self,
+        ID=None,
+        smLink=None,
+        smLinkGrp=None,
+        ):
         self.ID = _cast(None, ID)
         if smLink is None:
             self.smLink = []
@@ -3129,26 +5051,58 @@ class structLinkType(GeneratedsSuper):
             self.smLinkGrp = []
         else:
             self.smLinkGrp = smLinkGrp
+
     def factory(*args_, **kwargs_):
         if structLinkType.subclass:
             return structLinkType.subclass(*args_, **kwargs_)
         else:
             return structLinkType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_smLink(self): return self.smLink
-    def set_smLink(self, smLink): self.smLink = smLink
-    def add_smLink(self, value): self.smLink.append(value)
-    def insert_smLink(self, index, value): self.smLink[index] = value
-    def get_smLinkGrp(self): return self.smLinkGrp
-    def set_smLinkGrp(self, smLinkGrp): self.smLinkGrp = smLinkGrp
-    def add_smLinkGrp(self, value): self.smLinkGrp.append(value)
-    def insert_smLinkGrp(self, index, value): self.smLinkGrp[index] = value
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='structLinkType', namespacedef_=''):
+
+    def get_smLink(self):
+        return self.smLink
+
+    def set_smLink(self, smLink):
+        self.smLink = smLink
+
+    def add_smLink(self, value):
+        self.smLink.append(value)
+
+    def insert_smLink(self, index, value):
+        self.smLink[index] = value
+
+    def get_smLinkGrp(self):
+        return self.smLinkGrp
+
+    def set_smLinkGrp(self, smLinkGrp):
+        self.smLinkGrp = smLinkGrp
+
+    def add_smLinkGrp(self, value):
+        self.smLinkGrp.append(value)
+
+    def insert_smLinkGrp(self, index, value):
+        self.smLinkGrp[index] = value
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structLinkType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='structLinkType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='structLinkType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3156,34 +5110,69 @@ class structLinkType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='structLinkType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='structLinkType',
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='structLinkType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structLinkType',
+        ):
         for smLink_ in self.smLink:
             smLink_.export(outfile, level, namespace_, name_='smLink')
         for smLinkGrp_ in self.smLinkGrp:
-            smLinkGrp_.export(outfile, level, namespace_, name_='smLinkGrp')
+            smLinkGrp_.export(outfile, level, namespace_,
+                              name_='smLinkGrp')
+
     def hasContent_(self):
-        if (
-            self.smLink or
-            self.smLinkGrp
-            ):
+        if self.smLink or self.smLinkGrp:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='structLinkType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='structLinkType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('smLink=[\n')
         level += 1
@@ -3208,29 +5197,46 @@ class structLinkType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'smLink': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'smLink':
             obj_ = smLink.factory()
             obj_.build(child_)
             self.smLink.append(obj_)
-        elif nodeName_ == 'smLinkGrp': 
+        elif nodeName_ == 'smLinkGrp':
             obj_ = smLinkGrp.factory()
             obj_.build(child_)
             self.smLinkGrp.append(obj_)
+
+
 # end class structLinkType
 
 
 class smLink(GeneratedsSuper):
+
     """The Structural Map Link element <smLink> identifies a hyperlink
     between two nodes in the structural map. You would use <smLink>,
     for instance, to note the existence of hypertext links between
@@ -3252,9 +5258,21 @@ class smLink(GeneratedsSuper):
     - the value of the label for the element in the structMap you
     are linking to. xlink:from - the value of the label for the
     element in the structMap you are linking from."""
+
     subclass = None
     superclass = None
-    def __init__(self, fromxx=None, show=None, title=None, actuate=None, to=None, arcrole=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        fromxx=None,
+        show=None,
+        title=None,
+        actuate=None,
+        to=None,
+        arcrole=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.fromxx = _cast(None, fromxx)
         self.show = _cast(None, show)
         self.title = _cast(None, title)
@@ -3263,32 +5281,76 @@ class smLink(GeneratedsSuper):
         self.arcrole = _cast(None, arcrole)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if smLink.subclass:
             return smLink.subclass(*args_, **kwargs_)
         else:
             return smLink(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_from(self): return self.fromxx
-    def set_from(self, fromxx): self.fromxx = fromxx
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_to(self): return self.to
-    def set_to(self, to): self.to = to
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='smLink', namespacedef_=''):
+
+    def get_from(self):
+        return self.fromxx
+
+    def set_from(self, fromxx):
+        self.fromxx = fromxx
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_to(self):
+        return self.to
+
+    def set_to(self, to):
+        self.to = to
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLink',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='smLink')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='smLink')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -3296,82 +5358,142 @@ class smLink(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='smLink'):
-        if self.fromxx is not None and 'fromxx' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='smLink',
+        ):
+        if self.fromxx is not None and 'fromxx' \
+            not in already_processed:
             already_processed.append('fromxx')
-            outfile.write(' from=%s' % (self.gds_format_string(quote_attrib(self.fromxx).encode(ExternalEncoding), input_name='from'), ))
+            outfile.write(' from=%s'
+                          % (self.gds_format_string(quote_attrib(self.fromxx).encode(ExternalEncoding),
+                          input_name='from'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
         if self.to is not None and 'to' not in already_processed:
             already_processed.append('to')
-            outfile.write(' to=%s' % (self.gds_format_string(quote_attrib(self.to).encode(ExternalEncoding), input_name='to'), ))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write(' to=%s'
+                          % (self.gds_format_string(quote_attrib(self.to).encode(ExternalEncoding),
+                          input_name='to'), ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='smLink'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLink',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='smLink'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='smLink',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.fromxx is not None and 'fromxx' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.fromxx is not None and 'fromxx' \
+            not in already_processed:
             already_processed.append('fromxx')
             showIndent(outfile, level)
-            outfile.write('fromxx = "%s",\n' % (self.fromxx,))
+            outfile.write('fromxx = "%s",\n' % (self.fromxx, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
+            outfile.write('show = "%s",\n' % (self.show, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
         if self.to is not None and 'to' not in already_processed:
             already_processed.append('to')
             showIndent(outfile, level)
-            outfile.write('to = "%s",\n' % (self.to,))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write('to = "%s",\n' % (self.to, ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('from')
         if value is not None and 'from' not in already_processed:
             already_processed.append('from')
@@ -3400,12 +5522,22 @@ class smLink(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class smLink
 
 
 class smLinkGrp(GeneratedsSuper):
+
     """The structMap link group element <smLinkGrp> provides an
     implementation of xlink:extendLink, and provides xlink compliant
     mechanisms for establishing xlink:arcLink type links between 2
@@ -3430,9 +5562,20 @@ class smLinkGrp(GeneratedsSuper):
     significant. If the order is significant, then a value of
     "ordered" should be supplied. Value defaults to "unordered" Note
     that the ARLINKORDER attribute has no xlink specified meaning."""
+
     subclass = None
     superclass = None
-    def __init__(self, role=None, title=None, ARCLINKORDER='unordered', ID=None, type_=None, smLocatorLink=None, smArcLink=None):
+
+    def __init__(
+        self,
+        role=None,
+        title=None,
+        ARCLINKORDER='unordered',
+        ID=None,
+        type_=None,
+        smLocatorLink=None,
+        smArcLink=None,
+        ):
         self.role = _cast(None, role)
         self.title = _cast(None, title)
         self.ARCLINKORDER = _cast(None, ARCLINKORDER)
@@ -3446,34 +5589,82 @@ class smLinkGrp(GeneratedsSuper):
             self.smArcLink = []
         else:
             self.smArcLink = smArcLink
+
     def factory(*args_, **kwargs_):
         if smLinkGrp.subclass:
             return smLinkGrp.subclass(*args_, **kwargs_)
         else:
             return smLinkGrp(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_smLocatorLink(self): return self.smLocatorLink
-    def set_smLocatorLink(self, smLocatorLink): self.smLocatorLink = smLocatorLink
-    def add_smLocatorLink(self, value): self.smLocatorLink.append(value)
-    def insert_smLocatorLink(self, index, value): self.smLocatorLink[index] = value
-    def get_smArcLink(self): return self.smArcLink
-    def set_smArcLink(self, smArcLink): self.smArcLink = smArcLink
-    def add_smArcLink(self, value): self.smArcLink.append(value)
-    def insert_smArcLink(self, index, value): self.smArcLink[index] = value
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_ARCLINKORDER(self): return self.ARCLINKORDER
-    def set_ARCLINKORDER(self, ARCLINKORDER): self.ARCLINKORDER = ARCLINKORDER
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def export(self, outfile, level, namespace_='', name_='smLinkGrp', namespacedef_=''):
+
+    def get_smLocatorLink(self):
+        return self.smLocatorLink
+
+    def set_smLocatorLink(self, smLocatorLink):
+        self.smLocatorLink = smLocatorLink
+
+    def add_smLocatorLink(self, value):
+        self.smLocatorLink.append(value)
+
+    def insert_smLocatorLink(self, index, value):
+        self.smLocatorLink[index] = value
+
+    def get_smArcLink(self):
+        return self.smArcLink
+
+    def set_smArcLink(self, smArcLink):
+        self.smArcLink = smArcLink
+
+    def add_smArcLink(self, value):
+        self.smArcLink.append(value)
+
+    def insert_smArcLink(self, index, value):
+        self.smArcLink[index] = value
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_ARCLINKORDER(self):
+        return self.ARCLINKORDER
+
+    def set_ARCLINKORDER(self, ARCLINKORDER):
+        self.ARCLINKORDER = ARCLINKORDER
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLinkGrp',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='smLinkGrp')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='smLinkGrp')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -3481,62 +5672,107 @@ class smLinkGrp(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='smLinkGrp'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='smLinkGrp',
+        ):
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.ARCLINKORDER is not None and 'ARCLINKORDER' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.ARCLINKORDER is not None and 'ARCLINKORDER' \
+            not in already_processed:
             already_processed.append('ARCLINKORDER')
-            outfile.write(' ARCLINKORDER=%s' % (self.gds_format_string(quote_attrib(self.ARCLINKORDER).encode(ExternalEncoding), input_name='ARCLINKORDER'), ))
+            outfile.write(' ARCLINKORDER=%s'
+                          % (self.gds_format_string(quote_attrib(self.ARCLINKORDER).encode(ExternalEncoding),
+                          input_name='ARCLINKORDER'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='smLinkGrp'):
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLinkGrp',
+        ):
         for smLocatorLink_ in self.smLocatorLink:
-            smLocatorLink_.export(outfile, level, namespace_, name_='smLocatorLink')
+            smLocatorLink_.export(outfile, level, namespace_,
+                                  name_='smLocatorLink')
         for smArcLink_ in self.smArcLink:
-            smArcLink_.export(outfile, level, namespace_, name_='smArcLink')
+            smArcLink_.export(outfile, level, namespace_,
+                              name_='smArcLink')
+
     def hasContent_(self):
-        if (
-            self.smLocatorLink or
-            self.smArcLink
-            ):
+        if self.smLocatorLink or self.smArcLink:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='smLinkGrp'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='smLinkGrp',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
+            outfile.write('role = "%s",\n' % (self.role, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.ARCLINKORDER is not None and 'ARCLINKORDER' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.ARCLINKORDER is not None and 'ARCLINKORDER' \
+            not in already_processed:
             already_processed.append('ARCLINKORDER')
             showIndent(outfile, level)
-            outfile.write('ARCLINKORDER = "%s",\n' % (self.ARCLINKORDER,))
+            outfile.write('ARCLINKORDER = "%s",\n'
+                          % (self.ARCLINKORDER, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('type_ = %s,\n' % (self.type_, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('smLocatorLink=[\n')
         level += 1
@@ -3561,12 +5797,19 @@ class smLinkGrp(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('role')
         if value is not None and 'role' not in already_processed:
             already_processed.append('role')
@@ -3576,7 +5819,8 @@ class smLinkGrp(GeneratedsSuper):
             already_processed.append('title')
             self.title = value
         value = attrs.get('ARCLINKORDER')
-        if value is not None and 'ARCLINKORDER' not in already_processed:
+        if value is not None and 'ARCLINKORDER' \
+            not in already_processed:
             already_processed.append('ARCLINKORDER')
             self.ARCLINKORDER = value
         value = attrs.get('ID')
@@ -3587,19 +5831,29 @@ class smLinkGrp(GeneratedsSuper):
         if value is not None and 'type' not in already_processed:
             already_processed.append('type')
             self.type_ = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'smLocatorLink': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'smLocatorLink':
             obj_ = smLocatorLink.factory()
             obj_.build(child_)
             self.smLocatorLink.append(obj_)
-        elif nodeName_ == 'smArcLink': 
+        elif nodeName_ == 'smArcLink':
             obj_ = smArcLink.factory()
             obj_.build(child_)
             self.smArcLink.append(obj_)
+
+
 # end class smLinkGrp
 
 
 class smLocatorLink(GeneratedsSuper):
+
     """The structMap locator link element <smLocatorLink> is of xlink:type
     "locator". It provides a means of identifying a <div> element
     that will participate in one or more of the links specified by
@@ -3621,9 +5875,20 @@ class smLocatorLink(GeneratedsSuper):
     an IDREF or an XPTR. For more information on using ID attributes
     for internal and external linking see Chapter 4 of the METS
     Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, title=None, label=None, href=None, role=None, type_=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        title=None,
+        label=None,
+        href=None,
+        role=None,
+        type_=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.title = _cast(None, title)
         self.label = _cast(None, label)
         self.href = _cast(None, href)
@@ -3631,30 +5896,70 @@ class smLocatorLink(GeneratedsSuper):
         self.type_ = _cast(None, type_)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if smLocatorLink.subclass:
             return smLocatorLink.subclass(*args_, **kwargs_)
         else:
             return smLocatorLink(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_label(self): return self.label
-    def set_label(self, label): self.label = label
-    def get_href(self): return self.href
-    def set_href(self, href): self.href = href
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='smLocatorLink', namespacedef_=''):
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_label(self):
+        return self.label
+
+    def set_label(self, label):
+        self.label = label
+
+    def get_href(self):
+        return self.href
+
+    def set_href(self, href):
+        self.href = href
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLocatorLink',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='smLocatorLink')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='smLocatorLink')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -3662,75 +5967,125 @@ class smLocatorLink(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='smLocatorLink'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='smLocatorLink',
+        ):
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
         if self.label is not None and 'label' not in already_processed:
             already_processed.append('label')
-            outfile.write(' label=%s' % (self.gds_format_string(quote_attrib(self.label).encode(ExternalEncoding), input_name='label'), ))
+            outfile.write(' label=%s'
+                          % (self.gds_format_string(quote_attrib(self.label).encode(ExternalEncoding),
+                          input_name='label'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s' % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding), input_name='href'), ))
+            outfile.write(' href=%s'
+                          % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
+                          input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='smLocatorLink'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smLocatorLink',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='smLocatorLink'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='smLocatorLink',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
+            outfile.write('title = "%s",\n' % (self.title, ))
         if self.label is not None and 'label' not in already_processed:
             already_processed.append('label')
             showIndent(outfile, level)
-            outfile.write('label = "%s",\n' % (self.label,))
+            outfile.write('label = "%s",\n' % (self.label, ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
             showIndent(outfile, level)
-            outfile.write('href = "%s",\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href, ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
+            outfile.write('role = "%s",\n' % (self.role, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('title')
         if value is not None and 'title' not in already_processed:
             already_processed.append('title')
@@ -3755,12 +6110,22 @@ class smLocatorLink(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class smLocatorLink
 
 
 class smArcLink(GeneratedsSuper):
+
     """The structMap arc link element <smArcLink> is of xlink:type "arc" It
     can be used to establish a traversal link between two <div>
     elements as identified by <smLocatorLink> elements within the
@@ -3791,9 +6156,24 @@ class smArcLink(GeneratedsSuper):
     between the xlink:from and xlink:to sides of the arc. For more
     information on using METS IDREFS and IDREF type attributes for
     internal linking, see Chapter 4 of the METS Primer."""
+
     subclass = None
     superclass = None
-    def __init__(self, ADMID=None, fromxx=None, title=None, show=None, actuate=None, ARCTYPE=None, to=None, arcrole=None, type_=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        ADMID=None,
+        fromxx=None,
+        title=None,
+        show=None,
+        actuate=None,
+        ARCTYPE=None,
+        to=None,
+        arcrole=None,
+        type_=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.ADMID = _cast(None, ADMID)
         self.fromxx = _cast(None, fromxx)
         self.title = _cast(None, title)
@@ -3805,38 +6185,94 @@ class smArcLink(GeneratedsSuper):
         self.type_ = _cast(None, type_)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if smArcLink.subclass:
             return smArcLink.subclass(*args_, **kwargs_)
         else:
             return smArcLink(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_from(self): return self.fromxx
-    def set_from(self, fromxx): self.fromxx = fromxx
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_ARCTYPE(self): return self.ARCTYPE
-    def set_ARCTYPE(self, ARCTYPE): self.ARCTYPE = ARCTYPE
-    def get_to(self): return self.to
-    def set_to(self, to): self.to = to
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='smArcLink', namespacedef_=''):
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_from(self):
+        return self.fromxx
+
+    def set_from(self, fromxx):
+        self.fromxx = fromxx
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_ARCTYPE(self):
+        return self.ARCTYPE
+
+    def set_ARCTYPE(self, ARCTYPE):
+        self.ARCTYPE = ARCTYPE
+
+    def get_to(self):
+        return self.to
+
+    def set_to(self, to):
+        self.to = to
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smArcLink',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='smArcLink')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='smArcLink')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -3844,103 +6280,169 @@ class smArcLink(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='smArcLink'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='smArcLink',
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
-        if self.fromxx is not None and 'fromxx' not in already_processed:
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
+        if self.fromxx is not None and 'fromxx' \
+            not in already_processed:
             already_processed.append('fromxx')
-            outfile.write(' from=%s' % (self.gds_format_string(quote_attrib(self.fromxx).encode(ExternalEncoding), input_name='from'), ))
+            outfile.write(' from=%s'
+                          % (self.gds_format_string(quote_attrib(self.fromxx).encode(ExternalEncoding),
+                          input_name='from'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
-        if self.ARCTYPE is not None and 'ARCTYPE' not in already_processed:
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
+        if self.ARCTYPE is not None and 'ARCTYPE' \
+            not in already_processed:
             already_processed.append('ARCTYPE')
-            outfile.write(' ARCTYPE=%s' % (self.gds_format_string(quote_attrib(self.ARCTYPE).encode(ExternalEncoding), input_name='ARCTYPE'), ))
+            outfile.write(' ARCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.ARCTYPE).encode(ExternalEncoding),
+                          input_name='ARCTYPE'), ))
         if self.to is not None and 'to' not in already_processed:
             already_processed.append('to')
-            outfile.write(' to=%s' % (self.gds_format_string(quote_attrib(self.to).encode(ExternalEncoding), input_name='to'), ))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write(' to=%s'
+                          % (self.gds_format_string(quote_attrib(self.to).encode(ExternalEncoding),
+                          input_name='to'), ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='smArcLink'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='smArcLink',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='smArcLink'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='smArcLink',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
-        if self.fromxx is not None and 'fromxx' not in already_processed:
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
+        if self.fromxx is not None and 'fromxx' \
+            not in already_processed:
             already_processed.append('fromxx')
             showIndent(outfile, level)
-            outfile.write('fromxx = "%s",\n' % (self.fromxx,))
+            outfile.write('fromxx = "%s",\n' % (self.fromxx, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
+            outfile.write('title = "%s",\n' % (self.title, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('show = "%s",\n' % (self.show, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
-        if self.ARCTYPE is not None and 'ARCTYPE' not in already_processed:
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
+        if self.ARCTYPE is not None and 'ARCTYPE' \
+            not in already_processed:
             already_processed.append('ARCTYPE')
             showIndent(outfile, level)
-            outfile.write('ARCTYPE = "%s",\n' % (self.ARCTYPE,))
+            outfile.write('ARCTYPE = "%s",\n' % (self.ARCTYPE, ))
         if self.to is not None and 'to' not in already_processed:
             already_processed.append('to')
             showIndent(outfile, level)
-            outfile.write('to = "%s",\n' % (self.to,))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write('to = "%s",\n' % (self.to, ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ADMID')
         if value is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
@@ -3981,12 +6483,22 @@ class smArcLink(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class smArcLink
 
 
 class behaviorSecType(GeneratedsSuper):
+
     """behaviorSecType: Complex Type for Behavior Sections Behaviors are
     executable code which can be associated with parts of a METS
     object. The behaviorSec element is used to group individual
@@ -4001,9 +6513,18 @@ class behaviorSecType(GeneratedsSuper):
     CREATED (dateTime/O): Specifies the date and time of creation
     for the <behaviorSec> LABEL (string/O): A text description of
     the behavior section."""
+
     subclass = None
     superclass = None
-    def __init__(self, LABEL=None, ID=None, CREATED=None, behaviorSec=None, behavior=None):
+
+    def __init__(
+        self,
+        LABEL=None,
+        ID=None,
+        CREATED=None,
+        behaviorSec=None,
+        behavior=None,
+        ):
         self.LABEL = _cast(None, LABEL)
         self.ID = _cast(None, ID)
         self.CREATED = _cast(None, CREATED)
@@ -4015,30 +6536,70 @@ class behaviorSecType(GeneratedsSuper):
             self.behavior = []
         else:
             self.behavior = behavior
+
     def factory(*args_, **kwargs_):
         if behaviorSecType.subclass:
             return behaviorSecType.subclass(*args_, **kwargs_)
         else:
             return behaviorSecType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_behaviorSec(self): return self.behaviorSec
-    def set_behaviorSec(self, behaviorSec): self.behaviorSec = behaviorSec
-    def add_behaviorSec(self, value): self.behaviorSec.append(value)
-    def insert_behaviorSec(self, index, value): self.behaviorSec[index] = value
-    def get_behavior(self): return self.behavior
-    def set_behavior(self, behavior): self.behavior = behavior
-    def add_behavior(self, value): self.behavior.append(value)
-    def insert_behavior(self, index, value): self.behavior[index] = value
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def export(self, outfile, level, namespace_='', name_='behaviorSecType', namespacedef_=''):
+
+    def get_behaviorSec(self):
+        return self.behaviorSec
+
+    def set_behaviorSec(self, behaviorSec):
+        self.behaviorSec = behaviorSec
+
+    def add_behaviorSec(self, value):
+        self.behaviorSec.append(value)
+
+    def insert_behaviorSec(self, index, value):
+        self.behaviorSec[index] = value
+
+    def get_behavior(self):
+        return self.behavior
+
+    def set_behavior(self, behavior):
+        self.behavior = behavior
+
+    def add_behavior(self, value):
+        self.behavior.append(value)
+
+    def insert_behavior(self, index, value):
+        self.behavior[index] = value
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='behaviorSecType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='behaviorSecType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='behaviorSecType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4046,55 +6607,98 @@ class behaviorSecType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='behaviorSecType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='behaviorSecType',
+        ):
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='behaviorSecType'):
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='behaviorSecType',
+        ):
         for behaviorSec_ in self.behaviorSec:
-            behaviorSec_.export(outfile, level, namespace_, name_='behaviorSec')
+            behaviorSec_.export(outfile, level, namespace_,
+                                name_='behaviorSec')
         for behavior_ in self.behavior:
-            behavior_.export(outfile, level, namespace_, name_='behavior')
+            behavior_.export(outfile, level, namespace_,
+                             name_='behavior')
+
     def hasContent_(self):
-        if (
-            self.behaviorSec or
-            self.behavior
-            ):
+        if self.behaviorSec or self.behavior:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='behaviorSecType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='behaviorSecType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('behaviorSec=[\n')
         level += 1
         for behaviorSec_ in self.behaviorSec:
             showIndent(outfile, level)
             outfile.write('model_.behaviorSecType(\n')
-            behaviorSec_.exportLiteral(outfile, level, name_='behaviorSecType')
+            behaviorSec_.exportLiteral(outfile, level,
+                    name_='behaviorSecType')
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -4106,18 +6710,26 @@ class behaviorSecType(GeneratedsSuper):
         for behavior_ in self.behavior:
             showIndent(outfile, level)
             outfile.write('model_.behaviorType(\n')
-            behavior_.exportLiteral(outfile, level, name_='behaviorType')
+            behavior_.exportLiteral(outfile, level, name_='behaviorType'
+                                    )
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('LABEL')
         if value is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
@@ -4130,19 +6742,29 @@ class behaviorSecType(GeneratedsSuper):
         if value is not None and 'CREATED' not in already_processed:
             already_processed.append('CREATED')
             self.CREATED = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'behaviorSec': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'behaviorSec':
             obj_ = behaviorSecType.factory()
             obj_.build(child_)
             self.behaviorSec.append(obj_)
-        elif nodeName_ == 'behavior': 
+        elif nodeName_ == 'behavior':
             obj_ = behaviorType.factory()
             obj_.build(child_)
             self.behavior.append(obj_)
+
+
 # end class behaviorSecType
 
 
 class behaviorType(GeneratedsSuper):
+
     """behaviorType: Complex Type for Behaviors A behavior can be used to
     associate executable behaviors with content in the METS object.
     A behavior element has an interface definition element that
@@ -4174,9 +6796,22 @@ class behaviorType(GeneratedsSuper):
     (IDREFS/O): An optional attribute listing the XML ID values of
     administrative metadata sections within the METS document
     pertaining to this behavior."""
+
     subclass = None
     superclass = None
-    def __init__(self, ADMID=None, CREATED=None, STRUCTID=None, LABEL=None, GROUPID=None, BTYPE=None, ID=None, interfaceDef=None, mechanism=None):
+
+    def __init__(
+        self,
+        ADMID=None,
+        CREATED=None,
+        STRUCTID=None,
+        LABEL=None,
+        GROUPID=None,
+        BTYPE=None,
+        ID=None,
+        interfaceDef=None,
+        mechanism=None,
+        ):
         self.ADMID = _cast(None, ADMID)
         self.CREATED = _cast(None, CREATED)
         self.STRUCTID = _cast(None, STRUCTID)
@@ -4186,34 +6821,82 @@ class behaviorType(GeneratedsSuper):
         self.ID = _cast(None, ID)
         self.interfaceDef = interfaceDef
         self.mechanism = mechanism
+
     def factory(*args_, **kwargs_):
         if behaviorType.subclass:
             return behaviorType.subclass(*args_, **kwargs_)
         else:
             return behaviorType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_interfaceDef(self): return self.interfaceDef
-    def set_interfaceDef(self, interfaceDef): self.interfaceDef = interfaceDef
-    def get_mechanism(self): return self.mechanism
-    def set_mechanism(self, mechanism): self.mechanism = mechanism
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def get_STRUCTID(self): return self.STRUCTID
-    def set_STRUCTID(self, STRUCTID): self.STRUCTID = STRUCTID
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_GROUPID(self): return self.GROUPID
-    def set_GROUPID(self, GROUPID): self.GROUPID = GROUPID
-    def get_BTYPE(self): return self.BTYPE
-    def set_BTYPE(self, BTYPE): self.BTYPE = BTYPE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='behaviorType', namespacedef_=''):
+
+    def get_interfaceDef(self):
+        return self.interfaceDef
+
+    def set_interfaceDef(self, interfaceDef):
+        self.interfaceDef = interfaceDef
+
+    def get_mechanism(self):
+        return self.mechanism
+
+    def set_mechanism(self, mechanism):
+        self.mechanism = mechanism
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def get_STRUCTID(self):
+        return self.STRUCTID
+
+    def set_STRUCTID(self, STRUCTID):
+        self.STRUCTID = STRUCTID
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_GROUPID(self):
+        return self.GROUPID
+
+    def set_GROUPID(self, GROUPID):
+        self.GROUPID = GROUPID
+
+    def get_BTYPE(self):
+        return self.BTYPE
+
+    def set_BTYPE(self, BTYPE):
+        self.BTYPE = BTYPE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='behaviorType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='behaviorType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='behaviorType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4221,94 +6904,157 @@ class behaviorType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='behaviorType'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='behaviorType',
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
-        if self.STRUCTID is not None and 'STRUCTID' not in already_processed:
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
+        if self.STRUCTID is not None and 'STRUCTID' \
+            not in already_processed:
             already_processed.append('STRUCTID')
-            outfile.write(' STRUCTID=%s' % (self.gds_format_string(quote_attrib(self.STRUCTID).encode(ExternalEncoding), input_name='STRUCTID'), ))
+            outfile.write(' STRUCTID=%s'
+                          % (self.gds_format_string(quote_attrib(self.STRUCTID).encode(ExternalEncoding),
+                          input_name='STRUCTID'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
-            outfile.write(' GROUPID=%s' % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding), input_name='GROUPID'), ))
+            outfile.write(' GROUPID=%s'
+                          % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding),
+                          input_name='GROUPID'), ))
         if self.BTYPE is not None and 'BTYPE' not in already_processed:
             already_processed.append('BTYPE')
-            outfile.write(' BTYPE=%s' % (self.gds_format_string(quote_attrib(self.BTYPE).encode(ExternalEncoding), input_name='BTYPE'), ))
+            outfile.write(' BTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.BTYPE).encode(ExternalEncoding),
+                          input_name='BTYPE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='behaviorType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='behaviorType',
+        ):
         if self.interfaceDef:
-            self.interfaceDef.export(outfile, level, namespace_, name_='interfaceDef')
+            self.interfaceDef.export(outfile, level, namespace_,
+                    name_='interfaceDef')
         if self.mechanism:
-            self.mechanism.export(outfile, level, namespace_, name_='mechanism', )
+            self.mechanism.export(outfile, level, namespace_,
+                                  name_='mechanism')
+
     def hasContent_(self):
-        if (
-            self.interfaceDef is not None or
-            self.mechanism is not None
-            ):
+        if self.interfaceDef is not None or self.mechanism is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='behaviorType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='behaviorType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
-        if self.STRUCTID is not None and 'STRUCTID' not in already_processed:
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
+        if self.STRUCTID is not None and 'STRUCTID' \
+            not in already_processed:
             already_processed.append('STRUCTID')
             showIndent(outfile, level)
-            outfile.write('STRUCTID = "%s",\n' % (self.STRUCTID,))
+            outfile.write('STRUCTID = "%s",\n' % (self.STRUCTID, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
             showIndent(outfile, level)
-            outfile.write('GROUPID = "%s",\n' % (self.GROUPID,))
+            outfile.write('GROUPID = "%s",\n' % (self.GROUPID, ))
         if self.BTYPE is not None and 'BTYPE' not in already_processed:
             already_processed.append('BTYPE')
             showIndent(outfile, level)
-            outfile.write('BTYPE = "%s",\n' % (self.BTYPE,))
+            outfile.write('BTYPE = "%s",\n' % (self.BTYPE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.interfaceDef is not None:
             showIndent(outfile, level)
             outfile.write('interfaceDef=model_.objectType(\n')
-            self.interfaceDef.exportLiteral(outfile, level, name_='interfaceDef')
+            self.interfaceDef.exportLiteral(outfile, level,
+                    name_='interfaceDef')
             showIndent(outfile, level)
             outfile.write('),\n')
         if self.mechanism is not None:
             showIndent(outfile, level)
             outfile.write('mechanism=model_.objectType(\n')
-            self.mechanism.exportLiteral(outfile, level, name_='mechanism')
+            self.mechanism.exportLiteral(outfile, level,
+                    name_='mechanism')
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('ADMID')
         if value is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
@@ -4337,19 +7083,29 @@ class behaviorType(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'interfaceDef': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'interfaceDef':
             obj_ = objectType.factory()
             obj_.build(child_)
             self.set_interfaceDef(obj_)
-        elif nodeName_ == 'mechanism': 
+        elif nodeName_ == 'mechanism':
             obj_ = objectType.factory()
             obj_.build(child_)
             self.set_mechanism(obj_)
+
+
 # end class behaviorType
 
 
 class objectType(GeneratedsSuper):
+
     """objectType: complexType for interfaceDef and mechanism elements The
     mechanism and behavior elements point to external objects--an
     interface definition object or an executable code object
@@ -4361,9 +7117,25 @@ class objectType(GeneratedsSuper):
     an XPTR. For more information on using ID attributes for
     internal and external linking see Chapter 4 of the METS Primer.
     LABEL (string/O): A text description of the entity represented."""
+
     subclass = None
     superclass = None
-    def __init__(self, arcrole=None, title=None, OTHERLOCTYPE=None, show=None, actuate=None, LABEL=None, href=None, role=None, LOCTYPE=None, type_=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        arcrole=None,
+        title=None,
+        OTHERLOCTYPE=None,
+        show=None,
+        actuate=None,
+        LABEL=None,
+        href=None,
+        role=None,
+        LOCTYPE=None,
+        type_=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.arcrole = _cast(None, arcrole)
         self.title = _cast(None, title)
         self.OTHERLOCTYPE = _cast(None, OTHERLOCTYPE)
@@ -4376,40 +7148,100 @@ class objectType(GeneratedsSuper):
         self.type_ = _cast(None, type_)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if objectType.subclass:
             return objectType.subclass(*args_, **kwargs_)
         else:
             return objectType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_OTHERLOCTYPE(self): return self.OTHERLOCTYPE
-    def set_OTHERLOCTYPE(self, OTHERLOCTYPE): self.OTHERLOCTYPE = OTHERLOCTYPE
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_href(self): return self.href
-    def set_href(self, href): self.href = href
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_LOCTYPE(self): return self.LOCTYPE
-    def set_LOCTYPE(self, LOCTYPE): self.LOCTYPE = LOCTYPE
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='objectType', namespacedef_=''):
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_OTHERLOCTYPE(self):
+        return self.OTHERLOCTYPE
+
+    def set_OTHERLOCTYPE(self, OTHERLOCTYPE):
+        self.OTHERLOCTYPE = OTHERLOCTYPE
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_href(self):
+        return self.href
+
+    def set_href(self, href):
+        self.href = href
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_LOCTYPE(self):
+        return self.LOCTYPE
+
+    def set_LOCTYPE(self, LOCTYPE):
+        self.LOCTYPE = LOCTYPE
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='objectType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='objectType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='objectType')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -4417,110 +7249,179 @@ class objectType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='objectType'):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='objectType',
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
-            outfile.write(' OTHERLOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding), input_name='OTHERLOCTYPE'), ))
+            outfile.write(' OTHERLOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding),
+                          input_name='OTHERLOCTYPE'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s' % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding), input_name='href'), ))
+            outfile.write(' href=%s'
+                          % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
+                          input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
-            outfile.write(' LOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding), input_name='LOCTYPE'), ))
+            outfile.write(' LOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding),
+                          input_name='LOCTYPE'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='objectType'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='objectType',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='objectType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='objectType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERLOCTYPE = "%s",\n' % (self.OTHERLOCTYPE,))
+            outfile.write('OTHERLOCTYPE = "%s",\n'
+                          % (self.OTHERLOCTYPE, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('show = "%s",\n' % (self.show, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
             showIndent(outfile, level)
-            outfile.write('href = "%s",\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href, ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write('role = "%s",\n' % (self.role, ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
             showIndent(outfile, level)
-            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE,))
+            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('arcrole')
         if value is not None and 'arcrole' not in already_processed:
             already_processed.append('arcrole')
@@ -4530,7 +7431,8 @@ class objectType(GeneratedsSuper):
             already_processed.append('title')
             self.title = value
         value = attrs.get('OTHERLOCTYPE')
-        if value is not None and 'OTHERLOCTYPE' not in already_processed:
+        if value is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             self.OTHERLOCTYPE = value
         value = attrs.get('show')
@@ -4565,12 +7467,22 @@ class objectType(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class objectType
 
 
 class mdSecType(GeneratedsSuper):
+
     """mdSecType: Complex Type for Metadata Sections A generic framework
     for pointing to/including metadata within a METS document, a la
     Warwick Framework. ID (ID/R): This attribute uniquely identifies
@@ -4608,9 +7520,20 @@ class mdSecType(GeneratedsSuper):
     Primer. CREATED (dateTime/O): Specifies the date and time of
     creation for the metadata. STATUS (string/O): Indicates the
     status of this metadata (e.g., superseded, current, etc.)."""
+
     subclass = None
     superclass = None
-    def __init__(self, STATUS=None, ADMID=None, CREATED=None, ID=None, GROUPID=None, mdRef=None, mdWrap=None):
+
+    def __init__(
+        self,
+        STATUS=None,
+        ADMID=None,
+        CREATED=None,
+        ID=None,
+        GROUPID=None,
+        mdRef=None,
+        mdWrap=None,
+        ):
         self.STATUS = _cast(None, STATUS)
         self.ADMID = _cast(None, ADMID)
         self.CREATED = _cast(None, CREATED)
@@ -4618,30 +7541,70 @@ class mdSecType(GeneratedsSuper):
         self.GROUPID = _cast(None, GROUPID)
         self.mdRef = mdRef
         self.mdWrap = mdWrap
+
     def factory(*args_, **kwargs_):
         if mdSecType.subclass:
             return mdSecType.subclass(*args_, **kwargs_)
         else:
             return mdSecType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_mdRef(self): return self.mdRef
-    def set_mdRef(self, mdRef): self.mdRef = mdRef
-    def get_mdWrap(self): return self.mdWrap
-    def set_mdWrap(self, mdWrap): self.mdWrap = mdWrap
-    def get_STATUS(self): return self.STATUS
-    def set_STATUS(self, STATUS): self.STATUS = STATUS
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_GROUPID(self): return self.GROUPID
-    def set_GROUPID(self, GROUPID): self.GROUPID = GROUPID
-    def export(self, outfile, level, namespace_='', name_='mdSecType', namespacedef_=''):
+
+    def get_mdRef(self):
+        return self.mdRef
+
+    def set_mdRef(self, mdRef):
+        self.mdRef = mdRef
+
+    def get_mdWrap(self):
+        return self.mdWrap
+
+    def set_mdWrap(self, mdWrap):
+        self.mdWrap = mdWrap
+
+    def get_STATUS(self):
+        return self.STATUS
+
+    def set_STATUS(self, STATUS):
+        self.STATUS = STATUS
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_GROUPID(self):
+        return self.GROUPID
+
+    def set_GROUPID(self, GROUPID):
+        self.GROUPID = GROUPID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdSecType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='mdSecType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='mdSecType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -4649,62 +7612,111 @@ class mdSecType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='mdSecType'):
-        if self.STATUS is not None and 'STATUS' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='mdSecType',
+        ):
+        if self.STATUS is not None and 'STATUS' \
+            not in already_processed:
             already_processed.append('STATUS')
-            outfile.write(' STATUS=%s' % (self.gds_format_string(quote_attrib(self.STATUS).encode(ExternalEncoding), input_name='STATUS'), ))
+            outfile.write(' STATUS=%s'
+                          % (self.gds_format_string(quote_attrib(self.STATUS).encode(ExternalEncoding),
+                          input_name='STATUS'), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
-            outfile.write(' GROUPID=%s' % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding), input_name='GROUPID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='mdSecType'):
+            outfile.write(' GROUPID=%s'
+                          % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding),
+                          input_name='GROUPID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdSecType',
+        ):
         if self.mdRef:
             self.mdRef.export(outfile, level, namespace_, name_='mdRef')
         if self.mdWrap:
-            self.mdWrap.export(outfile, level, namespace_, name_='mdWrap')
+            self.mdWrap.export(outfile, level, namespace_,
+                               name_='mdWrap')
+
     def hasContent_(self):
-        if (
-            self.mdRef is not None or
-            self.mdWrap is not None
-            ):
+        if self.mdRef is not None or self.mdWrap is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='mdSecType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='mdSecType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.STATUS is not None and 'STATUS' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.STATUS is not None and 'STATUS' \
+            not in already_processed:
             already_processed.append('STATUS')
             showIndent(outfile, level)
-            outfile.write('STATUS = "%s",\n' % (self.STATUS,))
+            outfile.write('STATUS = "%s",\n' % (self.STATUS, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
             showIndent(outfile, level)
-            outfile.write('GROUPID = "%s",\n' % (self.GROUPID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('GROUPID = "%s",\n' % (self.GROUPID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.mdRef is not None:
             showIndent(outfile, level)
             outfile.write('mdRef=model_.mdRef(\n')
@@ -4717,12 +7729,19 @@ class mdSecType(GeneratedsSuper):
             self.mdWrap.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('STATUS')
         if value is not None and 'STATUS' not in already_processed:
             already_processed.append('STATUS')
@@ -4743,19 +7762,29 @@ class mdSecType(GeneratedsSuper):
         if value is not None and 'GROUPID' not in already_processed:
             already_processed.append('GROUPID')
             self.GROUPID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'mdRef': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'mdRef':
             obj_ = mdRef.factory()
             obj_.build(child_)
             self.set_mdRef(obj_)
-        elif nodeName_ == 'mdWrap': 
+        elif nodeName_ == 'mdWrap':
             obj_ = mdWrap.factory()
             obj_.build(child_)
             self.set_mdWrap(obj_)
+
+
 # end class mdSecType
 
 
 class mdRef(GeneratedsSuper):
+
     """The metadata reference element <mdRef> element is a generic element
     used throughout the METS schema to provide a pointer to metadata
     which resides outside the METS document. NB: <mdRef> is an empty
@@ -4770,9 +7799,34 @@ class mdRef(GeneratedsSuper):
     viewer of the METS document that identifies the associated
     metadata. XPTR (string/O): Locates the point within a file to
     which the <mdRef> element refers, if applicable."""
+
     subclass = None
     superclass = None
-    def __init__(self, MIMETYPE=None, arcrole=None, XPTR=None, CHECKSUMTYPE=None, show=None, OTHERLOCTYPE=None, CHECKSUM=None, OTHERMDTYPE=None, title=None, actuate=None, MDTYPE=None, LABEL=None, href=None, role=None, LOCTYPE=None, MDTYPEVERSION=None, CREATED=None, type_=None, ID=None, SIZE=None, valueOf_=None):
+
+    def __init__(
+        self,
+        MIMETYPE=None,
+        arcrole=None,
+        XPTR=None,
+        CHECKSUMTYPE=None,
+        show=None,
+        OTHERLOCTYPE=None,
+        CHECKSUM=None,
+        OTHERMDTYPE=None,
+        title=None,
+        actuate=None,
+        MDTYPE=None,
+        LABEL=None,
+        href=None,
+        role=None,
+        LOCTYPE=None,
+        MDTYPEVERSION=None,
+        CREATED=None,
+        type_=None,
+        ID=None,
+        SIZE=None,
+        valueOf_=None,
+        ):
         self.MIMETYPE = _cast(None, MIMETYPE)
         self.arcrole = _cast(None, arcrole)
         self.XPTR = _cast(None, XPTR)
@@ -4794,58 +7848,154 @@ class mdRef(GeneratedsSuper):
         self.ID = _cast(None, ID)
         self.SIZE = _cast(int, SIZE)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if mdRef.subclass:
             return mdRef.subclass(*args_, **kwargs_)
         else:
             return mdRef(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_MIMETYPE(self): return self.MIMETYPE
-    def set_MIMETYPE(self, MIMETYPE): self.MIMETYPE = MIMETYPE
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_XPTR(self): return self.XPTR
-    def set_XPTR(self, XPTR): self.XPTR = XPTR
-    def get_CHECKSUMTYPE(self): return self.CHECKSUMTYPE
-    def set_CHECKSUMTYPE(self, CHECKSUMTYPE): self.CHECKSUMTYPE = CHECKSUMTYPE
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_OTHERLOCTYPE(self): return self.OTHERLOCTYPE
-    def set_OTHERLOCTYPE(self, OTHERLOCTYPE): self.OTHERLOCTYPE = OTHERLOCTYPE
-    def get_CHECKSUM(self): return self.CHECKSUM
-    def set_CHECKSUM(self, CHECKSUM): self.CHECKSUM = CHECKSUM
-    def get_OTHERMDTYPE(self): return self.OTHERMDTYPE
-    def set_OTHERMDTYPE(self, OTHERMDTYPE): self.OTHERMDTYPE = OTHERMDTYPE
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_MDTYPE(self): return self.MDTYPE
-    def set_MDTYPE(self, MDTYPE): self.MDTYPE = MDTYPE
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_href(self): return self.href
-    def set_href(self, href): self.href = href
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_LOCTYPE(self): return self.LOCTYPE
-    def set_LOCTYPE(self, LOCTYPE): self.LOCTYPE = LOCTYPE
-    def get_MDTYPEVERSION(self): return self.MDTYPEVERSION
-    def set_MDTYPEVERSION(self, MDTYPEVERSION): self.MDTYPEVERSION = MDTYPEVERSION
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_SIZE(self): return self.SIZE
-    def set_SIZE(self, SIZE): self.SIZE = SIZE
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='mdRef', namespacedef_=''):
+
+    def get_MIMETYPE(self):
+        return self.MIMETYPE
+
+    def set_MIMETYPE(self, MIMETYPE):
+        self.MIMETYPE = MIMETYPE
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_XPTR(self):
+        return self.XPTR
+
+    def set_XPTR(self, XPTR):
+        self.XPTR = XPTR
+
+    def get_CHECKSUMTYPE(self):
+        return self.CHECKSUMTYPE
+
+    def set_CHECKSUMTYPE(self, CHECKSUMTYPE):
+        self.CHECKSUMTYPE = CHECKSUMTYPE
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_OTHERLOCTYPE(self):
+        return self.OTHERLOCTYPE
+
+    def set_OTHERLOCTYPE(self, OTHERLOCTYPE):
+        self.OTHERLOCTYPE = OTHERLOCTYPE
+
+    def get_CHECKSUM(self):
+        return self.CHECKSUM
+
+    def set_CHECKSUM(self, CHECKSUM):
+        self.CHECKSUM = CHECKSUM
+
+    def get_OTHERMDTYPE(self):
+        return self.OTHERMDTYPE
+
+    def set_OTHERMDTYPE(self, OTHERMDTYPE):
+        self.OTHERMDTYPE = OTHERMDTYPE
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_MDTYPE(self):
+        return self.MDTYPE
+
+    def set_MDTYPE(self, MDTYPE):
+        self.MDTYPE = MDTYPE
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_href(self):
+        return self.href
+
+    def set_href(self, href):
+        self.href = href
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_LOCTYPE(self):
+        return self.LOCTYPE
+
+    def set_LOCTYPE(self, LOCTYPE):
+        self.LOCTYPE = LOCTYPE
+
+    def get_MDTYPEVERSION(self):
+        return self.MDTYPEVERSION
+
+    def set_MDTYPEVERSION(self, MDTYPEVERSION):
+        self.MDTYPEVERSION = MDTYPEVERSION
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_SIZE(self):
+        return self.SIZE
+
+    def set_SIZE(self, SIZE):
+        self.SIZE = SIZE
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdRef',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='mdRef')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='mdRef')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -4853,173 +8003,277 @@ class mdRef(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='mdRef'):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='mdRef',
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
-            outfile.write(' MIMETYPE=%s' % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding), input_name='MIMETYPE'), ))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write(' MIMETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding),
+                          input_name='MIMETYPE'), ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.XPTR is not None and 'XPTR' not in already_processed:
             already_processed.append('XPTR')
-            outfile.write(' XPTR=%s' % (self.gds_format_string(quote_attrib(self.XPTR).encode(ExternalEncoding), input_name='XPTR'), ))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write(' XPTR=%s'
+                          % (self.gds_format_string(quote_attrib(self.XPTR).encode(ExternalEncoding),
+                          input_name='XPTR'), ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
-            outfile.write(' CHECKSUMTYPE=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding), input_name='CHECKSUMTYPE'), ))
+            outfile.write(' CHECKSUMTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding),
+                          input_name='CHECKSUMTYPE'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
-            outfile.write(' OTHERLOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding), input_name='OTHERLOCTYPE'), ))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write(' OTHERLOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding),
+                          input_name='OTHERLOCTYPE'), ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
-            outfile.write(' CHECKSUM=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding), input_name='CHECKSUM'), ))
-        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' not in already_processed:
+            outfile.write(' CHECKSUM=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding),
+                          input_name='CHECKSUM'), ))
+        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' \
+            not in already_processed:
             already_processed.append('OTHERMDTYPE')
-            outfile.write(' OTHERMDTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERMDTYPE).encode(ExternalEncoding), input_name='OTHERMDTYPE'), ))
+            outfile.write(' OTHERMDTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERMDTYPE).encode(ExternalEncoding),
+                          input_name='OTHERMDTYPE'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
-        if self.MDTYPE is not None and 'MDTYPE' not in already_processed:
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
+        if self.MDTYPE is not None and 'MDTYPE' \
+            not in already_processed:
             already_processed.append('MDTYPE')
-            outfile.write(' MDTYPE=%s' % (self.gds_format_string(quote_attrib(self.MDTYPE).encode(ExternalEncoding), input_name='MDTYPE'), ))
+            outfile.write(' MDTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.MDTYPE).encode(ExternalEncoding),
+                          input_name='MDTYPE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s' % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding), input_name='href'), ))
+            outfile.write(' href=%s'
+                          % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
+                          input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
-            outfile.write(' LOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding), input_name='LOCTYPE'), ))
-        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' not in already_processed:
+            outfile.write(' LOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding),
+                          input_name='LOCTYPE'), ))
+        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
-            outfile.write(' MDTYPEVERSION=%s' % (self.gds_format_string(quote_attrib(self.MDTYPEVERSION).encode(ExternalEncoding), input_name='MDTYPEVERSION'), ))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' MDTYPEVERSION=%s'
+                          % (self.gds_format_string(quote_attrib(self.MDTYPEVERSION).encode(ExternalEncoding),
+                          input_name='MDTYPEVERSION'), ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
-            outfile.write(' SIZE="%s"' % self.gds_format_integer(self.SIZE, input_name='SIZE'))
-    def exportChildren(self, outfile, level, namespace_='', name_='mdRef'):
+            outfile.write(' SIZE="%s"'
+                          % self.gds_format_integer(self.SIZE,
+                          input_name='SIZE'))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdRef',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='mdRef'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='mdRef',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
             showIndent(outfile, level)
-            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE,))
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE, ))
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.XPTR is not None and 'XPTR' not in already_processed:
             already_processed.append('XPTR')
             showIndent(outfile, level)
-            outfile.write('XPTR = "%s",\n' % (self.XPTR,))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write('XPTR = "%s",\n' % (self.XPTR, ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             showIndent(outfile, level)
-            outfile.write('CHECKSUMTYPE = "%s",\n' % (self.CHECKSUMTYPE,))
+            outfile.write('CHECKSUMTYPE = "%s",\n'
+                          % (self.CHECKSUMTYPE, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write('show = "%s",\n' % (self.show, ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERLOCTYPE = "%s",\n' % (self.OTHERLOCTYPE,))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write('OTHERLOCTYPE = "%s",\n'
+                          % (self.OTHERLOCTYPE, ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
             showIndent(outfile, level)
-            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM,))
-        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' not in already_processed:
+            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM, ))
+        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' \
+            not in already_processed:
             already_processed.append('OTHERMDTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERMDTYPE = "%s",\n' % (self.OTHERMDTYPE,))
+            outfile.write('OTHERMDTYPE = "%s",\n' % (self.OTHERMDTYPE,
+                          ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
-        if self.MDTYPE is not None and 'MDTYPE' not in already_processed:
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
+        if self.MDTYPE is not None and 'MDTYPE' \
+            not in already_processed:
             already_processed.append('MDTYPE')
             showIndent(outfile, level)
-            outfile.write('MDTYPE = "%s",\n' % (self.MDTYPE,))
+            outfile.write('MDTYPE = "%s",\n' % (self.MDTYPE, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
             showIndent(outfile, level)
-            outfile.write('href = "%s",\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href, ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write('role = "%s",\n' % (self.role, ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
             showIndent(outfile, level)
-            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE,))
-        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' not in already_processed:
+            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE, ))
+        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
             showIndent(outfile, level)
-            outfile.write('MDTYPEVERSION = "%s",\n' % (self.MDTYPEVERSION,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('MDTYPEVERSION = "%s",\n'
+                          % (self.MDTYPEVERSION, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
             showIndent(outfile, level)
-            outfile.write('SIZE = %d,\n' % (self.SIZE,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('SIZE = %d,\n' % (self.SIZE, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('MIMETYPE')
         if value is not None and 'MIMETYPE' not in already_processed:
             already_processed.append('MIMETYPE')
@@ -5033,7 +8287,8 @@ class mdRef(GeneratedsSuper):
             already_processed.append('XPTR')
             self.XPTR = value
         value = attrs.get('CHECKSUMTYPE')
-        if value is not None and 'CHECKSUMTYPE' not in already_processed:
+        if value is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             self.CHECKSUMTYPE = value
         value = attrs.get('show')
@@ -5041,7 +8296,8 @@ class mdRef(GeneratedsSuper):
             already_processed.append('show')
             self.show = value
         value = attrs.get('OTHERLOCTYPE')
-        if value is not None and 'OTHERLOCTYPE' not in already_processed:
+        if value is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             self.OTHERLOCTYPE = value
         value = attrs.get('CHECKSUM')
@@ -5081,7 +8337,8 @@ class mdRef(GeneratedsSuper):
             already_processed.append('LOCTYPE')
             self.LOCTYPE = value
         value = attrs.get('MDTYPEVERSION')
-        if value is not None and 'MDTYPEVERSION' not in already_processed:
+        if value is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
             self.MDTYPEVERSION = value
         value = attrs.get('CREATED')
@@ -5102,13 +8359,24 @@ class mdRef(GeneratedsSuper):
             try:
                 self.SIZE = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class mdRef
 
 
 class mdWrap(GeneratedsSuper):
+
     """A metadata wrapper element <mdWrap> provides a wrapper around
     metadata embedded within a METS document. The element is
     repeatable. Such metadata can be in one of two forms: 1) XML-
@@ -5124,9 +8392,25 @@ class mdWrap(GeneratedsSuper):
     internal and external linking see Chapter 4 of the METS Primer.
     LABEL: an optional string attribute providing a label to display
     to the viewer of the METS document identifying the metadata."""
+
     subclass = None
     superclass = None
-    def __init__(self, MIMETYPE=None, CHECKSUMTYPE=None, CREATED=None, CHECKSUM=None, OTHERMDTYPE=None, MDTYPE=None, LABEL=None, MDTYPEVERSION=None, ID=None, SIZE=None, binData=None, xmlData=None):
+
+    def __init__(
+        self,
+        MIMETYPE=None,
+        CHECKSUMTYPE=None,
+        CREATED=None,
+        CHECKSUM=None,
+        OTHERMDTYPE=None,
+        MDTYPE=None,
+        LABEL=None,
+        MDTYPEVERSION=None,
+        ID=None,
+        SIZE=None,
+        binData=None,
+        xmlData=None,
+        ):
         self.MIMETYPE = _cast(None, MIMETYPE)
         self.CHECKSUMTYPE = _cast(None, CHECKSUMTYPE)
         self.CREATED = _cast(None, CREATED)
@@ -5139,40 +8423,100 @@ class mdWrap(GeneratedsSuper):
         self.SIZE = _cast(int, SIZE)
         self.binData = binData
         self.xmlData = xmlData
+
     def factory(*args_, **kwargs_):
         if mdWrap.subclass:
             return mdWrap.subclass(*args_, **kwargs_)
         else:
             return mdWrap(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_binData(self): return self.binData
-    def set_binData(self, binData): self.binData = binData
-    def get_xmlData(self): return self.xmlData
-    def set_xmlData(self, xmlData): self.xmlData = xmlData
-    def get_MIMETYPE(self): return self.MIMETYPE
-    def set_MIMETYPE(self, MIMETYPE): self.MIMETYPE = MIMETYPE
-    def get_CHECKSUMTYPE(self): return self.CHECKSUMTYPE
-    def set_CHECKSUMTYPE(self, CHECKSUMTYPE): self.CHECKSUMTYPE = CHECKSUMTYPE
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def get_CHECKSUM(self): return self.CHECKSUM
-    def set_CHECKSUM(self, CHECKSUM): self.CHECKSUM = CHECKSUM
-    def get_OTHERMDTYPE(self): return self.OTHERMDTYPE
-    def set_OTHERMDTYPE(self, OTHERMDTYPE): self.OTHERMDTYPE = OTHERMDTYPE
-    def get_MDTYPE(self): return self.MDTYPE
-    def set_MDTYPE(self, MDTYPE): self.MDTYPE = MDTYPE
-    def get_LABEL(self): return self.LABEL
-    def set_LABEL(self, LABEL): self.LABEL = LABEL
-    def get_MDTYPEVERSION(self): return self.MDTYPEVERSION
-    def set_MDTYPEVERSION(self, MDTYPEVERSION): self.MDTYPEVERSION = MDTYPEVERSION
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_SIZE(self): return self.SIZE
-    def set_SIZE(self, SIZE): self.SIZE = SIZE
-    def export(self, outfile, level, namespace_='', name_='mdWrap', namespacedef_=''):
+
+    def get_binData(self):
+        return self.binData
+
+    def set_binData(self, binData):
+        self.binData = binData
+
+    def get_xmlData(self):
+        return self.xmlData
+
+    def set_xmlData(self, xmlData):
+        self.xmlData = xmlData
+
+    def get_MIMETYPE(self):
+        return self.MIMETYPE
+
+    def set_MIMETYPE(self, MIMETYPE):
+        self.MIMETYPE = MIMETYPE
+
+    def get_CHECKSUMTYPE(self):
+        return self.CHECKSUMTYPE
+
+    def set_CHECKSUMTYPE(self, CHECKSUMTYPE):
+        self.CHECKSUMTYPE = CHECKSUMTYPE
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def get_CHECKSUM(self):
+        return self.CHECKSUM
+
+    def set_CHECKSUM(self, CHECKSUM):
+        self.CHECKSUM = CHECKSUM
+
+    def get_OTHERMDTYPE(self):
+        return self.OTHERMDTYPE
+
+    def set_OTHERMDTYPE(self, OTHERMDTYPE):
+        self.OTHERMDTYPE = OTHERMDTYPE
+
+    def get_MDTYPE(self):
+        return self.MDTYPE
+
+    def set_MDTYPE(self, MDTYPE):
+        self.MDTYPE = MDTYPE
+
+    def get_LABEL(self):
+        return self.LABEL
+
+    def set_LABEL(self, LABEL):
+        self.LABEL = LABEL
+
+    def get_MDTYPEVERSION(self):
+        return self.MDTYPEVERSION
+
+    def set_MDTYPEVERSION(self, MDTYPEVERSION):
+        self.MDTYPEVERSION = MDTYPEVERSION
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_SIZE(self):
+        return self.SIZE
+
+    def set_SIZE(self, SIZE):
+        self.SIZE = SIZE
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdWrap',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='mdWrap')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='mdWrap')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5180,118 +8524,202 @@ class mdWrap(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='mdWrap'):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='mdWrap',
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
-            outfile.write(' MIMETYPE=%s' % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding), input_name='MIMETYPE'), ))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write(' MIMETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding),
+                          input_name='MIMETYPE'), ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
-            outfile.write(' CHECKSUMTYPE=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding), input_name='CHECKSUMTYPE'), ))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' CHECKSUMTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding),
+                          input_name='CHECKSUMTYPE'), ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
-            outfile.write(' CHECKSUM=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding), input_name='CHECKSUM'), ))
-        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' not in already_processed:
+            outfile.write(' CHECKSUM=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding),
+                          input_name='CHECKSUM'), ))
+        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' \
+            not in already_processed:
             already_processed.append('OTHERMDTYPE')
-            outfile.write(' OTHERMDTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERMDTYPE).encode(ExternalEncoding), input_name='OTHERMDTYPE'), ))
-        if self.MDTYPE is not None and 'MDTYPE' not in already_processed:
+            outfile.write(' OTHERMDTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERMDTYPE).encode(ExternalEncoding),
+                          input_name='OTHERMDTYPE'), ))
+        if self.MDTYPE is not None and 'MDTYPE' \
+            not in already_processed:
             already_processed.append('MDTYPE')
-            outfile.write(' MDTYPE=%s' % (self.gds_format_string(quote_attrib(self.MDTYPE).encode(ExternalEncoding), input_name='MDTYPE'), ))
+            outfile.write(' MDTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.MDTYPE).encode(ExternalEncoding),
+                          input_name='MDTYPE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
-            outfile.write(' LABEL=%s' % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding), input_name='LABEL'), ))
-        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' not in already_processed:
+            outfile.write(' LABEL=%s'
+                          % (self.gds_format_string(quote_attrib(self.LABEL).encode(ExternalEncoding),
+                          input_name='LABEL'), ))
+        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
-            outfile.write(' MDTYPEVERSION=%s' % (self.gds_format_string(quote_attrib(self.MDTYPEVERSION).encode(ExternalEncoding), input_name='MDTYPEVERSION'), ))
+            outfile.write(' MDTYPEVERSION=%s'
+                          % (self.gds_format_string(quote_attrib(self.MDTYPEVERSION).encode(ExternalEncoding),
+                          input_name='MDTYPEVERSION'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
-            outfile.write(' SIZE="%s"' % self.gds_format_integer(self.SIZE, input_name='SIZE'))
-    def exportChildren(self, outfile, level, namespace_='', name_='mdWrap'):
+            outfile.write(' SIZE="%s"'
+                          % self.gds_format_integer(self.SIZE,
+                          input_name='SIZE'))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mdWrap',
+        ):
         if self.binData is not None:
             showIndent(outfile, level)
-            outfile.write('<%sbinData>%s</%sbinData>\n' % (namespace_, self.gds_format_string(quote_xml(self.binData).encode(ExternalEncoding), input_name='binData'), namespace_))
+            outfile.write('<%sbinData>%s</%sbinData>\n' % (namespace_,
+                          self.gds_format_string(quote_xml(self.binData).encode(ExternalEncoding),
+                          input_name='binData'), namespace_))
         if self.xmlData is not None:
-            #showIndent(outfile, level)
-            self.xmlData.export(outfile, level, namespace_,)# name_, namespacedef_)
-            #outfile.write('<%sxmlData>%s</%sxmlData>\n' % (namespace_, self.gds_format_string(quote_xml(self.xmlData).encode(ExternalEncoding), input_name='xmlData'), namespace_))
+
+            # showIndent(outfile, level)
+
+            self.xmlData.export(outfile, level, namespace_)  # name_, namespacedef_)
+
+            # outfile.write('<%sxmlData>%s</%sxmlData>\n' % (namespace_, self.gds_format_string(quote_xml(self.xmlData).encode(ExternalEncoding), input_name='xmlData'), namespace_))
+
     def hasContent_(self):
-        if (
-            self.binData is not None or
-            self.xmlData is not None
-            ):
+        if self.binData is not None or self.xmlData is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='mdWrap'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='mdWrap',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
             showIndent(outfile, level)
-            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE,))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE, ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             showIndent(outfile, level)
-            outfile.write('CHECKSUMTYPE = "%s",\n' % (self.CHECKSUMTYPE,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('CHECKSUMTYPE = "%s",\n'
+                          % (self.CHECKSUMTYPE, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
             showIndent(outfile, level)
-            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM,))
-        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' not in already_processed:
+            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM, ))
+        if self.OTHERMDTYPE is not None and 'OTHERMDTYPE' \
+            not in already_processed:
             already_processed.append('OTHERMDTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERMDTYPE = "%s",\n' % (self.OTHERMDTYPE,))
-        if self.MDTYPE is not None and 'MDTYPE' not in already_processed:
+            outfile.write('OTHERMDTYPE = "%s",\n' % (self.OTHERMDTYPE,
+                          ))
+        if self.MDTYPE is not None and 'MDTYPE' \
+            not in already_processed:
             already_processed.append('MDTYPE')
             showIndent(outfile, level)
-            outfile.write('MDTYPE = "%s",\n' % (self.MDTYPE,))
+            outfile.write('MDTYPE = "%s",\n' % (self.MDTYPE, ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
             showIndent(outfile, level)
-            outfile.write('LABEL = "%s",\n' % (self.LABEL,))
-        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' not in already_processed:
+            outfile.write('LABEL = "%s",\n' % (self.LABEL, ))
+        if self.MDTYPEVERSION is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
             showIndent(outfile, level)
-            outfile.write('MDTYPEVERSION = "%s",\n' % (self.MDTYPEVERSION,))
+            outfile.write('MDTYPEVERSION = "%s",\n'
+                          % (self.MDTYPEVERSION, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
             showIndent(outfile, level)
-            outfile.write('SIZE = %d,\n' % (self.SIZE,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('SIZE = %d,\n' % (self.SIZE, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.binData is not None:
             showIndent(outfile, level)
-            outfile.write('binData=%s,\n' % quote_python(self.binData).encode(ExternalEncoding))
+            outfile.write('binData=%s,\n'
+                          % quote_python(self.binData).encode(ExternalEncoding))
         if self.xmlData is not None:
             showIndent(outfile, level)
-            outfile.write('xmlData=%s,\n' % quote_python(self.xmlData).encode(ExternalEncoding))
+            outfile.write('xmlData=%s,\n'
+                          % quote_python(self.xmlData).encode(ExternalEncoding))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('MIMETYPE')
         if value is not None and 'MIMETYPE' not in already_processed:
             already_processed.append('MIMETYPE')
             self.MIMETYPE = value
         value = attrs.get('CHECKSUMTYPE')
-        if value is not None and 'CHECKSUMTYPE' not in already_processed:
+        if value is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             self.CHECKSUMTYPE = value
         value = attrs.get('CREATED')
@@ -5315,7 +8743,8 @@ class mdWrap(GeneratedsSuper):
             already_processed.append('LABEL')
             self.LABEL = value
         value = attrs.get('MDTYPEVERSION')
-        if value is not None and 'MDTYPEVERSION' not in already_processed:
+        if value is not None and 'MDTYPEVERSION' \
+            not in already_processed:
             already_processed.append('MDTYPEVERSION')
             self.MDTYPEVERSION = value
         value = attrs.get('ID')
@@ -5328,20 +8757,33 @@ class mdWrap(GeneratedsSuper):
             try:
                 self.SIZE = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         if nodeName_ == 'binData':
             binData_ = child_.text
-            binData_ = self.gds_validate_string(binData_, node, 'binData')
+            binData_ = self.gds_validate_string(binData_, node,
+                    'binData')
             self.binData = binData_
         elif nodeName_ == 'xmlData':
             xmlData_ = child_.text
-            xmlData_ = self.gds_validate_string(xmlData_, node, 'xmlData')
+            xmlData_ = self.gds_validate_string(xmlData_, node,
+                    'xmlData')
             self.xmlData = xmlData_
+
+
 # end class mdWrap
 
 
 class xmlData(GeneratedsSuper):
+
     """The xml data wrapper element <xmlData> is used to contain XML
     encoded metadata. The content of an <xmlData> element can be in
     any namespace or in no namespace. As permitted by the XML Schema
@@ -5354,27 +8796,49 @@ class xmlData(GeneratedsSuper):
     schemaLocation, then an XML validator will check for well-
     formedness, but otherwise skip over the elements appearing in
     the <xmlData> element."""
+
     subclass = None
     superclass = None
+
     def __init__(self, xsdAny_=None):
         if xsdAny_ is None:
             self.xsdAny_ = []
         else:
             self.xsdAny_ = xsdAny_
+
     def factory(*args_, **kwargs_):
         if xmlData.subclass:
             return xmlData.subclass(*args_, **kwargs_)
         else:
             return xmlData(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_xsdAny_(self): return self.xsdAny_
-    def set_xsdAny_(self, xsdAny_): self.xsdAny_ = xsdAny_
-    def add_xsdAny_(self, value): self.xsdAny_.append(value)
-    def insert_xsdAny_(self, index, value): self.xsdAny_[index] = value
-    def export(self, outfile, level, namespace_='', name_='xmlData', namespacedef_=''):
+
+    def get_xsdAny_(self):
+        return self.xsdAny_
+
+    def set_xsdAny_(self, xsdAny_):
+        self.xsdAny_ = xsdAny_
+
+    def add_xsdAny_(self, value):
+        self.xsdAny_.append(value)
+
+    def insert_xsdAny_(self, index, value):
+        self.xsdAny_[index] = value
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='xmlData',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='xmlData')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='xmlData')
         if self.hasContent_():
             outfile.write('>')
             from elementtree.ElementTree import tostring
@@ -5384,42 +8848,92 @@ class xmlData(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='xmlData'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='xmlData',
+        ):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='xmlData'):
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='xmlData',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.xsdAny_
-            ):
+        if self.xsdAny_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='xmlData'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='xmlData',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         pass
-    def exportLiteralChildren(self, outfile, level, name_):
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         pass
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class xmlData
 
 
 class fileType(GeneratedsSuper):
+
     """fileType: Complex Type for Files The file element provides access to
     content files for a METS object. A file element may contain one
     or more FLocat elements, which provide pointers to a content
@@ -5491,9 +9005,33 @@ class fileType(GeneratedsSuper):
     that are being used. Currently BYTE is the only valid value that
     can be used in conjunction with nested <file> or <stream>
     elements."""
+
     subclass = None
     superclass = None
-    def __init__(self, MIMETYPE=None, ADMID=None, END=None, CHECKSUMTYPE=None, SEQ=None, CREATED=None, CHECKSUM=None, USE=None, ID=None, DMDID=None, BEGIN=None, OWNERID=None, SIZE=None, GROUPID=None, BETYPE=None, FLocat=None, FContent=None, stream=None, transformFile=None, file=None):
+
+    def __init__(
+        self,
+        MIMETYPE=None,
+        ADMID=None,
+        END=None,
+        CHECKSUMTYPE=None,
+        SEQ=None,
+        CREATED=None,
+        CHECKSUM=None,
+        USE=None,
+        ID=None,
+        DMDID=None,
+        BEGIN=None,
+        OWNERID=None,
+        SIZE=None,
+        GROUPID=None,
+        BETYPE=None,
+        FLocat=None,
+        FContent=None,
+        stream=None,
+        transformFile=None,
+        file=None,
+        ):
         self.MIMETYPE = _cast(None, MIMETYPE)
         self.ADMID = _cast(None, ADMID)
         self.END = _cast(None, END)
@@ -5526,64 +9064,172 @@ class fileType(GeneratedsSuper):
             self.file = []
         else:
             self.file = file
+
     def factory(*args_, **kwargs_):
         if fileType.subclass:
             return fileType.subclass(*args_, **kwargs_)
         else:
             return fileType(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_FLocat(self): return self.FLocat
-    def set_FLocat(self, FLocat): self.FLocat = FLocat
-    def add_FLocat(self, value): self.FLocat.append(value)
-    def insert_FLocat(self, index, value): self.FLocat[index] = value
-    def get_FContent(self): return self.FContent
-    def set_FContent(self, FContent): self.FContent = FContent
-    def get_stream(self): return self.stream
-    def set_stream(self, stream): self.stream = stream
-    def add_stream(self, value): self.stream.append(value)
-    def insert_stream(self, index, value): self.stream[index] = value
-    def get_transformFile(self): return self.transformFile
-    def set_transformFile(self, transformFile): self.transformFile = transformFile
-    def add_transformFile(self, value): self.transformFile.append(value)
-    def insert_transformFile(self, index, value): self.transformFile[index] = value
-    def get_file(self): return self.file
-    def set_file(self, file): self.file = file
-    def add_file(self, value): self.file.append(value)
-    def insert_file(self, index, value): self.file[index] = value
-    def get_MIMETYPE(self): return self.MIMETYPE
-    def set_MIMETYPE(self, MIMETYPE): self.MIMETYPE = MIMETYPE
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_END(self): return self.END
-    def set_END(self, END): self.END = END
-    def get_CHECKSUMTYPE(self): return self.CHECKSUMTYPE
-    def set_CHECKSUMTYPE(self, CHECKSUMTYPE): self.CHECKSUMTYPE = CHECKSUMTYPE
-    def get_SEQ(self): return self.SEQ
-    def set_SEQ(self, SEQ): self.SEQ = SEQ
-    def get_CREATED(self): return self.CREATED
-    def set_CREATED(self, CREATED): self.CREATED = CREATED
-    def get_CHECKSUM(self): return self.CHECKSUM
-    def set_CHECKSUM(self, CHECKSUM): self.CHECKSUM = CHECKSUM
-    def get_USE(self): return self.USE
-    def set_USE(self, USE): self.USE = USE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_DMDID(self): return self.DMDID
-    def set_DMDID(self, DMDID): self.DMDID = DMDID
-    def get_BEGIN(self): return self.BEGIN
-    def set_BEGIN(self, BEGIN): self.BEGIN = BEGIN
-    def get_OWNERID(self): return self.OWNERID
-    def set_OWNERID(self, OWNERID): self.OWNERID = OWNERID
-    def get_SIZE(self): return self.SIZE
-    def set_SIZE(self, SIZE): self.SIZE = SIZE
-    def get_GROUPID(self): return self.GROUPID
-    def set_GROUPID(self, GROUPID): self.GROUPID = GROUPID
-    def get_BETYPE(self): return self.BETYPE
-    def set_BETYPE(self, BETYPE): self.BETYPE = BETYPE
-    def export(self, outfile, level, namespace_='', name_='fileType', namespacedef_=''):
+
+    def get_FLocat(self):
+        return self.FLocat
+
+    def set_FLocat(self, FLocat):
+        self.FLocat = FLocat
+
+    def add_FLocat(self, value):
+        self.FLocat.append(value)
+
+    def insert_FLocat(self, index, value):
+        self.FLocat[index] = value
+
+    def get_FContent(self):
+        return self.FContent
+
+    def set_FContent(self, FContent):
+        self.FContent = FContent
+
+    def get_stream(self):
+        return self.stream
+
+    def set_stream(self, stream):
+        self.stream = stream
+
+    def add_stream(self, value):
+        self.stream.append(value)
+
+    def insert_stream(self, index, value):
+        self.stream[index] = value
+
+    def get_transformFile(self):
+        return self.transformFile
+
+    def set_transformFile(self, transformFile):
+        self.transformFile = transformFile
+
+    def add_transformFile(self, value):
+        self.transformFile.append(value)
+
+    def insert_transformFile(self, index, value):
+        self.transformFile[index] = value
+
+    def get_file(self):
+        return self.file
+
+    def set_file(self, file):
+        self.file = file
+
+    def add_file(self, value):
+        self.file.append(value)
+
+    def insert_file(self, index, value):
+        self.file[index] = value
+
+    def get_MIMETYPE(self):
+        return self.MIMETYPE
+
+    def set_MIMETYPE(self, MIMETYPE):
+        self.MIMETYPE = MIMETYPE
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_END(self):
+        return self.END
+
+    def set_END(self, END):
+        self.END = END
+
+    def get_CHECKSUMTYPE(self):
+        return self.CHECKSUMTYPE
+
+    def set_CHECKSUMTYPE(self, CHECKSUMTYPE):
+        self.CHECKSUMTYPE = CHECKSUMTYPE
+
+    def get_SEQ(self):
+        return self.SEQ
+
+    def set_SEQ(self, SEQ):
+        self.SEQ = SEQ
+
+    def get_CREATED(self):
+        return self.CREATED
+
+    def set_CREATED(self, CREATED):
+        self.CREATED = CREATED
+
+    def get_CHECKSUM(self):
+        return self.CHECKSUM
+
+    def set_CHECKSUM(self, CHECKSUM):
+        self.CHECKSUM = CHECKSUM
+
+    def get_USE(self):
+        return self.USE
+
+    def set_USE(self, USE):
+        self.USE = USE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_DMDID(self):
+        return self.DMDID
+
+    def set_DMDID(self, DMDID):
+        self.DMDID = DMDID
+
+    def get_BEGIN(self):
+        return self.BEGIN
+
+    def set_BEGIN(self, BEGIN):
+        self.BEGIN = BEGIN
+
+    def get_OWNERID(self):
+        return self.OWNERID
+
+    def set_OWNERID(self, OWNERID):
+        self.OWNERID = OWNERID
+
+    def get_SIZE(self):
+        return self.SIZE
+
+    def set_SIZE(self, SIZE):
+        self.SIZE = SIZE
+
+    def get_GROUPID(self):
+        return self.GROUPID
+
+    def set_GROUPID(self, GROUPID):
+        self.GROUPID = GROUPID
+
+    def get_BETYPE(self):
+        return self.BETYPE
+
+    def set_BETYPE(self, BETYPE):
+        self.BETYPE = BETYPE
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileType',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='fileType')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='fileType')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -5591,141 +9237,218 @@ class fileType(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='fileType'):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='fileType',
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
-            outfile.write(' MIMETYPE=%s' % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding), input_name='MIMETYPE'), ))
+            outfile.write(' MIMETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.MIMETYPE).encode(ExternalEncoding),
+                          input_name='MIMETYPE'), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
-            outfile.write(' END=%s' % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding), input_name='END'), ))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write(' END=%s'
+                          % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding),
+                          input_name='END'), ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
-            outfile.write(' CHECKSUMTYPE=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding), input_name='CHECKSUMTYPE'), ))
+            outfile.write(' CHECKSUMTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUMTYPE).encode(ExternalEncoding),
+                          input_name='CHECKSUMTYPE'), ))
         if self.SEQ is not None and 'SEQ' not in already_processed:
             already_processed.append('SEQ')
-            outfile.write(' SEQ="%s"' % self.gds_format_integer(self.SEQ, input_name='SEQ'))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write(' SEQ="%s"'
+                          % self.gds_format_integer(self.SEQ,
+                          input_name='SEQ'))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
-            outfile.write(' CREATED=%s' % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding), input_name='CREATED'), ))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write(' CREATED=%s'
+                          % (self.gds_format_string(quote_attrib(self.CREATED).encode(ExternalEncoding),
+                          input_name='CREATED'), ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
-            outfile.write(' CHECKSUM=%s' % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding), input_name='CHECKSUM'), ))
+            outfile.write(' CHECKSUM=%s'
+                          % (self.gds_format_string(quote_attrib(self.CHECKSUM).encode(ExternalEncoding),
+                          input_name='CHECKSUM'), ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
-            outfile.write(' USE=%s' % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding), input_name='USE'), ))
+            outfile.write(' USE=%s'
+                          % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding),
+                          input_name='USE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
-            outfile.write(' DMDID=%s' % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding), input_name='DMDID'), ))
+            outfile.write(' DMDID=%s'
+                          % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding),
+                          input_name='DMDID'), ))
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
-            outfile.write(' BEGIN=%s' % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding), input_name='BEGIN'), ))
-        if self.OWNERID is not None and 'OWNERID' not in already_processed:
+            outfile.write(' BEGIN=%s'
+                          % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding),
+                          input_name='BEGIN'), ))
+        if self.OWNERID is not None and 'OWNERID' \
+            not in already_processed:
             already_processed.append('OWNERID')
-            outfile.write(' OWNERID=%s' % (self.gds_format_string(quote_attrib(self.OWNERID).encode(ExternalEncoding), input_name='OWNERID'), ))
+            outfile.write(' OWNERID=%s'
+                          % (self.gds_format_string(quote_attrib(self.OWNERID).encode(ExternalEncoding),
+                          input_name='OWNERID'), ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
-            outfile.write(' SIZE="%s"' % self.gds_format_integer(self.SIZE, input_name='SIZE'))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write(' SIZE="%s"'
+                          % self.gds_format_integer(self.SIZE,
+                          input_name='SIZE'))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
-            outfile.write(' GROUPID=%s' % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding), input_name='GROUPID'), ))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write(' GROUPID=%s'
+                          % (self.gds_format_string(quote_attrib(self.GROUPID).encode(ExternalEncoding),
+                          input_name='GROUPID'), ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
-            outfile.write(' BETYPE=%s' % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding), input_name='BETYPE'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='fileType'):
+            outfile.write(' BETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding),
+                          input_name='BETYPE'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileType',
+        ):
         for FLocat_ in self.FLocat:
             FLocat_.export(outfile, level, namespace_, name_='FLocat')
         if self.FContent:
-            self.FContent.export(outfile, level, namespace_, name_='FContent')
+            self.FContent.export(outfile, level, namespace_,
+                                 name_='FContent')
         for stream_ in self.stream:
             stream_.export(outfile, level, namespace_, name_='stream')
         for transformFile_ in self.transformFile:
-            transformFile_.export(outfile, level, namespace_, name_='transformFile')
+            transformFile_.export(outfile, level, namespace_,
+                                  name_='transformFile')
         for file_ in self.file:
             file_.export(outfile, level, namespace_, name_='file')
+
     def hasContent_(self):
-        if (
-            self.FLocat or
-            self.FContent is not None or
-            self.stream or
-            self.transformFile or
-            self.file
-            ):
+        if self.FLocat or self.FContent is not None or self.stream \
+            or self.transformFile or self.file:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='fileType'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='fileType',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.MIMETYPE is not None and 'MIMETYPE' not in already_processed:
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.MIMETYPE is not None and 'MIMETYPE' \
+            not in already_processed:
             already_processed.append('MIMETYPE')
             showIndent(outfile, level)
-            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE,))
+            outfile.write('MIMETYPE = "%s",\n' % (self.MIMETYPE, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
             showIndent(outfile, level)
-            outfile.write('END = "%s",\n' % (self.END,))
-        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' not in already_processed:
+            outfile.write('END = "%s",\n' % (self.END, ))
+        if self.CHECKSUMTYPE is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             showIndent(outfile, level)
-            outfile.write('CHECKSUMTYPE = "%s",\n' % (self.CHECKSUMTYPE,))
+            outfile.write('CHECKSUMTYPE = "%s",\n'
+                          % (self.CHECKSUMTYPE, ))
         if self.SEQ is not None and 'SEQ' not in already_processed:
             already_processed.append('SEQ')
             showIndent(outfile, level)
-            outfile.write('SEQ = %d,\n' % (self.SEQ,))
-        if self.CREATED is not None and 'CREATED' not in already_processed:
+            outfile.write('SEQ = %d,\n' % (self.SEQ, ))
+        if self.CREATED is not None and 'CREATED' \
+            not in already_processed:
             already_processed.append('CREATED')
             showIndent(outfile, level)
-            outfile.write('CREATED = "%s",\n' % (self.CREATED,))
-        if self.CHECKSUM is not None and 'CHECKSUM' not in already_processed:
+            outfile.write('CREATED = "%s",\n' % (self.CREATED, ))
+        if self.CHECKSUM is not None and 'CHECKSUM' \
+            not in already_processed:
             already_processed.append('CHECKSUM')
             showIndent(outfile, level)
-            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM,))
+            outfile.write('CHECKSUM = "%s",\n' % (self.CHECKSUM, ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
             showIndent(outfile, level)
-            outfile.write('USE = "%s",\n' % (self.USE,))
+            outfile.write('USE = "%s",\n' % (self.USE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
+            outfile.write('ID = "%s",\n' % (self.ID, ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
             showIndent(outfile, level)
-            outfile.write('DMDID = "%s",\n' % (self.DMDID,))
+            outfile.write('DMDID = "%s",\n' % (self.DMDID, ))
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
             showIndent(outfile, level)
-            outfile.write('BEGIN = "%s",\n' % (self.BEGIN,))
-        if self.OWNERID is not None and 'OWNERID' not in already_processed:
+            outfile.write('BEGIN = "%s",\n' % (self.BEGIN, ))
+        if self.OWNERID is not None and 'OWNERID' \
+            not in already_processed:
             already_processed.append('OWNERID')
             showIndent(outfile, level)
-            outfile.write('OWNERID = "%s",\n' % (self.OWNERID,))
+            outfile.write('OWNERID = "%s",\n' % (self.OWNERID, ))
         if self.SIZE is not None and 'SIZE' not in already_processed:
             already_processed.append('SIZE')
             showIndent(outfile, level)
-            outfile.write('SIZE = %d,\n' % (self.SIZE,))
-        if self.GROUPID is not None and 'GROUPID' not in already_processed:
+            outfile.write('SIZE = %d,\n' % (self.SIZE, ))
+        if self.GROUPID is not None and 'GROUPID' \
+            not in already_processed:
             already_processed.append('GROUPID')
             showIndent(outfile, level)
-            outfile.write('GROUPID = "%s",\n' % (self.GROUPID,))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write('GROUPID = "%s",\n' % (self.GROUPID, ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
             showIndent(outfile, level)
-            outfile.write('BETYPE = "%s",\n' % (self.BETYPE,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('BETYPE = "%s",\n' % (self.BETYPE, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         showIndent(outfile, level)
         outfile.write('FLocat=[\n')
         level += 1
@@ -5780,12 +9503,19 @@ class fileType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('MIMETYPE')
         if value is not None and 'MIMETYPE' not in already_processed:
             already_processed.append('MIMETYPE')
@@ -5799,7 +9529,8 @@ class fileType(GeneratedsSuper):
             already_processed.append('END')
             self.END = value
         value = attrs.get('CHECKSUMTYPE')
-        if value is not None and 'CHECKSUMTYPE' not in already_processed:
+        if value is not None and 'CHECKSUMTYPE' \
+            not in already_processed:
             already_processed.append('CHECKSUMTYPE')
             self.CHECKSUMTYPE = value
         value = attrs.get('SEQ')
@@ -5808,7 +9539,8 @@ class fileType(GeneratedsSuper):
             try:
                 self.SEQ = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
         value = attrs.get('CREATED')
         if value is not None and 'CREATED' not in already_processed:
             already_processed.append('CREATED')
@@ -5843,7 +9575,8 @@ class fileType(GeneratedsSuper):
             try:
                 self.SIZE = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
         value = attrs.get('GROUPID')
         if value is not None and 'GROUPID' not in already_processed:
             already_processed.append('GROUPID')
@@ -5852,31 +9585,41 @@ class fileType(GeneratedsSuper):
         if value is not None and 'BETYPE' not in already_processed:
             already_processed.append('BETYPE')
             self.BETYPE = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        if nodeName_ == 'FLocat': 
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        if nodeName_ == 'FLocat':
             obj_ = FLocat.factory()
             obj_.build(child_)
             self.FLocat.append(obj_)
-        elif nodeName_ == 'FContent': 
+        elif nodeName_ == 'FContent':
             obj_ = FContent.factory()
             obj_.build(child_)
             self.set_FContent(obj_)
-        elif nodeName_ == 'stream': 
+        elif nodeName_ == 'stream':
             obj_ = stream.factory()
             obj_.build(child_)
             self.stream.append(obj_)
-        elif nodeName_ == 'transformFile': 
+        elif nodeName_ == 'transformFile':
             obj_ = transformFile.factory()
             obj_.build(child_)
             self.transformFile.append(obj_)
-        elif nodeName_ == 'file': 
+        elif nodeName_ == 'file':
             obj_ = fileType.factory()
             obj_.build(child_)
             self.file.append(obj_)
+
+
 # end class fileType
 
 
 class FLocat(GeneratedsSuper):
+
     """The file location element <FLocat> provides a pointer to the
     location of a content file. It uses the XLink reference syntax
     to provide linking information indicating the actual location of
@@ -5900,9 +9643,25 @@ class FLocat(GeneratedsSuper):
     elements. A USE attribute at the <FLocat> or <FContent> level
     pertains to the particular copy of the file that is either
     referenced (<FLocat>) or wrapped (<FContent>)."""
+
     subclass = None
     superclass = None
-    def __init__(self, arcrole=None, USE=None, title=None, OTHERLOCTYPE=None, show=None, actuate=None, href=None, role=None, LOCTYPE=None, type_=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        arcrole=None,
+        USE=None,
+        title=None,
+        OTHERLOCTYPE=None,
+        show=None,
+        actuate=None,
+        href=None,
+        role=None,
+        LOCTYPE=None,
+        type_=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.arcrole = _cast(None, arcrole)
         self.USE = _cast(None, USE)
         self.title = _cast(None, title)
@@ -5915,40 +9674,100 @@ class FLocat(GeneratedsSuper):
         self.type_ = _cast(None, type_)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if FLocat.subclass:
             return FLocat.subclass(*args_, **kwargs_)
         else:
             return FLocat(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_arcrole(self): return self.arcrole
-    def set_arcrole(self, arcrole): self.arcrole = arcrole
-    def get_USE(self): return self.USE
-    def set_USE(self, USE): self.USE = USE
-    def get_title(self): return self.title
-    def set_title(self, title): self.title = title
-    def get_OTHERLOCTYPE(self): return self.OTHERLOCTYPE
-    def set_OTHERLOCTYPE(self, OTHERLOCTYPE): self.OTHERLOCTYPE = OTHERLOCTYPE
-    def get_show(self): return self.show
-    def set_show(self, show): self.show = show
-    def get_actuate(self): return self.actuate
-    def set_actuate(self, actuate): self.actuate = actuate
-    def get_href(self): return self.href
-    def set_href(self, href): self.href = href
-    def get_role(self): return self.role
-    def set_role(self, role): self.role = role
-    def get_LOCTYPE(self): return self.LOCTYPE
-    def set_LOCTYPE(self, LOCTYPE): self.LOCTYPE = LOCTYPE
-    def get_type(self): return self.type_
-    def set_type(self, type_): self.type_ = type_
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='FLocat', namespacedef_=''):
+
+    def get_arcrole(self):
+        return self.arcrole
+
+    def set_arcrole(self, arcrole):
+        self.arcrole = arcrole
+
+    def get_USE(self):
+        return self.USE
+
+    def set_USE(self, USE):
+        self.USE = USE
+
+    def get_title(self):
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
+
+    def get_OTHERLOCTYPE(self):
+        return self.OTHERLOCTYPE
+
+    def set_OTHERLOCTYPE(self, OTHERLOCTYPE):
+        self.OTHERLOCTYPE = OTHERLOCTYPE
+
+    def get_show(self):
+        return self.show
+
+    def set_show(self, show):
+        self.show = show
+
+    def get_actuate(self):
+        return self.actuate
+
+    def set_actuate(self, actuate):
+        self.actuate = actuate
+
+    def get_href(self):
+        return self.href
+
+    def set_href(self, href):
+        self.href = href
+
+    def get_role(self):
+        return self.role
+
+    def set_role(self, role):
+        self.role = role
+
+    def get_LOCTYPE(self):
+        return self.LOCTYPE
+
+    def set_LOCTYPE(self, LOCTYPE):
+        self.LOCTYPE = LOCTYPE
+
+    def get_type(self):
+        return self.type_
+
+    def set_type(self, type_):
+        self.type_ = type_
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='FLocat',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='FLocat')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='FLocat')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -5956,110 +9775,179 @@ class FLocat(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FLocat'):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='FLocat',
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
-            outfile.write(' arcrole=%s' % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding), input_name='arcrole'), ))
+            outfile.write(' arcrole=%s'
+                          % (self.gds_format_string(quote_attrib(self.arcrole).encode(ExternalEncoding),
+                          input_name='arcrole'), ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
-            outfile.write(' USE=%s' % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding), input_name='USE'), ))
+            outfile.write(' USE=%s'
+                          % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding),
+                          input_name='USE'), ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
-            outfile.write(' title=%s' % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding), input_name='title'), ))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write(' title=%s'
+                          % (self.gds_format_string(quote_attrib(self.title).encode(ExternalEncoding),
+                          input_name='title'), ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
-            outfile.write(' OTHERLOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding), input_name='OTHERLOCTYPE'), ))
+            outfile.write(' OTHERLOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.OTHERLOCTYPE).encode(ExternalEncoding),
+                          input_name='OTHERLOCTYPE'), ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
-            outfile.write(' show=%s' % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding), input_name='show'), ))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write(' show=%s'
+                          % (self.gds_format_string(quote_attrib(self.show).encode(ExternalEncoding),
+                          input_name='show'), ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
-            outfile.write(' actuate=%s' % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding), input_name='actuate'), ))
+            outfile.write(' actuate=%s'
+                          % (self.gds_format_string(quote_attrib(self.actuate).encode(ExternalEncoding),
+                          input_name='actuate'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s' % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding), input_name='href'), ))
+            outfile.write(' href=%s'
+                          % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
+                          input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
-            outfile.write(' role=%s' % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding), input_name='role'), ))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write(' role=%s'
+                          % (self.gds_format_string(quote_attrib(self.role).encode(ExternalEncoding),
+                          input_name='role'), ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
-            outfile.write(' LOCTYPE=%s' % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding), input_name='LOCTYPE'), ))
+            outfile.write(' LOCTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.LOCTYPE).encode(ExternalEncoding),
+                          input_name='LOCTYPE'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             outfile.write(' type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='FLocat'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='FLocat',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='FLocat'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='FLocat',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.arcrole is not None and 'arcrole' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.arcrole is not None and 'arcrole' \
+            not in already_processed:
             already_processed.append('arcrole')
             showIndent(outfile, level)
-            outfile.write('arcrole = "%s",\n' % (self.arcrole,))
+            outfile.write('arcrole = "%s",\n' % (self.arcrole, ))
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
             showIndent(outfile, level)
-            outfile.write('USE = "%s",\n' % (self.USE,))
+            outfile.write('USE = "%s",\n' % (self.USE, ))
         if self.title is not None and 'title' not in already_processed:
             already_processed.append('title')
             showIndent(outfile, level)
-            outfile.write('title = "%s",\n' % (self.title,))
-        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' not in already_processed:
+            outfile.write('title = "%s",\n' % (self.title, ))
+        if self.OTHERLOCTYPE is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             showIndent(outfile, level)
-            outfile.write('OTHERLOCTYPE = "%s",\n' % (self.OTHERLOCTYPE,))
+            outfile.write('OTHERLOCTYPE = "%s",\n'
+                          % (self.OTHERLOCTYPE, ))
         if self.show is not None and 'show' not in already_processed:
             already_processed.append('show')
             showIndent(outfile, level)
-            outfile.write('show = "%s",\n' % (self.show,))
-        if self.actuate is not None and 'actuate' not in already_processed:
+            outfile.write('show = "%s",\n' % (self.show, ))
+        if self.actuate is not None and 'actuate' \
+            not in already_processed:
             already_processed.append('actuate')
             showIndent(outfile, level)
-            outfile.write('actuate = "%s",\n' % (self.actuate,))
+            outfile.write('actuate = "%s",\n' % (self.actuate, ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
             showIndent(outfile, level)
-            outfile.write('href = "%s",\n' % (self.href,))
+            outfile.write('href = "%s",\n' % (self.href, ))
         if self.role is not None and 'role' not in already_processed:
             already_processed.append('role')
             showIndent(outfile, level)
-            outfile.write('role = "%s",\n' % (self.role,))
-        if self.LOCTYPE is not None and 'LOCTYPE' not in already_processed:
+            outfile.write('role = "%s",\n' % (self.role, ))
+        if self.LOCTYPE is not None and 'LOCTYPE' \
+            not in already_processed:
             already_processed.append('LOCTYPE')
             showIndent(outfile, level)
-            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE,))
+            outfile.write('LOCTYPE = "%s",\n' % (self.LOCTYPE, ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
             showIndent(outfile, level)
-            outfile.write('type_ = %s,\n' % (self.type_,))
+            outfile.write('type_ = %s,\n' % (self.type_, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('arcrole')
         if value is not None and 'arcrole' not in already_processed:
             already_processed.append('arcrole')
@@ -6073,7 +9961,8 @@ class FLocat(GeneratedsSuper):
             already_processed.append('title')
             self.title = value
         value = attrs.get('OTHERLOCTYPE')
-        if value is not None and 'OTHERLOCTYPE' not in already_processed:
+        if value is not None and 'OTHERLOCTYPE' \
+            not in already_processed:
             already_processed.append('OTHERLOCTYPE')
             self.OTHERLOCTYPE = value
         value = attrs.get('show')
@@ -6104,12 +9993,22 @@ class FLocat(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class FLocat
 
 
 class FContent(GeneratedsSuper):
+
     """The file content element <FContent> is used to identify a content
     file contained internally within a METS document. The content
     file must be either Base64 encoded and contained within the
@@ -6132,31 +10031,67 @@ class FContent(GeneratedsSuper):
     at the <FLocat> or <FContent> level pertains to the particular
     copy of the file that is either referenced (<FLocat>) or wrapped
     (<FContent>)."""
+
     subclass = None
     superclass = None
-    def __init__(self, USE=None, ID=None, binData=None, xmlData=None):
+
+    def __init__(
+        self,
+        USE=None,
+        ID=None,
+        binData=None,
+        xmlData=None,
+        ):
         self.USE = _cast(None, USE)
         self.ID = _cast(None, ID)
         self.binData = binData
         self.xmlData = xmlData
+
     def factory(*args_, **kwargs_):
         if FContent.subclass:
             return FContent.subclass(*args_, **kwargs_)
         else:
             return FContent(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_binData(self): return self.binData
-    def set_binData(self, binData): self.binData = binData
-    def get_xmlData(self): return self.xmlData
-    def set_xmlData(self, xmlData): self.xmlData = xmlData
-    def get_USE(self): return self.USE
-    def set_USE(self, USE): self.USE = USE
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def export(self, outfile, level, namespace_='', name_='FContent', namespacedef_=''):
+
+    def get_binData(self):
+        return self.binData
+
+    def set_binData(self, binData):
+        self.binData = binData
+
+    def get_xmlData(self):
+        return self.xmlData
+
+    def set_xmlData(self, xmlData):
+        self.xmlData = xmlData
+
+    def get_USE(self):
+        return self.USE
+
+    def set_USE(self, USE):
+        self.USE = USE
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='FContent',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='FContent')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='FContent')
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -6164,55 +10099,104 @@ class FContent(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='FContent'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='FContent',
+        ):
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
-            outfile.write(' USE=%s' % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding), input_name='USE'), ))
+            outfile.write(' USE=%s'
+                          % (self.gds_format_string(quote_attrib(self.USE).encode(ExternalEncoding),
+                          input_name='USE'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='FContent'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='FContent',
+        ):
         if self.binData is not None:
             showIndent(outfile, level)
-            outfile.write('<%sbinData>%s</%sbinData>\n' % (namespace_, self.gds_format_string(quote_xml(self.binData).encode(ExternalEncoding), input_name='binData'), namespace_))
+            outfile.write('<%sbinData>%s</%sbinData>\n' % (namespace_,
+                          self.gds_format_string(quote_xml(self.binData).encode(ExternalEncoding),
+                          input_name='binData'), namespace_))
         if self.xmlData is not None:
             showIndent(outfile, level)
-            outfile.write('<%sxmlData>%s</%sxmlData>\n' % (namespace_, self.gds_format_string(quote_xml(self.xmlData).encode(ExternalEncoding), input_name='xmlData'), namespace_))
+            outfile.write('<%sxmlData>%s</%sxmlData>\n' % (namespace_,
+                          self.gds_format_string(quote_xml(self.xmlData).encode(ExternalEncoding),
+                          input_name='xmlData'), namespace_))
+
     def hasContent_(self):
-        if (
-            self.binData is not None or
-            self.xmlData is not None
-            ):
+        if self.binData is not None or self.xmlData is not None:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='FContent'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='FContent',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.USE is not None and 'USE' not in already_processed:
             already_processed.append('USE')
             showIndent(outfile, level)
-            outfile.write('USE = "%s",\n' % (self.USE,))
+            outfile.write('USE = "%s",\n' % (self.USE, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         if self.binData is not None:
             showIndent(outfile, level)
-            outfile.write('binData=%s,\n' % quote_python(self.binData).encode(ExternalEncoding))
+            outfile.write('binData=%s,\n'
+                          % quote_python(self.binData).encode(ExternalEncoding))
         if self.xmlData is not None:
             showIndent(outfile, level)
-            outfile.write('xmlData=%s,\n' % quote_python(self.xmlData).encode(ExternalEncoding))
+            outfile.write('xmlData=%s,\n'
+                          % quote_python(self.xmlData).encode(ExternalEncoding))
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('USE')
         if value is not None and 'USE' not in already_processed:
             already_processed.append('USE')
@@ -6221,19 +10205,31 @@ class FContent(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         if nodeName_ == 'binData':
             binData_ = child_.text
-            binData_ = self.gds_validate_string(binData_, node, 'binData')
+            binData_ = self.gds_validate_string(binData_, node,
+                    'binData')
             self.binData = binData_
         elif nodeName_ == 'xmlData':
             xmlData_ = child_.text
-            xmlData_ = self.gds_validate_string(xmlData_, node, 'xmlData')
+            xmlData_ = self.gds_validate_string(xmlData_, node,
+                    'xmlData')
             self.xmlData = xmlData_
+
+
 # end class FContent
 
 
 class stream(GeneratedsSuper):
+
     """A component byte stream element <stream> may be composed of one or
     more subsidiary streams. An MPEG4 file, for example, might
     contain separate audio and video streams, each of which is
@@ -6282,9 +10278,22 @@ class stream(GeneratedsSuper):
     END values that are being used. Currently BYTE is the only valid
     value that can be used in conjunction with nested <file> or
     <stream> elements."""
+
     subclass = None
     superclass = None
-    def __init__(self, BEGIN=None, END=None, ADMID=None, BETYPE=None, streamType=None, DMDID=None, OWNERID=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        BEGIN=None,
+        END=None,
+        ADMID=None,
+        BETYPE=None,
+        streamType=None,
+        DMDID=None,
+        OWNERID=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.BEGIN = _cast(None, BEGIN)
         self.END = _cast(None, END)
         self.ADMID = _cast(None, ADMID)
@@ -6294,34 +10303,82 @@ class stream(GeneratedsSuper):
         self.OWNERID = _cast(None, OWNERID)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if stream.subclass:
             return stream.subclass(*args_, **kwargs_)
         else:
             return stream(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_BEGIN(self): return self.BEGIN
-    def set_BEGIN(self, BEGIN): self.BEGIN = BEGIN
-    def get_END(self): return self.END
-    def set_END(self, END): self.END = END
-    def get_ADMID(self): return self.ADMID
-    def set_ADMID(self, ADMID): self.ADMID = ADMID
-    def get_BETYPE(self): return self.BETYPE
-    def set_BETYPE(self, BETYPE): self.BETYPE = BETYPE
-    def get_streamType(self): return self.streamType
-    def set_streamType(self, streamType): self.streamType = streamType
-    def get_DMDID(self): return self.DMDID
-    def set_DMDID(self, DMDID): self.DMDID = DMDID
-    def get_OWNERID(self): return self.OWNERID
-    def set_OWNERID(self, OWNERID): self.OWNERID = OWNERID
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='stream', namespacedef_=''):
+
+    def get_BEGIN(self):
+        return self.BEGIN
+
+    def set_BEGIN(self, BEGIN):
+        self.BEGIN = BEGIN
+
+    def get_END(self):
+        return self.END
+
+    def set_END(self, END):
+        self.END = END
+
+    def get_ADMID(self):
+        return self.ADMID
+
+    def set_ADMID(self, ADMID):
+        self.ADMID = ADMID
+
+    def get_BETYPE(self):
+        return self.BETYPE
+
+    def set_BETYPE(self, BETYPE):
+        self.BETYPE = BETYPE
+
+    def get_streamType(self):
+        return self.streamType
+
+    def set_streamType(self, streamType):
+        self.streamType = streamType
+
+    def get_DMDID(self):
+        return self.DMDID
+
+    def set_DMDID(self, DMDID):
+        self.DMDID = DMDID
+
+    def get_OWNERID(self):
+        return self.OWNERID
+
+    def set_OWNERID(self, OWNERID):
+        self.OWNERID = OWNERID
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='stream',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='stream')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='stream')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -6329,89 +10386,151 @@ class stream(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='stream'):
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='stream',
+        ):
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
-            outfile.write(' BEGIN=%s' % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding), input_name='BEGIN'), ))
+            outfile.write(' BEGIN=%s'
+                          % (self.gds_format_string(quote_attrib(self.BEGIN).encode(ExternalEncoding),
+                          input_name='BEGIN'), ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
-            outfile.write(' END=%s' % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding), input_name='END'), ))
+            outfile.write(' END=%s'
+                          % (self.gds_format_string(quote_attrib(self.END).encode(ExternalEncoding),
+                          input_name='END'), ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
-            outfile.write(' ADMID=%s' % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding), input_name='ADMID'), ))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write(' ADMID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ADMID).encode(ExternalEncoding),
+                          input_name='ADMID'), ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
-            outfile.write(' BETYPE=%s' % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding), input_name='BETYPE'), ))
-        if self.streamType is not None and 'streamType' not in already_processed:
+            outfile.write(' BETYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.BETYPE).encode(ExternalEncoding),
+                          input_name='BETYPE'), ))
+        if self.streamType is not None and 'streamType' \
+            not in already_processed:
             already_processed.append('streamType')
-            outfile.write(' streamType=%s' % (self.gds_format_string(quote_attrib(self.streamType).encode(ExternalEncoding), input_name='streamType'), ))
+            outfile.write(' streamType=%s'
+                          % (self.gds_format_string(quote_attrib(self.streamType).encode(ExternalEncoding),
+                          input_name='streamType'), ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
-            outfile.write(' DMDID=%s' % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding), input_name='DMDID'), ))
-        if self.OWNERID is not None and 'OWNERID' not in already_processed:
+            outfile.write(' DMDID=%s'
+                          % (self.gds_format_string(quote_attrib(self.DMDID).encode(ExternalEncoding),
+                          input_name='DMDID'), ))
+        if self.OWNERID is not None and 'OWNERID' \
+            not in already_processed:
             already_processed.append('OWNERID')
-            outfile.write(' OWNERID=%s' % (self.gds_format_string(quote_attrib(self.OWNERID).encode(ExternalEncoding), input_name='OWNERID'), ))
+            outfile.write(' OWNERID=%s'
+                          % (self.gds_format_string(quote_attrib(self.OWNERID).encode(ExternalEncoding),
+                          input_name='OWNERID'), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='stream'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='stream',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='stream'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='stream',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
         if self.BEGIN is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
             showIndent(outfile, level)
-            outfile.write('BEGIN = "%s",\n' % (self.BEGIN,))
+            outfile.write('BEGIN = "%s",\n' % (self.BEGIN, ))
         if self.END is not None and 'END' not in already_processed:
             already_processed.append('END')
             showIndent(outfile, level)
-            outfile.write('END = "%s",\n' % (self.END,))
+            outfile.write('END = "%s",\n' % (self.END, ))
         if self.ADMID is not None and 'ADMID' not in already_processed:
             already_processed.append('ADMID')
             showIndent(outfile, level)
-            outfile.write('ADMID = "%s",\n' % (self.ADMID,))
-        if self.BETYPE is not None and 'BETYPE' not in already_processed:
+            outfile.write('ADMID = "%s",\n' % (self.ADMID, ))
+        if self.BETYPE is not None and 'BETYPE' \
+            not in already_processed:
             already_processed.append('BETYPE')
             showIndent(outfile, level)
-            outfile.write('BETYPE = "%s",\n' % (self.BETYPE,))
-        if self.streamType is not None and 'streamType' not in already_processed:
+            outfile.write('BETYPE = "%s",\n' % (self.BETYPE, ))
+        if self.streamType is not None and 'streamType' \
+            not in already_processed:
             already_processed.append('streamType')
             showIndent(outfile, level)
-            outfile.write('streamType = "%s",\n' % (self.streamType,))
+            outfile.write('streamType = "%s",\n' % (self.streamType, ))
         if self.DMDID is not None and 'DMDID' not in already_processed:
             already_processed.append('DMDID')
             showIndent(outfile, level)
-            outfile.write('DMDID = "%s",\n' % (self.DMDID,))
-        if self.OWNERID is not None and 'OWNERID' not in already_processed:
+            outfile.write('DMDID = "%s",\n' % (self.DMDID, ))
+        if self.OWNERID is not None and 'OWNERID' \
+            not in already_processed:
             already_processed.append('OWNERID')
             showIndent(outfile, level)
-            outfile.write('OWNERID = "%s",\n' % (self.OWNERID,))
+            outfile.write('OWNERID = "%s",\n' % (self.OWNERID, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('BEGIN')
         if value is not None and 'BEGIN' not in already_processed:
             already_processed.append('BEGIN')
@@ -6444,12 +10563,22 @@ class stream(GeneratedsSuper):
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class stream
 
 
 class transformFile(GeneratedsSuper):
+
     """The transform file element <transformFile> provides a means to
     access any subsidiary files listed below a <file> element by
     indicating the steps required to "unpack" or transform the
@@ -6480,9 +10609,20 @@ class transformFile(GeneratedsSuper):
     transformation.TRANSFORMORDER (postive-integer/R): The order in
     which the instructions must be followed in order to unpack or
     transform the container file."""
+
     subclass = None
     superclass = None
-    def __init__(self, TRANSFORMTYPE=None, TRANSFORMKEY=None, TRANSFORMBEHAVIOR=None, TRANSFORMALGORITHM=None, TRANSFORMORDER=None, ID=None, valueOf_=None):
+
+    def __init__(
+        self,
+        TRANSFORMTYPE=None,
+        TRANSFORMKEY=None,
+        TRANSFORMBEHAVIOR=None,
+        TRANSFORMALGORITHM=None,
+        TRANSFORMORDER=None,
+        ID=None,
+        valueOf_=None,
+        ):
         self.TRANSFORMTYPE = _cast(None, TRANSFORMTYPE)
         self.TRANSFORMKEY = _cast(None, TRANSFORMKEY)
         self.TRANSFORMBEHAVIOR = _cast(None, TRANSFORMBEHAVIOR)
@@ -6490,30 +10630,70 @@ class transformFile(GeneratedsSuper):
         self.TRANSFORMORDER = _cast(int, TRANSFORMORDER)
         self.ID = _cast(None, ID)
         self.valueOf_ = valueOf_
+
     def factory(*args_, **kwargs_):
         if transformFile.subclass:
             return transformFile.subclass(*args_, **kwargs_)
         else:
             return transformFile(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def get_TRANSFORMTYPE(self): return self.TRANSFORMTYPE
-    def set_TRANSFORMTYPE(self, TRANSFORMTYPE): self.TRANSFORMTYPE = TRANSFORMTYPE
-    def get_TRANSFORMKEY(self): return self.TRANSFORMKEY
-    def set_TRANSFORMKEY(self, TRANSFORMKEY): self.TRANSFORMKEY = TRANSFORMKEY
-    def get_TRANSFORMBEHAVIOR(self): return self.TRANSFORMBEHAVIOR
-    def set_TRANSFORMBEHAVIOR(self, TRANSFORMBEHAVIOR): self.TRANSFORMBEHAVIOR = TRANSFORMBEHAVIOR
-    def get_TRANSFORMALGORITHM(self): return self.TRANSFORMALGORITHM
-    def set_TRANSFORMALGORITHM(self, TRANSFORMALGORITHM): self.TRANSFORMALGORITHM = TRANSFORMALGORITHM
-    def get_TRANSFORMORDER(self): return self.TRANSFORMORDER
-    def set_TRANSFORMORDER(self, TRANSFORMORDER): self.TRANSFORMORDER = TRANSFORMORDER
-    def get_ID(self): return self.ID
-    def set_ID(self, ID): self.ID = ID
-    def get_valueOf_(self): return self.valueOf_
-    def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='transformFile', namespacedef_=''):
+
+    def get_TRANSFORMTYPE(self):
+        return self.TRANSFORMTYPE
+
+    def set_TRANSFORMTYPE(self, TRANSFORMTYPE):
+        self.TRANSFORMTYPE = TRANSFORMTYPE
+
+    def get_TRANSFORMKEY(self):
+        return self.TRANSFORMKEY
+
+    def set_TRANSFORMKEY(self, TRANSFORMKEY):
+        self.TRANSFORMKEY = TRANSFORMKEY
+
+    def get_TRANSFORMBEHAVIOR(self):
+        return self.TRANSFORMBEHAVIOR
+
+    def set_TRANSFORMBEHAVIOR(self, TRANSFORMBEHAVIOR):
+        self.TRANSFORMBEHAVIOR = TRANSFORMBEHAVIOR
+
+    def get_TRANSFORMALGORITHM(self):
+        return self.TRANSFORMALGORITHM
+
+    def set_TRANSFORMALGORITHM(self, TRANSFORMALGORITHM):
+        self.TRANSFORMALGORITHM = TRANSFORMALGORITHM
+
+    def get_TRANSFORMORDER(self):
+        return self.TRANSFORMORDER
+
+    def set_TRANSFORMORDER(self, TRANSFORMORDER):
+        self.TRANSFORMORDER = TRANSFORMORDER
+
+    def get_ID(self):
+        return self.ID
+
+    def set_ID(self, ID):
+        self.ID = ID
+
+    def get_valueOf_(self):
+        return self.valueOf_
+
+    def set_valueOf_(self, valueOf_):
+        self.valueOf_ = valueOf_
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='transformFile',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='transformFile')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='transformFile')
         if self.hasContent_():
             outfile.write('>')
             outfile.write(self.valueOf_)
@@ -6521,110 +10701,193 @@ class transformFile(GeneratedsSuper):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='transformFile'):
-        if self.TRANSFORMTYPE is not None and 'TRANSFORMTYPE' not in already_processed:
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='transformFile',
+        ):
+        if self.TRANSFORMTYPE is not None and 'TRANSFORMTYPE' \
+            not in already_processed:
             already_processed.append('TRANSFORMTYPE')
-            outfile.write(' TRANSFORMTYPE=%s' % (self.gds_format_string(quote_attrib(self.TRANSFORMTYPE).encode(ExternalEncoding), input_name='TRANSFORMTYPE'), ))
-        if self.TRANSFORMKEY is not None and 'TRANSFORMKEY' not in already_processed:
+            outfile.write(' TRANSFORMTYPE=%s'
+                          % (self.gds_format_string(quote_attrib(self.TRANSFORMTYPE).encode(ExternalEncoding),
+                          input_name='TRANSFORMTYPE'), ))
+        if self.TRANSFORMKEY is not None and 'TRANSFORMKEY' \
+            not in already_processed:
             already_processed.append('TRANSFORMKEY')
-            outfile.write(' TRANSFORMKEY=%s' % (self.gds_format_string(quote_attrib(self.TRANSFORMKEY).encode(ExternalEncoding), input_name='TRANSFORMKEY'), ))
-        if self.TRANSFORMBEHAVIOR is not None and 'TRANSFORMBEHAVIOR' not in already_processed:
+            outfile.write(' TRANSFORMKEY=%s'
+                          % (self.gds_format_string(quote_attrib(self.TRANSFORMKEY).encode(ExternalEncoding),
+                          input_name='TRANSFORMKEY'), ))
+        if self.TRANSFORMBEHAVIOR is not None and 'TRANSFORMBEHAVIOR' \
+            not in already_processed:
             already_processed.append('TRANSFORMBEHAVIOR')
-            outfile.write(' TRANSFORMBEHAVIOR=%s' % (self.gds_format_string(quote_attrib(self.TRANSFORMBEHAVIOR).encode(ExternalEncoding), input_name='TRANSFORMBEHAVIOR'), ))
-        if self.TRANSFORMALGORITHM is not None and 'TRANSFORMALGORITHM' not in already_processed:
+            outfile.write(' TRANSFORMBEHAVIOR=%s'
+                          % (self.gds_format_string(quote_attrib(self.TRANSFORMBEHAVIOR).encode(ExternalEncoding),
+                          input_name='TRANSFORMBEHAVIOR'), ))
+        if self.TRANSFORMALGORITHM is not None and 'TRANSFORMALGORITHM' \
+            not in already_processed:
             already_processed.append('TRANSFORMALGORITHM')
-            outfile.write(' TRANSFORMALGORITHM=%s' % (self.gds_format_string(quote_attrib(self.TRANSFORMALGORITHM).encode(ExternalEncoding), input_name='TRANSFORMALGORITHM'), ))
-        if self.TRANSFORMORDER is not None and 'TRANSFORMORDER' not in already_processed:
+            outfile.write(' TRANSFORMALGORITHM=%s'
+                          % (self.gds_format_string(quote_attrib(self.TRANSFORMALGORITHM).encode(ExternalEncoding),
+                          input_name='TRANSFORMALGORITHM'), ))
+        if self.TRANSFORMORDER is not None and 'TRANSFORMORDER' \
+            not in already_processed:
             already_processed.append('TRANSFORMORDER')
-            outfile.write(' TRANSFORMORDER="%s"' % self.gds_format_integer(self.TRANSFORMORDER, input_name='TRANSFORMORDER'))
+            outfile.write(' TRANSFORMORDER="%s"'
+                          % self.gds_format_integer(self.TRANSFORMORDER,
+                          input_name='TRANSFORMORDER'))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
-            outfile.write(' ID=%s' % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding), input_name='ID'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='transformFile'):
+            outfile.write(' ID=%s'
+                          % (self.gds_format_string(quote_attrib(self.ID).encode(ExternalEncoding),
+                          input_name='ID'), ))
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='transformFile',
+        ):
         pass
+
     def hasContent_(self):
-        if (
-            self.valueOf_
-            ):
+        if self.valueOf_:
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='transformFile'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='transformFile',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
         showIndent(outfile, level)
-        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_,))
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.TRANSFORMTYPE is not None and 'TRANSFORMTYPE' not in already_processed:
+        outfile.write('valueOf_ = """%s""",\n' % (self.valueOf_, ))
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        if self.TRANSFORMTYPE is not None and 'TRANSFORMTYPE' \
+            not in already_processed:
             already_processed.append('TRANSFORMTYPE')
             showIndent(outfile, level)
-            outfile.write('TRANSFORMTYPE = "%s",\n' % (self.TRANSFORMTYPE,))
-        if self.TRANSFORMKEY is not None and 'TRANSFORMKEY' not in already_processed:
+            outfile.write('TRANSFORMTYPE = "%s",\n'
+                          % (self.TRANSFORMTYPE, ))
+        if self.TRANSFORMKEY is not None and 'TRANSFORMKEY' \
+            not in already_processed:
             already_processed.append('TRANSFORMKEY')
             showIndent(outfile, level)
-            outfile.write('TRANSFORMKEY = "%s",\n' % (self.TRANSFORMKEY,))
-        if self.TRANSFORMBEHAVIOR is not None and 'TRANSFORMBEHAVIOR' not in already_processed:
+            outfile.write('TRANSFORMKEY = "%s",\n'
+                          % (self.TRANSFORMKEY, ))
+        if self.TRANSFORMBEHAVIOR is not None and 'TRANSFORMBEHAVIOR' \
+            not in already_processed:
             already_processed.append('TRANSFORMBEHAVIOR')
             showIndent(outfile, level)
-            outfile.write('TRANSFORMBEHAVIOR = "%s",\n' % (self.TRANSFORMBEHAVIOR,))
-        if self.TRANSFORMALGORITHM is not None and 'TRANSFORMALGORITHM' not in already_processed:
+            outfile.write('TRANSFORMBEHAVIOR = "%s",\n'
+                          % (self.TRANSFORMBEHAVIOR, ))
+        if self.TRANSFORMALGORITHM is not None and 'TRANSFORMALGORITHM' \
+            not in already_processed:
             already_processed.append('TRANSFORMALGORITHM')
             showIndent(outfile, level)
-            outfile.write('TRANSFORMALGORITHM = "%s",\n' % (self.TRANSFORMALGORITHM,))
-        if self.TRANSFORMORDER is not None and 'TRANSFORMORDER' not in already_processed:
+            outfile.write('TRANSFORMALGORITHM = "%s",\n'
+                          % (self.TRANSFORMALGORITHM, ))
+        if self.TRANSFORMORDER is not None and 'TRANSFORMORDER' \
+            not in already_processed:
             already_processed.append('TRANSFORMORDER')
             showIndent(outfile, level)
-            outfile.write('TRANSFORMORDER = %d,\n' % (self.TRANSFORMORDER,))
+            outfile.write('TRANSFORMORDER = %d,\n'
+                          % (self.TRANSFORMORDER, ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             showIndent(outfile, level)
-            outfile.write('ID = "%s",\n' % (self.ID,))
-    def exportLiteralChildren(self, outfile, level, name_):
+            outfile.write('ID = "%s",\n' % (self.ID, ))
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         pass
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         self.valueOf_ = get_all_text_(node)
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
         value = attrs.get('TRANSFORMTYPE')
-        if value is not None and 'TRANSFORMTYPE' not in already_processed:
+        if value is not None and 'TRANSFORMTYPE' \
+            not in already_processed:
             already_processed.append('TRANSFORMTYPE')
             self.TRANSFORMTYPE = value
         value = attrs.get('TRANSFORMKEY')
-        if value is not None and 'TRANSFORMKEY' not in already_processed:
+        if value is not None and 'TRANSFORMKEY' \
+            not in already_processed:
             already_processed.append('TRANSFORMKEY')
             self.TRANSFORMKEY = value
         value = attrs.get('TRANSFORMBEHAVIOR')
-        if value is not None and 'TRANSFORMBEHAVIOR' not in already_processed:
+        if value is not None and 'TRANSFORMBEHAVIOR' \
+            not in already_processed:
             already_processed.append('TRANSFORMBEHAVIOR')
             self.TRANSFORMBEHAVIOR = value
         value = attrs.get('TRANSFORMALGORITHM')
-        if value is not None and 'TRANSFORMALGORITHM' not in already_processed:
+        if value is not None and 'TRANSFORMALGORITHM' \
+            not in already_processed:
             already_processed.append('TRANSFORMALGORITHM')
             self.TRANSFORMALGORITHM = value
         value = attrs.get('TRANSFORMORDER')
-        if value is not None and 'TRANSFORMORDER' not in already_processed:
+        if value is not None and 'TRANSFORMORDER' \
+            not in already_processed:
             already_processed.append('TRANSFORMORDER')
             try:
                 self.TRANSFORMORDER = int(value)
             except ValueError, exp:
-                raise_parse_error(node, 'Bad integer attribute: %s' % exp)
+                raise_parse_error(node, 'Bad integer attribute: %s'
+                                  % exp)
             if self.TRANSFORMORDER <= 0:
                 raise_parse_error(node, 'Invalid PositiveInteger')
         value = attrs.get('ID')
         if value is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             self.ID = value
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         pass
+
+
 # end class transformFile
 
 
 class structLink(structLinkType):
+
     """The structural link section element <structLink> allows for the
     specification of hyperlinks between the different components of
     a METS structure that are delineated in a structural map. This
@@ -6632,22 +10895,42 @@ class structLink(structLinkType):
     <smLink> which indicates a hyperlink between two nodes in the
     structural map. The <structLink> section in the METS document is
     identified using its XML ID attributes."""
+
     subclass = None
     superclass = structLinkType
-    def __init__(self, ID=None, smLink=None, smLinkGrp=None):
-        super(structLink, self).__init__(ID, smLink, smLinkGrp, )
+
+    def __init__(
+        self,
+        ID=None,
+        smLink=None,
+        smLinkGrp=None,
+        ):
+        super(structLink, self).__init__(ID, smLink, smLinkGrp)
         pass
+
     def factory(*args_, **kwargs_):
         if structLink.subclass:
             return structLink.subclass(*args_, **kwargs_)
         else:
             return structLink(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def export(self, outfile, level, namespace_='', name_='structLink', namespacedef_=''):
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structLink',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='structLink')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='structLink')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+                      )
         outfile.write(' xsi:type="structLink"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -6656,40 +10939,96 @@ class structLink(structLinkType):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='structLink'):
-        super(structLink, self).exportAttributes(outfile, level, already_processed, namespace_, name_='structLink')
-    def exportChildren(self, outfile, level, namespace_='', name_='structLink'):
-        super(structLink, self).exportChildren(outfile, level, namespace_, name_)
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='structLink',
+        ):
+        super(structLink, self).exportAttributes(outfile, level,
+                already_processed, namespace_, name_='structLink')
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='structLink',
+        ):
+        super(structLink, self).exportChildren(outfile, level,
+                namespace_, name_)
+
     def hasContent_(self):
-        if (
-            super(structLink, self).hasContent_()
-            ):
+        if super(structLink, self).hasContent_():
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='structLink'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='structLink',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(structLink, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(structLink, self).exportLiteralChildren(outfile, level, name_)
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        super(structLink, self).exportLiteralAttributes(outfile, level,
+                already_processed, name_)
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
+        super(structLink, self).exportLiteralChildren(outfile, level,
+                name_)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        super(structLink, self).buildAttributes(node, attrs, already_processed)
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        super(structLink, self).buildChildren(child_, node, nodeName_, True)
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
+        super(structLink, self).buildAttributes(node, attrs,
+                already_processed)
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        super(structLink, self).buildChildren(child_, node, nodeName_,
+                True)
         pass
+
+
 # end class structLink
 
 
 class fileGrp(fileGrpType):
+
     """A sequence of file group elements <fileGrp> can be used group the
     digital files comprising the content of a METS object either
     into a flat arrangement or, because each file group element can
@@ -6711,22 +11050,52 @@ class fileGrp(fileGrpType):
     TEI encoded XML version of the entire document or each of its
     pages. A <fileGrp> may contain zero or more <fileGrp> elements
     and or <file> elements."""
+
     subclass = None
     superclass = fileGrpType
-    def __init__(self, VERSDATE=None, ADMID=None, ID=None, USE=None, fileGrp=None, file=None):
-        super(fileGrp, self).__init__(VERSDATE, ADMID, ID, USE, fileGrp, file, )
+
+    def __init__(
+        self,
+        VERSDATE=None,
+        ADMID=None,
+        ID=None,
+        USE=None,
+        fileGrp=None,
+        file=None,
+        ):
+        super(fileGrp, self).__init__(
+            VERSDATE,
+            ADMID,
+            ID,
+            USE,
+            fileGrp,
+            file,
+            )
         pass
+
     def factory(*args_, **kwargs_):
         if fileGrp.subclass:
             return fileGrp.subclass(*args_, **kwargs_)
         else:
             return fileGrp(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def export(self, outfile, level, namespace_='', name_='fileGrp', namespacedef_=''):
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileGrp',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='fileGrp')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='fileGrp')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+                      )
         outfile.write(' xsi:type="fileGrp"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -6735,40 +11104,96 @@ class fileGrp(fileGrpType):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='fileGrp'):
-        super(fileGrp, self).exportAttributes(outfile, level, already_processed, namespace_, name_='fileGrp')
-    def exportChildren(self, outfile, level, namespace_='', name_='fileGrp'):
-        super(fileGrp, self).exportChildren(outfile, level, namespace_, name_)
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='fileGrp',
+        ):
+        super(fileGrp, self).exportAttributes(outfile, level,
+                already_processed, namespace_, name_='fileGrp')
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='fileGrp',
+        ):
+        super(fileGrp, self).exportChildren(outfile, level, namespace_,
+                name_)
+
     def hasContent_(self):
-        if (
-            super(fileGrp, self).hasContent_()
-            ):
+        if super(fileGrp, self).hasContent_():
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='fileGrp'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='fileGrp',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(fileGrp, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
-        super(fileGrp, self).exportLiteralChildren(outfile, level, name_)
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        super(fileGrp, self).exportLiteralAttributes(outfile, level,
+                already_processed, name_)
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
+        super(fileGrp, self).exportLiteralChildren(outfile, level,
+                name_)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        super(fileGrp, self).buildAttributes(node, attrs, already_processed)
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
-        super(fileGrp, self).buildChildren(child_, node, nodeName_, True)
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
+        super(fileGrp, self).buildAttributes(node, attrs,
+                already_processed)
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
+        super(fileGrp, self).buildChildren(child_, node, nodeName_,
+                True)
         pass
+
+
 # end class fileGrp
 
 
 class mets(metsType):
+
     """METS: Metadata Encoding and Transmission Standard. METS is intended
     to provide a standardized XML format for transmission of complex
     digital library objects between systems. As such, it can be seen
@@ -6778,22 +11203,64 @@ class mets(metsType):
     Model for an Open Archival Information System. The root element
     <mets> establishes the container for the information being
     stored and/or transmitted by the standard."""
+
     subclass = None
     superclass = metsType
-    def __init__(self, PROFILE=None, LABEL=None, TYPE=None, ID=None, OBJID=None, metsHdr=None, dmdSec=None, amdSec=None, fileSec=None, structMap=None, structLink=None, behaviorSec=None):
-        super(mets, self).__init__(PROFILE, LABEL, TYPE, ID, OBJID, metsHdr, dmdSec, amdSec, fileSec, structMap, structLink, behaviorSec, )
+
+    def __init__(
+        self,
+        PROFILE=None,
+        LABEL=None,
+        TYPE=None,
+        ID=None,
+        OBJID=None,
+        metsHdr=None,
+        dmdSec=None,
+        amdSec=None,
+        fileSec=None,
+        structMap=None,
+        structLink=None,
+        behaviorSec=None,
+        ):
+        super(mets, self).__init__(
+            PROFILE,
+            LABEL,
+            TYPE,
+            ID,
+            OBJID,
+            metsHdr,
+            dmdSec,
+            amdSec,
+            fileSec,
+            structMap,
+            structLink,
+            behaviorSec,
+            )
         pass
+
     def factory(*args_, **kwargs_):
         if mets.subclass:
             return mets.subclass(*args_, **kwargs_)
         else:
             return mets(*args_, **kwargs_)
+
     factory = staticmethod(factory)
-    def export(self, outfile, level, namespace_='', name_='mets', namespacedef_=''):
+
+    def export(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mets',
+        namespacedef_='',
+        ):
         showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, [], namespace_, name_='mets')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_
+                      and ' ' + namespacedef_ or ''))
+        self.exportAttributes(outfile, level, [], namespace_,
+                              name_='mets')
+        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+                      )
         outfile.write(' xsi:type="mets"')
         if self.hasContent_():
             outfile.write('>\n')
@@ -6802,42 +11269,95 @@ class mets(metsType):
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='mets'):
-        super(mets, self).exportAttributes(outfile, level, already_processed, namespace_, name_='mets')
-    def exportChildren(self, outfile, level, namespace_='', name_='mets'):
-        super(mets, self).exportChildren(outfile, level, namespace_, name_)
+
+    def exportAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        namespace_='',
+        name_='mets',
+        ):
+        super(mets, self).exportAttributes(outfile, level,
+                already_processed, namespace_, name_='mets')
+
+    def exportChildren(
+        self,
+        outfile,
+        level,
+        namespace_='',
+        name_='mets',
+        ):
+        super(mets, self).exportChildren(outfile, level, namespace_,
+                name_)
+
     def hasContent_(self):
-        if (
-            super(mets, self).hasContent_()
-            ):
+        if super(mets, self).hasContent_():
             return True
         else:
             return False
-    def exportLiteral(self, outfile, level, name_='mets'):
+
+    def exportLiteral(
+        self,
+        outfile,
+        level,
+        name_='mets',
+        ):
         level += 1
         self.exportLiteralAttributes(outfile, level, [], name_)
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
-    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        super(mets, self).exportLiteralAttributes(outfile, level, already_processed, name_)
-    def exportLiteralChildren(self, outfile, level, name_):
+
+    def exportLiteralAttributes(
+        self,
+        outfile,
+        level,
+        already_processed,
+        name_,
+        ):
+        super(mets, self).exportLiteralAttributes(outfile, level,
+                already_processed, name_)
+
+    def exportLiteralChildren(
+        self,
+        outfile,
+        level,
+        name_,
+        ):
         super(mets, self).exportLiteralChildren(outfile, level, name_)
+
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
-    def buildAttributes(self, node, attrs, already_processed):
-        super(mets, self).buildAttributes(node, attrs, already_processed)
-    def buildChildren(self, child_, node, nodeName_, from_subclass=False):
+
+    def buildAttributes(
+        self,
+        node,
+        attrs,
+        already_processed,
+        ):
+        super(mets, self).buildAttributes(node, attrs,
+                already_processed)
+
+    def buildChildren(
+        self,
+        child_,
+        node,
+        nodeName_,
+        from_subclass=False,
+        ):
         super(mets, self).buildChildren(child_, node, nodeName_, True)
         pass
-# end class mets
 
+
+# end class mets
 
 USAGE_TEXT = """
 Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
+
 
 def usage():
     print USAGE_TEXT
@@ -6847,23 +11367,24 @@ def usage():
 def get_root_tag(node):
     tag = Tag_pattern_.match(node.tag).groups()[-1]
     rootClass = globals().get(tag)
-    return tag, rootClass
+    return (tag, rootClass)
 
 
 def parse(inFileName):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    (rootTag, rootClass) = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = 'mets'
         rootClass = mets
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
+
     # Enable Python to collect the space used by the DOM.
+
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_=rootTag, 
-        namespacedef_='')
+    rootObj.export(sys.stdout, 0, name_=rootTag, namespacedef_='')
     return rootObj
 
 
@@ -6871,33 +11392,40 @@ def parseString(inString):
     from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    (rootTag, rootClass) = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = 'mets'
         rootClass = mets
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
+
     # Enable Python to collect the space used by the DOM.
+
     doc = None
     sys.stdout.write('<?xml version="1.0" ?>\n')
-    rootObj.export(sys.stdout, 0, name_="mets",
-        namespacedef_='')
+    rootObj.export(sys.stdout, 0, name_='mets', namespacedef_='')
     return rootObj
 
 
 def parseLiteral(inFileName):
     doc = parsexml_(inFileName)
     rootNode = doc.getroot()
-    rootTag, rootClass = get_root_tag(rootNode)
+    (rootTag, rootClass) = get_root_tag(rootNode)
     if rootClass is None:
         rootTag = 'mets'
         rootClass = mets
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
+
     # Enable Python to collect the space used by the DOM.
+
     doc = None
-    sys.stdout.write('#from mets import *\n\n')
-    sys.stdout.write('import mets as model_\n\n')
+    sys.stdout.write('''#from mets import *
+
+''')
+    sys.stdout.write('''import mets as model_
+
+''')
     sys.stdout.write('rootObj = model_.rootTag(\n')
     rootObj.exportLiteral(sys.stdout, 0, name_=rootTag)
     sys.stdout.write(')\n')
@@ -6907,9 +11435,10 @@ def parseLiteral(inFileName):
 def prettify(level, elem):
     """Return a pretty-printed XML string for the Element.
     """
+
     rough_string = ElementTree.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="    ")
+    return reparsed.toprettyxml(indent='    ')
 
 
 def main():
@@ -6921,44 +11450,45 @@ def main():
 
 
 if __name__ == '__main__':
-    #import pdb; pdb.set_trace()
+
+    # import pdb; pdb.set_trace()
+
     main()
 
-
 __all__ = [
-    "FContent",
-    "FLocat",
-    "agent",
-    "altRecordID",
-    "amdSecType",
-    "areaType",
-    "behaviorSecType",
-    "behaviorType",
-    "divType",
-    "fileGrp",
-    "fileGrpType",
-    "fileSec",
-    "fileType",
-    "fptr",
-    "mdRef",
-    "mdSecType",
-    "mdWrap",
-    "mets",
-    "metsDocumentID",
-    "metsHdr",
-    "metsType",
-    "mptr",
-    "objectType",
-    "parType",
-    "seqType",
-    "smArcLink",
-    "smLink",
-    "smLinkGrp",
-    "smLocatorLink",
-    "stream",
-    "structLink",
-    "structLinkType",
-    "structMapType",
-    "transformFile",
-    "xmlData"
+    'FContent',
+    'FLocat',
+    'agent',
+    'altRecordID',
+    'amdSecType',
+    'areaType',
+    'behaviorSecType',
+    'behaviorType',
+    'divType',
+    'fileGrp',
+    'fileGrpType',
+    'fileSec',
+    'fileType',
+    'fptr',
+    'mdRef',
+    'mdSecType',
+    'mdWrap',
+    'mets',
+    'metsDocumentID',
+    'metsHdr',
+    'metsType',
+    'mptr',
+    'objectType',
+    'parType',
+    'seqType',
+    'smArcLink',
+    'smLink',
+    'smLinkGrp',
+    'smLocatorLink',
+    'stream',
+    'structLink',
+    'structLinkType',
+    'structMapType',
+    'transformFile',
+    'xmlData',
     ]

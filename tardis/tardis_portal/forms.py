@@ -233,6 +233,7 @@ class AddGroupPermissionsForm(forms.Form):
     delete = forms.BooleanField(label='DELETE', required=False)
     delete.widget.attrs['class'] = 'canDelete'
 
+
 class ManageGroupPermissionsForm(forms.Form):
 
     authMethod = forms.CharField(required=True,
@@ -242,6 +243,7 @@ class ManageGroupPermissionsForm(forms.Form):
     adduser.widget.attrs['class'] = 'usersuggest'
     admin = forms.BooleanField(label='Group Admin', required=False, initial=True)
     admin.widget.attrs['class'] = 'isAdmin'
+
 
 class DatafileSearchForm(forms.Form):
 
