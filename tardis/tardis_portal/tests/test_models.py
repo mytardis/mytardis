@@ -41,6 +41,8 @@ from django.test import TestCase
 
 class ModelTestCase(TestCase):
 
+    urls = 'tardis.tardis_portal.tests.urls'
+
     def setUp(self):
         from django.contrib.auth.models import User
         user = 'tardis_user1'
@@ -64,9 +66,9 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)
         self.assertEqual(exp.public, False)
-        self.assertEqual(exp.get_absolute_url(), '/experiment/view/1/',
-                         exp.get_absolute_url() + ' != /experiment/view/1/')
-        self.assertEqual(exp.get_absolute_filepath(),
+        self.assertEqual(exp.get_absolute_url(), '/test/experiment/view/1/',
+                         exp.get_absolute_url() + ' != /test/experiment/view/1/')
+        self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
     def test_authors(self):
@@ -134,7 +136,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(), '/download/datafile/1/')
+        self.assertEqual(df_file.get_download_url(), '/test/download/datafile/1/')
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
@@ -148,7 +150,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
-                         '/download/datafile/2/')
+                         '/test/vbl/download/datafile/2/')
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
@@ -163,4 +165,4 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
-                         '/download/datafile/3/')
+                         '/test/download/datafile/3/')
