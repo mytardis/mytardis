@@ -46,11 +46,6 @@ class ExperimentManager(models.Manager):
         # if the user is not authenticated, they will see only public
         # experiments
         if request.user.is_authenticated():
-            # which experiments are owned by the user?
-            query |= Q(experimentacl__pluginId=django_user,
-                       experimentacl__entityId=str(request.user.id),
-                       experimentacl__isOwner=True)
-
             # for which experiments does the user have read access
             # based on USER permissions?
             query |= Q(experimentacl__pluginId=django_user,
