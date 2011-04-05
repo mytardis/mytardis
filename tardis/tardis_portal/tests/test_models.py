@@ -68,7 +68,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.public, False)
         self.assertEqual(exp.get_absolute_url(), '/test/experiment/view/1/',
                          exp.get_absolute_url() + ' != /test/experiment/view/1/')
-        self.assertEqual(exp.get_absolute_filepath(),
+        self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
     def test_authors(self):

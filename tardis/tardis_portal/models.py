@@ -166,8 +166,21 @@ class Experiment(models.Model):
         return self.title
 
     def get_absolute_filepath(self):
+        """Return the absolute storage path
+        to the current ``Experiment``"""
         store = settings.FILE_STORE_PATH
         return path.join(store, str(self.id))
+
+    def get_or_create_directory(self):
+        dirname = path.join(settings.FILE_STORE_PATH,
+                            str(self.id))
+        if not path.exists(dirname):
+            from os import mkdir
+            try:
+                mkdir(dirname)
+            except:
+                dirname = None
+        return dirname
 
     @models.permalink
     def get_absolute_url(self):
