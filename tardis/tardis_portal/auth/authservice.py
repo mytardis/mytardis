@@ -111,14 +111,18 @@ class AuthService():
 
         if not self._initialised:
             self._manual_init()
-
+        # if authMethod, else fall back to Django internal auth
         if authMethod:
             if authMethod in self._authentication_backends:
                 # note that it's the backend's job to create a user entry
                 # for a user in the DB if he has successfully logged in using
                 # the auth method he has picked and he doesn't exist in the DB
-                return self._authentication_backends[
+                user = self._authentication_backends[
                     authMethod].authenticate(**credentials)
+                if isinstance(user, dict):
+                    user['pluginname'] = authMethod
+                    return self.getUser(user)
+                return user
             else:
                 return None
         else:
@@ -227,6 +231,53 @@ class AuthService():
         user within the Django DB and returning the resulting
         user model.
         """
+        from django.contrib.auth.models import User
+        from tardis.tardis_portal.models import UserProfile, UserAuthentication
+
         if not self._initialised:
             self._manual_init()
-        pass
+
+        plugin = user_dict['pluginname']
+        username = user_dict['id']
+        try:
+            user = UserAuthentication.objects.get(username=username,
+                            authenticationMethod=plugin).userProfile.user
+            return user
+        except UserAuthentication.DoesNotExist:
+            pass
+
+        # length of the maximum username
+        max_length = 30
+        username = username[:max_length]
+
+        # remove email component
+        if username.find('@') > 0:
+            # the username to be used on the User table
+            name = username.partition('@')[0]
+        else:
+            name = username
+
+        # Generate a unique username
+        unique_username = username
+        i = 0
+        try:
+            while (User.objects.get(username=unique_username)):
+                i += 1
+                unique_username = username[:max_length - len(str(i))] + str(i)
+        except User.DoesNotExist:
+            pass
+
+        password = User.objects.make_random_password()
+        user = User.objects.create_user(username=username,
+                                        password=password,
+                                        email=user_dict.get("email", ""))
+        user.save()
+
+        userProfile = UserProfile(user=user,
+                                  isDjangoAccount=False)
+        userProfile.save()
+
+        userAuth = UserAuthentication(userProfile=userProfile,
+            username=username, authenticationMethod=plugin)
+        userAuth.save()
+        return user

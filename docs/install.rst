@@ -65,19 +65,7 @@ Database
 LDAP
 ~~~~
 
-.. attribute:: tardis.settings_changeme.LDAP_ENABLED
-
-   Boolean that enables LDAP support.
-
-.. attribute:: tardis.settings_changeme.LDAP_URL
-
-   LDAP the DNS name of your LDAP directory, for example
-   *directory.example.com*
-
-
-.. attribute:: tardis.settings_changeme.BASE_DN
-
-   The DN Base of the LDAP server.
+For further information see :ref:`LDAP authentication<ref-ldap_auth>`
 
 
 Repository

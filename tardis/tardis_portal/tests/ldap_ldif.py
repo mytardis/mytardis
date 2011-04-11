@@ -4,6 +4,7 @@
 #   (Monash University, Australia)
 # Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
+# Copyright (c) 2010 VPAC
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,75 +28,73 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-"""
-
-.. moduleauthor:: Russell Sim <russell.sim@gmail.com>
-"""
 
 
-class AuthProvider:
-
-    def authenticate(self, request):
-        """
-        from a request authenticate try to authenticate the user.
-        return a user dict if successful.
-        """
-        raise NotImplemented()
-
-    def get_user(self, user_id):
-        raise NotImplemented()
+from django.conf import settings
 
 
-class UserProvider:
-
-    def getUserById(self, id):
-        """
-        return the user dictionary in the format of::
-
-            {"id": 123,
-            "display": "John Smith",
-            "email": "john@example.com"}
-
-        """
-        raise NotImplemented()
-
-    def searchUsers(self, request):
-        """
-        return a list of user descriptions from the auth domain.
-
-        each user is in the format of::
-
-            {"id": 123,
-            "display": "John Smith",
-            "email": "john@example.com"}
-
-        """
-        raise NotImplemented()
-
-
-class GroupProvider:
-
-    def getGroups(self, request):
-        """
-        return an iteration of the available groups.
-        """
-        raise NotImplemented()
-
-    def getGroupById(self, id):
-        """
-        return the group associated with the id
-        """
-        raise NotImplemented()
-
-    def searchGroups(self, **filter):
-        """
-        return a list of groups that match the filter
-        """
-        raise NotImplemented()
-
-    def getGroupsForEntity(self, id):
-        """
-        return a list of groups associated with a particular entity id
-        """
-        raise NotImplemented()
+test_ldif = [
+    "dn: " + settings.LDAP_GROUP_BASE,
+    "objectClass: organizationalUnit",
+    "ou: Group",
+    "",
+    "dn: " + settings.LDAP_USER_BASE,
+    "objectClass: organizationalUnit",
+    "ou: People",
+    "",
+    'dn: uid=testuser1, ' + settings.LDAP_USER_BASE,
+    'cn: Test User',
+    'objectClass: inetOrgPerson',
+    'objectClass: top',
+    'userPassword:: kklk',
+    'o: Example Org',
+    'sn: User',
+    'mail: t.user@example.com',
+    'givenName: Test',
+    'uid: testuser1',
+    '',
+    'dn: uid=testuser2, ' + settings.LDAP_USER_BASE,
+    'cn: Test User2',
+    'objectClass: inetOrgPerson',
+    'objectClass: top',
+    'userPassword:: gfgf',
+    'o: Example Org2',
+    'sn: User2',
+    'mail: t.user2@example.com',
+    'givenName: Test',
+    'uid: testuser2',
+    '',
+    'dn: uid=testuser3, ' + settings.LDAP_USER_BASE,
+    'cn: Test User3',
+    'objectClass: inetOrgPerson',
+    'objectClass: top',
+    'userPassword:: asdf',
+    'o: Example Org3',
+    'sn: User3',
+    'mail: t.user3@example.com',
+    'givenName: Test',
+    'uid: testuser3',
+    '',
+    'dn: cn=systems, ' + settings.LDAP_GROUP_BASE,
+    'objectClass: posixGroup',
+    'gidNumber: 10001',
+    'cn: systems',
+    'description: Systems Services',
+    'memberUid: testuser1',
+    '',
+    'dn: cn=empty, ' + settings.LDAP_GROUP_BASE,
+    'objectClass: posixGroup',
+    'gidNumber: 10002',
+    'cn: empty',
+    'description: Empty Group',
+    '',
+    'dn: cn=full,' + settings.LDAP_GROUP_BASE,
+    'objectClass: posixGroup',
+    'gidNumber: 10003',
+    'cn: full',
+    'description: Full Group',
+    'memberUid: testuser1',
+    'memberUid: testuser2',
+    'memberUid: testuser3',
+    '',
+    ]

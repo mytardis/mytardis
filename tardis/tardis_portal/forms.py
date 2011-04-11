@@ -129,7 +129,7 @@ class RegistrationForm(forms.Form):
         in use.
 
         """
-        username = '%s_%s' % (locabdb_auth_key, self.cleaned_data['username'])
+        username = '%s' % self.cleaned_data['username']
 
         try:
             user = User.objects.get(username__iexact=username)
