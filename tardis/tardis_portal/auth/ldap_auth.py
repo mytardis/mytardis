@@ -40,8 +40,8 @@ import ldap
 
 from django.conf import settings
 
-from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider
-from tardis.tardis_portal.auth.interfaces import UserProvider
+from tardis.tardis_portal.auth.interfaces import AuthProvider, \
+    GroupProvider, UserProvider
 from tardis.tardis_portal.models import UserAuthentication
 from tardis.tardis_portal.logger import logger
 
