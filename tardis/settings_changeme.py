@@ -70,8 +70,9 @@ TEMPLATE_DIRS = (
 )
 
 LDAP_ENABLE = False
-LDAP_URL = 'directory.example.com'
+LDAP_URL = 'ldap://directory.example.com'
 BASE_DN = 'o=Organisation, c=X'
+LDAP_USER_RDN = 'uid'
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
 # Temporarily disable transaction management until everyone agrees that
