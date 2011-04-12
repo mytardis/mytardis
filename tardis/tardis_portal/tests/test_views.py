@@ -37,7 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
-
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
 class UploadTestCase(TestCase):
 
@@ -146,79 +146,316 @@ class UploadTestCase(TestCase):
 class listTestCase(TestCase):
 
     def setUp(self):
-        from django.contrib.auth.models import User  
-        from django.contrib.auth.models import Group 
-        from django.conf import settings
-        from tardis.tardis_portal import models
+	from django.contrib.auth.models import User
         from django.test.client import Client
-        
-        access_uname = 'user'
-        access_pwd   = 'pwd'
-  
-        self.access_user = User(username=access_uname, password=access_pwd)
-        self.access_client = Client()
-        self.access_client.login(username=access_uname, password=access_pwd)
-        
-
-    def testGetUserList(self):
-	from django.contrib.auth.models import User
-        from django.http import HttpRequest
-        from tardis.tardis_portal.views import retrieve_user_list
-
-        request = HttpRequest()
-        request.user = self.access_user
-
-        accounts = [('user1', 'pwd1'),
-                         ('user2', 'pwd2'),
-                         ('user3', 'pwd3')]  
-        email = ''
-        
-        for uname, pwd in accounts:
-           user = User.objects.create_user(uname, email, pwd)
-           user.save()
-        response = retrieve_user_list(request)
-
-        ret_names = response.content.split(' ')
-
-        self.assertTrue(len(ret_names) == len(accounts))
-
-        for a,b in zip([u for u,p in accounts], ret_names):
-            self.assertTrue(a == b )
-
-    def testGetGroupList(self):
-
-	from django.contrib.auth.models import User
 	from django.contrib.auth.models import Group
-        from django.http import HttpRequest
-        from tardis.tardis_portal.views import retrieve_group_list
-
-        request = HttpRequest()
-        request.user = self.access_user
-
-        accounts = [('user1', 'pwd1'),
+        
+        self.accounts = [('user1', 'pwd1'),
                     ('user2', 'pwd2'),
                     ('user3', 'pwd3')]  
-        email = ''
+        email = 'a@a.com'
         
-        for uname, pwd in accounts:
+        for uname, pwd in self.accounts:
            user = User.objects.create_user(uname, email, pwd)
            user.save()
-        groups = [('group1')]         
+
+        access_uname = self.accounts[0][0]
+        access_pwd = self.accounts[0][1]
+        self.access_user = User.objects.get(username=access_uname)
+ 
+        self.access_client = Client()
+        login = self.access_client.login(username=access_uname, password=access_pwd)
+        self.assertTrue(login)
+
+        self.groups = ['group1',         
+                  'group2',         
+                  'group3',         
+                  'group4']
 
         for groupname in self.groups:
             group = Group(name=groupname)
             group.save()
- 
+
+    def testGetUserList(self):
+        from django.http import HttpRequest
+        from tardis.tardis_portal.views import retrieve_user_list
+        
+        request = HttpRequest()
+        request.user = self.access_user
+        response = retrieve_user_list(request)
+
+        ret_names = response.content.split(' ')
+        self.assertTrue(len(ret_names) == len(self.accounts))
+        
+        for a,b in zip([u for u,p in self.accounts], ret_names):
+            self.assertTrue(a == b )
+
+    def testGetGroupList(self):
+
+        from django.http import HttpRequest
+        from tardis.tardis_portal.views import retrieve_group_list
+        
+        request = HttpRequest()
+        request.user = self.access_user
         response = retrieve_group_list(request)
 
-               
         ret_names = response.content.split(' ~ ')
+        self.assertTrue(len(ret_names) == len(self.groups))
 
-        self.assertTrue(len(ret_names) == len(accounts))
-
-        for a,b in zip([u for u,p in accounts], ret_names):
+        for a,b in zip(self.groups, ret_names):
             self.assertTrue(a == b )
 
     def tearDown(self):
        self.access_client.logout()
 
+class experimentAccessCase(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import User  
+        from django.test.client import Client
+        from tardis.tardis_portal.models import Experiment, ExperimentACL
+ 
+        access_uname = 'user'
+        access_pwd   = 'pwd'
+        email = 'a@a.com'
+  
+        self.access_user = User.objects.create_user(access_uname, email, access_pwd)
+
+        self.access_client = Client()
+        login = self.access_client.login(username=access_uname, password=access_pwd)
+        self.assertTrue(login)
+
+        # add an experiment which will default to being owned by the user
+        # that created it         
+        self.experiment = Experiment(title='title',
+                         institution_name='inst_name',
+                         description='description',
+                         created_by=self.access_user
+                               )
+        self.experiment.save()
+       
+        acl = ExperimentACL(pluginId=django_user,
+                           entityId=str(self.access_user.id),
+                           experiment=self.experiment,
+                           canRead=True,
+                           isOwner=True,
+                           aclOwnershipType=ExperimentACL.OWNER_OWNED
+                           ) 
+        acl.save()
+        
+        # Create a user which does not have ownership the experiment
+        no_access_uname = 'no_access_user'
+        no_access_pwd   = 'no_access_pwd'
+         
+        self.no_access_user = User.objects.create_user(no_access_uname, email, no_access_pwd)
+        
+        self.no_access_client = Client()
+        login = self.no_access_client.login(username=no_access_uname, password=no_access_pwd)
+        self.assertTrue(login)
+
+        # Create the lucky individual we're going to give access to
+        self.test_name = 'test_user'
+        self.test_pwd  = 'pwd'
+        self.test_email     = 'a@a.com'
+
+        self.user = User.objects.create_user(self.test_name, self.test_email, self.test_pwd)
+        self.user.save()
+    
+    def testAddUserAccess(self):
+        from tardis.tardis_portal.views import add_experiment_access_user
+        
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.experiment.id, self.test_name))
+
+        # todo: how to verify correct output?
+        self.assertContains(response, '<div class="access_list_user">')
+
+    def testNoAddPermissions(self):
+        from tardis.tardis_portal.views import add_experiment_access_user
+        
+        response = self.no_access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.experiment.id, self.test_name))
+
+        self.assertEqual(response.status_code, 403)        
+
+    def testAddNonExistantUser(self):
+        from tardis.tardis_portal.views import add_experiment_access_user
+        
+        non_existant_username = 'test_boozer'
+
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.experiment.id, non_existant_username))
+        self.assertContains(response, 'User %s does not exist' % (non_existant_username))
+
+    def testAddToNonExistantExperiment(self):
+        from tardis.tardis_portal.views import add_experiment_access_user
+        from django.http import HttpRequest
+        
+        non_existant_id = 9999
+
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (non_existant_id, self.test_name))
+
+        # Note: Ideally we'd like to check for error message, but we can't hit it with the decorator in place.
+        # However, currently we check for a 403 (forbidden) error, as the 'experiment_ownership_required' decorator simply checks if 
+        # the experiment_id appears in the specified user's ACL, and assumes that the absence of the experiment_id means that the 
+        # experiment exists but the user doesn't have access to it. This could possibly be changed to a 404 error.  
+        self.assertEqual(response.status_code, 403) 
+
+    def testUserAlreadyHasAccess(self):
+        from tardis.tardis_portal.views import add_experiment_access_user
+        from django.http import HttpRequest
+
+         # First, legitimately add the user
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.experiment.id, self.test_name))
+        self.assertContains(response, '<div class="access_list_user">')
+
+        # Then, try adding them again, which will generate an error message
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.experiment.id, self.test_name))
+        #self.assertEqual(response.contents, 'User already has experiment access')
+
+    def tearDown(self):
+        pass    
+
+class removeExperimentAccessCase(TestCase):
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from tardis.tardis_portal.models import Experiment, ExperimentACL  
+        from django.test.client import Client
+        
+        self.access_uname = 'user'
+        access_pwd   = 'pwd'
+        email = 'a@a.com' 
+
+        self.access_user = User.objects.create_user(self.access_uname, email, access_pwd)
+
+        self.access_client = Client()
+        login = self.access_client.login(username=self.access_uname, password=access_pwd)
+        self.assertTrue(login)
+
+        self.exp_details = [{'title': 'title1', 'institution_name': 'name1', 'description': 'desc1'},
+                            {'title': 'title2', 'institution_name': 'name2', 'description': 'desc2'},
+                            {'title': 'title3', 'institution_name': 'name3', 'description': 'desc3'}
+                           ]
+
+        # add experiments which will default to being owned by the user
+        # that created it
+        for ed in self.exp_details:         
+            exp = Experiment(title=ed['title'],
+                                institution_name=ed['institution_name'],
+                                description=ed['description'],
+                                created_by=self.access_user
+                                )
+            exp.save()
+            ed['id'] =  exp.id
+
+            acl = ExperimentACL(pluginId=django_user,
+                           entityId=str(self.access_user.id),
+                           experiment=exp,
+                           canRead=True,
+                           isOwner=True,
+                           aclOwnershipType=ExperimentACL.OWNER_OWNED
+                           ) 
+            acl.save()
+        
+        # Create a user which does not have ownership the experiment
+        no_access_uname = 'no_access_user'
+        no_access_pwd   = 'no_access_pwd'
+
+        self.no_access_user = User.objects.create_user(no_access_uname, email, no_access_pwd)
+        self.no_access_client = Client()
+        login = self.no_access_client.login(username=no_access_uname, password=no_access_pwd)
+        self.assertTrue(login)
+
+        from tardis.tardis_portal.views import add_experiment_access_user
+        from django.http import HttpRequest
+        
+        self.user_details = [{'name': 'user1', 'password': 'pwd1'},
+                             {'name': 'user2', 'password': 'pwd2'},
+                             {'name': 'user3', 'password': 'pwd3'}
+                            ]
+        
+        # Create some users and give each of them access to the first experiment
+        # todo make this meaningful
+        for ud in self.user_details:
+	    ud['user'] = User.objects.create_user(ud['name'], email, ud['password'])
+
+            response = self.access_client.get('/experiment/control_panel/%i/access_list/add/user/%s' % (self.exp_details[0]['id'], ud['name']))
+            self.assertContains(response, '<div class="access_list_user">')
+
+    def testRemoveSingleUser(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment, ExperimentACL
+ 
+        ud = self.user_details[0]
+ 
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (self.exp_details[0]['id'], ud['name']))
+        self.assertContains(response, 'OK')
+        
+        experiment = Experiment.objects.get(title=self.exp_details[0]['title'])
+
+        acl = ExperimentACL.objects.filter(entityId=str(ud['user'].id), experiment=experiment) 
+        self.assertEqual(acl.count(), 0)
+          
+    def testRemoveAllUsers(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment, ExperimentACL
+        
+        for ud in self.user_details:
+            response = self.access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (self.exp_details[0]['id'], ud['name']))
+            self.assertContains(response, 'OK')
+
+            experiment = Experiment.objects.get(title=self.exp_details[0]['title'])
+            acl = ExperimentACL.objects.filter(entityId=str(ud['user'].id), experiment=experiment) 
+            self.assertEqual(acl.count(), 0)
+
+    def testRemoveNonExistantUser(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment
+        
+        non_existant_user = 'test_boozer'
+ 
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (self.exp_details[0]['id'], non_existant_user))
+        self.assertContains(response, "User does not exist")
+
+    def testRemoveFromNonExistantExperiment(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment
+        
+        non_existant_exp = 9999
+ 
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (non_existant_exp, self.user_details[0]['name']))
+        # Note: The experiment ownership required decorator picks up that there is no ACL entry linking the 
+        #       user and the experiment and so returns a 403 forbidden error. The check below is there 
+        #       so that an assertion will fail if the decorator is ever removed and the proper functionality
+        #       of the 'experiment does not exist' error needs to be confirmed 
+        self.assertEqual(response.status_code, 403)
+        #self.assertContains(response, "Experiment does not exist")
+
+    def testRemoveUserWOutOwnership(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment, ExperimentACL
+        
+        ud = self.user_details[0]
+
+        response = self.no_access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (self.exp_details[0]['id'], self.user_details[0]['name']))
+        experiment = Experiment.objects.get(title=self.exp_details[0]['title'])
+        acl = ExperimentACL.objects.filter(entityId=str(ud['user'].id), experiment=experiment) 
+        self.assertEqual(acl.count(), 1)
+
+    def testRemoveOwnerPermissions(self):
+        from tardis.tardis_portal.views import remove_experiment_access_user
+        from tardis.tardis_portal.models import Experiment, ExperimentACL
+	from django.contrib.auth.models import User
+
+        access_uname = 'user'
+        access_pwd   = 'pwd'
+       
+        response = self.access_client.get('/experiment/control_panel/%i/access_list/remove/user/%s/' % (self.exp_details[0]['id'], self.access_uname))
+        self.assertContains(response, 'Cannot remove your own user access')
+
+        experiment = Experiment.objects.get(title=self.exp_details[0]['title'])
+
+        acl = ExperimentACL.objects.filter(entityId=str(self.access_user.id), experiment=experiment) 
+        self.assertEqual(acl.count(), 1)
+
+    def tearDown(self):
+        self.access_client.logout()
+        self.no_access_client.logout()
