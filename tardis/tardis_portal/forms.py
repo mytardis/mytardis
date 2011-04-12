@@ -748,7 +748,7 @@ def create_datafile_edit_form(
                 units = " (" + parameter_name.units + ")"
 
             # if not valid, spit back as exact
-            if parameter_name.is_numeric:
+            if parameter_name.isNumeric():
                 fields[key] = \
                 forms.DecimalField(label=parameter_name.full_name + units,
                     required=False,
@@ -782,7 +782,7 @@ def create_datafile_edit_form(
 
             form_id = form_id.replace('/', '_s47_')
 
-            if dfp.name.is_numeric:
+            if dfp.name.isNumeric():
                 fields[form_id] = \
                 forms.DecimalField(label=dfp.name.full_name + units,
                 required=False, initial=dfp.numerical_value)
@@ -836,7 +836,7 @@ def create_datafile_add_form(
                 units = " (" + parameter_name.units + ")"
 
             # if not valid, spit back as exact
-            if parameter_name.is_numeric:
+            if parameter_name.isNumeric():
                 fields[key] = \
                 forms.DecimalField(label=parameter_name.full_name + units,
                     required=False,
@@ -871,7 +871,7 @@ def create_datafile_add_form(
 
             form_id = form_id.replace('/', '_s47_')
 
-            if dfp.is_numeric:
+            if dfp.isNumeric():
                 fields[form_id] = \
                 forms.DecimalField(label=dfp.full_name + units,
                 required=False)

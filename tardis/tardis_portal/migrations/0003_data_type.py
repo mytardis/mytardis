@@ -6,7 +6,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         for parameter in orm.ParameterName.objects.all():
-            if parameter.is_numeric:
+            if parameter.isNumeric():
                 parameter.data_type = 1
             else:
                 parameter.data_type = 2
