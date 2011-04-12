@@ -1506,11 +1506,11 @@ def remove_user_from_group(request, group_id, username):
 
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
-
+    
     canRead = False
     canWrite = False
     canDelete = False
-
+    
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
@@ -1522,7 +1522,7 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
-
+    
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
@@ -1532,7 +1532,7 @@ def add_experiment_access_user(request, experiment_id, username):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
 	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
-
+    
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
         pluginId=django_user,
@@ -1552,8 +1552,7 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
-    return HttpResponse('User already has experiment access.'\
-            'Please delete them if you would like to change user access rights')
+    return HttpResponse('User already has experiment access.')
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
@@ -1567,7 +1566,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
-
+    
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
         pluginId=django_user,
