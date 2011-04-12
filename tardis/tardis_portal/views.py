@@ -1094,7 +1094,7 @@ def __filterParameters(parameters, datafile_results,
                                 searchFilterData[parameter.name]
                 else:
                     pass
-            else:  # parameter.is_numeric:
+            else:  # parameter.isNumeric():
                 if parameter.comparison_type == \
                         ParameterName.RANGE_COMPARISON:
                     fromParam = searchFilterData[parameter.name + 'From']
