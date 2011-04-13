@@ -13,4 +13,7 @@ def groups_view(request):
 # special urls for auth test cases
 urlpatterns += patterns('',
     (r'^test/groups/$', groups_view),
+    (r'^test/experiment/view/(?P<experiment_id>\d+)/$', 'tardis.tardis_portal.views.view_experiment'),
+    (r'^test/download/datafile/(?P<datafile_id>\d+)/$', 'tardis.tardis_portal.download.download_datafile'),
+    (r'^test/vbl/download/datafile/(?P<datafile_id>\d+)/$', 'tardis.tardis_portal.tests.mock_vbl_download.download_datafile'),
 )

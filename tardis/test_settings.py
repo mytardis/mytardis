@@ -7,8 +7,6 @@ ROOT_URLCONF = 'tardis.urls'
 DEBUG = True
 STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
                             'tardis_portal/site_media')
-# LDAP configuration
-LDAP_ENABLE = False
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
@@ -24,11 +22,18 @@ TEMPLATE_DIRS = ['.']
 # TODO: move vbl auth provider settings to mecat module
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
-                  ('vbl', 'VBL', 'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
+                  ('vbl', 'VBL',
+                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
+                  ('ldap', 'LDAP',
+                   'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
 )
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
+)
+
+DOWNLOAD_PROVIDERS = (
+    ('vbl', 'tardis.tardis_portal.tests.mock_vbl_download'),
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,6 +63,23 @@ INSTALLED_APPS = (
 # TODO: move to mecat settings module
 VBLSTORAGEGATEWAY = \
 'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
+
+
+# LDAP configuration
+LDAP_USE_TLS = False
+LDAP_URL = "ldap://localhost:38911/"
+
+LDAP_USER_LOGIN_ATTR = "uid"
+LDAP_USER_ATTR_MAP = {"givenName": "display", "mail": "email"}
+LDAP_GROUP_ID_ATTR = "cn"
+LDAP_GROUP_ATTR_MAP = {"description": "display"}
+
+#LDAP_ADMIN_USER = ''
+#LDAP_ADMIN_PASSWORD = ''
+LDAP_BASE = 'dc=example, dc=com'
+LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
+LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
+
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 

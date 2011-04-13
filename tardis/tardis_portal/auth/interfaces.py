@@ -43,6 +43,9 @@ class AuthProvider:
         """
         raise NotImplemented()
 
+    def get_user(self, user_id):
+        raise NotImplemented()
+
 
 class UserProvider:
 

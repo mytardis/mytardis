@@ -4,11 +4,19 @@
 {% endfor %}
 </div> <!-- users -->
 <p>
-  <label>Add user: </label>
-  <input type="text" class="usersuggest" name="adduser" />
-  <a class="form_submit" id="user" href="">Submit</a><br/>
-  <input type="checkbox" name="read" class="canRead"  checked="yes" /> READ <br/>
-  <input type="checkbox" name="write" class="canWrite" /> WRITE <br/>
-  <input type="checkbox" name="delete" class="canDelete" /> DELETE <br/>
+  <label>Add user: </label><br/>
+
+  {% for field in addUserPermissionsForm %}
+	  {% if field.label == "Authentication Method" %}
+	      {{ field.label }} {{ field }}
+	  {% else %}
+		  {% if field.label == "User" %}
+		  {{ field }} <a class="form_submit" id="user" href="">Submit</a>
+		  {% else %}
+		  {{ field }} {{ field.label }}
+		  {% endif %}
+	  {% endif %}
+	  <br/>
+  {% endfor %}
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>

@@ -132,3 +132,94 @@ class TraverseTestCase(TestCase):
         self.assertTrue('dir2/file3' in result)
         self.assertTrue('dir2/subdir/file4' in result)
         self.assertTrue('dir3' in result)
+
+
+class TestPathResolution(TestCase):
+    paths = ["dir123/file123",
+             "file.txt"]
+
+    def test_absolute_to_relative(self):
+        from tardis.tardis_portal import staging
+        from django.conf import settings
+        from os import path
+        for p in self.paths:
+            ap = path.join(settings.STAGING_PATH,
+                            p)
+            self.assertRaises(ValueError,
+                              staging.calculate_relative_path,
+                              'staging', p)
+            sp = staging.calculate_relative_path('staging',
+                                               ap)
+            self.assertEqual(sp, p)
+
+        for p in self.paths:
+            ap = path.join(settings.FILE_STORE_PATH,
+                            p)
+            self.assertRaises(ValueError,
+                              staging.calculate_relative_path,
+                              'tardis', p)
+            sp = staging.calculate_relative_path('tardis',
+                                               ap)
+            self.assertEqual(sp, p)
+
+
+class TestStagingFiles(TestCase):
+    def setUp(self):
+        from tardis.tardis_portal import models
+        from tardis.tardis_portal.staging import calculate_relative_path
+        from tempfile import mkdtemp, mktemp
+        from django.conf import settings
+        from os import path
+
+        # Disconnect post_save signal
+        from django.db.models.signals import post_save
+        from tardis.tardis_portal.models import staging_hook, Dataset_File
+        post_save.disconnect(staging_hook, sender=Dataset_File)
+
+        from django.contrib.auth.models import User
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)
+
+        self.temp = mkdtemp(dir=settings.STAGING_PATH)
+
+        self.file = mktemp(dir=self.temp)
+        f = open(self.file, "w+b")
+        f.write('test file')
+        f.close()
+
+        # make datafile
+        exp = models.Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        exp.save()
+
+        # make dataset
+        dataset = models.Dataset(description="dataset description...",
+                                 experiment=exp)
+        dataset.save()
+
+        # create datasetfile
+        df = models.Dataset_File()
+        df.dataset = dataset
+        df.filename = path.basename(self.file)
+        df.url = self.file
+        df.protocol = "staging"
+        df.save()
+        self.df = df
+
+    def tearDown(self):
+        # reconnect post_save signal
+        from django.db.models.signals import post_save
+        from tardis.tardis_portal.models import staging_hook, Dataset_File
+        post_save.connect(staging_hook, sender=Dataset_File)
+
+        from shutil import rmtree
+        rmtree(self.temp)
+
+    def test_stage_file(self):
+        from tardis.tardis_portal import staging
+
+        staging.stage_file(self.df)

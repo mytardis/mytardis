@@ -1,7 +1,7 @@
 '''
 Created on 19/01/2011
 
-@author: gerson
+.. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 from django.test import TestCase
 from django.test.client import Client
@@ -17,7 +17,7 @@ class AuthenticationTestCase(TestCase):
         self.loginUrl = "/login/"
         self.manageAuthMethodsUrl = "/accounts/manage_auth_methods/"
 
-        self.user = User.objects.create_user('localdb_test', '', 'test')
+        self.user = User.objects.create_user('test', '', 'test')
 
     def testSimpleAuthenticate(self):
         response = self.client.post(self.loginUrl, {'username': 'test',
@@ -92,7 +92,7 @@ class AuthenticationTestCase(TestCase):
             'password': 'test', 'authMethod': 'localdb'})
 
         response = self.client.get(self.manageAuthMethodsUrl)
-        self.assertEqual(len(response.context['userAuthMethodList']), 1)
+        self.assertEqual(len(response.context['userAuthMethodList']), 1, response)
         self.assertTrue(response.context['isDjangoAccount'] == True)
         self.assertTrue(len(response.context['supportedAuthMethods']), 1)
         self.assertTrue(len(response.context['allAuthMethods']), 1)
@@ -105,3 +105,15 @@ class AuthenticationTestCase(TestCase):
 
         self.assertTrue(simplejson.loads(response.content)['status'])
         self.client.logout()
+
+    def test_djangoauth(self):
+        from django.core.handlers.wsgi import WSGIRequest
+        from django.contrib.auth.models import User
+        from tardis.tardis_portal.auth.localdb_auth import DjangoAuthBackend
+        dj_auth = DjangoAuthBackend()
+        req = WSGIRequest({"REQUEST_METHOD": "POST"})
+        req._post = {'username': 'test',
+                     'password': 'test',
+                     'authMethod': 'localdb'}
+        user = dj_auth.authenticate(req)
+        self.assertTrue(isinstance(user, User))

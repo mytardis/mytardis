@@ -1,7 +1,7 @@
 .. _ref-vbl_auth:
 
-:py:mod:`tardis.tardis_portal.auth.vbl_auth` -- IP based Group Providers
-========================================================================
+:py:mod:`tardis.tardis_portal.auth.vbl_auth` -- Virtual Beamline Groups
+=======================================================================
 
 .. py:module:: tardis.tardis_portal.auth.vbl_auth
 .. moduleauthor:: Ulrich Felzmann <ulrich.felzmann@versi.edu.au>
