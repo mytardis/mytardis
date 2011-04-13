@@ -52,7 +52,7 @@ from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
 
-from tardis.tardis_portal import ProcessExperiment
+from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
@@ -694,7 +694,6 @@ def register_experiment_ws_xmldata(request):
             xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            experiment_owner = form.cleaned_data['experiment_owner']
             originid = form.cleaned_data['originid']
 
             from_url = None
@@ -1616,7 +1615,9 @@ def add_experiment_access_user(request, experiment_id, username):
                             canDelete=canDelete,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
-        c = Context({'authMethod': authMethod, 'user': user, 'experiment_id': experiment_id})
+        c = Context({'authMethod': authMethod,
+                     'user': user,
+                     'experiment_id': experiment_id})
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
