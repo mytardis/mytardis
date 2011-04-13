@@ -18,7 +18,6 @@ from tardis.tardis_portal.models import *
 from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error
-from tardis.tardis_portal.logger import logger
 
 import subprocess
 import urllib

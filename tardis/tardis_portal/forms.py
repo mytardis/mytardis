@@ -105,7 +105,7 @@ class RegistrationForm(forms.Form):
 
     username = forms.RegexField(
         regex=r'^[\w\.]+$',
-        max_length=31 - len(locabdb_auth_key),  # 31, max pw len with _ char
+        max_length=30,
         widget=forms.TextInput(attrs=attrs_dict),
         label=_("Username"),
         error_messages={'invalid':
@@ -132,7 +132,7 @@ class RegistrationForm(forms.Form):
         username = '%s' % self.cleaned_data['username']
 
         try:
-            user = User.objects.get(username__iexact=username)
+            User.objects.get(username__iexact=username)
         except User.DoesNotExist:
             return username
         raise forms.ValidationError(
@@ -167,7 +167,7 @@ class RegistrationForm(forms.Form):
 
         authentication = UserAuthentication(
             userProfile=userProfile,
-            username=self.cleaned_data['username'].split(locabdb_auth_key)[1],
+            username=self.cleaned_data['username'],
             authenticationMethod=locabdb_auth_key)
         authentication.save()
 
@@ -776,8 +776,6 @@ def __getParameterChoices(choicesString):
 
 
 def createSearchDatafileSelectionForm():
-
-    from tardis.tardis_portal import constants
 
     supportedDatafileSearches = (('-', 'Datafile'),)
     for key in models.Schema.getSubTypes():
