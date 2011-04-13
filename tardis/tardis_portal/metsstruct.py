@@ -20,6 +20,8 @@ class Experiment():
         self.description = None
         self.institution = None
         self.url = None
+        self.start_time = None
+        self.end_time = None
 
     def __str__(self):
         returnStr = 'Experiment\n' + \
