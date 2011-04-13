@@ -80,6 +80,8 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
 
     li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
                                     path.basename(pathname))
+    if pathname.rpartition('/')[2].startswith('.'):
+        return ''
     if path.isfile(pathname):
         return li + '</li>'
     if path.isdir(pathname):
