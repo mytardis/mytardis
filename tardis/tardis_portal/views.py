@@ -39,6 +39,7 @@ views.py
 from base64 import b64decode
 import urllib2
 from urllib import urlencode, urlopen
+from os import path
 
 from django.template import Context
 from django.conf import settings
@@ -60,11 +61,11 @@ from tardis.tardis_portal.forms import ExperimentForm, \
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse, stage_files, StagingHook, write_uploaded_file_to_dataset
+    staging_traverse, write_uploaded_file_to_dataset
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset
+    Dataset, UserProfile, UserAuthentication
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -337,8 +338,10 @@ def experiment_description(request, experiment_id):
             pass
     c['size'] = size
 
-    c['protocols'] = [df['protocol'] for df in
-                      c['datafiles'].values('protocol').distinct()]
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
 
     if 'status' in request.GET:
         c['status'] = request.GET['status']
@@ -379,8 +382,10 @@ def experiment_datasets(request, experiment_id):
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
-    c['protocols'] = [df['protocol'] for df in
-                      c['datafiles'].values('protocol').distinct()]
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
 
     if 'status' in request.GET:
         c['status'] = request.GET['status']
@@ -427,6 +432,10 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH,
+                                       df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -440,7 +449,6 @@ def create_experiment(request,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
-            stage_files(full_experiment['dataset_files'], experiment.id)
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(), params]))
@@ -452,8 +460,21 @@ def create_experiment(request,
         form = ExperimentForm(extra=1)
 
     c['form'] = form
-
     return HttpResponse(render_response_index(request, template_name, c))
+
+
+@authz.experiment_access_required
+def metsexport_experiment(request, experiment_id):
+
+    from os.path import basename
+    from django.core.servers.basehttp import FileWrapper
+    from tardis.tardis_portal.metsexporter import exporter
+    filename = exporter.export(experiment_id)
+    response = HttpResponse(FileWrapper(file(filename)),
+                            mimetype='application')
+    response['Content-Disposition'] = \
+        'attachment; filename="%s"' % basename(filename)
+    return response
 
 
 @login_required
@@ -478,12 +499,18 @@ def edit_experiment(request, experiment_id,
               })
 
     if request.method == 'POST':
-        staging = StagingHook(None, experiment_id)
         form = ExperimentForm(request.POST, request.FILES,
-                              instance=experiment, extra=0,
-                              datafile_post_save_cb=staging)
+                              instance=experiment, extra=0)
         if form.is_valid():
-            form.save()
+            full_experiment = form.save(commit=False)
+
+            experiment = full_experiment['experiment']
+            experiment.created_by = request.user
+            for df in full_experiment['dataset_files']:
+                if not df.url.startswith(path.sep):
+                    df.url = path.join(settings.STAGING_PATH, df.url)
+            full_experiment.save_m2m()
+
             params = urlencode({'status': "Experiment Saved."})
             return HttpResponseRedirect(
                 '?'.join([experiment.get_absolute_url(),
@@ -629,6 +656,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
             if settings.LDAP_ENABLE:
                 u = ldap_auth.get_or_create_user_ldap(owner)
             else:
+                print "owner", owner
                 u = User.objects.get(username=owner)
 
             # if exist, create ACL
@@ -664,7 +692,6 @@ def register_experiment_ws_xmldata(request):
             xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            experiment_owner = form.cleaned_data['experiment_owner']
             originid = form.cleaned_data['originid']
 
             from_url = None
@@ -1373,12 +1400,23 @@ def search_datafile(request):
 
 @login_required()
 def retrieve_user_list(request):
+    authMethod = request.GET['authMethod']
 
-    #userlist = ''
-    #for user in  User.objects.all().order_by('username'):
-    #    userlist += '%s ' % user
-    #userlist = userlist.strip()    
-    userlist = ' '.join(map(str,User.objects.all().order_by('username')))
+    if authMethod == 'localdb':
+        users = [userProfile.user for userProfile in
+                 UserProfile.objects.filter(isDjangoAccount=True)]
+        users = sorted(users, key=lambda user: user.username)
+    else:
+        users = [userAuth for userAuth in
+                 UserAuthentication.objects.filter(
+                     authenticationMethod=authMethod)
+                 if userAuth.userProfile.isDjangoAccount == False]
+        if users:
+            users = sorted(users, key=lambda userAuth: userAuth.username)
+        else:
+            users = User.objects.none()
+    print users
+    userlist = ' '.join([str(u).lstrip('localdb_') for u in users])
     return HttpResponse(userlist)
 
 
@@ -1395,14 +1433,19 @@ def retrieve_group_list(request):
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
 
+    from tardis.tardis_portal.forms import AddUserPermissionsForm
     users = Experiment.safe.users(request, experiment_id)
-    c = Context({'users': users, 'experiment_id': experiment_id})
+
+    c = Context({'users': users, 'experiment_id': experiment_id,
+                 'addUserPermissionsForm': AddUserPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
 
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
+
+    from tardis.tardis_portal.forms import AddGroupPermissionsForm
 
     user_owned_groups = Experiment.safe.user_owned_groups(request,
                                                           experiment_id)
@@ -1411,7 +1454,8 @@ def retrieve_access_list_group(request, experiment_id):
 
     c = Context({'user_owned_groups': user_owned_groups,
                  'system_owned_groups': system_owned_groups,
-                 'experiment_id': experiment_id})
+                 'experiment_id': experiment_id,
+                 'addGroupPermissionsForm': AddGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group.html', c))
 
@@ -1428,8 +1472,10 @@ def retrieve_access_list_external(request, experiment_id):
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
+    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
     users = User.objects.filter(groups__id=group_id)
-    c = Context({'users': users, 'group_id': group_id})
+    c = Context({'users': users, 'group_id': group_id,
+                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_user_list.html', c))
 
@@ -1446,6 +1492,7 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
+    authMethod = 'localdb'
     isAdmin = False
 
     if 'isAdmin' in request.GET:
@@ -1453,8 +1500,16 @@ def add_user_to_group(request, group_id, username):
             isAdmin = True
 
     try:
-        user = User.objects.get(username=username)
+        authMethod = request.GET['authMethod']
+        if authMethod == 'localdb':
+            username = 'localdb_' + username
+            user = User.objects.get(username=username)
+        else:
+            user = UserAuthentication.objects.get(username=username,
+                authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
+        return return_response_error(request)
+    except UserAuthentication.DoesNotExist:
         return return_response_error(request)
 
     try:
@@ -1507,6 +1562,8 @@ def remove_user_from_group(request, group_id, username):
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
     
+    authMethod = 'localdb'
+    
     canRead = False
     canWrite = False
     canDelete = False
@@ -1524,9 +1581,16 @@ def add_experiment_access_user(request, experiment_id, username):
             canDelete = True
     
     try:
-        user = User.objects.get(username=username)
+        authMethod = request.GET['authMethod']
+        if authMethod == 'localdb':
+            user = User.objects.get(username='localdb_' + username)
+        else:
+            user = UserAuthentication.objects.get(username=username,
+                authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
 	return HttpResponse('User %s does not exist' % (username))
+    except UserAuthentication.DoesNotExist:
+        return return_response_error(request)
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
@@ -1548,7 +1612,7 @@ def add_experiment_access_user(request, experiment_id, username):
                             canDelete=canDelete,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
         acl.save()
-        c = Context({'user': user, 'experiment_id': experiment_id})
+        c = Context({'authMethod': authMethod, 'user': user, 'experiment_id': experiment_id})
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
@@ -1556,7 +1620,6 @@ def add_experiment_access_user(request, experiment_id, username):
 
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
-
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
@@ -1681,7 +1744,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
     canRead = False
     canWrite = False
     canDelete = False
-    admin = ''
+    authMethod = 'localdb'
+    admin = None
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
@@ -1707,6 +1771,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     except Experiment.DoesNotExist:
 	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
     
+    # TODO: enable transaction management here...
     if create:
         try:
             group = Group(name=groupname)
@@ -1750,9 +1815,17 @@ def add_experiment_access_group(request, experiment_id, groupname):
     adminuser = None
     if admin:
         try:
-            adminuser = User.objects.get(username=admin)
+            authMethod = request.GET['authMethod']
+            if authMethod == 'localdb':
+                username = 'localdb_' + admin.strip()
+                adminuser = User.objects.get(username=username)
+            else:
+                adminuser = UserAuthentication.objects.get(username=admin,
+                    authenticationMethod=authMethod).userProfile.user
         except User.DoesNotExist:
             return HttpResponse('User \'%s\' does not exist' % (admin))
+        except UserAuthentication.DoesNotExist:
+            return return_response_error(request)
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)

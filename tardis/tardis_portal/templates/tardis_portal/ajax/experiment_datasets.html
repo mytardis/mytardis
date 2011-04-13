@@ -10,7 +10,7 @@
 
 	$(this).parents('.datafile_list'
 		       ).load("/ajax/datafile_list/" +
-			      dataset_id,function(){
+			      dataset_id + "/",function(){
 				  $(document).ready(function(){
 				      var datafile_info_selectors =
 					  $(this).find('.datafile_info'
@@ -290,13 +290,12 @@
   <div class="download_entire_experiment">
 
   {% for p in protocols %}
-
     <p>
-      {% if p %}
-	<strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
-      {% else %}
-	<strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
-      {% endif %}
+	{% if p.0 %}
+	  <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
+	{% else %}
+	  <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
+	{% endif %}
     </p>
 
   {% endfor %}

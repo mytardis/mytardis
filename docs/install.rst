@@ -11,13 +11,14 @@ Redhat::
 
 Debian/Ubuntu::
 
-   sudo apt-get install libssl-dev libsasl2-dev libldap-2.4-2 libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1
+   sudo apt-get install libssl-dev libsasl2-dev libldap-2.4-2 libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
 
 Configuration
 -------------
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
-file there are some extra config options that are specific to MyTARDIS.
+file there are some extra configuration options that are specific to
+MyTARDIS.
 
 .. attribute:: tardis.settings_changeme.FILE_STORE_PATH
 
@@ -64,19 +65,7 @@ Database
 LDAP
 ~~~~
 
-.. attribute:: tardis.settings_changeme.LDAP_ENABLED
-
-   Boolean that enables LDAP support.
-
-.. attribute:: tardis.settings_changeme.LDAP_URL
-
-   LDAP the DNS name of your LDAP directory, for example
-   *directory.example.com*
-
-
-.. attribute:: tardis.settings_changeme.BASE_DN
-
-   The DN Base of the LDAP server.
+For further information see :ref:`LDAP authentication<ref-ldap_auth>`
 
 
 Repository
@@ -92,7 +81,21 @@ Repository
    The path to the staging path. This is where new files to be
    included in datasets will be sourced.
 
+Filters
+~~~~~~~
 
+.. attribute:: tardis.settings_changeme.POST_SAVE_FILTERS
+
+   This contains a list of post save filters that are execute when a
+   new data file is created.
+
+   The **POST_SAVE_FILTERS** variable is specified like::
+
+      POST_SAVE_FILTERS = [
+          ("tardis.tardis_portal.filters.exif.EXIFFilter", ["EXIF", "http://exif.schema"]),
+          ]
+
+   For further details please see the :ref:`ref-filterframework` section.
 
 .. seealso::
 

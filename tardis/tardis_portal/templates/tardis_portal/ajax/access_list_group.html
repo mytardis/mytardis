@@ -12,14 +12,21 @@
 </div> <!-- groups -->
 <p>
   <label>Add group: </label>
-  <input type="text" class="groupsuggest" name="addgroup" />
-  <label>CREATE? </label>
-  <input type="checkbox" name="create" class="creategroup" /> <br/>
-  <label>Group admin: </label>
-  <input type="text" class="usersuggest" name="adduser" />
-  <a class="form_submit" id="group" href="">Submit</a><br/>
-  <input type="checkbox" name="read" class="canRead"  checked="yes" /> READ <br/>
-  <input type="checkbox" name="write" class="canWrite" /> WRITE <br/>
-  <input type="checkbox" name="delete" class="canDelete" /> DELETE <br/>
+  {% for field in addGroupPermissionsForm %}
+      {% if field.label == "Authentication Method" %}
+          {{ field.label }} {{ field }}
+      {% else %}
+          {% if field.label == "Group" %}
+              {{ field }}
+          {% else %}
+	          {% if field.label == "User" %}
+	              Group admin: {{ field }} <a class="form_submit" id="group" href="">Submit</a>
+	          {% else %}
+	              {{ field }} {{ field.label }}
+	          {% endif %}
+	      {% endif %}
+      {% endif %}
+      <br/>
+  {% endfor %}
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>

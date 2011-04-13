@@ -70,8 +70,9 @@ TEMPLATE_DIRS = (
 )
 
 LDAP_ENABLE = False
-LDAP_URL = 'directory.example.com'
+LDAP_URL = 'ldap://directory.example.com'
 BASE_DN = 'o=Organisation, c=X'
+LDAP_USER_RDN = 'uid'
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
 # Temporarily disable transaction management until everyone agrees that
@@ -114,9 +115,10 @@ INSTALLED_APPS = (
     'south'
     )
 
-USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
+USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
+)
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
-                   'tardis.tardis_portal.auth.vbl_auth.VblGroupProvider',)
+)
 
 # AUTH_PROVIDERS entry format:
 #('name', 'display name', 'backend implementation')
@@ -127,14 +129,11 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
-    ('vbl', 'VBL', 'tardis.tardis_portal.auth.vbl_auth.Backend'),
-    )
-
-# only needed for the VBL authentication
-VBLSTORAGEGATEWAY = \
-'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
+)
 
 ACCOUNT_ACTIVATION_DAYS = 3
+
+# Email Configuration
 
 EMAIL_PORT = 587
 
@@ -145,6 +144,14 @@ EMAIL_HOST_USER = 'bob@bobmail.com'
 EMAIL_HOST_PASSWORD = 'bob'
 
 EMAIL_USE_TLS = True
+
+# Post Save Filters
+#POST_SAVE_FILTERS = [
+#    ("tardis.tardis_portal.filters.exif.make_filter",
+#     ["EXIF", "http://exif.schema"]),  # this filter requires pyexiv2
+#                                       # http://tilloy.net/dev/pyexiv2/
+#    ]
+
 
 LOG_FILENAME = '/var/tmp/tardis.log'
 

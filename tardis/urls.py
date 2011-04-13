@@ -26,10 +26,12 @@ experiment_urls = patterns(
     (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^register/internal/$', 'register_experiment_ws_xmldata_internal'),
+    (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
     (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
-     '(?P<username>[\w\.]+)$', 'add_experiment_access_user'),
+     '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)$',
+     'add_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/user/'
      '(?P<username>[\w\.]+)/$', 'remove_experiment_access_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/user/'
@@ -89,7 +91,7 @@ download_urls = patterns(
 group_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
-    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)$',
+    (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
      'remove_user_from_group'),
