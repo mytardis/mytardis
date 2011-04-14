@@ -677,7 +677,7 @@ class ParameterName(models.Model):
 def _getParameter(parameter):
 
     if parameter.name.isNumeric():
-        value = parameter.numerical_value
+        value = str(parameter.numerical_value)
         units = parameter.name.units
         if units:
             value += ' %s' % units

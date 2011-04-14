@@ -39,6 +39,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from os import path
 import unittest
+import datetime
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
@@ -330,6 +331,10 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         self.assertTrue(self.experiment.url ==
             'http://www.blahblah.com/espanol',
             'wrong experiment url')
+        self.assertEqual(self.experiment.start_time,
+            datetime.datetime(2011, 12, 31, 13, 55))
+        self.assertEqual(self.experiment.end_time,
+            datetime.datetime(2035, 11, 29, 14, 33))
 
         authors = models.Author_Experiment.objects.filter(
             experiment=self.experiment)

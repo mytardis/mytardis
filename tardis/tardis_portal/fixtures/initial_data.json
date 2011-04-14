@@ -1148,7 +1148,7 @@
             "is_searchable": false, 
             "name": "frtype", 
             "schema": 5, 
-            "units": ""
+            "units": "/equipment/"
         }, 
         "model": "tardis_portal.parametername", 
         "pk": 77
@@ -1535,12 +1535,12 @@
         "fields": {
             "choices": "", 
             "comparison_type": 1, 
-            "data_type": 2, 
+            "data_type": 5, 
             "full_name": "previewImage", 
             "is_searchable": false, 
             "name": "previewImage", 
             "schema": 4, 
-            "units": ""
+            "units": "image"
         }, 
         "model": "tardis_portal.parametername", 
         "pk": 105
@@ -1605,7 +1605,7 @@
         "fields": {
             "choices": "", 
             "comparison_type": 3, 
-            "data_type": 1, 
+            "data_type": 2, 
             "full_name": "ChemicalPercent", 
             "is_searchable": false, 
             "name": "ChemicalPercent", 
@@ -1619,7 +1619,7 @@
         "fields": {
             "choices": "", 
             "comparison_type": 3, 
-            "data_type": 1, 
+            "data_type": 2, 
             "full_name": "ChemicalAmount", 
             "is_searchable": false, 
             "name": "ChemicalAmount", 
