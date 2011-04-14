@@ -50,6 +50,10 @@
 						</mods:role>
 					</mods:name>
 				</mods:mods>
+				<tardis:tardis xmlns:tardis="http://tardisdates.com/">
+					<tardis:startTime>2011-12-31 13:55</tardis:startTime>
+					<tardis:endTime>2035-11-29 14:33</tardis:endTime>
+				</tardis:tardis>
 			</xmlData>
 		</mdWrap>
 	</dmdSec>

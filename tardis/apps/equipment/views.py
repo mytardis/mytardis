@@ -5,7 +5,6 @@ from django.template import Context
 
 from tardis.tardis_portal.shortcuts import render_response_index, \
     render_response_search
-from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
 
 from tardis.apps.equipment.forms import EquipmentSearchForm
 from tardis.apps.equipment.models import Equipment
