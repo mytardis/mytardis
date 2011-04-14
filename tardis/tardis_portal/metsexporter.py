@@ -3,8 +3,11 @@ Created on 16/03/2011
 
 @author: Gerson Galang
 '''
+from base64 import b64encode
 from datetime import datetime
-from os.path import join
+from os.path import abspath, join
+
+from django.conf import settings
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.schema.mets import *
@@ -174,6 +177,17 @@ class MetsExporter():
                 if parameter.name.data_type is ParameterName.NUMERIC:
                     metadataDict[parameter.name.name] = \
                         str(parameter.numerical_value) or 'None'
+
+                elif parameter.name.data_type is ParameterName.FILENAME and \
+                        parameter.name.units.startswith('image'):
+
+                    # encode image as b64
+                    expid = parameter.getExpId()
+                    file_path = abspath(join(settings.FILE_STORE_PATH,
+                                             str(expid),
+                                             parameter.string_value))
+                    metadataDict[parameter.name.name] = \
+                        b64encode(open(file_path).read()) or 'None'
                 else:
                     metadataDict[parameter.name.name] = \
                         parameter.string_value.strip() or 'None'

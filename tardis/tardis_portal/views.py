@@ -1,4 +1,4 @@
-# -*- coding utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
