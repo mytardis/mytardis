@@ -1,4 +1,4 @@
-# -*- coding utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -69,6 +69,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
@@ -656,7 +657,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
             if settings.LDAP_ENABLE:
                 u = ldap_auth.get_or_create_user_ldap(owner)
             else:
-                print "owner", owner
+                # print "owner", owner
                 u = User.objects.get(username=owner)
 
             # if exist, create ACL
@@ -1402,7 +1403,7 @@ def search_datafile(request):
 def retrieve_user_list(request):
     authMethod = request.GET['authMethod']
 
-    if authMethod == 'localdb':
+    if authMethod == localdb_auth_key:
         users = [userProfile.user for userProfile in
                  UserProfile.objects.filter(isDjangoAccount=True)]
         users = sorted(users, key=lambda user: user.username)
@@ -1415,17 +1416,14 @@ def retrieve_user_list(request):
             users = sorted(users, key=lambda userAuth: userAuth.username)
         else:
             users = User.objects.none()
-    print users
-    userlist = ' '.join([str(u).lstrip('localdb_') for u in users])
+    # print users
+    userlist = ' '.join([str(u) for u in users])
     return HttpResponse(userlist)
 
 
 @login_required()
 def retrieve_group_list(request):
 
-    #grouplist = ''
-    #for group in Group.objects.all().order_by('name'):
-    #    grouplist += '%s ~ ' % group
     grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))
     return HttpResponse(grouplist)
 
@@ -1492,7 +1490,7 @@ def manage_groups(request):
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
-    authMethod = 'localdb'
+    authMethod = localdb_auth_key
     isAdmin = False
 
     if 'isAdmin' in request.GET:
@@ -1501,8 +1499,7 @@ def add_user_to_group(request, group_id, username):
 
     try:
         authMethod = request.GET['authMethod']
-        if authMethod == 'localdb':
-            username = 'localdb_' + username
+        if authMethod == localdb_auth_key:
             user = User.objects.get(username=username)
         else:
             user = UserAuthentication.objects.get(username=username,
@@ -1515,10 +1512,11 @@ def add_user_to_group(request, group_id, username):
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Group does not exist.')
 
     if user.groups.filter(name=group.name).count() > 0:
-        return return_response_error(request)
+        return HttpResponse('User %s is already member of that group.'
+                            % username)
 
     user.groups.add(group)
     user.save()
@@ -1538,15 +1536,18 @@ def remove_user_from_group(request, group_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return return_response_error(request)
-
+        return HttpResponse('User %s does not exist.' % username)
     try:
         group = Group.objects.get(pk=group_id)
     except Group.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('Group does not exist.')
 
     if user.groups.filter(name=group.name).count() == 0:
-        return return_response_error(request)
+        return HttpResponse('User %s is not member of that group.'
+                            % username)
+
+    if request.user == user:
+        return HttpResponse('You cannot remove yourself from that group.')
 
     user.groups.remove(group)
     user.save()
@@ -1559,15 +1560,17 @@ def remove_user_from_group(request, group_id, username):
 
     return HttpResponse('OK')
 
+
+@transaction.commit_on_success
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
-    
-    authMethod = 'localdb'
-    
+
+    authMethod = localdb_auth_key
+
     canRead = False
     canWrite = False
     canDelete = False
-    
+
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
             canRead = True
@@ -1579,24 +1582,24 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
-    
+
     try:
         authMethod = request.GET['authMethod']
-        if authMethod == 'localdb':
-            user = User.objects.get(username='localdb_' + username)
+        if authMethod == localdb_auth_key:
+            user = User.objects.get(username=username)
         else:
             user = UserAuthentication.objects.get(username=username,
                 authenticationMethod=authMethod).userProfile.user
     except User.DoesNotExist:
-	return HttpResponse('User %s does not exist' % (username))
+        return HttpResponse('User %s does not exist.' % (username))
     except UserAuthentication.DoesNotExist:
-        return return_response_error(request)
+        return HttpResponse('User %s does not exist' % (username))
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
-    
+        return HttpResponse('Experiment (id=%d) does not exist.' % (experiment.id))
+
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
         pluginId=django_user,
@@ -1614,24 +1617,26 @@ def add_experiment_access_user(request, experiment_id, username):
         acl.save()
         c = Context({'authMethod': authMethod,
                      'user': user,
+                     'username': username,
                      'experiment_id': experiment_id})
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
     return HttpResponse('User already has experiment access.')
 
+
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return HttpResponse('User does not exist')
+        return HttpResponse('User %s does not exist' % username)
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
-    
+
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
         pluginId=django_user,
@@ -1640,13 +1645,13 @@ def remove_experiment_access_user(request, experiment_id, username):
 
     if acl.count() == 1:
         if int(acl[0].entityId) == request.user.id:
-            return HttpResponse('Cannot remove your own user access')
-        
+            return HttpResponse('Cannot remove your own user access.')
+
         acl[0].delete()
         return HttpResponse('OK')
     elif acl.count() == 0:
-        return HttpResponse('No ACL available. ' \
-		'It is likely the user doesnt have access to this experiment.')
+        return HttpResponse(
+            'The user %s does not have access to this experiment.' % username)
     else:
         return HttpResponse('Multiple ACLs found')
 
@@ -1678,7 +1683,8 @@ def change_user_permissions(request, experiment_id, username):
 
         if form.is_valid:
             form.save()
-            return HttpResponseRedirect('/experiment/control_panel/')
+            url = reverse('tardis.tardis_portal.views.control_panel')
+            return HttpResponseRedirect(url)
 
     else:
         form = ChangeUserPermissionsForm(instance=acl)
@@ -1746,7 +1752,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     canRead = False
     canWrite = False
     canDelete = False
-    authMethod = 'localdb'
+    authMethod = localdb_auth_key
     admin = None
 
     if 'canRead' in request.GET:
@@ -1771,33 +1777,30 @@ def add_experiment_access_group(request, experiment_id, groupname):
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
-	return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
-    
-    # TODO: enable transaction management here...
+        return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
+
     if create:
         try:
             group = Group(name=groupname)
             group.save()
         except:
-	    return HttpResponse('Could not create group \'%s\' ' \
- 		'(It is likely that it already exists)' % (groupname))
+            return HttpResponse('Could not create group %s ' \
+            '(It is likely that it already exists)' % (groupname))
     else:
         try:
             group = Group.objects.get(name=groupname)
         except Group.DoesNotExist:
-	    return HttpResponse('Group \'%s\' does not exist' % (groupname))
-
-        if admin and not authz.is_group_admin(request, group.id):
-            return HttpResponse('You must be an admin to add permissions')
+            return HttpResponse('Group %s does not exist' % (groupname))
 
     acl = ExperimentACL.objects.filter(
         experiment=experiment,
         pluginId=django_group,
         entityId=str(group.id),
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
     if acl.count() > 0:
         # an acl role already exists
-        #todo: not sure why this was the only error condition 
+        # todo: not sure why this was the only error condition
         # that returns an error
         return return_response_error(request)
 
@@ -1818,16 +1821,16 @@ def add_experiment_access_group(request, experiment_id, groupname):
     if admin:
         try:
             authMethod = request.GET['authMethod']
-            if authMethod == 'localdb':
-                username = 'localdb_' + admin.strip()
-                adminuser = User.objects.get(username=username)
+            if authMethod == localdb_auth_key:
+                adminuser = User.objects.get(username=admin)
             else:
                 adminuser = UserAuthentication.objects.get(username=admin,
                     authenticationMethod=authMethod).userProfile.user
+
         except User.DoesNotExist:
-            return HttpResponse('User \'%s\' does not exist' % (admin))
+            return HttpResponse('User %s does not exist' % (admin))
         except UserAuthentication.DoesNotExist:
-            return return_response_error(request)
+            return HttpResponse('User %s does not exist' % (admin))
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)
@@ -1848,6 +1851,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
 
     c = Context({'group': group,
                  'experiment_id': experiment_id})
+
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
@@ -1875,8 +1879,8 @@ def remove_experiment_access_group(request, experiment_id, group_id):
         acl[0].delete()
         return HttpResponse('OK')
     elif acl.count() == 0:
-        return HttpResponse('No ACL available.' \
-		'It is likely the group doesnt have access to this experiment.')
+        return HttpResponse('No ACL available.'
+                            'It is likely the group doesnt have access to this experiment.')
     else:
         return HttpResponse('Multiple ACLs found')
 
@@ -2058,14 +2062,14 @@ def upload(request, dataset_id, *args, **kwargs):
 
             uploaded_file_post = request.FILES['Filedata']
 
-            print 'about to write uploaded file'
+            #print 'about to write uploaded file'
             filepath = write_uploaded_file_to_dataset(dataset,
                     uploaded_file_post)
-            print filepath
+            #print filepath
 
             add_datafile_to_dataset(dataset, filepath,
                                     uploaded_file_post.size)
-            print 'added datafile to dataset'
+            #print 'added datafile to dataset'
 
     return HttpResponse('True')
 
