@@ -760,6 +760,9 @@ class DatafileParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.dataset_file.dataset.experiment.id
+
     def __unicode__(self):
         return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
@@ -778,6 +781,9 @@ class DatasetParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.dataset.experiment.id
+
     def __unicode__(self):
         return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
@@ -795,8 +801,48 @@ class ExperimentParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.experiment.id
+
     def __unicode__(self):
         return 'Experiment Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
+
+
+def pre_save_parameter(sender, **kwargs):
+
+    # the object can be accessed via kwargs 'instance' key.
+    parameter = kwargs['instance']
+
+    if parameter.name.units.startswith('image') \
+            and parameter.name.data_type == ParameterName.FILENAME:
+        if parameter.string_value:
+            from base64 import b64decode
+            from os import mkdir
+            from os.path import exists, join
+            from uuid import uuid4 as uuid
+
+            exp_id = parameter.getExpId()
+
+            dirname = join(settings.FILE_STORE_PATH, str(exp_id))
+            filename = str(uuid())
+            filepath = join(dirname, filename)
+
+            b64 = parameter.string_value
+            modulo = len(b64) % 4
+            if modulo:
+                b64 += (4 - modulo) * '='
+
+            if not exists(dirname):
+                mkdir(dirname)
+            f = open(filepath, 'w')
+            f.write(b64decode(b64))
+            f.close()
+            parameter.string_value = filename
+
+
+pre_save.connect(pre_save_parameter, sender=ExperimentParameter)
+pre_save.connect(pre_save_parameter, sender=DatasetParameter)
+pre_save.connect(pre_save_parameter, sender=DatafileParameter)

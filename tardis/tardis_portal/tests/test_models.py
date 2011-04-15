@@ -37,6 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
+from django.test.client import Client
 
 
 class ModelTestCase(TestCase):
@@ -166,3 +167,101 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
                          '/test/download/datafile/3/')
+
+    # check conversion of b64encoded images back into files
+    def test_parameter(self):
+        from tardis.tardis_portal import models
+        exp = models.Experiment(title='test exp1',
+                                institution_name='Australian Synchrotron',
+                                approved=True,
+                                created_by=self.user,
+                                public=True,
+                                )
+        exp.save()
+
+        dataset = models.Dataset(description="dataset description",
+                                 experiment=exp)
+        dataset.save()
+
+        df_file = models.Dataset_File(dataset=dataset,
+                                      filename='file.txt',
+                                      url='path/file.txt',
+                                      )
+        df_file.save()
+
+        df_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
+                                  type=models.Schema.DATAFILE)
+        df_schema.save()
+
+        ds_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema2.xml',
+                                  type=models.Schema.DATASET)
+        ds_schema.save()
+
+        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
+                                   type=models.Schema.EXPERIMENT)
+        exp_schema.save()
+
+
+        df_parname = models.ParameterName(schema=df_schema,
+                                          name='name',
+                                          full_name='full_name',
+                                          units='image/jpg',
+                                          data_type=models.ParameterName.FILENAME)
+        df_parname.save()
+
+        ds_parname = models.ParameterName(schema=ds_schema,
+                                          name='name',
+                                          full_name='full_name',
+                                          units='image/jpg',
+                                          data_type=models.ParameterName.FILENAME)
+        ds_parname.save()
+
+        exp_parname = models.ParameterName(schema=exp_schema,
+                                          name='name',
+                                          full_name='full_name',
+                                          units='image/jpg',
+                                          data_type=models.ParameterName.FILENAME)
+        exp_parname.save()
+
+        df_parset = models.DatafileParameterSet(schema=df_schema,
+                                                dataset_file=df_file)
+
+        ds_parset = models.DatasetParameterSet(schema=ds_schema,
+                                               dataset=dataset)
+
+        exp_parset = models.ExperimentParameterSet(schema=exp_schema,
+                                                   experiment=exp)
+
+        from base64 import b64encode
+        from os import path
+        from os import remove
+
+        filename = path.join(path.dirname(__file__), 'test.jpg')
+        df_parameter = models.DatafileParameter(name=df_parname,
+                                                parameterset=df_parset,
+                                                string_value=b64encode(open(filename).read()))
+        df_parameter.save()
+
+        ds_parameter = models.DatasetParameter(name=ds_parname,
+                                               parameterset=ds_parset,
+                                               string_value=b64encode(open(filename).read()))
+        ds_parameter.save()
+
+        exp_parameter = models.ExperimentParameter(name=exp_parname,
+                                                   parameterset=exp_parset,
+                                                   string_value=b64encode(open(filename).read()))
+        exp_parameter.save()
+
+
+        self.assertEqual("<img src='/test/DatafileImage/load/%i/' />" % df_parameter.id,
+                         df_parameter.get())
+
+        self.assertEqual("<img src='/test/DatasetImage/load/%i/' />" % ds_parameter.id,
+                         ds_parameter.get())
+
+        self.assertEqual("<img src='/test/ExperimentImage/load/%i/' />" % exp_parameter.id,
+                         exp_parameter.get())
+
+        remove(path.join(exp.get_or_create_directory(), df_parameter.string_value))
+        remove(path.join(exp.get_or_create_directory(), ds_parameter.string_value))
+        remove(path.join(exp.get_or_create_directory(), exp_parameter.string_value))

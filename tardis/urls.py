@@ -101,8 +101,7 @@ display_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
      'load_experiment_image'),
-    (r'^DatasetImage/load/(?P<parameter_id>\d+)/'
-     '(?P<parameter_name>\w+)/$',
+    (r'^DatasetImage/load/(?P<parameter_id>\d+)/$',
      'load_dataset_image'),
     (r'^DatafileImage/load/(?P<parameter_id>\d+)/$',
      'load_datafile_image'),
