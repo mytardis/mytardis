@@ -83,12 +83,12 @@ def download_datafiles(request):
     # TODO: handle no datafile, invalid filename, all http links
     # (tarfile count?)
     expid = request.POST['expid']
-    protocols = []
     fileString = ''
     fileSize = 0
 
     # the following protocols can be handled by this module
     protocols = ['', 'file', 'tardis']
+    known_protocols = len(protocols)
 
     if 'datafile' or 'dataset' in request.POST:
 
@@ -149,19 +149,24 @@ def download_datafiles(request):
         return return_response_not_found(request)
 
     # more than one external download location?
-    if len(protocols) > 4:
+    if len(protocols) > known_protocols + 2:
         response = HttpResponseNotFound()
         response.write('<p>Different locations selected!</p>\n')
         response.write('Please limit your selection and try again.\n')
         return response
 
     # redirect request if another (external) download protocol was found
-    elif len(protocols) == 4:
-        from django.core.urlresolvers import resolve
-        view, args, kwargs = resolve('/%s%s' % (protocols[4],
-                                                request.path))
-        kwargs['request'] = request
-        return view(*args, **kwargs)
+    elif len(protocols) == known_protocols + 1:
+        from django.core.urlresolvers import reverse, resolve
+        try:
+            for module in settings.DOWNLOAD_PROVIDERS:
+                if module[0] == protocols[3]:
+                    url = reverse('%s.download_datafiles' % module[1])
+                    view, args, kwargs = resolve(url)
+                    kwargs['request'] = request
+                    return view(*args, **kwargs)
+        except:
+            return return_response_not_found(request)
 
     else:
         # tarfile class doesn't work on large files being added and

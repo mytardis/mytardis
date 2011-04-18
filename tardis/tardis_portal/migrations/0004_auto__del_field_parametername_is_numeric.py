@@ -7,7 +7,7 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
-        # Deleting field 'ParameterName.isNumeric()'
+        # Deleting field 'ParameterName.is_numeric'
         db.delete_column('tardis_portal_parametername', 'is_numeric')
 
     def backwards(self, orm):

@@ -166,8 +166,21 @@ class Experiment(models.Model):
         return self.title
 
     def get_absolute_filepath(self):
+        """Return the absolute storage path
+        to the current ``Experiment``"""
         store = settings.FILE_STORE_PATH
         return path.join(store, str(self.id))
+
+    def get_or_create_directory(self):
+        dirname = path.join(settings.FILE_STORE_PATH,
+                            str(self.id))
+        if not path.exists(dirname):
+            from os import mkdir
+            try:
+                mkdir(dirname)
+            except:
+                dirname = None
+        return dirname
 
     @models.permalink
     def get_absolute_url(self):
@@ -183,6 +196,27 @@ class Experiment(models.Model):
         """
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
+
+    def get_download_urls(self):
+        urls = {}
+        kwargs = {'experiment_id': self.id}
+        distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
+        for key_value in distinct:
+            protocol = key_value['protocol']
+            if protocol in ['', 'tardis', 'file', 'http', 'https']:
+                view = 'tardis.tardis_portal.download.download_experiment'
+                if not '' in urls:
+                    urls[''] = reverse(view, kwargs=kwargs)
+            else:
+                try:
+                    for module in settings.DOWNLOAD_PROVIDERS:
+                        if module[0] == protocol:
+                            view = '%s.download_experiment' % module[1]
+                            urls[protocol] = reverse(view, kwargs=kwargs)
+                except AttributeError:
+                    pass
+
+        return urls
 
 
 class ExperimentACL(models.Model):
@@ -358,10 +392,28 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
-    @models.permalink
     def get_download_url(self):
-        return ('tardis.tardis_portal.download.download_datafile',
-                      (), {'datafile_id': self.id})
+        view = ''
+        kwargs = {'datafile_id': self.id}
+
+        # these are the internally known protocols
+        protocols = ['', 'tardis', 'file', 'http', 'https', 'ftp']
+        if self.protocol in protocols:
+            view = 'tardis.tardis_portal.download.download_datafile'
+
+        # externally handled protocols
+        else:
+            try:
+                for module in settings.DOWNLOAD_PROVIDERS:
+                    if module[0] == self.protocol:
+                        view = '%s.download_datafile' % module[1]
+            except AttributeError:
+                pass
+
+        if view:
+            return reverse(view, kwargs=kwargs)
+        else:
+            return ''
 
     def get_absolute_filepath(self):
 
@@ -480,8 +532,12 @@ class Schema(models.Model):
         schemas.
 
         """
-        return [schema.namespace for schema in
-            Schema.objects.filter(type=type, subtype=subtype or '')]
+        if subtype:
+            return [schema.namespace for schema in
+                    Schema.objects.filter(type=type, subtype=subtype)]
+        else:
+            return [schema.namespace for schema in
+                    Schema.objects.filter(type=type)]
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
