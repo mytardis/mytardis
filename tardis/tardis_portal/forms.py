@@ -71,6 +71,13 @@ def getAuthMethodChoices():
     return authMethodChoices
 
 
+def getAuthMethodChoices():
+    authMethodChoices = ()
+    for authMethods in settings.AUTH_PROVIDERS:
+        authMethodChoices += ((authMethods[0], authMethods[1]),)
+    return authMethodChoices
+
+
 class LoginForm(AuthenticationForm):
     authMethod = forms.CharField()
 
