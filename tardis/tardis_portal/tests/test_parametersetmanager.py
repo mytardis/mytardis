@@ -40,6 +40,7 @@ from django.test import TestCase
 from tardis.tardis_portal import models
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
+
 class ParameterSetManagerTestCase(TestCase):
 
     def setUp(self):
@@ -68,36 +69,37 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.datafile.save()
 
-        self.schema = models.Schema(namespace="http://localhost/psmtest/df/",\
+        self.schema = models.Schema(namespace="http://localhost/psmtest/df/",
             name="Parameter Set Manager", type=3)
 
         self.schema.save()
 
-        self.parametername1 = models.ParameterName(\
-            schema=self.schema, name="parameter1",\
+        self.parametername1 = models.ParameterName(
+            schema=self.schema, name="parameter1",
             full_name="Parameter 1")
 
         self.parametername1.save()
 
-        self.parametername2 = models.ParameterName(\
-            schema=self.schema, name="parameter2",\
-            full_name="Parameter 2", is_numeric=True)
+        self.parametername2 = models.ParameterName(
+            schema=self.schema, name="parameter2",
+            full_name="Parameter 2",
+            data_type=models.ParameterName.NUMERIC)
 
         self.parametername2.save()
 
-        self.datafileparameterset = models.DatafileParameterSet(\
+        self.datafileparameterset = models.DatafileParameterSet(
             schema=self.schema, dataset_file=self.datafile)
 
         self.datafileparameterset.save()
 
-        self.datafileparameter1 = models.DatafileParameter(\
-            parameterset=self.datafileparameterset,\
+        self.datafileparameter1 = models.DatafileParameter(
+            parameterset=self.datafileparameterset,
             name=self.parametername1, string_value="test1")
 
         self.datafileparameter1.save()
 
-        self.datafileparameter2 = models.DatafileParameter(\
-            parameterset=self.datafileparameterset,\
+        self.datafileparameter2 = models.DatafileParameter(
+            parameterset=self.datafileparameterset,
             name=self.parametername2, numerical_value=2)
 
         self.datafileparameter2.save()
