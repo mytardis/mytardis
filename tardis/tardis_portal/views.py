@@ -2135,7 +2135,7 @@ def add_par(request, parentObject, otype):
         'valid': valid,
         'parentObject': parentObject,
         'all_schema': all_schema,
-        'schema_id': schema_id,
+        'schema_id': schema.id,
     })
 
     return HttpResponse(render_response_index(request,
