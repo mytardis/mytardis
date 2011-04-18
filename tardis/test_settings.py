@@ -31,6 +31,10 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 )
 
+DOWNLOAD_PROVIDERS = (
+    ('vbl', 'tardis.tardis_portal.tests.mock_vbl_download'),
+)
+
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

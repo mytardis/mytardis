@@ -50,24 +50,7 @@ $(document).ready(function() {
 			return false;
 		});
 	});
-	
 
-    // experiment md
-	//     $(".experiment_metadata_toggle").toggle(function(){
-	// $(this).text("[Hide]");
-	// var href= $(this).attr("href");
-	// 
-	//     	$(this).next().html(loadingHTML + "</br>");
-	//         $(this).next().load(href, function() {
-	//           $(this).show();
-	//         });
-	// 
-	//     },function(){
-	// $(this).text("[Show]");
-	// var href= $(this).attr("href");
-	// 
-	// $(this).next().hide();
-	//     });	
 </script>
 
 <div id="experiment_description">
@@ -106,6 +89,7 @@ $(document).ready(function() {
   {% endif %}
 
   <p>
+
     {# {% if experiment.experimentparameterset_set.count %} #}
 	<div class="experiment_md_container">
 	<strong>Experiment Metadata:</strong>
@@ -136,6 +120,7 @@ $(document).ready(function() {
 	
 	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
 	<span class="experiment_metadata"></span>
+
 	</div>
     {# {% endif %} #}
   </p>
@@ -161,10 +146,10 @@ $(document).ready(function() {
   <div class="download_entire_experiment">
     {% for p in protocols %}
       <p>
-	{% if p %}
-	  <strong><a href="/{{p}}/download/experiment/{{experiment.id}}/">Download Entire Experiment ({{p|upper}})</a></strong><br/>
+	{% if p.0 %}
+	  <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
 	{% else %}
-	  <strong><a href="/download/experiment/{{experiment.id}}/">Download Entire Experiment</a></strong><br/>
+	  <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
 	{% endif %}
       </p>
     {% endfor %}
