@@ -853,7 +853,7 @@ def create_datafile_add_form(
         fields = SortedDict()
 
         parameternames = ParameterName.objects.filter(
-            schema__namespace=schema.namespace)
+            schema__namespace=schema.namespace).order_by('name')
 
         for dfp in parameternames:
 
