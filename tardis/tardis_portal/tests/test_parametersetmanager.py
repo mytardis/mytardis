@@ -152,7 +152,10 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.assertTrue(psm.get_param("newparam2", True) == "test5")
 
-        self.assertTrue(psm.get_param("newparam3").numerical_value == 3)
+        # the newparam3 gets created and '3' is set to a string_value
+        # since once cannot assume that an initial numeric value
+        # will imply continuing numeric type for this new param
+        self.assertTrue(psm.get_param("newparam3").string_value == '3')
 
         psm.delete_params("newparam1")
 
