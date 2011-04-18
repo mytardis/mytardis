@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
 
     def backwards(self, orm):
 
-        # Adding field 'ParameterName.isNumeric()'
+        # Adding field 'ParameterName.is_numeric'
         db.add_column('tardis_portal_parametername', 'is_numeric', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
     models = {
