@@ -2004,10 +2004,17 @@ def import_params(request):
                         is_numeric = False
                         if part[3].strip(' \n\r') == 'True':
                             is_numeric = True
+                        if is_numeric:
+                            pn = ParameterName(schema=schema_db,
+                                               name=part[0], full_name=part[1],
+                                               units=part[2],
+                                               data_type=ParameterName.NUMERIC)
+                        else:
 
-                        pn = ParameterName(schema=schema_db,
-                                name=part[0], full_name=part[1],
-                                units=part[2], is_numeric=is_numeric)
+                            pn = ParameterName(schema=schema_db,
+                                               name=part[0], full_name=part[1],
+                                               units=part[2],
+                                               data_type=ParameterName.STRING)
                         pn.save()
 
                 i = i + 1
