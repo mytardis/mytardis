@@ -6,6 +6,9 @@ This module holds filters that can be used in postprocessing a form field.
 
 from django import template
 
+from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
+
+
 register = template.Library()
 
 
@@ -21,4 +24,4 @@ def size(value, actualSize):
 def removePrefix(value):
     """Removes the auth prefix (ie 'localdb_' from username)."""
 
-    return value.lstrip('localdb_')
+    return value.lstrip(localdb_auth_key)

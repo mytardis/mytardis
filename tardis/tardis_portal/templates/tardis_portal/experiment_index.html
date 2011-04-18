@@ -1,32 +1,3 @@
-<!--
- Copyright (c) 2010, Monash e-Research Centre
-   (Monash University, Australia)
- Copyright (c) 2010, VeRSI Consortium
-   (Victorian eResearch Strategic Initiative, Australia)
- All rights reserved.
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions are met:
- 
-    *  Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    *  Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the distribution.
-    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
-       names of its contributors may be used to endorse or promote products
-       derived from this software without specific prior written permission.
- 
- THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
- EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
- DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--->
 {% extends "tardis_portal/data_browsing_template.html" %}
 
 {% block script %}
@@ -51,94 +22,102 @@
 
 {% load experimentstats %}
 
-		{% block content %}
+{% block content %}
 
-		<div id="content">
-			{% if user.is_authenticated %}
-			<div class="post">
-				<h1 class="title">
-					<a href="#">My Experiments</a>
-				</h1>
-				 {% if experiments %}
-		            <strong>{{ experiments.count }}</strong> experiments
+<div id="content">
+  {% if user.is_authenticated %}
+    <div class="post">
+      <h1 class="title">
+	<a href="#">My Experiments</a>
+      </h1>
 
-			    {% endif %}
-				<br/><br/>			
-				
-				{% if experiments %}
-						<table class="experiment-table">
-						{% for experiment in experiments %}
-							<tr>
-								<th>
-									<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}
+      {% if experiments %}
+        <strong>{{ experiments.count }}</strong> experiment{{ experiments.count|pluralize}}
+      {% endif %}
+      <br/>
+      <br/>
 
-										</a>
-								</th>
-								
-							</tr>	
-							
-							<tr>
-								
-									<td>From <strong>{{experiment.institution_name}}</strong>, deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong></td>
-							
-							</tr>
-							
-							<tr>
-								
-									<td class="experiment-table-stats"><strong>{{ experiment.dataset_set.all.count }}</strong> dataset(s), containing <strong>{{ experiment.id|experiment_file_count }}</strong> files 
-								<br/><br/>
-							</tr>				
-						
-						{%endfor %}
-					</table>					
-						
-				{% else %}
-					No experiments available at this time.
-				{% endif %}
-			</div>
-			<br/><br/><br/>
-		        {% endif %}
-			<div class="post">
-				<h1 class="title">
-					<a href="#">Public Experiments</a>
-				</h1>
-				 {% if experiments %}
-		            <strong>{{ public_experiments.count }}</strong> public experiments
+      {% if experiments %}
+        <table class="experiment-table">
+	  {% for experiment in experiments %}
+	    <tr>
+	      <th>
+		<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a>
+	      </th>
+	    </tr>
+	    <tr>
+	      <td>
+		From <strong>{{experiment.institution_name}}</strong>,
+		deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td class="experiment-table-stats">
+		<strong>{{ experiment.dataset_set.all.count }}</strong>
+		dataset{{ experiment.dataset_set.all.count|pluralize }}
+		containing <strong>{{ experiment.id|experiment_file_count }}</strong>
+		file{{ experiment.id|experiment_file_count|pluralize }}
+                <br/>
+		<br/>
+	      </td>
+	    </tr>
+	    {% endfor %}
+	</table>
 
-			    {% endif %}
-				<br/><br/>			
-				
-				{% if public_experiments %}
-						<table class="experiment-table">
-						{% for public_experiment in public_experiments %}
-							<tr>
-								<th>
-									<a href="../view/{{ public_experiment.id }}">{{ public_experiment.title }}									
-										
-										</a>
-								</th>
-								
-							</tr>	
-							
-							<tr>
-								
-									<td>From <strong>{{public_experiment.institution_name}}</strong>, deposited <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong></td>
-							
-							</tr>
-							
-							<tr>
-								
-									<td class="experiment-table-stats"><strong>{{ public_experiment.dataset_set.all.count }}</strong> dataset(s), containing <strong>{{ public_experiment.id|experiment_file_count }}</strong> files 
-								<br/><br/>
-							</tr>				
-						
-						{%endfor %}
-					</table>					
-						
-				{% else %}
-					No public experiments at the moment.
-				{% endif %}
-			</div>			
-		</div>
+	{% else %}
+	  No experiments available at this time.
+	{% endif %}
 
-		{% endblock %}
+    </div> <!-- post -->
+
+    <br/>
+    <br/>
+    <br/>
+
+  {% endif %}
+
+  <div class="post">
+    <h1 class="title">
+      <a href="#">Public Experiments</a>
+    </h1>
+
+    {% if experiments %}
+      <strong>{{ public_experiments.count }}</strong>
+      public experiment {{ public_experiments.count|pluralize }}
+    {% endif %}
+
+    <br/>
+    <br/>
+
+    {% if public_experiments %}
+      <table class="experiment-table">
+	{% for public_experiment in public_experiments %}
+	  <tr>
+	    <th>
+	      <a href="{% url tardis.tardis_portal.views.view_experiment public_experiment.id %}">
+		{{ public_experiment.title }}</a>
+	    </th>
+	  </tr>
+	  <tr>
+	    <td>From <strong>{{public_experiment.institution_name}}</strong>,
+	      deposited <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong></td>
+	  </tr>
+	<tr>
+	  <td class="experiment-table-stats"><strong>{{ public_experiment.dataset_set.all.count }}</strong>
+	    dataset{{ public_experiment.dataset_set.all.count|pluralize }},
+	    containing <strong>{{ public_experiment.id|experiment_file_count }}</strong>
+	    file{{ public_experiment.id|experiment_file_count|pluralize }}
+	    <br/>
+	    <br/>
+	  </tr>
+	{% endfor %}
+      </table>
+
+      {% else %}
+        No public experiments at the moment.
+      {% endif %}
+
+  </div> <!-- post -->
+</div> <!-- content -->
+
+{% endblock %}

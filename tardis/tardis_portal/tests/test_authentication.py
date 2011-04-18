@@ -108,7 +108,6 @@ class AuthenticationTestCase(TestCase):
 
     def test_djangoauth(self):
         from django.core.handlers.wsgi import WSGIRequest
-        from django.contrib.auth.models import User
         from tardis.tardis_portal.auth.localdb_auth import DjangoAuthBackend
         dj_auth = DjangoAuthBackend()
         req = WSGIRequest({"REQUEST_METHOD": "POST"})

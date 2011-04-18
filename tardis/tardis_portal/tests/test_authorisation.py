@@ -5,8 +5,9 @@ from django.test.client import Client
 
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.models import ExperimentACL, Experiment, UserAuthentication, UserProfile
+from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
+from tardis.tardis_portal.models import ExperimentACL, Experiment
 
 
 class ExperimentACLTestCase(TestCase):
@@ -15,15 +16,10 @@ class ExperimentACLTestCase(TestCase):
     def setUp(self):
 
         # create a couple of test users
-        self.user1 = User.objects.create_user('localdb_testuser1', '', 'secret')
-        self.user2 = User.objects.create_user('localdb_testuser2', '', 'secret')
-        self.user3 = User.objects.create_user('localdb_testuser3', '', 'secret')
-        self.user4 = User.objects.create_user('localdb_testuser4', '', 'secret')
-
-        self.userProfile1 = UserProfile(user=self.user1)
-        self.userProfile2 = UserProfile(user=self.user2)
-        self.userProfile3 = UserProfile(user=self.user3)
-        self.userProfile4 = UserProfile(user=self.user4)
+        self.user1 = User.objects.create_user('testuser1', '', 'secret')
+        self.user2 = User.objects.create_user('testuser2', '', 'secret')
+        self.user3 = User.objects.create_user('testuser3', '', 'secret')
+        self.user4 = User.objects.create_user('testuser4', '', 'secret')
 
         # each user will have their own client
         self.client1 = Client()
@@ -120,7 +116,7 @@ class ExperimentACLTestCase(TestCase):
         self.user4.delete()
 
     def testReadAccess(self):
-        login = self.client1.login(username='localdb_testuser1', password='secret')
+        login = self.client1.login(username='testuser1', password='secret')
         self.assertTrue(login)
 
         # user1 should be see experiment1
@@ -151,15 +147,59 @@ class ExperimentACLTestCase(TestCase):
 
         # add user2 as admin to the newly created group
         group = Group.objects.get(name='group1')
-        response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=localdb'
-                                   % (group.id, 'testuser2'))
-        #response = self.client1.get('/group/1/add/testuser2?isAdmin=true&authMethod=localdb')
+        response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
+                                    % (group.id,
+                                       self.user2.username,
+                                       localdb_auth_key))
         self.assertEqual(response.status_code, 200)
+
+        # try it again
+        response = self.client1.get('/group/%i/add/%s/?isAdmin=true&authMethod=%s'
+                                    % (group.id,
+                                       self.user2.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.content, 'User %s is already member of that'
+                         ' group.' % self.user2.username)
+        self.assertEqual(response.status_code, 200)
+
+        # user1 is not allowed to modify acls for experiment2
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s?authMethod=%s'
+                                    % (self.experiment2.id,
+                                       self.user1.username,
+                                       localdb_auth_key))
+        self.assertEqual(response.status_code, 403)
+
+        # test add non-existent user
+        non_existant = 'test_boozer'
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       non_existant,
+                                       localdb_auth_key))
+
+        self.assertContains(response, 'User %s does not exist' % non_existant)
+
+        # test add to non existant experiment
+
+        # Note: Ideally we'd like to check for error message, but we
+        # can't hit it with the decorator in place.  However,
+        # currently we check for a 403 (forbidden) error, as the
+        # 'experiment_ownership_required' decorator simply checks if
+        # the experiment_id appears in the specified user's ACL, and
+        # assumes that the absence of the experiment_id means that the
+        # experiment exists but the user doesn't have access to
+        # it. This could possibly be changed to a 404 error.
+
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s?authMethod=%s'
+                                    % (9999, self.user1.username, localdb_auth_key))
+        self.assertEqual(response.status_code, 403)
 
         self.client1.logout()
 
         # now check user2's permissions
-        login = self.client2.login(username='localdb_testuser2', password='secret')
+        login = self.client2.login(username=self.user2.username, password='secret')
         self.assertTrue(login)
 
         # user2 should be able to see experiment1 now
@@ -178,13 +218,13 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # user2 should be able to add user3 to group1 (experiment1)
-        response = self.client2.get('/group/%i/add/%s/?isAdmin=false&authMethod=localdb'
-                                   % (group.id, 'testuser3'))
+        response = self.client2.get('/group/%i/add/%s/?isAdmin=false&authMethod=%s'
+                                   % (group.id, self.user3.username, localdb_auth_key))
 
-        self.client1.logout()
+        self.client2.logout()
 
         # now check user3's permissions
-        login = self.client3.login(username='localdb_testuser3', password='secret')
+        login = self.client3.login(username='testuser3', password='secret')
         self.assertTrue(login)
 
         # user3 should be able to see experiment1 via his group permissions
@@ -203,8 +243,8 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # user3 should not be able to add another user4 to group1
-        response = self.client3.get('/group/%i/add/%s/?isAdmin=false&authMethod=localdb'
-                                   % (group.id, 'testuser4'))
+        response = self.client3.get('/group/%i/add/%s/?isAdmin=false&authMethod=%s'
+                                   % (group.id, 'testuser4', localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client3.logout()
@@ -216,7 +256,7 @@ class ExperimentACLTestCase(TestCase):
 
         url = '/experiment/control_panel/%i/access_list/change/user/%s/'
 
-        login = self.client1.login(username='localdb_testuser1', password='secret')
+        login = self.client1.login(username=self.user1.username, password='secret')
         self.assertTrue(login)
 
         # remove user3 from group1
@@ -225,9 +265,11 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # add user3 to experiment1
-        self.client1.get('/experiment/control_panel/%i/access_list/add/user/%s?authMethod=localdb'
-                         % (self.experiment1.id, 'testuser3'))
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/add/user/%s?authMethod=%s'
+                         % (self.experiment1.id, self.user3.username, localdb_auth_key))
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '<div class="access_list_user">')
 
         # give user3 read permissions for experiment1 effictive TOMORROW
         response = self.client1.post(url % (self.experiment1.id, self.user3.username),
@@ -239,7 +281,7 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # check permissions for user3
-        login = self.client3.login(username='localdb_testuser3', password='secret')
+        login = self.client3.login(username='testuser3', password='secret')
         self.assertTrue(login)
 
         response = self.client3.get('/experiment/view/%i/'
@@ -307,7 +349,35 @@ class ExperimentACLTestCase(TestCase):
                                    % (self.experiment1.id))
         self.assertEqual(response.status_code, 403)
 
-        # can't think of any more stuff atm...
+        # remove user3 from experiment1 again
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/'
+                                    % (self.experiment1.id, self.user3.username))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, 'OK')
+
+        # try again, see if it falls over
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/'
+                                    % (self.experiment1.id, self.user3.username))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content,
+                         'The user %s does not have access to this experiment.'
+                         % self.user3.username)
+
+        # try to remove from a non-existant experiment
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/'
+                                    % (9999, self.user3.username))
+        self.assertEqual(response.status_code, 403)
+
+        # try to remove the owner
+        response = self.client1.get('/experiment/control_panel/%i/access_list'
+                                    '/remove/user/%s/'
+                                    % (self.experiment1.id, self.user1.username))
+        self.assertEqual(response.content,
+                         'Cannot remove your own user access.')
+
         self.client1.logout()
         self.client3.logout()
 
@@ -317,7 +387,7 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # now check access for user1
-        login = self.client1.login(username='localdb_testuser1', password='secret')
+        login = self.client1.login(username='testuser1', password='secret')
         self.assertTrue(login)
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
@@ -338,14 +408,14 @@ class ExperimentACLTestCase(TestCase):
 
         # add user2 to 'group1w' which gives him write permissions
         group = Group.objects.get(name='group1w')
-        response = self.client1.get('/group/%i/add/%s/?isAdmin=false&authMethod=localdb'
-                                   % (group.id, 'testuser2'))
+        response = self.client1.get('/group/%i/add/%s/?isAdmin=false&authMethod=%s'
+                                   % (group.id, self.user2.username, localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         # add user3 explicitly to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=localdb&canRead=true&canWrite=true'
-                                    % (self.experiment1.id, 'testuser3'))
+                                    '/add/user/%s?authMethod=%s&canRead=true&canWrite=true'
+                                    % (self.experiment1.id, self.user3.username, localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         # check newly created permissions for user2 and user3
@@ -355,10 +425,10 @@ class ExperimentACLTestCase(TestCase):
         response = self.client3.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 302)
 
-        login = self.client2.login(username='localdb_testuser2', password='secret')
+        login = self.client2.login(username=self.user2.username, password='secret')
         self.assertTrue(login)
 
-        login = self.client3.login(username='localdb_testuser3', password='secret')
+        login = self.client3.login(username=self.user3.username, password='secret')
         self.assertTrue(login)
 
         response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
