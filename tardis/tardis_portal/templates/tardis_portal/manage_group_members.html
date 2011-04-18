@@ -109,7 +109,7 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 															}
 															else
 															{
-																alert('Error removing user.');
+															        alert(val);
 															}
 														}
 												    }); // end ajax
@@ -120,7 +120,7 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 										}
 										else
 										{
-											alert('Error adding user. Perhaps they already have access?');
+											alert(data);
 										}
 								     },
 								     error: function(data) {
@@ -153,7 +153,7 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 													});
 												}
 												else {
-												   alert('Error removing user.');
+												   alert(val);
 												}
 											}
 									    }); // end ajax
@@ -202,4 +202,3 @@ var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 			</div>
 		</div>
 		{% endblock %}
-

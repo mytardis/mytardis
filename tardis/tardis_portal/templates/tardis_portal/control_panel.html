@@ -88,34 +88,34 @@
             url: action,
             success: function(data) {
               if (data.beginsWith("<div class=", true) == true) {
-            users_div.hide().append(data).fadeIn();
-            // todo this is a duplicate function..
-            $(".remove_user").unbind('click');
-            $(".remove_user").click(function() {
-              var href = $(this).attr("href");
-              remove_user = $(this);
-
-              $.ajax({
-                'async': false,
-                'global': false,
-                'url': href,
-                'success': function (data) {
-                  val = data;
-                  if(val == "OK") {
-                remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
-                  }
-                  else { alert('Error removing user.'); }
-                }
-              }); // end ajax
-              return false;
-
+                users_div.hide().append(data).fadeIn();
+                // todo this is a duplicate function..
+                $(".remove_user").unbind('click');
+                $(".remove_user").click(function() {
+                  var href = $(this).attr("href");
+                  remove_user = $(this);
+                  $.ajax({
+                    'async': false,
+	            'global': false,
+	            'url': href,
+		    'success': function (data) {
+		      val = data;
+		      if(val == "OK") {
+			remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
+		      }
+		      else { alert(val); }
+		    }
+		  }); // end ajax
+		  return false;
                }); // end remove user
              }
-
-             else { alert('Error adding user. Perhaps they already have access?'); }
-           },
-           error: function(data) { alert('Error adding user'); }
-          });
+     	     else {
+               val = data;
+	       alert(val);
+	     }
+	   },
+	   error: function(data) { alert('Error adding user'); }
+	 });
 
           return false;
         });
@@ -125,27 +125,24 @@
 
           var href = $(this).attr("href");
           remove_user = $(this);
-
-          $.ajax({
-            'async': false,
-            'global': false,
-            'url': href,
-            'success': function (data) {
-              val = data;
-              if(val == "OK") {
-            remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
-              }
-            else { alert('Error removing user.'); }
-            }
-          }); // end ajax
+	  $.ajax({
+	    'async': false,
+	    'global': false,
+	    'url': href,
+	    'success': function (data) {
+	      val = data;
+	      if(val == "OK") {
+		remove_user.fadeOut(500, function(){ remove_user.parents('.access_list_user').remove(); });
+	      }
+	    else { alert(val); }
+	    }
+	  }); // end ajax
 
           return false;
         }); // end remove user
           });
         });
-
       }, function(){ $(this).text("[Show]"); });
-
 
       // group access list
       $(".access_list_group_toggle").toggle(function(){
@@ -253,15 +250,18 @@
                   remove_group.parents('.access_list_group').remove();
                 });
                   }
-                  else { alert('Error removing group.'); }
+                  else { alert(val); }
                 }
               }); // end ajax
               return false;
             }); // end remove group
               }
-              else { alert('Error adding group.'); }
+              else {
+                val = data;
+                alert(val);
+              }
             },
-            error: function(data) { alert('Error adding group. Perhaps the name already exists.'); }
+            error: function(data) { alert('Error adding group!'); }
           });
           return false;
         });
@@ -273,25 +273,24 @@
 
           remove_group = $(this);
 
-          $.ajax({
-            'async': false,
-            'global': false,
-            'url': href,
-            'success': function (data) {
-              val = data;
-              if(val == "OK") {
-            remove_group.fadeOut(500, function(){
-              remove_group.parents('.access_list_group').remove();
-            });
-              }
-              else { alert('Error removing group.'); }
-            }
-          }); // end ajax
-          return false;
-        }); // end remove group
-          });
-        });
-
+		  $.ajax({
+		    'async': false,
+		    'global': false,
+		    'url': href,
+		    'success': function (data) {
+		      val = data;
+		      if(val == "OK") {
+			remove_group.fadeOut(500, function(){
+			  remove_group.parents('.access_list_group').remove();
+			});
+		      }
+		      else { alert(val); }
+		    }
+		  }); // end ajax
+		  return false;
+		}); // end remove group
+	      });
+	    });
          },function(){ $(this).text("[Show]"); });
 
       });

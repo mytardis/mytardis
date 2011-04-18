@@ -109,7 +109,13 @@ $(document).ready(function() {
     {% if owners %}
       <strong>Experiment Administrators </strong><br/>
       {% for owner in owners %}
-        {{ owner.username }} {% if owner.email %}(<a href="mailto:{{owner.email}}">{{ owner.email}}</a>{% endif %}){% if not forloop.last %}<br/>{% endif %}
+        {% if owner.email %}
+          <a href="mailto:{{owner.email}}">{{ owner.email}}</a>
+        {% endif %}
+        ({{ owner.username }})
+        {% if not forloop.last %}
+          <br/>
+	{% endif %}
       {% endfor %}
   </p>
 {% endif %}
