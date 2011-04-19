@@ -55,7 +55,7 @@ def render_response_search(request, *args, **kwargs):
     kwargs['context_instance']['is_superuser'] = is_superuser
     kwargs['context_instance']['username'] = email
     kwargs['context_instance']['searchDatafileSelectionForm'] = \
-        getNewSearchDatafileSelectionForm()
+        getNewSearchDatafileSelectionForm(request.GET.get('type', None))
     kwargs['context_instance']['links'] = links
 
     if request.mobile:
