@@ -79,8 +79,8 @@ from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
 
-def getNewSearchDatafileSelectionForm():
-    DatafileSelectionForm = createSearchDatafileSelectionForm()
+def getNewSearchDatafileSelectionForm(initial=None):
+    DatafileSelectionForm = createSearchDatafileSelectionForm(initial)
     return DatafileSelectionForm()
 
 
@@ -1322,7 +1322,7 @@ def search_datafile(request):
     datafile query.
 
     """
-
+    
     if 'type' in request.GET:
         searchQueryType = request.GET.get('type')
     else:

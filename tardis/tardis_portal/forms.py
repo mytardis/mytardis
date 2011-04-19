@@ -775,7 +775,7 @@ def __getParameterChoices(choicesString):
     return paramChoices
 
 
-def createSearchDatafileSelectionForm():
+def createSearchDatafileSelectionForm(initial=None):
 
     supportedDatafileSearches = (('-', 'Datafile'),)
     for key in models.Schema.getSubTypes():
@@ -785,8 +785,7 @@ def createSearchDatafileSelectionForm():
     fields['type'] = \
         forms.CharField(label='type',
         widget=forms.Select(choices=supportedDatafileSearches),
-        required=False)
+        required=False, initial=initial)
     fields['type'].widget.attrs['class'] = 'searchdropdown'
-
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
