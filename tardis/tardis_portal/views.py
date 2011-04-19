@@ -33,6 +33,7 @@ views.py
 
 .. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
+.. moduleauthor:: Ulrich Felzmaann <ulrich.felzmann@versi.edu.au>
 
 """
 
@@ -40,6 +41,8 @@ from base64 import b64decode
 import urllib2
 from urllib import urlencode, urlopen
 from os import path
+
+import logging
 
 from django.template import Context
 from django.conf import settings
@@ -62,7 +65,6 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     save_datafile_add_form
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
-from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
     staging_traverse, write_uploaded_file_to_dataset
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
@@ -84,6 +86,9 @@ from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 
 
+logger = logging.getLogger(__name__)
+
+
 def getNewSearchDatafileSelectionForm():
     DatafileSelectionForm = createSearchDatafileSelectionForm()
     return DatafileSelectionForm()
@@ -99,7 +104,6 @@ def logout(request):
 
 
 def index(request):
-
     status = ''
     c = Context({'status': status,
                  'searchDatafileSelectionForm':
@@ -667,12 +671,14 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     # for each PI
     for owner in owners:
         if owner:
+            # TODO: enable LDAP module here!
+
             # try get user from email
-            if settings.LDAP_ENABLE:
-                u = ldap_auth.get_or_create_user_ldap(owner)
-            else:
+            # if settings.LDAP_ENABLE:
+            #     u = ldap_auth.get_or_create_user_ldap(owner)
+            # else:
                 # print "owner", owner
-                u = User.objects.get(username=owner)
+            u = User.objects.get(username=owner)
 
             # if exist, create ACL
             if u:
@@ -693,7 +699,6 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
 
 # web service
-@transaction.commit_manually
 def register_experiment_ws_xmldata(request):
     import threading
 
@@ -727,7 +732,6 @@ def register_experiment_ws_xmldata(request):
                 created_by=user,
                 )
             e.save()
-            transaction.commit()
 
             eid = e.id
 
@@ -748,7 +752,7 @@ def register_experiment_ws_xmldata(request):
 
             class RegisterThread(threading.Thread):
 
-                @transaction.commit_manually
+                @transaction.commit_on_success
                 def run(self):
                     logger.info('=== processing experiment %s: START' % eid)
                     owners = request.POST.getlist('experiment_owner')
@@ -758,10 +762,9 @@ def register_experiment_ws_xmldata(request):
                                                     expid=eid,
                                                     owners=owners,
                                                     username=username)
-                        transaction.commit()
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
-                        transaction.rollback()
+                        e.delete()
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
             RegisterThread().start()
 
@@ -958,9 +961,8 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
     # there's no need to do any filtering if we didn't find any
     # datafiles that the user has access to
     if not datafile_results:
-        logger.info("__getFilteredDatafiles: user ",
-                    "{0} doesn\'t".format(request.user),
-                    "access to any experiments")
+        logger.info("""__getFilteredDatafiles: user {0} doesn\'t have
+                    access to any experiments""".format(request.user))
         return datafile_results
 
     datafile_results = \

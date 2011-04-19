@@ -14,7 +14,6 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.logger import logger
 
 
 class ExperimentManager(models.Manager):
