@@ -36,7 +36,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
-from django.test.client import Client
 
 
 class ModelTestCase(TestCase):

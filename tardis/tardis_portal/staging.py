@@ -36,12 +36,14 @@ staging.py
 
 """
 
+import logging
 import shutil
 from os import path, makedirs, listdir
 
 from django.conf import settings
 
-from tardis.tardis_portal.logger import logger
+
+logger = logging.getLogger(__name__)
 
 
 def staging_traverse(staging=settings.STAGING_PATH):

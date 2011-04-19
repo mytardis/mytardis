@@ -717,6 +717,8 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isLink():
+        if parameter.string_value is None:
+            return ''
         units = parameter.name.units
         if units:
             url = units + parameter.string_value
