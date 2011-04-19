@@ -9,7 +9,7 @@ DATABASES = {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': 'mytardis-akg.db',
+        'NAME': ':memory:',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
