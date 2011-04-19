@@ -4,6 +4,64 @@
 {% block script %}
 
   <script type="text/javascript">
+	$(document).ready(function(){
+
+		$(".dataset_metadata_toggle").live('click', function(e){
+			e.preventDefault();
+
+			if($(this).text() == "[Show]")
+			{
+
+				$(this).text("[Hide]");
+				var href= $(this).attr("href");
+
+			    	$(this).next().html(loadingHTML + "</br>");
+			        $(this).next().load(href, function() {
+			        $(this).show();
+			        });
+
+			}
+			else
+			{
+				$(this).text("[Show]");
+				var href= $(this).attr("href");
+				$(this).next().hide();
+			}
+			return false;
+		});
+
+		$(".datafile_info_toggle").text("[Show]");
+		$(".datafile_info_toggle").next().hide();
+		var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
+
+		// metadata text / ajax toggle
+
+		$(document).ready(function(){
+
+			$(".datafile_info_toggle").live('click', function(e){
+				e.preventDefault();
+
+				if($(this).text() == "[Show]")
+				{
+
+					$(this).text("[Hide]");
+					var href= $(this).attr("href");
+
+			    	$(this).next().html(loadingHTML + "</br>");
+			        $(this).next().load(href);
+					$(this).next().show();
+				}
+				else
+				{
+					$(this).text("[Show]");
+					var href= $(this).attr("href");
+					$(this).next().hide();
+				}
+				return false;
+			});
+		});
+	});
+
     $("#uploadify").live("allUploadsComplete", function(e, data){
 	dataset_id = $(this).parents('.upload_files_container'
 				    ).siblings('.dataset_id').val();
@@ -12,30 +70,6 @@
 		       ).load("/ajax/datafile_list/" +
 			      dataset_id + "/",function(){
 				  $(document).ready(function(){
-				      var datafile_info_selectors =
-					  $(this).find('.datafile_info'
-						      ).hide().end().find(
-						'.datafile_info_toggle');
-				      datafile_info_selectors.text("[Show Metadata]");
-
-				      // datafile metadata
-				      datafile_info_selectors.toggle(function(){
-					  $(this).text("[Hide Metadata]");
-					  var href = $(this).attr("href");
-
-					  //if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
-					  //{
-					  $(this).next().html(loadingHTML);
-					  //}
-					  $(this).next().load(href);
-
-				      },function(){
-					  $(this).text("[Show Metadata]");
-				      });
-
-				      datafile_info_selectors.click(function() {
-					  $(this).next().toggle();
-				      });
 
 				      // file selectors
 				      $(this).find('.dataset_selector_all').click(function() {
@@ -88,45 +122,7 @@
 	if(e.keyCode == 13) {
 	    dataset_id = $(this).siblings('.dataset_id').val();
 
-	    $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + $(this).val(), function(){
-		$(document).ready(function(){
-
-		    // datafile metadata
-		    $(".datafile_info_toggle").unbind('click');
-		    $(document).find('.datafile_info_toggle').text("[Show Metadata]");
-		    $(document).find('.datafile_info').hide();
-		    $(document).find('.datafile_info_toggle').toggle(function(){
-			$(this).text("[Hide Metadata]");
-			var href = $(this).attr("href");
-			$(this).next().show();
-
-			//if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
-			//{
-			$(this).next().html(loadingHTML);
-			//}
-			$(this).next().load(href);
-
-		    },function(){
-			$(this).text("[Show Metadata]");
-			$(this).next().hide();
-		    });
-
-		    $(".dataset_selector_all").unbind('click');
-		    $(".dataset_selector_none").unbind('click');
-
-		    // file selectors
-		    $(document).find('.dataset_selector_all').click(function() {
-			$(this).parent().find('.datafile_checkbox').attr("checked", "checked");
-
-		    });
-
-		    $(document).find('.dataset_selector_none').click(function() {
-			$(this).parent().find('.datafile_checkbox').removeAttr("checked");
-
-		    });
-		});
-
-	    });
+	    $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/?filename=" + $(this).val(), function(){});
 	}
 
     });
@@ -148,26 +144,6 @@
 	html = $(this).html();
 	$(this).html(html + " " + loadingHTML);
 	$(this).parents('.datafile_list').load(href, function(){
-	    $(document).ready(function(){
-		// datafile metadata
-		$(".datafile_info_toggle").unbind('click');
-		$(document).find('.datafile_info_toggle').text("[Show Metadata]");
-		$(document).find('.datafile_info').hide();
-		$(document).find('.datafile_info_toggle').toggle(function(){
-		    $(this).text("[Hide Metadata]");
-		    var href = $(this).attr("href");
-		    $(this).next().show();
-
-		    //if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
-		    //{
-		    $(this).next().html(loadingHTML);
-		    //}
-		    $(this).next().load(href);
-
-		},function(){
-		    $(this).text("[Show Metadata]");
-		    $(this).next().hide();
-		});
 
 		$(".dataset_selector_all").unbind('click');
 		$(".dataset_selector_none").unbind('click');
@@ -181,9 +157,9 @@
 		    $(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
 		});
-	    });
 
-	    //$(this).html(html);
+
+	    $(this).html(html);
 
 	})
 	return false;
@@ -198,22 +174,6 @@
     var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
     // metadata text / ajax toggle
-
-    // dataset md
-    $(".dataset_metadata_toggle").toggle(function(){
-	$(this).text("[Hide]");
-	var href= $(this).attr("href");
-
-    	$(this).next().html(loadingHTML + "</br>");
-        $(this).next().load(href, function() {
-          $(this).show();
-        });
-
-    },function(){
-	$(this).text("[Show]");
-	var href= $(this).attr("href");
-	$(this).next().hide();
-    });
 
     // datafile list
     $(".datafile_list_toggle").toggle(function(){
@@ -230,11 +190,11 @@
 
 		var datafile_info_selectors =
 		    datafile_info_container.find('.datafile_info').hide().end().find('.datafile_info_toggle');
-		datafile_info_selectors.text("[Show Metadata]");
+		datafile_info_selectors.text("[Show]");
 
 		// datafile metadata
 		datafile_info_selectors.toggle(function(){
-		    $(this).text("[Hide Metadata]");
+		    $(this).text("[Hide]");
 		    var href = $(this).attr("href");
 
 		    //if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
@@ -244,7 +204,7 @@
 		    $(this).next().load(href);
 
 		},function(){
-		    $(this).text("[Show Metadata]");
+		    $(this).text("[Show]");
 		});
 
 		datafile_info_selectors.click(function() {
@@ -320,11 +280,37 @@
 	    </div> <!-- dataset_description -->
 
 	    <div class="dataset_extrainfo">
-	      {% if dataset.datasetparameterset_set.count %}
-		<strong>Dataset Metadata: </strong><a class="dataset_metadata_toggle" href="/ajax/dataset_metadata/{{ dataset.id }}">[Show]</a>
+
+		<strong>Dataset Metadata: </strong>
+
+		<a href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
+		 class="jqModalDsA{{dataset.id}}">[Add]</a>
+		<script type="text/javascript">
+		$('#jqmAlertDsA{{dataset.id}}').die();
+		$('#jqmAlertDsA{{dataset.id}}').jqm({
+		  trigger: '.jqModalDsA{{dataset.id}}',
+		  ajax: '@href',
+		  target: '#jqmAlertContentdatasetA{{dataset.id}}',
+		  overlay: 0,
+		  });
+		</script>
+		<div class="jqmAlert" id="jqmAlertDsA{{dataset.id}}">
+
+			<div class="jqmAlertWindow">
+			    <div class="jqmAlertTitle clearfix">
+			    <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+			  </div>
+
+			  <div class="jqmAlertContent" id="jqmAlertContentdatasetA{{dataset.id}}">
+			  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+			  </div>
+			</div>
+		</div>
+
+		<a class="dataset_metadata_toggle" href="/ajax/dataset_metadata/{{ dataset.id }}">[Show]</a>
 		<div class="dataset_metadata">
 		</div> <!-- dataset metadata -->
-	      {% endif %}
+
 	      <div class="dataset_datafiles">
 		<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
 		{% if dataset.dataset_file_set.count|lt:"1000000" %}

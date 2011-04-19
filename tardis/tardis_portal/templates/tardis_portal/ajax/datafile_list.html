@@ -40,12 +40,35 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 <li class="datafile">
 	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
 	<a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
-	{% if datafile.datafileparameterset_set.count %}
-	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Metadata]</a>
+	Metadata: <a href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+	 class="jqModalDfA{{datafile.id}}">[Add]</a>
+	<script type="text/javascript">
+	$('#jqmAlertDfA{{datafile.id}}').die();
+	$('#jqmAlertDfA{{datafile.id}}').jqm({
+	  trigger: '.jqModalDfA{{datafile.id}}',
+	  ajax: '@href',
+	  target: '#jqmAlertContentdatafileA{{datafile.id}}',
+	  overlay: 0,
+	  });
+	</script>
+	<div class="jqmAlert" id="jqmAlertDfA{{datafile.id}}">
+
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent" id="jqmAlertContentdatafileA{{datafile.id}}">
+		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+		  </div>
+		</div>
+	</div>	
+	
+	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Show]</a>
 	<ul class="datafile_info">
 
 	</ul>
-	{% endif %}
+	
 
 	{% if datafile.xml_data_set.count %}
 	<a class="datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>

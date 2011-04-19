@@ -21,6 +21,11 @@ def size(value, actualSize):
 
 
 @register.filter
+def parametername_form(value):
+    "Removes all values of arg from the given string"
+    return value.replace('/', '_s47_')
+
+
 def removePrefix(value):
     """Removes the auth prefix (ie 'localdb_' from username)."""
 

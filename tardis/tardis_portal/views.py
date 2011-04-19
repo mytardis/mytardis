@@ -57,7 +57,10 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
-    ImportParamsForm
+    ImportParamsForm, create_parameterset_edit_form, \
+    save_datafile_edit_form, create_datafile_add_form,\
+    save_datafile_add_form
+
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.logger import logger
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -65,7 +68,9 @@ from tardis.tardis_portal.staging import add_datafile_to_dataset,\
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset, UserProfile, UserAuthentication
+    Dataset, ExperimentParameterSet, DatasetParameterSet, \
+    UserProfile, UserAuthentication
+
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -405,9 +410,18 @@ def retrieve_dataset_metadata(request, dataset_id):
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
 
+@authz.experiment_access_required
+def retrieve_experiment_metadata(request, experiment_id):
+    experiment = Experiment.objects.get(pk=experiment_id)
+    c = Context({'experiment': experiment, })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/experiment_metadata.html', c))
+
+
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
+
     """Create a new experiment view.
 
     :param request: a HTTP Request instance
@@ -815,11 +829,13 @@ def retrieve_datafile_list(request, dataset_id):
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
 
-    pgresults = 500
-    if request.mobile:
-        pgresults = 30
-    else:
-        pgresults = 500
+    # pagination was removed by someone in the interface but not here.
+    # need to fix.
+    pgresults = 10000
+    # if request.mobile:
+    #     pgresults = 30
+    # else:
+    #     pgresults = 25
 
     paginator = Paginator(dataset_results, pgresults)
 
@@ -1098,7 +1114,7 @@ def __filterParameters(parameters, datafile_results,
                                 searchFilterData[parameter.name]
                 else:
                     pass
-            else:  # parameter.is_numeric:
+            else:  # parameter.isNumeric():
                 if parameter.comparison_type == \
                         ParameterName.RANGE_COMPARISON:
                     fromParam = searchFilterData[parameter.name + 'From']
@@ -1565,8 +1581,6 @@ def remove_user_from_group(request, group_id, username):
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
 
-    authMethod = localdb_auth_key
-
     canRead = False
     canWrite = False
     canDelete = False
@@ -1614,11 +1628,13 @@ def add_experiment_access_user(request, experiment_id, username):
                             canWrite=canWrite,
                             canDelete=canDelete,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
         acl.save()
         c = Context({'authMethod': authMethod,
                      'user': user,
                      'username': username,
                      'experiment_id': experiment_id})
+
         return HttpResponse(render_response_index(request,
             'tardis_portal/ajax/add_user_result.html', c))
 
@@ -1779,6 +1795,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
 
+    # TODO: enable transaction management here...
     if create:
         try:
             group = Group(name=groupname)
@@ -1831,6 +1848,8 @@ def add_experiment_access_group(request, experiment_id, groupname):
             return HttpResponse('User %s does not exist' % (admin))
         except UserAuthentication.DoesNotExist:
             return HttpResponse('User %s does not exist' % (admin))
+        except UserAuthentication.DoesNotExist:
+            return return_response_error(request)
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)
@@ -2003,10 +2022,17 @@ def import_params(request):
                         is_numeric = False
                         if part[3].strip(' \n\r') == 'True':
                             is_numeric = True
+                        if is_numeric:
+                            pn = ParameterName(schema=schema_db,
+                                               name=part[0], full_name=part[1],
+                                               units=part[2],
+                                               data_type=ParameterName.NUMERIC)
+                        else:
 
-                        pn = ParameterName(schema=schema_db,
-                                name=part[0], full_name=part[1],
-                                units=part[2], is_numeric=is_numeric)
+                            pn = ParameterName(schema=schema_db,
+                                               name=part[0], full_name=part[1],
+                                               units=part[2],
+                                               data_type=ParameterName.STRING)
                         pn.save()
 
                 i = i + 1
@@ -2091,3 +2117,157 @@ def upload_files(request, dataset_id,
     url = reverse('tardis.tardis_portal.views.upload_complete')
     c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
     return render_to_response(template_name, c)
+
+
+@login_required
+def edit_experiment_par(request, parameterset_id):
+    parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
+    if authz.has_write_permissions(request, parameterset.experiment.id):
+        return edit_parameters(request, parameterset, otype="experiment")
+    else:
+        return return_response_error(request)
+
+
+@login_required
+def edit_dataset_par(request, parameterset_id):
+    parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
+    if authz.has_write_permissions(request, parameterset.dataset.experiment.id):
+        return edit_parameters(request, parameterset, otype="dataset")
+    else:
+        return return_response_error(request)
+
+
+@login_required
+def edit_datafile_par(request, parameterset_id):
+    parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
+    if authz.has_write_permissions(request, parameterset.datafile.dataset.experiment.id):
+        return edit_parameters(request, parameterset, otype="datafile")
+    else:
+        return return_response_error(request)
+
+
+def edit_parameters(request, parameterset, otype):
+
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=parameterset.schema.namespace)
+    success = False
+    valid = True
+
+    if request.method == 'POST':
+
+        class DynamicForm(create_parameterset_edit_form(
+            parameterset, request=request)):
+            pass
+
+        form = DynamicForm(request.POST)
+
+        if form.is_valid():
+            save_datafile_edit_form(parameterset, request)
+
+            success = True
+        else:
+            valid = False
+
+    else:
+
+        class DynamicForm(create_parameterset_edit_form(
+            parameterset)):
+            pass
+
+        form = DynamicForm()
+
+    c = Context({
+        'schema': parameterset.schema.namespace,
+        'form': form,
+        'parameternames': parameternames,
+        'type': otype,
+        'success': success,
+        'parameterset_id': parameterset.id,
+        'valid': valid,
+    })
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/parameteredit.html', c))
+
+
+@login_required
+def add_datafile_par(request, datafile_id):
+    parentObject = Dataset_File.objects.get(id=datafile_id)
+    if authz.has_write_permissions(request, parentObject.dataset.experiment.id):
+        return add_par(request, parentObject, otype="datafile")
+    else:
+        return return_response_error(request)
+
+
+@login_required
+def add_dataset_par(request, dataset_id):
+    parentObject = Dataset.objects.get(id=dataset_id)
+    if authz.has_write_permissions(request, parentObject.experiment.id):
+        return add_par(request, parentObject, otype="dataset")
+    else:
+        return return_response_error(request)
+
+
+@login_required
+def add_experiment_par(request, experiment_id):
+    parentObject = Experiment.objects.get(id=experiment_id)
+    if authz.has_write_permissions(request, parentObject.id):
+        return add_par(request, parentObject, otype="experiment")
+    else:
+        return return_response_error(request)
+
+
+def add_par(request, parentObject, otype):
+
+    all_schema = Schema.objects.all()
+
+    if 'schema_id' in request.GET:
+        schema_id = request.GET['schema_id']
+    else:
+        schema_id = all_schema[0].id
+
+    schema = Schema.objects.get(id=schema_id)
+
+    parameternames = ParameterName.objects.filter(
+        schema__namespace=schema.namespace)
+
+    success = False
+    valid = True
+
+    if request.method == 'POST':
+
+        class DynamicForm(create_datafile_add_form(
+            schema.namespace, parentObject, request=request)):
+            pass
+
+        form = DynamicForm(request.POST)
+
+        if form.is_valid():
+            save_datafile_add_form(schema.namespace, parentObject, request)
+
+            success = True
+        else:
+            valid = False
+
+    else:
+
+        class DynamicForm(create_datafile_add_form(
+            schema.namespace, parentObject)):
+            pass
+
+        form = DynamicForm()
+
+    c = Context({
+        'schema': schema,
+        'form': form,
+        'parameternames': parameternames,
+        'type': otype,
+        'success': success,
+        'valid': valid,
+        'parentObject': parentObject,
+        'all_schema': all_schema,
+        'schema_id': schema.id,
+    })
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/parameteradd.html', c))
