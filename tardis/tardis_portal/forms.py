@@ -62,6 +62,8 @@ from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+
 
 def getAuthMethodChoices():
     authMethodChoices = ()
@@ -241,7 +243,7 @@ class ManageGroupPermissionsForm(forms.Form):
         label='Authentication Method')
     adduser = forms.CharField(label='User', required=False, max_length=100)
     adduser.widget.attrs['class'] = 'usersuggest'
-    admin = forms.BooleanField(label='Group Admin', required=False, initial=True)
+    admin = forms.BooleanField(label='Group Admin', required=False, initial=False)
     admin.widget.attrs['class'] = 'isAdmin'
 
 
@@ -694,11 +696,43 @@ def createSearchExperimentForm():
             widget=SelectDateWidget(), required=False)
 
     formutilFields = {}
-
     formutilFields['main fields'] = ['title', 'description', 'institutionName', 'creator', 'date']
 
     for schema, parameterNames in parameterNameGroups.items():
         formutilFields[schema] = []
+
+        for parameterName in parameterNames:
+            if parameterName.data_type == ParameterName.NUMERIC:
+                if parameterName.comparison_type \
+                    == ParameterName.RANGE_COMPARISON:
+                    fields[parameterName.name + 'From'] = \
+                        forms.DecimalField(label=parameterName.full_name
+                            + ' From', required=False)
+                    fields[parameterName.name + 'To'] = \
+                        forms.DecimalField(label=parameterName.full_name
+                            + ' To', required=False)
+                    formutilFields[schema].append(parameterName.name + 'From')
+                    formutilFields[schema].append(parameterName.name + 'To')
+                else:
+                    # note that we'll also ignore the choices text box entry
+                    # even if it's filled if the parameter is of numeric type
+                    # TODO: decide if we are to raise an exception if
+                    #       parameterName.choices is not empty
+                    fields[parameterName.name] = \
+                        forms.DecimalField(label=parameterName.full_name,
+                            required=False)
+                    formutilFields[schema].append(parameterName.name)
+            else:  # parameter is a string
+                if parameterName.choices != '':
+                    fields[parameterName.name] = \
+                        forms.CharField(label=parameterName.full_name,
+                        widget=forms.Select(choices=__getParameterChoices(
+                        parameterName.choices)), required=False)
+                else:
+                    fields[parameterName.name] = \
+                        forms.CharField(label=parameterName.full_name,
+                        max_length=255, required=False)
+                formutilFields[schema].append(parameterName.name)
 
         for parameterName in parameterNames:
             if parameterName.data_type == ParameterName.NUMERIC:
@@ -790,3 +824,203 @@ def createSearchDatafileSelectionForm():
 
     return type('DatafileSelectionForm', (forms.BaseForm, ),
                     {'base_fields': fields})
+
+
+class NoInput(forms.Widget):
+
+    def render(self, name, value, attrs=None):
+        from django.utils.safestring import mark_safe
+        return mark_safe(value)
+
+
+class StaticField(forms.Field):
+
+    widget = NoInput
+
+    def clean(self, value):
+        return
+
+
+def create_parameterset_edit_form(
+    parameterset,
+    request=None):
+
+    from tardis.tardis_portal.models import ParameterName
+
+    # if POST data to save
+    if request:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+
+        for key, value in sorted(request.POST.iteritems()):
+
+            x = 1
+
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            parameter_name = ParameterName.objects.get(
+                schema=parameterset.schema,
+                name=stripped_key)
+
+            units = ""
+            if parameter_name.units:
+                units = " (" + parameter_name.units + ")"
+                # if not valid, spit back as exact
+                if parameter_name.isNumeric():
+                    fields[key] = \
+                        forms.DecimalField(label=parameter_name.full_name + units,
+                                           required=False,
+                                           initial=value)
+                else:
+                    fields[key] = \
+                        forms.CharField(label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value)
+
+        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+
+    else:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+        psm = ParameterSetManager(parameterset=parameterset)
+
+        for dfp in psm.parameters:
+
+            x = 1
+
+            form_id = dfp.name.name + "__" + str(x)
+
+            while form_id in fields:
+                x = x + 1
+                form_id = dfp.name.name + "__" + str(x)
+
+            units = ""
+            if dfp.name.units:
+                units = " (" + dfp.name.units + ")"
+
+            form_id = form_id.replace('/', '_s47_')
+
+            if dfp.name.isNumeric():
+                fields[form_id] = \
+                    forms.DecimalField(label=dfp.name.full_name + units,
+                                       required=False,
+                                       initial=dfp.numerical_value)
+            else:
+                fields[form_id] = \
+                    forms.CharField(label=dfp.name.full_name + units,
+                                    max_length=255,
+                                    required=False,
+                                    initial=dfp.string_value)
+
+            if dfp.name.immutable:
+                fields[form_id].widget.attrs['readonly'] = 'readonly'
+
+        return type('DynamicForm', (forms.BaseForm, ),
+                    {'base_fields': fields})
+
+
+def save_datafile_edit_form(parameterset, request):
+
+    psm = ParameterSetManager(parameterset=parameterset)
+
+    psm.delete_all_params()
+
+    for key, value in sorted(request.POST.iteritems()):
+        if value:
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            psm.new_param(stripped_key, value)
+
+
+def create_datafile_add_form(
+    schema, parentObject,
+    request=None):
+
+    from tardis.tardis_portal.models import ParameterName
+
+    # if POST data to save
+    if request:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+
+        for key, value in sorted(request.POST.iteritems()):
+
+            x = 1
+
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            parameter_name = ParameterName.objects.get(
+                schema__namespace=schema,
+                name=stripped_key)
+
+
+            units = ""
+            if parameter_name.units:
+                units = " (" + parameter_name.units + ")"
+
+                # if not valid, spit back as exact
+                if parameter_name.isNumeric():
+                    fields[key] = \
+                        forms.DecimalField(label=parameter_name.full_name + units,
+                                           required=False,
+                                           initial=value,
+                                           )
+                else:
+                    fields[key] = \
+                        forms.CharField(label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value,
+                                        )
+
+        return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
+
+    else:
+        from django.utils.datastructures import SortedDict
+        fields = SortedDict()
+
+        parameternames = ParameterName.objects.filter(
+            schema__namespace=schema).order_by('name')
+
+        for dfp in parameternames:
+
+            x = 1
+
+            form_id = dfp.name + "__" + str(x)
+
+            while form_id in fields:
+                x = x + 1
+                form_id = dfp.name + "__" + str(x)
+
+            units = ""
+            if dfp.units:
+                units = " (" + dfp.units + ")"
+
+            form_id = form_id.replace('/', '_s47_')
+
+            if dfp.isNumeric():
+                fields[form_id] = \
+                forms.DecimalField(label=dfp.full_name + units,
+                required=False)
+            else:
+                fields[form_id] = \
+                forms.CharField(label=dfp.full_name + units,
+                max_length=255, required=False)
+
+        return type('DynamicForm', (forms.BaseForm, ),
+            {'base_fields': fields})
+
+
+def save_datafile_add_form(schema, parentObject, request):
+
+    psm = ParameterSetManager(schema=schema,
+        parentObject=parentObject)
+
+    for key, value in sorted(request.POST.iteritems()):
+        if value:
+            stripped_key = key.replace('_s47_', '/')
+            stripped_key = stripped_key.rpartition('__')[0]
+
+            psm.new_param(stripped_key, value)

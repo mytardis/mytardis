@@ -17,6 +17,40 @@ $(document).ready(function() {
 });
 
 </script>
+
+<script type="text/javascript" charset="utf-8">
+	$(".experiment_metadata_toggle").text("[Show]");
+	$(".experiment_metadata_toggle").next().hide();
+	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
+
+	// metadata text / ajax toggle
+
+	$(document).ready(function(){
+
+		$(".experiment_metadata_toggle").live('click', function(e){
+			e.preventDefault();
+
+			if($(this).text() == "[Show]")
+			{
+
+				$(this).text("[Hide]");
+				var href= $(this).attr("href");
+
+		    	$(this).next().html(loadingHTML + "</br>");
+		        $(this).next().load(href);
+				$(this).next().show();
+			}
+			else
+			{
+				$(this).text("[Show]");
+				var href= $(this).attr("href");
+				$(this).next().hide();
+			}
+			return false;
+		});
+	});
+
+</script>
 {% endblock %}
 
 <div id="experiment_description">
@@ -55,23 +89,39 @@ $(document).ready(function() {
   {% endif %}
 
   <p>
-    {% if experiment.experimentparameterset_set.count %}
-      <div class="dataset_extrainfo">
-	<strong>Experiment Metadata: </strong><a class="dataset_metadata_toggle" href="#dataset_metadata_{{forloop.counter}}">[Hide]</a>
-	<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
-	  <ul>
-	    {% for parameterset in experiment.experimentparameterset_set.all %}
-              <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
-	      {% for parameter in parameterset.experimentparameter_set.all %}
-                <li><strong>{{ parameter.name.full_name }}: </strong>{{ parameter.get }}</li>
-              {% endfor %}
-	      <br/>
-	      <br/>
-            {% endfor %}
-	  </ul>
+    {# {% if experiment.experimentparameterset_set.count %} #}
+	<div class="experiment_md_container">
+	<strong>Experiment Metadata:</strong>
+
+	<a href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
+	 class="jqModalExpA{{experiment.id}}">[Add]</a>
+	<script type="text/javascript">
+	$('#jqmAlertExpA{{experiment.id}}').die();
+	$('#jqmAlertExpA{{experiment.id}}').jqm({
+	  trigger: '.jqModalExpA{{experiment.id}}',
+	  ajax: '@href',
+	  target: '#jqmAlertContentexperimentA{{experiment.id}}',
+	  overlay: 0,
+	  });
+	</script>
+	<div class="jqmAlert" id="jqmAlertExpA{{experiment.id}}">
+
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
+		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+		  </div>
+		</div>
 	</div>
-      </div>
-    {% endif %}
+
+	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
+	<span class="experiment_metadata"></span>
+
+	</div>
+    {# {% endif %} #}
   </p>
 
   <p>

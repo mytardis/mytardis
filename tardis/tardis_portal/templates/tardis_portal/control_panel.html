@@ -78,7 +78,7 @@
           var canRead = $(this).siblings(".canRead").is(':checked');
           var canWrite = $(this).siblings(".canWrite").is(':checked');
           var canDelete = $(this).siblings(".canDelete").is(':checked');
-          var permissions = '?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete;
+          var permissions = '/?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete;
           action = experiment_id + '/access_list/add/user/' + usersuggest + permissions;
 
           $.ajax({
@@ -221,7 +221,7 @@
           var canRead = $(this).siblings(".canRead").is(':checked');
           var canWrite = $(this).siblings(".canWrite").is(':checked');
           var canDelete = $(this).siblings(".canDelete").is(':checked');
-          var permissions = '?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+          var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
           action = experiment_id + '/access_list/add/group/' + groupsuggest + permissions;
 
           $.ajax({

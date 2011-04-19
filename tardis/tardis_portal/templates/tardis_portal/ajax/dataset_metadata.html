@@ -1,5 +1,8 @@
 <ul>
   {% for parameterset in dataset.datasetparameterset_set.all %}
+	<p><a href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}"
+	 class="jqModalDs{{parameterset.id}}">[Edit Metadata]</a></p>
+
      <p><strong><em>Schema: {{parameterset.schema}}</em></strong></p>
 
      {% for parameter in parameterset.datasetparameter_set.all %}
@@ -9,5 +12,27 @@
      {% endfor %}
      <br/>
      <br/>
+	<script type="text/javascript">
+	$('#jqmAlertDs{{parameterset.id}}').unbind();
+	$('#jqmAlertDs{{parameterset.id}}').jqm({
+	  trigger: ".jqModalDs{{parameterset.id}}",
+	  ajax: '@href',
+	  target: '#jqmAlertContentdataset{{parameterset.id}}',
+	  overlay: 0
+	  });
+	</script>
+
+	<div class="jqmAlert" id="jqmAlertDs{{parameterset.id}}">
+
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent" id="jqmAlertContentdataset{{parameterset.id}}">
+		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
+		  </div>
+		</div>
+	</div>
   {% endfor %}
 </ul>

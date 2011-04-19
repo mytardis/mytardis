@@ -1,0 +1,81 @@
+{# {% include "tardis_portal/javascript_libraries.html" %} #}
+{% load formfieldfilters %}
+
+{% if success %}
+	Parameters saved successfully.
+	
+{% else %}
+	<p><strong>Schema: </strong>{{schema}}</strong></p>
+	<form id="edit_form_{{type}}_{{parameterset_id}}" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>
+		{{ form.non_field_errors }}
+	    {% for field in form %}
+	        <div class="fieldWrapper">
+	            {{ field.errors }}
+	            {{ field.label_tag }}:
+				<br/>{{ field }}
+	        </div>
+	    {% endfor %}
+		<span/>
+		
+		<select id="parameternameselect_{{type}}_{{parameterset_id}}">
+		{% for pn in parameternames %}
+		
+			<option value="{{pn.name|parametername_form}}">{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
+	
+		{% endfor %}
+		</select>
+
+		<a id="add_new_parameter_{{type}}_{{parameterset_id}}">Add Metadata Parameter</a>
+  		
+		<p><em>Leave a parameter blank to remove</em></p>
+		{% if not valid %}
+			<p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
+		{% endif %}		
+		<p><input id="submit" type="submit" value="submit" /></p>
+		
+	</form>	
+	<script type="text/javascript">
+	$('#add_new_parameter_{{type}}_{{parameterset_id}}').live('click', function(){		
+
+		$("#parameternameselect_{{type}}_{{parameterset_id}} option:selected").each(function () {
+
+			new_element_name = get_new_parameter_name($(this).val());
+
+			$("#parameternameselect_{{type}}_{{parameterset_id}}").before(get_form_input_html($(this).text(), new_element_name));
+			
+			$("#" + new_element_name).focus();
+		});
+	});
+	
+	$('.jqmClose').click(function(){
+		// yeah perhaps I shouldn't let this try and find and fail silently..
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.datafile');
+		var href= parentdatafile.children('.datafile_info_toggle').attr("href");
+		parentdatafile.children('.datafile_info').html(loadingHTML);
+		parentdatafile.children('.datafile_info').load(href);
+	
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.dataset_extrainfo');
+		var href = parentdatafile.children('.dataset_metadata_toggle').attr("href");
+		parentdatafile.children('.dataset_metadata').html(loadingHTML);
+		parentdatafile.children('.dataset_metadata').load(href);
+		
+		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.experiment_md_container');
+		var href = parentdatafile.children('.experiment_metadata_toggle').attr("href");
+		parentdatafile.children('.experiment_metadata').html(loadingHTML);
+		parentdatafile.children('.experiment_metadata').load(href);		
+	});
+	
+		$('#edit_form_{{type}}_{{parameterset_id}}').submit(function(e) {
+			e.preventDefault();
+
+			$.post("/ajax/edit_{{type}}_parameters/{{parameterset_id}}/", $("#edit_form_{{type}}_{{parameterset_id}}").serialize(),
+			      function( data ) {
+			          $("#jqmAlertContent{{type}}{{parameterset_id}}").html( data );					
+							
+						return false;
+			      });
+
+			return false;
+		});
+	</script>
+{% endif %}
