@@ -60,11 +60,6 @@ INSTALLED_APPS = (
         'south'
 )
 
-# TODO: move to mecat settings module
-VBLSTORAGEGATEWAY = \
-'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
-
-
 # LDAP configuration
 LDAP_USE_TLS = False
 LDAP_URL = "ldap://localhost:38911/"
