@@ -6,7 +6,7 @@
 
   {% include "tardis_portal/javascript_libraries.html" %}
 
-<script type="text/javascript">	
+<script type="text/javascript">
 
 	function get_new_parameter_name(name)
 	{
@@ -38,10 +38,10 @@
 	  if($.browser.msie) {
 	  $('div.jqmAlert .jqmClose')
 	  .hover(
-	    function(){ $(this).addClass('jqmCloseHover'); }, 
+	    function(){ $(this).addClass('jqmCloseHover'); },
 	    function(){ $(this).removeClass('jqmCloseHover'); });
 	  }
-	
+
     });
   </script>
 
@@ -52,9 +52,11 @@
   <div id="fullpage">
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
-        <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+        {% if has_write_permissions %}
+           <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+	{% endif %}
       </h1>
-    </div>  
+    </div>
 
     <div class="tabcontainer">
       <div id="tabs">
@@ -67,7 +69,8 @@
     </div>
   </div>
 
+
 {# <p><a href="/ajax/edit_datafile_parameters/1/" #}
 {#  class="jqModal">[Edit Metadata]</a></p> #}
-<p>
+
 {% endblock %}

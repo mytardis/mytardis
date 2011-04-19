@@ -287,6 +287,8 @@ def view_experiment(request, experiment_id):
         return return_response_not_found(request)
 
     c['experiment'] = experiment
+    c['has_write_permissions'] = \
+        authz.has_write_permissions(request, experiment_id)
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
@@ -348,6 +350,9 @@ def experiment_description(request, experiment_id):
             pass
     c['size'] = size
 
+    c['has_write_permissions'] = \
+        authz.has_write_permissions(request, experiment_id)
+
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
     for key, value in download_urls.iteritems():
@@ -391,6 +396,9 @@ def experiment_datasets(request, experiment_id):
     c['experiment'] = experiment
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
+
+    c['has_write_permissions'] = \
+        authz.has_write_permissions(request, experiment_id)
 
     c['protocol'] = []
     download_urls = experiment.get_download_urls()

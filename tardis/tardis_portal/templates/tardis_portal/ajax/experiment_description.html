@@ -93,6 +93,7 @@ $(document).ready(function() {
 	<div class="experiment_md_container">
 	<strong>Experiment Metadata:</strong>
 
+	{% if has_write_permissions %}
 	<a href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
 	 class="jqModalExpA{{experiment.id}}">[Add]</a>
 	<script type="text/javascript">
@@ -116,6 +117,7 @@ $(document).ready(function() {
 		  </div>
 		</div>
 	</div>
+	{% endif %}
 
 	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
 	<span class="experiment_metadata"></span>

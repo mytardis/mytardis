@@ -22,6 +22,7 @@
 	  });
 	</script>
 
+	{% if has_write_permissions %}
 	<div class="jqmAlert" id="jqmAlertDs{{parameterset.id}}">
 
 		<div class="jqmAlertWindow">
@@ -34,5 +35,6 @@
 		  </div>
 		</div>
 	</div>
+	{% endif %}
   {% endfor %}
 </ul>
