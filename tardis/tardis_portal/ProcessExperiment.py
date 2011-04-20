@@ -35,10 +35,14 @@ from lxml import etree
 from xml.dom.minidom import parseString
 import urllib
 
+import logging
+
 from django.utils.safestring import SafeUnicode
 
 from tardis.tardis_portal.models import *
-from tardis.tardis_portal.logger import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 def getText(nodelist):
@@ -85,6 +89,12 @@ def getXmlnsFromTechXMLRaw(md):
 
 
 class ProcessExperiment:
+
+    def __init__(self):
+        pass
+
+    def __call__(self):
+        pass
 
     def download_xml(self, url):
         f = urllib.urlopen(url)

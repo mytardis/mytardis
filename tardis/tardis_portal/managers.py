@@ -14,19 +14,22 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
-from tardis.tardis_portal.logger import logger
+
 
 class OracleSafeManager(models.Manager):
     """
-    Implements a custom manager which automatically defers the retreival
-    of any TextField fields on calls to get_query_set. This is to avoid
-    the known issue that 'distinct' calls on query_sets containing 
-    TextField's fail when Oracle is being used as the back end. 
-    """  
+    Implements a custom manager which automatically defers the
+    retreival of any TextField fields on calls to get_query_set. This
+    is to avoid the known issue that 'distinct' calls on query_sets
+    containing TextFields fail when Oracle is being used as the
+    backend.
+    """
     def get_query_set(self):
-        fields = [a.attname for a in self.model._meta.fields if a.db_type() == 'NCLOB']
-        return super(OracleSafeManager, self).get_query_set().defer(*fields)    
-    
+        fields = [a.attname for a in
+                  self.model._meta.fields if a.db_type() == 'NCLOB']
+        return super(OracleSafeManager, self).get_query_set().defer(*fields)
+
+
 class ExperimentManager(OracleSafeManager):
     """
     Implements a custom manager for the Experiment model which checks

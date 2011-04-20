@@ -49,13 +49,17 @@ recommends.
 
 """
 
+import logging
+
 from xml.sax import SAXParseException, ContentHandler
-from tardis.tardis_portal import metsstruct
-from tardis.tardis_portal import models
-from tardis.tardis_portal.logger import logger
-from django.utils.safestring import SafeUnicode
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
+
+from tardis.tardis_portal import metsstruct
+from tardis.tardis_portal import models
+
+
+logger = logging.getLogger(__name__)
 
 
 class MetsDataHolder():

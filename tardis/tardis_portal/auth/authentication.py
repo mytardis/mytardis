@@ -4,6 +4,8 @@ views.py.
 
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
+import logging
+
 from django.conf import settings
 from django.http import HttpResponse
 from django.template import Context
@@ -13,7 +15,9 @@ from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
 from tardis.tardis_portal.auth import localdb_auth
 from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.logger import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 def list_auth_methods(request):

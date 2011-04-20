@@ -1,25 +1,44 @@
-import logging
 from os import path
 
-DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = ':memory:'
-ROOT_URLCONF = 'tardis.urls'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
 DEBUG = True
-STATIC_DOC_ROOT = path.join(path.abspath(path.dirname(__file__)),
-                            'tardis_portal/site_media')
+
+DATABASES = {
+    'default': {
+        # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.sqlite3',
+        # Name of the database to use. For SQLite, it's the full path.
+        'NAME': ':memory:',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
+ROOT_URLCONF = 'tardis.urls'
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/staging/"))
 
-ADMIN_MEDIA_STATIC_DOC_ROOT = ''
-HANDLEURL = ''
 SITE_ID = '1'
-MEDIA_URL = '/site_media/'
+
 TEMPLATE_DIRS = ['.']
 
-# TODO: move vbl auth provider settings to mecat module
+STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                            'tardis_portal/site_media').replace('\\', '/')
+
+MEDIA_ROOT = STATIC_DOC_ROOT
+
+MEDIA_URL = '/site_media/'
+
+ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                                        '../parts/django/django/contrib/admin/media/').replace('\\', '/')
+
+
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
                   ('vbl', 'VBL',
@@ -28,6 +47,7 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
                    'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
 )
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
+
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 )
@@ -41,7 +61,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
-    'tardis.tardis_portal.minidetector.Middleware'
+    'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
+    'tardis.tardis_portal.minidetector.Middleware',
+    'django.middleware.transaction.TransactionMiddleware'
 )
 
 INSTALLED_APPS = (
@@ -60,11 +82,6 @@ INSTALLED_APPS = (
         'south'
 )
 
-# TODO: move to mecat settings module
-VBLSTORAGEGATEWAY = \
-'https://vbl.synchrotron.org.au/StorageGateway/VBLStorageGateway.wsdl'
-
-
 # LDAP configuration
 LDAP_USE_TLS = False
 LDAP_URL = "ldap://localhost:38911/"
@@ -80,13 +97,14 @@ LDAP_BASE = 'dc=example, dc=com'
 LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
 LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
 
+SYSTEM_LOG_LEVEL = 'INFO'
+MODULE_LOG_LEVEL = 'INFO'
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+SYSTEM_LOG_FILENAME = 'request.log'
+MODULE_LOG_FILENAME = 'tardis.log'
 
-LOG_FILENAME = None
-# LOG_FILENAME = '/var/log/tardis/tardis.log'
+SYSTEM_LOG_MAXBYTES = 0
+MODULE_LOG_MAXBYTES = 0
 
-LOG_FORMAT = "%(asctime)s - %(levelname)-8s - %(message)s"
-
-# logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
-LOG_LEVEL = logging.ERROR
+UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
+UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')

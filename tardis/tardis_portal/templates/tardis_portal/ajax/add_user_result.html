@@ -1,11 +1,7 @@
 <div class="access_list_user">
   <p>
-    <strong>{{user.username}}</strong> - {{user.email}}
-    {% if request.user != user %}
+    <strong>{{username}}</strong> - {{user.email}}
     <a class="change_user" href="{% url tardis.tardis_portal.views.change_user_permissions experiment_id user.username %}"><img src="/site_media/images/icon_changelink.gif"></a>
     <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_experiment_access_user experiment_id user.username %}"><img src="/site_media/images/icon_deletelink.gif"></a>
-    {% endif %}
-    <br/>
-    <br/>
   </p>
 </div> <!-- access_list_user -->
