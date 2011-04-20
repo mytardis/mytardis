@@ -49,17 +49,17 @@ LOGGING = {
     },
     'handlers': {
         'null': {
-            'level':'DEBUG',
-            'class':'django.utils.log.NullHandler',
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
         },
-        'console':{
-            'level':'INFO',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
             'formatter': 'module',
         },
         'systemlog': {
             'level': settings.SYSTEM_LOG_LEVEL,
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'system',
             'filename': settings.SYSTEM_LOG_FILENAME,
             'maxBytes': settings.SYSTEM_LOG_MAXBYTES,
@@ -67,7 +67,7 @@ LOGGING = {
         },
         'modulelog': {
             'level': settings.MODULE_LOG_LEVEL,
-            'class':'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'module',
             'filename': settings.MODULE_LOG_FILENAME,
             'maxBytes': settings.MODULE_LOG_MAXBYTES,
@@ -99,7 +99,7 @@ class LoggingMiddleware(object):
         try:
             user = request.user
         except:
-            user =''
+            user = ''
         ip = request.META['REMOTE_ADDR']
         method = request.method
         status = response.status_code
