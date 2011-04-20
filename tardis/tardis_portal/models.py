@@ -624,6 +624,7 @@ class ParameterName(models.Model):
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
     data_type = models.IntegerField(choices=__TYPE_CHOICES, default=STRING)
+    immutable = models.BooleanField(default=False)
     comparison_type = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
     is_searchable = models.BooleanField(default=False)
@@ -716,6 +717,8 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isLink():
+        if parameter.string_value is None:
+            return ''
         units = parameter.name.units
         if units:
             url = units + parameter.string_value

@@ -4,11 +4,15 @@ Local DB Authentication module.
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
+import logging
+
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.backends import ModelBackend
 
 from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
-from tardis.tardis_portal.logger import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 auth_key = u'localdb'

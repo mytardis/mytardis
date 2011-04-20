@@ -475,6 +475,7 @@ table.experiment-table th {
 		width: 90%;
 		padding: 10px;
 		margin: 10px;
+		display: none;
 	}
 
 	a.filelink {
@@ -614,7 +615,7 @@ table.experiment-table th {
     }
 
     .fieldWrapper input {
-        width: 500px;
+        width: 300px;
 
     }
 

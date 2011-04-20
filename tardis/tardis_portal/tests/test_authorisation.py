@@ -7,7 +7,7 @@ from django.contrib.auth.models import User, Group
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ExperimentACL, Experiment
+from tardis.tardis_portal.models import ExperimentACL, Experiment, UserProfile
 
 
 class ExperimentACLTestCase(TestCase):
@@ -20,6 +20,11 @@ class ExperimentACLTestCase(TestCase):
         self.user2 = User.objects.create_user('testuser2', '', 'secret')
         self.user3 = User.objects.create_user('testuser3', '', 'secret')
         self.user4 = User.objects.create_user('testuser4', '', 'secret')
+
+        self.userProfile1 = UserProfile(user=self.user1)
+        self.userProfile2 = UserProfile(user=self.user2)
+        self.userProfile3 = UserProfile(user=self.user3)
+        self.userProfile4 = UserProfile(user=self.user4)
 
         # each user will have their own client
         self.client1 = Client()
@@ -116,7 +121,8 @@ class ExperimentACLTestCase(TestCase):
         self.user4.delete()
 
     def testReadAccess(self):
-        login = self.client1.login(username='testuser1', password='secret')
+        login = self.client1.login(username=self.user1.username,
+                                   password='secret')
         self.assertTrue(login)
 
         # user1 should be see experiment1
@@ -141,7 +147,7 @@ class ExperimentACLTestCase(TestCase):
 
         # create a group and add it to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/group/%s?canRead=true&create=true'
+                                    '/add/group/%s/?canRead=true&create=true'
                                     % (self.experiment1.id, 'group1'))
         self.assertEqual(response.status_code, 200)
 
@@ -164,7 +170,7 @@ class ExperimentACLTestCase(TestCase):
 
         # user1 is not allowed to modify acls for experiment2
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s'
                                     % (self.experiment2.id,
                                        self.user1.username,
                                        localdb_auth_key))
@@ -173,7 +179,7 @@ class ExperimentACLTestCase(TestCase):
         # test add non-existent user
         non_existant = 'test_boozer'
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s'
                                     % (self.experiment1.id,
                                        non_existant,
                                        localdb_auth_key))
@@ -192,14 +198,15 @@ class ExperimentACLTestCase(TestCase):
         # it. This could possibly be changed to a 404 error.
 
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=%s'
+                                    '/add/user/%s/?authMethod=%s'
                                     % (9999, self.user1.username, localdb_auth_key))
         self.assertEqual(response.status_code, 403)
 
         self.client1.logout()
 
         # now check user2's permissions
-        login = self.client2.login(username=self.user2.username, password='secret')
+        login = self.client2.login(username=self.user2.username,
+                                   password='secret')
         self.assertTrue(login)
 
         # user2 should be able to see experiment1 now
@@ -224,7 +231,8 @@ class ExperimentACLTestCase(TestCase):
         self.client2.logout()
 
         # now check user3's permissions
-        login = self.client3.login(username='testuser3', password='secret')
+        login = self.client3.login(username=self.user3.username,
+                                   password='secret')
         self.assertTrue(login)
 
         # user3 should be able to see experiment1 via his group permissions
@@ -255,8 +263,8 @@ class ExperimentACLTestCase(TestCase):
         tomorrow = today + datetime.timedelta(days=1)
 
         url = '/experiment/control_panel/%i/access_list/change/user/%s/'
-
-        login = self.client1.login(username=self.user1.username, password='secret')
+        login = self.client1.login(username=self.user1.username,
+                                   password='secret')
         self.assertTrue(login)
 
         # remove user3 from group1
@@ -266,8 +274,10 @@ class ExperimentACLTestCase(TestCase):
 
         # add user3 to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=%s'
-                         % (self.experiment1.id, self.user3.username, localdb_auth_key))
+                                    '/add/user/%s/?authMethod=%s'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, '<div class="access_list_user">')
 
@@ -281,7 +291,8 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # check permissions for user3
-        login = self.client3.login(username='testuser3', password='secret')
+        login = self.client3.login(username=self.user3.username,
+                                   password='secret')
         self.assertTrue(login)
 
         response = self.client3.get('/experiment/view/%i/'
@@ -387,7 +398,8 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # now check access for user1
-        login = self.client1.login(username='testuser1', password='secret')
+        login = self.client1.login(username=self.user1.username,
+                                   password='secret')
         self.assertTrue(login)
         response = self.client1.get('/experiment/edit/%i/' % (self.experiment1.id))
         self.assertEqual(response.status_code, 200)
@@ -402,7 +414,7 @@ class ExperimentACLTestCase(TestCase):
 
         # create a group 'group1w' with write permissions
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/group/%s?canRead=true&canWrite=true&create=true'
+                                    '/add/group/%s/?canRead=true&canWrite=true&create=true'
                                     % (self.experiment1.id, 'group1w'))
         self.assertEqual(response.status_code, 200)
 
@@ -414,8 +426,11 @@ class ExperimentACLTestCase(TestCase):
 
         # add user3 explicitly to experiment1
         response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/user/%s?authMethod=%s&canRead=true&canWrite=true'
-                                    % (self.experiment1.id, self.user3.username, localdb_auth_key))
+                                    '/add/user/%s/?authMethod=%s&canRead=true'
+                                    '&canWrite=true'
+                                    % (self.experiment1.id,
+                                       self.user3.username,
+                                       localdb_auth_key))
         self.assertEqual(response.status_code, 200)
 
         # check newly created permissions for user2 and user3

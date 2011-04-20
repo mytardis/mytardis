@@ -1,21 +1,40 @@
-import logging
 from os import path
 
 
-DEBUG = True
+DEBUG = False
+
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (('bob', 'bob@bobmail.com'), )
 
 MANAGERS = ADMINS
 
-# 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'postgresql_psycopg2'
-DATABASE_NAME = 'tardis'  # Or path to database file if using sqlite3.
-DATABASE_USER = 'x'  # Not used with sqlite3.
-DATABASE_PASSWORD = ''  # Not used with sqlite3.
-DATABASE_HOST = ''  # Set to empty string for localhost. Not used with sqlite3.
-DATABASE_PORT = ''  # Set to empty string for default. Not used with sqlite3.
+# Dictionary containing the settings for all databases to be used.
+# The DATABASES setting must configure a default database;
+# any number of additional databases may also be specified.
+DATABASES = {
+    'default': {
+        # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # Name of the database to use. For SQLite, it's the full path.
+        'NAME': 'tardis',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
+# A dictionary containing the settings for all caches to be used with
+# Django. The CACHES setting must configure a default cache; any number of
+# additional caches may also be specified.
+
+#CACHES = {
+#    'default': {
+#        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#        'LOCATION': '127.0.0.1:11211',
+#    }
+#}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -51,13 +70,14 @@ MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.minidetector.Middleware',
+    'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.middleware.transaction.TransactionMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
-                               'django.core.context_processors.auth',
+                               'django.contrib.auth.context_processors.auth',
                                'django.core.context_processors.debug',
                                'django.core.context_processors.i18n')
 
@@ -69,12 +89,6 @@ TEMPLATE_DIRS = (
     'tardis_portal/templates/').replace('\\', '/'),
 )
 
-LDAP_ENABLE = False
-LDAP_URL = 'ldap://directory.example.com'
-BASE_DN = 'o=Organisation, c=X'
-LDAP_USER_RDN = 'uid'
-AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
-
 # Temporarily disable transaction management until everyone agrees that
 # we should start handling transactions
 DISABLE_TRANSACTION_MANAGEMENT = False
@@ -83,12 +97,12 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
-                                           '../parts/django-admin.py/django/contrib/admin/media/').replace('\\', '/')
+    '../parts/django/django/contrib/admin/media/').replace('\\', '/')
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
-                                               '../var/store/')).replace('\\', '/')
+    '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
-                                            "../var/staging/")).replace('\\', '/')
+    '../var/staging/')).replace('\\', '/')
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -101,6 +115,9 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 
 MEDIA_URL = '/site_media/'
 
+# A tuple of strings designating all applications that are enabled in
+# this Django installation.
+
 INSTALLED_APPS = (
     'django_extensions',
     'django.contrib.auth',
@@ -110,18 +127,21 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'tardis.tardis_portal',
-    'registration',
     'tardis.tardis_portal.templatetags',
+    'registration',
     'south'
     )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
+
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                   'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
+
 )
 
 # AUTH_PROVIDERS entry format:
-#('name', 'display name', 'backend implementation')
+# ('name', 'display name', 'backend implementation')
 #   name - used as the key for the entry
 #   display name - used as the displayed value in the login form
 #   backend implementation points to the actual backend implementation
@@ -130,6 +150,8 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 AUTH_PROVIDERS = (
     ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
+
+AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
 ACCOUNT_ACTIVATION_DAYS = 3
 
@@ -152,13 +174,17 @@ EMAIL_USE_TLS = True
 #                                       # http://tilloy.net/dev/pyexiv2/
 #    ]
 
-
-LOG_FILENAME = '/var/tmp/tardis.log'
-
-LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
-LOG_LEVEL = logging.DEBUG
+SYSTEM_LOG_LEVEL = 'INFO'
+MODULE_LOG_LEVEL = 'INFO'
+
+SYSTEM_LOG_FILENAME = 'request.log'
+MODULE_LOG_FILENAME = 'tardis.log'
+
+# Rollover occurs whenever the current log file is nearly maxBytes in length;
+# if maxBytes is zero, rollover never occurs
+SYSTEM_LOG_MAXBYTES = 0
+MODULE_LOG_MAXBYTES = 0
 
 # Uploadify root folder path, relative to MEDIA_ROOT
 UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
