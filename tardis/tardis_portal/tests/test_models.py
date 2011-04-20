@@ -199,7 +199,6 @@ class ModelTestCase(TestCase):
                                    type=models.Schema.EXPERIMENT)
         exp_schema.save()
 
-
         df_parname = models.ParameterName(schema=df_schema,
                                           name='name',
                                           full_name='full_name',
@@ -249,7 +248,6 @@ class ModelTestCase(TestCase):
                                                    parameterset=exp_parset,
                                                    string_value=b64encode(open(filename).read()))
         exp_parameter.save()
-
 
         self.assertEqual("<img src='/test/DatafileImage/load/%i/' />" % df_parameter.id,
                          df_parameter.get())

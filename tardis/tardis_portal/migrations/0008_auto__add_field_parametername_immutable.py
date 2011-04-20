@@ -1,22 +1,17 @@
 # encoding: utf-8
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
         # Adding field 'ParameterName.immutable'
         db.add_column('tardis_portal_parametername', 'immutable', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
-
     def backwards(self, orm):
-        
         # Deleting field 'ParameterName.immutable'
         db.delete_column('tardis_portal_parametername', 'immutable')
-
 
     models = {
         'auth.group': {
