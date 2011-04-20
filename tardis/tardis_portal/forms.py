@@ -955,7 +955,6 @@ def create_datafile_add_form(
                 schema__namespace=schema,
                 name=stripped_key)
 
-
             units = ""
             if parameter_name.units:
                 units = " (" + parameter_name.units + ")"
