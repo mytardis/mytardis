@@ -501,10 +501,12 @@ class Schema(models.Model):
     EXPERIMENT = 1
     DATASET = 2
     DATAFILE = 3
+    NONE = 4
     _SCHEMA_TYPES = (
         (EXPERIMENT, 'Experiment schema'),
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
+        (NONE, 'None')
     )
 
     namespace = models.URLField(verify_exists=False, max_length=400)
