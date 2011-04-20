@@ -38,12 +38,16 @@ LDAP Authentication module.
 
 import ldap
 
+import logging
+
 from django.conf import settings
 
 from tardis.tardis_portal.auth.interfaces import AuthProvider, \
     GroupProvider, UserProvider
 from tardis.tardis_portal.models import UserAuthentication
-from tardis.tardis_portal.logger import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 auth_key = u'ldap'

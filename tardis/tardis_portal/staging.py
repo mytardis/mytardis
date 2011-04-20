@@ -36,12 +36,14 @@ staging.py
 
 """
 
+import logging
 import shutil
 from os import path, makedirs, listdir
 
 from django.conf import settings
 
-from tardis.tardis_portal.logger import logger
+
+logger = logging.getLogger(__name__)
 
 
 def staging_traverse(staging=settings.STAGING_PATH):
@@ -80,6 +82,8 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
 
     li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
                                     path.basename(pathname))
+    if pathname.rpartition('/')[2].startswith('.'):
+        return ''
     if path.isfile(pathname):
         return li + '</li>'
     if path.isdir(pathname):

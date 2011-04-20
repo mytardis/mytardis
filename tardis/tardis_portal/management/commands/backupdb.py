@@ -16,17 +16,24 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('-r', '--restore', default=False,
             help='Restore database instead of dumping it'),
+        make_option('-d', '--database', default=False,
+            help='Database settings to be used'),
         )
 
     def handle(self, *args, **options):
         from django.conf import settings
 
-        self.engine = settings.DATABASE_ENGINE
-        self.db = settings.DATABASE_NAME
-        self.user = settings.DATABASE_USER
-        self.passwd = settings.DATABASE_PASSWORD
-        self.host = settings.DATABASE_HOST
-        self.port = settings.DATABASE_PORT
+        database = options.get('database')
+        if not database:
+            database = 'default'
+        db_settings = settings.DATABASES[database]
+
+        self.engine = db_settings['ENGINE'].rsplit('.', 1)[-1]
+        self.db = db_settings['NAME']
+        self.user = db_settings['USER']
+        self.passwd = db_settings['PASSWORD']
+        self.host = db_settings['HOST']
+        self.port = db_settings['PORT']
 
         infile = options.get('restore')
         if infile:

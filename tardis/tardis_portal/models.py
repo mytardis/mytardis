@@ -148,7 +148,7 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
-    objects = OracleSafeManager() #models.Manager()  # The default manager.
+    objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
 
     def getParameterSets(self, schemaType=None):
@@ -502,10 +502,12 @@ class Schema(models.Model):
     EXPERIMENT = 1
     DATASET = 2
     DATAFILE = 3
+    NONE = 4
     _SCHEMA_TYPES = (
         (EXPERIMENT, 'Experiment schema'),
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
+        (NONE, 'None')
     )
 
     namespace = models.URLField(verify_exists=False, max_length=400)
@@ -625,6 +627,7 @@ class ParameterName(models.Model):
     full_name = models.CharField(max_length=60)
     units = models.CharField(max_length=60, blank=True)
     data_type = models.IntegerField(choices=__TYPE_CHOICES, default=STRING)
+    immutable = models.BooleanField(default=False)
     comparison_type = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=EXACT_VALUE_COMPARISON)
     is_searchable = models.BooleanField(default=False)
@@ -717,6 +720,8 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isLink():
+        if parameter.string_value is None:
+            return ''
         units = parameter.name.units
         if units:
             url = units + parameter.string_value
@@ -762,6 +767,9 @@ class DatafileParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.dataset_file.dataset.experiment.id
+
     def __unicode__(self):
         return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
@@ -781,6 +789,9 @@ class DatasetParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.dataset.experiment.id
+
     def __unicode__(self):
         return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
@@ -799,8 +810,48 @@ class ExperimentParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
+    def getExpId(self):
+        return self.parameterset.experiment.id
+
     def __unicode__(self):
         return 'Experiment Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
         ordering = ['id']
+
+
+def pre_save_parameter(sender, **kwargs):
+
+    # the object can be accessed via kwargs 'instance' key.
+    parameter = kwargs['instance']
+
+    if parameter.name.units.startswith('image') \
+            and parameter.name.data_type == ParameterName.FILENAME:
+        if parameter.string_value:
+            from base64 import b64decode
+            from os import mkdir
+            from os.path import exists, join
+            from uuid import uuid4 as uuid
+
+            exp_id = parameter.getExpId()
+
+            dirname = join(settings.FILE_STORE_PATH, str(exp_id))
+            filename = str(uuid())
+            filepath = join(dirname, filename)
+
+            b64 = parameter.string_value
+            modulo = len(b64) % 4
+            if modulo:
+                b64 += (4 - modulo) * '='
+
+            if not exists(dirname):
+                mkdir(dirname)
+            f = open(filepath, 'w')
+            f.write(b64decode(b64))
+            f.close()
+            parameter.string_value = filename
+
+
+pre_save.connect(pre_save_parameter, sender=ExperimentParameter)
+pre_save.connect(pre_save_parameter, sender=DatasetParameter)
+pre_save.connect(pre_save_parameter, sender=DatafileParameter)

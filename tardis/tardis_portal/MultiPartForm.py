@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import logging
 import itertools
 import mimetools
 import mimetypes
 from cStringIO import StringIO
 import urllib2
-from tardis.tardis_portal.logger import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiPartForm(object):

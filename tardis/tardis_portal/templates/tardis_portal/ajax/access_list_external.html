@@ -1,5 +1,8 @@
 <div class="external">
   <div class="access_list_external">
+    {% if not groups %}
+      <p>No external access roles defined </p>
+    {% endif %}
     {% for group in groups %}
       {% for user in group.members %}
         <strong>{{ group.display }}</strong> {{ user }}<br>
