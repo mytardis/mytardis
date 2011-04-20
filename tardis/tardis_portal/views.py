@@ -94,11 +94,8 @@ def logout(request):
 
 
 def index(request):
-
     status = ''
-    c = Context({'status': status,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+    c = Context({'status': status})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -217,9 +214,7 @@ def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}],
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+                 'nav': [{'name': 'About', 'link': '/about/'}]})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
