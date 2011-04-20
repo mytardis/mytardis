@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (c) 2010, Monash e-Research Centre
@@ -37,7 +36,6 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 from django.test import TestCase
-from django.test.client import Client
 
 
 class ModelTestCase(TestCase):

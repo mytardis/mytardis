@@ -36,13 +36,16 @@ __init__.py
 
 """
 
+import logging
+
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
-from tardis.tardis_portal.logger import logger
+
+logger = logging.getLogger(__name__)
 
 
 class FilterInitMiddleware(object):

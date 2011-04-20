@@ -6,7 +6,10 @@ metadata values.
 .. moduleauthor::  Gerson Galang <gerson.galang@versi.edu.au>
 '''
 
-from tardis.tardis_portal.logger import logger
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class Experiment():
