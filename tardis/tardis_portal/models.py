@@ -48,7 +48,7 @@ from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 
 from tardis.tardis_portal.staging import StagingHook
-from tardis.tardis_portal.managers import ExperimentManager
+from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
 
 
 class UserProfile(models.Model):
@@ -148,7 +148,7 @@ class Experiment(models.Model):
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
     public = models.BooleanField()
-    objects = models.Manager()  # The default manager.
+    objects = OracleSafeManager() #models.Manager()  # The default manager.
     safe = ExperimentManager()  # The acl-aware specific manager.
 
     def getParameterSets(self, schemaType=None):
@@ -295,6 +295,7 @@ class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
+    objects = OracleSafeManager()
 
     def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
@@ -756,6 +757,7 @@ class DatafileParameter(models.Model):
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
     datetime_value = models.DateTimeField(null=True, blank=True)
+    objects = OracleSafeManager()
 
     def get(self):
         return _getParameter(self)
@@ -774,6 +776,7 @@ class DatasetParameter(models.Model):
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
     datetime_value = models.DateTimeField(null=True, blank=True)
+    objects = OracleSafeManager()
 
     def get(self):
         return _getParameter(self)
@@ -791,6 +794,7 @@ class ExperimentParameter(models.Model):
     string_value = models.TextField(null=True, blank=True)
     numerical_value = models.FloatField(null=True, blank=True)
     datetime_value = models.DateTimeField(null=True, blank=True)
+    objects = OracleSafeManager()
 
     def get(self):
         return _getParameter(self)
