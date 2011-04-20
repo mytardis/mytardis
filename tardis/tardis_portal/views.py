@@ -2146,7 +2146,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request, parameterset.datafile.dataset.experiment.id):
+    if authz.has_write_permissions(request, parameterset.dataset_file.dataset.experiment.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
