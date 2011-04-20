@@ -74,7 +74,6 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     UserProfile, UserAuthentication
 
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth import ldap_auth
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth import decorators as authz
@@ -89,8 +88,8 @@ from tardis.tardis_portal.metsparser import parseMets
 logger = logging.getLogger(__name__)
 
 
-def getNewSearchDatafileSelectionForm():
-    DatafileSelectionForm = createSearchDatafileSelectionForm()
+def getNewSearchDatafileSelectionForm(initial=None):
+    DatafileSelectionForm = createSearchDatafileSelectionForm(initial)
     return DatafileSelectionForm()
 
 
@@ -105,9 +104,7 @@ def logout(request):
 
 def index(request):
     status = ''
-    c = Context({'status': status,
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+    c = Context({'status': status})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
 
@@ -121,7 +118,8 @@ def site_settings(request):
             password = request.POST['password']
 
             user = auth_service.authenticate(username=username,
-                                             password=password)
+                                             password=password,
+                                             authMethod=localdb_auth_key)
             if user is not None:
                 if user.is_staff:
 
@@ -226,9 +224,7 @@ def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}],
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm()})
+                 'nav': [{'name': 'About', 'link': '/about/'}]})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
