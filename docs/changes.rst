@@ -20,10 +20,14 @@ Changelog
     Engine design
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
-* New METS parser [Gerson]
+* Metadata Editing [Steve, Grisha]
+* New METS parser & METS exporter [Gerson]
 * Dist/Buildout infrastructure [Russell]
 * Through the web creation and editing of experiments [Steve, Russell]
 * Through the web upload of files [Steve]
+* Download protocol handler [Russel, Uli]
+* Logging framework [Uli]
+* Django 1.3
 
 
 1.07 - 01/06/2010
