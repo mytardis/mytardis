@@ -1,4 +1,3 @@
-
 """
 managers.py
 
@@ -28,7 +27,7 @@ class OracleSafeManager(models.Manager):
         from django.db import connection
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
             fields = [a.attname for a in self.model._meta.fields
-                      if a.db_type(connection) == 'NCLOB']
+                      if a.db_type() == 'NCLOB']
             return \
                 super(OracleSafeManager, self).get_query_set().defer(*fields)
         else:
