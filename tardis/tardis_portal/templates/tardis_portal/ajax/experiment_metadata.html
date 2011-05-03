@@ -13,12 +13,8 @@
 
       {% for parameter in parameterset.experimentparameter_set.all %}
             <li><strong>{{ parameter.name.full_name }}: </strong>
-	{% if parameter.name.isNumeric %}
-              {{ parameter.numerical_value }} {{ parameter.name.units }}
-            {% else %}
-              {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
-            {% endif %}
-	</li>
+	      {{ parameter.get }}
+	    </li>
           {% endfor %}
       <br/><br/>
 	<script type="text/javascript">
