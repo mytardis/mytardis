@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>download – Downloading of datasets and experiments &mdash; MyTARDIS v1.99 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.99',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MyTARDIS v1.99 documentation" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="download-downloading-of-datasets-and-experiments">
+<h1><a class="reference internal" href="#module-tardis.tardis_portal.download" title="tardis.tardis_portal.download"><tt class="xref py py-mod docutils literal"><span class="pre">download</span></tt></a> &#8211; Downloading of datasets and experiments<a class="headerlink" href="#download-downloading-of-datasets-and-experiments" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-tardis.tardis_portal.download"><span id="ref-download"></span></span><dl class="function">
+<dt id="tardis.tardis_portal.download.download_datafile">
+<tt class="descclassname">tardis.tardis_portal.download.</tt><tt class="descname">download_datafile</tt><big>(</big><em>request</em>, <em>datafile_id</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.download.download_datafile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tardis.tardis_portal.download.download_experiment">
+<tt class="descclassname">tardis.tardis_portal.download.</tt><tt class="descname">download_experiment</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.download.download_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tardis.tardis_portal.download.download_datafiles">
+<tt class="descclassname">tardis.tardis_portal.download.</tt><tt class="descname">download_datafiles</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.download.download_datafiles" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="writing-a-custom-download-provider">
+<h1>Writing a Custom Download Provider<a class="headerlink" href="#writing-a-custom-download-provider" title="Permalink to this headline">¶</a></h1>
+<p>If you need to provide your own download provider - a common example
+is storing files on a remote system - you can do do by defining a
+custom download provider module. You&#8217;ll need the following steps.</p>
+<p>1. You need to define on your protocol. Files stored on your own
+storage system must have the protocol field set and the url must start
+with the protocol. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Dataset_File</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+             <span class="n">filename</span><span class="o">=</span><span class="s">&#39;file.txt&#39;</span><span class="p">,</span>
+             <span class="n">url</span><span class="o">=</span><span class="s">&#39;protocol:///path/to/file.txt&#39;</span><span class="p">,</span>
+             <span class="n">size</span><span class="o">=</span><span class="s">&#39;1024&#39;</span><span class="p">,</span>
+             <span class="n">protocol</span><span class="o">=</span><span class="s">&#39;protocol&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>2. Your download module needs to provide the following three
+hooks:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">def</span> <span class="pre">download_datafile(request,</span> <span class="pre">datafile_id)</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">def</span> <span class="pre">download_experiment(request,</span> <span class="pre">experiment_id)</span></tt></p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">def</span> <span class="pre">download_datafiles(request)</span></tt> which needs to be able to
+retrieve a list of dataset and datafile for download:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">datasets</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s">&#39;dataset&#39;</span><span class="p">)</span>
+<span class="n">datafiles</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="o">.</span><span class="n">getlist</span><span class="p">(</span><span class="s">&#39;datafile&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>These three functions need to be able to access the your file storage
+and shoukd return a HttpResponse which either redirects to the file or
+contains a file object:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">wrapper</span> <span class="o">=</span> <span class="n">FileWrapper</span><span class="p">(</span><span class="nb">file</span><span class="p">(</span><span class="s">&#39;/path/to/file.txt&#39;</span><span class="p">))</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span> <span class="n">mimetype</span><span class="o">=</span><span class="n">datafile</span><span class="o">.</span><span class="n">get_mimetype</span><span class="p">())</span>
+<span class="n">response</span><span class="p">[</span><span class="s">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                  <span class="s">&#39;attachment; filename=&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="n">datafile</span><span class="o">.</span><span class="n">filename</span>
+<span class="k">return</span> <span class="n">response</span>
+</pre></div>
+</div>
+<p>3. These three views must have url patterns associated in your
+<em>URLconf</em> module (probably <em>urls.py</em>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="s">r&#39;^datafile/(?P&lt;datafile_id&gt;\d+)/$&#39;</span><span class="p">,</span> <span class="s">&#39;your.module.download_datafile&#39;</span><span class="p">),</span>
+<span class="p">(</span><span class="s">r&#39;^experiment/(?P&lt;experiment_id&gt;\d+)/$&#39;</span><span class="p">,</span> <span class="s">&#39;your.module.download_experiment&#39;</span><span class="p">),</span>
+<span class="p">(</span><span class="s">r&#39;^datafiles/$&#39;</span><span class="p">,</span> <span class="s">&#39;your.module.download_datafiles&#39;</span><span class="p">),</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li>Settings</li>
+</ol>
+<p>In the <em>settings.py</em> download providers are activated by specifying them
+within the <strong>DOWNLOAD_PROVIDERS</strong> variable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">DOWNLOAD_PROVIDERS</span> <span class="o">=</span> <span class="p">(</span>
+<span class="p">(</span><span class="s">&#39;protocol&#39;</span><span class="p">,</span> <span class="s">&#39;your.module&#39;</span><span class="p">,),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">download</span></tt> &#8211; Downloading of datasets and experiments</a></li>
+<li><a class="reference internal" href="#writing-a-custom-download-provider">Writing a Custom Download Provider</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/ref/download.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Steve Androulakis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,215 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Ingesting &mdash; MyTARDIS v1.99 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.99',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MyTARDIS v1.99 documentation" href="../" />
+    <link rel="next" title="Contributing" href="../contributing/" />
+    <link rel="prev" title="Database Maintenance" href="../admin/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../contributing/" title="Contributing"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../admin/" title="Database Maintenance"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="ingesting">
+<h1>Ingesting<a class="headerlink" href="#ingesting" title="Permalink to this headline">¶</a></h1>
+<p>MyTARDIS supports 2 different XML schemas for importing data. One
+method is METS and the other is using a MyTARDIS specific XML
+format. METS is the preferred format because it is supported by
+systems other that MyTARDIS so will provide more versatility in the
+long run.</p>
+<div class="section" id="mets">
+<h2>METS<a class="headerlink" href="#mets" title="Permalink to this headline">¶</a></h2>
+<p>The Meta-data Encoding and Transmission Standard was recommended by
+Monash Librarians and ANU in 2008 as the XML description format for
+MyTARDIS datasets.</p>
+</div>
+<div class="section" id="mytardis-xml">
+<h2>MyTARDIS XML<a class="headerlink" href="#mytardis-xml" title="Permalink to this headline">¶</a></h2>
+<p>The MyTARDIS XML format matches to the data model that is being used
+within MyTARDIS so it provides a truer mapping between the XML elements
+and MyTARDIS.:</p>
+<div class="highlight-python"><pre>&lt;experiment&gt;
+        &lt;title&gt;Specialist Crystallography at the Australian Synchrotron&lt;/title&gt;
+        &lt;createdate&gt;2007-10-30T00:00:00+11:00&lt;/createdate&gt;
+        &lt;lastmoddate&gt;2007-10-30T00:00:00+11:00&lt;/lastmoddate&gt;
+        &lt;abstract&gt;We aim to detemine the crystal structures of several micro-crystalline materials and compare the data quality with that obtained recently for the SCrAPS program at the ChemMatCars beamline.&lt;/abstract&gt;
+        &lt;organization&gt;Australian Synchrotron&lt;/organization&gt;
+        &lt;creator&gt;VBL MetaMan&lt;/creator&gt;
+        &lt;author&gt;Dr. Paul Jensen&lt;/author&gt;
+        &lt;author&gt;Dr. Peter Turner&lt;/author&gt;
+        &lt;dataset&gt;
+                &lt;description&gt;Australian Synchrotron Proposal ID: 286&lt;/description&gt;
+                &lt;file&gt;
+                        &lt;name&gt;OKxtal1_1_001.img&lt;/name&gt;
+                        &lt;size&gt;8389120&lt;/size&gt;
+                        &lt;md5&gt;unknown&lt;/md5&gt;
+                        &lt;path&gt;file://Frames/test/OKxtal1_1_001.img&lt;/path&gt;
+                        &lt;metadata schema="..."&gt;
+                                ... (custom metadata here)
+                        &lt;/metadata&gt;
+                &lt;/file&gt;
+        &lt;/dataset&gt;
+&lt;/experiment&gt;</pre>
+</div>
+</div>
+<div class="section" id="ingestion-script">
+<h2>Ingestion Script<a class="headerlink" href="#ingestion-script" title="Permalink to this headline">¶</a></h2>
+<p>Ingesting files can be trough the web using a POST request.</p>
+<p>Simple ingestion script:</p>
+<div class="highlight-python"><pre>#!/bin/bash
+
+file="$1"
+username="localdb_admin"
+password="secret"
+host="http://localhost:8000"
+owner="$username"
+
+curl -F username=$username -F password=$password -F xmldata=@${file} -F experiment_owner=$owner "$host/experiment/register/"</pre>
+</div>
+<p>To use this script simple paste it into a new file called
+<em>register.sh</em> and <cite>chmod +x register.sh</cite> then you can call it using
+<cite>./register.sh file.xml</cite> there are several example XML and METS files
+within the tardis tests.</p>
+</div>
+<div class="section" id="post-processing">
+<h2>Post Processing<a class="headerlink" href="#post-processing" title="Permalink to this headline">¶</a></h2>
+<p>TARDIS takes advantage of the Django signal framework to provide post
+porcessing of files. The only default post processing step that is
+enabled by default operates on newly created Dataset Files.</p>
+<div class="section" id="staging-hook">
+<h3>Staging Hook<a class="headerlink" href="#staging-hook" title="Permalink to this headline">¶</a></h3>
+<p>The staging hook is responsible for moving files from the staging area
+to the data store. It operates as a
+<tt class="xref py py-class docutils literal"><span class="pre">django.db.models.signals.post_save</span></tt> signal and only triggers
+in a newly created file.</p>
+<p>The saging hook is only triggerd on files that have a protocol of
+<cite>staging</cite> which dignifies that the file is in the in the TARDIS
+staging area.</p>
+</div>
+<div class="section" id="exif-metadata-extraction">
+<h3>EXIF Metadata extraction<a class="headerlink" href="#exif-metadata-extraction" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<dl class="last docutils">
+<dt><a class="reference external" href="http://www.loc.gov/standards/mets/">http://www.loc.gov/standards/mets/</a></dt>
+<dd>Metadata Encoding and Tranmission Standard</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ingesting</a><ul>
+<li><a class="reference internal" href="#mets">METS</a></li>
+<li><a class="reference internal" href="#mytardis-xml">MyTARDIS XML</a></li>
+<li><a class="reference internal" href="#ingestion-script">Ingestion Script</a></li>
+<li><a class="reference internal" href="#post-processing">Post Processing</a><ul>
+<li><a class="reference internal" href="#staging-hook">Staging Hook</a></li>
+<li><a class="reference internal" href="#exif-metadata-extraction">EXIF Metadata extraction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../admin/"
+                        title="previous chapter">Database Maintenance</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../contributing/"
+                        title="next chapter">Contributing</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/ingesting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../contributing/" title="Contributing"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../admin/" title="Database Maintenance"
+             >previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Steve Androulakis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

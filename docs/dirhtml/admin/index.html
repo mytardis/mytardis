@@ -1,0 +1,204 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database Maintenance &mdash; MyTARDIS v1.99 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.99',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MyTARDIS v1.99 documentation" href="../" />
+    <link rel="next" title="Ingesting" href="../ingesting/" />
+    <link rel="prev" title="Install" href="../install/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ingesting/" title="Ingesting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../install/" title="Install"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="database-maintenance">
+<h1>Database Maintenance<a class="headerlink" href="#database-maintenance" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="initialising">
+<h2>initialising<a class="headerlink" href="#initialising" title="Permalink to this headline">¶</a></h2>
+<p>When creating a new database the <tt class="docutils literal"><span class="pre">syncdb</span></tt> command will need to be
+called to initialise the schema and instert the initial data fixtures.</p>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">./bin/django</span> <span class="pre">syncdb</span></tt></p>
+</div>
+</div>
+<div class="section" id="migrating">
+<h2>migrating<a class="headerlink" href="#migrating" title="Permalink to this headline">¶</a></h2>
+<p>Some of the upgrades to MyTARDIS will require that the database schema
+be upgraded to match the internal datamodel. This tool migrates data
+from old database schemas to the current one. It detects which version
+of the database you are currently running and will automatically
+migrate to the current version.</p>
+<div class="section" id="id1">
+<h3>Usage<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">./bin/django</span> <span class="pre">migrate</span></tt></p>
+</div>
+</div>
+<div class="section" id="backup">
+<h2>backup<a class="headerlink" href="#backup" title="Permalink to this headline">¶</a></h2>
+<p>The backupdb command allows to backup and to restore of the MyTARDIS
+database.  The command uses the corresponding database tool to
+facilitate this task. Currently implemented are PostgreSQL and
+MySQL. In case of backup, a directory called <tt class="docutils literal"><span class="pre">backups</span></tt> is created
+(if it does not exists) in the working directory.  In case of restore,
+the database for storing the tablespace must already exist before
+loading the backup file into the database.</p>
+<div class="section" id="id2">
+<h3>Usage<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">./bin/django</span> <span class="pre">backupdb</span></tt></p>
+<dl class="option">
+<dt id="cmdoption-r">
+<tt class="descname">-r</tt><tt class="descclassname"> FILE</tt><tt class="descclassname">, </tt><tt class="descname">--restore</tt><tt class="descclassname">=FILE</tt><a class="headerlink" href="#cmdoption-r" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-v">
+<tt class="descname">-v</tt><tt class="descclassname"> VERBOSITY</tt><tt class="descclassname">, </tt><tt class="descname">--verbosity</tt><tt class="descclassname">=VERBOSITY</tt><a class="headerlink" href="#cmdoption-v" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption--settings">
+<tt class="descname">--settings</tt><tt class="descclassname">=SETTINGS</tt><a class="headerlink" href="#cmdoption--settings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption--pythonpath">
+<tt class="descname">--pythonpath</tt><tt class="descclassname">=PYTHONPATH</tt><a class="headerlink" href="#cmdoption--pythonpath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption--traceback">
+<tt class="descname">--traceback</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption--traceback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption--version">
+<tt class="descname">--version</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption--version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-h">
+<tt class="descname">-h</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--help</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-h" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database Maintenance</a><ul>
+<li><a class="reference internal" href="#initialising">initialising</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#migrating">migrating</a><ul>
+<li><a class="reference internal" href="#id1">Usage</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#backup">backup</a><ul>
+<li><a class="reference internal" href="#id2">Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../install/"
+                        title="previous chapter">Install</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../ingesting/"
+                        title="next chapter">Ingesting</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/admin.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ingesting/" title="Ingesting"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../install/" title="Install"
+             >previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Steve Androulakis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
