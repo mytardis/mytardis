@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>tardis.tardis_portal.auth.ldap_auth – LDAP Authentication &mdash; MyTARDIS v1.99 documentation</title>
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.99',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="MyTARDIS v1.99 documentation" href="../../" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-tardis.tardis_portal.auth.ldap_auth">
+<span id="tardis-tardis-portal-auth-ldap-auth-ldap-authentication"></span><span id="ref-ldap-auth"></span><h1><a class="reference internal" href="#module-tardis.tardis_portal.auth.ldap_auth" title="tardis.tardis_portal.auth.ldap_auth"><tt class="xref py py-mod docutils literal"><span class="pre">tardis.tardis_portal.auth.ldap_auth</span></tt></a> &#8211; LDAP Authentication<a class="headerlink" href="#module-tardis.tardis_portal.auth.ldap_auth" title="Permalink to this headline">¶</a></h1>
+<p>To enable LDAP you&#8217;ll need to specify which components of the LDAP
+authentication backend are enabled. In the <em>settings.py</em> add the
+following to either Authentication, User Provider, Group Provider
+slugs.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&#39;tardis.tardis_portal.auth.ldap_auth.ldap_auth&#39;</span>
+</pre></div>
+</div>
+<p>This is a wrapper function that allows initialisation of the LDAP
+provider using <em>settings.py</em> values.</p>
+<div class="section" id="ldap-auth-function">
+<h2><a class="reference internal" href="#tardis.tardis_portal.auth.ldap_auth.ldap_auth" title="tardis.tardis_portal.auth.ldap_auth.ldap_auth"><tt class="xref py py-func docutils literal"><span class="pre">ldap_auth()</span></tt></a> Function<a class="headerlink" href="#ldap-auth-function" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tardis.tardis_portal.auth.ldap_auth.ldap_auth">
+<tt class="descclassname">tardis.tardis_portal.auth.ldap_auth.</tt><tt class="descname">ldap_auth</tt><big>(</big><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.ldap_auth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an initialised LDAP backend.</p>
+</dd></dl>
+
+<p>The following are configuration settings that are used when
+initialising the LDAP backend.</p>
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_TLS">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_TLS</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_TLS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable TLS connections.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_URL">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_URL</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_URL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the URL of the LDAP server, e.g. <em>ldap://localhost:389/</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_LOGIN_ATTR">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_USER_LOGIN_ATTR</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_LOGIN_ATTR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the login attribute of the users, usually this will be either
+<em>cn</em> or <em>uid</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_ATTR_MAP">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_USER_ATTR_MAP</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_ATTR_MAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>The LDAP user attribute map is used to map internal identifiers
+like <em>display</em> and <em>email</em> to their LDAP equivalents e.g.
+<em>{&#8220;givenName&#8221;: &#8220;display&#8221;, &#8220;mail&#8221;: &#8220;email&#8221;}</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_ID_ATTR">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_GROUP_ID_ATTR</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_ID_ATTR" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is where you specify the group identifier from LDAP, usually
+it will be <em>cn</em>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_ATTR_MAP">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_GROUP_ATTR_MAP</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_ATTR_MAP" title="Permalink to this definition">¶</a></dt>
+<dd><p>This map is used to map internal identifiers like <em>display</em> e.g.
+<em>{&#8220;description&#8221;: &#8220;display&#8221;}</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_BASE">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_BASE</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_BASE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the search base of the LDAP queries <em>dc=example, dc=com</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_BASE">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_USER_BASE</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_USER_BASE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the search base of user related LDAP queries e.g. <em>&#8220;ou=People,
+&#8221; + LDAP_BASE</em></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_BASE">
+<tt class="descclassname">tardis.settings_changeme.</tt><tt class="descname">LDAP_GROUP_BASE</tt><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.tardis.settings_changeme.LDAP_GROUP_BASE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the search base of group related LDAP queries e.g. <em>&#8220;ou=Group,
+&#8221; + LDAP_BASE</em></p>
+</dd></dl>
+
+</div>
+<div class="section" id="ldapbackend-objects">
+<h2><a class="reference internal" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend" title="tardis.tardis_portal.auth.ldap_auth.LDAPBackend"><tt class="xref py py-class docutils literal"><span class="pre">LDAPBackend</span></tt></a> Objects<a class="headerlink" href="#ldapbackend-objects" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend">
+<em class="property">class </em><tt class="descclassname">tardis.tardis_portal.auth.ldap_auth.</tt><tt class="descname">LDAPBackend</tt><big>(</big><em>name</em>, <em>url</em>, <em>base</em>, <em>login_attr</em>, <em>user_base</em>, <em>user_attr_map</em>, <em>group_id_attr</em>, <em>group_base</em>, <em>group_attr_map</em>, <em>admin_user=''</em>, <em>admin_pass=''</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.authenticate">
+<tt class="descname">authenticate</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.authenticate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroupById">
+<tt class="descname">getGroupById</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroupById" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the group associated with the id:</p>
+<div class="highlight-python"><pre>{"id": 123,</pre>
+</div>
+<p>&#8220;display&#8221;: &#8220;Group Name&#8221;,}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroups">
+<tt class="descname">getGroups</tt><big>(</big><em>request</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>return an iteration of the available groups.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroupsForEntity">
+<tt class="descname">getGroupsForEntity</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getGroupsForEntity" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of groups associated with a particular entity id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getUserById">
+<tt class="descname">getUserById</tt><big>(</big><em>id</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.getUserById" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the user dictionary in the format of:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">{</span><span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span>
+<span class="s">&quot;display&quot;</span><span class="p">:</span> <span class="s">&quot;John Smith&quot;</span><span class="p">,</span>
+<span class="s">&quot;email&quot;</span><span class="p">:</span> <span class="s">&quot;john@example.com&quot;</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.get_user">
+<tt class="descname">get_user</tt><big>(</big><em>user_id</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.get_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tardis.tardis_portal.auth.ldap_auth.LDAPBackend.searchGroups">
+<tt class="descname">searchGroups</tt><big>(</big><em>**filter</em><big>)</big><a class="headerlink" href="#tardis.tardis_portal.auth.ldap_auth.LDAPBackend.searchGroups" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">tardis.tardis_portal.auth.ldap_auth</span></tt> &#8211; LDAP Authentication</a><ul>
+<li><a class="reference internal" href="#ldap-auth-function"><tt class="docutils literal"><span class="pre">ldap_auth()</span></tt> Function</a></li>
+<li><a class="reference internal" href="#ldapbackend-objects"><tt class="docutils literal"><span class="pre">LDAPBackend</span></tt> Objects</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/ref/auth_ldap.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Steve Androulakis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>

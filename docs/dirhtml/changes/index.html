@@ -1,0 +1,214 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Changelog &mdash; MyTARDIS v1.99 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.99',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="MyTARDIS v1.99 documentation" href="../" />
+    <link rel="prev" title="filters – Filter Framework" href="../ref/filters/" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ref/filters/" title="filters – Filter Framework"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="unreleased">
+<h2>2.0 - Unreleased<a class="headerlink" href="#unreleased" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">Auth/Auth redesign [Gerson, Uli, Russel]</p>
+<ul>
+<li><p class="first">Authorisation. Support for several pluggable authorisation plugins
+(Django internal, LDAP, VBL). The added AuthService middleware
+provides a mechanism to query all available auth modules to
+determine what group memberships a users has.</p>
+</li>
+<li><p class="first">Alternative authorisation. Rule based experiment access control
+engine was implemented with the following access attributes for
+indivdual users and groups: canRead, canWrite, canDelete,
+isOwner. Additionally, a time stamp can be specified for each
+access rule.</p>
+<p>Further information can be found at the wiki: <a class="reference external" href="http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt">Authorisation
+Engine design</a></p>
+</li>
+</ul>
+</li>
+<li><p class="first">Metadata Editing [Steve, Grisha]</p>
+</li>
+<li><p class="first">New METS parser &amp; METS exporter [Gerson]</p>
+</li>
+<li><p class="first">Dist/Buildout infrastructure [Russell]</p>
+</li>
+<li><p class="first">Through the web creation and editing of experiments [Steve, Russell]</p>
+</li>
+<li><p class="first">Through the web upload of files [Steve]</p>
+</li>
+<li><p class="first">Download protocol handler [Russel, Uli]</p>
+</li>
+<li><p class="first">Logging framework [Uli]</p>
+</li>
+<li><p class="first">Django 1.3</p>
+</li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2>1.07 - 01/06/2010<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Publish to tardis.edu.au interface created, though not implemented,
+pending legal text</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>1.06 - 15/03/2010<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Parameter import interface for creation of new parameter/schema
+definitions</li>
+<li>iPhone Interface</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>1.05 - 01/03/2010<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Images as parameters supported</li>
+<li>Data / metadata transfer from synchrotron is now &#8216;threaded&#8217; using
+asynchronous web service transfers.</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h2>1.0 - 01/02/2010<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>MyTARDIS created from existin MyTARDIS python / django codebase</li>
+<li>Allows private data to be stored</li>
+<li>Open key/value parameter model, replacing current crystallography
+one</li>
+<li>Internal data store for data</li>
+<li>LDAP Login</li>
+<li>Pagination of files</li>
+<li>Creation of synchrotron-tardis from MyTARDIS codebase including
+specific code for the VBL login service and data transfer to
+MyTARDIS deployments.</li>
+<li>Web server changed to apache and mod_wsgi</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h2>0.5 - 2009<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Re-wrote federated index (python / django)</li>
+<li>Federated stores are now simple web server based with optional FTP
+access</li>
+<li>Runs on Jython / Tomcat</li>
+</ul>
+</div>
+<div class="section" id="id6">
+<h2>0.1 - 2007<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Federated index (php) running on Apache HTTP Server</li>
+<li>Crystallography data deposition and packaging tools for Fedora
+Commons (java swing desktop)</li>
+<li>Search Interface via web</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Changelog</a><ul>
+<li><a class="reference internal" href="#unreleased">2.0 - Unreleased</a></li>
+<li><a class="reference internal" href="#id1">1.07 - 01/06/2010</a></li>
+<li><a class="reference internal" href="#id2">1.06 - 15/03/2010</a></li>
+<li><a class="reference internal" href="#id3">1.05 - 01/03/2010</a></li>
+<li><a class="reference internal" href="#id4">1.0 - 01/02/2010</a></li>
+<li><a class="reference internal" href="#id5">0.5 - 2009</a></li>
+<li><a class="reference internal" href="#id6">0.1 - 2007</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../ref/filters/"
+                        title="previous chapter"><tt class="docutils literal"><span class="pre">filters</span></tt> &#8211; Filter Framework</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/changes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search/" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex/" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex/" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../ref/filters/" title="filters – Filter Framework"
+             >previous</a> |</li>
+        <li><a href="../">MyTARDIS v1.99 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Steve Androulakis.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
