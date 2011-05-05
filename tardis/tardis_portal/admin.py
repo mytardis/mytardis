@@ -30,8 +30,9 @@
 #
 
 
-from tardis.tardis_portal import models
 from django.contrib import admin
+from tardis.tardis_portal import models
+# from south.models import MigrationHistory
 
 admin.site.register(models.Experiment)
 admin.site.register(models.Dataset)
@@ -49,3 +50,4 @@ admin.site.register(models.ExperimentParameterSet)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
 admin.site.register(models.ExperimentACL)
+# admin.site.register(MigrationHistory)
