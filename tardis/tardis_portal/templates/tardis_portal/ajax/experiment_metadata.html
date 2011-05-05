@@ -1,4 +1,3 @@
-{% load parametertypecheck %}
 {% if not experiment.experimentparameterset_set.all %}
 <div class="dataset_metadata">
 	There is no metadata for this experiment.
@@ -14,12 +13,8 @@
 
       {% for parameter in parameterset.experimentparameter_set.all %}
             <li><strong>{{ parameter.name.full_name }}: </strong>
-	{% if parameter.name.isNumeric %}
-              {{ parameter.numerical_value }} {{ parameter.name.units }}
-            {% else %}
-              {{ parameter.string_value|eparametertypecheck:parameter.id|safe }}
-            {% endif %}
-	</li>
+	      {{ parameter.get }}
+	    </li>
           {% endfor %}
       <br/><br/>
 	<script type="text/javascript">
@@ -31,7 +26,7 @@
 	  overlay: 0
 	  });
 	</script>
-	
+
 	<div class="jqmAlert" id="jqmAlertExp{{parameterset.id}}">
 
 		<div class="jqmAlertWindow">
@@ -43,7 +38,7 @@
 		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
 		  </div>
 		</div>
-	</div>		
+	</div>
         {% endfor %}
   </ul>
 </div>

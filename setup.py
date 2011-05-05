@@ -29,5 +29,7 @@ setup(
         'python-ldap',
         'python-magic',
         'south',
+        'psycopg2',
+        'python-memcached',
         ],
 )
