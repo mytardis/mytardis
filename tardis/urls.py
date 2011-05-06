@@ -16,6 +16,8 @@ core_urls = patterns(
     (r'^partners/$', 'partners'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
+    (r'^rif-cs/$',
+     'rif_cs'),
 )
 
 experiment_urls = patterns(
@@ -92,13 +94,17 @@ ajax_urls = patterns(
         'add_dataset_par'),
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
+    (r'^view/(?P<experiment_id>\d+)/publish/$',
+        'publish_experiment'),
     )
 
 download_urls = patterns(
     'tardis.tardis_portal.download',
     (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
-    (r'^experiment/(?P<experiment_id>\d+)/$', 'download_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
+     'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
+    (r'^datafile/ws/$', 'download_datafile_ws'),
     )
 
 group_urls = patterns(

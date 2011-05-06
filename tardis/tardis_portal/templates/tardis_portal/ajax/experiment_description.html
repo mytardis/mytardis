@@ -93,7 +93,7 @@ $(document).ready(function() {
 	<div class="experiment_md_container">
 	<strong>Experiment Metadata:</strong>
 
-	{% if has_write_permissions %}
+	{% if has_write_permissions %}{% if not experiment.public %}
 	<a href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
 	 class="jqModalExpA{{experiment.id}}">[Add]</a>
 	<script type="text/javascript">
@@ -117,7 +117,7 @@ $(document).ready(function() {
 		  </div>
 		</div>
 	</div>
-	{% endif %}
+	{% endif %}{% endif %}
 
 	<a class="experiment_metadata_toggle" href="/ajax/experiment_metadata/{{experiment.id}}/">[Show]</a>
 	<span class="experiment_metadata"></span>
@@ -145,7 +145,7 @@ $(document).ready(function() {
     {{ experiment.update_time|date:"jS F Y H:i" }}<br/>
   </p>
   <div class="download_entire_experiment">
-    {% for p in protocols %}
+    {% for p in protocol %}
       <p>
 	{% if p.0 %}
 	  <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
@@ -167,6 +167,16 @@ $(document).ready(function() {
         ({{ owner.username }})
         {% if not forloop.last %}
           <br/>
+	{% endif %}
+	</p>
+	<p align="right">
+	{% if experiment.public %}
+		<em>This experiment is public.</em>
+	{% endif %}
+	{% if is_owner %}
+	{% if not experiment.public %}
+		<strong><a href="publish/">Publish Experiment</a></strong><br/>
+	{% endif %}
 	{% endif %}
       {% endfor %}
   </p>

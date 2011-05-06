@@ -1,23 +1,35 @@
 {% extends "tardis_portal/portal_template.html" %}
 
-{% block content %}
+{% block fullpage %}
   <div id="content">
     <div class="post">
-      <h1 class="title"><a name="abouttardis">About Squirrel</a></h1>
-      <div class="entry">
-	<p>
-	  Here's some text!
-	</p>
-      </div> <!-- entry -->
-    </div> <!-- post -->
 
-    <br/>
+		<h1 class="title"><a name="abouttardis">Project Development</a></h1> 
+		                                        <div class="entry"> 
+		<h3>Source Code / Documentation</h3> 
+		<blockquote>
+		The TARDIS project (including the Monash ANDS-funded EIF019 project and the Synchrotron/ANSTO Meecat project) is being actively developed and documented on Google Code:
+		<br/><br/> 
+		<strong><a href="http://code.google.com/p/mytardis/" target="_blank">MyTardis On Google Code</a></strong> 
+		</blockquote>
+		<br/> 
+
+		<h3>Discussion Group</h3> 
+		<blockquote>
+		TARDIS User Group: <a href="http://groups.google.com/group/tardis-users" target="_blank">tardis-users</a><br/> 
+		TARDIS Developer Group (invite only, contact <a href="mailto: steve.androulakis@monash.edu">Steve Androulakis</a>): <a href="http://groups.google.com/group/tardis-devel" target="_blank">tardis-devel</a> 
+		</blockquote>
+		<br/><br/> 
+
+		                    </div> 
+		</div>
+
 
     <div class="post">
       <h1 class="title"><a name="citation">Citation</a></h1>
       <div class="entry">
 	<p>
-	  Please cite the following when referring to Squirrel:<br/>
+	  Please cite the following when referring to MyTARDIS:<br/>
 
 	  <small>
 	    <br/> Androulakis S, Schmidberger J, Bate MA, Degori R,
@@ -32,23 +44,11 @@
 	</p>
 
 	<p>
-	  For more information on the TARDIS project please
+	  For more information on the MyTARDIS project please
 	  contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate
 	  Professor Ashley Buckle</a>.</p>
       </div> <!-- entry -->
     </div> <!-- post -->
   </div> <!-- content -->
 
-{% endblock content %}
-
-{% block sidebar %}
-  <ul>
-    <li>
-      <h2>About</h2>
-      <ul>
-	<li><a href="#abouttardis">About TARDIS</a></li>
-	<li><a href="#citation">Citation</a></li>
-      </ul>
-    </li>
-  </ul>
-{% endblock sidebar %}
+{% endblock fullpage %}

@@ -3,24 +3,26 @@
 {% block script %}
 
   {% include "tardis_portal/javascript_libraries.html" %}
+  <script type="text/javascript" src="/site_media/js/jquery.customised-formset.js" ></script>
 
   <script type="text/javascript">
 
     function addDatafile(file_list, filename) {
 	var total_input = file_list.children('input:first');
-	var container_type = "dataset-";
+	var container_type = "ds-";
 
 	// get the total number of childforms
 	var total = file_list.children('input:first').val();
-	var type = 'dataset-0-datafile-0-filename';
+	var type = 'ds-0-datafile-0-filename';
 
 	// find the number of the parent dataset
-	var dataset_number = total_input.attr('name').substring(container_type.length,
-								total_input.attr('name').indexOf('-', container_type.length));
+	var indRegex = new RegExp(/ds-(\d+)-datafile/m);
+	var lastDSid = total_input.attr("name");
+	var dataset_number = parseInt(indRegex.exec(lastDSid)[1]);
+
 
 	var name = container_type + dataset_number + '-datafile-' + total + '-filename';
 	var id = 'id_' + name;
-
 
 	var name1 = container_type + dataset_number + '-datafile-' + total + '-id';
 	var id1 = 'id_' + name1;
@@ -36,14 +38,12 @@
 	li.append(file);
 	var file1 = $('<input type="hidden"/>').attr({'value': '', 'name': name1, 'id': id1});
 	li.append(file1);
-	var file2 = $('<input type="hidden"/>').attr({'value': '', 'name': name2, 'id': id2});
+	var file2 = $('<input type="hidden"/>').attr({'value': filename, 'name': name2, 'id': id2});
 	li.append(file2);
 	var file3 = $('<input type="hidden"/>').attr({'value': '', 'name': name3, 'id': id3, 'value':'staging'});
 	li.append(file3);
-	li.append($('<span class="file"></span>').text(filename));
-	var delete_file = $('<span class="remove_file">[x]</span>').click(function() {
-    	    deleteDatafile(li, container_type + dataset_number + '-datafile');
-	});
+	li.append($('<span class="file"></span> ').text(filename));
+	var delete_file = $('<span class="remove_file"> [remove]</span>')
 	li.append(delete_file);
 	file_list.append(li);
 
@@ -53,6 +53,7 @@
     }
 
     $(document).ready(function() {
+	{% if directory_listing %}
         $("#demo1").jstree({
 	    core : { /* core options go here */ },
 	    plugins : [ "themes", "html_data", "checkbox" ]
@@ -60,7 +61,7 @@
 
 	//Get checked
 	$('.add_files').live('click', function(){
-	    file_list = $(this).parents(".dataset_container").find(".dataset");
+	    file_list = $(this).parents(".dataset_container").find(".datafiles");
 
 	    $(".jstree-leaf.jstree-checked").each(function(){
 		exists = false;
@@ -76,11 +77,10 @@
 		    addDatafile(file_list, filename);
 		}
 	    });
+	    $("#demo1").jstree("uncheck_all");
 	});
+	{% endif %}
     });
-  </script>
-
-  <script type="text/javascript">
 
     function updateElementIndex(el, prefix, ndx) {
         var id_regex = new RegExp('(' + prefix + '-\\d+)');
@@ -90,96 +90,26 @@
         if (el.name) el.name = el.name.replace(id_regex, replacement);
     }
 
-    function addDataset(btn, prefix) {
-        var formCount = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
-        var row = $('.dataset_container:first').clone(true).get(0);
-        $(row).removeAttr('id').insertAfter($('.dataset_container:first')).children('.hidden').removeClass('hidden');
+    function deleteDatafile(btn) {
+	var id_regex = new RegExp("id_ds-(\\d+)-datafile-(\\d+)-.*");
+	var df_input = $(btn).siblings('input:first');
+	var thismatch = id_regex.exec(df_input.attr('id'));
+	var ds_id = thismatch[1];
+	var df_id = thismatch[2];
 
-        // delete datafiles
-        $('ul.dataset > li', row).remove();
+	var prefix = "ds-" + ds_id + "-" + "datafile";
 
-        // update field ids and names
-        $(row).find(':input').not('.add_files').each(function() {
-            updateElementIndex(this, prefix, formCount);
-            switch(this.type) {
-                case 'password':
-                case 'select-multiple':
-                case 'select-one':
-                case 'text':
-                case 'textarea':
-                    $(this).val('');
-                    break;
-            }
-        });
+        var dataset = $(btn).parents('ul.datafiles');
+        var parent = $(btn).parents('li.datafile');
+	var total_input = dataset.find('input:first');
 
-	// reset primary key field
-	$('#id_' + prefix + '-' + formCount + '-id', row).val('');
-	$('#id_' + prefix + '-' + formCount + '-datafile-INITIAL_FORMS', row).val('0');
-
-	// remove the delete field because this won't be bound to real data
-	$('#id_' + prefix + '-' + formCount + '-DELETE', row).remove();
-
-        // reset the datafile counts to 0
-        $('ul.dataset > input:first', row).val('0');
-
-        // add delete function to each dataset
-        $(row).find('.remove_dataset').click(function() {
-            deleteDataset(this, prefix);
-        });
-
-        //increment the form count
-        $('#id_' + prefix + '-TOTAL_FORMS').val(formCount + 1);
-        return false;
-    }
-
-    function deleteDataset(btn, prefix) {
-
-	var parent = $(btn).parents('.dataset_container');
-	var id_regex = new RegExp('(' + prefix + '-\\d+)');
-	var total_input = parent.find('input:first');
-	// find the number of the parent dataset
-	var dataset_number = total_input.attr('id').match(new RegExp("id_" + prefix + "-(\\d+)-.*"))[1];
-
-	// if the -DELETE field exists then fold the area and mark it for deletion
-	if ($('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).length > 0) {
-	    var head = parent.find('.msg_head');
-            $(head).css('background-color', '#FF0000');
-            $(head).css('color', 'white');
-            $(head).next(".msg_body").hide();
-	    $('#id_' + prefix + "-" + dataset_number + "-DELETE", parent).attr('value', '1');
-	    for (i=0; i < $('#id_' + prefix + "-" + dataset_number + "-datafile-TOTAL_FORMS", parent).val(); i++) {
-		$('#id_' + prefix + "-" + dataset_number + "-datafile-" + i + "-DELETE", parent).attr('value', '1');
-	    }
+	if ($('#id_' + prefix + "-" + df_id + "-DELETE", parent).length > 0) {
+	    $('#id_' + prefix + "-" + df_id + "-DELETE", parent).attr('value', '1');
+	    $(parent).css('text-decoration', 'line-through');
+	    $(parent).css('color', 'red');
+	    $(this).css('color', 'black');
 	} else {
-            $(parent).remove();
-            var forms = $('.dataset_container');
-            $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
-            for (var i=0, formCount=forms.length; i<formCount; i++) {
-		$(forms.get(i)).find(':input').children().not(':last').children().each(function() {
-                    updateElementIndex(this, prefix, i);
-		});
-            }
-	}
-        return false;
-    }
-
-    function deleteDatafile(btn, prefix) {
-
-        var dataset = $(btn).parents('.dataset');
-        var parent = $(btn).parents('.datafile');
-
-	var id_regex = new RegExp("id_dataset-(\\d+)-" + prefix + "-(\\d+)-.*");
-	var total_input = parent.find('input:first');
-
-	var match = total_input.attr('id').match(id_regex);
-	var ds_id = match[1];
-	var df_id = match[2];
-
-	if ($('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).length > 0) {
-	    $('#id_dataset-' + ds_id + "-" + prefix + "-" + df_id + "-DELETE", parent).attr('value', '1');
-            $(parent).css('background-color', '#FF0000');
-
-	} else {
+	    $(parent).remove();
             var forms = $('li', dataset);
             $('#id_' + prefix + '-TOTAL_FORMS', dataset).val(forms.length);
             for (var i=0, formCount=forms.length; i<formCount; i++) {
@@ -187,14 +117,12 @@
                     updateElementIndex(this, prefix, i);
 		});
             }
-	    $(parent).remove();
 	}
         return false;
     }
 
     $(document).ready(
-        function()
-        {
+        function() {
             //hide the all of the element with class msg_body
             //toggle the componenet with class msg_body
 
@@ -212,41 +140,77 @@
                 }
             });
 
-            $(".add_new_dataset").click(function() {
-                //cloneDataset('div.dataset_container:last', 'dataset');
-                addDataset('div.dataset_container:last', 'dataset');
-            });
-
-            $(".remove_dataset").live('click', function() {
-                if($(".dataset_container").size() > 1) {
-                    //$(this).parents(".dataset_container").remove();
-                    // TODO needs to have the correct prefix
-                    deleteDataset(this,'dataset')
-                } else {
-                    alert('experiments must have at least one dataset!');
-                }
-            });
-
             $(".remove_file").live('click', function() {
-		deleteDatafile(this, 'datafile')
-                //$(this).parent().remove()
+		deleteDatafile(this)
             });
 
         });
+
+	$(document).ready(function() {
+	    $("#fuzz").css("height", $(document).height());
+	    $('#jqmAlertLoading').jqm({
+		ajax: '',
+		target: '',
+		overlay: 0,
+	    });
+
+	    $(window).bind("resize", function() {
+		$("#fuzz").css("height", $(window).height());
+	    });
+
+	    $("#button").click(function() {
+		$('#jqmAlertLoading').jqmShow();
+		$("#fuzz").fadeIn();
+		$("#create_experiment_form").submit();
+	    });
+	});
   </script>
 
 {% endblock %}
 
 {% block content %}
+<div id="fuzz"> <!-- for the fade-in -->
+</div>
+<div class="jqmAlertLoading" id="jqmAlertLoading">
+  <div class="jqmAlertWindowLoading">
+    <div class="jqmAlertTitle clearfix">
+      <h1>Please Wait...</h1>
+    </div>
+    <div align="center" class="jqmAlertContentLoading" id="jqmAlertContentLoading">
+      <img src="/site_media/images/ajax-loader-big.gif">
+      </div>
+    </div>
+  </div>
   <div id="content">
     <div class="post">
       <h1 class="title"><a name="abouttardis">{{ subtitle }}</a></h1>
       <div class="entry">
-        <form action="" method="POST">
+	      <div style="display:none;" class="fsTemplate">
+		<p class="msg_head">Dataset</p>
+		<div class="msg_body">
+		  <div class="fieldWrapper">
+		    <input type="hidden" name="dataset-0-experiment" value="{{experiment_id}}" id="id_dataset-0-experiment" />
+		    <input type="hidden" name="dataset-0-id" value id="id_dataset-0-id" />
+		    Description:
+		    <input name="dataset-0-description" value="" type="text" id="id_dataset-0-description" size="80" />
+		    <input type="hidden" name="dataset-0-immutable" value="False" id="id_dataset-0-immutable" />
+		  </div>
+		  <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+		  <p><strong>Files added to Dataset</strong></p>
+		  <div>
+		    <ul class="datafiles">
+		      <input type="hidden" name="ds-2012-datafile-TOTAL_FORMS" value="0" id="id_ds-2012-datafile-TOTAL_FORMS" />
+		      <input type="hidden" name="ds-2012-datafile-INITIAL_FORMS" value="0" id="id_ds-2012-datafile-INITIAL_FORMS" />
+		      <input type="hidden" name="ds-2012-datafile-MAX_NUM_FORMS" id="id_ds-2012-datafile-MAX_NUM_FORMS" />
+		    </ul>
+		  </div>
+		</div>
+	      </div>
+        <form id="create_experiment_form" action="" method="POST">
           {{ form.non_field_errors }}
           <div class="msg_list">
-            <p class="msg_head">Experiment Information</p>
-            <div class="msg_body">
+            <p class="exp_head">Experiment Information</p>
+            <div class="exp_body">
               <div class="fieldWrapper">
                 {{ form.title.errors }}
                 <label for="id_title">Title:</label><br/>
@@ -271,63 +235,134 @@
                 {{ form.description }}
               </div>
             </div>
-            <p class="add_new_dataset">Add New Dataset</p>
-            <p class="my_files">My Files</p>
-            <div class="msg_body">
-              <p><strong>Select Files For New Dataset</strong></p>
-              <div id="demo1" class="demo">
-                {{directory_listing|safe}}
-              </div>
-              <br/>
-            </div>
-            <div class="datasets">
-              {{ form.datasets.management_form }}
-              {% for dataset_form, file_forms in form.get_datasets %}
-                <div class="dataset_container">
-                  <p class="msg_head">Dataset</p>
-                  <div class="msg_body">
-                    <div class="fieldWrapper">
-                      {{ dataset_form.description.errors }}
-                      <p>Dataset Description: <br/>
-                      {% if form.instance %}
-			{{ dataset_form.id }}
-                        {{ dataset_form.DELETE.as_hidden }}
-		      {% endif %}
-                      {{dataset_form.description}}
-                      </p>
-                    </div>
-                    <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
-                    <p><strong>Files</strong></p>
-                    <div>
+	    {% if directory_listing %}
+              <p class="my_files">My Files</p>
+	      <div class="msg_body">
+		<p><strong>Select Files To Be Added To A Dataset:</strong></p>
+		<div id="demo1" class="demo">
+		  {{directory_listing|safe}}
+		</div>
+		<p>
+		To add files to 'My Files', mount the following file store via your operating system:
+		</p>
+		<p id="mountpath">
+		<strong>{{staging_mount_prefix}}{{username}}</strong>
+		</p>
+		<p>
+		<a href="#">User Guide</a>
+		</p>
+		<br/>
+	      </div>
+	    {% endif %}
+	    <script type="text/javascript">
+	      function findLastDS() {
+		  forms = $('.dataset_container').not('.formset-custom-template');
+		  return forms.length-1;
+	      }
+	      var dsPrefix = "dataset";
+	      // converting DOM element to jquery
+	      function updateDSidCB(ndx, row) {
+		  updateDSid(ndx, $(row));
+	      }
+	      function updateDSid(ndx, row) {
+		  row.find('input,select,textarea,label').each(function() {
+		      var prefix = "ds";
+		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
+                      var replacement = prefix + '-' + ndx + '-';
+                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
+                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
+		      var prefix = "dataset";
+		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
+                      var replacement = prefix + '-' + ndx + '-';
+                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
+                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
+                  });
+	      }
+	      function addDatasetCB(row) {
+		  var ndx = findLastDS();
+		  console.log(ndx);
+		  updateDSid(ndx, row);
+		  row.find("li.datafile").remove();
+		  row.find('[name$=TOTAL_FORMS]').val("0");
+		  row.find('[name$=INITIAL_FORMS]').val("0");
+	      }
+	      function updateDSids() {
+		  $(".dataset_container").not('.formset-custom-template').each(updateDSidCB);
+	      }
+	      function removeDatasetCB(row) {
+		  updateDSids();
+	      }
+	      $(document).ready(function() {
+		  $('.dataset_container').formset({addText:"Add another Dataset",
+						   prefix: dsPrefix,
+						   added: addDatasetCB,
+						   removed: removeDatasetCB,
+						   deleteText: 'Remove Dataset',
+						   formCssClass: "dataset_container",
+						   formTemplate: ".fsTemplate",
+						   });
 
-                      <ul class="dataset">
-                        {{ file_forms.management_form }}
+		  $(document).find('.dataset_container.immutable').find('.delete-row').hide();
+		  $(document).find('.dataset_container.immutable').find('.remove_file').hide();
+		  $(document).find('.dataset_container.immutable').find('.add_files').hide();
+
+	      });
+
+	    </script>
+
+	    <div class="datasets">
+	      {% for dataset_form, file_forms in form.get_datasets %}
+		<div class="dataset_container {% if dataset_form.instance.immutable %}immutable{% endif %}"  id="{{ dataset_form.prefix }}-row">
+		  <p class="msg_head">Dataset {% if dataset_form.instance.immutable %}(Immutable){% endif %}</p>
+		  <div class="msg_body">
+		    <div class="fieldWrapper">
+		      {{ dataset_form.description.errors }}
+
+			{% for fld in dataset_form.hidden_fields %}{{ fld }}{% endfor %}
+			{% if dataset_form.instance.pk %}{{ dataset_form.DELETE }}{% endif %}
+			Description: {{ dataset_form.description }}
+   	        {{ dataset_form.immutable.as_hidden }}
+
+		    </div>
+		    {% if directory_listing %}
+		      <p><input class="add_files" type="button" value="Add selected files to dataset"/></p>
+		    {% endif %}
+		    <p><strong>Files added to Dataset</strong></p>
+		    <div>
+		      <ul class="datafiles">
+			{{ file_forms.management_form }}
 			{% for file_form in file_forms.forms %}
-                          <li class="datafile">
+                          <li id="{{file_form.prefix}}-row" class="datafile">
+			    {{ file_form.protocol.as_hidden }}
 			    {{ file_form.id.as_hidden }}
-                            {{ file_form.DELETE.as_hidden }}
+			    {{ file_form.DELETE.as_hidden }}
 			    {{ file_form.url.as_hidden }}
 			    {{ file_form.filename.as_hidden }}
-                          <span class="file">{{ file_form.filename }}</span>
-                          <span class="remove_file">[x]</span><br/>
-                          </li>
+			    <span class="file">{{ file_form.url|cut:"tardis://" }}</span>
+			    <span class="remove_file">[remove]</span><br/>
+			  </li>
                         {% endfor %}
-                      </ul>
-                    </div>
-                    <div style="text-align: right" class="remove_dataset">(Remove Dataset)</div>
+			</ul>
+		      </div>
+		    </div>
 		  </div>
-		</div>
-	      {% endfor %}
-	    </div>
+		{% endfor %}
+		{{ form.datasets.management_form }}
+	      </div>
 	    <br/>
-	    <input id="button" type="submit" value="Save"/>
-	  </div>
+	      <input id="button" type="button" value="Save"/>
+	      {% if experiment_id %}
+	      <a href="{% url tardis.tardis_portal.views.view_experiment experiment_id %}" >Cancel</a>
+	      {% else %}
+	      <a href="{% url tardis.tardis_portal.views.experiment_index %}" >Cancel</a>
+	      {% endif %}
+	    </div>
 
-	</form>
+	  </form>
+	</div>
       </div>
     </div>
-  </div>
-  <br/>
+    <br/>
 {% endblock %}
 
 {% block sidebar %}

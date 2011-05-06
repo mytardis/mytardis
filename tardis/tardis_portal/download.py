@@ -40,10 +40,12 @@ def download_datafile(request, datafile_id):
 
             try:
                 wrapper = FileWrapper(file(file_path))
+
                 response = HttpResponse(wrapper,
                                         mimetype=datafile.get_mimetype())
                 response['Content-Disposition'] = \
                     'attachment; filename="%s"' % datafile.filename
+
                 return response
 
             except IOError:
@@ -52,26 +54,73 @@ def download_datafile(request, datafile_id):
         return return_response_error(request)
 
 
-@experiment_access_required
-def download_experiment(request, experiment_id):
+def download_datafile_ws(request):
+    if request.GET.has_key('url') and len(request.GET['url']) > 0:
+        url = urllib.unquote(request.GET['url'])
+        raw_path = url.partition('//')[2]
+        experiment_id = request.GET['experiment_id']
+        datafile = Dataset_File.objects.filter(url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
 
+        if has_datafile_access(request=request,
+                               dataset_file_id=datafile.id):
+
+            file_path = datafile.get_absolute_filepath()
+
+            try:
+                wrapper = FileWrapper(file(file_path))
+                response = HttpResponse(wrapper,
+                                        mimetype=datafile.get_mimetype())
+                response['Content-Disposition'] = \
+                    'attachment; filename="%s"' % datafile.filename
+                return response
+
+            except IOError:
+                return return_response_not_found(request)
+
+        else:
+            return return_response_not_found(request)
+
+    else:
+        return return_response_error(request)
+
+
+@experiment_access_required
+def download_experiment(request, experiment_id, comptype):
+    """
+    takes string parameter "comptype" for compression method.
+    Currently implemented: "zip" and "tar"
+    """
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # (tarfile count?)
     experiment = Experiment.objects.get(pk=experiment_id)
 
-    cmd = 'tar -C %s -c %s/' % (abspath(settings.FILE_STORE_PATH),
-                                str(experiment.id))
+    if comptype == "tar":
+        cmd = 'tar -C %s -c %s/' % (abspath(settings.FILE_STORE_PATH),
+                                    str(experiment.id))
+        # logger.info('TAR COMMAND: ' + cmd)
+        response = HttpResponse(FileWrapper(subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    shell=True).stdout),
+                                mimetype='application/x-tar')
 
-    #logger.info('TAR COMMAND: ' + cmd)
-    response = HttpResponse(FileWrapper(subprocess.Popen(cmd,
-                            stdout=subprocess.PIPE,
-                            shell=True).stdout),
-                            mimetype='application/x-tar')
+        response['Content-Disposition'] = 'attachment; filename="experiment' \
+            + str(experiment.id) + '-complete.tar"'
+    elif comptype == "zip":
+        cmd = 'cd %s; zip -r - %s' % (abspath(settings.FILE_STORE_PATH),
+                                    str(experiment.id))
+        # logger.info('TAR COMMAND: ' + cmd)
+        response = HttpResponse(FileWrapper(subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    shell=True).stdout),
+                                mimetype='application/zip')
 
-    response['Content-Disposition'] = 'attachment; filename="experiment' \
-        + str(experiment.id) + '-complete.tar"'
-
+        response['Content-Disposition'] = 'attachment; filename="experiment' \
+            + str(experiment.id) + '-complete.zip"'
+    else:
+        return return_response_not_found(request)
     # response['Content-Length'] = fileSize + 5120
     return response
 
@@ -85,12 +134,15 @@ def download_datafiles(request):
     fileString = ''
     fileSize = 0
 
+    comptype = "zip"
+    if request.POST.has_key('comptype'):
+        comptype = request.POST['comptype']
+
     # the following protocols can be handled by this module
     protocols = ['', 'file', 'tardis']
     known_protocols = len(protocols)
 
-    if 'datafile' or 'dataset' in request.POST:
-
+    if request.POST.has_key('datafile') or request.POST.has_key('dataset'):
         if (len(request.POST.getlist('datafile')) > 0 \
                 or len(request.POST.getlist('dataset'))) > 0:
 
@@ -100,13 +152,15 @@ def download_datafiles(request):
             for dsid in datasets:
                 for datafile in Dataset_File.objects.filter(dataset=dsid):
                     if has_datafile_access(request=request,
-                                           dataset_file_id=datafile.id):
+                                            dataset_file_id=datafile.id):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
-
                         absolute_filename = datafile.url.partition('//')[2]
-                        fileString += '%s/%s ' % (expid, absolute_filename)
+                        if(datafile.url.partition('//')[0] == 'tardis:'):
+                            fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+                        else:
+                            fileString += '%s/%s ' % (expid, absolute_filename)
                         fileSize += long(datafile.size)
 
             for dfid in datafiles:
@@ -119,29 +173,35 @@ def download_datafiles(request):
                     if not p in protocols:
                         protocols += [p]
                     absolute_filename = datafile.url.partition('//')[2]
-                    fileString += '%s/%s ' % (expid, absolute_filename)
+                    if(datafile.url.partition('//')[0] == 'tardis:'):
+                        fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+                    else:
+                        fileString += '%s/%s ' % (expid, absolute_filename)
                     fileSize += long(datafile.size)
-
         else:
             return return_response_not_found(request)
 
-    # TODO: check if we really still need this method
-    elif 'url' in request.POST:
-
+    elif request.POST.has_key('url'):
         if not len(request.POST.getlist('url')) == 0:
+            fileString = ""
+            fileSize = 0
             for url in request.POST.getlist('url'):
-                datafile = \
-                    Dataset_File.objects.get(url=urllib.unquote(url),
-                        dataset__experiment__id=request.POST['expid'])
+                url = urllib.unquote(url)
+                raw_path = url.partition('//')[2]
+                experiment_id = request.POST['expid']
+                datafile = Dataset_File.objects.filter(url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
                 if has_datafile_access(request=request,
                                        dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
                     absolute_filename = datafile.url.partition('//')[2]
-                    fileString += '%s/%s ' % (expid, absolute_filename)
+                    if(datafile.url.partition('//')[0] == 'tardis:'):
+                        # expects tardis: formatted stuff to not include dataset id
+                        fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+                    else:
+                        fileString += '%s/%s ' % (expid, absolute_filename)
                     fileSize += long(datafile.size)
-
         else:
             return return_response_not_found(request)
     else:
@@ -173,16 +233,31 @@ def download_datafiles(request):
         if not fileString:
             return return_response_error(request)
 
-        cmd = 'tar -C %s -c %s' % (settings.FILE_STORE_PATH,
-                                   fileString)
+        if comptype == "tar":
+            cmd = 'tar -C %s -c %s' % (settings.FILE_STORE_PATH,
+                                       fileString)
 
-        # logger.info(cmd)
-        response = \
-            HttpResponse(FileWrapper(subprocess.Popen(cmd,
-                                                      stdout=subprocess.PIPE,
-                                                      shell=True).stdout),
-                         mimetype='application/x-tar')
-        response['Content-Disposition'] = \
-                'attachment; filename="experiment%s.tar"' % expid
-        response['Content-Length'] = fileSize + 5120
-        return response
+            # logger.info(cmd)
+            response = \
+                HttpResponse(FileWrapper(subprocess.Popen(cmd,
+                                                          stdout=subprocess.PIPE,
+                                                          shell=True).stdout),
+                             mimetype='application/x-tar')
+            response['Content-Disposition'] = \
+                    'attachment; filename="experiment%s-selection.tar"' % expid
+            response['Content-Length'] = fileSize + 5120
+            return response
+        else:
+            cmd = 'cd %s; zip -r - %s' % (settings.FILE_STORE_PATH,
+                                       fileString)
+
+            # logger.info(cmd)
+            response = \
+                HttpResponse(FileWrapper(subprocess.Popen(cmd,
+                                                          stdout=subprocess.PIPE,
+                                                          shell=True).stdout),
+                             mimetype='application/zip')
+            response['Content-Disposition'] = \
+                    'attachment; filename="experiment%s-selection.zip"' % expid
+            response['Content-Length'] = fileSize + 5120
+            return response

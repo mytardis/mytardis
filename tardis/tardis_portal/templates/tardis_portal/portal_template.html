@@ -36,10 +36,10 @@
 <head>
 	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>Squirrel {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
 	<meta name="keywords" content="">
 	<meta name="description" content="">
-
+	{% include "tardis_portal/javascript_libraries.html" %}
 	{% block script %}
 	{% endblock script %}
 
@@ -56,13 +56,49 @@
 	pageTracker._trackPageview();
 	} catch(err) {}
         </script>
+
+	      <script type="text/javascript">
+
+		$(document).ready(function() {
+			var myClose=function(hash) {
+					hash.w.fadeOut('2000',function(){ hash.o.remove()});
+					window.location.hash = "";
+				};
+			
+		    // $("#fuzz").css("height", $(document).height());
+		    $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
+
+			// 			    $(window).bind("resize", function() {
+			// $("#fuzz").css("height", $(window).height());
+			// 			    });
+			
+			{% if status %}
+			$('#jqmAlertStatus').jqmShow();
+			{% endif %}
+			// $("#fuzz").fadeIn();
+			if(window.location.hash) {
+				if(window.location.hash == '#created')
+				{
+					$('#jqmStatusMessage').html('Experiment Created');
+					$("#jqmAlertStatus").jqmShow();
+				}
+				else if(window.location.hash == '#saved')
+				{
+					$('#jqmStatusMessage').html('Experiment Saved');
+					$("#jqmAlertStatus").jqmShow();					
+				}
+			}		
+		});		
+			
+	      </script>
+
 </head>
 
 <body>
 
   <div id="header">
     <div id="logo">
-      <h1><img src="/site_media/images/squirrel_logo.png"></h1>
+      <h1><img src="/site_media/images/mytardis_logo.png"></h1>
     </div> <!-- logo -->
     <div id="menu">
       <ul>
@@ -92,22 +128,23 @@
     </div> <!-- headerloginstatus -->
   </div> <!-- headerbg -->
 
-  <div id="page"> <!-- start page -->
+  <div id="page"> <!-- start page -->	
     <div id="content-box">
-      {% if status %}
-        <div id="status">
-          {% if error %}
-	    <div id="statusBoxError">
-	      {{status}}
-	    </div> <!-- statusBoxError -->
-	  {% else %}
-	    <div id="statusBox">
-	      {{status}}
-	    </div> <!-- statusBox -->
-	  {% endif %}
-	</div> <!-- status -->
-      {% endif %}
+		      <div class="jqmAlertStatus" id="jqmAlertStatus">
+				  <div class="jqmAlertWindowStatus">
 
+					{% if error %}
+					<div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
+					  <br/>{{status}}
+					
+					</div> <!-- statusBoxError -->
+					{% else %}
+					<div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
+					  <br/><span id="jqmStatusMessage">{{status}}</span>
+					</div> <!-- statusBox -->
+					{% endif %}
+				   </div> <!-- window -->
+			   </div> <!-- status -->
       {% block content %}
       {% endblock content %}
 
@@ -129,8 +166,8 @@
 
     </div> <!-- content box -->
 
-    <div id="bottombar" style="padding-bottom: 3px">
-      &nbsp;&nbsp;&nbsp;&nbsp;<a href="mailto:%20steve.androulakis@med.monash.edu.au">Created by Ashley Buckle, Steve Androulakis and the MyTARDIS Team</a> - Version 1.00
+    <div id="bottombar" style="padding-bottom: 5px; padding-left: 17px;">
+      Created by the <a target="_blank" style="text-decoration: underline" href="http://code.google.com/p/mytardis/">MyTARDIS Team</a> - Version 2.00
     </div> <!-- bottombar -->
   </div> <!-- page -->
 

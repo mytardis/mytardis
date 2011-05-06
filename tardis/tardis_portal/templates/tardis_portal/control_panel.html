@@ -198,6 +198,18 @@
 
         })();
 
+		$(".creategroup").live('click', function()
+		{
+			if($(this).is(':checked'))
+			{
+				$(this).parents('.access_list2').find('.newgroup').show();
+			}
+			else
+			{
+				$(this).parents('.access_list2').find('.newgroup').hide();
+			}
+		});
+
         $(".usersuggest").autocomplete(users.split(" "), {
           matchContains: true,
           //minChars: 0
@@ -212,15 +224,15 @@
         $("#group.form_submit").click(function(event) {
           event.preventDefault();
 
-          var experiment_id = $(this).siblings(".experiment_id").val();
-          var usersuggest = $(this).siblings(".usersuggest").val();
-          var groupsuggest = $(this).siblings(".groupsuggest").val();
-          var authMethod = $(this).siblings("#id_authMethod").val();
+          var experiment_id = $(this).parents('.access_list2').find(".experiment_id").val();
+          var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
+          var groupsuggest = $(this).parents('.access_list2').find(".groupsuggest").val();
+          var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
           var groups_div = $(this).parents('.access_list2').children('.groups');
-          var create = $(this).siblings(".creategroup").is(':checked');
-          var canRead = $(this).siblings(".canRead").is(':checked');
-          var canWrite = $(this).siblings(".canWrite").is(':checked');
-          var canDelete = $(this).siblings(".canDelete").is(':checked');
+          var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
+          var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
+          var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
+          var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
           var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
           action = experiment_id + '/access_list/add/group/' + groupsuggest + permissions;
 
@@ -302,10 +314,9 @@
 {% block content %}
   <div id="content">
     <div class="post">
-      <h1 class="title"><a href="#">Control Panel</a></h1>
+      <h1 class="title"><a href="#">Experiment Access Controls</a></h1>
       <div class="entry">
 
-    <p>
       {% if experiments %}
         <table class="experiment-table">
           {% for experiment in experiments %}

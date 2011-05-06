@@ -58,6 +58,7 @@ from xml.sax import make_parser
 from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
 
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -463,7 +464,8 @@ class MetsMetadataInfoHandler(ContentHandler):
                 # let's save the dataset in the DB
                 self.modelDataset = models.Dataset(
                     experiment=self.modelExperiment,
-                    description=self.metsObject.title)
+                    description=self.metsObject.title,
+                    immutable=settings.IMMUTABLE_METS_DATASETS)
                 self.modelDataset.save()
 
                 # let's also save the modelDataset in a dictionary so that we
