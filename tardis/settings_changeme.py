@@ -103,6 +103,8 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
+STAGING_PROTOCOL = 'ldap'
+STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -131,6 +133,12 @@ INSTALLED_APPS = (
     'registration',
     'south'
     )
+
+
+PUBLISH_PROVIDERS = (
+                    'tardis.tardis_portal.publish.rif_cs_profile.'
+                    + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
@@ -191,3 +199,8 @@ UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 
 # Upload path that files are sent to
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+
+DEFAULT_INSTITUTION = "Monash University"
+
+#Are the datasets ingested via METS xml (web services) to be immutable?
+IMMUTABLE_METS_DATASETS = True

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import mkdir
+from os import makedirs
 from os.path import abspath, basename, dirname, join, exists
 from shutil import rmtree
 
@@ -43,14 +43,17 @@ class DownloadTestCase(TestCase):
 
         # absolute path first
         filename = 'testfile.txt'
-        self.dest1 = abspath(join(settings.FILE_STORE_PATH, '%s'
-                                  % self.experiment1.id))
-        self.dest2 = abspath(join(settings.FILE_STORE_PATH, '%s'
-                                  % self.experiment2.id))
+        self.dest1 = abspath(join(settings.FILE_STORE_PATH, '%s/%s/'
+                                  % (self.experiment1.id,
+                                  self.dataset1.id)))
+        self.dest2 = abspath(join(settings.FILE_STORE_PATH,
+                                '%s/%s/'
+                                  % (self.experiment2.id,
+                                  self.dataset2.id)))
         if not exists(self.dest1):
-            mkdir(self.dest1)
+            makedirs(self.dest1)
         if not exists(self.dest2):
-            mkdir(self.dest2)
+            makedirs(self.dest2)
 
         testfile1 = abspath(join(self.dest1, filename))
         f = open(testfile1, 'w')
@@ -85,14 +88,15 @@ class DownloadTestCase(TestCase):
         client = Client()
 
         # check download for experiment1
-        response = client.get('/download/experiment/%i/' % self.experiment1.id)
+        response = client.get('/download/experiment/%i/zip/' % self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.tar"'
+                         'attachment; filename="experiment%s-complete.zip"'
                          % self.experiment1.id)
         self.assertEqual(response.status_code, 200)
 
         # check download of file1
         response = client.get('/download/datafile/%i/' % self.dataset_file1.id)
+
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s"'
                          % self.dataset_file2.filename)

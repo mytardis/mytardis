@@ -283,7 +283,7 @@
 
 		<strong>Dataset Metadata: </strong>
 
-		{% if has_write_permissions %}
+		{% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
 		<a href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
 		 class="jqModalDsA{{dataset.id}}">[Add]</a>
 		<script type="text/javascript">
@@ -307,7 +307,7 @@
 			  </div>
 			</div>
 		</div>
-		{% endif %}
+		{% endif %}{% endif %}{% endif %}
 
 		<a class="dataset_metadata_toggle" href="/ajax/dataset_metadata/{{ dataset.id }}">[Show]</a>
 		<div class="dataset_metadata">

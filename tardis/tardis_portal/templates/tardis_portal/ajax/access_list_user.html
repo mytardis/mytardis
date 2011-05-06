@@ -4,14 +4,17 @@
 {% endfor %}
 </div> <!-- users -->
 <p>
-  <label>Add user: </label><br/>
-
+	<br/>
+  <strong><label>Add new user: </label></strong><br/>
+	<br/>
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
-	      {{ field.label }} {{ field }}
+	      {{ field.label }}: {{ field }}
+		<br/>
 	  {% else %}
 		  {% if field.label == "User" %}
-		     {{ field }} <a class="form_submit" id="user" href="">Submit</a>
+			Username:
+		     {{ field }} <a class="form_submit" id="user" href="">Add</a>
 		  {% else %}
 		     {{ field }} {{ field.label }}
 		  {% endif %}

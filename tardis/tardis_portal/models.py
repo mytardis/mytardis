@@ -137,7 +137,8 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
-    institution_name = models.CharField(max_length=400)
+    institution_name = models.CharField(max_length=400,
+            default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -197,9 +198,10 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
-    def get_download_urls(self):
+    def get_download_urls(self, comptype="zip"):
         urls = {}
-        kwargs = {'experiment_id': self.id}
+        kwargs = {'experiment_id': self.id,
+                  'comptype': comptype}
         distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
         for key_value in distinct:
             protocol = key_value['protocol']
@@ -217,6 +219,30 @@ class Experiment(models.Model):
                     pass
 
         return urls
+
+    def profile(self):
+        """Return the rif-cs profile template location
+            as determined by the profile ExperimentParameter
+
+        """
+
+        profile_template_location = "rif_cs_profile/profiles/"
+
+        try:
+            from tardis.tardis_portal.publish.rif_cs_profile.\
+            rif_cs_PublishProvider\
+            import rif_cs_PublishProvider
+
+            rif_cs_pp = rif_cs_PublishProvider(self.id)
+
+            profile = rif_cs_pp.get_profile()
+            if not profile:
+                return profile_template_location + "default.xml"
+
+            return profile_template_location + profile
+
+        except:
+            return profile_template_location + "default.xml"
 
 
 class ExperimentACL(models.Model):
@@ -295,6 +321,7 @@ class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
+    immutable = models.BooleanField(default=False)
     objects = OracleSafeManager()
 
     def getParameterSets(self, schemaType=None):
@@ -337,6 +364,9 @@ class Dataset(models.Model):
 
     def __unicode__(self):
         return self.description
+
+    def get_absolute_filepath(self):
+        return path.join(self.experiment.get_absolute_filepath(), str(self.id))
 
 
 class Dataset_File(models.Model):
@@ -416,8 +446,17 @@ class Dataset_File(models.Model):
         else:
             return ''
 
-    def get_absolute_filepath(self):
+    def get_relative_filepath(self):
+        if self.protocol == '' or self.protocol == 'tardis':
+            from os.path import abspath, join
+            return abspath(join(self.url.partition('://')[2]))
+        elif self.protocol == 'staging':
+            return self.url
+        # file should refer to an absolute location
+        elif self.protocol == 'file':
+            return self.url.partition('://')[2]
 
+    def get_absolute_filepath(self):
         # check for empty protocol field (historical reason) or
         # 'tardis' which indicates a location within the tardis file
         # store
@@ -431,6 +470,7 @@ class Dataset_File(models.Model):
             from os.path import abspath, join
             return abspath(join(FILE_STORE_PATH,
                                 str(self.dataset.experiment.id),
+                                str(self.dataset.id),
                                 self.url.partition('://')[2]))
         elif self.protocol == 'staging':
             return self.url

@@ -11,22 +11,36 @@
 {% endfor %}
 </div> <!-- groups -->
 <p>
-  <label>Add group: </label>
+  <strong><label>Add group name: </label></strong>
+
   {% for field in addGroupPermissionsForm %}
       {% if field.label == "Authentication Method" %}
-          {{ field.label }} {{ field }}
+		<div class="newgroup" style="display: none">
+	      {{ field.label }}: {{ field }}
+		<br/><br/>
       {% else %}
           {% if field.label == "Group" %}
               {{ field }}
           {% else %}
 	          {% if field.label == "User" %}
-	              Group admin: {{ field }} <a class="form_submit" id="group" href="">Submit</a>
+	              Group admin: {{ field }}
+				<br/><br/>
+				Group permissions:
+				<br/>
 	          {% else %}
-	              {{ field }} {{ field.label }}
+		   		  {% if field.label == "DELETE" %}
+					{{ field }} {{ field.label }}
+					<br/><br/>
+					</div>
+				  {% else %}
+	                 {{ field }} {{ field.label }}
+					<br/>
+	 			  {% endif %}
 	          {% endif %}
 	      {% endif %}
       {% endif %}
-      <br/>
   {% endfor %}
+
+  <a class="form_submit" id="group" href="">Add Group</a>
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>

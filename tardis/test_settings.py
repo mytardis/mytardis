@@ -24,6 +24,11 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/staging/"))
 
+STAGING_PROTOCOL = 'localdb'
+STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
+
+GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
+
 SITE_ID = '1'
 
 TEMPLATE_DIRS = ['.']
@@ -108,3 +113,7 @@ MODULE_LOG_MAXBYTES = 0
 
 UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+
+DEFAULT_INSTITUTION = "Monash University"
+
+IMMUTABLE_METS_DATASETS = True

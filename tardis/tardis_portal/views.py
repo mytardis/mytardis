@@ -27,7 +27,7 @@
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 """
 views.py
 
@@ -66,7 +66,8 @@ from tardis.tardis_portal.forms import ExperimentForm, \
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse, write_uploaded_file_to_dataset
+    staging_traverse, write_uploaded_file_to_dataset,\
+    get_full_staging_path
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
@@ -83,6 +84,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error_message, render_response_search
 from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
+from tardis.tardis_portal.publish.publishservice import PublishService
 
 
 logger = logging.getLogger(__name__)
@@ -104,6 +106,7 @@ def logout(request):
 
 def index(request):
     status = ''
+
     c = Context({'status': status})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
@@ -290,10 +293,10 @@ def view_experiment(request, experiment_id):
                 {'name': experiment.title,
                  'link': experiment.get_absolute_url()}]
 
-    if 'status' in request.GET:
-        c['status'] = request.GET['status']
-    if 'error' in request.GET:
-        c['error'] = request.GET['error']
+    if 'status' in request.POST:
+        c['status'] = request.POST['status']
+    if 'error' in request.POST:
+        c['error'] = request.POST['error']
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/view_experiment.html', c))
@@ -348,6 +351,9 @@ def experiment_description(request, experiment_id):
 
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+
+    if request.user.is_authenticated():
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
 
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
@@ -413,7 +419,11 @@ def experiment_datasets(request, experiment_id):
 @authz.dataset_access_required
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
+    has_write_permissions = \
+        authz.has_write_permissions(request, dataset.experiment.id)
+
     c = Context({'dataset': dataset, })
+    c['has_write_permissions'] = has_write_permissions
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -421,7 +431,11 @@ def retrieve_dataset_metadata(request, dataset_id):
 @authz.experiment_access_required
 def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
+    has_write_permissions = \
+        authz.has_write_permissions(request, experiment_id)
+
     c = Context({'experiment': experiment, })
+    c['has_write_permissions'] = has_write_permissions
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -442,9 +456,14 @@ def create_experiment(request,
 
     c = Context({
         'subtitle': 'Create Experiment',
-        'directory_listing': staging_traverse(),
         'user_id': request.user.id,
         })
+
+    staging = get_full_staging_path(
+                                request.user.username)
+    if staging:
+        c['directory_listing'] = staging_traverse(staging)
+        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
@@ -457,8 +476,9 @@ def create_experiment(request,
             experiment.created_by = request.user
             for df in full_experiment['dataset_files']:
                 if not df.url.startswith(path.sep):
-                    df.url = path.join(settings.STAGING_PATH,
-                                       df.url)
+                    df.url = path.join(get_full_staging_path(
+                                        request.user.username),
+                                        df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -472,9 +492,10 @@ def create_experiment(request,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
 
-            params = urlencode({'status': "Experiment Saved."})
-            return HttpResponseRedirect(
-                '?'.join([experiment.get_absolute_url(), params]))
+            request.POST = {'status': "Experiment Created."}
+            return HttpResponseRedirect(reverse(
+                'tardis.tardis_portal.views.view_experiment',
+                args=[str(experiment.id)]) + "#created")
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
@@ -483,6 +504,7 @@ def create_experiment(request,
         form = ExperimentForm(extra=1)
 
     c['form'] = form
+    c['default_institution'] = settings.DEFAULT_INSTITUTION
     return HttpResponse(render_response_index(request, template_name, c))
 
 
@@ -519,32 +541,39 @@ def edit_experiment(request, experiment_id,
 
     c = Context({'subtitle': 'Edit Experiment',
                  'user_id': request.user.id,
+                 'experiment_id': experiment_id,
               })
+
+    staging = get_full_staging_path(
+                                request.user.username)
+    if staging:
+        c['directory_listing'] = staging_traverse(staging)
+        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES,
                               instance=experiment, extra=0)
         if form.is_valid():
             full_experiment = form.save(commit=False)
-
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
             for df in full_experiment['dataset_files']:
-                if not df.url.startswith(path.sep):
-                    df.url = path.join(settings.STAGING_PATH, df.url)
+                if df.protocol == "staging":
+                    df.url = path.join(
+                    get_full_staging_path(request.user.username),
+                    df.url)
             full_experiment.save_m2m()
 
-            params = urlencode({'status': "Experiment Saved."})
-            return HttpResponseRedirect(
-                '?'.join([experiment.get_absolute_url(),
-                          params]))
+            request.POST = {'status': "Experiment Saved."}
+            return HttpResponseRedirect(reverse(
+                'tardis.tardis_portal.views.view_experiment',
+                args=[str(experiment.id)]) + "#saved")
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
     else:
         form = ExperimentForm(instance=experiment, extra=0)
 
-    c['directory_listing'] = staging_traverse()
     c['form'] = form
 
     return HttpResponse(render_response_index(request,
@@ -859,17 +888,25 @@ def retrieve_datafile_list(request, dataset_id):
         dataset = paginator.page(paginator.num_pages)
 
     is_owner = False
+    has_write_permissions = False
 
     if request.user.is_authenticated():
         experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
         is_owner = authz.has_experiment_ownership(request, experiment_id)
 
+        has_write_permissions = \
+            authz.has_write_permissions(request, experiment_id)
+
+    immutable = Dataset.objects.get(id=dataset_id).immutable
+
     c = Context({
         'dataset': dataset,
         'paginator': paginator,
+        'immutable': immutable,
         'dataset_id': dataset_id,
         'filename_search': filename_search,
         'is_owner': is_owner,
+        'has_write_permissions': has_write_permissions,
         })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/datafile_list.html', c))
@@ -1912,55 +1949,6 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     return HttpResponse('')
 
 
-@authz.experiment_ownership_required
-def publish_experiment(request, experiment_id):
-
-    experiment = Experiment.objects.get(id=experiment_id)
-
-    if not experiment.public:
-        filename = settings.FILE_STORE_PATH + '/' + experiment_id + \
-            '/METS.XML'
-
-        mpform = MultiPartForm()
-        mpform.add_field('username', settings.TARDIS_USERNAME)
-        mpform.add_field('password', settings.TARDIS_PASSWORD)
-        mpform.add_field('url', request.build_absolute_uri('/'))
-        mpform.add_field('mytardis_id', experiment_id)
-
-        f = open(filename, 'r')
-
-        # Add a fake file
-
-        mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
-
-        logger.debug('about to send register request to site')
-
-        # Build the request
-
-        requestmp = urllib2.Request(settings.TARDIS_REGISTER_URL)
-        requestmp.add_header('User-agent',
-                             'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-        body = str(mpform)
-        requestmp.add_header('Content-type', mpform.get_content_type())
-        requestmp.add_header('Content-length', len(body))
-        requestmp.add_data(body)
-
-        logger.debug('OUTGOING DATA:')
-        logger.debug(requestmp.get_data())
-
-        logger.debug('SERVER RESPONSE:')
-        logger.debug(urllib2.urlopen(requestmp).read())
-
-        experiment.public = True
-        experiment.save()
-
-        c = Context({})
-        return HttpResponse(render_response_index(request,
-                            'tardis_portal/index.html', c))
-    else:
-        return return_response_error(request)
-
-
 def stats(request):
 
     # stats
@@ -2277,3 +2265,125 @@ def add_par(request, parentObject, otype):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteradd.html', c))
+
+
+def rif_cs(request):
+    """
+    Display rif_cs of collection / parties / acitivies
+    This function is highly dependent on production requirements
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+
+    """
+
+    #currently set up to work with EIF038 dummy data
+    if settings.TEST_MONASH_ANDS_URL:
+        import datetime
+
+        experiments = Experiment.objects.filter(public=True)
+
+        activity_url = settings.TEST_MONASH_ANDS_URL\
+        + "pilot/GetActivitybyGrantID/"
+
+        requestmp = urllib2.Request(activity_url)
+        activity_rif_cs = urllib2.urlopen(requestmp).read()
+
+        party_url = settings.TEST_MONASH_ANDS_URL\
+        + "pilot/GetPartybyMonashID/"
+
+        requestmp = urllib2.Request(party_url)
+        party_rif_cs = urllib2.urlopen(requestmp).read()
+
+        c = Context({
+            'experiments': experiments,
+            'now': datetime.datetime.now(),
+            'party_rif_cs': party_rif_cs,
+            'activity_rif_cs': activity_rif_cs,
+        })
+        return HttpResponse(render_response_index(request,\
+        'rif_cs_profile/rif-cs.xml', c),
+        mimetype='application/xml')
+    else:
+        logger.debug('TEST_MONASH_ANDS_URL setting not found.' +
+        ' RIF-CS not shown')
+        return return_response_error(request)
+
+
+@authz.experiment_ownership_required
+def publish_experiment(request, experiment_id):
+    """
+    Make the experiment open to public access.
+    Sets off a chain of PublishProvider modules for
+    extra publish functionality.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be published
+    :type experiment_id: string
+
+    """
+    import os
+
+    experiment = Experiment.objects.get(id=experiment_id)
+    username = str(request.user).partition('_')[2]
+
+    publishService = PublishService(experiment.id)
+
+    if request.method == 'POST':  # If the form has been submitted...
+
+        legal = True
+        success = True
+
+        context_dict = {}
+        #fix this slightly dodgy logic
+        context_dict['publish_result'] = "submitted"
+        if 'legal' in request.POST:
+            experiment.public = True
+            experiment.save()
+
+            context_dict['publish_result'] = \
+            publishService.execute_publishers(request)
+
+            for result in context_dict['publish_result']:
+                if not result['status']:
+                    success = False
+
+        else:
+            logger.debug('Legal agreement for exp: ' + experiment_id +
+            ' not accepted.')
+            legal = False
+
+        # set dictionary to legal status and publish success result
+        context_dict['legal'] = legal
+        context_dict['success'] = success
+    else:
+        TARDIS_ROOT = os.path.abspath(\
+        os.path.join(os.path.dirname(__file__)))
+
+        legalpath = os.path.join(TARDIS_ROOT,
+                      "publish/legal.txt")
+
+        # if legal file isn't found then we can't proceed
+        try:
+            legalfile = open(legalpath, 'r')
+        except IOError:
+            logger.error('legal.txt not found. Publication halted.')
+            return return_response_error(request)
+
+        legaltext = legalfile.read()
+        legalfile.close()
+
+        context_dict = \
+        {'username': username,
+        'publish_forms': publishService.get_template_paths(),
+        'experiment': experiment,
+        'legaltext': legaltext,
+        }
+
+        context_dict = dict(context_dict, \
+        **publishService.get_contexts(request))
+
+    c = Context(context_dict)
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/publish_experiment.html', c))

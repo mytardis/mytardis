@@ -7,7 +7,7 @@
   {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-
+	
 	function get_new_parameter_name(name)
 	{
 		new_name = name
@@ -52,9 +52,9 @@
   <div id="fullpage">
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
-        {% if has_write_permissions %}
+        {% if has_write_permissions %}{% if not experiment.public %}
            <a href="{{ experiment.get_edit_url }}">[Edit]</a>
-	{% endif %}
+	{% endif %}{% endif %}
       </h1>
     </div>
 

@@ -57,6 +57,7 @@ class DjangoAuthBackend():
         """
         username = request.POST['username']
         password = request.POST['password']
+
         if not username or not password:
             return None
         return _modelBackend.authenticate(username, password)
