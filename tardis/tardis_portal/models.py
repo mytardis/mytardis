@@ -566,7 +566,7 @@ class Schema(models.Model):
     objects = SchemaManager()
 
     def natural_key(self):
-        return self.namespace
+        return (self.namespace,)
 
     def _getSchemaTypeName(self, typeNum):
         return dict(self._SCHEMA_TYPES)[typeNum]
@@ -690,8 +690,7 @@ class ParameterName(models.Model):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
     def natural_key(self):
-        return (self.schema, self.name)
-    #natural_key.dependencies = ['Schema']
+        return (self.schema.namespace, self.name)
 
     def isNumeric(self):
         if self.data_type == self.NUMERIC:
