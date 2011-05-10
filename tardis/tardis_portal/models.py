@@ -551,7 +551,7 @@ class Schema(models.Model):
         (NONE, 'None')
     )
 
-    namespace = models.URLField(unique=False,
+    namespace = models.URLField(unique=True,
                                 verify_exists=False,
                                 max_length=400)
     name = models.CharField(blank=True, null=True, max_length=50)
