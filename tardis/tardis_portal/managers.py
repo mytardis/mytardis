@@ -250,8 +250,8 @@ class ExperimentManager(OracleSafeManager):
 
 
 class ParameterNameManager(models.Manager):
-    def get_by_natural_key(self, schema, name):
-        return self.get(schema=schema, name=name)
+    def get_by_natural_key(self, namespace, name):
+        return self.get(schema__namespace=namespace, name=name)
 
 
 class SchemaManager(models.Manager):
