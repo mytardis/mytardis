@@ -48,7 +48,8 @@ from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 
 from tardis.tardis_portal.staging import StagingHook
-from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
+from tardis.tardis_portal.managers import OracleSafeManager,\
+    ExperimentManager, ParameterNameManager, SchemaManager
 
 
 class UserProfile(models.Model):
@@ -550,7 +551,9 @@ class Schema(models.Model):
         (NONE, 'None')
     )
 
-    namespace = models.URLField(verify_exists=False, max_length=400)
+    namespace = models.URLField(unique=True,
+                                verify_exists=False,
+                                max_length=400)
     name = models.CharField(blank=True, null=True, max_length=50)
     type = models.IntegerField(
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
@@ -560,6 +563,10 @@ class Schema(models.Model):
     # further categorise the experiment, dataset, and datafile schemas. the
     # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
     subtype = models.CharField(blank=True, null=True, max_length=30)
+    objects = SchemaManager()
+
+    def natural_key(self):
+        return self.namespace
 
     def _getSchemaTypeName(self, typeNum):
         return dict(self._SCHEMA_TYPES)[typeNum]
@@ -674,12 +681,17 @@ class ParameterName(models.Model):
     # TODO: we'll need to rethink the way choices for drop down menus are
     #       represented in the DB. doing it this way is just a bit wasteful.
     choices = models.CharField(max_length=500, blank=True)
+    objects = ParameterNameManager()
+
+    class Meta:
+        unique_together = (('schema', 'name'),)
 
     def __unicode__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
-    class Meta:
-        unique_together = (('schema', 'name'),)
+    def natural_key(self):
+        return (self.schema, self.name)
+    #natural_key.dependencies = ['Schema']
 
     def isNumeric(self):
         if self.data_type == self.NUMERIC:
