@@ -195,7 +195,7 @@ class ModelTestCase(TestCase):
                                   type=models.Schema.DATASET)
         ds_schema.save()
 
-        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
+        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema3.xml',
                                    type=models.Schema.EXPERIMENT)
         exp_schema.save()
 
