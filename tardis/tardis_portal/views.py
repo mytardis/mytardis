@@ -298,6 +298,14 @@ def view_experiment(request, experiment_id):
     if 'error' in request.POST:
         c['error'] = request.POST['error']
 
+    appurls = ['%s.%s.views.index' % (settings.TARDIS_APP_ROOT, app)
+               for app in settings.TARDIS_APPS]
+    import sys
+    appnames = [sys.modules['%s.%s.settings' %
+                (settings.TARDIS_APP_ROOT, app)].NAME
+                for app in settings.TARDIS_APPS]
+    c['apps'] = zip(appurls, appnames)
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/view_experiment.html', c))
 
@@ -2108,8 +2116,15 @@ def upload_files(request, dataset_id,
     :type dataset_id: integer
     :returns: A view containing an Uploadify *create files* button
     """
+    if 'message' in request.GET:
+        message = request.GET['message']
+    else:
+        message = "Upload Files to Dataset"
     url = reverse('tardis.tardis_portal.views.upload_complete')
-    c = Context({'upload_complete_url': url, 'dataset_id': dataset_id})
+    c = Context({'upload_complete_url': url,
+                 'dataset_id': dataset_id,
+                 'message': message,
+                 })
     return render_to_response(template_name, c)
 
 

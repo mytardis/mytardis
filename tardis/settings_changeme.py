@@ -117,6 +117,16 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 
 MEDIA_URL = '/site_media/'
 
+#set to empty tuple () for no apps
+#TARDIS_APPS = ('mrtardis', )
+TARDIS_APPS = ()
+TARDIS_APP_ROOT = 'tardis.apps'
+
+if TARDIS_APPS:
+    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
+else:
+    apps = ()
+
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
 
@@ -132,7 +142,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal.templatetags',
     'registration',
     'south'
-    )
+    ) + apps
 
 
 PUBLISH_PROVIDERS = (

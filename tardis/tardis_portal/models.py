@@ -509,6 +509,11 @@ class Dataset_File(models.Model):
         f.close()
         self.md5sum = md5.hexdigest()
 
+    def deleteCompletely(self):
+        import os
+        filename = self.get_absolute_filepath()
+        os.remove(filename)
+        self.delete()
 
 def save_DatasetFile(sender, **kwargs):
 

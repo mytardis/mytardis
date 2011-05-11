@@ -20,7 +20,7 @@ Changelog
     Engine design
     <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
 
-* Metadata Editing [Steve, Grisha]
+* Metadata Editing [Steve, Grischa]
 * New METS parser & METS exporter [Gerson]
 * Dist/Buildout infrastructure [Russell]
 * Through the web creation and editing of experiments [Steve, Russell]
