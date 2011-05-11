@@ -768,39 +768,6 @@ def createSearchExperimentForm():
                         max_length=255, required=False)
                 formutilFields[schema].append(parameterName.name)
 
-        for parameterName in parameterNames:
-            if parameterName.data_type == ParameterName.NUMERIC:
-                if parameterName.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fields[parameterName.name + 'From'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' From', required=False)
-                    fields[parameterName.name + 'To'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' To', required=False)
-                    formutilFields[schema].append(parameterName.name + 'From')
-                    formutilFields[schema].append(parameterName.name + 'To')
-                else:
-                    # note that we'll also ignore the choices text box entry
-                    # even if it's filled if the parameter is of numeric type
-                    # TODO: decide if we are to raise an exception if
-                    #       parameterName.choices is not empty
-                    fields[parameterName.name] = \
-                        forms.DecimalField(label=parameterName.full_name,
-                            required=False)
-                    formutilFields[schema].append(parameterName.name)
-            else:  # parameter is a string
-                if parameterName.choices != '':
-                    fields[parameterName.name] = \
-                        forms.CharField(label=parameterName.full_name,
-                        widget=forms.Select(choices=__getParameterChoices(
-                        parameterName.choices)), required=False)
-                else:
-                    fields[parameterName.name] = \
-                        forms.CharField(label=parameterName.full_name,
-                        max_length=255, required=False)
-                formutilFields[schema].append(parameterName.name)
-
     fieldsets = []
 
     for groupName, fieldlist in formutilFields.items():
