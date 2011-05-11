@@ -71,6 +71,14 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware'
 )
 
+TARDIS_APPS = ()
+TARDIS_APP_ROOT = 'tardis.apps'
+
+if TARDIS_APPS:
+    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
+else:
+    apps = ()
+
 INSTALLED_APPS = (
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -85,7 +93,7 @@ INSTALLED_APPS = (
         'registration',
         'django_nose',
         'south'
-)
+) + apps
 
 # LDAP configuration
 LDAP_USE_TLS = False

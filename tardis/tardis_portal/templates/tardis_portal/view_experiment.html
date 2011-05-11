@@ -1,6 +1,7 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load uploadify_tags %}
+{% load dynurl %}
 
 {% block script %}
 
@@ -63,6 +64,9 @@
 	<ul>
 	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
 	  <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+	  {% for appurl, appname in apps %}
+	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+	  {% endfor %}
 	</ul>
       </div><!-- End tab container -->
 
