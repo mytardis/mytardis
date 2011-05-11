@@ -68,7 +68,7 @@ class Command(BaseCommand):
                 try:
                     objects = serializers.deserialize(format, data)
                     for obj in objects:
-                        obj.save(using=using)
+			obj.save(using=using)
                 except (SystemExit, KeyboardInterrupt):
                     raise
                 except Exception:

@@ -105,6 +105,7 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
 
 
 class StagingHook():
+    __name__ = 'StagingHook'
 
     def __init__(self, staging=None, store=None):
         self.staging = staging or settings.STAGING_PATH
