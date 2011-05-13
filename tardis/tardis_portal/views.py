@@ -521,7 +521,8 @@ def metsexport_experiment(request, experiment_id):
 
     from os.path import basename
     from django.core.servers.basehttp import FileWrapper
-    from tardis.tardis_portal.metsexporter import exporter
+    from tardis.tardis_portal.metsexporter import MetsExporter
+    exporter = MetsExporter()
     filename = exporter.export(experiment_id)
     response = HttpResponse(FileWrapper(file(filename)),
                             mimetype='application')
