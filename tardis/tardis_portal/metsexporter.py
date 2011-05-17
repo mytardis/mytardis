@@ -13,6 +13,10 @@ from tardis.tardis_portal.models import *
 from tardis.tardis_portal.schema.mets import *
 
 
+# XHTML namespace prefix
+prefix = 'tardis'
+
+
 class MetsExporter():
 
     def export(self, experimentId):
@@ -21,7 +25,13 @@ class MetsExporter():
         experiment = Experiment.objects.get(id=experimentId)
 
         # TODO: what info do we put on label?
-        _mets = mets(PROFILE="Scientific Dataset Profile 1.0", LABEL="",
+        profile = '"Scientific Dataset Profile 1.0"' \
+            ' xmlns="http://www.loc.gov/METS/"' \
+            ' xmlns:xlink="http://www.w3.org/1999/xlink"' \
+            ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
+            ' xsi:schemaLocation="http://www.loc.gov/METS/' \
+            ' http://www.loc.gov/standards/mets/mets.xsd"'
+        _mets = mets(PROFILE=profile, LABEL="",
             TYPE="study", OBJID="A-{0}".format(metadataCounter))
 
         _amdSec = amdSecType()
@@ -47,7 +57,7 @@ class MetsExporter():
         _amdSec.add_techMD(_techMD)
 
         _xmlData = self.getDmdSecXmlDataForExperiment(
-            experiment, "http://www.loc.gov./mods/v3")
+            experiment, "http://www.loc.gov/mods/v3")
         experimentMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
         _dmdSec = mdSecType(ID="E-1", mdWrap=experimentMdWrap)
 
@@ -87,7 +97,7 @@ class MetsExporter():
             _amdSec.add_techMD(_techMD)
 
             _xmlData = self.getDmdSecXmlDataForDataset(
-                dataset, "http://www.loc.gov./mods/v3")
+                dataset, "http://www.loc.gov/mods/v3")
             datasetMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
             _dmdSec = mdSecType(ID="D-{0}".format(datasetCounter),
                 mdWrap=experimentMdWrap)
@@ -186,8 +196,11 @@ class MetsExporter():
                     file_path = abspath(join(settings.FILE_STORE_PATH,
                                              str(expid),
                                              parameter.string_value))
-                    metadataDict[parameter.name.name] = \
-                        b64encode(open(file_path).read()) or 'None'
+		    try:
+			metadataDict[parameter.name.name] = \
+                        b64encode(open(file_path).read())
+		    except:
+			logger.exception('b64encoding failed: %s' % file_path)
                 else:
                     metadataDict[parameter.name.name] = \
                         parameter.string_value.strip() or 'None'
@@ -207,72 +220,79 @@ class MetsExporter():
         metadataDict - a dictionary of the metadata fields where key is the
             name of the field while the value is the value of the field.
         """
-        import elementtree.ElementTree as ET
-        ET._namespace_map[schemaURI] = "tardis"
+	import xml.etree.ElementTree as ET
 
         # build a tree structure
-        xmlDataContentEl = ET.Element(elementName)
+        xmlDataContentEl = ET.Element('%s:%s' %(prefix, elementName))
 
         for k, v in metadataDict.iteritems():
-            metadataField = ET.SubElement(xmlDataContentEl, k)
+	    metadataField = ET.SubElement(xmlDataContentEl, '%s:%s' %(prefix, k))
             metadataField.text = v
+
+	xmlDataContentEl.set('xmlns:' + prefix, schemaURI)
         return xmlDataContentEl
 
     def getDmdSecXmlDataForExperiment(self, experiment, schemaURI):
-        import elementtree.ElementTree as ET
-        ET._namespace_map[schemaURI] = "mods"
+	import xml.etree.ElementTree as ET
 
         # build a tree structure
-        xmlDataContentEl = ET.Element("mods")
+        xmlDataContentEl = ET.Element("mods:mods")
 
-        titleInfo = ET.SubElement(xmlDataContentEl, "titleInfo")
-        title = ET.SubElement(titleInfo, "title")
+        titleInfo = ET.SubElement(xmlDataContentEl, "mods:titleInfo")
+        title = ET.SubElement(titleInfo, "mods:title")
         title.text = experiment.title
 
-        genre = ET.SubElement(xmlDataContentEl, "genre")
+        genre = ET.SubElement(xmlDataContentEl, "mods:genre")
         genre.text = "experiment"
 
-        relatedItem = ET.SubElement(xmlDataContentEl, "relatedItem",
+        relatedItem = ET.SubElement(xmlDataContentEl, "mods:relatedItem",
             {"type": "otherVersion"})
-        originInfo = ET.SubElement(relatedItem, "originInfo")
-        publisher = ET.SubElement(originInfo, "publisher")
+        originInfo = ET.SubElement(relatedItem, "mods:originInfo")
+        publisher = ET.SubElement(originInfo, "mods:publisher")
         publisher.text = "Primary Citation"
-        location = ET.SubElement(relatedItem, "location")
+        location = ET.SubElement(relatedItem, "mods:location")
         location.text = experiment.url
 
-        abstract = ET.SubElement(xmlDataContentEl, "abstract")
+        abstract = ET.SubElement(xmlDataContentEl, "mods:abstract")
         abstract.text = experiment.description
+
+        experiment_date = ET.SubElement(xmlDataContentEl, "tardis:tardis")
+        start_date = ET.SubElement(experiment_date, "tardis:startTime")
+        start_date.text = str(experiment.start_time)
+        end_date = ET.SubElement(experiment_date, "tardis:endTime")
+        end_date.text = str(experiment.end_time)
+        experiment_date.set('xmlns:tardis', "http://tardisdates.com/")
 
         authors = Author_Experiment.objects.filter(experiment=experiment)
         for author in authors:
-            name = ET.SubElement(xmlDataContentEl, "name",
+            name = ET.SubElement(xmlDataContentEl, "mods:name",
                 {"type": "personal"})
-            namePart = ET.SubElement(name, "namePart")
+            namePart = ET.SubElement(name, "mods:namePart")
             namePart.text = author.author
-            role = ET.SubElement(name, "role")
-            roleTerm = ET.SubElement(role, "roleTerm", {"type": "text"})
+            role = ET.SubElement(name, "mods:role")
+            roleTerm = ET.SubElement(role, "mods:roleTerm", {"type": "text"})
             roleTerm.text = "author"
 
         # TODO: figure out where I could get the PDB details
 
+	xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
 
     def getDmdSecXmlDataForDataset(self, dataset, schemaURI):
-        import elementtree.ElementTree as ET
-        ET._namespace_map[schemaURI] = "mods"
+	import xml.etree.ElementTree as ET
 
         # build a tree structure
-        xmlDataContentEl = ET.Element("mods")
+        xmlDataContentEl = ET.Element("mods:mods")
 
-        titleInfo = ET.SubElement(xmlDataContentEl, "titleInfo")
-        title = ET.SubElement(titleInfo, "title")
+        titleInfo = ET.SubElement(xmlDataContentEl, "mods:titleInfo")
+        title = ET.SubElement(titleInfo, "mods:title")
         title.text = dataset.description
 
         # TODO: figure out where I could get the PDB details
+
+	xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
-
-exporter = MetsExporter()
