@@ -25,7 +25,13 @@ class MetsExporter():
         experiment = Experiment.objects.get(id=experimentId)
 
         # TODO: what info do we put on label?
-        _mets = mets(PROFILE="Scientific Dataset Profile 1.0", LABEL="",
+        profile = '"Scientific Dataset Profile 1.0"' \
+            ' xmlns="http://www.loc.gov/METS/"' \
+            ' xmlns:xlink="http://www.w3.org/1999/xlink"' \
+            ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' \
+            ' xsi:schemaLocation="http://www.loc.gov/METS/' \
+            ' http://www.loc.gov/standards/mets/mets.xsd"'
+        _mets = mets(PROFILE=profile, LABEL="",
             TYPE="study", OBJID="A-{0}".format(metadataCounter))
 
         _amdSec = amdSecType()
@@ -51,7 +57,7 @@ class MetsExporter():
         _amdSec.add_techMD(_techMD)
 
         _xmlData = self.getDmdSecXmlDataForExperiment(
-            experiment, "http://www.loc.gov./mods/v3")
+            experiment, "http://www.loc.gov/mods/v3")
         experimentMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
         _dmdSec = mdSecType(ID="E-1", mdWrap=experimentMdWrap)
 
@@ -250,6 +256,13 @@ class MetsExporter():
         abstract = ET.SubElement(xmlDataContentEl, "mods:abstract")
         abstract.text = experiment.description
 
+        experiment_date = ET.SubElement(xmlDataContentEl, "tardis:tardis")
+        start_date = ET.SubElement(experiment_date, "tardis:startTime")
+        start_date.text = str(experiment.start_time)
+        end_date = ET.SubElement(experiment_date, "tardis:endTime")
+        end_date.text = str(experiment.end_time)
+        experiment_date.set('xmlns:tardis', "http://tardisdates.com/")
+
         authors = Author_Experiment.objects.filter(experiment=experiment)
         for author in authors:
             name = ET.SubElement(xmlDataContentEl, "mods:name",
@@ -278,7 +291,7 @@ class MetsExporter():
         title.text = dataset.description
 
         # TODO: figure out where I could get the PDB details
-	
+
 	xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
