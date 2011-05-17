@@ -709,7 +709,7 @@ class metsType(GeneratedsSuper):
             not in already_processed:
             already_processed.append('PROFILE')
             outfile.write(' PROFILE=%s'
-                          % (self.gds_format_string(quote_attrib(self.PROFILE).encode(ExternalEncoding),
+                          % (self.gds_format_string(self.PROFILE.encode(ExternalEncoding),
                           input_name='PROFILE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
@@ -11258,12 +11258,6 @@ class mets(metsType):
                       and ' ' + namespacedef_ or ''))
         self.exportAttributes(outfile, level, [], namespace_,
                               name_='mets')
-        outfile.write(' xmlns="http://www.loc.gov/METS/"'
-                      ' xmlns:xlink="http://www.w3.org/1999/xlink"'
-                      ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
-                      ' xsi:schemaLocation="http://www.loc.gov/METS/'
-                      ' http://www.loc.gov/standards/mets/mets.xsd"'
-                     )
         outfile.write(' xsi:type="mets"')
         if self.hasContent_():
             outfile.write('>\n')
