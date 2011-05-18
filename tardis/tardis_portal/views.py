@@ -120,8 +120,7 @@ def site_settings(request):
             username = request.POST['username']
             password = request.POST['password']
 
-            user = auth_service.authenticate(username=username,
-                                             password=password,
+            user = auth_service.authenticate(request=request,
                                              authMethod=localdb_auth_key)
             if user is not None:
                 if user.is_staff:
