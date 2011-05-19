@@ -321,7 +321,7 @@ class RegisterExperimentForm(forms.Form):
     xmldata = forms.FileField()
     experiment_owner = forms.CharField(max_length=400, required=False)
     originid = forms.CharField(max_length=400, required=False)
-
+    from_url = forms.CharField(max_length=400, required=False)
 
 class Author_Experiment(forms.ModelForm):
 

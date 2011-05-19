@@ -138,10 +138,9 @@ def site_settings(request):
 
 
 def load_image(request, experiment_id, parameter):
-    from os.path import abspath, join
-    file_path = abspath(join(settings.FILE_STORE_PATH,
-                             str(experiment_id),
-                             parameter.string_value))
+    file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
+                                       str(experiment_id),
+                                       parameter.string_value))
 
     from django.core.servers.basehttp import FileWrapper
     wrapper = FileWrapper(file(file_path))
@@ -712,23 +711,17 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     # for each PI
     for owner in owners:
         if owner:
-            # TODO: enable LDAP module here!
-
-            # try get user from email
-            # if settings.LDAP_ENABLE:
-            #     u = ldap_auth.get_or_create_user_ldap(owner)
-            # else:
-                # print "owner", owner
-            u = User.objects.get(username=owner)
-
+            from tardis.tardis_portal.auth import auth_service
+            user = auth_service.getUser({'pluginname': localdb_auth_key,
+                                         'id': owner})
             # if exist, create ACL
-            if u:
+            if user:
                 logger.debug('registering owner: ' + owner)
                 e = Experiment.objects.get(pk=eid)
 
                 acl = ExperimentACL(experiment=e,
                                     pluginId=django_user,
-                                    entityId=str(u.id),
+                                    entityId=str(user.id),
                                     canRead=True,
                                     canWrite=True,
                                     canDelete=True,
@@ -754,10 +747,7 @@ def register_experiment_ws_xmldata(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
             originid = form.cleaned_data['originid']
-
-            from_url = None
-            if 'form_url' in request.POST:
-                from_url = request.POST['from_url']
+            from_url = form.cleaned_data['from_url']
 
             from django.contrib.auth import authenticate
             user = authenticate(username=username, password=password)
@@ -778,14 +768,10 @@ def register_experiment_ws_xmldata(request):
 
             # TODO: this entire function needs a fancy class with functions for
             # each part..
-            from os import makedirs, system
-            from os.path import exists, join
-            dir = join(settings.FILE_STORE_PATH, str(eid))
-            if not exists(dir):
-                makedirs(dir)
-                system('chmod g+w ' + dir)
-
-            filename = dir + '/METS.xml'
+            dir = e.get_or_create_directory()
+            from os import system
+            system('chmod g+w ' + dir)
+            filename = path.join(dir, 'METS.xml')
             file = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 file.write(chunk)
@@ -795,6 +781,8 @@ def register_experiment_ws_xmldata(request):
 
                 @transaction.commit_on_success
                 def run(self):
+                    from time import sleep
+                    sleep(0.5)
                     logger.info('=== processing experiment %s: START' % eid)
                     owners = request.POST.getlist('experiment_owner')
                     try:
@@ -805,8 +793,10 @@ def register_experiment_ws_xmldata(request):
                                                     username=username)
                         logger.info('=== processing experiment %s: DONE' % eid)
                     except:
-                        e.delete()
                         logger.exception('=== processing experiment %s: FAILED!' % eid)
+
+                    return 
+
             RegisterThread().start()
 
             if from_url:
@@ -814,20 +804,28 @@ def register_experiment_ws_xmldata(request):
                 class FileTransferThread(threading.Thread):
 
                     def run(self):
+                        from time import sleep
+                        sleep(0.5)
                         # todo remove hard coded u/p for sync transfer....
-                        logger.debug('started transfer thread')
-                        file_transfer_url = from_url + '/file_transfer/'
-                        data = urlencode({
-                            'originid': str(originid),
-                            'eid': str(eid),
-                            'site_settings_url': request.build_absolute_uri(
-                                    '/site-settings.xml/'),
-                            'username': str('synchrotron'),
-                            'password': str('tardis'),
-                            })
-                        urlopen(file_transfer_url, data)
+                        logger.info('started file-transfer thread')
+                        try:
+                            file_transfer_url = from_url + '/file_transfer/'
+                            data = urlencode({
+                                'originid': str(originid),
+                                'eid': str(eid),
+                                'site_settings_url':
+                                request.build_absolute_uri('/site-settings.xml/'),
+                                'username': str('synchrotron'),
+                                'password': str('tardis'),
+                                })
+                            urlopen(file_transfer_url, data)
+                            logger.info('=== file-transfer request submitted to %s'
+                                        % file_transfer_url)
+                        except:
+                            logger.exception('=== file-transfer request to %s FAILED!'
+                                             % file_transfer_url)
 
-                logger.debug('Sending file request')
+                logger.debug('=== sending file request')
                 FileTransferThread().start()
 
             logger.debug('returning response from main call')
