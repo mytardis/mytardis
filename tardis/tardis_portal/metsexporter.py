@@ -256,12 +256,15 @@ class MetsExporter():
         abstract = ET.SubElement(xmlDataContentEl, "mods:abstract")
         abstract.text = experiment.description
 
-        experiment_date = ET.SubElement(xmlDataContentEl, "tardis:tardis")
-        start_date = ET.SubElement(experiment_date, "tardis:startTime")
-        start_date.text = str(experiment.start_time)
-        end_date = ET.SubElement(experiment_date, "tardis:endTime")
-        end_date.text = str(experiment.end_time)
-        experiment_date.set('xmlns:tardis', "http://tardisdates.com/")
+	start_time = experiment.start_time
+	end_time = experiment.end_time
+	if start_time and end_time:
+	    dateElement = ET.SubElement(xmlDataContentEl, "tardis:tardis")
+	    startElement = ET.SubElement(experiment_date, "tardis:startTime")
+	    startElement.text = str(start_time)
+	    endElement = ET.SubElement(experiment_date, "tardis:endTime")
+	    endElement.text = str(end_time)
+	    dateElement.set('xmlns:tardis', "http://tardisdates.com/")
 
         authors = Author_Experiment.objects.filter(experiment=experiment)
         for author in authors:
@@ -291,7 +294,6 @@ class MetsExporter():
         title.text = dataset.description
 
         # TODO: figure out where I could get the PDB details
-
 	xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
