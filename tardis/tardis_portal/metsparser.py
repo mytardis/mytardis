@@ -690,8 +690,8 @@ class MetsMetadataInfoHandler(ContentHandler):
         http://stackoverflow.com/questions/452969/does-python-have-an-equivalent-to-java-class-forname
 
         '''
-        logger.debug('saving parameter %s: %s' %
-            (parameterName, parameterValue))
+        #logger.debug('saving parameter %s: %s' %
+        #    (parameterName, parameterValue))
         if parameterName.isNumeric():
             parameter = \
                 getattr(models, parameterTypeClass)(
