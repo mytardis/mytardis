@@ -260,9 +260,9 @@ class MetsExporter():
 	end_time = experiment.end_time
 	if start_time and end_time:
 	    dateElement = ET.SubElement(xmlDataContentEl, "tardis:tardis")
-	    startElement = ET.SubElement(experiment_date, "tardis:startTime")
+	    startElement = ET.SubElement(dateElement, "tardis:startTime")
 	    startElement.text = str(start_time)
-	    endElement = ET.SubElement(experiment_date, "tardis:endTime")
+	    endElement = ET.SubElement(dateElement, "tardis:endTime")
 	    endElement.text = str(end_time)
 	    dateElement.set('xmlns:tardis', "http://tardisdates.com/")
 
