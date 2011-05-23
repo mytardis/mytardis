@@ -100,7 +100,7 @@ class MetsExporter():
                 dataset, "http://www.loc.gov/mods/v3")
             datasetMdWrap = mdWrap(MDTYPE="MODS", xmlData=_xmlData)
             _dmdSec = mdSecType(ID="D-{0}".format(datasetCounter),
-                mdWrap=experimentMdWrap)
+                mdWrap=datasetMdWrap)
             _mets.add_dmdSec(_dmdSec)
 
             datasetCounter += 1

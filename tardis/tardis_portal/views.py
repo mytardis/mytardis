@@ -82,7 +82,6 @@ from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
     return_response_error_message, render_response_search
-from tardis.tardis_portal.MultiPartForm import MultiPartForm
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.publish.publishservice import PublishService
 
@@ -116,9 +115,6 @@ def site_settings(request):
 
     if request.method == 'POST':
         if 'username' in request.POST and 'password' in request.POST:
-
-            username = request.POST['username']
-            password = request.POST['password']
 
             user = auth_service.authenticate(request=request,
                                              authMethod=localdb_auth_key)
@@ -648,35 +644,8 @@ def manage_auth_methods(request):
         return list_auth_methods(request)
 
 
-def register_experiment_ws_xmldata_internal(request):
-    logger.debug('def register_experiment_ws_xmldata_internal')
-    if request.method == 'POST':
-
-        username = request.POST['username']
-        password = request.POST['password']
-        filename = request.POST['filename']
-        eid = request.POST['eid']
-
-        from django.contrib.auth import authenticate
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if not user.is_active:
-                return return_response_error(request)
-        else:
-            return return_response_error(request)
-
-        _registerExperimentDocument(filename=filename,
-                created_by=user, expid=eid)
-
-        response = HttpResponse('Finished cataloging: %s' % eid,
-                                status=200)
-        response['Location'] = request.build_absolute_uri(
-            '/experiment/view/' + str(eid))
-
-        return response
-
-
 # TODO removed username from arguments
+@transaction.commit_on_success
 def _registerExperimentDocument(filename, created_by, expid=None,
                                 owners=[], username=None):
     '''
@@ -711,7 +680,6 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     # for each PI
     for owner in owners:
         if owner:
-            from tardis.tardis_portal.auth import auth_service
             user = auth_service.getUser({'pluginname': localdb_auth_key,
                                          'id': owner})
             # if exist, create ACL
@@ -734,7 +702,6 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
 # web service
 def register_experiment_ws_xmldata(request):
-    import threading
 
     status = ''
     if request.method == 'POST':  # If the form has been submitted...
@@ -749,8 +716,8 @@ def register_experiment_ws_xmldata(request):
             originid = form.cleaned_data['originid']
             from_url = form.cleaned_data['from_url']
 
-            from django.contrib.auth import authenticate
-            user = authenticate(username=username, password=password)
+            user = auth_service.authenticate(request=request,
+                                             authMethod=localdb_auth_key)
             if user:
                 if not user.is_active:
                     return return_response_error(request)
@@ -764,71 +731,46 @@ def register_experiment_ws_xmldata(request):
                 )
             e.save()
 
-            eid = e.id
-
-            # TODO: this entire function needs a fancy class with functions for
-            # each part..
-            dir = e.get_or_create_directory()
-            from os import system
-            system('chmod g+w ' + dir)
-            filename = path.join(dir, 'METS.xml')
+            filename = path.join(e.get_or_create_directory(),
+                                 'mets_upload.xml')
             file = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 file.write(chunk)
             file.close()
 
-            class RegisterThread(threading.Thread):
-
-                @transaction.commit_on_success
-                def run(self):
-                    from time import sleep
-                    sleep(0.5)
-                    logger.info('=== processing experiment %s: START' % eid)
-                    owners = request.POST.getlist('experiment_owner')
-                    try:
-                        _registerExperimentDocument(filename=filename,
-                                                    created_by=user,
-                                                    expid=eid,
-                                                    owners=owners,
-                                                    username=username)
-                        logger.info('=== processing experiment %s: DONE' % eid)
-                    except:
-                        logger.exception('=== processing experiment %s: FAILED!' % eid)
-
-                    return 
-
-            RegisterThread().start()
+            logger.info('=== processing experiment: START')
+            owners = request.POST.getlist('experiment_owner')
+            eid = None
+            try:
+                eid = _registerExperimentDocument(filename=filename,
+                                                  created_by=user,
+                                                  expid=eid,
+                                                  owners=owners,
+                                                  username=username)
+                logger.info('=== processing experiment %s: DONE' % eid)
+            except:
+                logger.exception('=== processing experiment %s: FAILED!' % eid)
+                return return_response_error(request)
 
             if from_url:
-
-                class FileTransferThread(threading.Thread):
-
-                    def run(self):
-                        from time import sleep
-                        sleep(0.5)
-                        # todo remove hard coded u/p for sync transfer....
-                        logger.info('started file-transfer thread')
-                        try:
-                            file_transfer_url = from_url + '/file_transfer/'
-                            data = urlencode({
-                                'originid': str(originid),
-                                'eid': str(eid),
-                                'site_settings_url':
-                                request.build_absolute_uri('/site-settings.xml/'),
-                                'username': str('synchrotron'),
-                                'password': str('tardis'),
-                                })
-                            urlopen(file_transfer_url, data)
-                            logger.info('=== file-transfer request submitted to %s'
-                                        % file_transfer_url)
-                        except:
-                            logger.exception('=== file-transfer request to %s FAILED!'
-                                             % file_transfer_url)
-
                 logger.debug('=== sending file request')
-                FileTransferThread().start()
+                try:
+                    file_transfer_url = from_url + '/file_transfer/'
+                    data = urlencode({
+                            'originid': str(originid),
+                            'eid': str(eid),
+                            'site_settings_url':
+                                request.build_absolute_uri('/site-settings.xml/'),
+                            'username': str('synchrotron'),
+                            'password': str('tardis'),
+                            })
+                    urlopen(file_transfer_url, data)
+                    logger.info('=== file-transfer request submitted to %s'
+                                % file_transfer_url)
+                except:
+                    logger.exception('=== file-transfer request to %s FAILED!'
+                                     % file_transfer_url)
 
-            logger.debug('returning response from main call')
             response = HttpResponse(str(eid), status=200)
             response['Location'] = request.build_absolute_uri(
                 '/experiment/view/' + str(eid))
