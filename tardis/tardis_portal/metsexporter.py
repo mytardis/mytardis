@@ -19,7 +19,7 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId):
+    def export(self, experimentId, replace_protocols={}):
        # initialise the metadata counter
         metadataCounter = 1
         experiment = Experiment.objects.get(id=experimentId)
@@ -118,7 +118,14 @@ class MetsExporter():
                     "application/octet-stream"), CHECKSUMTYPE="MD5",
                     OWNERID=datafile.filename, ADMID="A-{0}".format(
                     metadataCounter))
-                _file.add_FLocat(FLocat(LOCTYPE="URL", href=datafile.url,
+
+                protocol = datafile.protocol
+                if protocol in replace_protocols:
+                    url = datafile.url.replace(protocol,
+                                               replace_protocols[protocol])
+                else:
+                    url = datafile.url
+                _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
                     type_="simple"))
                 _fileGrp.add_file(_file)
 
