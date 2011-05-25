@@ -787,7 +787,7 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image'):
+        if parameter.name.units.startswith('image') and	parameter.string_value:
             parset = type(parameter.parameterset).__name__
             viewname = ''
             if parset == 'DatafileParameterSet':
@@ -800,8 +800,8 @@ def _getParameter(parameter):
                 value = "<img src='%s' />" % reverse(viewname=viewname,
                                                      args=[parameter.id])
                 return mark_safe(value)
-
-        return parameter.string_value
+	else:
+	    return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
