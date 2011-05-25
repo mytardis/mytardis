@@ -677,25 +677,32 @@ def _registerExperimentDocument(filename, created_by, expid=None,
         logger.debug('processing METS')
         eid = parseMets(filename, created_by, expid)
 
-    # for each PI
-    for owner in owners:
-        if owner:
-            user = auth_service.getUser({'pluginname': localdb_auth_key,
-                                         'id': owner})
-            # if exist, create ACL
-            if user:
-                logger.debug('registering owner: ' + owner)
-                e = Experiment.objects.get(pk=eid)
+    auth_key = ''
+    try:
+	auth_key = settings.DEFAULT_AUTH
+    except AttibuteError:
+	logger.error('no default authentication for experiment ownership set')
 
-                acl = ExperimentACL(experiment=e,
-                                    pluginId=django_user,
-                                    entityId=str(user.id),
-                                    canRead=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
-                acl.save()
+    if auth_key:
+	for owner in owners:
+	    # for each PI
+	    if owner:
+		user = auth_service.getUser({'pluginname': auth_key,
+					     'id': owner})
+		# if exist, create ACL
+		if user:
+		    logger.debug('registering owner: ' + owner)
+		    e = Experiment.objects.get(pk=eid)
+
+		    acl = ExperimentACL(experiment=e,
+					pluginId=django_user,
+					entityId=str(user.id),
+					canRead=True,
+					canWrite=True,
+					canDelete=True,
+					isOwner=True,
+					aclOwnershipType=ExperimentACL.OWNER_OWNED)
+		    acl.save()
 
     return eid
 
@@ -760,9 +767,7 @@ def register_experiment_ws_xmldata(request):
                             'originid': str(originid),
                             'eid': str(eid),
                             'site_settings_url':
-                                request.build_absolute_uri('/site-settings.xml/'),
-                            'username': str('synchrotron'),
-                            'password': str('tardis'),
+                                request.build_absolute_uri('site-settings.xml/'),
                             })
                     urlopen(file_transfer_url, data)
                     logger.info('=== file-transfer request submitted to %s'

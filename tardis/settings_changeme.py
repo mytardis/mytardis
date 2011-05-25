@@ -169,7 +169,12 @@ AUTH_PROVIDERS = (
     ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
+# default authentication module for experiment ownership user during
+# ingestion? Must be one of the above authentication provider names
+DEFAULT_AUTH = 'localdb'
+
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
+
 
 ACCOUNT_ACTIVATION_DAYS = 3
 
