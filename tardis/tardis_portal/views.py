@@ -679,30 +679,30 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
     auth_key = ''
     try:
-	auth_key = settings.DEFAULT_AUTH
-    except AttibuteError:
-	logger.error('no default authentication for experiment ownership set')
+        auth_key = settings.DEFAULT_AUTH
+    except AttributeError:
+        logger.error('no default authentication for experiment ownership set')
 
     if auth_key:
-	for owner in owners:
-	    # for each PI
-	    if owner:
-		user = auth_service.getUser({'pluginname': auth_key,
-					     'id': owner})
-		# if exist, create ACL
-		if user:
-		    logger.debug('registering owner: ' + owner)
-		    e = Experiment.objects.get(pk=eid)
+        for owner in owners:
+            # for each PI
+            if owner:
+                user = auth_service.getUser({'pluginname': auth_key,
+                                             'id': owner})
+                # if exist, create ACL
+                if user:
+                    logger.debug('registering owner: ' + owner)
+                    e = Experiment.objects.get(pk=eid)
 
-		    acl = ExperimentACL(experiment=e,
-					pluginId=django_user,
-					entityId=str(user.id),
-					canRead=True,
-					canWrite=True,
-					canDelete=True,
-					isOwner=True,
-					aclOwnershipType=ExperimentACL.OWNER_OWNED)
-		    acl.save()
+                    acl = ExperimentACL(experiment=e,
+                                        pluginId=django_user,
+                                        entityId=str(user.id),
+                                        canRead=True,
+                                        canWrite=True,
+                                        canDelete=True,
+                                        isOwner=True,
+                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                    acl.save()
 
     return eid
 
@@ -740,10 +740,10 @@ def register_experiment_ws_xmldata(request):
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
-            file = open(filename, 'wb+')
+            f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 file.write(chunk)
-            file.close()
+            f.close()
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
