@@ -901,7 +901,10 @@ def pre_save_parameter(sender, **kwargs):
             if not exists(dirname):
                 mkdir(dirname)
             f = open(filepath, 'w')
-            f.write(b64decode(b64))
+	    try:
+		f.write(b64decode(b64))
+	    except TypeError:
+		pass
             f.close()
             parameter.string_value = filename
 

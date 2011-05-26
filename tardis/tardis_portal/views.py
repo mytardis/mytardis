@@ -737,9 +737,11 @@ def register_experiment_ws_xmldata(request):
                 created_by=user,
                 )
             e.save()
+	    eid = e.id
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
+	    print filename
             f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 f.write(chunk)
@@ -747,13 +749,12 @@ def register_experiment_ws_xmldata(request):
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
-            eid = None
             try:
-                eid = _registerExperimentDocument(filename=filename,
-                                                  created_by=user,
-                                                  expid=eid,
-                                                  owners=owners,
-                                                  username=username)
+                _registerExperimentDocument(filename=filename,
+					    created_by=user,
+					    expid=eid,
+					    owners=owners,
+					    username=username)
                 logger.info('=== processing experiment %s: DONE' % eid)
             except:
                 logger.exception('=== processing experiment %s: FAILED!' % eid)
