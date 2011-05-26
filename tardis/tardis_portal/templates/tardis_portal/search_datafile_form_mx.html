@@ -1,5 +1,5 @@
 {% extends "tardis_portal/search_template.html" %}
-{% load formfieldfilters %}
+
         {% block searchPageBody %}
             {% if searchForm.errors %}
                 <p style="color: red;">
@@ -17,28 +17,28 @@
              {{ searchForm.diffractometerType }}
              <br><br>X-ray Source
              <br>
-             {{ searchForm.xraySource|size:"20" }} {{ searchForm.errors.xraySource }}
+             {{ searchForm.xraySource }} {{ searchForm.errors.xraySource }}
              <br/>
              <br/>Crystal Name
-             <br/>{{ searchForm.crystalName|size:"20" }} {{ searchForm.errors.crystalName }}
+             <br/>{{ searchForm.crystalName }} {{ searchForm.errors.crystalName }}
              </td>
              <td>
 
              Filename
              <br/>
-             {{ searchForm.filename|size:"20" }} {{ searchForm.errors.filename }}
+             {{ searchForm.filename }} {{ searchForm.errors.filename }}
              <br/>
              <br/>
 
              Max Resolution Limit
              <br/>
-             {{ searchForm.resolutionLimit|size:"4" }} Å {{ searchForm.errors.resolutionLimit }}
+             {{ searchForm.resolutionLimit }} Å {{ searchForm.errors.resolutionLimit }}
 
              <br/>
              <br>X-ray Wavelength
 
-             Between {{ searchForm.xrayWavelengthFrom|size:"4" }} and
-             {{ searchForm.xrayWavelengthTo|size:"4" }} Å
+             Between {{ searchForm.xrayWavelengthFrom }} and
+             {{ searchForm.xrayWavelengthTo }} Å
              {{ searchForm.errors.xrayWavelengthFrom }} {{ searchForm.errors.xrayWavelengthTo }}
              <br><br>
              <input type="submit" value="Submit">

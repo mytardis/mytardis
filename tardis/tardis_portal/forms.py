@@ -271,10 +271,12 @@ class MXDatafileSearchForm(DatafileSearchForm):
         required=False, label='Max Resolution Limit')
     xrayWavelengthFrom = forms.IntegerField(
         required=False, label='X-ray Wavelength From',
-        widget=forms.TextInput(attrs={'size': '4'}))
+        widget=forms.TextInput(attrs={'size': '4'})
+    	)
     xrayWavelengthTo = forms.IntegerField(
         required=False, label='X-ray Wavelength To',
-        widget=forms.TextInput(attrs={'size': '4'}))
+        widget=forms.TextInput(attrs={'size': '4'})
+    	)
 
 
 def createLinkedUserAuthenticationForm(authMethods):
