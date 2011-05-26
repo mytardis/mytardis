@@ -62,7 +62,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form
+    save_datafile_add_form, MXDatafileSearchForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -1193,6 +1193,15 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
         searchForm=None):
     """Forward to the search data file form page."""
 
+    # TODO: remove this later on when we have a more generic search form
+    if searchQueryType == 'mx':
+        url = 'tardis_portal/search_datafile_form_mx.html'
+	searchForm = MXDatafileSearchForm()
+	c = Context({'header': 'Search Datafile',
+		     'searchForm': searchForm})
+	return HttpResponse(render_response_search(request, url, c))
+	
+
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
         #if searchQueryType == 'saxs':
@@ -1202,10 +1211,6 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
-
-    # TODO: remove this later on when we have a more generic search form
-    if searchQueryType == 'mx':
-        url = 'tardis_portal/search_datafile_form_mx.html'
 
     from itertools import groupby
 
