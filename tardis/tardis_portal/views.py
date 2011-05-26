@@ -742,7 +742,7 @@ def register_experiment_ws_xmldata(request):
                                  'mets_upload.xml')
             f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
-                file.write(chunk)
+                f.write(chunk)
             f.close()
 
             logger.info('=== processing experiment: START')
