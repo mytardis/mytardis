@@ -54,4 +54,3 @@ Auth Plugins
 * :py:mod:`tardis.tardis_portal.auth.localdb_auth`
 * :py:mod:`tardis.tardis_portal.auth.ldap_auth`
 * :py:mod:`tardis.tardis_portal.auth.ip_auth`
-* :py:mod:`tardis.tardis_portal.auth.vbl_auth`
