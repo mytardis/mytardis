@@ -904,7 +904,7 @@ def pre_save_parameter(sender, **kwargs):
 	    try:
 		f.write(b64decode(b64))
 	    except TypeError:
-		pass
+		f.write(b64)
             f.close()
             parameter.string_value = filename
 
