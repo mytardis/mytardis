@@ -6,11 +6,13 @@ Created on 16/03/2011
 from base64 import b64encode
 from datetime import datetime
 from os.path import abspath, join
-
-from django.conf import settings
+import logging
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.schema.mets import *
+
+
+logger = logging.getLogger(__name__)
 
 
 # XHTML namespace prefix
@@ -19,8 +21,9 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}):
-       # initialise the metadata counter
+    def export(self, experimentId, replace_protocols={}, filename=None, export_images=False):
+	self.export_images = export_images
+	# initialise the metadata counter
         metadataCounter = 1
         experiment = Experiment.objects.get(id=experimentId)
 
@@ -164,12 +167,18 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
-        filename = join(experiment.get_or_create_directory(),
-                        'mets_expid_%s.xml' % str(experiment.id))
-        outfile = open(filename, 'w')
+	if not filename:
+	    dirname = experiment.get_or_create_directory()
+	    if dirname is None:
+		from tempfile import mkdtemp
+		dirname = mkdtemp()
+	    logger.debug('got directory %s' %dirname)
+	    filename = 'mets_expid_%i.xml' % experiment.id
+	filepath = join(dirname,filename)
+        outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
         outfile.close()
-        return filename
+        return filepath
 
     def getTechMDXmlDataForParameterSets(self, parameterSets, type="experiment"):
 
@@ -196,13 +205,12 @@ class MetsExporter():
                         str(parameter.numerical_value) or 'None'
 
                 elif parameter.name.data_type is ParameterName.FILENAME and \
-                        parameter.name.units.startswith('image'):
+                        parameter.name.units.startswith('image') and \
+			self.export_images==True:
 
                     # encode image as b64
-                    expid = parameter.getExpId()
-                    file_path = abspath(join(settings.FILE_STORE_PATH,
-                                             str(expid),
-                                             parameter.string_value))
+                    file_path = abspath(experiment.get_or_create_directory(),
+					parameter.string_value)
 		    try:
 			metadataDict[parameter.name.name] = \
                         b64encode(open(file_path).read())
