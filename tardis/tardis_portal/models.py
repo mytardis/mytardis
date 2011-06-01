@@ -175,9 +175,10 @@ class Experiment(models.Model):
         dirname = path.join(settings.FILE_STORE_PATH,
                             str(self.id))
         if not path.exists(dirname):
-            from os import mkdir
+            from os import chmod, mkdir
             try:
                 mkdir(dirname)
+                chmod(dirname, 770)
             except:
                 dirname = None
         return dirname
@@ -513,6 +514,7 @@ class Dataset_File(models.Model):
         os.remove(filename)
         self.delete()
 
+
 def save_DatasetFile(sender, **kwargs):
 
     # the object can be accessed via kwargs 'instance' key.
@@ -785,7 +787,7 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image') and	parameter.string_value:
+        if parameter.name.units.startswith('image') and parameter.string_value:
             parset = type(parameter.parameterset).__name__
             viewname = ''
             if parset == 'DatafileParameterSet':
@@ -798,8 +800,8 @@ def _getParameter(parameter):
                 value = "<img src='%s' />" % reverse(viewname=viewname,
                                                      args=[parameter.id])
                 return mark_safe(value)
-	else:
-	    return parameter.string_value
+        else:
+            return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
@@ -901,10 +903,10 @@ def pre_save_parameter(sender, **kwargs):
             if not exists(dirname):
                 mkdir(dirname)
             f = open(filepath, 'w')
-	    try:
-		f.write(b64decode(b64))
-	    except TypeError:
-		f.write(b64)
+            try:
+                f.write(b64decode(b64))
+            except TypeError:
+                f.write(b64)
             f.close()
             parameter.string_value = filename
 
