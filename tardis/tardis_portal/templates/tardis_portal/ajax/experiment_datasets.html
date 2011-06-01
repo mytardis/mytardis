@@ -267,11 +267,17 @@
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
     <div id="datasets">
-      {% for dataset in experiment.dataset_set.all %}
-	<div class="dataset">
-	  <div class="dataset_title">
+        {% for dataset in datasets %} <!-- experiment.dataset_set.all %}-->
+    <div class="dataset">
+        <div class="dataset_title">
+        {% if dataset.pk in highlighted_datasets %}
+          <span style="background-color: #FFFF00">
+        {% endif %}
 	    <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
-	      <strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
+        <strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
+        {% if dataset.pk in highlighted_datasets %}
+          </span>
+        {% endif %}
 	  </div> <!-- dataset title -->
 
 	  <div class="dataset_info">
@@ -316,7 +322,7 @@
 	      <div class="dataset_datafiles">
 		<strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
 		{% if dataset.dataset_file_set.count|lt:"1000000" %}
-		  <a class="datafile_list_toggle" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
+        <a class="datafile_list_toggle" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}{% if query %}?query={{ query }}{% endif %}">[Show]</a>
 		  {% else %}
 		    <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
 		  {% endif %}
@@ -331,7 +337,7 @@
 	      </div> <!-- dataset_datafiles -->
 	    </div> <!-- dataset_extrainfo -->
 	  </div> <!-- dataset_info -->
-	</div> <!-- dataset -->
+  </div> <!-- dataset -->
       {% endfor %}
     </div> <!-- datasets -->
     <input type="submit" value="Download Selected Files" />
