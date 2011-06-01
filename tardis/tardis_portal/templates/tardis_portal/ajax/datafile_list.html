@@ -37,9 +37,16 @@ File path search: <input type="text" onKeyPress="return disableEnterKey(event)" 
 Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
 <br/><br/>
 {% for datafile in dataset.object_list %}
+{% if datafile.pk in display_dataset_files %}
 <li class="datafile">
 	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
-	<a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a> {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
+
+    <span style="background-color: #FFFF00">
+    <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.datafile_filename }}</a> 
+    {% if datafile.pk in highlight_dataset_files%}
+    </span>
+    {% endif %}
+    {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
 	Metadata: <a href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
 	 class="jqModalDfA{{datafile.id}}">[Add]</a>
 	<script type="text/javascript">
@@ -77,6 +84,7 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 	{% endif %}
 
 </li>
+{% endif %}
 {% endfor %}
 <br/>
 
