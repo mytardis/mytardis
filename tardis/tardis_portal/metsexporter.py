@@ -22,8 +22,8 @@ prefix = 'tardis'
 class MetsExporter():
 
     def export(self, experimentId, replace_protocols={}, filename=None, export_images=False):
-	self.export_images = export_images
-	# initialise the metadata counter
+        self.export_images = export_images
+        # initialise the metadata counter
         metadataCounter = 1
         experiment = Experiment.objects.get(id=experimentId)
 
@@ -167,14 +167,14 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
-	if not filename:
-	    dirname = experiment.get_or_create_directory()
-	    if dirname is None:
-		from tempfile import mkdtemp
-		dirname = mkdtemp()
-	    logger.debug('got directory %s' %dirname)
-	    filename = 'mets_expid_%i.xml' % experiment.id
-	filepath = join(dirname,filename)
+        dirname = experiment.get_or_create_directory()
+        if not filename:
+            if dirname is None:
+                from tempfile import mkdtemp
+                dirname = mkdtemp()
+            logger.debug('got directory %s' % dirname)
+            filename = 'mets_expid_%i.xml' % experiment.id
+        filepath = join(dirname, filename)
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
         outfile.close()
@@ -206,16 +206,16 @@ class MetsExporter():
 
                 elif parameter.name.data_type is ParameterName.FILENAME and \
                         parameter.name.units.startswith('image') and \
-			self.export_images==True:
+                        self.export_images == True:
 
                     # encode image as b64
                     file_path = abspath(experiment.get_or_create_directory(),
-					parameter.string_value)
-		    try:
-			metadataDict[parameter.name.name] = \
+                                        parameter.string_value)
+                    try:
+                        metadataDict[parameter.name.name] = \
                         b64encode(open(file_path).read())
-		    except:
-			logger.exception('b64encoding failed: %s' % file_path)
+                    except:
+                        logger.exception('b64encoding failed: %s' % file_path)
                 else:
                     metadataDict[parameter.name.name] = \
                         parameter.string_value.strip() or 'None'
@@ -235,20 +235,20 @@ class MetsExporter():
         metadataDict - a dictionary of the metadata fields where key is the
             name of the field while the value is the value of the field.
         """
-	import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as ET
 
         # build a tree structure
-        xmlDataContentEl = ET.Element('%s:%s' %(prefix, elementName))
+        xmlDataContentEl = ET.Element('%s:%s' % (prefix, elementName))
 
         for k, v in metadataDict.iteritems():
-	    metadataField = ET.SubElement(xmlDataContentEl, '%s:%s' %(prefix, k))
+            metadataField = ET.SubElement(xmlDataContentEl, '%s:%s' % (prefix, k))
             metadataField.text = v
 
-	xmlDataContentEl.set('xmlns:' + prefix, schemaURI)
+        xmlDataContentEl.set('xmlns:' + prefix, schemaURI)
         return xmlDataContentEl
 
     def getDmdSecXmlDataForExperiment(self, experiment, schemaURI):
-	import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as ET
 
         # build a tree structure
         xmlDataContentEl = ET.Element("mods:mods")
@@ -271,15 +271,15 @@ class MetsExporter():
         abstract = ET.SubElement(xmlDataContentEl, "mods:abstract")
         abstract.text = experiment.description
 
-	start_time = experiment.start_time
-	end_time = experiment.end_time
-	if start_time and end_time:
-	    dateElement = ET.SubElement(xmlDataContentEl, "tardis:tardis")
-	    startElement = ET.SubElement(dateElement, "tardis:startTime")
-	    startElement.text = str(start_time)
-	    endElement = ET.SubElement(dateElement, "tardis:endTime")
-	    endElement.text = str(end_time)
-	    dateElement.set('xmlns:tardis', "http://tardisdates.com/")
+        start_time = experiment.start_time
+        end_time = experiment.end_time
+        if start_time and end_time:
+            dateElement = ET.SubElement(xmlDataContentEl, "tardis:tardis")
+            startElement = ET.SubElement(dateElement, "tardis:startTime")
+            startElement.text = str(start_time)
+            endElement = ET.SubElement(dateElement, "tardis:endTime")
+            endElement.text = str(end_time)
+            dateElement.set('xmlns:tardis', "http://tardisdates.com/")
 
         authors = Author_Experiment.objects.filter(experiment=experiment)
         for author in authors:
@@ -293,13 +293,13 @@ class MetsExporter():
 
         # TODO: figure out where I could get the PDB details
 
-	xmlDataContentEl.set('xmlns:mods', schemaURI)
+        xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
 
     def getDmdSecXmlDataForDataset(self, dataset, schemaURI):
-	import xml.etree.ElementTree as ET
+        import xml.etree.ElementTree as ET
 
         # build a tree structure
         xmlDataContentEl = ET.Element("mods:mods")
@@ -309,7 +309,7 @@ class MetsExporter():
         title.text = dataset.description
 
         # TODO: figure out where I could get the PDB details
-	xmlDataContentEl.set('xmlns:mods', schemaURI)
+        xmlDataContentEl.set('xmlns:mods', schemaURI)
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
