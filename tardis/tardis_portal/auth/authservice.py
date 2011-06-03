@@ -249,17 +249,11 @@ class AuthService():
 
         # length of the maximum username
         max_length = 30
-        username = username[:max_length]
 
-        # remove email component
-        if username.find('@') > 0:
-            # the username to be used on the User table
-            name = username.partition('@')[0]
-        else:
-            name = username
+	# the username to be used on the User table
+	unique_username = username.partition('@')[0][:max_length]
 
         # Generate a unique username
-        unique_username = username
         i = 0
         try:
             while (User.objects.get(username=unique_username)):
@@ -269,7 +263,7 @@ class AuthService():
             pass
 
         password = User.objects.make_random_password()
-        user = User.objects.create_user(username=username,
+        user = User.objects.create_user(username=unique_username,
                                         password=password,
                                         email=user_dict.get("email", ""))
         user.save()
