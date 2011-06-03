@@ -719,7 +719,6 @@ def register_experiment_ws_xmldata(request):
 
             xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
             originid = form.cleaned_data['originid']
             from_url = form.cleaned_data['from_url']
 
@@ -737,11 +736,11 @@ def register_experiment_ws_xmldata(request):
                 created_by=user,
                 )
             e.save()
-	    eid = e.id
+            eid = e.id
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
-	    print filename
+            print filename
             f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 f.write(chunk)
@@ -751,10 +750,10 @@ def register_experiment_ws_xmldata(request):
             owners = request.POST.getlist('experiment_owner')
             try:
                 _registerExperimentDocument(filename=filename,
-					    created_by=user,
-					    expid=eid,
-					    owners=owners,
-					    username=username)
+                                            created_by=user,
+                                            expid=eid,
+                                            owners=owners,
+                                            username=username)
                 logger.info('=== processing experiment %s: DONE' % eid)
             except:
                 logger.exception('=== processing experiment %s: FAILED!' % eid)
@@ -768,7 +767,7 @@ def register_experiment_ws_xmldata(request):
                             'originid': str(originid),
                             'eid': str(eid),
                             'site_settings_url':
-                                request.build_absolute_uri('site-settings.xml/'),
+                                request.build_absolute_uri('/site-settings.xml/'),
                             })
                     urlopen(file_transfer_url, data)
                     logger.info('=== file-transfer request submitted to %s'
@@ -1197,11 +1196,10 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     # TODO: remove this later on when we have a more generic search form
     if searchQueryType == 'mx':
         url = 'tardis_portal/search_datafile_form_mx.html'
-	searchForm = MXDatafileSearchForm()
-	c = Context({'header': 'Search Datafile',
-		     'searchForm': searchForm})
-	return HttpResponse(render_response_search(request, url, c))
-	
+        searchForm = MXDatafileSearchForm()
+        c = Context({'header': 'Search Datafile',
+                     'searchForm': searchForm})
+        return HttpResponse(render_response_search(request, url, c))
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
@@ -2091,7 +2089,8 @@ def edit_experiment_par(request, parameterset_id):
 @login_required
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request, parameterset.dataset.experiment.id):
+    if authz.has_write_permissions(request,
+                                   parameterset.dataset.experiment.id):
         return edit_parameters(request, parameterset, otype="dataset")
     else:
         return return_response_error(request)
@@ -2100,7 +2099,8 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request, parameterset.dataset_file.dataset.experiment.id):
+    if authz.has_write_permissions(request,
+                                   parameterset.dataset_file.dataset.experiment.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
@@ -2153,7 +2153,8 @@ def edit_parameters(request, parameterset, otype):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = Dataset_File.objects.get(id=datafile_id)
-    if authz.has_write_permissions(request, parentObject.dataset.experiment.id):
+    if authz.has_write_permissions(request,
+                                   parentObject.dataset.experiment.id):
         return add_par(request, parentObject, otype="datafile")
     else:
         return return_response_error(request)

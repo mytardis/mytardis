@@ -135,14 +135,14 @@ def download_datafiles(request):
     fileSize = 0
 
     comptype = "zip"
-    if request.POST.has_key('comptype'):
+    if 'comtype' in request.POST:
         comptype = request.POST['comptype']
 
     # the following protocols can be handled by this module
     protocols = ['', 'file', 'tardis']
     known_protocols = len(protocols)
 
-    if request.POST.has_key('datafile') or request.POST.has_key('dataset'):
+    if 'datafile' or 'dataset' in request.POST:
         if (len(request.POST.getlist('datafile')) > 0 \
                 or len(request.POST.getlist('dataset'))) > 0:
 
@@ -181,7 +181,7 @@ def download_datafiles(request):
         else:
             return return_response_not_found(request)
 
-    elif request.POST.has_key('url'):
+    elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
             fileString = ""
             fileSize = 0
