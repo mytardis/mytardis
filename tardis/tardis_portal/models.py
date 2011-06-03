@@ -178,7 +178,7 @@ class Experiment(models.Model):
             from os import chmod, mkdir
             try:
                 mkdir(dirname)
-                chmod(dirname, 770)
+                chmod(dirname, 0770)
             except:
                 dirname = None
         return dirname

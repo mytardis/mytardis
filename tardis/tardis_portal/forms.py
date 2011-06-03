@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 #
-# Copyright (c) 2010, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -272,11 +272,11 @@ class MXDatafileSearchForm(DatafileSearchForm):
     xrayWavelengthFrom = forms.IntegerField(
         required=False, label='X-ray Wavelength From',
         widget=forms.TextInput(attrs={'size': '4'})
-    	)
+        )
     xrayWavelengthTo = forms.IntegerField(
         required=False, label='X-ray Wavelength To',
         widget=forms.TextInput(attrs={'size': '4'})
-    	)
+        )
 
 
 def createLinkedUserAuthenticationForm(authMethods):

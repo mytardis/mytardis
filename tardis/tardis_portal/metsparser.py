@@ -669,7 +669,6 @@ class MetsMetadataInfoHandler(ContentHandler):
                             else:
                                 self.modelDatafile = thisFilesDataset.dataset_file_set.get(
                                     filename=self.metsObject.name, size=self.metsObject.size)
-				
                             # TODO: we need to note here that we are
                             # only creating a datafile entry in the DB
                             # for files that have corresponding
