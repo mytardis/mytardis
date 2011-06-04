@@ -84,6 +84,7 @@ Contents
    ref/auth_framework
    ref/filters
 
+   architecture
    changes
 
 
