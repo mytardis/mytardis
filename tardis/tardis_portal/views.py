@@ -340,7 +340,12 @@ def experiment_description(request, experiment_id):
                                        isOwner=True)
 
     # TODO: resolve usernames through UserProvider!
-    c['owners'] = [User.objects.get(pk=str(a.entityId)) for a in acl]
+    c['owners'] = []
+    for a in acl:
+        try:
+            c['owners'].append(User.objects.get(pk=str(a.entityId)))
+        except User.DoesNotExist:
+            logger.exception('user for acl %i does not exist' % a.id)
 
     # calculate the sum of the datafile sizes
     size = 0
