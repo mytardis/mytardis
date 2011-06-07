@@ -37,7 +37,6 @@ LDAP Authentication module.
 
 
 import ldap
-
 import logging
 
 from django.conf import settings
@@ -130,7 +129,6 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         l = None
 
         try:
-            searchScope = ldap.SCOPE_SUBTREE
             retrieveAttributes = self._user_attr_map.keys() + \
                                  [self._login_attr]
             userRDN = self._login_attr + '=' + username
@@ -189,6 +187,33 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         for k, v in result[0][1].items():
             user[self._user_attr_map[k]] = v[0]
         return user
+
+    def getUsernameByEmail(self, email):
+
+        l = None
+        try:
+            retrieveAttributes = ["uid"]
+            l = ldap.initialize(self._url)
+            l.protocol_version = ldap.VERSION3
+            searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
+                                                                      email)
+            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+                                      searchFilter, retrieveAttributes)
+
+            if ldap_result[0][1]['uid'][0]:
+                return ldap_result[0][1]['uid'][0]
+            else:
+                return None
+
+        except ldap.LDAPError:
+            logger.exception("ldap error")
+            return None
+        except IndexError:
+            logger.exception("index error")
+            return None
+        finally:
+            if l:
+                l.unbind_s()
 
     #
     # Group Provider

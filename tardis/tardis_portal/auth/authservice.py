@@ -239,7 +239,15 @@ class AuthService():
             self._manual_init()
 
         plugin = user_dict['pluginname']
-        username = user_dict['id']
+
+        username = ""
+        if "email" in user_dict:
+            email = user_dict['email']
+            username =\
+                self._authentication_backends[plugin].getUsernameByEmail(email)
+        else:
+            username = user_dict['id']
+
         try:
             user = UserAuthentication.objects.get(username=username,
                             authenticationMethod=plugin).userProfile.user
@@ -250,8 +258,8 @@ class AuthService():
         # length of the maximum username
         max_length = 30
 
-	# the username to be used on the User table
-	unique_username = username.partition('@')[0][:max_length]
+        # the username to be used on the User table
+        unique_username = username.partition('@')[0][:max_length]
 
         # Generate a unique username
         i = 0
