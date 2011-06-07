@@ -26,8 +26,12 @@ DATABASES = {
 }
 
 # A dictionary containing the settings for all caches to be used with
-# Django. The CACHES setting must configure a default cache; any number of
-# additional caches may also be specified.
+# Django. The CACHES setting must configure a default cache; any
+# number of additional caches may also be specified.  Once the cache
+# is set up, you'll need to add
+# 'django.middleware.cache.UpdateCacheMiddleware' and
+# 'django.middleware.cache.FetchFromCacheMiddleware'
+# to your MIDDLEWARE_CLASSES setting below
 
 #CACHES = {
 #    'default': {
@@ -66,7 +70,13 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
-MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
+# once the cache is set up, you'll need to add
+# 'django.middleware.cache.UpdateCacheMiddleware' and
+# 'django.middleware.cache.FetchFromCacheMiddleware'
+MIDDLEWARE_CLASSES = (
+    #'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    #'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.minidetector.Middleware',
