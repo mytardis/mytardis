@@ -54,6 +54,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.cache import never_cache
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, \
@@ -133,6 +134,7 @@ def site_settings(request):
     return return_response_error(request)
 
 
+@never_cache
 def load_image(request, experiment_id, parameter):
     file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
                                        str(experiment_id),
@@ -141,6 +143,7 @@ def load_image(request, experiment_id, parameter):
     from django.core.servers.basehttp import FileWrapper
     wrapper = FileWrapper(file(file_path))
     return HttpResponse(wrapper, mimetype=parameter.name.units)
+
 
 
 def load_experiment_image(request, parameter_id):
@@ -376,6 +379,7 @@ def experiment_description(request, experiment_id):
                         'tardis_portal/ajax/experiment_description.html', c))
 
 
+@never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
     """View a listing of dataset of an existing experiment as ajax loaded tab.
@@ -435,6 +439,7 @@ def retrieve_dataset_metadata(request, dataset_id):
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
 
+@never_cache
 @authz.experiment_access_required
 def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
@@ -515,6 +520,7 @@ def create_experiment(request,
     return HttpResponse(render_response_index(request, template_name, c))
 
 
+@never_cache
 @authz.experiment_access_required
 def metsexport_experiment(request, experiment_id):
 
@@ -797,6 +803,7 @@ def register_experiment_ws_xmldata(request):
                         'tardis_portal/register_experiment.html', c))
 
 
+@never_cache
 @authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
 
@@ -809,6 +816,7 @@ def retrieve_parameters(request, dataset_file_id):
                         'tardis_portal/ajax/parameters.html', c))
 
 
+@never_cache
 @authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
 
@@ -1420,6 +1428,7 @@ def search_datafile(request):
     return HttpResponse(render_response_index(request, url, c))
 
 
+@never_cache
 @login_required()
 def retrieve_user_list(request):
     authMethod = request.GET['authMethod']
@@ -1442,6 +1451,7 @@ def retrieve_user_list(request):
     return HttpResponse(userlist)
 
 
+@never_cache
 @login_required()
 def retrieve_group_list(request):
 
@@ -1449,6 +1459,7 @@ def retrieve_group_list(request):
     return HttpResponse(grouplist)
 
 
+@never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
 
@@ -1461,6 +1472,7 @@ def retrieve_access_list_user(request, experiment_id):
                         'tardis_portal/ajax/access_list_user.html', c))
 
 
+@never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
@@ -1479,6 +1491,7 @@ def retrieve_access_list_group(request, experiment_id):
                         'tardis_portal/ajax/access_list_group.html', c))
 
 
+@never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
@@ -1488,6 +1501,7 @@ def retrieve_access_list_external(request, experiment_id):
                         'tardis_portal/ajax/access_list_external.html', c))
 
 
+@never_cache
 @authz.group_ownership_required
 def retrieve_group_userlist(request, group_id):
 
@@ -1499,6 +1513,7 @@ def retrieve_group_userlist(request, group_id):
                         'tardis_portal/ajax/group_user_list.html', c))
 
 
+@never_cache
 @login_required()
 def manage_groups(request):
 
@@ -1508,6 +1523,7 @@ def manage_groups(request):
                         'tardis_portal/manage_group_members.html', c))
 
 
+@never_cache
 @authz.group_ownership_required
 def add_user_to_group(request, group_id, username):
 
@@ -1551,6 +1567,7 @@ def add_user_to_group(request, group_id, username):
          'tardis_portal/ajax/add_user_to_group_result.html', c))
 
 
+@never_cache
 @authz.group_ownership_required
 def remove_user_from_group(request, group_id, username):
 
@@ -1582,6 +1599,7 @@ def remove_user_from_group(request, group_id, username):
     return HttpResponse('OK')
 
 
+@never_cache
 @transaction.commit_on_success
 @authz.experiment_ownership_required
 def add_experiment_access_user(request, experiment_id, username):
@@ -1646,6 +1664,7 @@ def add_experiment_access_user(request, experiment_id, username):
     return HttpResponse('User already has experiment access.')
 
 
+@never_cache
 @authz.experiment_ownership_required
 def remove_experiment_access_user(request, experiment_id, username):
     try:
@@ -1677,6 +1696,7 @@ def remove_experiment_access_user(request, experiment_id, username):
         return HttpResponse('Multiple ACLs found')
 
 
+@never_cache
 @authz.experiment_ownership_required
 def change_user_permissions(request, experiment_id, username):
 
@@ -1717,6 +1737,7 @@ def change_user_permissions(request, experiment_id, username):
                             'tardis_portal/form_template.html', c))
 
 
+@never_cache
 @authz.experiment_ownership_required
 def change_group_permissions(request, experiment_id, group_id):
 
@@ -1766,6 +1787,7 @@ def change_group_permissions(request, experiment_id, group_id):
                             'tardis_portal/form_template.html', c))
 
 
+@never_cache
 @authz.experiment_ownership_required
 def add_experiment_access_group(request, experiment_id, groupname):
 
@@ -1880,6 +1902,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         'tardis_portal/ajax/add_group_result.html', c))
 
 
+@never_cache
 @authz.experiment_ownership_required
 def remove_experiment_access_group(request, experiment_id, group_id):
 
@@ -2282,6 +2305,7 @@ def rif_cs(request):
         return return_response_error(request)
 
 
+@never_cache
 @authz.experiment_ownership_required
 def publish_experiment(request, experiment_id):
     """
