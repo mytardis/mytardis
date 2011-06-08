@@ -79,6 +79,7 @@ Contents
    install
    admin
    overview
+   schemaparamsets
    ingesting
    contributing
 
