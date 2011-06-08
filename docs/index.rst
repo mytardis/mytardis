@@ -78,6 +78,7 @@ Contents
 
    install
    admin
+   overview
    ingesting
    contributing
 

@@ -104,7 +104,7 @@ For Postgres, this will probably be addressed by table partioning.  In this case
 Persistance and Data Architecture
 ---------------------------------
 
-An introduction to how Tardis models Experiments, Datasets and Datafiles is available on the `MeCAT Project Blog - Modeling Experimental Data - Basic Description <http://mecatproj.wordpress.com/2010/10/22/modeling-experimental-data-basic-description/>`_.
+An introduction to how Tardis models Experiments, Datasets and Datafiles is provided in the :doc:`overview`.
 
 Django provides an Object-Relational-Model that maps Django Models to the underlying relational database.  The models as defined in Django are:
 
