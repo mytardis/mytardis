@@ -44,27 +44,26 @@ from django.test.client import Client
 
 
 class EquipmentTestCase(TestCase):
-
     def setUp(self):
         self.client = Client()
 
     def testSearchEquipmentForm(self):
-        response = self.client.get('/equipment/search/')
+        response = self.client.get('/apps/equipment/search/')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['form'] is not None)
 
     def testSearchEquipmentResult(self):
-        response = self.client.post('/equipment/search/', {'key': 'PIL', })
+        response = self.client.post('/apps/equipment/search/', {'key': 'PIL', })
         self.assertEqual(len(response.context['object_list']), 2)
 
     def testEquipmentDetail(self):
-        response = self.client.get('/equipment/1/')
+        response = self.client.get('/apps/equipment/1/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context['object'].make, 'Dectris')
         self.assertEqual(response.context['object'].type, 'X-ray detector')
 
     def testEquipmentList(self):
-        response = self.client.get('/equipment/')
+        response = self.client.get('/apps/equipment/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['object_list']), 2)
 

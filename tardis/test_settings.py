@@ -2,7 +2,7 @@ from os import path
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-DEBUG = True
+DEBUG = False
 
 DATABASES = {
     'default': {
@@ -71,8 +71,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware'
 )
 
-TARDIS_APPS = ()
 TARDIS_APP_ROOT = 'tardis.apps'
+TARDIS_APPS = ('equipment',)
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
@@ -89,10 +89,9 @@ INSTALLED_APPS = (
         'django_extensions',
         'tardis.tardis_portal',
         'tardis.tardis_portal.templatetags',
-        'tardis.apps.equipment',
         'registration',
         'django_nose',
-        'south'
+
 ) + apps
 
 # LDAP configuration
