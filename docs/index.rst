@@ -81,13 +81,15 @@ Contents
    overview
    schemaparamsets
    ingesting
-   contributing
 
    ref/auth_framework
    ref/filters
 
    architecture
+   data
+
    changes
+   contributing
 
 
 ==================
