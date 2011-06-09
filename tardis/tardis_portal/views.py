@@ -295,12 +295,17 @@ def view_experiment(request, experiment_id):
     if 'error' in request.POST:
         c['error'] = request.POST['error']
 
-    appurls = ['%s.%s.views.index' % (settings.TARDIS_APP_ROOT, app)
-               for app in settings.TARDIS_APPS]
     import sys
-    appnames = [sys.modules['%s.%s.settings' %
-                (settings.TARDIS_APP_ROOT, app)].NAME
-                for app in settings.TARDIS_APPS]
+    appnames = []
+    appurls = []
+    for app in settings.TARDIS_APPS:
+        try:
+            appnames.append(sys.modules['%s.%s.settings'
+                                        % (settings.TARDIS_APP_ROOT, app)].NAME)
+            appurls.append('%s.%s.views.index' % (settings.TARDIS_APP_ROOT, app))
+        except:
+            pass
+
     c['apps'] = zip(appurls, appnames)
 
     return HttpResponse(render_response_index(request,
