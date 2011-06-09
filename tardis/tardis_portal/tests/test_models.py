@@ -222,12 +222,15 @@ class ModelTestCase(TestCase):
 
         df_parset = models.DatafileParameterSet(schema=df_schema,
                                                 dataset_file=df_file)
+        df_parset.save()
 
         ds_parset = models.DatasetParameterSet(schema=ds_schema,
                                                dataset=dataset)
+        ds_parset.save()
 
         exp_parset = models.ExperimentParameterSet(schema=exp_schema,
                                                    experiment=exp)
+        exp_parset.save()
 
         from base64 import b64encode
         from os import path
