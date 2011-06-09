@@ -1793,6 +1793,7 @@ def change_group_permissions(request, experiment_id, group_id):
 
 
 @never_cache
+@transaction.commit_manually
 @authz.experiment_ownership_required
 def add_experiment_access_group(request, experiment_id, groupname):
 
@@ -1825,6 +1826,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
     except Experiment.DoesNotExist:
+        transaction.rollback()
         return HttpResponse('Experiment (id=%d) does not exist' % (experiment_id))
 
     # TODO: enable transaction management here...
@@ -1833,12 +1835,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
             group = Group(name=groupname)
             group.save()
         except:
+            transaction.rollback()
             return HttpResponse('Could not create group %s ' \
             '(It is likely that it already exists)' % (groupname))
     else:
         try:
             group = Group.objects.get(name=groupname)
         except Group.DoesNotExist:
+            transaction.rollback()
             return HttpResponse('Group %s does not exist' % (groupname))
 
     acl = ExperimentACL.objects.filter(
@@ -1851,6 +1855,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         # an acl role already exists
         # todo: not sure why this was the only error condition
         # that returns an error
+        transaction.rollback()
         return return_response_error(request)
 
     acl = ExperimentACL(experiment=experiment,
@@ -1877,10 +1882,13 @@ def add_experiment_access_group(request, experiment_id, groupname):
                     authenticationMethod=authMethod).userProfile.user
 
         except User.DoesNotExist:
+            transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
         except UserAuthentication.DoesNotExist:
+            transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
         except UserAuthentication.DoesNotExist:
+            transaction.rollback()
             return return_response_error(request)
 
         # create admin for this group and add it to the group
@@ -1900,9 +1908,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
+    transaction.commit()
     c = Context({'group': group,
                  'experiment_id': experiment_id})
-
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
 
