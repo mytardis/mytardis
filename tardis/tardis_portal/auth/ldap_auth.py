@@ -151,10 +151,10 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             return None
 
         except ldap.LDAPError:
-            logger.error("ldap error")
+            logger.exception("ldap error")
             return None
         except IndexError:
-            logger.error("index error")
+            logger.exception("index error")
             return None
         finally:
             if l:
