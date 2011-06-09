@@ -2,7 +2,16 @@
 Ingesting
 =========
 
-MyTARDIS supports 2 different XML schemas for importing data. One
+There are three mechanisms for ingesting metadata and data into MyTARDIS:
+
+#. User Interface
+   The User Interface is appropriate for ingesting a single experiment by the end user with a relatively small amount of data.
+#. Staging Area
+   The Staging Area is appropriate for ingesting a single experiment by the end user with larger amounts of data.
+#. Batch Ingestion
+   Batch ingestion is typically used by facilities automatically ingesting all metadata from one or more instruments into MyTARDIS.
+
+MyTARDIS supports 2 different XML schemas for importing metadata. One
 method is METS and the other is using a MyTARDIS specific XML
 format. METS is the preferred format because it is supported by
 systems other that MyTARDIS so will provide more versatility in the
