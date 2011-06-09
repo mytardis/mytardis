@@ -7,9 +7,9 @@ Schema and Parameter Sets
 MyTARDIS stores metadata as *Parameters*, which are grouped in to *Parameter Sets*, 
 which are defined by a *Schema*.
 
-===============
+---------------
 Managing Schema
-===============
+---------------
 
 MyTARDIS currently relies on the in-built Django administrative interface for managing schema.  The administrative interface is accesible from a link similar to::
 
