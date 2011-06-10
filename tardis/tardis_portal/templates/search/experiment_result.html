@@ -5,7 +5,7 @@
   {% if result.experiment_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}   
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}">{{result.sr.experiment_title}}</a>
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-1">{{result.sr.experiment_title}}</a>
 
   {% if result.experiment_hit %}
   </span>

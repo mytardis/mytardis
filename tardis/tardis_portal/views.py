@@ -403,6 +403,7 @@ def experiment_datasets(request, experiment_id):
    
 
     if 'query' in request.GET:
+
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
         sqs = SearchQuerySet() 
@@ -426,7 +427,6 @@ def experiment_datasets(request, experiment_id):
         c['datasets'] = matching_datasets + matching_file_datasets 
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
         c['query'] = request.GET['query']
-
     else:
         c['datasets'] = \
             Dataset.objects.filter(experiment=experiment_id)
@@ -2350,7 +2350,7 @@ def add_par(request, parentObject, otype):
 class ExperimentSearchView(SearchView):
     def __name__(self):
         return "ExperimentSearchView"
-
+    
     def extra_context(self):
         extra = super(ExperimentSearchView, self).extra_context()
         # Results may contain Experiments, Datasets and Dataset_Files.
@@ -2381,6 +2381,22 @@ class ExperimentSearchView(SearchView):
 
         extra['experiments'] = experiments
         return extra
+    
+    # override SearchView's method in order to
+    # return a ResponseContext
+    def create_response(self):
+        (paginator, page) = self.build_page()
+        context = {
+                'query': self.query,
+                'form': self.form,
+                'page': page,
+                'paginator' : paginator,
+                }
+        context.update(self.extra_context())
+
+        return render_response_index(self.request, self.template, context)
+        #return render_to_response(self.template, context, context_instance=self.context_class(self.request))
+
 
 @login_required
 def single_search(request):

@@ -241,7 +241,10 @@
 	    $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
 	}
     });
-
+    $("input[name='results_view']").click(function(){
+            alert("radio button clicked") ;
+            $("#view_toggle").submit()
+        });
   </script>
 
 {% endblock %}
@@ -262,7 +265,10 @@
 
   </div> <!-- download_entire_experiment -->
 
-
+  {% if query %}
+  <!--<a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}?q={{query}}&view=all">[Show all]</a>
+  <a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}?q={{query}}&view=matches">[Show matches only]</a>-->
+  {% endif %}
   <form method="POST" action="{% url tardis.tardis_portal.download.download_datafiles %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 

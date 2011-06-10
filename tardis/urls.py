@@ -178,7 +178,5 @@ urlpatterns = patterns(
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
     
     # Search
-    #(r'^search/', include('haystack.urls')),
-    #'haystack.views',
     (r'^search/$', 'tardis.tardis_portal.views.single_search'),
 )
