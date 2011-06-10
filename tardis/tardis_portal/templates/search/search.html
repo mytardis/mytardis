@@ -23,14 +23,11 @@ $(document).ready(function(){
  return val;
 })();
   
-$("#id_q").autocomplete(users.split(" "), {
-matchContains: true, multiple: true, multipleSeparator: ":", autoFill: true,
-});
 
 $("#id_q").result(function(event, ui){
        $('#id_q').autocomplete(["test"]) 
 });
-
+-->
 });
 </script>
 {% endblock script %}
@@ -38,7 +35,7 @@ $("#id_q").result(function(event, ui){
 {% block content %}
     <div id = "content">
       <div class="post">
-    <h1 class="title">Single Search Box</h1>
+<!--    <h1 class="title">Single Search Box</h1>
     <div class="searchmenu" style="padding-left: 10px">
         <form method="get" action=".">
         <table>
@@ -54,7 +51,7 @@ $("#id_q").result(function(event, ui){
     </div> <!-- searchmenu --> 
     <div class="entry">
     {% if query %}
-      <h2>Results</h2>
+    <h2>Search Results for <em>{{ query }}</em></h2>
       {% for key, result in experiments.items %}
         {% ifequal result.sr.model_name 'experiment' %}
           {% include "search/experiment_result.html" %}

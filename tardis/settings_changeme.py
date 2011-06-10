@@ -129,7 +129,8 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
-    'south'
+    'south',
+    'haystack',
     )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
@@ -191,3 +192,10 @@ UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 
 # Upload path that files are sent to
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+
+# Settings for the single search box
+# Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
+SINGLE_SEARCH_ENABLED = True
+HAYSTACK_SITECONF = 'tardis.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'solr'
+HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
