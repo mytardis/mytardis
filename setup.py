@@ -25,11 +25,6 @@ setup(
         'django-registration',
         'django-extensions',
         'django-form-utils',
-        'suds',
-        'python-ldap',
-        'python-magic',
         'south',
-        'psycopg2',
-        'python-memcached',
         ],
 )

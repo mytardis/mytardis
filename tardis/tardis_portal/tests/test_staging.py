@@ -90,7 +90,7 @@ class StagingFiles(TestCase):
                                      1234)
         self.assertEqual(df.size, 1234)
         self.assertEqual(df.filename, 'file')
-        self.assertEqual(df.url, "file://%s/file" % dataset.id)
+        self.assertEqual(df.url, "tardis://file")
 
 
 class TraverseTestCase(TestCase):
@@ -99,10 +99,11 @@ class TraverseTestCase(TestCase):
              ['dir2', 'file2'],
              ['dir2', 'file3'],
              ['dir2', 'subdir', 'file4']]
+    username = "tardis_user1"
 
     def setUp(self):
         from django.conf import settings
-        staging = settings.STAGING_PATH
+        staging = settings.GET_FULL_STAGING_PATH_TEST
         import os
         from os import path
         for dir in self.dirs:
@@ -113,18 +114,20 @@ class TraverseTestCase(TestCase):
 
     def tearDown(self):
         from django.conf import settings
-        staging = settings.STAGING_PATH
+        staging = settings.GET_FULL_STAGING_PATH_TEST
         import os
         from os import path
         for file in self.files:
             os.remove(path.join(staging, *file))
         self.dirs.reverse()
         for dir in self.dirs:
-            os.rmdir(path.join(staging, dir))
+            import shutil
+            shutil.rmtree(path.join(staging, dir))
 
     def test_traversal(self):
         from tardis.tardis_portal.staging import staging_traverse
-        result = staging_traverse()
+        from django.conf import settings
+        result = staging_traverse(settings.GET_FULL_STAGING_PATH_TEST)
         self.assertTrue('dir1' in result)
         self.assertTrue('dir1/file1' in result)
         self.assertTrue('dir2' in result)
@@ -137,17 +140,15 @@ class TraverseTestCase(TestCase):
 class TestPathResolution(TestCase):
     paths = ["dir123/file123",
              "file.txt"]
+    username = "tardis_user1"
 
     def test_absolute_to_relative(self):
         from tardis.tardis_portal import staging
         from django.conf import settings
         from os import path
         for p in self.paths:
-            ap = path.join(settings.STAGING_PATH,
+            ap = path.join(settings.GET_FULL_STAGING_PATH_TEST,
                             p)
-            self.assertRaises(ValueError,
-                              staging.calculate_relative_path,
-                              'staging', p)
             sp = staging.calculate_relative_path('staging',
                                                ap)
             self.assertEqual(sp, p)
@@ -155,9 +156,6 @@ class TestPathResolution(TestCase):
         for p in self.paths:
             ap = path.join(settings.FILE_STORE_PATH,
                             p)
-            self.assertRaises(ValueError,
-                              staging.calculate_relative_path,
-                              'tardis', p)
             sp = staging.calculate_relative_path('tardis',
                                                ap)
             self.assertEqual(sp, p)
@@ -170,6 +168,7 @@ class TestStagingFiles(TestCase):
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
         from os import path
+        import os
 
         # Disconnect post_save signal
         from django.db.models.signals import post_save
@@ -182,7 +181,11 @@ class TestStagingFiles(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-        self.temp = mkdtemp(dir=settings.STAGING_PATH)
+        try:
+            os.makedirs(settings.GET_FULL_STAGING_PATH_TEST)
+        except OSError:
+            pass
+        self.temp = mkdtemp(dir=settings.GET_FULL_STAGING_PATH_TEST)
 
         self.file = mktemp(dir=self.temp)
         f = open(self.file, "w+b")
@@ -216,8 +219,6 @@ class TestStagingFiles(TestCase):
         from tardis.tardis_portal.models import staging_hook, Dataset_File
         post_save.connect(staging_hook, sender=Dataset_File)
 
-        from shutil import rmtree
-        rmtree(self.temp)
 
     def test_stage_file(self):
         from tardis.tardis_portal import staging

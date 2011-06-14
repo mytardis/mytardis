@@ -41,6 +41,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
+from tardis.tardis_portal.staging import get_full_staging_path
 
 
 class AuthService():
@@ -238,7 +239,15 @@ class AuthService():
             self._manual_init()
 
         plugin = user_dict['pluginname']
-        username = user_dict['id']
+
+        username = ''
+        if 'email' in user_dict:
+            email = user_dict['email']
+            username =\
+                self._authentication_backends[plugin].getUsernameByEmail(email)
+        else:
+            username = user_dict['id']
+
         try:
             user = UserAuthentication.objects.get(username=username,
                             authenticationMethod=plugin).userProfile.user
@@ -248,17 +257,14 @@ class AuthService():
 
         # length of the maximum username
         max_length = 30
-        username = username[:max_length]
 
-        # remove email component
+        # the username to be used on the User table
         if username.find('@') > 0:
-            # the username to be used on the User table
-            name = username.partition('@')[0]
+            unique_username = username.partition('@')[0][:max_length]
         else:
-            name = username
+            unique_username = username[:max_length]
 
         # Generate a unique username
-        unique_username = username
         i = 0
         try:
             while (User.objects.get(username=unique_username)):
@@ -268,7 +274,7 @@ class AuthService():
             pass
 
         password = User.objects.make_random_password()
-        user = User.objects.create_user(username=username,
+        user = User.objects.create_user(username=unique_username,
                                         password=password,
                                         email=user_dict.get("email", ""))
         user.save()
@@ -280,4 +286,14 @@ class AuthService():
         userAuth = UserAuthentication(userProfile=userProfile,
             username=username, authenticationMethod=plugin)
         userAuth.save()
+
+        if settings.STAGING_PROTOCOL == plugin:
+            # to be put in its own function
+            staging_path = get_full_staging_path(username)
+            import os
+            if not os.path.exists(staging_path):
+                os.makedirs(staging_path)
+                os.system('chmod g+w ' + staging_path)
+                os.system('chown ' + username + ' ' + staging_path)
+
         return user

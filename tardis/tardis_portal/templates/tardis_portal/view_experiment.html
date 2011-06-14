@@ -1,13 +1,14 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load uploadify_tags %}
+{% load dynurl %}
 
 {% block script %}
 
   {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-
+	
 	function get_new_parameter_name(name)
 	{
 		new_name = name
@@ -52,9 +53,9 @@
   <div id="fullpage">
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
-        {% if has_write_permissions %}
+        {% if has_write_permissions %}{% if not experiment.public %}
            <a href="{{ experiment.get_edit_url }}">[Edit]</a>
-	{% endif %}
+	{% endif %}{% endif %}
       </h1>
     </div>
 
@@ -66,7 +67,10 @@
       {% if query %}
       <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?query={{ query }}">Matching Datasets</a></li>
       {% endif%}
-    </ul>
+	  {% for appurl, appname in apps %}
+	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+	  {% endfor %}
+	</ul>
       </div><!-- End tab container -->
 
     </div>

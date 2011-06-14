@@ -27,7 +27,7 @@ class OracleSafeManager(models.Manager):
         from django.db import connection
         if connection.settings_dict['ENGINE'] == 'django.db.backends.oracle':
             fields = [a.attname for a in self.model._meta.fields
-                      if a.db_type() == 'NCLOB']
+                      if a.db_type(connection=connection) == 'NCLOB']
             return \
                 super(OracleSafeManager, self).get_query_set().defer(*fields)
         else:
@@ -247,3 +247,13 @@ class ExperimentManager(OracleSafeManager):
             if group:
                 result += group
         return result
+
+
+class ParameterNameManager(models.Manager):
+    def get_by_natural_key(self, namespace, name):
+        return self.get(schema__namespace=namespace, name=name)
+
+
+class SchemaManager(models.Manager):
+    def get_by_natural_key(self, namespace):
+        return self.get(namespace=namespace)

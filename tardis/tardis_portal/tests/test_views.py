@@ -134,7 +134,7 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
-        self.assertTrue(test_files_db[0].url == 'file://1/testfile.txt')
+        self.assertTrue(test_files_db[0].url == 'tardis://testfile.txt')
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest

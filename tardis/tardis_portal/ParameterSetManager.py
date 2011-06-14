@@ -10,7 +10,7 @@ from tardis.tardis_portal.models import ExperimentParameter
 from tardis.tardis_portal.models import Schema
 
 
-class ParameterSetManager():
+class ParameterSetManager(object):
 
     parameterset = None
     parameters = None       # queryset of parameters
@@ -61,7 +61,7 @@ class ParameterSetManager():
             self.namespace = schema
 
             if type(parentObject).__name__ == "Dataset_File":
-                self.parameterset = DatafileParameterSet(\
+                self.parameterset = DatafileParameterSet(
                     schema=self.get_schema(), dataset_file=parentObject)
 
                 self.parameterset.save()
@@ -72,7 +72,7 @@ class ParameterSetManager():
                 self.blank_param = DatafileParameter
 
             elif type(parentObject).__name__ == "Dataset":
-                self.parameterset = DatasetParameterSet(\
+                self.parameterset = DatasetParameterSet(
                     schema=self.get_schema(), dataset=parentObject)
 
                 self.parameterset.save()
@@ -83,7 +83,7 @@ class ParameterSetManager():
                 self.blank_param = DatasetParameter
 
             elif type(parentObject).__name__ == "Experiment":
-                self.parameterset = ExperimentParameterSet(\
+                self.parameterset = ExperimentParameterSet(
                     schema=self.get_schema(), experiment=parentObject)
 
                 self.parameterset.save()
@@ -94,7 +94,7 @@ class ParameterSetManager():
                 self.blank_param = ExperimentParameter
 
             else:
-                raise TypeError("Invalid parent object." + \
+                raise TypeError("Invalid parent object." +
                     "Must be an experiment/dataset/datafile")
 
         else:
@@ -131,16 +131,17 @@ class ParameterSetManager():
                         for par in pars]
         return pars
 
-    def set_param(self, parname, value, fullparname=None):
+    def set_param(self, parname, value, fullparname=None,
+                  example_value=None):
         try:
             param = self.get_param(parname)
         except ObjectDoesNotExist:
             param = self.blank_param()
             param.parameterset = self.parameterset
             param.name = self._get_create_parname(parname, fullparname,
-                example_value=value)
-            param.string_value = value
-            param.save()
+                example_value=example_value)
+            #param.string_value = value
+            #param.save()
         if param.name.isNumeric():
             param.numerical_value = float(value)
         else:
@@ -163,7 +164,8 @@ class ParameterSetManager():
     def set_param_list(self, parname, value_list, fullparname=None):
         self.delete_params(parname)
         for value in value_list:
-            self.new_param(parname, value, fullparname)
+            if value != None:
+                self.new_param(parname, value, fullparname)
 
     def set_params_from_dict(self, dict):
         print type(dict)
@@ -171,8 +173,9 @@ class ParameterSetManager():
             if type(value) is list:
                 self.set_param_list(key, value)
             else:
-                self.delete_params(key)
-                self.set_param(key, value)
+                if value != None:
+                    self.delete_params(key)
+                    self.set_param(key, value)
 
     def delete_params(self, parname):
         params = self.get_params(parname)
@@ -199,11 +202,11 @@ class ParameterSetManager():
             if example_value:
                 try:
                     float(example_value)
-                    paramName.data_type == ParameterName.NUMERIC
+                    paramName.data_type = ParameterName.NUMERIC
                 except (TypeError, ValueError):
-                    paramName.data_type == ParameterName.STRING
+                    paramName.data_type = ParameterName.STRING
             else:
-                paramName.data_type == ParameterName.STRING
+                paramName.data_type = ParameterName.STRING
             paramName.is_searchable = True
             paramName.save()
         return paramName

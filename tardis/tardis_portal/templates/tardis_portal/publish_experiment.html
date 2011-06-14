@@ -1,0 +1,126 @@
+<!--
+ Copyright (c) 2010, Monash e-Research Centre
+   (Monash University, Australia)
+ Copyright (c) 2010, VeRSI Consortium
+   (Victorian eResearch Strategic Initiative, Australia)
+ All rights reserved.
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+    
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the distribution.
+    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+       names of its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+ 
+ THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+ EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+{% extends "tardis_portal/portal_template.html" %}
+		
+		{% block script %}
+		
+		<script type="text/javascript">
+		
+		</script>
+		
+		{% endblock %}
+		
+		{% block content %}
+			<div id="content">
+				<div class="post">
+					<h1 class="title"><a name="abouttardis">Publish Experiment</a></h1>
+					<div class="entry">
+							
+							
+							{% if publish_result %}
+						<p>
+							{% if legal %}
+								
+								{% if success %}
+									<h3>Experiment Publication Successful</strong></h3>
+									<a href="../">Go back to your experiment.</a>
+								{% else %}
+									<h3><span style="color: red;">Experiment Publication Failed</span></h3>
+									See messages below for more information. <a href=".">Try to publish again</a>
+								
+								{% endif %}
+							
+							{% else %}
+								
+								<h3><span style="color: red;">Experiment Publication Failed</span></h3>
+								Please accept the legal agreement.
+							
+							{% endif %}
+									
+									<div class="publish_results" style="padding: 20px">
+									{% for result in publish_result %}
+										<div {% if not result.status %}style="color: red;"{% endif %}>
+											<strong>{{result.name}}</strong><br/>
+											{{result.message}}
+											<br/><br/>
+										</div>
+									{% endfor %}
+									</div>
+						
+						</p>
+						{% else %}
+							
+							<form action="." method="POST" class="publishform">
+							<p>
+								<strong>Experiment Name:</strong> {{ experiment.title }}
+							</p>
+							
+							<strong>Legal Agreement:</strong>
+							<p>
+								{{legaltext}}
+							<p>
+							{{default_test}}
+							<input type="checkbox" name="legal" value="Agree">I agree to the above terms and wish to make my data publicly available<br>
+							</p>
+							
+							{% for form in publish_forms %}
+								<div style="border-width: 1px; border-style: solid;
+								 padding: 10px; margin: 10px">
+									{% include form %}
+								</div>
+							{% endfor %}
+							
+							<br/>
+							<input id="button" type="submit" value="Publish Experiment"/>
+						
+						{% endif %}
+			
+			</div>
+			
+			</form>
+		    		</div>
+		    	</div>
+			</div>
+		    <br/>
+			
+			{% endblock %} {% block sidebar %}
+				
+				<ul>
+					<li>
+						<h2></h2>
+							
+							<ul>
+							
+							</ul>
+					</li>
+				</ul>
+		
+		<p>
+			{% endblock %}

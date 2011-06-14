@@ -1,8 +1,9 @@
+{% if parametersets %}
 {% for parameterset in parametersets %}
 	<div class="datafile_parameters">
-	<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
-	<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
-	 class="jqModalDf{{parameterset.id}}">[Edit Metadata]</a></p>
+	<p><strong><em>{{parameterset.schema}}</strong></em></p>
+	{% if has_write_permissions %}{% if not experiment.public %}<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
+	 class="jqModalDf{{parameterset.id}}">[Edit Metadata]</a></p>{% endif %}{% endif %}
     {% autoescape off %}
 	{% for parameter in parameterset.datafileparameter_set.all %}
 		<li><strong>{{ parameter.name.full_name }}: </strong>
@@ -34,3 +35,6 @@
 		</div>
 	</div>
 {% endfor %}
+{% else %}
+	There is no metadata for this file
+{% endif %}

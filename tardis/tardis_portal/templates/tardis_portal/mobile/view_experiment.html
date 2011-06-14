@@ -1,6 +1,5 @@
 {% extends "mobile/portal_template.html" %}
 {% load basiccomparisonfilters %}
-{% load parametertypecheck %}
 
 {% block script %}
 
@@ -237,11 +236,11 @@
 									<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 									<ul>
 											{% for parameterset in experiment.experimentparameterset_set.all %}
-											<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+											<p><strong><em>{{parameterset.schema}}</strong></em></p>
 
 											{% for parameter in parameterset.experimentparameter_set.all %}
 												<li><strong>{{ parameter.name.full_name }}: </strong>
-												  {{ parameter.get|eparametertypecheck:parameter.id|safe }}
+												  {{ parameter.get }}
 												</li>
 											{% endfor %}
 											<br/><br/>
@@ -306,11 +305,11 @@
 										<div class="dataset_metadata" id="dataset_metadata_{{forloop.counter}}">
 										<ul>
 												{% for parameterset in dataset.datasetparameterset_set.all %}
-												<p><strong><em>Schema: {{parameterset.schema}}</strong></em></p>
+												<p><strong><em>{{parameterset.schema}}</strong></em></p>
 
 												{% for parameter in parameterset.datasetparameter_set.all %}
 													<li><strong>{{ parameter.name.full_name }}: </strong>
-													  {{ parameter.get|dsparametertypecheck:parameter.id|safe }}
+													  {{ parameter.get }}
 													</li>
 												{% endfor %}
 												<br/><br/>
