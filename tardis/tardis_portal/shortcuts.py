@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext, Context
 from django.http import HttpResponseForbidden, HttpResponseNotFound, \
     HttpResponseServerError
+from tardis.tardis_portal.staging import get_full_staging_path
 
 
 def render_response_index(request, *args, **kwargs):
@@ -20,6 +21,14 @@ def render_response_index(request, *args, **kwargs):
     kwargs['context_instance']['is_authenticated'] = is_authenticated
     kwargs['context_instance']['is_superuser'] = is_superuser
     kwargs['context_instance']['username'] = username
+
+    staging = get_full_staging_path(
+                                username)
+    if staging:
+        kwargs['context_instance']['has_staging_access'] = True
+    else:
+        kwargs['context_instance']['has_staging_access'] = False
+
 
     if request.mobile:
         template_path = args[0]
@@ -58,6 +67,13 @@ def render_response_search(request, *args, **kwargs):
     kwargs['context_instance']['searchDatafileSelectionForm'] = \
         getNewSearchDatafileSelectionForm(request.GET.get('type', None))
     kwargs['context_instance']['links'] = links
+
+    staging = get_full_staging_path(
+                                username)
+    if staging:
+        kwargs['context_instance']['has_staging_access'] = True
+    else:
+        kwargs['context_instance']['has_staging_access'] = False
 
     if request.mobile:
         template_path = args[0]

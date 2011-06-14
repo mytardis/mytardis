@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 # Generated Thu Mar 17 13:49:32 2011 by generateDS.py version 2.4b.
@@ -710,7 +709,7 @@ class metsType(GeneratedsSuper):
             not in already_processed:
             already_processed.append('PROFILE')
             outfile.write(' PROFILE=%s'
-                          % (self.gds_format_string(quote_attrib(self.PROFILE).encode(ExternalEncoding),
+                          % (self.gds_format_string(self.PROFILE.encode(ExternalEncoding),
                           input_name='PROFILE'), ))
         if self.LABEL is not None and 'LABEL' not in already_processed:
             already_processed.append('LABEL')
@@ -9819,7 +9818,7 @@ class FLocat(GeneratedsSuper):
                           input_name='actuate'), ))
         if self.href is not None and 'href' not in already_processed:
             already_processed.append('href')
-            outfile.write(' href=%s'
+            outfile.write(' xlink:href=%s'
                           % (self.gds_format_string(quote_attrib(self.href).encode(ExternalEncoding),
                           input_name='href'), ))
         if self.role is not None and 'role' not in already_processed:
@@ -9835,7 +9834,7 @@ class FLocat(GeneratedsSuper):
                           input_name='LOCTYPE'), ))
         if self.type_ is not None and 'type_' not in already_processed:
             already_processed.append('type_')
-            outfile.write(' type=%s' % (quote_attrib(self.type_), ))
+            outfile.write(' xlink:type=%s' % (quote_attrib(self.type_), ))
         if self.ID is not None and 'ID' not in already_processed:
             already_processed.append('ID')
             outfile.write(' ID=%s'
@@ -11259,8 +11258,6 @@ class mets(metsType):
                       and ' ' + namespacedef_ or ''))
         self.exportAttributes(outfile, level, [], namespace_,
                               name_='mets')
-        outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
-                      )
         outfile.write(' xsi:type="mets"')
         if self.hasContent_():
             outfile.write('>\n')

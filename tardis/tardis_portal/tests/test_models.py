@@ -195,7 +195,7 @@ class ModelTestCase(TestCase):
                                   type=models.Schema.DATASET)
         ds_schema.save()
 
-        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
+        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema3.xml',
                                    type=models.Schema.EXPERIMENT)
         exp_schema.save()
 
@@ -222,12 +222,15 @@ class ModelTestCase(TestCase):
 
         df_parset = models.DatafileParameterSet(schema=df_schema,
                                                 dataset_file=df_file)
+        df_parset.save()
 
         ds_parset = models.DatasetParameterSet(schema=ds_schema,
                                                dataset=dataset)
+        ds_parset.save()
 
         exp_parset = models.ExperimentParameterSet(schema=exp_schema,
                                                    experiment=exp)
+        exp_parset.save()
 
         from base64 import b64encode
         from os import path

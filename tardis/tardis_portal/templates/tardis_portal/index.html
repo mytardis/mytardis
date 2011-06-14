@@ -4,60 +4,28 @@
 
 {% endblock script %}
 
-{% block content %}
+{% block fullpage %}
+     <p>
+		<b>MyTARDIS</b> is a multi-institutional collaborative venture that facilitates the archiving and sharing of data and metadata collected at major facilities such as the Australian Synchrotron and ANSTO and within several institutions.
+	</p>
+	<p>
+		An example of the benefit of a system such as MyTARDIS in the protein crystallography community is that while the model coordinates and (less often) the structure factors (processed experimental data) are stored in the community Protein Data Bank (PDB) the raw diffraction data is often not available. There are several reasons why this is important, which can be summarised as:
+		<ul>
+			<li>
+		The availability of raw data is extremely useful for the development of improved methods of image analysis and data processing.
+			</li>
+			<li>
+		Fostering the archival of raw data at an institutional level is one the best ways of ensuring that this data is not lost (laboratory archives are typically volatile).
+			</li>
+		</ul>
+	 </p>
 
-<div id="content">
-  <div class="post">
-    <h1 class="title">
-      <a href="#">Welcome</a>
-    </h1>
-    <div class="entry">
+	<p align="center">
+		<img src="/site_media/images/mytardis_dataflow.png" style="border: 1px black solid; margin: 10px">
+	</p>	
       <p>
-	<strong>TARDIS</strong> is a multi-institutional collaborative
-	venture that aims to facilitate the archiving and sharing of
-	raw X-ray diffraction images (collectively known as a
-	'dataset') from the protein crystallography community.
-	Whereas the model coordinates and (less often) the structure
-	factors (processed experimental data) are stored in
-	the <a href="http://www.rcsb.org/pdb/home/home.do">PDB</a> the
-	raw diffraction data is often not available. Addressing this
-	shortcoming is the central aim of TARDIS. There are several
-	reasons why we feel this is important
-	(see <a href="/about">about</a>), which can be summarised as:
-      </p>
-      <ul>
-	<li>
-	  The availability of raw data is extremely useful for the
-	  development of improved methods of image analysis and data
-	  processing.
-	</li>
-	<li>
-	  Fostering the archival of raw data at an institutional level
-	  is one the best ways of ensuring that this data is not lost
-	  (laboratory archives are typically volatile)
-	</li>
-      </ul>
-      <br/>
-      <p>
-	For more information on the TARDIS project please
+	For more information on the MyTARDIS project please
 	contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate
 	Professor Ashley Buckle</a>.
       </p>
-    </div>
-  </div>
-</div>
 {% endblock %}
-
-{% block sidebar %}
-
-
-<ul>
-  <li>
-    <h2>Welcome</h2>
-    <ul>
-      <li><a href="#intro">Introduction</a></li>
-    </ul>
-  </li>
-</ul>
-
-{% endblock sidebar %}

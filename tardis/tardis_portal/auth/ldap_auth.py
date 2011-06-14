@@ -37,7 +37,6 @@ LDAP Authentication module.
 
 
 import ldap
-
 import logging
 
 from django.conf import settings
@@ -123,39 +122,39 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     def authenticate(self, request):
         username = request.POST['username']
         password = request.POST['password']
+
         if not username or not password:
             return None
 
         l = None
 
         try:
-            searchScope = ldap.SCOPE_SUBTREE
             retrieveAttributes = self._user_attr_map.keys() + \
                                  [self._login_attr]
             userRDN = self._login_attr + '=' + username
-
             l = ldap.initialize(self._url)
             l.protocol_version = ldap.VERSION3
             l.simple_bind(userRDN + ',' + self._base, password)
-            ldap_result_id = l.search(self._user_base, searchScope,
+            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
                                       userRDN, retrieveAttributes)
 
-            result_type, result_data = l.result(ldap_result_id, 1)
+            bind_dn = ldap_result[0][0]
+            l.simple_bind_s(bind_dn, password)
 
-            if result_data[0][1][self._login_attr][0] == username:
+            if ldap_result[0][1]['uid'][0] == username:
                 # check if the given username in combination with the LDAP
                 # auth method is already in the UserAuthentication table
-                user = result_data[0][1]
+                user = ldap_result[0][1]
                 return {'display': user['givenName'][0],
                         "id": user['uid'][0],
                         "email": user['mail'][0]}
             return None
 
         except ldap.LDAPError:
-            logger.error("ldap error")
+            logger.exception("ldap error")
             return None
         except IndexError:
-            logger.error("index error")
+            logger.exception("index error")
             return None
         finally:
             if l:
@@ -188,6 +187,33 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
         for k, v in result[0][1].items():
             user[self._user_attr_map[k]] = v[0]
         return user
+
+    def getUsernameByEmail(self, email):
+
+        l = None
+        try:
+            retrieveAttributes = ["uid"]
+            l = ldap.initialize(self._url)
+            l.protocol_version = ldap.VERSION3
+            searchFilter = '(|(mail=%s)(mailalternateaddress=%s))' % (email,
+                                                                      email)
+            ldap_result = l.search_s(self._user_base, ldap.SCOPE_SUBTREE,
+                                      searchFilter, retrieveAttributes)
+
+            if ldap_result[0][1]['uid'][0]:
+                return ldap_result[0][1]['uid'][0]
+            else:
+                return None
+
+        except ldap.LDAPError:
+            logger.exception("ldap error")
+            return None
+        except IndexError:
+            logger.exception("index error")
+            return None
+        finally:
+            if l:
+                l.unbind_s()
 
     #
     # Group Provider

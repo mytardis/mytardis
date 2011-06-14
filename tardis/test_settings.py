@@ -2,7 +2,7 @@ from os import path
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-DEBUG = True
+DEBUG = False
 
 DATABASES = {
     'default': {
@@ -23,6 +23,11 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/staging/"))
+
+STAGING_PROTOCOL = 'localdb'
+STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
+
+GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
@@ -66,6 +71,14 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware'
 )
 
+TARDIS_APP_ROOT = 'tardis.apps'
+TARDIS_APPS = ('equipment',)
+
+if TARDIS_APPS:
+    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
+else:
+    apps = ()
+
 INSTALLED_APPS = (
         'django.contrib.auth',
         'django.contrib.contenttypes',
@@ -76,11 +89,10 @@ INSTALLED_APPS = (
         'django_extensions',
         'tardis.tardis_portal',
         'tardis.tardis_portal.templatetags',
-        'tardis.apps.equipment',
         'registration',
         'django_nose',
-        'south'
-)
+
+) + apps
 
 # LDAP configuration
 LDAP_USE_TLS = False
@@ -108,3 +120,7 @@ MODULE_LOG_MAXBYTES = 0
 
 UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+
+DEFAULT_INSTITUTION = "Monash University"
+
+IMMUTABLE_METS_DATASETS = True

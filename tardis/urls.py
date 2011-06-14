@@ -17,6 +17,8 @@ core_urls = patterns(
     (r'^partners/$', 'partners'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
+    (r'^rif-cs/$',
+     'rif_cs'),
 )
 
 experiment_urls = patterns(
@@ -26,7 +28,6 @@ experiment_urls = patterns(
     (r'^view/$', 'experiment_index'),
     (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
-    (r'^register/internal/$', 'register_experiment_ws_xmldata_internal'),
     (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
     (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
     (r'^create/$', 'create_experiment'),
@@ -94,13 +95,17 @@ ajax_urls = patterns(
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
     (r'^parameter_field_list/$', 'retrieve_field_list'),
+    (r'^view/(?P<experiment_id>\d+)/publish/$',
+        'publish_experiment'),
     )
 
 download_urls = patterns(
     'tardis.tardis_portal.download',
     (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
-    (r'^experiment/(?P<experiment_id>\d+)/$', 'download_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
+     'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
+    (r'^datafile/ws/$', 'download_datafile_ws'),
     )
 
 group_urls = patterns(
@@ -131,13 +136,17 @@ display_urls = patterns(
      'display_datafile_image'),
     )
 
+apppatterns = patterns('',)
+for app in settings.TARDIS_APPS:
+    apppatterns += patterns('tardis.apps',
+                            (r'^%s/' % app,
+                             include('%s.%s.urls' %
+                                     (settings.TARDIS_APP_ROOT, app))))
+
 urlpatterns = patterns(
     # (r'^search/quick/$', 'tardis.tardis_portal.views.search_quick'),
     '',
     (r'', include(core_urls)),
-
-    # Equipment views
-    (r'^equipment/', include('tardis.apps.equipment.urls')),
 
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
@@ -179,4 +188,7 @@ urlpatterns = patterns(
     
     # Search
     (r'^search/$', 'tardis.tardis_portal.views.single_search'),
+
+    # Apps
+    (r'^apps/', include(apppatterns)),
 )

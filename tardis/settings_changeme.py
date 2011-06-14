@@ -26,8 +26,12 @@ DATABASES = {
 }
 
 # A dictionary containing the settings for all caches to be used with
-# Django. The CACHES setting must configure a default cache; any number of
-# additional caches may also be specified.
+# Django. The CACHES setting must configure a default cache; any
+# number of additional caches may also be specified.  Once the cache
+# is set up, you'll need to add
+# 'django.middleware.cache.UpdateCacheMiddleware' and
+# 'django.middleware.cache.FetchFromCacheMiddleware'
+# to your MIDDLEWARE_CLASSES setting below
 
 #CACHES = {
 #    'default': {
@@ -66,7 +70,13 @@ ADMIN_MEDIA_PREFIX = '/media/'
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 
-MIDDLEWARE_CLASSES = ('django.middleware.common.CommonMiddleware',
+# once the cache is set up, you'll need to add
+# 'django.middleware.cache.UpdateCacheMiddleware' and
+# 'django.middleware.cache.FetchFromCacheMiddleware'
+MIDDLEWARE_CLASSES = (
+    #'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    #'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.minidetector.Middleware',
@@ -103,6 +113,8 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
+STAGING_PROTOCOL = 'ldap'
+STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -114,6 +126,16 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
 
 MEDIA_URL = '/site_media/'
+
+#set to empty tuple () for no apps
+#TARDIS_APPS = ('mrtardis', )
+TARDIS_APPS = ()
+TARDIS_APP_ROOT = 'tardis.apps'
+
+if TARDIS_APPS:
+    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
+else:
+    apps = ()
 
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
@@ -131,7 +153,13 @@ INSTALLED_APPS = (
     'registration',
     'south',
     'haystack',
-    )
+    ) + apps
+
+
+PUBLISH_PROVIDERS = (
+                    'tardis.tardis_portal.publish.rif_cs_profile.'
+                    + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
@@ -152,7 +180,12 @@ AUTH_PROVIDERS = (
     ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
+# default authentication module for experiment ownership user during
+# ingestion? Must be one of the above authentication provider names
+DEFAULT_AUTH = 'localdb'
+
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
+
 
 ACCOUNT_ACTIVATION_DAYS = 3
 
@@ -195,7 +228,12 @@ UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = True
+SINGLE_SEARCH_ENABLED = False 
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+
+DEFAULT_INSTITUTION = "Monash University"
+
+#Are the datasets ingested via METS xml (web services) to be immutable?
+IMMUTABLE_METS_DATASETS = True

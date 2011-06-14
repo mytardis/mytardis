@@ -73,6 +73,13 @@ class UserProvider:
         """
         raise NotImplemented()
 
+    def getUsernameByEmail(self, email):
+        """
+        returns the username (format string) from the auth domain
+        needed for resolving experiment owners during ingestion
+        """
+        raise NotImplemented()
+
 
 class GroupProvider:
 

@@ -48,7 +48,8 @@ from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 
 from tardis.tardis_portal.staging import StagingHook
-from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
+from tardis.tardis_portal.managers import OracleSafeManager,\
+    ExperimentManager, ParameterNameManager, SchemaManager
 
 
 class UserProfile(models.Model):
@@ -137,12 +138,11 @@ class Experiment(models.Model):
                           null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
-    institution_name = models.CharField(max_length=400)
+    institution_name = models.CharField(max_length=400,
+            default=settings.DEFAULT_INSTITUTION)
     description = models.TextField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    created_time = models.DateTimeField(null=True, blank=True,
-        auto_now_add=True)
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
@@ -175,9 +175,10 @@ class Experiment(models.Model):
         dirname = path.join(settings.FILE_STORE_PATH,
                             str(self.id))
         if not path.exists(dirname):
-            from os import mkdir
+            from os import chmod, mkdir
             try:
                 mkdir(dirname)
+                chmod(dirname, 0770)
             except:
                 dirname = None
         return dirname
@@ -197,9 +198,10 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
-    def get_download_urls(self):
+    def get_download_urls(self, comptype="zip"):
         urls = {}
-        kwargs = {'experiment_id': self.id}
+        kwargs = {'experiment_id': self.id,
+                  'comptype': comptype}
         distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
         for key_value in distinct:
             protocol = key_value['protocol']
@@ -217,6 +219,30 @@ class Experiment(models.Model):
                     pass
 
         return urls
+
+    def profile(self):
+        """Return the rif-cs profile template location
+            as determined by the profile ExperimentParameter
+
+        """
+
+        profile_template_location = "rif_cs_profile/profiles/"
+
+        try:
+            from tardis.tardis_portal.publish.rif_cs_profile.\
+            rif_cs_PublishProvider\
+            import rif_cs_PublishProvider
+
+            rif_cs_pp = rif_cs_PublishProvider(self.id)
+
+            profile = rif_cs_pp.get_profile()
+            if not profile:
+                return profile_template_location + "default.xml"
+
+            return profile_template_location + profile
+
+        except:
+            return profile_template_location + "default.xml"
 
 
 class ExperimentACL(models.Model):
@@ -295,6 +321,7 @@ class Dataset(models.Model):
 
     experiment = models.ForeignKey(Experiment)
     description = models.TextField(blank=True)
+    immutable = models.BooleanField(default=False)
     objects = OracleSafeManager()
 
     def getParameterSets(self, schemaType=None):
@@ -337,6 +364,9 @@ class Dataset(models.Model):
 
     def __unicode__(self):
         return self.description
+
+    def get_absolute_filepath(self):
+        return path.join(self.experiment.get_absolute_filepath(), str(self.id))
 
 
 class Dataset_File(models.Model):
@@ -416,8 +446,17 @@ class Dataset_File(models.Model):
         else:
             return ''
 
-    def get_absolute_filepath(self):
+    def get_relative_filepath(self):
+        if self.protocol == '' or self.protocol == 'tardis':
+            from os.path import abspath, join
+            return abspath(join(self.url.partition('://')[2]))
+        elif self.protocol == 'staging':
+            return self.url
+        # file should refer to an absolute location
+        elif self.protocol == 'file':
+            return self.url.partition('://')[2]
 
+    def get_absolute_filepath(self):
         # check for empty protocol field (historical reason) or
         # 'tardis' which indicates a location within the tardis file
         # store
@@ -431,6 +470,7 @@ class Dataset_File(models.Model):
             from os.path import abspath, join
             return abspath(join(FILE_STORE_PATH,
                                 str(self.dataset.experiment.id),
+                                str(self.dataset.id),
                                 self.url.partition('://')[2]))
         elif self.protocol == 'staging':
             return self.url
@@ -467,6 +507,12 @@ class Dataset_File(models.Model):
             md5.update(chunk)
         f.close()
         self.md5sum = md5.hexdigest()
+
+    def deleteCompletely(self):
+        import os
+        filename = self.get_absolute_filepath()
+        os.remove(filename)
+        self.delete()
 
 
 def save_DatasetFile(sender, **kwargs):
@@ -510,7 +556,9 @@ class Schema(models.Model):
         (NONE, 'None')
     )
 
-    namespace = models.URLField(verify_exists=False, max_length=400)
+    namespace = models.URLField(unique=True,
+                                verify_exists=False,
+                                max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
     type = models.IntegerField(
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
@@ -520,6 +568,10 @@ class Schema(models.Model):
     # further categorise the experiment, dataset, and datafile schemas. the
     # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
     subtype = models.CharField(blank=True, null=True, max_length=30)
+    objects = SchemaManager()
+
+    def natural_key(self):
+        return (self.namespace,)
 
     def _getSchemaTypeName(self, typeNum):
         return dict(self._SCHEMA_TYPES)[typeNum]
@@ -634,12 +686,16 @@ class ParameterName(models.Model):
     # TODO: we'll need to rethink the way choices for drop down menus are
     #       represented in the DB. doing it this way is just a bit wasteful.
     choices = models.CharField(max_length=500, blank=True)
+    objects = ParameterNameManager()
+
+    class Meta:
+        unique_together = (('schema', 'name'),)
 
     def __unicode__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name
 
-    class Meta:
-        unique_together = (('schema', 'name'),)
+    def natural_key(self):
+        return (self.schema.namespace, self.name)
 
     def isNumeric(self):
         if self.data_type == self.NUMERIC:
@@ -731,7 +787,7 @@ def _getParameter(parameter):
         return mark_safe(value)
 
     elif parameter.name.isFilename():
-        if parameter.name.units.startswith('image'):
+        if parameter.name.units.startswith('image') and parameter.string_value:
             parset = type(parameter.parameterset).__name__
             viewname = ''
             if parset == 'DatafileParameterSet':
@@ -744,8 +800,8 @@ def _getParameter(parameter):
                 value = "<img src='%s' />" % reverse(viewname=viewname,
                                                      args=[parameter.id])
                 return mark_safe(value)
-
-        return parameter.string_value
+        else:
+            return parameter.string_value
 
     elif parameter.name.isDateTime():
         value = str(parameter.datetime_value)
@@ -847,7 +903,10 @@ def pre_save_parameter(sender, **kwargs):
             if not exists(dirname):
                 mkdir(dirname)
             f = open(filepath, 'w')
-            f.write(b64decode(b64))
+            try:
+                f.write(b64decode(b64))
+            except TypeError:
+                f.write(b64)
             f.close()
             parameter.string_value = filename
 
