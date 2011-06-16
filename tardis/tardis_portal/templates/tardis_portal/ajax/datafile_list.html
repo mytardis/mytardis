@@ -1,36 +1,38 @@
-
-<div class="pagination">
+{% if dataset.paginator.num_pages > 1 %}
+  <div class="pagination">
     <span class="step-links">
-        {% if dataset.has_previous %}
-            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
-        {% endif %}
+      {% if dataset.has_previous %}
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
+      {% endif %}
 
-		{% for pagenum in dataset.paginator.page_range %}
-				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
-		{% endfor %}
+      {% for pagenum in dataset.paginator.page_range %}
+	<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
+      {% endfor %}
 
-        {% if dataset.has_next %}
-            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
-        {% endif %}
-
-		<br/>
-        <span class="current">
-            Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
-        </span>
+      {% if dataset.has_next %}
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
+      {% endif %}
+      <br/>
+      <span class="current">
+        Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+      </span>
     </span>
-</div>
-<br/>
+  </div>
+  <br/>
+{% endif %}
 
 <div style="">
 {# uploadify here #}
 
-{% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}
-<a class="upload_files_link">Upload Files To Dataset</a>
-
-<div class="upload_files_container"></div>
-
-<input class="dataset_id" type="hidden" value="{{dataset_id}}">
-{% endif %}{% endif %}{% endif %}
+{% if has_write_permissions %}
+  {% if not experiment.public %}
+    {% if not immutable %}
+      <a class="upload_files_link">Upload Files To Dataset</a>
+      <div class="upload_files_container"></div>
+      <input class="dataset_id" type="hidden" value="{{dataset_id}}">
+    {% endif %}
+  {% endif %}
+{% endif %}
 
 File path search: <input type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"> <em>(eg. enter 'test' to show the '/Frames/test/' directory)</em>
 </div>
@@ -63,41 +65,36 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
 		  </div>
 		</div>
-	</div>	
-	
+	</div>
+
 	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Show]</a>
 	<ul class="datafile_info">
 
 	</ul>
-	
-
-	{% if datafile.xml_data_set.count %}
-	<a class="datafile_info_toggle" href="/ajax/xml_data/{{ datafile.id }}">[Metadata]</a>
-	<ul class="datafile_info" style="width: 95%; overflow:auto; padding: 5px; font-size: 12px">
-	</ul>
-	{% endif %}
 
 </li>
 {% endfor %}
+
+
+{% if dataset.paginator.num_pages > 1 %}
 <br/>
-
 <div class="pagination">
-    <span class="step-links">
-        {% if dataset.has_previous %}
-            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
-        {% endif %}
+  <span class="step-links">
+    {% if dataset.has_previous %}
+      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
+    {% endif %}
 
-		{% for pagenum in dataset.paginator.page_range %}
-				<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
-		{% endfor %}
+    {% for pagenum in dataset.paginator.page_range %}
+      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
+    {% endfor %}
 
-        {% if dataset.has_next %}
-            <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
-        {% endif %}
-
-		<br/>
-        <span class="current">
-            Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
-        </span>
+    {% if dataset.has_next %}
+      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
+    {% endif %}
+    <br/>
+    <span class="current">
+      Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
     </span>
+  </span>
 </div>
+{% endif %}
