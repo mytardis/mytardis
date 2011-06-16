@@ -241,7 +241,7 @@ class AuthService():
         plugin = user_dict['pluginname']
 
         username = ''
-        if 'email' in user_dict:
+        if not 'id' in user_dict:
             email = user_dict['email']
             username =\
                 self._authentication_backends[plugin].getUsernameByEmail(email)
