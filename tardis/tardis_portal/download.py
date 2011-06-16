@@ -124,7 +124,7 @@ def download_experiment(request, experiment_id, comptype):
     experiment = Experiment.objects.get(pk=experiment_id)
 
     if comptype == "tar":
-        cmd = 'tar -C %s -c %s/' % (abspath(settings.FILE_STORE_PATH),
+        cmd = 'tar -C %s -c %s/' % (path.abspath(settings.FILE_STORE_PATH),
                                     str(experiment.id))
         # logger.info('TAR COMMAND: ' + cmd)
         response = HttpResponse(FileWrapper(subprocess.Popen(
@@ -136,7 +136,7 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + str(experiment.id) + '-complete.tar"'
     elif comptype == "zip":
-        cmd = 'cd %s; zip -r - %s' % (abspath(settings.FILE_STORE_PATH),
+        cmd = 'cd %s; zip -r - %s' % (path.abspath(settings.FILE_STORE_PATH),
                                     str(experiment.id))
         # logger.info('TAR COMMAND: ' + cmd)
         response = HttpResponse(FileWrapper(subprocess.Popen(
