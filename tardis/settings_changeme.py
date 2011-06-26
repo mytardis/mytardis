@@ -274,3 +274,4 @@ LDAP_GROUP_ATTR_MAP = {"description": "display"}
 LDAP_BASE = 'dc=example, dc=com'
 LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
 LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
+#
