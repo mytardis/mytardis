@@ -1,5 +1,6 @@
 from os import path
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = False
 
@@ -15,9 +16,9 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': 'tardis',
+        'NAME': '/tmp/tardis.sql',
         'USER': 'postgres',
         'PASSWORD': '',
         'HOST': '',
@@ -101,6 +102,10 @@ TEMPLATE_DIRS = (
     'tardis_portal/templates/').replace('\\', '/'),
 )
 
+DOWNLOAD_PROVIDERS = (
+    ('vbl', 'tardis.tardis_portal.tests.mock_vbl_download'),
+)
+
 # Temporarily disable transaction management until everyone agrees that
 # we should start handling transactions
 DISABLE_TRANSACTION_MANAGEMENT = False
@@ -118,6 +123,10 @@ STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
 STAGING_PROTOCOL = 'ldap'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
+
+GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
+
+
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 
@@ -131,7 +140,7 @@ MEDIA_URL = '/site_media/'
 
 #set to empty tuple () for no apps
 #TARDIS_APPS = ('mrtardis', )
-TARDIS_APPS = ()
+TARDIS_APPS = ('equipment',)
 TARDIS_APP_ROOT = 'tardis.apps'
 
 if TARDIS_APPS:
@@ -153,6 +162,7 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
+    'django_nose',
     'south',
     'haystack',
     ) + apps
@@ -178,8 +188,17 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 #   backend implementation points to the actual backend implementation
 # We will assume that localdb will always be a default AUTH_PROVIDERS entry
 
-AUTH_PROVIDERS = (
-    ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+
+AUTH_PROVIDERS = (('localdb', 'Local DB',
+                  'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+                  ('vbl', 'VBL',
+                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
+                  ('ldap', 'LDAP',
+                   'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
+)
+
+DOWNLOAD_PROVIDERS = (
+    ('vbl', 'tardis.tardis_portal.tests.mock_vbl_download'),
 )
 
 # default authentication module for experiment ownership user during
@@ -234,8 +253,24 @@ SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+if not SINGLE_SEARCH_ENABLED:
+    HAYSTACK_ENABLE_REGISTRATIONS = False
+
 
 DEFAULT_INSTITUTION = "Monash University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = True
+
+# LDAP configuration
+LDAP_USE_TLS = False
+LDAP_URL = "ldap://localhost:38911/"
+LDAP_USER_LOGIN_ATTR = "uid"
+LDAP_USER_ATTR_MAP = {"givenName": "display", "mail": "email"}
+LDAP_GROUP_ID_ATTR = "cn"
+LDAP_GROUP_ATTR_MAP = {"description": "display"}
+#LDAP_ADMIN_USER = ''
+#LDAP_ADMIN_PASSWORD = ''
+LDAP_BASE = 'dc=example, dc=com'
+LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
+LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
