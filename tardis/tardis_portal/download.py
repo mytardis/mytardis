@@ -50,14 +50,14 @@ def download_datafile(request, datafile_id):
                                       str(expid),
                                       datafile.filename)
                 if not path.exists(file_path):
-                    logger.error('exp %s: file not not found: ' % (expid,
+                    logger.error('exp %s: file not found: %s ' % (expid,
                                                                   datafile.url))
                     return return_response_not_found(request)
 
         elif datafile.protocol in ['', 'file']:
             file_path = datafile.url.partition('://')[2]
             if not path.exists(file_path):
-                logger.error('exp %s: file not not found: ' % (expid,
+                logger.error('exp %s: file not found: %s' % (expid,
                                                                datafile.url))
                 return return_response_not_found(request)
 
