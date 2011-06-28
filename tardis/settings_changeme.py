@@ -140,7 +140,7 @@ MEDIA_URL = '/site_media/'
 
 #set to empty tuple () for no apps
 #TARDIS_APPS = ('mrtardis', )
-TARDIS_APPS = ('equipment',)
+TARDIS_APPS = ('equipment','hpctardis')
 TARDIS_APP_ROOT = 'tardis.apps'
 
 if TARDIS_APPS:
