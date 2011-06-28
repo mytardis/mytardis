@@ -4,6 +4,7 @@ from models import Dataset
 from models import Experiment
 from models import Dataset_File
 from models import DatafileParameter 
+from models import DatasetParameter
 from models import ExperimentParameter 
 from models import ParameterName
 
@@ -39,7 +40,7 @@ class DatasetFileIndex(SearchIndex):
         self.prepared_data = super(DatasetFileIndex, self).prepare(obj)
         self.prepared_data['text'] = obj.filename
 
-        for par in DatafileParameter.objects.filter(parameterset__datafile__pk=obj.pk).filter(name__is_searchable=True):
+        for par in DatafileParameter.objects.filter(parameterset__dataset_file__pk=obj.pk).filter(name__is_searchable=True):
         #for par_set in obj.datafileparameterset_set.all():
         #    for par in par_set.datafileparameter_set.filter(name__is_searchable=True):
             self.prepared_data['datasetfile_' + par.name.name] = par.string_value # TODO: add other fields
