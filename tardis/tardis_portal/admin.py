@@ -34,11 +34,36 @@ from django.contrib import admin
 from tardis.tardis_portal import models
 # from south.models import MigrationHistory
 
-admin.site.register(models.Experiment)
-admin.site.register(models.Dataset)
-admin.site.register(models.Dataset_File)
-admin.site.register(models.Schema)
-admin.site.register(models.ParameterName)
+class ExperimentAdmin(admin.ModelAdmin):
+    search_fields = ['title', 'id']
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    search_fields = ['description', 'experiment__id']
+
+
+class DatafileAdmin(admin.ModelAdmin):
+    search_fields = ['filename', 'dataset__experiment__id']
+
+
+class SchemaAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'namespace']
+
+
+class ParameterNameAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'schema__id']
+
+
+class ExperimentAclAdmin(admin.ModelAdmin):
+    search_fields = ['experiment__id']
+
+
+
+admin.site.register(models.Experiment, ExperimentAdmin)
+admin.site.register(models.Dataset, DatasetAdmin)
+admin.site.register(models.Dataset_File, DatafileAdmin)
+admin.site.register(models.Schema, SchemaAdmin)
+admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)
 admin.site.register(models.DatasetParameter)
 admin.site.register(models.Author_Experiment)
@@ -49,5 +74,5 @@ admin.site.register(models.DatasetParameterSet)
 admin.site.register(models.ExperimentParameterSet)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
-admin.site.register(models.ExperimentACL)
+admin.site.register(models.ExperimentACL, ExperimentAclAdmin)
 # admin.site.register(MigrationHistory)
