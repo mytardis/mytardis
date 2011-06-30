@@ -1526,11 +1526,17 @@ def retrieve_field_list(request):
              DatasetIndex.fields.items() + \
              DatasetFileIndex.fields.items()
     
+    users = User.objects.all()
+
+    usernames = [u.username for u in users]
+
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
     searchableFields = ([key for key,f in allFields if f.indexed == True and key is not 'text' ])
-    fieldList = ' '.join([str(fn) for fn in searchableFields])
     
+    auto_list = usernames + searchableFields 
+
+    fieldList = ' '.join([str(fn) for fn in auto_list])
     return HttpResponse(fieldList)
 
 @never_cache

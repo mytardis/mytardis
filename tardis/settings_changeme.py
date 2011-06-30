@@ -89,7 +89,9 @@ ROOT_URLCONF = 'tardis.urls'
 TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
                                'django.contrib.auth.context_processors.auth',
                                'django.core.context_processors.debug',
-                               'django.core.context_processors.i18n')
+                               'django.core.context_processors.i18n'
+                                'tardis.tardis_portal.context_processors.single_search_processor',
+                                )
 
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.

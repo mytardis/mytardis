@@ -4,24 +4,39 @@ from models import Dataset
 from models import Experiment
 from models import Dataset_File
 from models import DatafileParameter 
-from models import DatasetParameter
+from models import DatasetParameter 
 from models import ExperimentParameter 
 from models import ParameterName
 
+
+def _getDataType(param_name):
+    if param_name.isNumeric():
+        return IntegerField()
+    elif param_name.isDateTime():
+        return DateTimeField()
+    else:
+        return CharField()
+
+def _getParamValue(param):
+    if param.name.isNumeric():
+        return param.numeric_value 
+    elif param.name.isDateTime():
+        return param.datetime_value
+    else:
+        return param.string_value
 
 class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn.name for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-        #for dp in DatafileParameter.objects.filter(name__is_searchable=True):
-            attrs['datasetfile_' + n] = CharField()# (ExperimentIndex, 'experiment_' + pn.name,  CharField())
+        for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
+            attrs['datasetfile_' + n.name] = _getDataType(n)
         
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetFileIndex(SearchIndex):
     
-    #__metaclass__ = GetDatasetFileParameters
+    __metaclass__ = GetDatasetFileParameters
     
     text = CharField(document=True)
     datasetfile_filename  = CharField(model_attr='filename')
@@ -41,19 +56,15 @@ class DatasetFileIndex(SearchIndex):
         self.prepared_data['text'] = obj.filename
 
         for par in DatafileParameter.objects.filter(parameterset__dataset_file__pk=obj.pk).filter(name__is_searchable=True):
-        #for par_set in obj.datafileparameterset_set.all():
-        #    for par in par_set.datafileparameter_set.filter(name__is_searchable=True):
-            self.prepared_data['datasetfile_' + par.name.name] = par.string_value # TODO: add other fields
+            self.prepared_data['datasetfile_' + par.name.name] = _getParamValue(par) 
         return self.prepared_data
 
 class GetDatasetParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn.name for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
-        #for dp in DatasetParameter.objects.filter(name__is_searchable=True):
-            attrs['dataset_' + n] = CharField()# (ExperimentIndex, 'experiment_' + pn.name,  CharField())
-        
+        for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
+            attrs['dataset_' + n.name] = _getDataType(n)
         return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetIndex(SearchIndex):
@@ -75,20 +86,16 @@ class DatasetIndex(SearchIndex):
         self.prepared_data = super(DatasetIndex, self).prepare(obj)
         self.prepared_data['text'] = obj.description
 
-        #for name in [pn.name for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
         for par in DatasetParameter.objects.filter(parameterset__dataset__pk=obj.pk).filter(name__is_searchable=True):
-        #for par_set in obj.datasetparameterset_set.all():
-        #    for par in par_set.datasetparameter_set.filter(name__is_searchable=True):
-            self.prepared_data['dataset_'  + par.name.name] = par.string_value # TODO: add other fields
+            self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
         return self.prepared_data
 
 class GetExperimentParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn.name for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
-        #for ep in ExperimentParameter.objects.filter(name__is_searchable=True):
-            attrs['experiment_' + n] = CharField()# (ExperimentIndex, 'experiment_' + pn.name,  CharField())
+        for n in [pn for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
+            attrs['experiment_' + n.name] = _getDataType(n)
         
         return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
 
@@ -108,7 +115,7 @@ class ExperimentIndex(SearchIndex):
     experiment_institution_name=CharField(model_attr='institution_name')
     experiment_authors = MultiValueField()
 
-
+    # TODO fill out experiment_authors
     def prepare_experiment_authors(self, obj):
         return [a for a in obj.author_experiment_set.all()]
 
@@ -117,9 +124,7 @@ class ExperimentIndex(SearchIndex):
             self.prepared_data['text'] = ' '.join([obj.title, obj.description])
         
             for par in ExperimentParameter.objects.filter(parameterset__experiment__pk=obj.pk).filter(name__is_searchable=True):
-            #for par_set in obj.experimentparameterset_set.all():
-                #for par in par_set.experimentparameter_set.filter(name__is_searchable=True):
-                self.prepared_data['experiment_' + par.name.name] = par.string_value # TODO: add other fields
+                self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
             return self.prepared_data
 
 site.register(Dataset_File, DatasetFileIndex)
