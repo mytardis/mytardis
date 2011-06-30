@@ -19,7 +19,7 @@ def _getDataType(param_name):
 
 def _getParamValue(param):
     if param.name.isNumeric():
-        return param.numeric_value 
+        return param.numerical_value 
     elif param.name.isDateTime():
         return param.datetime_value
     else:
