@@ -11,7 +11,7 @@ from models import ParameterName
 
 def _getDataType(param_name):
     if param_name.isNumeric():
-        return IntegerField()
+        return FloatField()
     elif param_name.isDateTime():
         return DateTimeField()
     else:
