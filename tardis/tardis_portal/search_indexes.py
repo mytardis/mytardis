@@ -117,11 +117,13 @@ class ExperimentIndex(SearchIndex):
 
     # TODO fill out experiment_authors
     def prepare_experiment_authors(self, obj):
-        return [a for a in obj.author_experiment_set.all()]
+        return [a.author for a in obj.author_experiment_set.all()]
 
     def prepare(self,obj):
             self.prepared_data = super(ExperimentIndex, self).prepare(obj)
-            self.prepared_data['text'] = ' '.join([obj.title, obj.description])
+            text_list = [obj.title, obj.description]
+            text_list.extend(self.prepare_experiment_authors(obj))
+            self.prepared_data['text'] = ' '.join(text_list)
         
             for par in ExperimentParameter.objects.filter(parameterset__experiment__pk=obj.pk).filter(name__is_searchable=True):
                 self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
