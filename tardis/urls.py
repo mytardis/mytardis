@@ -8,6 +8,7 @@ from registration.views import register
 
 from tardis.tardis_portal.forms import RegistrationForm
 
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
@@ -93,6 +94,7 @@ ajax_urls = patterns(
         'add_dataset_par'),
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
+    (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^view/(?P<experiment_id>\d+)/publish/$',
         'publish_experiment'),
     )
@@ -183,6 +185,9 @@ urlpatterns = patterns(
     (r'^admin/', include(admin.site.urls)),
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
+    
+    # Search
+    (r'^search/$', 'tardis.tardis_portal.views.single_search'),
 
     # Apps
     (r'^apps/', include(apppatterns)),

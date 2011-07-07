@@ -52,6 +52,8 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from haystack.forms import SearchForm
+
 from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
@@ -1025,3 +1027,14 @@ def save_datafile_add_form(schema, parentObject, request):
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
+
+class RawSearchForm(SearchForm):
+    
+    def search(self):
+        #self.clean()
+        sqs = self.searchqueryset.raw_search(self.cleaned_data['q'])
+
+        if self.load_all:
+            sqs.load_all()
+
+        return sqs

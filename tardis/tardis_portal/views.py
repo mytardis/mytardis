@@ -41,7 +41,6 @@ from base64 import b64decode
 import urllib2
 from urllib import urlencode, urlopen
 from os import path
-
 import logging
 
 from django.template import Context
@@ -86,6 +85,9 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.publish.publishservice import PublishService
 
+from haystack.query import SearchQuerySet
+from tardis.tardis_portal.forms import RawSearchForm
+from haystack.views import SearchView
 
 logger = logging.getLogger(__name__)
 
@@ -264,6 +266,7 @@ def experiment_index(request):
 
 @authz.experiment_access_required
 def view_experiment(request, experiment_id):
+
     """View an existing experiment.
 
     :param request: a HTTP Request instance
@@ -295,6 +298,12 @@ def view_experiment(request, experiment_id):
     if 'error' in request.POST:
         c['error'] = request.POST['error']
 
+    if 'query' in request.GET:
+        c['query'] = request.GET['query']
+    
+    if  'load' in request.GET:
+        c['load'] = request.GET['load']
+        
     import sys
     appnames = []
     appurls = []
@@ -387,6 +396,7 @@ def experiment_description(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
+    
     """View a listing of dataset of an existing experiment as ajax loaded tab.
 
     :param request: a HTTP Request instance
@@ -412,9 +422,39 @@ def experiment_datasets(request, experiment_id):
         return return_response_not_found(request)
 
     c['experiment'] = experiment
-    c['datafiles'] = \
-        Dataset_File.objects.filter(dataset__experiment=experiment_id)
+   
 
+    if 'query' in request.GET:
+
+        # We've been passed a query to get back highlighted results.
+        # Only pass back matching datafiles
+        sqs = SearchQuerySet() 
+        
+        #raw_search doesn't chain...
+        results = sqs.raw_search(request.GET['query'])
+        matching_datasets = [d.object for d in results if 
+                d.model_name == 'dataset' and 
+                d.experiment_id_stored == int(experiment_id)
+                ]
+
+        matching_dataset_files = [d for d in results if 
+                d.model_name == 'dataset_file' and 
+                d.experiment_id_stored == int(experiment_id)
+                ]
+     
+        matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
+        matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
+        
+        c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
+        c['datasets'] = matching_datasets + matching_file_datasets 
+        c['highlighted_dataset_files'] = matching_dataset_file_pks 
+        c['query'] = request.GET['query']
+    else:
+        c['datasets'] = \
+            Dataset.objects.filter(experiment=experiment_id)
+        c['highlighted_datasets'] = None
+        c['highlighted_dataset_files'] = None
+    
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
@@ -867,7 +907,19 @@ def retrieve_datafile_list(request, dataset_id):
 
         has_write_permissions = \
             authz.has_write_permissions(request, experiment_id)
+    
+    if 'query' in request.GET:
+        sqs = SearchQuerySet()
 
+        results = sqs.raw_search(request.GET['query'])
+
+        dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+
+    else:
+        dsf_pks =  [r.pk for r in dataset_results]
+        highlighted_dsf_pks = []
+    
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
     c = Context({
@@ -877,6 +929,8 @@ def retrieve_datafile_list(request, dataset_id):
         'dataset_id': dataset_id,
         'filename_search': filename_search,
         'is_owner': is_owner,
+        'display_dataset_files':dsf_pks,
+        'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
         })
     return HttpResponse(render_response_index(request,
@@ -1437,7 +1491,6 @@ def search_datafile(request):
 @login_required()
 def retrieve_user_list(request):
     authMethod = request.GET['authMethod']
-
     if authMethod == localdb_auth_key:
         users = [userProfile.user for userProfile in
                  UserProfile.objects.filter(isDjangoAccount=True)]
@@ -1451,7 +1504,6 @@ def retrieve_user_list(request):
             users = sorted(users, key=lambda userAuth: userAuth.username)
         else:
             users = User.objects.none()
-    # print users
     userlist = ' '.join([str(u) for u in users])
     return HttpResponse(userlist)
 
@@ -1463,6 +1515,29 @@ def retrieve_group_list(request):
     grouplist = ' ~ '.join(map(str, Group.objects.all().order_by('name')))
     return HttpResponse(grouplist)
 
+def retrieve_field_list(request):
+    
+    from  tardis.tardis_portal.search_indexes import ExperimentIndex
+    from tardis.tardis_portal.search_indexes import DatasetIndex
+    from tardis.tardis_portal.search_indexes import DatasetFileIndex
+
+    # Get all of the fields in the indexes 
+    allFields = ExperimentIndex.fields.items() + \
+             DatasetIndex.fields.items() + \
+             DatasetFileIndex.fields.items()
+    
+    users = User.objects.all()
+
+    usernames = [u.username for u in users]
+
+    # Collect all of the indexed (searchable) fields, except
+    # for the main search document ('text')
+    searchableFields = ([key for key,f in allFields if f.indexed == True and key is not 'text' ])
+    
+    auto_list = usernames + searchableFields 
+
+    fieldList = ' '.join([str(fn) for fn in auto_list])
+    return HttpResponse(fieldList)
 
 @never_cache
 @authz.experiment_ownership_required
@@ -2273,6 +2348,67 @@ def add_par(request, parentObject, otype):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameteradd.html', c))
+
+class ExperimentSearchView(SearchView):
+    def __name__(self):
+        return "ExperimentSearchView"
+    
+    def extra_context(self):
+        extra = super(ExperimentSearchView, self).extra_context()
+        # Results may contain Experiments, Datasets and Dataset_Files.
+        # Group them into experiments, noting whether or not the search
+        # hits were in the Dataset(s) or Dataset_File(s)
+        results = self.results
+        
+        experiments = {}
+        for r in results:
+            if (r.model==Experiment):
+                i = int(r.pk)
+            else:
+                i = int(r.experiment_id_stored) 
+
+            if i not in experiments.keys():
+                experiments[i]= {}
+                experiments[i]['sr'] = r 
+                experiments[i]['dataset_hit'] = False 
+                experiments[i]['dataset_file_hit'] = False
+                experiments[i]['experiment_hit'] =False 
+
+            if r.model == Experiment:
+                experiments[i]['experiment_hit'] = True
+            elif r.model == Dataset:
+                experiments[i]['dataset_hit'] = True
+            elif r.model == Dataset_File:
+                experiments[i]['dataset_file_hit'] = True
+
+        extra['experiments'] = experiments
+        return extra
+    
+    # override SearchView's method in order to
+    # return a ResponseContext
+    def create_response(self):
+        (paginator, page) = self.build_page()
+        context = {
+                'query': self.query,
+                'form': self.form,
+                'page': page,
+                'paginator' : paginator,
+                }
+        context.update(self.extra_context())
+
+        return render_response_index(self.request, self.template, context)
+        #return render_to_response(self.template, context, context_instance=self.context_class(self.request))
+
+
+@login_required
+def single_search(request):
+    sqs = SearchQuerySet()
+    return ExperimentSearchView(
+            template = 'search/search.html',
+            searchqueryset=sqs,
+            form_class=RawSearchForm,
+            ).__call__(request)
+
 
 
 def rif_cs(request):

@@ -89,7 +89,9 @@ ROOT_URLCONF = 'tardis.urls'
 TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
                                'django.contrib.auth.context_processors.auth',
                                'django.core.context_processors.debug',
-                               'django.core.context_processors.i18n')
+                               'django.core.context_processors.i18n'
+                                'tardis.tardis_portal.context_processors.single_search_processor',
+                                )
 
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
@@ -151,7 +153,8 @@ INSTALLED_APPS = (
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
-    'south'
+    'south',
+    'haystack',
     ) + apps
 
 
@@ -224,6 +227,13 @@ UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 
 # Upload path that files are sent to
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+
+# Settings for the single search box
+# Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
+SINGLE_SEARCH_ENABLED = False 
+HAYSTACK_SITECONF = 'tardis.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'solr'
+HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 
 DEFAULT_INSTITUTION = "Monash University"
 
