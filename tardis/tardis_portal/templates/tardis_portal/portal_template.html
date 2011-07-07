@@ -40,6 +40,8 @@
 	<meta name="keywords" content="">
 	<meta name="description" content="">
 	{% include "tardis_portal/javascript_libraries.html" %}
+    {% include "tardis_portal/javascript_libraries.html" %} 
+
 	{% block script %}
 	{% endblock script %}
 
@@ -55,7 +57,33 @@
 	var pageTracker = _gat._getTracker("UA-5443750-1");
 	pageTracker._trackPageview();
 	} catch(err) {}
-        </script>
+   </script>
+
+	<script type="text/javascript">
+$(document).ready(function(){
+  var users = (function () {
+  var val = null;
+  var authMethod = "localdb";
+  var data = { authMethod: authMethod };
+  $.ajax({
+    'async': false,
+    'global': false,
+    'data': data,
+    'url': '/ajax/parameter_field_list',
+    'success': function (data) {
+       val = data;
+     }
+     });
+ return val;
+})();
+  
+$("#id_q").autocomplete(users.split(" "), {
+matchContains: true, multiple: true, multipleSeparator: " ", 
+});
+
+
+      });
+	</script>
 
 	      <script type="text/javascript">
 
@@ -112,7 +140,7 @@
   </div> <!-- end header -->
 
   <div id="headerbg">
-    <div id="headerloginstatus">
+    <div id="headerloginstatus" style="float: left">
       {% if is_authenticated %}
         Welcome,
         {% if is_superuser %}
@@ -125,7 +153,24 @@
 	  <a href="{% url registration.views.register %}"> [Register] </a>
 	  <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
       {% endif %}
-    </div> <!-- headerloginstatus -->
+  </div> <!-- headerloginstatus -->
+    {% if form %}
+    <div class="searchmenu" style="float: right">
+        <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
+        <table>
+        <tr>
+            <td>
+                <input type="submit" value="search">
+            </td>
+            <td>
+               <input type="text" name="q" id="id_q" />
+            </td>
+        </tr>
+        
+        </table>p
+        </form>
+    </div> <!-- searchmenu --> 
+    {% endif %}
   </div> <!-- headerbg -->
 
   <div id="page"> <!-- start page -->	

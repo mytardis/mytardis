@@ -1,0 +1,55 @@
+{% load experimentstats %}
+<table class="experiment-table">
+<tr>
+<th>
+  {% if result.experiment_hit %}
+  <span style="background-color: #FFFF00">
+  {% endif %}   
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-1">{{result.sr.experiment_title}}</a>
+
+  {% if result.experiment_hit %}
+  </span>
+  {% endif %}
+</th>
+</tr>
+<tr>
+<td>
+  From <strong>{{ result.sr.experiment_institution_name }} </strong>,
+  deposited <strong>{{ result.sr.experiment_created_time|date:"jS F Y" }} </strong>,
+  last modified <strong>{{ result.sr.experiment_update_time|date:"jS F Y" }} </strong>,
+</td>
+</tr>    
+{% if result.sr.experiment_start_time and result.sr.experiment_end_time %}
+<tr>
+<td>
+<strong>{{ result.sr.experiment_start_time|date:"jS F Y H:i" }}</strong>
+- <strong>{{ result.sr.experiment_end_time|date:"jS F Y H:i" }}</strong>
+</td>
+</tr>
+{% endif%}
+<tr>
+<td class="experiment-table_stats">
+  {% if result.dataset_hit %}
+  <span style="background-color: #FFFF00">
+  {% endif %}   
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+  <strong> {{result.sr.object.dataset_set.all.count}} </strong>
+  dataset{{result.sr.object.dataset_set.all.count|pluralize }}</strong>
+  </a>
+  {% if result.dataset_hit %}
+  </span>
+  {% endif %}
+containing
+  {% if result.dataset_file_hit %}
+  <span style="background-color: #FFFF00">
+  {% endif %}
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+<strong>{{ result.sr.object.id|experiment_file_count }}</strong>
+file{{ result.sr.object.id|experiment_file_count|pluralize }}
+</a>
+  </span>
+<br/>
+<br/>
+</td>
+</tr>
+</table>

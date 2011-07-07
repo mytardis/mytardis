@@ -63,7 +63,10 @@
       <div id="tabs">
 	<ul>
 	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-	  <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}">All Datasets ({{ experiment.dataset_set.count }})</a></li>
+      {% if query %}
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?query={{ query }}">Matching Datasets</a></li>
+      {% endif%}
 	  {% for appurl, appname in apps %}
 	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
 	  {% endfor %}
