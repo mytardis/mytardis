@@ -25,6 +25,32 @@ def _getParamValue(param):
     else:
         return param.string_value
 
+#
+# Overrides the index_queryset function of the basic
+# SearchIndex. index_queryset fetches a QuerySet for
+# haystack to index. If we're uinsg the OracleSafeManager
+# then a regular QuerySet fetched with objects.all will
+# be full of deferred models instances. One of the 
+# offshoots of this is that all the model instances 
+# will be proxy classes instances, with names like 
+# Experiment_Deferred_deferredField1_deferredField2 etc.
+# This breaks haystack as it checks that each index entry
+# returned by search is an instance of one of the 
+# models registered with the site (This list is generated
+# from static class properties and not instances so 
+# nothing will be deferred). It will look for
+# 'Experiment' for example, but finde Experiment_Deferred...
+# and will return an empty SearchQuerySet. 
+#
+# We fix this by un-deferring the QuerySets passed to 
+# Haystack. This doesn't seem to break anything (the 
+# indexing operation doesn't generate any UNIQUE calls
+# to the DB).
+#
+class OracleSafeIndex(SearchIndex):
+    def index_queryset(self):
+        return self.model._default_manager.all().defer(None)
+
 class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
@@ -67,7 +93,7 @@ class GetDatasetParameters(SearchIndex.__metaclass__):
             attrs['dataset_' + n.name] = _getDataType(n)
         return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
 
-class DatasetIndex(SearchIndex):
+class DatasetIndex(OracleSafeIndex):
     
     __metaclass__ = GetDatasetParameters
     
@@ -99,7 +125,7 @@ class GetExperimentParameters(SearchIndex.__metaclass__):
         
         return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
 
-class ExperimentIndex(SearchIndex):
+class ExperimentIndex(OracleSafeIndex):
     
     __metaclass__ = GetExperimentParameters
 
