@@ -446,15 +446,17 @@ def experiment_datasets(request, experiment_id):
         matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
         
         c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
-        c['datasets'] = matching_datasets + matching_file_datasets 
+        c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
         c['query'] = request.GET['query']
     else:
-        c['datasets'] = \
-            Dataset.objects.filter(experiment=experiment_id)
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = None
-    
+        c['file_matched_datasets'] = None
+
+    c['datasets'] = \
+         Dataset.objects.filter(experiment=experiment_id)
+
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
@@ -912,10 +914,11 @@ def retrieve_datafile_list(request, dataset_id):
         sqs = SearchQuerySet()
 
         results = sqs.raw_search(request.GET['query'])
-
+        
         dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+        
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
-
+    
     else:
         dsf_pks =  [r.pk for r in dataset_results]
         highlighted_dsf_pks = []
