@@ -7,7 +7,7 @@ from models import DatafileParameter
 from models import DatasetParameter 
 from models import ExperimentParameter 
 from models import ParameterName
-
+from django.db.utils import DatabaseError
 
 def _getDataType(param_name):
     if param_name.isNumeric():
@@ -55,9 +55,12 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-            attrs['datasetfile_' + n.name] = _getDataType(n)
-        
+        # catch 
+        try:    
+            for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
+                attrs['datasetfile_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetFileIndex(SearchIndex):
@@ -72,8 +75,8 @@ class DatasetFileIndex(SearchIndex):
     experiment_title_stored = CharField(model_attr='dataset__experiment__title', indexed=False)
     experiment_description_stored = CharField(model_attr='dataset__experiment__description', indexed=False)
     experiment_created_time_stored = DateTimeField(model_attr='dataset__experiment__created_time', indexed=False)
-    experiment_start_time_stored = DateTimeField(model_attr='dataset__experiment__start_time', indexed=False)
-    experiment_end_time_stored = DateTimeField(model_attr='dataset__experiment__end_time', indexed=False)
+    experiment_start_time_stored = DateTimeField(model_attr='dataset__experiment__start_time', indexed=False, default=None)
+    experiment_end_time_stored = DateTimeField(model_attr='dataset__experiment__end_time', indexed=False, default=None)
     experiment_institution_name_stored = CharField(model_attr='dataset__experiment__institution_name', indexed=False)
     experiment_update_time_stored = DateTimeField(model_attr='dataset__experiment__update_time', indexed=False)
     
@@ -89,8 +92,11 @@ class GetDatasetParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
-            attrs['dataset_' + n.name] = _getDataType(n)
+        try:
+            for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
+                attrs['dataset_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetIndex(OracleSafeIndex):
@@ -103,8 +109,8 @@ class DatasetIndex(OracleSafeIndex):
     experiment_title_stored = CharField(model_attr='experiment__title', indexed=False)
     experiment_description_stored = CharField(model_attr='experiment__description', indexed=False)
     experiment_created_time_stored = DateTimeField(model_attr='experiment__created_time', indexed=False)
-    experiment_start_time_stored = DateTimeField(model_attr='experiment__start_time', indexed=False)
-    experiment_end_time_stored = DateTimeField(model_attr='experiment__end_time', indexed=False)
+    experiment_start_time_stored = DateTimeField(model_attr='experiment__start_time', indexed=False, default=None)
+    experiment_end_time_stored = DateTimeField(model_attr='experiment__end_time', indexed=False, default=None)
     experiment_institution_name_stored = CharField(model_attr='experiment__institution_name', indexed=False)
     experiment_update_time_stored = DateTimeField(model_attr='experiment__update_time', indexed=False)
     
@@ -120,8 +126,11 @@ class GetExperimentParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
-            attrs['experiment_' + n.name] = _getDataType(n)
+        try:
+            for n in [pn for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
+                attrs['experiment_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         
         return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
 
@@ -133,10 +142,10 @@ class ExperimentIndex(OracleSafeIndex):
     experiment_description = CharField(model_attr='description')
     experiment_title = CharField(model_attr='title')
     experiment_created_time = DateTimeField(model_attr='created_time')
-    experiment_start_time = DateTimeField(model_attr='start_time')
-    experiment_end_time = DateTimeField(model_attr='end_time')
-    experiment_update_time = DateTimeField(model_attr='update_time')
-    experiment_institution_name = CharField(model_attr='institution_name')
+    experiment_start_time = DateTimeField(model_attr='start_time', default=None)
+    experiment_end_time = DateTimeField(model_attr='end_time', default=None)
+    experiment_update_time = DateTimeField(model_attr='update_time', default=None)
+    experiment_institution_name = CharField(model_attr='institution_name', default=None)
     experiment_creator=CharField(model_attr='created_by__username')
     experiment_institution_name=CharField(model_attr='institution_name')
     experiment_authors = MultiValueField()
