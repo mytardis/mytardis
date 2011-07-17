@@ -7,7 +7,7 @@ from models import DatafileParameter
 from models import DatasetParameter 
 from models import ExperimentParameter 
 from models import ParameterName
-
+from django.db.utils import DatabaseError
 
 def _getDataType(param_name):
     if param_name.isNumeric():
@@ -55,9 +55,12 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-            attrs['datasetfile_' + n.name] = _getDataType(n)
-        
+        # catch 
+        try:    
+            for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
+                attrs['datasetfile_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetFileIndex(SearchIndex):
@@ -89,8 +92,11 @@ class GetDatasetParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
-            attrs['dataset_' + n.name] = _getDataType(n)
+        try:
+            for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
+                attrs['dataset_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetIndex(OracleSafeIndex):
@@ -120,8 +126,11 @@ class GetExperimentParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        for n in [pn for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
-            attrs['experiment_' + n.name] = _getDataType(n)
+        try:
+            for n in [pn for pn in ParameterName.objects.all() if pn.experimentparameter_set.count() and pn.is_searchable is True]:
+                attrs['experiment_' + n.name] = _getDataType(n)
+        except DatabaseError:
+            pass
         
         return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
 
