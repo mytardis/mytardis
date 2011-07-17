@@ -33,7 +33,7 @@
   {% if result.dataset_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}   
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-2">
   <strong> {{result.sr.object.dataset.experiment.dataset_set.all.count}} </strong>
   dataset{{result.sr.object.dataset.experiment.dataset_set.all.count|pluralize }}</strong>
   </a>
@@ -44,7 +44,7 @@ containing
   {% if result.dataset_file_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-2">
 <strong>{{ result.sr.experiment_id_stored|experiment_file_count }}</strong>
 file{{ result.sr.experiment_id_stored|experiment_file_count|pluralize }}
 </a>
