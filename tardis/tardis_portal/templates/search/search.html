@@ -35,20 +35,7 @@ $("#id_q").result(function(event, ui){
 {% block content %}
     <div id = "content">
       <div class="post">
-<!--    <h1 class="title">Single Search Box</h1>
-    <div class="searchmenu" style="padding-left: 10px">
-        <form method="get" action=".">
-        <table>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-                <input type="submit" value="search">
-            </td>
-        </tr>
-        </table>
-        </form>
-    </div> <!-- searchmenu --> 
-    <div class="entry">
+       <div class = "entry">  
     {% if query %}
     <h2>Search Results for <em>{{ query }}</em></h2>
       {% for key, result in experiments.items %}
