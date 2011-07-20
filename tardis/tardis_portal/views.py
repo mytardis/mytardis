@@ -2256,7 +2256,7 @@ def edit_parameters(request, parameterset, otype):
         form = DynamicForm()
 
     c = Context({
-        'schema': parameterset.schema.namespace,
+        'schema': parameterset.schema,
         'form': form,
         'parameternames': parameternames,
         'type': otype,
@@ -2274,7 +2274,8 @@ def add_datafile_par(request, datafile_id):
     parentObject = Dataset_File.objects.get(id=datafile_id)
     if authz.has_write_permissions(request,
                                    parentObject.dataset.experiment.id):
-        return add_par(request, parentObject, otype="datafile")
+        return add_par(request, parentObject, otype="datafile",
+                stype=Schema.DATAFILE)
     else:
         return return_response_error(request)
 
@@ -2283,7 +2284,8 @@ def add_datafile_par(request, datafile_id):
 def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
     if authz.has_write_permissions(request, parentObject.experiment.id):
-        return add_par(request, parentObject, otype="dataset")
+        return add_par(request, parentObject, otype="dataset",
+                stype=Schema.DATASET)
     else:
         return return_response_error(request)
 
@@ -2292,14 +2294,15 @@ def add_dataset_par(request, dataset_id):
 def add_experiment_par(request, experiment_id):
     parentObject = Experiment.objects.get(id=experiment_id)
     if authz.has_write_permissions(request, parentObject.id):
-        return add_par(request, parentObject, otype="experiment")
+        return add_par(request, parentObject, otype="experiment",
+                stype=Schema.EXPERIMENT)
     else:
         return return_response_error(request)
 
 
-def add_par(request, parentObject, otype):
-
-    all_schema = Schema.objects.all()
+def add_par(request, parentObject, otype, stype):
+        
+    all_schema = Schema.objects.filter(type=stype)
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
