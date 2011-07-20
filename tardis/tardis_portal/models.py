@@ -832,7 +832,7 @@ class DatafileParameter(models.Model):
         return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
-        ordering = ['id']
+        ordering = ['name']
 
 
 class DatasetParameter(models.Model):
@@ -854,7 +854,7 @@ class DatasetParameter(models.Model):
         return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
-        ordering = ['id']
+        ordering = ['name']
 
 
 class ExperimentParameter(models.Model):
@@ -875,7 +875,7 @@ class ExperimentParameter(models.Model):
         return 'Experiment Param: %s=%s' % (self.name.name, self.get())
 
     class Meta:
-        ordering = ['id']
+        ordering = ['name']
 
 
 def pre_save_parameter(sender, **kwargs):
