@@ -1965,9 +1965,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
         except UserAuthentication.DoesNotExist:
             transaction.rollback()
             return HttpResponse('User %s does not exist' % (admin))
-        except UserAuthentication.DoesNotExist:
-            transaction.rollback()
-            return return_response_error(request)
 
         # create admin for this group and add it to the group
         groupadmin = GroupAdmin(user=adminuser, group=group)
@@ -1986,11 +1983,12 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    transaction.commit()
     c = Context({'group': group,
                  'experiment_id': experiment_id})
-    return HttpResponse(render_response_index(request,
+    response = HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
+    transaction.commit()
+    return response
 
 
 @never_cache
