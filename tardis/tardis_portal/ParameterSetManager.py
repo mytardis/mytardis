@@ -8,6 +8,9 @@ from tardis.tardis_portal.models import DatasetParameter
 from tardis.tardis_portal.models import DatafileParameter
 from tardis.tardis_portal.models import ExperimentParameter
 from tardis.tardis_portal.models import Schema
+from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Dataset
+from tardis.tardis_portal.models import Dataset_File
 
 
 class ParameterSetManager(object):
@@ -20,6 +23,16 @@ class ParameterSetManager(object):
     # delete dataset creation code
     # make parameterset / object arguments generic and test type
     # create function to return generic parameter type for setting/getting
+    #
+    # 2011/07/20 (Ryan Braganza)
+    # changed type checking from:
+    #     type(self.parameterset).__name__ == 'ClassName'
+    # to:
+    #     isinstance(self.parameterset, Class)
+    # This is to solve an issue with models using deferred fields.
+    # When using deferred fields, a subclass is used, so the class name
+    # will not match when using type(self.parameterset).__name__
+    # isinstance deals with inheritance appropriately here
     def __init__(self, parameterset=None, parentObject=None,
                  schema=None):
         """
@@ -35,19 +48,19 @@ class ParameterSetManager(object):
             self.schema = self.parameterset.schema
             self.namespace = self.schema.namespace
 
-            if type(self.parameterset).__name__ == "DatafileParameterSet":
+            if isinstance(self.parameterset, DatafileParameterSet):
                 self.parameters = DatafileParameter.objects.filter(\
                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatafileParameter
 
-            elif type(self.parameterset).__name__ == "DatasetParameterSet":
+            elif isinstance(self.parameterset, DatasetParameterSet):
                 self.parameters = DatasetParameter.objects.filter(\
                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatasetParameter
 
-            elif type(self.parameterset).__name__ == "ExperimentParameterSet":
+            elif isinstance(self.parameterset, ExperimentParameterSet):
                 self.parameters = ExperimentParameter.objects.filter(\
                    parameterset=self.parameterset).order_by('name__full_name')
 
@@ -60,7 +73,7 @@ class ParameterSetManager(object):
 
             self.namespace = schema
 
-            if type(parentObject).__name__ == "Dataset_File":
+            if isinstance(parentObject, Dataset_File):
                 self.parameterset = DatafileParameterSet(
                     schema=self.get_schema(), dataset_file=parentObject)
 
@@ -71,7 +84,7 @@ class ParameterSetManager(object):
 
                 self.blank_param = DatafileParameter
 
-            elif type(parentObject).__name__ == "Dataset":
+            elif isinstance(parentObject, Dataset):
                 self.parameterset = DatasetParameterSet(
                     schema=self.get_schema(), dataset=parentObject)
 
@@ -82,7 +95,7 @@ class ParameterSetManager(object):
 
                 self.blank_param = DatasetParameter
 
-            elif type(parentObject).__name__ == "Experiment":
+            elif isinstance(parentObject, Experiment):
                 self.parameterset = ExperimentParameterSet(
                     schema=self.get_schema(), experiment=parentObject)
 
@@ -95,7 +108,7 @@ class ParameterSetManager(object):
 
             else:
                 raise TypeError("Invalid parent object." +
-                    "Must be an experiment/dataset/datafile")
+                    "Must be an experiment/dataset/datafile not " + str(type(parentObject)))
 
         else:
             raise TypeError("Missing arguments")
