@@ -739,7 +739,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     try:
         auth_key = settings.DEFAULT_AUTH
     except AttributeError:
-        logger.error('no default authentication for experiment ownership set')
+        logger.error('no default authentication for experiment ownership set (settings.DEFAULT_AUTH)')
 
     if auth_key:
         for owner in owners:
