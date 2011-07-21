@@ -47,7 +47,7 @@ def _getParamValue(param):
 # indexing operation doesn't generate any UNIQUE calls
 # to the DB).
 #
-class OracleSafeIndex(SearchIndex):
+class OracleSafeIndex(RealTimeSearchIndex):
     def index_queryset(self):
         return self.model._default_manager.all().defer(None)
 
@@ -63,7 +63,7 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
             pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
-class DatasetFileIndex(SearchIndex):
+class DatasetFileIndex(RealTimeSearchIndex):
     
     __metaclass__ = GetDatasetFileParameters
     
