@@ -1,56 +1,27 @@
-{# {% include "tardis_portal/javascript_libraries.html" %} #}
 {% load formfieldfilters %}
+<script type="text/javascript">
+    // This could be better placed inside each jqModal call as an onHide callback
+    $('.jqmClose').unbind('click.close').bind('click.close', function(){
+        {% if type == "datafile" %}
+        var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.datafile');
+        var toggle = parentdatafile.find('.datafile_info_toggle');	
+            
+        toggle.text('[Hide]');
+        toggle.next().show();
+        toggle.next().html(loadingHTML);
+        toggle.next().load(toggle.attr("href"));				
+        {% endif %}		
 
-<script type="text/javascript" charset="utf-8">
-	
-	$('.jqmClose').click(function(){
-			
-		// var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.datafile');
-		// var href = parentdatafile.children('.datafile_info_toggle').attr("href");
-		// parentdatafile.children('.datafile_info_toggle').text('[Hide]');
-		// parentdatafile.children('.datafile_info').show();		
-		// parentdatafile.children('.datafile_info').html(loadingHTML);
-		// parentdatafile.children('.datafile_info').load(href);
-		
-		{% if type == "datafile" %}
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.datafile');
-		var toggle = parentdatafile.find('.datafile_info_toggle');	
-			
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));				
-		{% endif %}		
+        {% if type == "dataset" %}		
+        var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.dataset');
+        var toggle = parentdatafile.find('.dataset_metadata_toggle');	
 
-		{% if type == "dataset" %}		
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.dataset');
-		var toggle = parentdatafile.find('.dataset_metadata_toggle');	
-	
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));	
-		{% endif %}		
-
-		{% if type == "experiment" %}	
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.experiment_md_container');
-		var toggle = parentdatafile.find('.experiment_metadata_toggle');
-		
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));		
-		{% endif %}						
-		
-		// var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.experiment_md_container');
-		// var href = parentdatafile.children('.experiment_metadata_toggle').attr("href");
-		// parentdatafile.children('.experiment_metadata_toggle').text('[Hide]');
-		// parentdatafile.children('.experiment_metadata_toggle').next().show();
-		// parentdatafile.children('.experiment_metadata').html(loadingHTML);
-		// parentdatafile.children('.experiment_metadata').load(href);
-			// yeah perhaps I shouldn't let this try and find and fail silently..
-
-	});	
+        toggle.text('[Hide]');
+        toggle.next().show();
+        toggle.next().html(loadingHTML);
+        toggle.next().load(toggle.attr("href"));	
+        {% endif %}		
+    });	
 </script>
 
 {% if success %}
@@ -117,22 +88,17 @@
 						
 					return false;
 		      });
-
 		return false;
-		
 	});
 	
-		$('#add_form_{{type}}_{{parentObject.id}}').submit(function(e) {
-			e.preventDefault();
+    $('#add_form_{{type}}_{{parentObject.id}}').submit(function(e) {
+        e.preventDefault();
 
-			$.post("/ajax/add_{{type}}_parameters/{{parentObject.id}}/?schema_id={{schema_id}}", $("#add_form_{{type}}_{{parentObject.id}}").serialize(),
-			      function( data ) {
-			          $("#jqmAlertContent{{type}}A{{parentObject.id}}").html( data );					
-							
-						return false;
-			      });
-
-			return false;
-		});
+        $.post("/ajax/add_{{type}}_parameters/{{parentObject.id}}/?schema_id={{schema_id}}", $("#add_form_{{type}}_{{parentObject.id}}").serialize(), function( data ) {
+            $("#jqmAlertContent{{type}}A{{parentObject.id}}").html( data );					
+            return false;
+        });
+        return false;
+    });
 	</script>
 {% endif %}

@@ -119,6 +119,18 @@ matchContains: true, multiple: true, multipleSeparator: " ",
 			
 	      </script>
 
+{# icons #}
+<script type="text/javascript">
+jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
+    if (evt.type == 'mouseover') {
+        jQuery(this).addClass('ui-state-hover');
+    } else {
+        jQuery(this).removeClass('ui-state-hover');
+    }
+}
+);
+</script>
+
 </head>
 
 <body>
