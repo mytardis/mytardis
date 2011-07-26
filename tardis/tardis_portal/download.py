@@ -39,31 +39,45 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
 
-        elif datafile.protocol == 'tardis':
+        elif datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
+            raw_path = url.partition('//')[2]
             file_path = path.join(settings.FILE_STORE_PATH,
                                   str(expid),
                                   str(datafile.dataset.id),
-                                  datafile.filename)
+                                  raw_path)
+            try:
 
-            if not path.exists(file_path):
-                file_path = path.join(settings.FILE_STORE_PATH,
-                                      str(expid),
-                                      datafile.filename)
-                if not path.exists(file_path):
-                    logger.error('exp %s: file not found: %s ' % (expid,
-                                                                  datafile.url))
-                    return return_response_not_found(request)
+                wrapper = FileWrapper(file(file_path))
+                response = HttpResponse(wrapper,
+                                        mimetype=datafile.get_mimetype())
+                response['Content-Disposition'] = \
+                    'attachment; filename="%s"' % datafile.filename
+                return response
+
+            except IOError:
+                try:
+                    file_path = path.join(settings.FILE_STORE_PATH,
+                                          str(expid),
+                                          raw_path)
+                    print file_path
+                    wrapper = FileWrapper(file(file_path))
+                    response = HttpResponse(wrapper,
+                                            mimetype=datafile.get_mimetype())
+                    response['Content-Disposition'] = \
+                        'attachment; filename="%s"' % datafile.filename
+                    return response
+                except IOError:
+                    return return_response_not_found(request)               
 
         elif datafile.protocol in ['', 'file']:
             file_path = datafile.url.partition('://')[2]
             if not path.exists(file_path):
-                logger.error('exp %s: file not found: %s' % (expid,
-                                                               datafile.url))
+
                 return return_response_not_found(request)
 
         else:
-            logger.error('exp %s: file protocol unknown: %s' % (expid,
-                                                                datafile.url))
+#            logger.error('exp %s: file protocol unknown: %s' % (expid,
+#                                                                datafile.url))
             return return_response_not_found(request)
 
     else:
@@ -96,14 +110,27 @@ def download_datafile_ws(request):
 
             try:
                 wrapper = FileWrapper(file(file_path))
+
                 response = HttpResponse(wrapper,
                                         mimetype=datafile.get_mimetype())
                 response['Content-Disposition'] = \
                     'attachment; filename="%s"' % datafile.filename
+
                 return response
 
             except IOError:
-                return return_response_not_found(request)
+                try:
+                    file_path = datafile.get_absolute_filepath_old()
+                    wrapper = FileWrapper(file(file_path))
+
+                    response = HttpResponse(wrapper,
+                                            mimetype=datafile.get_mimetype())
+                    response['Content-Disposition'] = \
+                        'attachment; filename="%s"' % datafile.filename
+
+                    return response
+                except IOError:
+                    return return_response_not_found(request)
 
         else:
             return return_response_not_found(request)
@@ -185,9 +212,25 @@ def download_datafiles(request):
                             protocols += [p]
                         absolute_filename = datafile.url.partition('//')[2]
                         if(datafile.url.partition('//')[0] == 'tardis:'):
-                            fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+                            #temp fix for old data
+                            filepath = '\"%s/%s/%s\" ' % (expid, str(datafile.dataset.id),
+                                absolute_filename)
+
+                            print filepath + "######"
+
+                            try:
+                                wrapper = FileWrapper(file(
+                                    datafile.get_absolute_filepath()))\
+                                #exists test. os.exists broken
+                            except IOError:
+                                print "OLD FILE DETECTED"
+                                filepath = '%s/%s ' % (expid, absolute_filename)
+
+                            fileString += ('\"' + filepath + '\"" ')
+                            print fileString
                         else:
-                            fileString += '%s/%s ' % (expid, absolute_filename)
+                            fileString += '\"%s/\"%s" ' % (expid, absolute_filename)
+
 
             for dfid in datafiles:
                 datafile = Dataset_File.objects.get(pk=dfid)
@@ -200,9 +243,24 @@ def download_datafiles(request):
                         protocols += [p]
                     absolute_filename = datafile.url.partition('//')[2]
                     if(datafile.url.partition('//')[0] == 'tardis:'):
-                        fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+                        #temp fix for old data
+                        filepath = '\"%s/%s/%s\" ' % (expid, str(datafile.dataset.id),
+                            absolute_filename)
+
+                        print filepath + "######"
+
+                        try:
+                            wrapper = FileWrapper(file(
+                                datafile.get_absolute_filepath()))\
+                            #exists test. os.exists broken
+                        except IOError:
+                            print "OLD FILE DETECTED"
+                            filepath = '\"%s/\"%s ' % (expid, absolute_filename)
+
+                        fileString += filepath
+                        print fileString
                     else:
-                        fileString += '%s/%s ' % (expid, absolute_filename)
+                        fileString += '\"%s/\"%s ' % (expid, absolute_filename)
         else:
             return return_response_not_found(request)
 
@@ -213,7 +271,8 @@ def download_datafiles(request):
                 url = urllib.unquote(url)
                 raw_path = url.partition('//')[2]
                 experiment_id = request.POST['expid']
-                datafile = Dataset_File.objects.filter(url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
+                datafile = Dataset_File.objects.filter(url__endswith=raw_path,
+                    dataset__experiment__id=experiment_id)[0]
                 if has_datafile_access(request=request,
                                        dataset_file_id=datafile.id):
                     p = datafile.protocol
@@ -222,9 +281,25 @@ def download_datafiles(request):
                     absolute_filename = datafile.url.partition('//')[2]
                     if(datafile.url.partition('//')[0] == 'tardis:'):
                         # expects tardis: formatted stuff to not include dataset id
-                        fileString += '%s/%s/%s ' % (expid, str(datafile.dataset.id), absolute_filename)
+
+                        #temp fix for old data
+                        filepath = '%s/%s/%s ' % (expid, str(datafile.dataset.id),
+                            absolute_filename)
+
+                        print filepath + "######"
+
+                        try:
+                            wrapper = FileWrapper(file(
+                                datafile.get_absolute_filepath()))\
+                            #exists test. os.exists broken
+                        except IOError:
+                            print "OLD FILE DETECTED"
+                            filepath = '%s/%s ' % (expid, absolute_filename)
+
+                        fileString += ('\"' + filePath + '\" ')
+                        print fileString
                     else:
-                        fileString += '%s/%s ' % (expid, absolute_filename)
+                        fileString += '\"%s/%s\" ' % (expid, absolute_filename)
         else:
             return return_response_not_found(request)
     else:
@@ -272,7 +347,6 @@ def download_datafiles(request):
         else:
             cmd = 'cd %s; zip -r - %s' % (settings.FILE_STORE_PATH,
                                        fileString)
-
             # logger.info(cmd)
             response = \
                 HttpResponse(FileWrapper(subprocess.Popen(cmd,
