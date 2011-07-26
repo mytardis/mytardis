@@ -156,14 +156,16 @@ class ExperimentIndex(OracleSafeIndex):
     def prepare(self,obj):
         self.prepared_data = super(ExperimentIndex, self).prepare(obj)
         beamline = '' 
+        
         try:
            ep = ExperimentParameter.objects.get(name__name='beamline', parameterset__experiment__id=obj.id, name__is_searchable=True)
            beamline = ep.string_value
         except:
  	    # No beamline soft paramter set for this experiment
             print 'skipping beamline index for experiment id %d (no beamline parameter sepecified)' % (obj.id)
-
-        text_list = [obj.title, obj.description, beamline]
+        text_list = [obj.title, obj.description]
+        if beamline:
+            text_list.extend(beamline)
         text_list.extend(self.prepare_experiment_authors(obj))
         self.prepared_data['text'] = ' '.join(text_list)
 
