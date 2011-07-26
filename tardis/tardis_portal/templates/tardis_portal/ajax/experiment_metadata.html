@@ -20,11 +20,13 @@
 	<script type="text/javascript">
 	$('#jqmAlertExp{{parameterset.id}}').unbind();
 	$('#jqmAlertExp{{parameterset.id}}').jqm({
-	  trigger: ".jqModalExp{{parameterset.id}}",
-	  ajax: '@href',
-	  target: '#jqmAlertContentexperiment{{parameterset.id}}',
-	  overlay: 0
-	  });
+	    trigger: ".jqModalExp{{parameterset.id}}",
+	    ajax: '@href',
+	    target: '#jqmAlertContentexperiment{{parameterset.id}}',
+	    overlay: 0,
+        closeClass: 'jqmClose',
+        onHide: refreshMetadataDisplay
+	});
 	</script>
 
 	<div class="jqmAlert" id="jqmAlertExp{{parameterset.id}}">
