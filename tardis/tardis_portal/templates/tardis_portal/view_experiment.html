@@ -9,40 +9,82 @@
 	
 	function get_new_parameter_name(name)
 	{
-		new_name = name
+		var new_name = name;
 
-		i = 1
+		var i = 1;
 		while($("input[name=" + new_name + "__" + i + "]").length == 1)
 		{
-			i = i + 1
+			i++;
 		}
-		return new_name + "__" + i
+		return new_name + "__" + i;
 	}
 
 	function get_form_input_html(label, name)
 	{
-		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>'
+		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>';
 	}
 
-</script>
+	$('#schemaselect').live('change', function(e) {
+		e.preventDefault();
 
-  <script type="text/javascript">
-	$(document).ready(function() {
-	$("#tabs").tabs({
-	    ajaxOptions: {dataType: "html"},
-	    cookie: { expires: 30 },
+        var $this = $(this);
+        var $jqm_content_div = $this.closest('.jqmAlertContent');
+
+        var type = $this.attr('data-type');
+        var parent_object_id = $this.attr('data-parent_object_id');
+        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
+		$.get(href, function(data) {
+            $jqm_content_div.html(data);
+            return false;
+        });
+		return false;
 	});
+	$('#add_new_parameter').live('click', function(){		
+        var $this = $(this);
+        var $form = $this.closest('form');
+        var type = $form.attr('data-type');
+        var parent_object_id = $form.attr('data-parent_object_id');
 
-	  // Close Button Highlighting. IE doesn't support :hover. Surprise?
-	  if($.browser.msie) {
-	  $('div.jqmAlert .jqmClose')
-	  .hover(
-	    function(){ $(this).addClass('jqmCloseHover'); },
-	    function(){ $(this).removeClass('jqmCloseHover'); });
-	  }
+		$("#parameternameselect_" + type + "_" + parent_object_id + ">option:selected").each(function() {
+            var $selected_option = $(this);
+			var new_element_name = get_new_parameter_name($selected_option.val());
+			$("#parameternameselect_" + type + "_" + parent_object_id).before(get_form_input_html($selected_option.text(), new_element_name));
+			$("#" + new_element_name).focus();
+		});
+	});
+    $('#add_metadata_form').live('submit', function(e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var form_data = $form.serialize();
+
+        var schema_id = $('#schemaselect').val();
+        var $jqm_content_div = $form.closest('.jqmAlertContent');
+        var type = $form.attr('data-type');
+        var parent_object_id = $form.attr('data-parent_object_id');
+        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
+        $.post(href, form_data, function(data) {
+            $jqm_content_div.html(data);
+        });
+        return false;
+    });
+
+	$(document).ready(function() {
+        $("#tabs").tabs({
+            ajaxOptions: {dataType: "html"},
+            cookie: { expires: 30 },
+        });
+
+        // Close Button Highlighting. IE doesn't support :hover. Surprise?
+        if($.browser.msie) {
+            $('div.jqmAlert .jqmClose').hover(
+                function(){ $(this).addClass('jqmCloseHover'); },
+                function(){ $(this).removeClass('jqmCloseHover');}
+            );
+        }
 
     });
-  </script>
+</script>
 
 {% endblock %}
 

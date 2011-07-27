@@ -58,10 +58,6 @@
 		parentdatafile.children('.dataset_metadata').html(loadingHTML);
 		parentdatafile.children('.dataset_metadata').load(href);
 		
-		var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.experiment_md_container');
-		var href = parentdatafile.children('.experiment_metadata_toggle').attr("href");
-		parentdatafile.children('.experiment_metadata').html(loadingHTML);
-		parentdatafile.children('.experiment_metadata').load(href);		
 	});
 	
 		$('#edit_form_{{type}}_{{parameterset_id}}').submit(function(e) {
