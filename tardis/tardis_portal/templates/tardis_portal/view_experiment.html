@@ -35,20 +35,14 @@
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
 		$.get(href, function(data) {
             $jqm_content_div.html(data);
-            return false;
         });
 		return false;
 	});
 	$('#add_new_parameter').live('click', function(){		
-        var $this = $(this);
-        var $form = $this.closest('form');
-        var type = $form.attr('data-type');
-        var parent_object_id = $form.attr('data-parent_object_id');
-
-		$("#parameternameselect_" + type + "_" + parent_object_id + ">option:selected").each(function() {
+		$("#parameternameselect > option:selected").each(function() {
             var $selected_option = $(this);
 			var new_element_name = get_new_parameter_name($selected_option.val());
-			$("#parameternameselect_" + type + "_" + parent_object_id).before(get_form_input_html($selected_option.text(), new_element_name));
+			$("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name));
 			$("#" + new_element_name).focus();
 		});
 	});
@@ -68,11 +62,34 @@
         });
         return false;
     });
+    $('#edit_metadata_form').live('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+
+        $.post($form.attr('action'), $form.serialize(), function(data) {
+              $('#jqmAlertExpEdit div.jqmAlertContent').html(data);
+        });
+        return false;
+    });
+
+    function refreshMetadataDisplay(hash){
+        var $trigger = $(hash.t);
+        var $toggle = $($trigger.attr('data-toggle_selector'));
+        if ($toggle.hasClass('metadata_shown')) {
+            $toggle.click(); // hide
+            $toggle.click(); // show
+            // outcome is a refresh
+        } else {
+            $toggle.click(); // show
+        }
+        hash.w.fadeOut();
+        hash.w.css('opacity', '100%'); // must be set otherwise popup will be displayed but not visible the second time
+    }
 
 	$(document).ready(function() {
         $("#tabs").tabs({
             ajaxOptions: {dataType: "html"},
-            cookie: { expires: 30 },
+            cookie: { expires: 30 }
         });
 
         // Close Button Highlighting. IE doesn't support :hover. Surprise?
@@ -83,12 +100,110 @@
             );
         }
 
+        $('#jqmAlertExpAdd, #jqmAlertExpEdit').jqm({
+            ajax: '@href',
+            target: '.jqmAlertContent',
+            overlay: false,
+            closeClass: 'jqmClose',
+            onHide: refreshMetadataDisplay
+        });
+
     });
+
+	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br />";
+	// metadata text / ajax toggle
+    $(".dataset_metadata_toggle").live('click', function(e){
+        var $this = $(this);
+        var $dataset_metadata = $this.next();
+        var $icon = $this.find('span');
+
+        $this.toggleClass('metadata_shown metadata_hidden');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        if($this.hasClass('metadata_shown')) {
+            var href= $this.attr("href");
+
+            $dataset_metadata.html(loadingHTML);
+            $dataset_metadata.load(href);
+            $dataset_metadata.show();
+        } else {
+            $dataset_metadata.hide();
+        }
+        return false;
+    });
+    $(".experiment_metadata_toggle").live('click', function(e){
+        var $this = $(this);
+        var $experiment_metadata = $('.experiment_metadata');
+        var $icon = $this.find('span');
+
+        $this.toggleClass('metadata_shown metadata_hidden');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        if($this.hasClass('metadata_shown')) {
+            var href= $this.attr("href");
+
+            $experiment_metadata.html(loadingHTML);
+            $experiment_metadata.load(href);
+            $experiment_metadata.show();
+        } else {
+            $experiment_metadata.hide();
+        }
+        return false;
+    });
+    $('#expAddTrigger').live('click', function(evt){
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpAdd').jqmShow(this); 
+    });
+    $('.jqModalExpEdit').live('click', function(evt){
+        evt.preventDefault();
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpEdit').jqmShow(this); 
+    });
+    $('.jqModalDsEdit').live('click', function(evt) {
+        evt.preventDefault();
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpEdit').jqmShow(this); 
+    });
+    $('.jqModalDsAdd').live('click', function(evt) {
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpAdd').jqmShow(this); 
+    });
+
 </script>
 
 {% endblock %}
 
 {% block fullpage %}
+
+   <div class="jqmAlert" id="jqmAlertExpAdd">
+
+       <div class="jqmAlertWindow">
+           <div class="jqmAlertTitle clearfix">
+           <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+         </div>
+
+         <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
+         <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+         </div>
+       </div>
+   </div>
+
+	<div class="jqmAlert" id="jqmAlertExpEdit">
+
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+		    <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		  </div>
+
+		  <div class="jqmAlertContent">
+		  <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+		  </div>
+		</div>
+	</div>
 
   <div id="fullpage">
     <div class="post">

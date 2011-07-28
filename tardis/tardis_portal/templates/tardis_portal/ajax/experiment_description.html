@@ -1,56 +1,3 @@
-{% block script %}
-
-<script type="text/javascript" charset="utf-8">
-	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br />";
-
-	// metadata text / ajax toggle
-
-	$(document).ready(function(){
-
-		$(".experiment_metadata_toggle").live('click', function(e){
-            var $this = $(this);
-            var $experiment_metadata = $('.experiment_metadata');
-            var $icon = $this.find('span');
-
-            $this.toggleClass('metadata_shown metadata_hidden');
-            $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
-
-			if($this.hasClass('metadata_shown')) {
-				var href= $this.attr("href");
-
-		    	$experiment_metadata.html(loadingHTML);
-		        $experiment_metadata.load(href);
-				$experiment_metadata.show();
-			} else {
-				$experiment_metadata.hide();
-			}
-			return false;
-		});
-	});
-
-    function refreshMetadataDisplay(hash) {
-        var toggle = $('.experiment_metadata_toggle');
-        if (toggle.hasClass('metadata_shown')) {
-            toggle.click(); // hide
-            toggle.click(); // show
-            // outcome is a refresh
-        } else {
-            toggle.click(); // show
-        }
-        hash.w.fadeOut();
-        hash.w.css('opacity', '100%'); // must be set otherwise popup will be displayed but not visible the second time
-    }
-    $('#jqmAlertExpA{{experiment.id}}').die();
-    $('#jqmAlertExpA{{experiment.id}}').jqm({
-        trigger: '.jqModalExpA{{experiment.id}}',
-        ajax: '@href',
-        target: '#jqmAlertContentexperimentA{{experiment.id}}',
-        overlay: 0,
-        closeClass: 'jqmClose',
-        onHide: refreshMetadataDisplay
-    });
-</script>
-{% endblock %}
 
 <div id="experiment_description">
 
@@ -92,22 +39,11 @@
         <strong style="float:left;">Experiment Metadata:</strong>
 
         {% if has_write_permissions %}{% if not experiment.public %}
-            <a title="Add" class="jqModalExpA{{experiment.id}} fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}">
+            <a title="Add" id="expAddTrigger" class="fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}" 
+                    data-toggle_selector=".experiment_metadata_toggle">
                 <span class="ui-icon ui-icon-plusthick"></span>
                 Add
             </a>
-        <div class="jqmAlert" id="jqmAlertExpA{{experiment.id}}">
-
-            <div class="jqmAlertWindow">
-                <div class="jqmAlertTitle clearfix">
-                <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-              </div>
-
-              <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
-              <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
-              </div>
-            </div>
-        </div>
         {% endif %}{% endif %}
 
         <a title="Show/Hide" class="experiment_metadata_toggle metadata_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/experiment_metadata/{{experiment.id}}/">
@@ -122,13 +58,12 @@
   <p>
     <strong>Dataset Information:</strong>
     <div>
-      <!-- <strong>Dataset Metadata: </strong>	 -->
       <div class="dataset_information">
-	<ul>
-	  <li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
-	  <li><strong>Files:</strong> {{datafiles.count}}</li>
-	  <li><strong>Size:</strong> {{size|filesizeformat}}</li>
-	</ul>
+            <ul>
+              <li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
+              <li><strong>Files:</strong> {{datafiles.count}}</li>
+              <li><strong>Size:</strong> {{size|filesizeformat}}</li>
+            </ul>
       </div>
     </div>
   </p>

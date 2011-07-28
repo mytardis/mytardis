@@ -9,7 +9,7 @@
           <p><strong><em>{{parameterset.schema}}</em></strong></p>
 
 		{% if has_write_permissions %}{% if not experiment.public %}<p><a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
-		 class="jqModalExp{{parameterset.id}}">[Edit Metadata]</a></p>{% endif %}{% endif %}
+		 class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle">[Edit Metadata]</a></p>{% endif %}{% endif %}
 
       {% for parameter in parameterset.experimentparameter_set.all %}
             <li><strong>{{ parameter.name.full_name }}: </strong>
@@ -17,30 +17,7 @@
 	</li>
           {% endfor %}
       <br/><br/>
-	<script type="text/javascript">
-	$('#jqmAlertExp{{parameterset.id}}').unbind();
-	$('#jqmAlertExp{{parameterset.id}}').jqm({
-	    trigger: ".jqModalExp{{parameterset.id}}",
-	    ajax: '@href',
-	    target: '#jqmAlertContentexperiment{{parameterset.id}}',
-	    overlay: 0,
-        closeClass: 'jqmClose',
-        onHide: refreshMetadataDisplay
-	});
-	</script>
 
-	<div class="jqmAlert" id="jqmAlertExp{{parameterset.id}}">
-
-		<div class="jqmAlertWindow">
-		    <div class="jqmAlertTitle clearfix">
-		    <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-		  </div>
-
-		  <div class="jqmAlertContent" id="jqmAlertContentexperiment{{parameterset.id}}">
-		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
-		  </div>
-		</div>
-	</div>
         {% endfor %}
   </ul>
 </div>
