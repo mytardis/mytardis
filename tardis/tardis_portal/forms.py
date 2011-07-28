@@ -707,19 +707,6 @@ def createSearchExperimentForm():
     from django.forms.extras.widgets import SelectDateWidget
     from tardis.tardis_portal.models import ParameterName
 
-    parameterNameGroups = {}
-
-    for experimentSchema in models.Schema.getNamespaces(
-            type=models.Schema.EXPERIMENT):
-        parameterName = ParameterName.objects.filter(
-            schema__namespace__iexact=experimentSchema,
-            is_searchable='True')
-        if experimentSchema in parameterNameGroups:
-            parameterNameGroups[experimentSchema] += parameterName
-        else:
-            parameterNameGroups[experimentSchema] = []
-            parameterNameGroups[experimentSchema] += parameterName
-
     fields = {}
 
     fields['title'] = forms.CharField(label='Title',
@@ -733,13 +720,18 @@ def createSearchExperimentForm():
     fields['date'] = forms.DateTimeField(label='Experiment Date',
             widget=SelectDateWidget(), required=False)
 
-    formutilFields = {}
-    formutilFields['main fields'] = ['title', 'description', 'institutionName', 'creator', 'date']
+    fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})] 
 
-    for schema, parameterNames in parameterNameGroups.items():
-        formutilFields[schema] = []
+    schemaAndFieldLists = []
 
-        for parameterName in parameterNames:
+    experimentSchemata = models.Schema.objects.filter(type=models.Schema.EXPERIMENT)
+    for schema in experimentSchemata:
+        searchableParameterNames = \
+            schema.parametername_set.filter(is_searchable=True)
+        fieldNames = []
+        schemaAndFieldLists.append((schema, fieldNames))
+
+        for parameterName in searchableParameterNames:
             if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
@@ -749,8 +741,8 @@ def createSearchExperimentForm():
                     fields[parameterName.name + 'To'] = \
                         forms.DecimalField(label=parameterName.full_name
                             + ' To', required=False)
-                    formutilFields[schema].append(parameterName.name + 'From')
-                    formutilFields[schema].append(parameterName.name + 'To')
+                    fieldNames.append(parameterName.name + 'From')
+                    fieldNames.append(parameterName.name + 'To')
                 else:
                     # note that we'll also ignore the choices text box entry
                     # even if it's filled if the parameter is of numeric type
@@ -759,7 +751,7 @@ def createSearchExperimentForm():
                     fields[parameterName.name] = \
                         forms.DecimalField(label=parameterName.full_name,
                             required=False)
-                    formutilFields[schema].append(parameterName.name)
+                    fieldNames.append(parameterName.name)
             else:  # parameter is a string
                 if parameterName.choices != '':
                     fields[parameterName.name] = \
@@ -770,16 +762,12 @@ def createSearchExperimentForm():
                     fields[parameterName.name] = \
                         forms.CharField(label=parameterName.full_name,
                         max_length=255, required=False)
-                formutilFields[schema].append(parameterName.name)
+                fieldNames.append(parameterName.name)
 
-    fieldsets = []
 
-    for groupName, fieldlist in formutilFields.items():
-        fieldsets.append((groupName, {'fields': fieldlist}))
-
-#    class Meta:
-#        fieldsets = [('first', {'fields': ['key', 'description']}),
-#                     ('second', {'fields': ['make', 'model', 'type', 'serial']})]
+    for schema, fieldlist in schemaAndFieldLists:
+        name = schema.name if schema.name != None else 'No schema name'
+        fieldsets.append((name, {'fields': fieldlist}))
 
     return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
                     {'base_fields': fields, 'base_fieldsets': fieldsets,
