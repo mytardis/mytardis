@@ -260,7 +260,7 @@
 
 	    <div class="dataset_extrainfo">
 
-		<strong>Dataset Metadata: </strong>
+		<strong style="float:left;">Dataset Metadata: </strong>
 
 		{% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
 		<a title="Add" href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
@@ -274,6 +274,7 @@
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
             Show/Hide
         </a>
+        <div style="clear:both;"></div>
 		<div class="dataset_metadata">
 		</div> <!-- dataset metadata -->
 
