@@ -212,11 +212,10 @@ class ExperimentIndex(OracleSafeIndex):
             # TODO change to log message
                 print 'skipping  index of %s soft parameter for experiment id %d (parameter not specified)' % (p, obj.id)
             if val:
-                text_list.extend(val)
+                text_list += [val]
        
         # add all authors to the free text search
         text_list.extend(self.prepare_experiment_authors(obj))
-        
         self.prepared_data['text'] = ' '.join(text_list)
 
         # add all soft parameters listed as searchable as searchable fields
