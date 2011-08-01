@@ -7,6 +7,53 @@
 
 <script type="text/javascript">
 	
+	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br />";
+
+    // metadata text / ajax toggle
+    // datafile list
+    $(".datafile_list_toggle").live('click', function(evt){
+        evt.preventDefault();
+
+        var $datafile_info_container = $(this).siblings('ul.datafile_list');
+        $datafile_info_container.toggle();
+
+        if ($datafile_info_container.is(':visible')) {
+
+            $(this).text("[Hide]");
+            $datafile_info_container.html(loadingHTML);
+
+            var href = $(this).attr("href");
+            // add initialisation for new datafile handlers as callback once ajax has loaded
+            $datafile_info_container.load(href);
+        } else {
+            $(this).text("[Show]");
+
+            var $datafile_info_container = $(this).siblings('ul.datafile_list');
+        }
+    });
+    // datafile metadata
+    $('ul.datafile_list .datafile_info_toggle').live('click', function(){
+        var $datafile_metadata_container = $(this).next();
+        $datafile_metadata_container.toggle();
+        if ($datafile_metadata_container.is(':visible')) {
+            $(this).text("[Hide]");
+
+            var href = $(this).attr("href");
+            $datafile_metadata_container.html(loadingHTML);
+            $datafile_metadata_container.load(href);
+        } else {
+            $(this).text("[Show]");
+        }
+        return false;
+    });
+    // file selectors
+    jQuery('.dataset_selector_all').live('click', function() {
+        $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+    });
+    jQuery('.dataset_selector_none').live('click', function() {
+        $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+    });
+
 	function get_new_parameter_name(name)
 	{
 		var new_name = name;
@@ -23,6 +70,17 @@
 	{
 		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>';
 	}
+
+    $('.dataset_checkbox').live('click', function( event ) {
+	if ($(this).is(':checked')) {
+	    $(this).parents('.dataset').find('.datafile_checkbox'
+					    ).attr('disabled', true);
+	    $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
+	} else {
+	    $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
+	    $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
+	}
+    });
 
 	$('#schemaselect').live('change', function(e) {
 		e.preventDefault();
@@ -110,7 +168,6 @@
 
     });
 
-	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br />";
 	// metadata text / ajax toggle
     $(".dataset_metadata_toggle").live('click', function(e){
         var $this = $(this);
@@ -171,6 +228,32 @@
 
         // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
         $('#jqmAlertExpAdd').jqmShow(this); 
+    });
+
+    $('.pagelink').live('click', function( event ){
+        var href = $(this).attr("href");
+        var html = $(this).html();
+        $(this).html(html + " " + loadingHTML);
+        $(this).parents('.datafile_list').load(href, function(){
+
+            $(".dataset_selector_all").unbind('click');
+            $(".dataset_selector_none").unbind('click');
+            // file selectors
+            $(document).find('.dataset_selector_all').click(function() {
+                $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+            });
+
+            $(document).find('.dataset_selector_none').click(function() {
+                $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+
+            });
+
+
+            $(this).html(html);
+
+        })
+        return false;
     });
 
 </script>
