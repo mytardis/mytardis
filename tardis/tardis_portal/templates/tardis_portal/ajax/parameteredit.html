@@ -1,19 +1,4 @@
 {% load formfieldfilters %}
-<script type="text/javascript">
-    $('.jqmClose').click(function(){
-        // yeah perhaps I shouldn't let this try and find and fail silently..
-        var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.datafile');
-        var href= parentdatafile.children('.datafile_info_toggle').attr("href");
-        parentdatafile.children('.datafile_info').html(loadingHTML);
-        parentdatafile.children('.datafile_info').load(href);
-
-        var parentdatafile = $("#jqmAlertContent{{type}}{{parameterset_id}}").parents('.dataset_extrainfo');
-        var href = parentdatafile.children('.dataset_metadata_toggle').attr("href");
-        parentdatafile.children('.dataset_metadata').html(loadingHTML);
-        parentdatafile.children('.dataset_metadata').load(href);
-        
-    });
-</script>
 
 {% if success %}
 	Parameters saved successfully.
