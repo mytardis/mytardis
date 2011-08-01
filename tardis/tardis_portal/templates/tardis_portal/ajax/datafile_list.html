@@ -37,7 +37,7 @@
 File path search: <input type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"> <em>(eg. enter 'test' to show the '/Frames/test/' directory)</em>
 </div>
 <br/>
-Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
+Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
 <br/><br/>
 <script type="text/javascript">
   $("input[name$='show_datafile_search']").click(function() {
@@ -95,7 +95,7 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 	</div>
 
 	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}/">[Show]</a>
-	<ul class="datafile_info">
+	<ul class="datafile_info" style="display:none;">
 
 	</ul>
 

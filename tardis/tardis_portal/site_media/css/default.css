@@ -805,3 +805,6 @@ h2 {
     text-decoration: line-through;
 }
 
+.clickable {
+    cursor: pointer;
+}
