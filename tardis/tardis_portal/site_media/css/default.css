@@ -722,21 +722,11 @@ ul.errorlist {
 see:
 http://www.filamentgroup.com/lab/styling_buttons_and_toolbars_with_the_jquery_ui_css_framework/
 */
-.fg-button { 
-outline: 0; 
-    margin:0 4px 0 0; 
-    padding: .4em 1em; 
-    text-decoration:none !important; 
-    cursor:pointer; 
-    position: relative; 
-    text-align: center; 
-    zoom: 1; 
-}
 .fg-button {
     cursor: pointer;
     margin: 0 4px 0 0;
     outline: 0 none;
-    padding: 0.4em 1em;
+    padding: 2px 7px;
     position: relative;
     text-align: center;
     text-decoration: none !important;
@@ -774,7 +764,6 @@ button.fg-button {
 .fg-button-icon-solo {
     display: block;
     text-indent: -9999px;
-    width: 8px;
 }
 .fg-buttonset {
     float: left;
