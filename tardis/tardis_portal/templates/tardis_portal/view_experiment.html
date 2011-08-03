@@ -6,6 +6,54 @@
 {% block script %}
 
 <script type="text/javascript">
+    var toggle_files = function(loadCallback) {
+        var $this = $(this);
+        var $datafile_info_container = $this.siblings('ul.datafile_list');
+        var $icon = $this.find('span');
+
+        $this.toggleClass('files_shown files_hidden');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        if ($this.hasClass('files_shown')) {
+            $datafile_info_container.show();
+            $datafile_info_container.html(loadingHTML);
+
+            var href = $this.attr("href");
+            $datafile_info_container.load(href, loadCallback);
+        } else {
+            $datafile_info_container.html('');
+        }
+    };
+
+    $("#uploadify").live("allUploadsComplete", function(e, data){
+        // refresh datafile list
+        var dataset_id = $(this).attr('data-dataset_id');
+        $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
+    });
+    $('.upload_files_link').live('click', function(evt){
+        var $this = $(this);
+        var $toggle = $this.siblings('.datafile_list_toggle');
+        var $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+        var dataset_id = $this.attr('data-dataset_id');
+
+        if ($upload_files_container.length > 0 && $upload_files_container.html() !== '') {
+            // don't do anything if this has been clicked before and the upload_files_container is showing
+            return;
+        } else {
+            // clear the other upload files containers
+            $('.upload_files_container').html('');
+        }
+
+        // finish up the load
+        if ($toggle.hasClass('files_hidden')) {
+            toggle_files.call($toggle[0], function() {
+                $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+                $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
+            });
+        } else {
+            $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
+        }
+    });
 	
 	var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br />";
 
@@ -88,7 +136,7 @@
         var $form = $(this);
 
         $.post($form.attr('action'), $form.serialize(), function(data) {
-              $('#jqmAlertExpEdit div.jqmAlertContent').html(data);
+            $('#jqmAlertExpEdit div.jqmAlertContent').html(data);
         });
         return false;
     });
@@ -135,22 +183,7 @@
     // datafile list
     $(".datafile_list_toggle").live('click', function(evt){
         evt.preventDefault();
-        var $this = $(this);
-        var $datafile_info_container = $this.siblings('ul.datafile_list');
-        var $icon = $this.find('span');
-
-        $this.toggleClass('files_shown files_hidden');
-        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
-
-        if ($this.hasClass('files_shown')) {
-            $datafile_info_container.show();
-            $datafile_info_container.html(loadingHTML);
-
-            var href = $this.attr("href");
-            $datafile_info_container.load(href);
-        } else {
-            $datafile_info_container.hide();
-        }
+        toggle_files.apply(this);
     });
     // datafile metadata
     $('ul.datafile_list .datafile_info_toggle').live('click', function(evt){
@@ -265,13 +298,11 @@
 
             });
 
-
             $(this).html(html);
 
         })
         return false;
     });
-
 </script>
 
 {% endblock %}

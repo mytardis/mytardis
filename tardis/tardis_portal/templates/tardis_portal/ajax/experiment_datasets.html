@@ -5,11 +5,6 @@
 
   <script type="text/javascript">
 
-    $("#uploadify").live("allUploadsComplete", function(e, data){
-        var dataset_id = $(this).parents('.upload_files_container').siblings('.dataset_id').val();
-        $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
-    });
-
     function disableEnterKey(e) {
         var key;
         if(window.event) {
@@ -20,26 +15,7 @@
         return (key != 13);
     }
 
-    $('.upload_files_link').live('click', function( event ){
-        $('.upload_files_container').each(function(index) {
-            $(this).html("");
-        });
-
-        $('.upload_files_link').each(function(index) {
-            $(this).show();
-            $(this).html('Upload Files To Dataset');
-        });
-
-        $(this).hide();
-
-        var dataset_id = $(this).siblings('.dataset_id').val();
-
-        $(this).siblings(".upload_files_container").load("/ajax/upload_files/" + dataset_id + "/");
-    });
-
-
     $('.filename_search').live('keyup', function(e) {
-        alert('something');
         e.preventDefault();
         if(e.keyCode == 13) {
             var dataset_id = $(this).siblings('.dataset_id').val();
@@ -141,6 +117,16 @@
                     <span class="ui-icon ui-icon-circle-triangle-e"></span>
                     Show/Hide
                 </a>
+{% if has_write_permissions %}
+  {% if not experiment.public %}
+    {% if not immutable %}
+        <a  data-dataset_id="{{dataset.id}}" class="upload_files_link fg-button ui-state-default fg-button-icon-solo ui-corner-all" title="Upload Files">
+            <span class="ui-icon ui-icon-circle-arrow-n"></span>
+            Upload Files
+        </a>
+    {% endif %}
+  {% endif %}
+{% endif %}
 		  {% else %}
 		    <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
 		  {% endif %}
