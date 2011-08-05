@@ -174,7 +174,7 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
                 <input type="submit" value="search"/>
             </td>
             <td>
-               <input type="text" name="q" id="id_q" />
+                <input type="text" name="q" id="id_q"{% if query %} value="{{ query }}"{% endif %} />
             </td>
         </tr>
         

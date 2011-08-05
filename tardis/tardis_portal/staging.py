@@ -293,7 +293,7 @@ def add_datafile_to_dataset(dataset, filepath, size):
     filename = urlpath.rpartition('/')[2]
 
     datafile = Dataset_File(dataset=dataset, filename=filename,
-                            url=urlpath, size=size, protocol='')
+                            url=urlpath, size=size, protocol='tardis')
     datafile.save()
 
     return datafile
