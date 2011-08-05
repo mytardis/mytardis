@@ -691,7 +691,7 @@ class ParameterName(models.Model):
 
     class Meta:
         unique_together = (('schema', 'name'),)
-        ordering = ('order',)
+        ordering = ('order', 'name')
 
     def __unicode__(self):
         return (self.schema.name or self.schema.namespace) + ": " + self.name

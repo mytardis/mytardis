@@ -47,7 +47,7 @@ def _getParamValue(param):
 # indexing operation doesn't generate any UNIQUE calls
 # to the DB).
 #
-class OracleSafeIndex(SearchIndex):
+class OracleSafeIndex(RealTimeSearchIndex):
     def index_queryset(self):
         return self.model._default_manager.all().defer(None)
 
@@ -63,7 +63,7 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
             pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
-class DatasetFileIndex(SearchIndex):
+class DatasetFileIndex(RealTimeSearchIndex):
     
     __metaclass__ = GetDatasetFileParameters
     
@@ -150,19 +150,28 @@ class ExperimentIndex(OracleSafeIndex):
     experiment_institution_name=CharField(model_attr='institution_name')
     experiment_authors = MultiValueField()
 
-    # TODO fill out experiment_authors
     def prepare_experiment_authors(self, obj):
         return [a.author for a in obj.author_experiment_set.all()]
 
     def prepare(self,obj):
-            self.prepared_data = super(ExperimentIndex, self).prepare(obj)
-            text_list = [obj.title, obj.description]
-            text_list.extend(self.prepare_experiment_authors(obj))
-            self.prepared_data['text'] = ' '.join(text_list)
+        self.prepared_data = super(ExperimentIndex, self).prepare(obj)
+        beamline = '' 
         
-            for par in ExperimentParameter.objects.filter(parameterset__experiment__pk=obj.pk).filter(name__is_searchable=True):
-                self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
-            return self.prepared_data
+        try:
+           ep = ExperimentParameter.objects.get(name__name='beamline', parameterset__experiment__id=obj.id, name__is_searchable=True)
+           beamline = ep.string_value
+        except:
+ 	    # No beamline soft paramter set for this experiment
+            print 'skipping beamline index for experiment id %d (no beamline parameter sepecified)' % (obj.id)
+        text_list = [obj.title, obj.description]
+        if beamline:
+            text_list.extend(beamline)
+        text_list.extend(self.prepare_experiment_authors(obj))
+        self.prepared_data['text'] = ' '.join(text_list)
+
+        for par in ExperimentParameter.objects.filter(parameterset__experiment__pk=obj.pk).filter(name__is_searchable=True):
+	    self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
+        return self.prepared_data
 
 site.register(Dataset_File, DatasetFileIndex)
 site.register(Dataset, DatasetIndex)

@@ -432,6 +432,7 @@ def experiment_datasets(request, experiment_id):
         
         #raw_search doesn't chain...
         results = sqs.raw_search(request.GET['query'])
+        
         matching_datasets = [d.object for d in results if 
                 d.model_name == 'dataset' and 
                 d.experiment_id_stored == int(experiment_id)
@@ -497,7 +498,6 @@ def retrieve_experiment_metadata(request, experiment_id):
     c['has_write_permissions'] = has_write_permissions
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
-
 
 @login_required
 def create_experiment(request,
@@ -739,7 +739,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     try:
         auth_key = settings.DEFAULT_AUTH
     except AttributeError:
-        logger.error('no default authentication for experiment ownership set')
+        logger.error('no default authentication for experiment ownership set (settings.DEFAULT_AUTH)')
 
     if auth_key:
         for owner in owners:
@@ -2365,11 +2365,21 @@ class ExperimentSearchView(SearchView):
         results = self.results
         
         experiments = {}
+        access_list = []
+
+        if self.request.user.is_authenticated():
+            access_list.extend([e.pk for e in authz.get_accessible_experiments(self.request)])
+
+        access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
+
         for r in results:
             if (r.model==Experiment):
                 i = int(r.pk)
             else:
                 i = int(r.experiment_id_stored) 
+            
+            if i not in access_list:
+                continue
 
             if i not in experiments.keys():
                 experiments[i]= {}
@@ -2439,7 +2449,7 @@ def rif_cs(request):
 
         party_url = settings.TEST_MONASH_ANDS_URL\
         + "pilot/GetPartybyMonashID/"
-
+        
         requestmp = urllib2.Request(party_url)
         party_rif_cs = urllib2.urlopen(requestmp).read()
 
@@ -2456,7 +2466,6 @@ def rif_cs(request):
         logger.debug('TEST_MONASH_ANDS_URL setting not found.' +
         ' RIF-CS not shown')
         return return_response_error(request)
-
 
 @never_cache
 @authz.experiment_ownership_required

@@ -21,40 +21,35 @@ $(document).ready(function(){
      }
    });
  return val;
-})();
-  
-
-$("#id_q").result(function(event, ui){
-       $('#id_q').autocomplete(["test"]) 
-});
--->
+  })();
 });
 </script>
 {% endblock script %}
 
 {% block content %}
-    <div id = "content">
-      <div class="post">
-       <div class = "entry">  
-    {% if query %}
-    <h2>Search Results for <em>{{ query }}</em></h2>
+<div id = "content">
+  <div class="post">
+    <div class = "entry">  
+        <h1 class="title">Search Results for <em>{{ query|default:"' '"}}</em></h1>
+      {% if experiments%}
+      <strong>{{experiments.items|length}}</strong> Experiment{{experiments.items|length|pluralize}}
+      {% endif %}
       {% for key, result in experiments.items %}
-        {% ifequal result.sr.model_name 'experiment' %}
-          {% include "search/experiment_result.html" %}
-        {% else %}
+      {% ifequal result.sr.model_name 'experiment' %}
+        {% include "search/experiment_result.html" %}
+      {% else %}
         {% ifequal result.sr.model_name 'dataset' %}
           {% include "search/dataset_result.html" %}
-        {% else %}
+      {% else %}
         {% ifequal result.sr.model_name 'dataset_file' %}
           {% include "search/dataset_file_result.html" %}
-          {% endifequal %}{% endifequal %}{% endifequal %}
+        {% endifequal %}{% endifequal %}{% endifequal %}
 
-           {% empty %}
-            <p>No Results found</p>
-        {% endfor%}
-    {% endif %}
+      {% empty %}
+        <p>No Results found</p>
+      {% endfor%}
 
     </div> <!-- entry -->
-      </div> <!-- post -->
-    </div> <!-- content -->
+  </div> <!-- post -->
+</div> <!-- content -->
 {% endblock content%}
