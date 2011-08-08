@@ -972,8 +972,19 @@ def search_experiment(request):
     else:
         return __forwardToSearchExperimentFormPage(request)
 
+    results = []
+
+    for e in experiments:
+        results.append(
+            {'sr' : e,
+             'dataset_hit' : False, 
+             'dataset_file_hit' : False, 
+             'experiment_hit' : True, 
+            }
+         )
+
     c = Context({'header': 'Search Experiment',
-                 'experiments': experiments,
+                 'experiments': results,
                  'bodyclass': bodyclass})
 
     url = 'tardis_portal/search_experiment_results.html'

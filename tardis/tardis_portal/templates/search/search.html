@@ -1,31 +1,6 @@
 {%extends "tardis_portal/data_browsing_template.html" %}
 {% load experimentstats %}
 
-{% block script %}
-
-{% include "tardis_portal/javascript_libraries.html" %} 
-
-<script type="text/javascript">
-$(document).ready(function(){
-  var users = (function () {
-  var val = null;
-  var authMethod = "localdb";
-  var data = { authMethod: authMethod };
-  $.ajax({
-    'async': false,
-    'global': false,
-    'data': data,
-    'url': '/ajax/parameter_field_list',
-    'success': function (data) {
-       val = data;
-     }
-   });
- return val;
-  })();
-});
-</script>
-{% endblock script %}
-
 {% block content %}
 <div id = "content">
   <div class="post">
@@ -43,8 +18,9 @@ $(document).ready(function(){
       {% else %}
         {% ifequal result.sr.model_name 'dataset_file' %}
           {% include "search/dataset_file_result.html" %}
-        {% endifequal %}{% endifequal %}{% endifequal %}
-
+      {% else %}
+        {% include "tardis_portal/experiment_result.html" %}
+      {% endifequal %}{% endifequal %}{% endifequal %}
       {% empty %}
         <p>No Results found</p>
       {% endfor%}
