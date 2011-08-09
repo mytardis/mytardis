@@ -39,7 +39,6 @@
 	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
 	<meta name="keywords" content="">
 	<meta name="description" content="">
-	{% include "tardis_portal/javascript_libraries.html" %}
     {% include "tardis_portal/javascript_libraries.html" %} 
 
 	{% block script %}
@@ -69,7 +68,7 @@ $(document).ready(function(){
     'async': false,
     'global': false,
     'data': data,
-    'url': '/ajax/parameter_field_list',
+    'url': '/ajax/parameter_field_list/',
     'success': function (data) {
        val = data;
      }
@@ -78,7 +77,7 @@ $(document).ready(function(){
 })();
   
 $("#id_q").autocomplete(users.split(" "), {
-matchContains: true, multiple: true, multipleSeparator: " ", 
+matchContains: true, multiple: true, multipleSeparator: " "
 });
 
 
