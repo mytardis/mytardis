@@ -740,6 +740,8 @@ http://www.filamentgroup.com/lab/styling_buttons_and_toolbars_with_the_jquery_ui
 }
 a.fg-button {
     float: left;
+    height: 10px;
+    width: 2px;
 }
 button.fg-button {
     overflow: visible;
