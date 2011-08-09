@@ -5,7 +5,7 @@
   {% if result.experiment_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}   
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-1">{{result.sr.experiment_title}}</a>
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?search=true&query={{ query }}#ui-tabs-1">{{result.sr.experiment_title}}</a>
 
   {% if result.experiment_hit %}
   </span>
@@ -32,7 +32,7 @@
   {% if result.dataset_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}   
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?search=true&query={{ query }}#ui-tabs-2">
   <strong> {{result.sr.object.dataset_set.all.count}} </strong>
   dataset{{result.sr.object.dataset_set.all.count|pluralize }}</strong>
   </a>
@@ -43,7 +43,7 @@ containing
   {% if result.dataset_file_hit %}
   <span style="background-color: #FFFF00">
   {% endif %}
-  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?query={{ query }}#ui-tabs-3">
+  <a href="{% url tardis.tardis_portal.views.view_experiment key %}?search=true&?query={{ query }}#ui-tabs-2">
 <strong>{{ result.sr.object.id|experiment_file_count }}</strong>
 file{{ result.sr.object.id|experiment_file_count|pluralize }}
 </a>

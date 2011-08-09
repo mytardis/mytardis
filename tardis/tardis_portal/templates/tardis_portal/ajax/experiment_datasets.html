@@ -343,7 +343,7 @@
               </span>
               {% endif %}
 		      {% if dataset.dataset_file_set.count|lt:"1000000" %}
-                <a class="datafile_list_toggle" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}{% if query %}?query={{ query }}{% endif %}">[Show]</a>
+              <a class="datafile_list_toggle" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if query %}query={{ query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">[Show]</a>
 		  {% else %}
 		    <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
 		  {% endif %}

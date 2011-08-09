@@ -18,8 +18,6 @@
       {% else %}
         {% ifequal result.sr.model_name 'dataset_file' %}
           {% include "search/dataset_file_result.html" %}
-      {% else %}
-        {% include "tardis_portal/experiment_result.html" %}
       {% endifequal %}{% endifequal %}{% endifequal %}
       {% empty %}
         <p>No Results found</p>
