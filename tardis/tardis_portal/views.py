@@ -301,6 +301,9 @@ def view_experiment(request, experiment_id):
     if 'query' in request.GET:
         c['query'] = request.GET['query']
     
+    if  'search' in request.GET:
+        c['search'] = request.GET['search']
+    
     if  'load' in request.GET:
         c['load'] = request.GET['load']
         
@@ -423,7 +426,7 @@ def experiment_datasets(request, experiment_id):
 
     c['experiment'] = experiment
    
-
+    #TODO Single search should use sessions as well 
     if 'query' in request.GET:
 
         # We've been passed a query to get back highlighted results.
@@ -450,6 +453,14 @@ def experiment_datasets(request, experiment_id):
         c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
         c['query'] = request.GET['query']
+    
+    elif 'datafileResults' in request.session and 'search' in request.GET: 
+        c['highlighted_datasets'] = None
+        c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
+        c['file_matched_datasets'] = \
+            list(set(r.dataset.pk for r in request.session['datafileResults']))
+        c['search'] = True
+
     else:
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = None
@@ -833,7 +844,6 @@ def register_experiment_ws_xmldata(request):
                 except:
                     logger.exception('=== file-transfer request to %s FAILED!'
                                      % file_transfer_url)
-
             response = HttpResponse(str(eid), status=200)
             response['Location'] = request.build_absolute_uri(
                 '/experiment/view/' + str(eid))
@@ -866,7 +876,7 @@ def retrieve_parameters(request, dataset_file_id):
 @never_cache
 @authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
-
+    
     dataset_results = \
         Dataset_File.objects.filter(
         dataset__pk=dataset_id).order_by('filename')
@@ -912,15 +922,13 @@ def retrieve_datafile_list(request, dataset_id):
     
     if 'query' in request.GET:
         sqs = SearchQuerySet()
-
         results = sqs.raw_search(request.GET['query'])
-        
-        dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
-        
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
     
+    elif 'datafileResults' in request.session and 'search' in request.GET: 
+        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
+    
     else:
-        dsf_pks =  [r.pk for r in dataset_results]
         highlighted_dsf_pks = []
     
     immutable = Dataset.objects.get(id=dataset_id).immutable
@@ -932,7 +940,6 @@ def retrieve_datafile_list(request, dataset_id):
         'dataset_id': dataset_id,
         'filename_search': filename_search,
         'is_owner': is_owner,
-        'display_dataset_files':dsf_pks,
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
         })
@@ -972,8 +979,11 @@ def search_experiment(request):
     else:
         return __forwardToSearchExperimentFormPage(request)
 
+    # remove information from previous searches from session
+    if 'datafileResults' in request.session:
+        del request.session['datafileResults']
+    
     results = []
-
     for e in experiments:
         results.append(
             {'sr' : e,
@@ -982,11 +992,9 @@ def search_experiment(request):
              'experiment_hit' : True, 
             }
          )
-
     c = Context({'header': 'Search Experiment',
                  'experiments': results,
                  'bodyclass': bodyclass})
-
     url = 'tardis_portal/search_experiment_results.html'
     return HttpResponse(render_response_search(request, url, c))
 
@@ -1470,35 +1478,50 @@ def search_datafile(request):
             return __forwardToSearchDatafileFormPage(request, searchQueryType)
 
     # process the files to be displayed by the paginator...
-    paginator = Paginator(datafile_results,
-                          constants.DATAFILE_RESULTS_PER_PAGE)
+    #paginator = Paginator(datafile_results,
+    #                      constants.DATAFILE_RESULTS_PER_PAGE)
 
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
+    #try:
+    #    page = int(request.GET.get('page', '1'))
+    #except ValueError:
+    #    page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
-    try:
-        datafiles = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        datafiles = paginator.page(paginator.num_pages)
+    #try:
+    #    datafiles = paginator.page(page)
+    #except (EmptyPage, InvalidPage):
+    #    datafiles = paginator.page(paginator.num_pages)
 
-    import re
-    cleanedUpQueryString = re.sub('&page=\d+', '',
-        request.META['QUERY_STRING'])
-
+    #import re
+    #cleanedUpQueryString = re.sub('&page=\d+', '',
+    #    request.META['QUERY_STRING'])
+   
+    # get experiments associated with datafiles
+    experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
+    experiments = Experiment.safe.in_bulk(experiment_pks)
+    
+    results = []
+    for key, e in experiments.items():
+        results.append(
+            {'sr' : e,
+             'dataset_hit' : False, 
+             'datafile_hit' : True, 
+             'experiment_hit' : False, 
+            }
+         )
+    
     c = Context({
-        'datafiles': datafiles,
-        'paginator': paginator,
-        'query_string': cleanedUpQueryString,
+        'experiments': results,
+        'datafiles': datafile_results,
+        #'paginator': paginator,
+        #'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
         'bodyclass': bodyclass,
         'search_pressed': True,
         'searchDatafileSelectionForm': getNewSearchDatafileSelectionForm()})
-    url = 'tardis_portal/search_datafile_results.html'
-    return HttpResponse(render_response_index(request, url, c))
+    url = 'tardis_portal/search_experiment_results.html'
+    return HttpResponse(render_response_search(request, url, c))
 
 
 @never_cache
