@@ -38,6 +38,7 @@
 
         if ($upload_files_container.length > 0 && $upload_files_container.html() !== '') {
             // don't do anything if this has been clicked before and the upload_files_container is showing
+            $upload_files_container.html('');
             return;
         } else {
             // clear the other upload files containers
