@@ -32,7 +32,7 @@
 	$(document).ready(function() {
 	$("#tabs").tabs({
 	    ajaxOptions: {dataType: "html"},
-	    cookie: { expires: 30 },
+	    cookie: { expires: 30 }
 	});
 
 	  // Close Button Highlighting. IE doesn't support :hover. Surprise?
@@ -54,7 +54,10 @@
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
         {% if has_write_permissions %}{% if not experiment.public %}
-           <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+            <a href="{{ experiment.get_edit_url }}">
+          <img src="/site_media/images/icon_changelink.gif" >
+          </a>
+
 	{% endif %}{% endif %}
       </h1>
     </div>
