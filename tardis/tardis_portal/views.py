@@ -983,9 +983,9 @@ def search_experiment(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
     
-    results = []
+    results = {}
     for e in experiments:
-        results.append(
+        results[e.pk] = (
             {'sr' : e,
              'dataset_hit' : False, 
              'dataset_file_hit' : False, 
@@ -1500,15 +1500,14 @@ def search_datafile(request):
     experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
     experiments = Experiment.safe.in_bulk(experiment_pks)
     
-    results = []
+    results = {}
     for key, e in experiments.items():
-        results.append(
+        results[key]=\
             {'sr' : e,
              'dataset_hit' : False, 
              'datafile_hit' : True, 
              'experiment_hit' : False, 
             }
-         )
     
     c = Context({
         'experiments': results,
@@ -2407,10 +2406,7 @@ class ExperimentSearchView(SearchView):
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
         for r in results:
-            if (r.model==Experiment):
-                i = int(r.pk)
-            else:
-                i = int(r.experiment_id_stored) 
+            i = int(r.experiment_id_stored) 
             
             if i not in access_list:
                 continue

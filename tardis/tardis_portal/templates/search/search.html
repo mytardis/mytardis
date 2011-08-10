@@ -9,20 +9,7 @@
       {% if experiments%}
       <strong>{{experiments.items|length}}</strong> Experiment{{experiments.items|length|pluralize}}
       {% endif %}
-      {% for key, result in experiments.items %}
-      {% ifequal result.sr.model_name 'experiment' %}
-        {% include "search/experiment_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset' %}
-          {% include "search/dataset_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset_file' %}
-          {% include "search/dataset_file_result.html" %}
-      {% endifequal %}{% endifequal %}{% endifequal %}
-      {% empty %}
-        <p>No Results found</p>
-      {% endfor%}
-
+      {% include "search/search_result_list.html"%}
     </div> <!-- entry -->
   </div> <!-- post -->
 </div> <!-- content -->
