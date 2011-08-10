@@ -10,49 +10,5 @@
 {% else %}
 No experiments found
 {% endif %}
-<table class="experiment-table">
-  {% for experiment in experiments %}
-    <tr>
-    <th>
-      <span{% if experiment.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment experiment.sr.pk %}?search=true#ui-tabs-1">{{experiment.sr.title}}</a>
-      </span>
-    </th>
-    </tr>
-    <tr>
-    <td>
-      From <strong>{{ experiment.sr.institution_name }} </strong>,
-      deposited <strong>{{ experiment.sr.created_time|date:"jS F Y" }} </strong>,
-      last modified <strong>{{ experiment.sr.update_time|date:"jS F Y" }} </strong>,
-    </td>
-    </tr>    
-    {% if experiment.sr.start_time and experiment.sr.end_time %}
-    <tr>
-    <td>
-    <strong>{{ experiment.sr.start_time|date:"jS F Y H:i" }}</strong>
-    - <strong>{{ experiment.sr.end_time|date:"jS F Y H:i" }}</strong>
-    </td>
-    </tr>
-    {% endif%}
-    <tr>
-    <td class="experiment-table_stats">
-      <span{% if experiment.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment experiment.sr.pk %}?search=true#ui-tabs-2">
-      <strong> {{experiment.sr.dataset_set.all.count}} </strong>
-      dataset{{experiment.sr.dataset_set.all.count|pluralize }}</strong>
-      </a>
-      </span>
-    containing
-      <span{% if experiment.datafile_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment experiment.sr.pk %}?search=true#ui-tabs-2">
-    <strong>{{ experiment.sr.pk|experiment_file_count }}</strong>
-    file{{ experiment.sr.pk|experiment_file_count|pluralize }}
-    </a>
-      </span>
-    <br/>
-    <br/>
-    </td>
-    </tr>
-{%endfor %}
-</table>
+{% include "search/search_result_list.html" %}
 {% endblock %}

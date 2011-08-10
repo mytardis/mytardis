@@ -177,6 +177,7 @@ class ExperimentIndex(OracleSafeIndex):
     __metaclass__ = GetExperimentParameters
 
     text=CharField(document=True)
+    experiment_id_stored = IntegerField(model_attr='pk', indexed=False)
     experiment_description = CharField(model_attr='description')
     experiment_title = CharField(model_attr='title')
     experiment_created_time = DateTimeField(model_attr='created_time')
