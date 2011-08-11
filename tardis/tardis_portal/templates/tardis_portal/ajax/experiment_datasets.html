@@ -271,7 +271,6 @@
   {% endfor %}
 
   </div> <!-- download_entire_experiment -->
-
   {% if highlighted_datasets or file_matched_datasets %}
   <form name="search_select_form" id="search_form" method="post" action="">
     <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>  
@@ -285,14 +284,10 @@
       {% for dataset in datasets %} <!-- experiment.dataset_set.all %}-->
 	<div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
         <div class="dataset_title">
-        {% if dataset.pk in highlighted_datasets %}
-          <span style="background-color: #FFFF00">
-        {% endif %}
+        <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
 	    <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
         <strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
-        {% if dataset.pk in highlighted_datasets %}
-          </span>
-        {% endif %}
+        </span>
 	  </div> <!-- dataset title -->
 
 	  <div class="dataset_info">
@@ -335,13 +330,9 @@
 		</div> <!-- dataset metadata -->
 
 	      <div class="dataset_datafiles">
-              {% if dataset.pk in file_matched_datasets %} 
-              <span style="background-color: #FFFF00">
-              {% endif %}
+              <span{% if dataset.pk in file_matched_datasets %} style="background-color: #FFFF00"{% endif %}>
               <strong>Data Files ({{ dataset.dataset_file_set.count }}): </strong>
-              {% if dataset.pk in file_matched_datasets %}
               </span>
-              {% endif %}
 		      {% if dataset.dataset_file_set.count|lt:"1000000" %}
               <a class="datafile_list_toggle" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if query %}query={{ query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">[Show]</a>
 		  {% else %}
