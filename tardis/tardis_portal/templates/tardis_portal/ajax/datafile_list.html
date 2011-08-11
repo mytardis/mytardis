@@ -61,14 +61,9 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 {% for datafile in dataset.object_list %}
 <li class="datafile {% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
 	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
-
-    {% if datafile.pk in highlighted_dataset_files %}
-    <span style="background-color: #FFFF00">
-    {% endif %}
+    <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
     <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a>
-    {% if datafile.pk in highlight_dataset_files %}
     </span>
-    {% endif %}
     {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
 	Metadata: {% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}<a href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
 	 class="jqModalDfA{{datafile.id}}">[Add]</a>{% endif %}{% endif %}{% endif %}
