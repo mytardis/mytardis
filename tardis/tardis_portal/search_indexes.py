@@ -1,3 +1,41 @@
+# -*- coding: utf-8 -*-
+
+#
+# Copyright (c) 2010-2011, Monash e-Research Centre
+#   (Monash University, Australia)
+# Copyright (c) 2010-2011, VeRSI Consortium
+#   (Victorian eResearch Strategic Initiative, Australia)
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    *  Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#    *  Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+#       names of its contributors may be used to endorse or promote products
+#       derived from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+'''
+search indexes for single search
+
+.. moduleauthor:: Shaun O'Keefe  <shaun.okeefe@versi.edu.au>
+
+'''
 from haystack.indexes import *
 from haystack import site
 from models import Dataset 
@@ -139,6 +177,7 @@ class ExperimentIndex(OracleSafeIndex):
     __metaclass__ = GetExperimentParameters
 
     text=CharField(document=True)
+    experiment_id_stored = IntegerField(model_attr='pk', indexed=False)
     experiment_description = CharField(model_attr='description')
     experiment_title = CharField(model_attr='title')
     experiment_created_time = DateTimeField(model_attr='created_time')
@@ -154,21 +193,33 @@ class ExperimentIndex(OracleSafeIndex):
         return [a.author for a in obj.author_experiment_set.all()]
 
     def prepare(self,obj):
+        #
+        # prepare the free text field and also get all soft parameters
+        #
         self.prepared_data = super(ExperimentIndex, self).prepare(obj)
-        beamline = '' 
         
-        try:
-           ep = ExperimentParameter.objects.get(name__name='beamline', parameterset__experiment__id=obj.id, name__is_searchable=True)
-           beamline = ep.string_value
-        except:
- 	    # No beamline soft paramter set for this experiment
-            print 'skipping beamline index for experiment id %d (no beamline parameter sepecified)' % (obj.id)
-        text_list = [obj.title, obj.description]
-        if beamline:
-            text_list.extend(beamline)
+        text_list = [obj.title, obj.description, obj.institution_name]
+       
+        # soft params that should be added to the free text search
+        freetext_soft_params = ['beamline', 'EPN']
+       
+        for p in freetext_soft_params:
+            val = ''
+            try:
+               ep = ExperimentParameter.objects.get(name__name=p, parameterset__experiment__id=obj.id, name__is_searchable=True)
+               val = str(_getParamValue(ep))
+            except:
+            # No 'p' soft paramter set for this experiment
+            # TODO change to log message
+                print 'skipping  index of %s soft parameter for experiment id %d (parameter not specified)' % (p, obj.id)
+            if val:
+                text_list += [val]
+       
+        # add all authors to the free text search
         text_list.extend(self.prepare_experiment_authors(obj))
         self.prepared_data['text'] = ' '.join(text_list)
 
+        # add all soft parameters listed as searchable as searchable fields
         for par in ExperimentParameter.objects.filter(parameterset__experiment__pk=obj.pk).filter(name__is_searchable=True):
 	    self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
         return self.prepared_data

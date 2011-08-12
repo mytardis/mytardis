@@ -2,47 +2,13 @@
 {% load experimentstats %}
 
 {% block searchPageBody %}
-{% if experiments.count %}
+{% if experiments %}
 <em>
-  <strong>{{ experiments.count }}</strong>
-  experiment{{ experiments.count|pluralize }} found.
+  <strong>{{ experiments|length }}</strong>
+  experiment{{ experiments|length|pluralize }} found.
 </em>
 {% else %}
 No experiments found
 {% endif %}
-<table class="experiment-table">
-  {% for experiment in experiments %}
-  <tr>
-    <th>
-      <a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a>
-    </th>
-  </tr>
-  <tr>
-    <td>
-      From <strong>{{ experiment.institution_name }}</strong>,
-      deposited <strong>{{ experiment.created_time|date:"jS F Y" }}</strong>,
-      last modified <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
-    </td>
-  </tr>
-  {% if experiment.start_time and experiment.end_time %}
-  <tr>
-    <td>
-      <strong>{{ experiment.start_time|date:"jS F Y H:i" }}</strong>
-      - <strong>{{ experiment.end_time|date:"jS F Y H:i" }}</srong>
-    </td>
-  </tr>
-  {% endif %}
-  <tr>
-    <td class="experiment-table-stats">
-      <strong>{{ experiment.dataset_set.all.count }}</strong>
-      dataset{{ experiment.dataset_set.all.count|pluralize }},
-      containing
-      <strong>{{ experiment.id|experiment_file_count }}</strong>
-      file{{ experiment.id|experiment_file_count|pluralize }}
-      <br/>
-      <br/>
-    </td>
-  </tr>
-{%endfor %}
-</table>
+{% include "search/search_result_list.html" %}
 {% endblock %}
