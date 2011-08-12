@@ -96,7 +96,7 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
         # catch 
         try:    
             for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-                attrs['datasetfile_' + n.name] = _getDataType(n)
+                attrs['datafile_' + n.name] = _getDataType(n)
         except DatabaseError:
             pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
@@ -106,7 +106,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
     __metaclass__ = GetDatasetFileParameters
     
     text = CharField(document=True)
-    datasetfile_filename  = CharField(model_attr='filename')
+    datafile_filename  = CharField(model_attr='filename')
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=False)
     dataset_description_stored = CharField(model_attr='dataset__description', indexed=False)
     experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=False)
@@ -123,7 +123,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         self.prepared_data['text'] = obj.filename
 
         for par in DatafileParameter.objects.filter(parameterset__dataset_file__pk=obj.pk).filter(name__is_searchable=True):
-            self.prepared_data['datasetfile_' + par.name.name] = _getParamValue(par) 
+            self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
         return self.prepared_data
 
 class GetDatasetParameters(SearchIndex.__metaclass__):
