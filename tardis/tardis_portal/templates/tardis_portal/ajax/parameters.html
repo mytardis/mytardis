@@ -1,14 +1,19 @@
 {% if parametersets %}
 {% for parameterset in parametersets %}
 	<div class="datafile_parameters">
-	<p><strong><em>{{parameterset.schema}}</strong></em></p>
-    {% comment %}
-	{% if has_write_permissions %}{% if not experiment.public %}<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
-	 class="jqModalDf{{parameterset.id}}">[Edit Metadata]</a></p>{% endif %}{% endif %}
-    {% endcomment %}
-	<p><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
+        <div class="schema_name" title="{{ parameterset.schema.namespace }}">
+            <span>
+                {% if parameterset.schema.name %}
+                    {{ parameterset.schema.name }}
+                {% endif %}
+            </span>
+            <hr>
+        </div>
+	{% if has_write_permissions %}{% if not experiment.public %}
+      <div class="edit_schema"><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
      data-toggle_selector="#datafile_metadata_toggle_{{parameterset.dataset_file_id}}"
-	 class="jqModalDfEdit">[Edit Metadata]</a></p>
+	    class="jqModalDfEdit"><img src="/site_media/images/icon_changelink.gif" /></a></div>
+    {% endif %}{% endif %}
     {% autoescape off %}
 	{% for parameter in parameterset.datafileparameter_set.all %}
 		<li><strong>{{ parameter.name.full_name }}: </strong>

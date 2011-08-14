@@ -1,10 +1,19 @@
 <ul>
   {% if dataset.datasetparameterset_set.all %}
   {% for parameterset in dataset.datasetparameterset_set.all %}
-	{% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}<p><a href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}"
-	 class="jqModalDsEdit" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">[Edit Metadata]</a></p>{% endif %}{% endif %}{% endif %}
+        <div class="schema_name" title="{{ parameterset.schema.namespace }}">
+            <span>
+                {% if parameterset.schema.name %}
+                    {{ parameterset.schema.name }}
+                {% endif %}
+            </span>
+            <hr>
+        </div>
+	{% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}
+            <div class="edit_schema"><a href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}"
+      class="jqModalDsEdit" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}"><img src="/site_media/images/icon_changelink.gif" ></a></div>
+     {% endif %}{% endif %}{% endif %}
 
-     <p><strong><em>{{parameterset.schema}}</em></strong></p>
 
      {% for parameter in parameterset.datasetparameter_set.all %}
          <li><strong>{{ parameter.name.full_name }}: </strong>

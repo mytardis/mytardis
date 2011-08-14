@@ -8,7 +8,7 @@
 		<strong>Schema</strong>
 		<select id="schemaselect" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
 		{% for schema in all_schema %}
-			<option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.namespace}}</option>
+			<option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
 		{% endfor %}
 		</select>
 	</p>

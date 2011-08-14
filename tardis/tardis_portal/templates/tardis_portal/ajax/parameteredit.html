@@ -4,7 +4,7 @@
 	Parameters saved successfully.
 	
 {% else %}
-	<p><strong>Schema: </strong>{{schema}}</strong></p>
+	<p><strong>Schema: </strong>{{schema.name}}</strong></p>
 	<form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>
 		{{ form.non_field_errors }}
 	    {% for field in form %}

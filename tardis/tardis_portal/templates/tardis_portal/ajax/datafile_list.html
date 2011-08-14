@@ -31,10 +31,10 @@
     {% endif %}
   {% endif %}
 {% endif %}
+<input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filename filter to work #}
 
-<input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filter to work #}
-File path search: <input type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"> <em>(eg. enter 'test' to show the '/Frames/test/' directory)</em>
-</div>
+File filter: <input title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
+    type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></div>
 <br/>
 Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
 <br/><br/>
@@ -58,23 +58,14 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
 </form>
 {% endif %}
 {% for datafile in dataset.object_list %}
-<li class="datafile {% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
+<li class="datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
 	<input type="checkbox" style="float:left;" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
     <span style="float:left;">
 
-        {% if datafile.pk in highlighted_dataset_files %}
-        <span style="background-color: #FFFF00">
-        {% endif %}
-        <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a>
-        {% if datafile.pk in highlight_dataset_files %}
-        </span>
-        {% endif %}
-        {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
-        {% comment %}
-        Metadata:
-        {% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}<a href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
-	 class="jqModalDfA{{datafile.id}}">[Add]</a>{% endif %}{% endif %}{% endif %}
-     {% endcomment %}
+    <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
+    <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a> 
+    </span>
+    {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
 	Metadata:
      </span>
     <a title="Add" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
