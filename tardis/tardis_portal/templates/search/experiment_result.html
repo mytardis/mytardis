@@ -25,7 +25,7 @@
 <tr>
   <td class="experiment-table_stats">
       <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experimenti result.sr.experiment_id_stored %}?search=true&query={{ query }}#ui-tabs-2">
+    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.experiment_id_stored %}?search=true&query={{ query }}#ui-tabs-2">
 <strong> {{result.sr.object.dataset_set.all.count}} </strong>
 dataset{{result.sr.object.dataset_set.all.count|pluralize }}</strong>
 </a>

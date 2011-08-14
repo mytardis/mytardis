@@ -8,31 +8,74 @@
   </p>
 {% endif %}
 
-<form name="input" action="." method="get">
-  <table>
-    {% for fieldset in searchForm.fieldsets %}
-    <tr>
-      <td>
-        <fieldset class="{{ fieldset.classes }}">
-		  {% if fieldset.legend %}
-		    <!-- <legend>{{ fieldset.legend }}</legend> -->
-		  {% endif %}
-		  {% if fieldset.description %}
-		    <p class="description">{{ fieldset.description }}</p>
-		  {% endif %}
+<style>
+.accordion_head {
+    background-color: #eee;
+    cursor: pointer;
+    margin: 0;
+    padding: 5px;
+}
+.accordion_head:hover {
+    background-color: #ccd;
+}
+.accordion_head:active {
+    background-color: #ccc;
+}
+.accordion_wrap {
+    border-color: #eee;
+    border-width: 1px;
+    padding: 0;
+    border-style: solid;
+}
+.accordion_body {
+    padding: 10px;
+}
+</style>
 
-		  {% for field in fieldset %}
-		        {{ field.label_tag }}<br>
-		        {{ field }} {{ field.errors }}<br><br>
-		  {% endfor %}
-		</fieldset>
-      </td>
-    </tr>
-    {% endfor %}
-    <tr>
-      <td><input type="submit" value="Submit"></td>
-    </tr>
-  </table>
+<p>
+    Click on the headers to expand and collapse search fields.
+</p>
+<form name="input" action="." method="get">
+
+    <div id="accordion">
+        {% for fieldset in searchForm.fieldsets %}
+            {% if forloop.counter == 1 %}
+            <div class="accordion_wrap">
+                <div class="accordion_body">
+                  {% for field in fieldset %}
+                        {{ field.label_tag }}<br>
+                        {{ field }} {{ field.errors }}<br><br>
+                  {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="accordion_wrap">
+                <h3 class="accordion_head">{{ fieldset.legend }}</h3>
+                <div class="accordion_body hideme">
+                  {% if fieldset.description %}
+                    <p class="description">{{ fieldset.description }}</p>
+                  {% endif %}
+
+                  {% for field in fieldset %}
+                        {{ field.label_tag }}<br>
+                        {{ field }} {{ field.errors }}<br><br>
+                  {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+      <td><input type="submit" value="Submit" /></td>
 </form>
+
+<script>
+    $(function() {
+        jQuery('h3.accordion_head').click(function() {
+            jQuery(this).next().slideToggle('fast');
+        });
+        jQuery('div.hideme').hide();
+    });
+</script>
 
 {% endblock searchPageBody %}

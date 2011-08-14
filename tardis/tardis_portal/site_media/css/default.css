@@ -44,12 +44,6 @@ h3 {
 	font-size: 1.2em;
 }
 
-p, ul, ol {
-}
-
-p {
-}
-
 .blockbg {
 	background: #D9D785;
 }
@@ -63,12 +57,6 @@ blockquote {
 	color: #3D3D3D;
 }
 
-ul {
-}
-
-ol {
-}
-
 a {
 	color: #781F1F;
 	text-decoration: none;
@@ -76,13 +64,6 @@ a {
 
 a:hover {
 	text-decoration: underline;
-}
-
-small {
-}
-
-hr {
-	display: none;
 }
 
 img {
@@ -117,9 +98,7 @@ img.right {
 	margin: 0 auto;
 	height: 71px;
 	letter-spacing: -1px;
-
 }
-
 
 #headerbg {
 	clear: both;
@@ -134,7 +113,6 @@ img.right {
 #headerloginstatus {
 	padding: 10px;
 	color: white;
-
 }
 
 #headerloginstatus a {
@@ -159,7 +137,6 @@ img.right {
 	padding-left: 10px;
 	text-align: center;
 	font-size: 3.2em;
-
 }
 
 #logo h1 a {
@@ -258,9 +235,6 @@ img.right {
 	font-size: 12px;
 }
 
-#recent-posts .entry {
-}
-
 #recent-posts .entry a {
 	background: #333333;
 	padding: 5px 10px;
@@ -273,9 +247,6 @@ img.right {
 #recent-posts .more {
 	background: url(../images/mimg04.gif) no-repeat left 50%;
 	padding-left: 20px;
-}
-
-.post {
 }
 
 .post .title {
@@ -441,12 +412,8 @@ table.experiment-table th {
 
 	.dataset_info
 	{
-		border-width: 2px;
-		border-color: gray;
-		border-style: dotted;
 		margin: 5px;
 		padding: 10px;
-		margin-bottom: 30px;
 	}
 
 	.dataset_description
@@ -624,11 +591,7 @@ table.experiment-table th {
 	}
 
 	.dataset {
-		border-width: 1px;
-		border-color: black;
-		border-style: dashed;
 		padding: 10px 30px 10px 30px;
-		width: 80%;
 	}
 
     .fieldWrapper {
@@ -716,4 +679,20 @@ ul.errorlist {
     background-color: #F0F3F6;
     text-align: center;
     padding: 7px;
+}
+div.schema_name > span {
+    z-index: 20;
+    background-color: rgb(255, 255, 255);
+    margin-left: 20px;
+}
+div.schema_name > hr{
+    margin-top:-7px;
+    margin-bottom:14px;
+    background-color: #FFF;
+}
+div.schema_name > span img {
+    padding-right: 20px;
+}
+div.edit_schema {
+    float:right;
 }
