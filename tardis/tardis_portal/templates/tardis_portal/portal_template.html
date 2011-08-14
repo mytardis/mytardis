@@ -39,7 +39,6 @@
 	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
 	<meta name="keywords" content="">
 	<meta name="description" content="">
-    {% include "tardis_portal/javascript_libraries.html" %} 
 
 	{% block script %}
 	{% endblock script %}
@@ -118,6 +117,18 @@ matchContains: true, multiple: true, multipleSeparator: " "
 		});		
 			
 	      </script>
+
+{# icons #}
+<script type="text/javascript">
+jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
+    if (evt.type == 'mouseover') {
+        jQuery(this).addClass('ui-state-hover');
+    } else {
+        jQuery(this).removeClass('ui-state-hover');
+    }
+}
+);
+</script>
 
 </head>
 

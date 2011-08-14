@@ -680,6 +680,88 @@ ul.errorlist {
     text-align: center;
     padding: 7px;
 }
+
+/*
+see:
+http://www.filamentgroup.com/lab/styling_buttons_and_toolbars_with_the_jquery_ui_css_framework/
+*/
+.fg-button {
+    cursor: pointer;
+    margin: 0 4px 0 0;
+    outline: 0 none;
+    padding: 2px 7px;
+    position: relative;
+    text-align: center;
+    text-decoration: none !important;
+}
+.fg-button .ui-icon {
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    position: absolute;
+    top: 50%;
+}
+a.fg-button {
+    float: left;
+    height: 10px;
+    width: 2px;
+}
+button.fg-button {
+    overflow: visible;
+    width: auto;
+}
+.fg-button-icon-left {
+    padding-left: 2.1em;
+}
+.fg-button-icon-right {
+    padding-right: 2.1em;
+}
+.fg-button-icon-left .ui-icon {
+    left: 0.2em;
+    margin-left: 0;
+    right: auto;
+}
+.fg-button-icon-right .ui-icon {
+    left: auto;
+    margin-left: 0;
+    right: 0.2em;
+}
+.fg-button-icon-solo {
+    display: block;
+    text-indent: -9999px;
+}
+.fg-buttonset {
+    float: left;
+}
+.fg-buttonset .fg-button {
+    float: left;
+}
+.fg-buttonset-single .fg-button, .fg-buttonset-multi .fg-button {
+    margin-right: -1px;
+}
+.fg-toolbar {
+    margin: 0;
+    padding: 0.5em;
+}
+.fg-toolbar .fg-buttonset {
+    margin-right: 1.5em;
+    padding-left: 1px;
+}
+.fg-toolbar .fg-button {
+    font-size: 1em;
+}
+h2 {
+    clear: both;
+    margin-top: 0;
+    padding-top: 1.5em;
+}
+.strike {
+    text-decoration: line-through;
+}
+
+.clickable {
+    cursor: pointer;
+}
 div.schema_name > span {
     z-index: 20;
     background-color: rgb(255, 255, 255);
