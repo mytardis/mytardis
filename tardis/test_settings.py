@@ -51,6 +51,8 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
                   ('ldap', 'LDAP',
                    'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
 )
+DEFAULT_AUTH = 'localdb'
+
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
@@ -91,6 +93,7 @@ INSTALLED_APPS = (
         'tardis.tardis_portal.templatetags',
         'registration',
         'django_nose',
+        'south'
 
 ) + apps
 
@@ -109,8 +112,8 @@ LDAP_BASE = 'dc=example, dc=com'
 LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
 LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = 'INFO'
-MODULE_LOG_LEVEL = 'INFO'
+SYSTEM_LOG_LEVEL = 'DEBUG'
+MODULE_LOG_LEVEL = 'DEBUG'
 
 SYSTEM_LOG_FILENAME = 'request.log'
 MODULE_LOG_FILENAME = 'tardis.log'
@@ -124,3 +127,9 @@ UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 DEFAULT_INSTITUTION = "Monash University"
 
 IMMUTABLE_METS_DATASETS = True
+# Settings for the single search box
+# Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
+SINGLE_SEARCH_ENABLED = False 
+HAYSTACK_SITECONF = 'tardis.search_sites'
+HAYSTACK_SEARCH_ENGINE = 'solr'
+HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'

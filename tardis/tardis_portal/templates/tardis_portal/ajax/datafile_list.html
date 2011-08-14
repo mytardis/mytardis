@@ -21,13 +21,12 @@
   <br/>
 {% endif %}
 
-<div style="">
+<div>
 {# uploadify here #}
 
 {% if has_write_permissions %}
   {% if not experiment.public %}
     {% if not immutable %}
-      <a class="upload_files_link">Upload Files To Dataset</a>
       <div class="upload_files_container"></div>
     {% endif %}
   {% endif %}
@@ -37,7 +36,7 @@
 File filter: <input title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
     type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></div>
 <br/>
-Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_none">[None]</a>
+Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
 <br/><br/>
 <script type="text/javascript">
   $("input[name$='show_datafile_search']").click(function() {
@@ -60,41 +59,29 @@ Select: <a class="dataset_selector_all">[All]</a> / <a class="dataset_selector_n
 {% endif %}
 {% for datafile in dataset.object_list %}
 <li class="datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
-	<input type="checkbox" class="datafile_checkbox" name="datafile" value="{{datafile.id}}">
+	<input type="checkbox" style="float:left;" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
+    <span style="float:left;">
 
     <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
     <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a> 
     </span>
     {% if datafile.size %}({{ datafile.size|filesizeformat }}){% endif %}
-	Metadata: {% if has_write_permissions %}{% if not experiment.public %}{% if not immutable %}<a href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
-	 class="jqModalDfA{{datafile.id}}">[Add]</a>{% endif %}{% endif %}{% endif %}
-	<script type="text/javascript">
-	$('#jqmAlertDfA{{datafile.id}}').die();
-	$('#jqmAlertDfA{{datafile.id}}').jqm({
-	  trigger: '.jqModalDfA{{datafile.id}}',
-	  ajax: '@href',
-	  target: '#jqmAlertContentdatafileA{{datafile.id}}',
-	  overlay: 0,
-	  });
-	</script>
-	<div class="jqmAlert" id="jqmAlertDfA{{datafile.id}}">
+	Metadata:
+     </span>
+    <a title="Add" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+     data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+	 class="fg-button ui-state-default fg-button-icon-solo ui-corner-all jqModalDfAdd">
+        <span class="ui-icon ui-icon-plusthick"></span>
+        Add
+     </a>
 
-		<div class="jqmAlertWindow">
-		    <div class="jqmAlertTitle clearfix">
-		    <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-		  </div>
-
-		  <div class="jqmAlertContent" id="jqmAlertContentdatafileA{{datafile.id}}">
-		  <p>Please wait... <img src="inc/busy.gif" alt="loading" /></p>
-		  </div>
-		</div>
-	</div>
-
-	<a class="datafile_info_toggle" href="/ajax/parameters/{{ datafile.id}}">[Show]</a>
-	<ul class="datafile_info">
-
+	<a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide" class="datafile_info_toggle metadata_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/parameters/{{ datafile.id}}/">
+        <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        Show/Hide
+    </a>
+    <div style="clear:both;"></div>
+	<ul class="datafile_info" style="display:none;">
 	</ul>
-
 </li>
 {% endfor %}
 

@@ -1,57 +1,4 @@
-{# {% include "tardis_portal/javascript_libraries.html" %} #}
 {% load formfieldfilters %}
-
-<script type="text/javascript" charset="utf-8">
-	
-	$('.jqmClose').click(function(){
-			
-		// var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.datafile');
-		// var href = parentdatafile.children('.datafile_info_toggle').attr("href");
-		// parentdatafile.children('.datafile_info_toggle').text('[Hide]');
-		// parentdatafile.children('.datafile_info').show();		
-		// parentdatafile.children('.datafile_info').html(loadingHTML);
-		// parentdatafile.children('.datafile_info').load(href);
-		
-		{% if type == "datafile" %}
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.datafile');
-		var toggle = parentdatafile.find('.datafile_info_toggle');	
-			
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));				
-		{% endif %}		
-
-		{% if type == "dataset" %}		
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.dataset');
-		var toggle = parentdatafile.find('.dataset_metadata_toggle');	
-	
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));	
-		{% endif %}		
-
-		{% if type == "experiment" %}	
-		var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.experiment_md_container');
-		var toggle = parentdatafile.find('.experiment_metadata_toggle');
-		
-		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));		
-		{% endif %}						
-		
-		// var parentdatafile = $("#jqmAlertContent{{type}}A{{parentObject.id}}").parents('.experiment_md_container');
-		// var href = parentdatafile.children('.experiment_metadata_toggle').attr("href");
-		// parentdatafile.children('.experiment_metadata_toggle').text('[Hide]');
-		// parentdatafile.children('.experiment_metadata_toggle').next().show();
-		// parentdatafile.children('.experiment_metadata').html(loadingHTML);
-		// parentdatafile.children('.experiment_metadata').load(href);
-			// yeah perhaps I shouldn't let this try and find and fail silently..
-
-	});	
-</script>
 
 {% if success %}
 	Parameters saved successfully.
@@ -59,13 +6,13 @@
 {% else %}
 	<p>
 		<strong>Schema</strong>
-		<select id="schemaselect_{{type}}_{{parentObject.id}}">
+		<select id="schemaselect" data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
 		{% for schema in all_schema %}
 			<option value="{{schema.id}}" {% if schema.id == schema_id %}selected{% endif %}>{{schema.name}}</option>
 		{% endfor %}
 		</select>
 	</p>
-	<form id="add_form_{{type}}_{{parentObject.id}}" action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/' method='post'>
+	<form id="add_metadata_form" action='/ajax/add_{{type}}_parameters/{{parentObject.id}}/{{schema.id}}/' method='post' data-type="{{type}}" data-parent_object_id="{{parentObject.id}}">
 		{{ form.non_field_errors }}
 	    {% for field in form %}
 	        <div class="fieldWrapper">
@@ -77,7 +24,7 @@
 		<span/>
 	
 
-		<select id="parameternameselect_{{type}}_{{parentObject.id}}">
+		<select id="parameternameselect">
 		{% for pn in parameternames %}
 	
 			<option value="{{pn.name|parametername_form}}">{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
@@ -85,7 +32,7 @@
 		{% endfor %}
 		</select>
 
-		<a id="add_new_parameterA_{{type}}_{{parentObject.id}}">Add Metadata Parameter</a>
+		<a id="add_new_parameter">Add Metadata Parameter</a>
   		
 		<p><em>Leave a parameter blank to remove</em></p>
 		{% if not valid %}
@@ -94,45 +41,4 @@
 		<p><input id="submit" type="submit" value="submit" /></p>
 		
 	</form>	
-	<script type="text/javascript">
-	$('#add_new_parameterA_{{type}}_{{parentObject.id}}').click(function(){		
-
-		$("#parameternameselect_{{type}}_{{parentObject.id}} option:selected").each(function () {
-
-			new_element_name = get_new_parameter_name($(this).val());
-
-			$("#parameternameselect_{{type}}_{{parentObject.id}}").before(get_form_input_html($(this).text(), new_element_name));
-			
-			$("#" + new_element_name).focus();
-		});
-	});
-	
-	$('#schemaselect_{{type}}_{{parentObject.id}}').change(function(e) {
-
-		e.preventDefault();
-
-		$.get("/ajax/add_{{type}}_parameters/{{parentObject.id}}/?schema_id=" + $(this).val(),
-		      function( data ) {
-		          $("#jqmAlertContent{{type}}A{{parentObject.id}}").html( data );					
-						
-					return false;
-		      });
-
-		return false;
-		
-	});
-	
-		$('#add_form_{{type}}_{{parentObject.id}}').submit(function(e) {
-			e.preventDefault();
-
-			$.post("/ajax/add_{{type}}_parameters/{{parentObject.id}}/?schema_id={{schema_id}}", $("#add_form_{{type}}_{{parentObject.id}}").serialize(),
-			      function( data ) {
-			          $("#jqmAlertContent{{type}}A{{parentObject.id}}").html( data );					
-							
-						return false;
-			      });
-
-			return false;
-		});
-	</script>
 {% endif %}
