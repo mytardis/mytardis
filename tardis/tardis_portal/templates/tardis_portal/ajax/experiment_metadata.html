@@ -6,12 +6,20 @@
 <div class="dataset_metadata">
   <ul>
     {% for parameterset in experiment.experimentparameterset_set.all %}
-          <p><strong><em>{{parameterset.schema}}</em></strong></p>
+        <div class="schema_name" title="{{ parameterset.schema.namespace }}">
+            <span>
+                {% if parameterset.schema.name %}
+                    {{ parameterset.schema.name }}
+                {% endif %}
+            </span>
+            <hr>
+        </div>
+        {% if has_write_permissions %}{% if not experiment.public %}
+            <div class="edit_schema"><a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
+                class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle"><img src="/site_media/images/icon_changelink.gif" ></a></div>
+        {% endif %}{% endif %}
 
-		{% if has_write_permissions %}{% if not experiment.public %}<p><a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
-		 class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle">[Edit Metadata]</a></p>{% endif %}{% endif %}
-
-      {% for parameter in parameterset.experimentparameter_set.all %}
+        {% for parameter in parameterset.experimentparameter_set.all %}
             <li><strong>{{ parameter.name.full_name }}: </strong>
               {{ parameter.get }}
 	</li>

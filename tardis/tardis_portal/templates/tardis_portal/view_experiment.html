@@ -340,7 +340,10 @@
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
         {% if has_write_permissions %}{% if not experiment.public %}
-           <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+            <a href="{{ experiment.get_edit_url }}">
+          <img src="/site_media/images/icon_changelink.gif" >
+          </a>
+
 	{% endif %}{% endif %}
       </h1>
     </div>
@@ -349,7 +352,7 @@
       <div id="tabs">
 	<ul>
 	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}{% if query %}?query={{ query }}{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if query %}query={{ query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
 	  {% for appurl, appname in apps %}
 	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
 	  {% endfor %}
