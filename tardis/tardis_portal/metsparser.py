@@ -658,11 +658,16 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 filename=self.metsObject.name, size=self.metsObject.size)
 
                             if datafile.count() == 0:
+                                size = self.metsObject.size
+
+                                if not self.metsObject.size:
+                                    size = 0
+
                                 self.modelDatafile = models.Dataset_File(
                                     dataset=thisFilesDataset,
                                     filename=self.metsObject.name,
                                     url=self.metsObject.url,
-                                    size=self.metsObject.size,
+                                    size=size,
                                     protocol=self.metsObject.url.split('://')[0])
 
                                 self.modelDatafile.save()

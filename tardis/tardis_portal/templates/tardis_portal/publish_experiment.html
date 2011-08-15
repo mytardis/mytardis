@@ -28,16 +28,23 @@
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 {% extends "tardis_portal/portal_template.html" %}
-		
-		{% block script %}
-		
-		<script type="text/javascript">
-		
-		</script>
-		
-		{% endblock %}
-		
+{% load creativecommons %}		
 		{% block content %}
+		<script type="text/javascript" charset="utf-8">
+			$(document).ready(function() {
+				$('#ands_register_checkbox').click(function() {
+					  if ($('#ands_register_checkbox').is(':checked'))
+					  {
+						$("#default_publish").show();
+					  }
+					  else
+					  {
+						 $("#default_publish").hide();
+				      }
+
+				});	
+			});		
+		</script>		
 			<div id="content">
 				<div class="post">
 					<h1 class="title"><a name="abouttardis">Publish Experiment</a></h1>
@@ -49,12 +56,20 @@
 							{% if legal %}
 								
 								{% if success %}
-									<h3>Experiment Publication Successful</strong></h3>
+									<h3>Experiment Publication Successful</h3>
 									<a href="../">Go back to your experiment.</a>
 								{% else %}
 									<h3><span style="color: red;">Experiment Publication Failed</span></h3>
-									See messages below for more information. <a href=".">Try to publish again</a>
-								
+									<p>See messages below for more information:</p>
+									
+									<p>
+										{% for message in messages %}
+											{{message}}<br/>
+										{% endfor %}
+									</p>
+									
+									<p><a href=".">Try to publish again</a></p>
+									
 								{% endif %}
 							
 							{% else %}
@@ -63,48 +78,64 @@
 								Please accept the legal agreement.
 							
 							{% endif %}
-									
-									<div class="publish_results" style="padding: 20px">
-									{% for result in publish_result %}
-										<div {% if not result.status %}style="color: red;"{% endif %}>
-											<strong>{{result.name}}</strong><br/>
-											{{result.message}}
-											<br/><br/>
-										</div>
-									{% endfor %}
-									</div>
 						
 						</p>
 						{% else %}
-							
-							<form action="." method="POST" class="publishform">
-							<p>
-								<strong>Experiment Name:</strong> {{ experiment.title }}
-							</p>
-							
-							<strong>Legal Agreement:</strong>
-							<p>
-								{{legaltext}}
-							<p>
-							{{default_test}}
-							<input type="checkbox" name="legal" value="Agree">I agree to the above terms and wish to make my data publicly available<br>
-							</p>
-							
-							{% for form in publish_forms %}
-								<div style="border-width: 1px; border-style: solid;
-								 padding: 10px; margin: 10px">
-									{% include form %}
-								</div>
-							{% endfor %}
-							
-							<br/>
-							<input id="button" type="submit" value="Publish Experiment"/>
-						
+							{% if not has_cc_license %}
+									No license is currently set for this experiment. Please go to the <a href="{% url tardis.tardis_portal.views.choose_license experiment.id %}">Choose License page to set it.</a>
+							{% else %}
+                                <form action="." method="POST" class="publishform">
+                                <p>
+                                    <strong>Experiment Name:</strong> {{ experiment.title }}
+                                </p>
+
+                                {% if not has_ands_registered %}
+                                <div class="white_box">
+                                    <h2>ANDS Research Data Australia Registration</h2>
+                                    <p><img src="/site_media/images/ands-logo-hi-res.jpg"></p>
+
+                                    <p>You have not yet registered this experiment with ANDS Research Data Australia. Doing so has many benefits including a persistent handles, and a 33% increase in your attractiveness to the opposite gender*. This is obviously temporary text. Relax!</p>
+
+                                    <p><a href="../">Click here to go back to your Experiment. From there click 'ANDS Register'.</a></p>
+
+                                    <input id="ands_register_checkbox" type="checkbox" name="ands_register" value="do_not_ands_register">I do <strong>not</strong> wish to register my data first with Research Data Australia.<br/>
+
+                                </div>
+                                <br/>
+                                {% endif %}
+
+                                <div id="default_publish" {% if not has_ands_registered %}style="display: none"{% endif%}>
+                                <div class="white_box">
+                                    <h2>Licensing</h2>
+
+                                    <p>
+                                        Current experiment license is:
+                                    </p>
+                                    <p>
+                                        <div class="license_box">{{experiment.id|show_cc_license|safe}}</div>
+                                    </p>
+                                    <p>
+                                        If you'd like to change this, then go to the <a href="{% url tardis.tardis_portal.views.choose_license experiment.id %}">Choose License page before publishing.</a>
+                                    </p>
+                                </div>
+
+                                <div class="white_box">
+                                <h2>Legal Agreement:</h2>
+                                <p>
+                                    {{legaltext}}
+                                <p>
+                                <input type="checkbox" name="legal" value="Agree">I agree to the above terms and wish to make my data publicly available<br>
+                                </p>
+                                </div>
+                                <br/>
+                                <input id="button" type="submit" value="Publish Experiment"/>
+
+                                </div>
+
+                                </form>
+                             {% endif %}
 						{% endif %}
 			
-			</div>
-			
-			</form>
 		    		</div>
 		    	</div>
 			</div>

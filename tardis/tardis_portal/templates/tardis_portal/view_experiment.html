@@ -92,7 +92,24 @@
 	    $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
 	    $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
 	}
-    });
+    })
+
+	$(document).ready(function() {
+	$("#tabs").tabs({
+	   ajaxOptions: {dataType: "html"},
+	   cookie: { expires: 30 },
+       load: function (e, ui) {
+             $(ui.panel).find(".tab-loading").remove();
+           },
+       select: function (e, ui) {
+         var $panel = $(ui.panel);
+
+
+         $panel.html("<div class='tab-loading'>Loading...<img src='/site_media/images/busy.gif'/></div>")
+
+        }
+
+	});
 
 	$('#schemaselect').live('change', function(e) {
 		e.preventDefault();
@@ -108,6 +125,7 @@
         });
 		return false;
 	});
+
 	$('#add_new_parameter').live('click', function(){		
 		$("#parameternameselect > option:selected").each(function() {
             var $selected_option = $(this);
@@ -303,6 +321,7 @@
 
         })
         return false;
+        });
     });
 </script>
 
@@ -352,7 +371,7 @@
       <div id="tabs">
 	<ul>
 	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if query %}query={{ query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+	  <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
 	  {% for appurl, appname in apps %}
 	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
 	  {% endfor %}

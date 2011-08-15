@@ -202,7 +202,8 @@ class Experiment(models.Model):
         urls = {}
         kwargs = {'experiment_id': self.id,
                   'comptype': comptype}
-        distinct = Dataset_File.objects.filter(dataset__experiment=self.id).values('protocol').distinct()
+        distinct = Dataset_File.objects.filter(dataset__experiment=self.id)\
+            .values('protocol').distinct()
         for key_value in distinct:
             protocol = key_value['protocol']
             if protocol in ['', 'tardis', 'file', 'http', 'https']:
@@ -219,30 +220,6 @@ class Experiment(models.Model):
                     pass
 
         return urls
-
-    def profile(self):
-        """Return the rif-cs profile template location
-            as determined by the profile ExperimentParameter
-
-        """
-
-        profile_template_location = "rif_cs_profile/profiles/"
-
-        try:
-            from tardis.tardis_portal.publish.rif_cs_profile.\
-            rif_cs_PublishProvider\
-            import rif_cs_PublishProvider
-
-            rif_cs_pp = rif_cs_PublishProvider(self.id)
-
-            profile = rif_cs_pp.get_profile()
-            if not profile:
-                return profile_template_location + "default.xml"
-
-            return profile_template_location + profile
-
-        except:
-            return profile_template_location + "default.xml"
 
 
 class ExperimentACL(models.Model):
@@ -480,6 +457,24 @@ class Dataset_File(models.Model):
             return self.url.partition('://')[2]
 
         # ok, it doesn't look like the file is stored locally
+        else:
+            return ''
+
+    def get_absolute_filepath_old(self):  # temp quickfix!
+        # check for empty protocol field (historical reason) or
+        # 'tardis' which indicates a location within the tardis file
+        # store
+        if self.protocol == '' or self.protocol == 'tardis':
+            from django.conf import settings
+            try:
+                FILE_STORE_PATH = settings.FILE_STORE_PATH
+            except AttributeError:
+                return ''
+
+            from os.path import abspath, join
+            return abspath(join(FILE_STORE_PATH,
+                                str(self.dataset.experiment.id),
+                                self.url.partition('://')[2]))
         else:
             return ''
 
@@ -763,7 +758,8 @@ def _getParameter(parameter):
             elif parset == 'ExperimentParameterSet':
                 eid = parameter.parameterset.dataset.id
                 psid = parameter.parameterset.id
-                viewname = 'tardis.tardis_portal.views.display_experiment_image'
+                viewname = 'tardis.tardis_portal.views.'
+                'display_experiment_image'
                 args = [eid, psid, parameter.name]
             if viewname:
                 value = "<img src='%s' />" % reverse(viewname=viewname,

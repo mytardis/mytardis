@@ -9043,7 +9043,11 @@ class fileType(GeneratedsSuper):
         self.DMDID = _cast(None, DMDID)
         self.BEGIN = _cast(None, BEGIN)
         self.OWNERID = _cast(None, OWNERID)
-        self.SIZE = _cast(int, SIZE)
+        self.SIZE = None
+        try:
+            self.SIZE = _cast(int, SIZE)
+        except ValueError:
+            pass
         self.GROUPID = _cast(None, GROUPID)
         self.BETYPE = _cast(None, BETYPE)
         if FLocat is None:

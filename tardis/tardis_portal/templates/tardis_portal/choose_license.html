@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+    
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -27,25 +27,55 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-<site-settings>
-	<email-endswith>monash.edu.au</email-endswith>
-	<register>
-		<url>{{baseurl}}/experiment/register/</url>
-		<username>synchrotron</username>
-		<password>tardis</password>
-	</register>
-	<transfer>
-		<type>gridftp</type>
-		<user>tardis</user>
-		<password>{{proxy}}</password>
-		<sl>gsiftp://gridftpdev.its.monash.edu.au</sl>
-		<serversite>{{filestorepath}}</serversite>
-		<optionFast>true</optionFast>
-		<optionPenable>true</optionPenable>
-		<optionP>10</optionP>
-		<optionBSenable>false</optionBSenable>
-		<optionBS>0</optionBS>
-		<optionTCPBSenable>false</optionTCPBSenable>
-		<optionTCPBS>0</optionTCPBS>
-	</transfer>
-</site-settings>
+{% extends "tardis_portal/portal_template.html" %}
+
+        {%  block script %}
+          <script type="text/javascript">
+
+              $(document).ready(function() {
+                $('#cc_js_jurisdiction_choice_au').attr('selected', true);
+              });
+          </script>
+        {%  endblock %}
+
+		{% block content %}
+			<div id="content">
+				<div class="post">
+					<h1 class="title"><a name="abouttardis">Choose License</a></h1>
+					<div class="entry">
+							{% if not submit %}
+							<form action="." method="POST" class="licenseform">
+							<p>
+								<strong>Experiment Name:</strong> {{ experiment.title }}
+							</p>
+							
+							
+								{% include "tardis_portal/creative_commons.html" %}
+
+							<br/>
+							<input id="button" type="submit" value="Choose License"/>
+						
+							</form>	
+							{% else %}
+								<h2>License Chosen</h2>
+								<a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">Go back to your experiment.</a>
+							{% endif %}
+		    		</div>
+		    	</div>
+			</div>
+		    <br/>
+			
+			{% endblock %} {% block sidebar %}
+				
+				<ul>
+					<li>
+						<h2></h2>
+							
+							<ul>
+							
+							</ul>
+					</li>
+				</ul>
+		
+		<p>
+			{% endblock %}

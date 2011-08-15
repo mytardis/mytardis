@@ -196,7 +196,8 @@ class ChangeGroupPermissionsForm(forms.Form):
 
     canRead = forms.BooleanField(label='canRead', required=False)
     canWrite = forms.BooleanField(label='canWrite', required=False)
-    canDelete = forms.BooleanField(label='canDelete', required=False)
+    canDelete = forms.BooleanField(label='', required=False,
+                                   widget=forms.HiddenInput)
 
     effectiveDate = forms.DateTimeField(label='Effective Date',
             widget=SelectDateWidget(), required=False)
@@ -213,9 +214,10 @@ class AddUserPermissionsForm(forms.Form):
     adduser.widget.attrs['class'] = 'usersuggest'
     read = forms.BooleanField(label='READ', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='WRITE', required=False)
+    write = forms.BooleanField(label='EDIT', required=False)
     write.widget.attrs['class'] = 'canWrite'
-    delete = forms.BooleanField(label='DELETE', required=False)
+    delete = forms.BooleanField(label='', required=False,
+                                   widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
 
 
@@ -232,9 +234,10 @@ class AddGroupPermissionsForm(forms.Form):
     adduser.widget.attrs['class'] = 'usersuggest'
     read = forms.BooleanField(label='READ', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='WRITE', required=False)
+    write = forms.BooleanField(label='EDIT', required=False)
     write.widget.attrs['class'] = 'canWrite'
-    delete = forms.BooleanField(label='DELETE', required=False)
+    delete = forms.BooleanField(label='', required=False,
+                                   widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
 
 
@@ -731,39 +734,7 @@ def createSearchExperimentForm():
         fieldNames = []
         schemaAndFieldLists.append((schema, fieldNames))
 
-        for parameterName in searchableParameterNames:
-            if parameterName.data_type == ParameterName.NUMERIC:
-                if parameterName.comparison_type \
-                    == ParameterName.RANGE_COMPARISON:
-                    fields[parameterName.name + 'From'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' From', required=False)
-                    fields[parameterName.name + 'To'] = \
-                        forms.DecimalField(label=parameterName.full_name
-                            + ' To', required=False)
-                    fieldNames.append(parameterName.name + 'From')
-                    fieldNames.append(parameterName.name + 'To')
-                else:
-                    # note that we'll also ignore the choices text box entry
-                    # even if it's filled if the parameter is of numeric type
-                    # TODO: decide if we are to raise an exception if
-                    #       parameterName.choices is not empty
-                    fields[parameterName.name] = \
-                        forms.DecimalField(label=parameterName.full_name,
-                            required=False)
-                    fieldNames.append(parameterName.name)
-            else:  # parameter is a string
-                if parameterName.choices != '':
-                    fields[parameterName.name] = \
-                        forms.CharField(label=parameterName.full_name,
-                        widget=forms.Select(choices=__getParameterChoices(
-                        parameterName.choices)), required=False)
-                else:
-                    fields[parameterName.name] = \
-                        forms.CharField(label=parameterName.full_name,
-                        max_length=255, required=False)
-                fieldNames.append(parameterName.name)
-
+    fieldsets = []
 
     for schema, fieldlist in schemaAndFieldLists:
         name = schema.name if schema.name != None else 'No schema name'

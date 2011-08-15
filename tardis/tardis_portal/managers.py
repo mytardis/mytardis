@@ -87,6 +87,7 @@ class ExperimentManager(OracleSafeManager):
         return super(ExperimentManager, self).get_query_set().filter(
             query).distinct()
 
+
     def get(self, request, experiment_id):
         """
         Returns an experiment under the consideration of the ACL rules

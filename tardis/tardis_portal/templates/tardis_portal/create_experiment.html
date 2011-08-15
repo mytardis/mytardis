@@ -166,6 +166,61 @@
 	});
   </script>
 
+	    <script type="text/javascript">
+          $(document).ready(function() {
+
+	      var dsPrefix = "dataset";
+	      // converting DOM element to jquery
+	      function updateDSidCB(ndx, row) {
+		  updateDSid(ndx, $(row));
+	      }
+	      function updateDSid(ndx, row) {
+		  row.find('input,select,textarea,label').each(function() {
+		      var prefix = "ds";
+		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
+                      var replacement = prefix + '-' + ndx + '-';
+                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
+                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
+		      var prefix = "dataset";
+		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
+                      var replacement = prefix + '-' + ndx + '-';
+                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
+                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
+                  });
+	      }
+	      function addDatasetCB(row) {
+		  //var ndx = findLastDS();
+          var forms = row.parents('#create_experiment_form').find('.dataset_container').not('.formset-custom-template');
+		  var ndx = forms.size()-1;
+		  updateDSid(ndx, row);
+		  row.find("li.datafile").remove();
+		  row.find('[name$=TOTAL_FORMS]').val("0");
+		  row.find('[name$=INITIAL_FORMS]').val("0");
+	      }
+	      function updateDSids() {
+		  $(".dataset_container").not('.formset-custom-template').each(updateDSidCB);
+	      }
+	      function removeDatasetCB(row) {
+		  updateDSids();
+	      }
+
+		  $('.dataset_container').formset({addText:"Add another Dataset",
+						   prefix: dsPrefix,
+						   added: addDatasetCB,
+						   removed: removeDatasetCB,
+						   deleteText: 'Remove Dataset',
+						   formCssClass: "dataset_container",
+						   formTemplate: ".fsTemplate",
+						   });
+
+		  $(document).find('.dataset_container.immutable').find('.delete-row').hide();
+		  $(document).find('.dataset_container.immutable').find('.remove_file').hide();
+		  $(document).find('.dataset_container.immutable').find('.add_files').hide();
+
+	      });
+
+	    </script>
+
 {% endblock %}
 
 {% block content %}
@@ -254,61 +309,6 @@
 		<br/>
 	      </div>
 	    {% endif %}
-	    <script type="text/javascript">
-	      function findLastDS() {
-		  forms = $('.dataset_container').not('.formset-custom-template');
-		  return forms.length-1;
-	      }
-	      var dsPrefix = "dataset";
-	      // converting DOM element to jquery
-	      function updateDSidCB(ndx, row) {
-		  updateDSid(ndx, $(row));
-	      }
-	      function updateDSid(ndx, row) {
-		  row.find('input,select,textarea,label').each(function() {
-		      var prefix = "ds";
-		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
-                      var replacement = prefix + '-' + ndx + '-';
-                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
-                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
-		      var prefix = "dataset";
-		      var idRegex = new RegExp('(' + prefix + '-\\d+-)');
-                      var replacement = prefix + '-' + ndx + '-';
-                      if ($(this).attr('id')) $(this).attr('id', $(this).attr('id').replace(idRegex, replacement));
-                      if ($(this).attr('name')) $(this).attr('name', $(this).attr('name').replace(idRegex, replacement));
-                  });
-	      }
-	      function addDatasetCB(row) {
-		  var ndx = findLastDS();
-		  console.log(ndx);
-		  updateDSid(ndx, row);
-		  row.find("li.datafile").remove();
-		  row.find('[name$=TOTAL_FORMS]').val("0");
-		  row.find('[name$=INITIAL_FORMS]').val("0");
-	      }
-	      function updateDSids() {
-		  $(".dataset_container").not('.formset-custom-template').each(updateDSidCB);
-	      }
-	      function removeDatasetCB(row) {
-		  updateDSids();
-	      }
-	      $(document).ready(function() {
-		  $('.dataset_container').formset({addText:"Add another Dataset",
-						   prefix: dsPrefix,
-						   added: addDatasetCB,
-						   removed: removeDatasetCB,
-						   deleteText: 'Remove Dataset',
-						   formCssClass: "dataset_container",
-						   formTemplate: ".fsTemplate",
-						   });
-
-		  $(document).find('.dataset_container.immutable').find('.delete-row').hide();
-		  $(document).find('.dataset_container.immutable').find('.remove_file').hide();
-		  $(document).find('.dataset_container.immutable').find('.add_files').hide();
-
-	      });
-
-	    </script>
 
 	    <div class="datasets">
 	      {% for dataset_form, file_forms in form.get_datasets %}

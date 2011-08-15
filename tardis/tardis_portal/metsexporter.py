@@ -217,8 +217,13 @@ class MetsExporter():
                     except:
                         logger.exception('b64encoding failed: %s' % file_path)
                 else:
-                    metadataDict[parameter.name.name] = \
+                    try:
+                        metadataDict[parameter.name.name] = \
                         parameter.string_value.strip() or 'None'
+                    except AttributeError:
+                        metadataDict[parameter.name.name] = \
+                        'None'
+
 
             _xmlData.add_xsdAny_(self.createXmlDataContentForParameterSets(
                 elementName=elementName,

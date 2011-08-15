@@ -43,6 +43,23 @@ def get_accessible_experiments(request):
     return experiments
 
 
+def get_shared_experiments(request):
+
+    experiments = Experiment.safe.all(request)
+    experiments = experiments.filter(public=False)
+
+    #exclude owned experiments
+    owned = get_owned_experiments(request)
+    experiments = experiments.exclude(id__in=[o.id for o in owned])
+    return experiments
+
+
+def get_owned_experiments(request):
+
+    experiments = Experiment.safe.owned(request)
+    return experiments
+
+
 def get_accessible_datafiles_for_user(request):
 
     experiments = get_accessible_experiments(request)

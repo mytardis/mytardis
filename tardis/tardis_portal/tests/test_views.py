@@ -39,13 +39,15 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal import models
+from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.models import UserProfile, ExperimentACL,\
+    Experiment, Dataset, Dataset_File
 
 
 class UploadTestCase(TestCase):
@@ -59,14 +61,26 @@ class UploadTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
+        self.userProfile = UserProfile(user=self.user)
+
         self.test_dir = mkdtemp()
 
-        self.exp = models.Experiment(title='test exp1',
+        self.exp = Experiment(title='test exp1',
                 institution_name='monash', created_by=self.user)
         self.exp.save()
 
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=self.exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
         self.dataset = \
-            models.Dataset(description='dataset description...',
+            Dataset(description='dataset description...',
                            experiment=self.exp)
         self.dataset.save()
 
@@ -104,32 +118,16 @@ class UploadTestCase(TestCase):
         self.exp.delete()
 
     def testFileUpload(self):
-        from django.http import QueryDict, HttpRequest
-        from tardis.tardis_portal.views import upload
-        from django.core.files import File
-        from django.core.files.uploadedfile import UploadedFile
-        from django.utils.datastructures import MultiValueDict
         from os import path
 
-        # create request.FILES object
+        c = Client()
+        c.login(username='tardis_user1', password='secret')
 
-        django_file = File(self.f1)
-        uploaded_file = UploadedFile(file=django_file)
-        uploaded_file.name = self.filename
-        uploaded_file.size = self.f1_size
+        response = c.post('/upload/' + str(self.dataset.id) + '/',
+            {'Filedata': self.f1})
 
-        post_data = [('enctype', 'multipart/form-data')]
-        post = QueryDict('&'.join(['%s=%s' % (k, v) for (k, v) in
-                         post_data]))
-
-        files = MultiValueDict({'Filedata': [uploaded_file]})
-        request = HttpRequest()
-        request.FILES = files
-        request.POST = post
-        request.method = 'POST'
-        response = upload(request, self.dataset.id)
         test_files_db = \
-            models.Dataset_File.objects.filter(dataset__id=self.dataset.id)
+            Dataset_File.objects.filter(dataset__id=self.dataset.id)
 
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
@@ -164,7 +162,7 @@ class listTestCase(TestCase):
         for (uname, pwd) in self.accounts:
             user = User.objects.create_user(uname, '', pwd)
             user.save()
-            profile = models.UserProfile(user=user,
+            profile = UserProfile(user=user,
                                          isDjangoAccount=True)
             profile.save()
 

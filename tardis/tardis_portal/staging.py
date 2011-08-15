@@ -55,8 +55,14 @@ def staging_traverse(staging=settings.STAGING_PATH):
     """
 
     ul = '<ul><li id="phtml_1"><a>My Files</a><ul>'
-    filelist = listdir(staging)
-    filelist.sort()
+
+    filelist = []
+    try:
+        filelist = listdir(staging)
+        filelist.sort()
+    except OSError:
+        logger.error('staging directory doesnt exist' +\
+            str(staging))
     for f in filelist:
         ul = ul + traverse(path.join(staging, f), staging)
     return ul + '</ul></li></ul>'
@@ -310,4 +316,9 @@ def get_full_staging_path(username):
         return None
 
     from os import path
-    return path.join(settings.STAGING_PATH, username)
+    staging_path = path.join(settings.STAGING_PATH, username)
+    logger.debug('full staging path returned as ' + str(staging_path))
+    if not path.exists(staging_path):
+        return None
+    else:
+        return staging_path
