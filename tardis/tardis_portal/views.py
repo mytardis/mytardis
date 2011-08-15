@@ -867,7 +867,14 @@ def retrieve_parameters(request, dataset_file_id):
     parametersets = DatafileParameterSet.objects.all()
     parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
 
-    c = Context({'parametersets': parametersets})
+    experiment_id = Dataset_File.objects.get(id=dataset_file_id).\
+        dataset.experiment.id
+
+    has_write_permissions = \
+        authz.has_write_permissions(request, experiment_id)
+
+    c = Context({'parametersets': parametersets,
+                 'has_write_permissions': has_write_permissions})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
