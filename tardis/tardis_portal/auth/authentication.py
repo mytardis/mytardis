@@ -51,13 +51,15 @@ def list_auth_methods(request):
 
         # ... and append it to our list
         for userAuth in userAuths:
-            userAuthMethodList.append((userAuth.username,
-                userAuth.getAuthMethodDescription(),
-                userAuth.authenticationMethod))
+            # localdb is already represented above
+            if not userAuth.authenticationMethod == "localdb":
+                userAuthMethodList.append((userAuth.username,
+                    userAuth.getAuthMethodDescription(),
+                    userAuth.authenticationMethod))
 
-            # also remove the current userAuth from the list of authentication
-            # method options that can be added by this user
-            del supportedAuthMethods[userAuth.authenticationMethod]
+                # also remove the current userAuth from the list of authentication
+                # method options that can be added by this user
+                del supportedAuthMethods[userAuth.authenticationMethod]
 
     except UserProfile.DoesNotExist:
         # if there is no userProfile object linked to the current user,

@@ -42,6 +42,8 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
 from tardis.tardis_portal.staging import get_full_staging_path
+import logging
+logger = logging.getLogger(__name__)
 
 
 class AuthService():
@@ -240,13 +242,15 @@ class AuthService():
 
         plugin = user_dict['pluginname']
 
+        logger.debug('Trying to find user in user_dict:')
+        logger.debug(user_dict)
         username = ''
-        if not 'id' in user_dict:
-            email = user_dict['email']
-            username =\
-                self._authentication_backends[plugin].getUsernameByEmail(email)
-        else:
-            username = user_dict['id']
+        email = user_dict['id']
+        logger.debug('trying to get username by' +
+            ' email ' + email)
+        username =\
+            self._authentication_backends[plugin].getUsernameByEmail(email)
+        logger.debug('get username by email returned ' + str(username))
 
         try:
             user = UserAuthentication.objects.get(username=username,
@@ -287,13 +291,22 @@ class AuthService():
             username=username, authenticationMethod=plugin)
         userAuth.save()
 
+        logger.debug(str(settings.STAGING_PROTOCOL) + ' ' + str(plugin))
+
         if settings.STAGING_PROTOCOL == plugin:
             # to be put in its own function
-            staging_path = get_full_staging_path(username)
-            import os
-            if not os.path.exists(staging_path):
-                os.makedirs(staging_path)
-                os.system('chmod g+w ' + staging_path)
-                os.system('chown ' + username + ' ' + staging_path)
-
+            from os import path
+            staging_path = path.join(settings.STAGING_PATH, username)
+            logger.debug('new staging path calced to be ' + str(staging_path))
+            if staging_path != None:
+                import os
+                if not os.path.exists(staging_path):
+                    try:
+                        os.makedirs(staging_path)
+                        #os.system('chmod g+w ' + staging_path)
+                        os.system('chown ' + username + ' ' + staging_path)
+                    except OSError:
+                        logger.error("Couldn't create staging directory " +\
+                            str(staging_path))
+                   
         return user

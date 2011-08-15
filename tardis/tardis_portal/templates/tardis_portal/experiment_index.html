@@ -34,15 +34,13 @@
       {% if experiments %}
         <strong>{{ experiments.count }}</strong> experiment{{ experiments.count|pluralize}}
       {% endif %}
-      <br/>
-      <br/>
-
+	
       {% if experiments %}
         <table class="experiment-table">
 	  {% for experiment in experiments %}
 	    <tr>
 	      <th>
-		<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a>
+		<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a> {% if experiment.public %}(public){% endif %}
 	      </th>
 	    </tr>
 	    <tr>
@@ -65,7 +63,7 @@
 	</table>
 
 	{% else %}
-	  No experiments available at this time.
+	  You own no experiments at this time.
 	{% endif %}
 
     </div> <!-- post -->
@@ -73,6 +71,51 @@
     <br/>
     <br/>
     <br/>
+
+<div class="post">
+  <h1 class="title">
+<a href="#">Experiments shared with me</a>
+  </h1>
+
+  {% if shared_experiments %}
+    <strong>{{ shared_experiments.count }}</strong> experiment{{ shared_experiments.count|pluralize}}
+  {% endif %}
+
+  {% if shared_experiments %}
+    <table class="experiment-table">
+  {% for experiment in shared_experiments %}
+    <tr>
+      <th>
+	<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a> {% if experiment.public %}(public){% endif %}
+      </th>
+    </tr>
+    <tr>
+      <td>
+	From <strong>{{experiment.institution_name}}</strong>,
+	deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+      </td>
+    </tr>
+    <tr>
+      <td class="experiment-table-stats">
+	<strong>{{ experiment.dataset_set.all.count }}</strong>
+	dataset{{ experiment.dataset_set.all.count|pluralize }},
+	containing <strong>{{ experiment.id|experiment_file_count }}</strong>
+	file{{ experiment.id|experiment_file_count|pluralize }}
+            <br/>
+	<br/>
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% else %}
+  There are no experiments shared with you.
+{% endif %}
+</div> <!-- post -->
+
+<br/>
+<br/>
+<br/>
 
   {% endif %}
 
@@ -86,8 +129,6 @@
       public experiment{{ public_experiments.count|pluralize }}
     {% endif %}
 
-    <br/>
-    <br/>
 
     {% if public_experiments %}
       <table class="experiment-table">

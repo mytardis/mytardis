@@ -8,6 +8,23 @@
 
       $(document).ready(function() {
 
+    $('.canWrite').live('click', function(){
+       if($(this).is(':checked'))
+       {
+           var canReadBox = $(this).siblings(".canRead");
+           canReadBox.attr('disabled', true);
+           canReadBox.attr('checked','checked')
+
+       }
+       else
+       {
+           var canReadBox = $(this).siblings(".canRead");
+           canReadBox.attr('disabled', false);
+           canReadBox.removeAttr('checked')
+       }
+
+    });
+
     //beginswith, endswith
     String.prototype.beginsWith = function(t, i) { if (i==false) { return
     (t == this.substring(0, t.length)); } else { return (t.toLowerCase()

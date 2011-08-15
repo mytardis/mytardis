@@ -160,6 +160,7 @@ class ParameterSetManager(object):
         else:
             param.string_value = str(value)
         param.save()
+        return param.id
 
     def new_param(self, parname, value, fullparname=None):
         param = self.blank_param()
@@ -172,6 +173,7 @@ class ParameterSetManager(object):
         else:
             param.string_value = str(value)
         param.save()
+        return param.id
 
         # use this one from post data
     def set_param_list(self, parname, value_list, fullparname=None):

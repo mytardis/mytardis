@@ -39,7 +39,9 @@ def download_datafile(request, datafile_id):
             or url.startswith('ftp://'):
             return HttpResponseRedirect(datafile.url)
 
-        elif datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
+        elif datafile.protocol == 'tardis' or \
+            datafile.url.startswith('tardis'):
+
             raw_path = url.partition('//')[2]
             file_path = path.join(settings.FILE_STORE_PATH,
                                   str(expid),
@@ -67,7 +69,7 @@ def download_datafile(request, datafile_id):
                         'attachment; filename="%s"' % datafile.filename
                     return response
                 except IOError:
-                    return return_response_not_found(request)               
+                    return return_response_not_found(request)
 
         elif datafile.protocol in ['', 'file']:
             file_path = datafile.url.partition('://')[2]
@@ -101,7 +103,8 @@ def download_datafile_ws(request):
         url = urllib.unquote(request.GET['url'])
         raw_path = url.partition('//')[2]
         experiment_id = request.GET['experiment_id']
-        datafile = Dataset_File.objects.filter(url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
+        datafile = Dataset_File.objects.filter(
+            url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
 
         if has_datafile_access(request=request,
                                dataset_file_id=datafile.id):
@@ -189,8 +192,15 @@ def download_datafiles(request):
     fileString = ''
 
     comptype = "zip"
-    if 'comtype' in request.POST:
+    if 'comptype' in request.POST:
         comptype = request.POST['comptype']
+
+    if 'datafile' in request.POST:
+        if len(request.POST.getlist('datafile')) > 500:
+            comptype = "tar"
+
+    if 'dataset' in request.POST:
+        comptype = "tar" #todo quickfix, calc how many files
 
     # the following protocols can be handled by this module
     protocols = ['', 'file', 'tardis']
@@ -213,7 +223,8 @@ def download_datafiles(request):
                         absolute_filename = datafile.url.partition('//')[2]
                         if(datafile.url.partition('//')[0] == 'tardis:'):
                             #temp fix for old data
-                            filepath = '\"%s/%s/%s\" ' % (expid, str(datafile.dataset.id),
+                            filepath = '%s/%s/%s' %\
+                            (expid, str(datafile.dataset.id),
                                 absolute_filename)
 
                             print filepath + "######"
@@ -224,12 +235,13 @@ def download_datafiles(request):
                                 #exists test. os.exists broken
                             except IOError:
                                 print "OLD FILE DETECTED"
-                                filepath = '%s/%s ' % (expid, absolute_filename)
+                                filepath = '%s/%s' % (expid, absolute_filename)
 
-                            fileString += ('\"' + filepath + '\"" ')
+                            fileString += ('\"' + filepath + '\" ')
                             print fileString
                         else:
-                            fileString += '\"%s/\"%s" ' % (expid, absolute_filename)
+                            fileString += '\"%s/%s\" ' %\
+                            (expid, absolute_filename)
 
 
             for dfid in datafiles:
@@ -237,14 +249,15 @@ def download_datafiles(request):
                 if datafile.dataset.id in datasets:
                     continue
                 if has_datafile_access(request=request,
-                                        dataset_file_id=datafile.id):
+                        dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
                     absolute_filename = datafile.url.partition('//')[2]
                     if(datafile.url.partition('//')[0] == 'tardis:'):
                         #temp fix for old data
-                        filepath = '\"%s/%s/%s\" ' % (expid, str(datafile.dataset.id),
+                        filepath = '\"%s/%s/%s\" ' %\
+                        (expid, str(datafile.dataset.id),
                             absolute_filename)
 
                         print filepath + "######"
@@ -255,17 +268,19 @@ def download_datafiles(request):
                             #exists test. os.exists broken
                         except IOError:
                             print "OLD FILE DETECTED"
-                            filepath = '\"%s/\"%s ' % (expid, absolute_filename)
+                            filepath = '\"%s/%s\" ' %\
+                                       (expid, absolute_filename)
 
                         fileString += filepath
                         print fileString
                     else:
-                        fileString += '\"%s/\"%s ' % (expid, absolute_filename)
+                        fileString += '\"%s/%s\" ' % (expid, absolute_filename)
         else:
             return return_response_not_found(request)
 
     elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
+            comptype = "tar" #todo quickfix for zip error
             fileString = ""
             for url in request.POST.getlist('url'):
                 url = urllib.unquote(url)
@@ -280,10 +295,12 @@ def download_datafiles(request):
                         protocols += [p]
                     absolute_filename = datafile.url.partition('//')[2]
                     if(datafile.url.partition('//')[0] == 'tardis:'):
-                        # expects tardis: formatted stuff to not include dataset id
+                        # expects tardis: formatted stuff
+                        # to not include dataset id
 
                         #temp fix for old data
-                        filepath = '%s/%s/%s ' % (expid, str(datafile.dataset.id),
+                        filepath = '\"%s/%s/%s\" ' %\
+                            (expid, str(datafile.dataset.id),
                             absolute_filename)
 
                         print filepath + "######"
@@ -294,7 +311,8 @@ def download_datafiles(request):
                             #exists test. os.exists broken
                         except IOError:
                             print "OLD FILE DETECTED"
-                            filepath = '%s/%s ' % (expid, absolute_filename)
+                            filepath = '\"%s/%s\" ' %\
+                                       (expid, absolute_filename)
 
                         fileString += ('\"' + filePath + '\" ')
                         print fileString
@@ -337,9 +355,10 @@ def download_datafiles(request):
 
             # logger.info(cmd)
             response = \
-                HttpResponse(FileWrapper(subprocess.Popen(cmd,
-                                                          stdout=subprocess.PIPE,
-                                                          shell=True).stdout),
+                HttpResponse(FileWrapper(subprocess.Popen(
+                                                    cmd,
+                                                    stdout=subprocess.PIPE,
+                                                    shell=True).stdout),
                              mimetype='application/x-tar')
             response['Content-Disposition'] = \
                     'attachment; filename="experiment%s-selection.tar"' % expid
@@ -349,9 +368,10 @@ def download_datafiles(request):
                                        fileString)
             # logger.info(cmd)
             response = \
-                HttpResponse(FileWrapper(subprocess.Popen(cmd,
-                                                          stdout=subprocess.PIPE,
-                                                          shell=True).stdout),
+                HttpResponse(FileWrapper(subprocess.Popen(
+                                                    cmd,
+                                                    stdout=subprocess.PIPE,
+                                                    shell=True).stdout),
                              mimetype='application/zip')
             response['Content-Disposition'] = \
                     'attachment; filename="experiment%s-selection.zip"' % expid

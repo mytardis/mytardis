@@ -5,6 +5,7 @@ from django.template import RequestContext, Context
 from django.http import HttpResponseForbidden, HttpResponseNotFound, \
     HttpResponseServerError
 from tardis.tardis_portal.staging import get_full_staging_path
+from django.template.loader import render_to_string
 
 
 def render_response_index(request, *args, **kwargs):
@@ -30,10 +31,10 @@ def render_response_index(request, *args, **kwargs):
         kwargs['context_instance']['has_staging_access'] = False
 
 
-    if request.mobile:
-        template_path = args[0]
-        split = template_path.partition('/')
-        args = (split[0] + '/mobile/' + split[2], ) + args[1:]
+    #if request.mobile:
+    #    template_path = args[0]
+    #    split = template_path.partition('/')
+    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
 
     return render_to_response(*args, **kwargs)
 
@@ -75,10 +76,10 @@ def render_response_search(request, *args, **kwargs):
     else:
         kwargs['context_instance']['has_staging_access'] = False
 
-    if request.mobile:
-        template_path = args[0]
-        split = template_path.partition('/')
-        args = (split[0] + '/mobile/' + split[2], ) + args[1:]
+    #if request.mobile:
+    #    template_path = args[0]
+    #    split = template_path.partition('/')
+    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
 
     return render_to_response(*args, **kwargs)
 
@@ -98,3 +99,6 @@ def return_response_error(request):
     c = Context({'status': 'ERROR: Forbidden', 'error': True})
     return HttpResponseForbidden(render_response_index(request,
                                  'tardis_portal/blank_status.html', c))
+
+def render_to_file(template, filename, context):
+    open(filename, "w").write(render_to_string(template, context))
