@@ -36,7 +36,7 @@
 
   <p>
     <div class="experiment_md_container">
-        <strong style="float:left;">Experiment Metadata:</strong>
+        <strong style="float:left; margin-right: 5px">Experiment Metadata</strong>
 
         {% if has_write_permissions %}{% if not experiment.public %}
             <a title="Add" id="expAddTrigger" class="fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}" 
