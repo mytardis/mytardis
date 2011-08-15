@@ -74,7 +74,9 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-TARDIS_APPS = ('equipment',)
+#TARDIS_APPS = ('equipment',)
+
+TARDIS_APPS = ()
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
