@@ -32,10 +32,31 @@
 
 from django.contrib import admin
 from tardis.tardis_portal import models
+from django.forms import TextInput
+import django.db
 # from south.models import MigrationHistory
+
+
+class ExperimentParameterInline(admin.TabularInline):
+    model = models.ExperimentParameter
+    extra = 0
+    formfield_overrides = {
+      django.db.models.TextField: {'widget': TextInput},
+    }
+
+
+class ExperimentParameterSetAdmin(admin.ModelAdmin):
+    inlines = [ExperimentParameterInline]
+
+
+class ExperimentACLInline(admin.TabularInline):
+    model = models.ExperimentACL
+    extra = 0
+
 
 class ExperimentAdmin(admin.ModelAdmin):
     search_fields = ['title', 'id']
+    inlines = [ExperimentACLInline]
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -46,8 +67,14 @@ class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'dataset__experiment__id']
 
 
+class ParameterNameInline(admin.TabularInline):
+    model = models.ParameterName
+    extra = 0
+
+
 class SchemaAdmin(admin.ModelAdmin):
     search_fields = ['name', 'namespace']
+    inlines = [ParameterNameInline]
 
 
 class ParameterNameAdmin(admin.ModelAdmin):
@@ -56,7 +83,10 @@ class ParameterNameAdmin(admin.ModelAdmin):
 
 class ExperimentAclAdmin(admin.ModelAdmin):
     search_fields = ['experiment__id']
-
+    list_display = [
+        '__unicode__', 'pluginId', 'entityId', 'canRead',
+        'canWrite', 'canDelete', 'isOwner'
+    ]
 
 
 admin.site.register(models.Experiment, ExperimentAdmin)
@@ -71,7 +101,7 @@ admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
 admin.site.register(models.DatafileParameterSet)
 admin.site.register(models.DatasetParameterSet)
-admin.site.register(models.ExperimentParameterSet)
+admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
 admin.site.register(models.ExperimentACL, ExperimentAclAdmin)
