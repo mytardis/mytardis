@@ -172,6 +172,7 @@
         }
         hash.w.fadeOut();
         hash.w.css('opacity', '100%'); // must be set otherwise popup will be displayed but not visible the second time
+        hash.o.remove();
     }
 
 	$(document).ready(function() {
@@ -191,7 +192,6 @@
         $('#jqmAlertExpAdd, #jqmAlertExpEdit').jqm({
             ajax: '@href',
             target: '.jqmAlertContent',
-            overlay: false,
             closeClass: 'jqmClose',
             onHide: refreshMetadataDisplay
         });
