@@ -98,6 +98,7 @@ class DiffractionImageFilter(object):
          }
 
     def __call__(self, sender, **kwargs):
+        from os import path
         """post save callback entry point.
 
         :param sender: The model class.
@@ -114,9 +115,17 @@ class DiffractionImageFilter(object):
         filepath = instance.get_absolute_filepath()
         if not filepath:
             # TODO log that exited early
-            return
-        metadata = self.getDiffractionImageMetadata(filepath)
-        self.saveDiffractionImageMetadata(instance, schema, metadata)
+            return None
+
+        if not path.exists(filepath):
+            return None
+        
+        try:
+            metadata = self.getDiffractionImageMetadata(filepath)
+            self.saveDiffractionImageMetadata(instance, schema, metadata)
+        except Exception, e:
+            logger.debug(e)
+            return None
 
     def saveDiffractionImageMetadata(self, instance, schema, metadata):
         """Save all the metadata to a Dataset_Files paramamter set.
