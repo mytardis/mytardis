@@ -38,7 +38,6 @@ def get_or_create_user(email):
         logger.debug("user found in DB")
     return u
 
-
 _modelBackend = ModelBackend()
 
 
