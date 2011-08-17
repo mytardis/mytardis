@@ -248,9 +248,18 @@ class AuthService():
         email = user_dict['id']
         logger.debug('trying to get username by' +
             ' email ' + email)
-        username =\
-            self._authentication_backends[plugin].getUsernameByEmail(email)
-        logger.debug('get username by email returned ' + str(username))
+
+        username = email
+        try:
+            username =\
+                self._authentication_backends[plugin].getUsernameByEmail(email)
+            logger.debug('get username by email returned ' + str(username))
+        except AttributeError:
+            try:
+                u = User.objects.get(email=email)
+                username = u.username
+            except User.DoesNotExist:
+                pass
 
         try:
             user = UserAuthentication.objects.get(username=username,
