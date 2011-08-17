@@ -86,8 +86,8 @@
         } else {
             widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
         }
-        console.log(widget);
-		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/>' + widget + '</div>';
+        var label = '<label for="' + name + '">' + label + '</label>';
+		return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
 	}
 
     $('.dataset_checkbox').live('click', function( event ) {
