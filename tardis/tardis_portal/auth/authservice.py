@@ -249,8 +249,7 @@ class AuthService():
         logger.debug('trying to get username by' +
             ' email ' + email)
 
-        username = None
-
+        username = email
         try:
             username =\
                 self._authentication_backends[plugin].getUsernameByEmail(email)
@@ -261,9 +260,6 @@ class AuthService():
                 username = u.username
             except User.DoesNotExist:
                 pass
-
-        if username == None:
-            return None
 
         try:
             user = UserAuthentication.objects.get(username=username,
