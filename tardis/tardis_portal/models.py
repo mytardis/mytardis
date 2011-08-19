@@ -51,7 +51,6 @@ from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ExperimentManager, ParameterNameManager, SchemaManager
 
-import django.utils.html
 
 class UserProfile(models.Model):
     """
@@ -777,7 +776,7 @@ def _getParameter(parameter):
                                                      args=args)
                 return mark_safe(value)
 
-        return django.utils.html.escape(parameter.string_value)
+        return parameter.string_value
 
     elif parameter.name.isURL():
         url = parameter.string_value
