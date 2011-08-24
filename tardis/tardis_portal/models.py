@@ -198,6 +198,14 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.edit_experiment', (),
                 {'experiment_id': self.id})
 
+    @models.permalink
+    def get_create_token_url(self):
+        """Return the absolute url to the create token view of the current
+        ``Experiment``
+        """
+        return ('tardis.tardis_portal.views.create_token', (),
+                {'experiment_id': self.id})
+
     def get_download_urls(self, comptype="zip"):
         urls = {}
         kwargs = {'experiment_id': self.id,
