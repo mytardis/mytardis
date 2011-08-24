@@ -52,6 +52,7 @@ experiment_urls = patterns(
      'retrieve_access_list_external'),
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/license/$', 'choose_license'),
+    (r'^token/(?P<experiment_id>\d+)/create/$', 'create_token'),
     )
 
 accounts_urls = patterns(

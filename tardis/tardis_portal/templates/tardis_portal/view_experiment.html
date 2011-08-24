@@ -195,6 +195,12 @@
             closeClass: 'jqmClose',
             onHide: refreshMetadataDisplay
         });
+        $('#tokenPopup').jqm({
+            trigger: '#createTokenLink',
+            target: '.jqmAlertContent',
+            closeClass: 'jqmClose',
+            ajax: '@href'
+        });
 
     });
 
@@ -329,31 +335,43 @@
 
 {% block fullpage %}
 
-   <div class="jqmAlert" id="jqmAlertExpAdd">
-
-       <div class="jqmAlertWindow">
-           <div class="jqmAlertTitle clearfix">
-           <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-         </div>
-
-         <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
-         <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
-         </div>
-       </div>
-   </div>
+    <div class="jqmAlert" id="jqmAlertExpAdd">
+ 
+        <div class="jqmAlertWindow">
+            <div class="jqmAlertTitle clearfix">
+                <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+            </div>
+ 
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
+        </div>
+    </div>
 
 	<div class="jqmAlert" id="jqmAlertExpEdit">
 
 		<div class="jqmAlertWindow">
 		    <div class="jqmAlertTitle clearfix">
-		    <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-		  </div>
+                <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		    </div>
 
-		  <div class="jqmAlertContent">
-		  <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
-		  </div>
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
 		</div>
 	</div>
+
+    <div class="jqmAlert" id="tokenPopup">
+		<div class="jqmAlertWindow">
+		    <div class="jqmAlertTitle clearfix">
+                <h1>Create Token</h1><a href="" class="jqmClose"><em>Close</em></a>
+		    </div>
+
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
+		</div>
+    </div>
 
   <div id="fullpage">
     <div class="post">
@@ -364,9 +382,11 @@
           </a>
 
 	{% endif %}{% endif %}
+    {% if is_owner %}
+        <a id="createTokenLink" href="{{ experiment.get_create_token_url }}">Create Token</a>
+    {% endif %}
       </h1>
     </div>
-
     <div class="tabcontainer">
       <div id="tabs">
 	<ul>

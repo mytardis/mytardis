@@ -294,6 +294,8 @@ def view_experiment(request, experiment_id):
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+    if request.user.is_authenticated():
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
@@ -2599,3 +2601,11 @@ def choose_license(request, experiment_id):
     c = Context(context_dict)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/choose_license.html', c))
+
+@authz.experiment_ownership_required
+def create_token(request, experiment_id):
+    c = Context({})
+    experiment = Experiment.objects.get(id=experiment_id)
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/token_created.html', c))
+
