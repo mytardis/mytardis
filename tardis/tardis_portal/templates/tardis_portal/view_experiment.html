@@ -197,9 +197,15 @@
         });
         $('#tokenPopup').jqm({
             trigger: '#createTokenLink',
-            target: '.jqmAlertContent',
+            //target: '.jqmAlertContent',
             closeClass: 'jqmClose',
-            ajax: '@href'
+            //ajax: '@href'
+            onShow: function(h) {
+                h.w.show();
+                $.post(h.t.href, {}, function(data) {
+                    h.w.find('.jqmAlertContent').html(data);
+                });
+            }
         });
 
     });

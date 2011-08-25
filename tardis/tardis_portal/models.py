@@ -51,6 +51,9 @@ from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ExperimentManager, ParameterNameManager, SchemaManager
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class UserProfile(models.Model):
     """
@@ -880,6 +883,64 @@ class ExperimentParameter(models.Model):
 
     class Meta:
         ordering = ['name']
+
+
+def _token_expiry():
+    import datetime as dt
+    return dt.datetime.now() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
+
+
+class Token(models.Model):
+
+    token = models.CharField(max_length=30, unique=True)
+    experiment = models.ForeignKey(Experiment)
+
+    expiry_date = models.DateField(default=_token_expiry)
+
+    user = models.ForeignKey(User)
+
+    _TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+    objects = OracleSafeManager()
+
+    def __unicode__(self):
+        return 'Token: %s %s %s %s' % (self.expiry_date,
+                                        self.token,
+                                        self.experiment,
+                                        self.user)
+
+    def _randomise_token(self):
+        from random import choice
+        self.token = ''.join(choice(self._TOKEN_CHARS)
+                                for x in range(settings.TOKEN_LENGTH))
+
+    def save_with_random_token(self):
+        from django.db import IntegrityError
+
+        if not self.user or not self.experiment:  # fail if success impossible
+            self.save()
+
+        for i in range(30):  # 30 is an arbitrary number
+            logger.debug('randomising')
+            self._randomise_token()
+            try:
+                logger.debug('saving')
+                logger.debug(self.token)
+                self.save()
+            except IntegrityError as e:
+                logger.debug(e)
+                logger.debug('continuing')
+                continue
+            else:
+                logger.debug('returning')
+                return
+        logger.warning('failed to generate a random token')
+        self.save()  # give up and raise the exception
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('tardis.tardis_portal.views.token_login', (),  # TODO
+                {'token': self.token})
 
 
 def pre_save_parameter(sender, **kwargs):

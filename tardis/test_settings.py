@@ -1,15 +1,16 @@
 from os import path
+import logging
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': ':memory:',
+        'NAME': 'db.sqlite3',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -95,6 +96,8 @@ INSTALLED_APPS = (
         'tardis.tardis_portal.templatetags',
         'registration',
         'django_nose',
+        'south',
+        'haystack'
 
 ) + apps
 
@@ -113,8 +116,8 @@ LDAP_BASE = 'dc=example, dc=com'
 LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
 LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = 'DEBUG'
-MODULE_LOG_LEVEL = 'DEBUG'
+SYSTEM_LOG_LEVEL = logging.INFO
+MODULE_LOG_LEVEL = logging.DEBUG
 
 SYSTEM_LOG_FILENAME = 'request.log'
 MODULE_LOG_FILENAME = 'tardis.log'
@@ -134,3 +137,6 @@ SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+
+TOKEN_EXPIRY_DAYS = 30
+TOKEN_LENGTH = 30
