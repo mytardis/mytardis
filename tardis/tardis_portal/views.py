@@ -53,6 +53,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -72,7 +73,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
-    UserProfile, UserAuthentication
+    UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2602,10 +2603,13 @@ def choose_license(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/choose_license.html', c))
 
+@require_POST
 @authz.experiment_ownership_required
 def create_token(request, experiment_id):
-    c = Context({})
     experiment = Experiment.objects.get(id=experiment_id)
+    token = Token(experiment=experiment, user=request.user)
+    token.save_with_random_token()
+    logger.info('created token: %s' % token)
+    c = Context({'token': token})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/token_created.html', c))
-
