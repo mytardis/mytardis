@@ -119,7 +119,7 @@ class SearchTestCase(TestCase):
 
         # check if the response is zero since the user is not logged in
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['paginator'].object_list), 0)
+        self.assertEqual(len(response.context['datafiles']), 0)
 
     def testSearchDatafileResults(self):
         login = self.client.login(username='test', password='test')
@@ -129,7 +129,7 @@ class SearchTestCase(TestCase):
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
-        self.assertTrue(response.context['paginator'] is not None)
+        self.assertTrue(response.context['experiments'] is not None)
         self.assertTrue(response.context['query_string'] is not None)
         self.assertTrue(response.context['subtitle'] is not None)
         self.assertTrue(response.context['nav'] is not None)
@@ -138,28 +138,42 @@ class SearchTestCase(TestCase):
         self.assertTrue(response.context['searchDatafileSelectionForm'] is not
             None)
 
-        self.assertEqual(len(response.context['paginator'].object_list), 1)
+        #self.assertEqual(len(response.context['paginator'].object_list), 1)
+        self.assertEqual(len(response.context['datafiles']), 1)
+        self.assertEqual(len(response.context['experiments']), 1)
         self.assertTemplateUsed(response,
-            'tardis_portal/search_datafile_results.html')
+            'tardis_portal/search_experiment_results.html')
 
         from tardis.tardis_portal.models import Dataset_File
+        from tardis.tardis_portal.models import Experiment 
+        
+        values = response.context['experiments'].values()
+        experiment = values[0]
+        datafile = response.context['datafiles'][0]
         self.assertTrue(
-            type(response.context['paginator'].object_list[0]) is Dataset_File)
+            type(experiment['sr']) is Experiment)
+        self.assertTrue(
+            type(datafile) is Dataset_File)
+
+        
+        self.assertTrue(experiment['dataset_file_hit'] is True)
+        self.assertTrue(experiment['dataset_hit'] is False)
+        self.assertTrue(experiment['experiment_hit'] is False)
 
         # TODO: check if the schema is correct
 
         # check if searching for nothing would result to returning everything
         response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
-        self.assertEqual(len(response.context['paginator'].object_list), 129)
+        self.assertEqual(len(response.context['datafiles']), 129)
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'io': '123', })
-        self.assertEqual(len(response.context['paginator'].object_list), 0)
+        self.assertEqual(len(response.context['datafiles']), 0)
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs', 'frqimn': '0.0450647', })
-        self.assertEqual(len(response.context['paginator'].object_list), 125)
+        self.assertEqual(len(response.context['datafiles']), 125)
         self.client.logout()
 
     def testSearchExperimentForm(self):
@@ -196,6 +210,18 @@ class SearchTestCase(TestCase):
 
         self.assertTrue(
             len(response.context['experiments']) == 1)
+ 
+        from tardis.tardis_portal.models import Experiment 
+        
+        values = response.context['experiments'].values()
+        experiment = values[0]
+        
+        self.assertTrue(
+            type(experiment['sr']) is Experiment)
+        
+        self.assertTrue(experiment['dataset_file_hit'] is False)
+        self.assertTrue(experiment['dataset_hit'] is False)
+        self.assertTrue(experiment['experiment_hit'] is True)
 
         # check if searching for nothing would result to returning everything
         response = self.client.get('/experiment/search/',
