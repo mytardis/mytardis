@@ -82,6 +82,8 @@ Contents
    schemaparamsets
    ingesting
 
+   searching
+
    ref/auth_framework
    ref/filters
 
