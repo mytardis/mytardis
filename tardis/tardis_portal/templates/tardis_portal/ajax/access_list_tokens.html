@@ -1,0 +1,12 @@
+<div class="tokens">
+  <div class="access_list_tokens">
+    {% if not tokens %}
+      <p>No tokens defined </p>
+    {% endif %}
+    {% for token in tokens %}
+      <div>
+      {{token}}
+      </div>
+    {% endfor %}
+  </div> <!-- access_list_tokens -->
+</div> <!-- tokens -->

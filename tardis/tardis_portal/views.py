@@ -1638,6 +1638,14 @@ def retrieve_access_list_external(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))
 
+@never_cache
+@authz.experiment_ownership_required
+def retrieve_access_list_tokens(request, experiment_id):
+    tokens = Token.objects.filter(experiment=experiment_id)
+    c = Context({'tokens': tokens})
+    return HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/access_list_tokens.html', c))
+
 
 @never_cache
 @authz.group_ownership_required
@@ -2613,3 +2621,12 @@ def create_token(request, experiment_id):
     c = Context({'token': token})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/token_created.html', c))
+
+def token_login(request, token):
+    logger.debug('token login')
+    try:
+        t = Token.objects.get(token=token)
+    except Token.DoesNotExist:
+        return return_response_error(request)
+
+    logger.debug(t)
