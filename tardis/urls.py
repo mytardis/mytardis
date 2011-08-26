@@ -50,9 +50,15 @@ experiment_urls = patterns(
      'retrieve_access_list_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
      'retrieve_access_list_external'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
+     'retrieve_access_list_tokens'),
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/license/$', 'choose_license'),
-    (r'^token/(?P<experiment_id>\d+)/create/$', 'create_token'),
+    (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
+    )
+token_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^login/(?P<token>.+)/', 'token_login'),
     )
 
 accounts_urls = patterns(
@@ -190,4 +196,7 @@ urlpatterns = patterns(
 
     # Apps
     (r'^apps/', include(apppatterns)),
+
+    # Token login
+    (r'^token/', include(token_urls)),
 )

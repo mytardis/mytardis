@@ -38,10 +38,19 @@
     $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
     $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
     $('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+    $('.access_list_token_toggle').click(function(evt){
+        evt.preventDefault();
+        var $access_list = $(this).siblings('.access_list');
+        $access_list.toggle();
+        if ($access_list.is(':visible')) {
+            $access_list.load(this.href);
+        }
+    });
 
     $(".access_list_user_toggle").text("[Show]");
     $(".access_list_group_toggle").text("[Show]");
     $(".access_list_external_toggle").text("[Show]");
+    $('.access_list_token_toggle').text('show');
 
     var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
@@ -360,6 +369,12 @@
             External Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle"></a>
             <div class="access_list3"></div>
           </td>
+        </tr>
+        <tr>
+            <td>
+                Token Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle"></a>
+                <div class="access_list" style="display:none;"></div>
+            </td>
         </tr>
               {%endfor %}
         </table>
