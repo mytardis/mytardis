@@ -2623,10 +2623,12 @@ def create_token(request, experiment_id):
                         'tardis_portal/ajax/token_created.html', c))
 
 def token_login(request, token):
+    from tardis.tardis_portal.auth import login, token_auth
     logger.debug('token login')
-    try:
-        t = Token.objects.get(token=token)
-    except Token.DoesNotExist:
-        return return_response_error(request)
 
-    logger.debug(t)
+    user = token_auth.authenticate(request, token)
+    if not user:
+        return return_response_error(request)
+    login(request, user)
+    experiment = Experiment.objects.get(token__token=token)
+    return HttpResponseRedirect(experiment.get_absolute_url())

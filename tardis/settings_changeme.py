@@ -161,6 +161,7 @@ USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
 
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 
 )
