@@ -942,6 +942,10 @@ class Token(models.Model):
         return ('tardis.tardis_portal.views.token_login', (),  # TODO
                 {'token': self.token})
 
+    def is_expired(self):
+        import datetime
+        return self.expiry_date and self.expiry_date <= datetime.date.today() 
+
 
 def pre_save_parameter(sender, **kwargs):
 
