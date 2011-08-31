@@ -25,6 +25,8 @@ setup(
         'django-registration',
         'django-extensions',
         'django-form-utils',
+        'django-haystack',
+        'pysolr',
         'south',
         ],
 )

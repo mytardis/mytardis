@@ -46,6 +46,7 @@ from django.db import models
 from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
+from django.dispatch import receiver
 
 from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import OracleSafeManager,\
@@ -947,11 +948,13 @@ class Token(models.Model):
         return self.expiry_date and self.expiry_date <= datetime.date.today() 
 
 
+@receiver(pre_save, sender=ExperimentParameter)
+@receiver(pre_save, sender=DatasetParameter)
+@receiver(pre_save, sender=DatafileParameter)
 def pre_save_parameter(sender, **kwargs):
 
     # the object can be accessed via kwargs 'instance' key.
     parameter = kwargs['instance']
-
     if parameter.name.units.startswith('image') \
             and parameter.name.data_type == ParameterName.FILENAME:
         if parameter.string_value:
@@ -980,8 +983,3 @@ def pre_save_parameter(sender, **kwargs):
                 f.write(b64)
             f.close()
             parameter.string_value = filename
-
-
-pre_save.connect(pre_save_parameter, sender=ExperimentParameter)
-pre_save.connect(pre_save_parameter, sender=DatasetParameter)
-pre_save.connect(pre_save_parameter, sender=DatafileParameter)

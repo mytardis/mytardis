@@ -2,17 +2,18 @@
 Database Maintenance
 ====================
 
-initialising
+Initialising
 ------------
 
 When creating a new database the ``syncdb`` command will need to be
-called to initialise the schema and instert the initial data fixtures.
+called to initialise the schema and insert the initial data fixtures
+located at ``tardis/tardis_portal/fixtures/initial_data.json``.
 
 Usage
 ~~~~~
 ``./bin/django syncdb``
 
-migrating
+Migrating
 ---------
 
 Some of the upgrades to MyTARDIS will require that the database schema
@@ -26,7 +27,7 @@ Usage
 ``./bin/django migrate``
 
 
-backup
+Backup
 ------
 
 The backupdb command allows to backup and to restore of the MyTARDIS

@@ -57,6 +57,7 @@ DEFAULT_AUTH = 'localdb'
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 )
 
@@ -75,9 +76,8 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-#TARDIS_APPS = ('equipment',)
-
-TARDIS_APPS = ()
+TARDIS_APPS = ('equipment',)
+#TARDIS_APPS = ()
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
@@ -131,12 +131,17 @@ UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 DEFAULT_INSTITUTION = "Monash University"
 
 IMMUTABLE_METS_DATASETS = True
+
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = False 
+SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
+
+TIME_ZONE='Australia/Sydney'
+if not SINGLE_SEARCH_ENABLED:
+    HAYSTACK_ENABLE_REGISTRATIONS = False
