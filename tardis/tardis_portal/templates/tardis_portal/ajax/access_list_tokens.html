@@ -2,11 +2,33 @@
   <div class="access_list_tokens">
     {% if not tokens %}
       <p>No tokens defined </p>
+    {% else %}
+        <table>
+            <tr>
+                <th align="center">
+                    Expiry Date
+                </th>
+                <th align="center">
+                    Granted By
+                </th>
+                <th align="center">
+                    URL 
+                </th>
+            </tr>
+            {% for token in tokens %}
+            <tr>
+                <td align="center">
+                    {{ token.expiry_date }}
+                </td>
+                <td align="center">
+                    {{ token.user }}
+                </td>
+                <td>
+                    {{ token.url }}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     {% endif %}
-    {% for token in tokens %}
-      <div>
-      {{token}}
-      </div>
-    {% endfor %}
   </div> <!-- access_list_tokens -->
 </div> <!-- tokens -->
