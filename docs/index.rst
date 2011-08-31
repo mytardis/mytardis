@@ -31,43 +31,7 @@ Homepage
 
 You can get a copy of MyTARDIS from http://code.google.com/p/mytardis/
 
-===========
-Quick Start
-===========
-
-Prerequisites
--------------
-
-Redhat::
-
-   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python
-
-Debian/Ubuntu::
-
-   sudo apt-get install libsasl2-dev libldap libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1
-
-Download
---------
-
-To get the current trunk::
-
-   svn co https://mytardis.googlecode.com/svn/trunk/ mytardis
-   cd mytardis
-
-Building
---------
-
-MyTARDIS is using the buildout buildsystem to handle dependencies and create the python class path::
-
-   python bootstrap.py
-   ./bin/buildout
-
-MyTARDIS can now be executed in it's simplist form using::
-
-   ./bin/django runserver
-
-This will execute django using the builtin SQLite DBMS and only be accessable on *localhost*.
-
+For installation instructions see :doc:`install`.
 
 ========
 Contents
