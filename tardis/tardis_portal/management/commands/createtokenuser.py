@@ -6,7 +6,6 @@ from optparse import make_option
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
-from tardis.tardis_portal.auth.token_auth import auth_key as tokenauth_key
 
 
 class Command(BaseCommand):
@@ -28,10 +27,6 @@ class Command(BaseCommand):
         userProfile = UserProfile(user=user, isDjangoAccount=False)
         userProfile.save()
 
-        authentication = UserAuthentication(userProfile=userProfile,
-                                            username=username,
-                                            authenticationMethod=tokenauth_key)
-        authentication.save()
-
         if verbosity > 0:
             self.stdout.write("Tokenuser %s created successfully\n" % username)
+            self.stdout.write("Ensure you have TOKEN_USERNAME='%s' in your settings file\n" % username)
