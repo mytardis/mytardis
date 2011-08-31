@@ -21,7 +21,7 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}, filename=None, export_images=False):
+    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True):
         self.export_images = export_images
         # initialise the metadata counter
         metadataCounter = 1
@@ -199,6 +199,11 @@ class MetsExporter():
 
             metadataDict = {}
             for parameter in parameters:
+                
+                # fetch the experiment entity
+                experimentId = parameter.getExpId()
+                experiment = Experiment.objects.get(id=experimentId)
+                
                 # print parameter.name
                 if parameter.name.data_type is ParameterName.NUMERIC:
                     metadataDict[parameter.name.name] = \
@@ -209,8 +214,7 @@ class MetsExporter():
                         self.export_images == True:
 
                     # encode image as b64
-                    file_path = abspath(experiment.get_or_create_directory(),
-                                        parameter.string_value)
+                    file_path = abspath(experiment.get_or_create_directory()+'/'+parameter.string_value)
                     try:
                         metadataDict[parameter.name.name] = \
                         b64encode(open(file_path).read())

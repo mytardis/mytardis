@@ -436,7 +436,7 @@ def experiment_datasets(request, experiment_id):
         return return_response_not_found(request)
 
     c['experiment'] = experiment
-   
+    
     #TODO Single search should use sessions as well 
     if 'query' in request.GET:
 
@@ -476,7 +476,7 @@ def experiment_datasets(request, experiment_id):
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = None
         c['file_matched_datasets'] = None
-
+    
     c['datasets'] = \
          Dataset.objects.filter(experiment=experiment_id)
 
@@ -1514,28 +1514,30 @@ def search_datafile(request):
     #except (EmptyPage, InvalidPage):
     #    datafiles = paginator.page(paginator.num_pages)
 
-    #import re
-    #cleanedUpQueryString = re.sub('&page=\d+', '',
-    #    request.META['QUERY_STRING'])
+    import re
+    cleanedUpQueryString = re.sub('&page=\d+', '',
+        request.META['QUERY_STRING'])
    
     # get experiments associated with datafiles
-    experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
-    experiments = Experiment.safe.in_bulk(experiment_pks)
-    
+    if datafile_results: 
+        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
+        experiments = Experiment.safe.in_bulk(experiment_pks)
+    else:
+        experiments = {}
+
     results = {}
     for key, e in experiments.items():
         results[key]=\
             {'sr' : e,
              'dataset_hit' : False, 
-             'datafile_hit' : True, 
+             'dataset_file_hit' : True, 
              'experiment_hit' : False, 
-            }
-    
+            }        
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
         #'paginator': paginator,
-        #'query_string': cleanedUpQueryString,
+        'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
         'bodyclass': bodyclass,

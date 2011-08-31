@@ -31,7 +31,7 @@ dataset{{result.sr.dataset_set.all.count|pluralize }}</strong>
 </a>
       </span>
       containing
-      <span{% if result.datafile_hit %} style="background-color: #FFFF00"{% endif %}>
+      <span{% if result.dataset_file_hit %} style="background-color: #FFFF00"{% endif %}>
       <a href="{% url tardis.tardis_portal.views.view_experiment key  %}?search=true#ui-tabs-2">
 <strong>{{ key|experiment_file_count }}</strong>
 file{{ key|experiment_file_count|pluralize }}
