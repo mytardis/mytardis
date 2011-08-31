@@ -1644,6 +1644,10 @@ def retrieve_access_list_external(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
+    tokens = [{'expiry_date': token.expiry_date,
+                 'user': token.user,
+                 'url': request.build_absolute_uri(token.get_absolute_url()),
+              } for token in tokens]
     c = Context({'tokens': tokens})
     return HttpResponse(render_response_index(request,
         'tardis_portal/ajax/access_list_tokens.html', c))
@@ -2613,6 +2617,7 @@ def choose_license(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/choose_license.html', c))
 
+
 @require_POST
 @authz.experiment_ownership_required
 def create_token(request, experiment_id):
@@ -2620,9 +2625,11 @@ def create_token(request, experiment_id):
     token = Token(experiment=experiment, user=request.user)
     token.save_with_random_token()
     logger.info('created token: %s' % token)
-    c = Context({'token': token, 'full_url': request.build_absolute_uri(token.get_absolute_url())})
+    c = Context({'token': token,
+        'full_url': request.build_absolute_uri(token.get_absolute_url())})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/token_created.html', c))
+
 
 def token_login(request, token):
     from tardis.tardis_portal.auth import login, token_auth
