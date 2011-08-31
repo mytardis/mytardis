@@ -2,11 +2,11 @@
 token authentication module
 """
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from tardis.tardis_portal.models import Token, ExperimentACL, Experiment
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 
-auth_key = u'tokenauth'
 TOKEN_EXPERIMENT = '_token_experiment'
 
 
@@ -23,8 +23,7 @@ def authenticate(request, token_string):
     if token.is_expired():
         return None
 
-    user = User.objects.get(
-        userprofile__userauthentication__authenticationMethod=auth_key)
+    user = User.objects.get(username=settings.TOKEN_USERNAME)
     user.backend = 'django.contrib.auth.backends.ModelBackend'
 
     request.session[TOKEN_EXPERIMENT] = token.experiment.id
