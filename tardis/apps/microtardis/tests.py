@@ -103,7 +103,7 @@ class MicroTagsTestCase(TestCase):
                                  experiment=exp)
         dataset.save()
         df_file = models.Dataset_File(dataset=dataset,
-                                      filename='test2.tif',
+                                      filename='test.tif',
                                       url=filename,
                                       protocol='staging')
         df_file.save()

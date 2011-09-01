@@ -229,6 +229,12 @@ EMAIL_USE_TLS = True
 #                                       # http://tilloy.net/dev/pyexiv2/
 #    ]
 
+# Post Save Filters
+POST_SAVE_FILTERS = [
+#  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
+    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ]
+
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 SYSTEM_LOG_LEVEL = 'INFO'
 MODULE_LOG_LEVEL = 'INFO'
