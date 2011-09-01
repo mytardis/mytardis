@@ -132,3 +132,9 @@ HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
+    
+# Post Save Filters
+POST_SAVE_FILTERS = [
+#  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
+    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ]
