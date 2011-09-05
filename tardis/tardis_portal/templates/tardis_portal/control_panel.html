@@ -2,8 +2,6 @@
 
 {% block script %}
 
-  {% include "tardis_portal/javascript_libraries.html" %}
-
   <script type="text/javascript">
 
       $(document).ready(function() {
@@ -42,12 +40,24 @@
         evt.preventDefault();
         var $this = $(this);
         var $access_list = $this.siblings('.access_list');
-        $access_list.toggle();
-        if ($access_list.is(':visible')) {
+        if ($this.text() == 'show') {
             $access_list.load(this.href);
             $this.text('hide');
+            $access_list.show();
         } else {
+            $access_list.hide();
             $this.text('show');
+        }
+    });
+
+    $('.token_url').live('click', function(evt) {
+        evt.preventDefault();
+    });
+    $('.token_url').live('mouseup', function(evt) {
+        if (evt.which == 1) { // left-click
+            if (confirm('Click OK to login as a token user.\nOr click cancel and right-click and "copy shortcut" or "copy link location" or similar')) {
+                window.location.href = this.href;
+            }
         }
     });
 
@@ -241,12 +251,12 @@
 		});
 
         $(".usersuggest").autocomplete(users.split(" "), {
-          matchContains: true,
+          matchContains: true
           //minChars: 0
         });
 
         $(".groupsuggest").autocomplete(groups.split(" ~ "), {
-          matchContains: true,
+          matchContains: true
           //minChars: 0
         });
 
@@ -332,7 +342,7 @@
 		  return false;
 		}); // end remove group
 	      });
-	    });
+           });
          },function(){ $(this).text("[Show]"); });
 
       });
