@@ -2625,10 +2625,7 @@ def create_token(request, experiment_id):
     token = Token(experiment=experiment, user=request.user)
     token.save_with_random_token()
     logger.info('created token: %s' % token)
-    c = Context({'token': token,
-        'full_url': request.build_absolute_uri(token.get_absolute_url())})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/token_created.html', c))
+    return HttpResponse('{"success": true}', mimetype='application/json');
 
 
 def token_login(request, token):

@@ -4,8 +4,6 @@
 
   <script type="text/javascript">
 
-      $(document).ready(function() {
-
     $('.canWrite').live('click', function(){
        if($(this).is(':checked'))
        {
@@ -22,6 +20,27 @@
        }
 
     });
+
+      $(document).ready(function() {
+          var refreshFunctionFor = function(create_token_link) {
+              return function(data, textStatus, jqXHR) {
+                  if (data.success) {
+                      var toggle = $(create_token_link).siblings('.access_list_token_toggle');
+                      if (toggle.hasClass('tokens_shown')) {
+                          toggle.click();
+                          toggle.click();
+                      } else {
+                          toggle.click();
+                      }
+                  } else {
+                      alert('Error creating token.  Please try again later');
+                  }
+              };
+          };
+          $('.create_token_link').click(function(evt){
+              evt.preventDefault();
+              $.post(this.href, {}, refreshFunctionFor(this));
+          });
 
     //beginswith, endswith
     String.prototype.beginsWith = function(t, i) { if (i==false) { return
@@ -40,6 +59,7 @@
         evt.preventDefault();
         var $this = $(this);
         var $access_list = $this.siblings('.access_list');
+        $this.toggleClass('tokens_shown');
         if ($this.text() == 'show') {
             $access_list.load(this.href);
             $this.text('hide');
@@ -387,6 +407,7 @@
         <tr>
             <td>
                 Token Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle"></a>
+                            <a class="create_token_link" href="{{ experiment.get_create_token_url }}">Create Token</a>
                 <div class="access_list" style="display:none;"></div>
             </td>
         </tr>
