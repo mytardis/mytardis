@@ -85,8 +85,7 @@
 
     $('.dataset_checkbox').live('click', function( event ) {
 	if ($(this).is(':checked')) {
-	    $(this).parents('.dataset').find('.datafile_checkbox'
-					    ).attr('disabled', true);
+	    $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
 	    $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
 	} else {
 	    $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
@@ -195,19 +194,6 @@
             closeClass: 'jqmClose',
             onHide: refreshMetadataDisplay
         });
-        $('#tokenPopup').jqm({
-            trigger: '#createTokenLink',
-            //target: '.jqmAlertContent',
-            closeClass: 'jqmClose',
-            //ajax: '@href'
-            onShow: function(h) {
-                h.w.show();
-                $.post(h.t.href, {}, function(data) {
-                    h.w.find('.jqmAlertContent').html(data);
-                });
-            }
-        });
-
     });
 
 	// metadata text / ajax toggle
@@ -367,18 +353,6 @@
 		</div>
 	</div>
 
-    <div class="jqmAlert" id="tokenPopup">
-		<div class="jqmAlertWindow">
-		    <div class="jqmAlertTitle clearfix">
-                <h1>Create Token</h1><a href="" class="jqmClose"><em>Close</em></a>
-		    </div>
-
-            <div class="jqmAlertContent">
-                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
-            </div>
-		</div>
-    </div>
-
   <div id="fullpage">
     <div class="post">
       <h1 class="title">{{ experiment.title }}</h1>
@@ -388,11 +362,9 @@
           </a>
 
 	{% endif %}{% endif %}
-    {% if is_owner %}
-        <a id="createTokenLink" href="{{ experiment.get_create_token_url }}">Create Token</a>
-    {% endif %}
       </h1>
     </div>
+
     <div class="tabcontainer">
       <div id="tabs">
 	<ul>
