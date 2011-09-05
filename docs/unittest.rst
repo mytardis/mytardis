@@ -2,11 +2,26 @@
 Unit Tests
 ==========
 
+Before you can run unit tests, you have to configure ./bin/test to use test 
+settings rather than normal settings.
+
+Configure to use Test Settings
+------------------------------
+
+Assuming you have followed the instructions on :doc:`install` to install and 
+configure MyTARDIS, the last line of ./bin/test file to the following::
+
+    djangorecipe.test.main('tardis.settings', 'tardis')
+
+Change this line to use 'tardis.test_settings' instead::
+
+    djangorecipe.test.main('tardis.test_settings', 'tardis')
+
+
 Running the Test Suite
 ----------------------
 
-Assuming you have followed the instructions on :doc:`install` to install and 
-configure MyTARDIS, simply run this command to run the unit tests::
+Run this command to run the unit tests::
 
     ./bin/test
 
