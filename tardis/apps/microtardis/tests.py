@@ -55,31 +55,6 @@ class MicroTagsTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-
-    def test_create_schema(self):
-        try:
-            from tardis.apps.microtardis.filters.microtags import MicroTagsFilter
-        except:
-            logger.debug("skipping testing")
-            raise SkipTest()
-
-        f = MicroTagsFilter("microscopy","http://tardis.edu.au/schemas")
-        self.assertEqual(str(f.getSchema()),
-                         "Datafile schema: http://tardis.edu.au/schemas")
-
-    def test_update_schema(self):
-        from os import path
-        try:
-            from tardis.apps.microtardis.filters.microtags import MicroTagsFilter
-        except:
-            raise SkipTest()
-
-        f = MicroTagsFilter("microscopy","http://tardis.edu.au/schemas")
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/FEIQuanta200/test2.tif')
-        self.assertEqual(len(f.getParamaters(f.getSchema(),
-                                             f.getExif(filename))),
-                         12)
-
     def test_save_metadata(self):
         from os import path
         try:
@@ -87,7 +62,7 @@ class MicroTagsTestCase(TestCase):
         except:
             raise SkipTest()
 
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/FEIQuanta200/test2.tif')
+        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/FEIQuanta200/test.tif')
 
         exp = models.Experiment(title='test exp1',
                                 institution_name='rmit',
@@ -108,7 +83,7 @@ class MicroTagsTestCase(TestCase):
                                       protocol='staging')
         df_file.save()
 
-
+        #self.assertEqual("",models.Schema.objects.all())
         sch = models.Schema.objects.get(name="FEIQuanta-2")
         self.assertEqual("FEIQuanta-2",sch.name)
         datafileparameterset = models.DatafileParameterSet.objects.get(
