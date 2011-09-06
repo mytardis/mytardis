@@ -68,7 +68,8 @@ MIDDLEWARE_CLASSES = (
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.minidetector.Middleware',
-    'django.middleware.transaction.TransactionMiddleware'
+    'django.middleware.transaction.TransactionMiddleware',
+      'tardis.tardis_portal.filters.FilterInitMiddleware'
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'

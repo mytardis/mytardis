@@ -83,7 +83,8 @@ MIDDLEWARE_CLASSES = (
     'tardis.tardis_portal.minidetector.Middleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
-    'django.middleware.transaction.TransactionMiddleware')
+    'django.middleware.transaction.TransactionMiddleware',
+    'tardis.tardis_portal.filters.FilterInitMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
 
