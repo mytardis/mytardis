@@ -888,7 +888,7 @@ class ExperimentParameter(models.Model):
 
 def _token_expiry():
     import datetime as dt
-    return dt.datetime.now() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
+    return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
 
 
 class Token(models.Model):
@@ -907,8 +907,8 @@ class Token(models.Model):
     def __unicode__(self):
         return 'Token: %s %s %s %s' % (self.expiry_date,
                                         self.token,
-                                        self.experiment,
-                                        self.user)
+                                        (self.experiment or 'no_exp'),
+                                        (self.user or 'no_user'))
 
     def _randomise_token(self):
         from random import choice
@@ -922,30 +922,26 @@ class Token(models.Model):
             self.save()
 
         for i in range(30):  # 30 is an arbitrary number
-            logger.debug('randomising')
             self._randomise_token()
             try:
-                logger.debug('saving')
                 logger.debug(self.token)
                 self.save()
             except IntegrityError as e:
                 logger.debug(e)
-                logger.debug('continuing')
                 continue
             else:
-                logger.debug('returning')
                 return
         logger.warning('failed to generate a random token')
         self.save()  # give up and raise the exception
 
     @models.permalink
     def get_absolute_url(self):
-        return ('tardis.tardis_portal.views.token_login', (),  # TODO
+        return ('tardis.tardis_portal.views.token_login', (),
                 {'token': self.token})
 
     def is_expired(self):
-        import datetime
-        return self.expiry_date and self.expiry_date <= datetime.date.today() 
+        import datetime as dt
+        return self.expiry_date and self.expiry_date < dt.datetime.now().date()
 
 
 @receiver(pre_save, sender=ExperimentParameter)
