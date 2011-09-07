@@ -905,10 +905,7 @@ class Token(models.Model):
     objects = OracleSafeManager()
 
     def __unicode__(self):
-        return 'Token: %s %s %s %s' % (self.expiry_date,
-                                        self.token,
-                                        (self.experiment or 'no_exp'),
-                                        (self.user or 'no_user'))
+        return '%s %s' % (self.expiry_date, self.token)
 
     def _randomise_token(self):
         from random import choice

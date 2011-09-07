@@ -243,4 +243,7 @@ DEFAULT_INSTITUTION = "Monash University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = True
+
+TOKEN_EXPIRY_DAYS = 30
+TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
