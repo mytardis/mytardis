@@ -39,7 +39,7 @@
           };
           $('.create_token_link').click(function(evt){
               evt.preventDefault();
-              $.post(this.href, {}, refreshFunctionFor(this));
+              $.post(this.href, {}, refreshFunctionFor(this));  // TODO error-handling
           });
 
     //beginswith, endswith
