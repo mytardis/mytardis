@@ -27,6 +27,9 @@ class Command(BaseCommand):
         userProfile = UserProfile(user=user, isDjangoAccount=False)
         userProfile.save()
 
+        # We do not create a UserAuthentication intentionally.
+        # If we did, lookups to find the "TokenAuth" would fail
+
         if verbosity > 0:
             self.stdout.write("Tokenuser %s created successfully\n" % username)
             self.stdout.write("Ensure you have TOKEN_USERNAME='%s' in your settings file\n" % username)

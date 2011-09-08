@@ -16,16 +16,16 @@ from datetime import datetime as dt
 class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
-        make_option('--delete-acls', dest='delete_acls', default=False,
+        make_option('--keep-acls', dest='keep_acls', default=False,
             action='store_true',
-            help='Delete orphaned ACLs related to tokens'),
+            help='Keep orphaned token ACLs'),
     )
 
-    help = 'Used to do some token housekeeping'
+    help = 'Deletes unused tokens and optionally their ACLs'
 
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity', 1))
-        delete_acls = options.get('delete_acls')
+        keep_acls = options.get('keep_acls')
 
         expired_tokens = Token.objects.filter(expiry_date__lt=dt.today())
         num_tokens = expired_tokens.count()
@@ -34,13 +34,13 @@ class Command(BaseCommand):
         if verbosity > 0:
             self.stdout.write("%s Tokens cleaned up successfully\n" % num_tokens)
 
-        if delete_acls:
-            self._delete_unused_token_acls(verbosity)
+        if not keep_acls:
+            self._purge_unused_token_acls(verbosity)
 
 
-    def _delete_unused_token_acls(self, verbosity):
+    def _purge_unused_token_acls(self, verbosity):
         """
-            delete ACLs if they are not in use
+            purge ACLs if they are not in use
         """
 
         acls_to_delete = ExperimentACL.objects.filter(pluginId=TokenGroupProvider.name) \
