@@ -19,9 +19,13 @@ def _ensure_acl_exists(experiment_id):
 
 
 def authenticate(request, token_string):
-    token = Token.objects.get(token=token_string)
-    if token.is_expired():
+    try:
+        token = Token.objects.get(token=token_string)
+    except Token.DoesNotExist:
         return None
+    else:
+        if token.is_expired():
+            return None
 
     user = User.objects.get(username=settings.TOKEN_USERNAME)
     user.backend = 'django.contrib.auth.backends.ModelBackend'

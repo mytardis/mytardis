@@ -90,6 +90,8 @@ from haystack.query import SearchQuerySet
 from tardis.tardis_portal.forms import RawSearchForm
 from haystack.views import SearchView
 
+from django.contrib.auth import logout as django_logout
+
 logger = logging.getLogger(__name__)
 
 
@@ -2629,6 +2631,8 @@ def create_token(request, experiment_id):
 
 
 def token_login(request, token):
+    django_logout(request)
+
     from tardis.tardis_portal.auth import login, token_auth
     logger.debug('token login')
 
