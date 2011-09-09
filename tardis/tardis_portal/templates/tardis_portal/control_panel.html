@@ -59,17 +59,16 @@
         evt.preventDefault();
         var $this = $(this);
         var $access_list = $this.siblings('.access_list');
+        var $icon = $this.find('span')
         $this.toggleClass('tokens_shown');
-        if ($this.text() == 'show') {
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        if ($this.hasClass('tokens_shown')) {
             $access_list.load(this.href);
-            $this.text('hide');
             $access_list.show();
         } else {
             $access_list.hide();
-            $this.text('show');
         }
     });
-
     $('.token_url').live('click', function(evt) {
         evt.preventDefault();
     });
@@ -81,20 +80,11 @@
         }
     });
 
-    $(".access_list_user_toggle").text("[Show]");
-    $(".access_list_group_toggle").text("[Show]");
-    $(".access_list_external_toggle").text("[Show]");
-    $('.access_list_token_toggle').text('show');
-
     var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
-
-    $(".access_list_user_external").toggle(function(){ $(this).text("[Hide]"); });
 
 
     // user access list
     $(".access_list_user_toggle").toggle(function(){
-
-      $(this).text("[Hide]");
 
       var href = $(this).attr("href");
 
@@ -202,12 +192,18 @@
         }); // end remove user
           });
         });
-      }, function(){ $(this).text("[Show]"); });
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+      }, function(){
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+      });
 
       // group access list
       $(".access_list_group_toggle").toggle(function(){
 
-        $(this).text("[Hide]");
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
 
         var href = $(this).attr("href");
 
@@ -363,7 +359,10 @@
 		}); // end remove group
 	      });
            });
-         },function(){ $(this).text("[Show]"); });
+         },function(){
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+              });
 
       });
 
@@ -388,26 +387,49 @@
         </tr>
             <tr>
           <td>
-            User Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle"></a>
+            <span style="float:left;">
+                User Access
+            </span>
+            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all">
+                <span class="ui-icon ui-icon-circle-triangle-e"></span>
+            </a>
             <div class="access_list1"></div>
           </td>
         </tr>
             <tr>
           <td>
-            Group Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle"></a>
+            <span style="float:left;">
+                Group Access
+            </span>
+            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all">
+                <span class="ui-icon ui-icon-circle-triangle-e"></span>
+            </a>
             <div class="access_list2"></div>
           </td>
         </tr>
             <tr>
           <td>
-            External Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle"></a>
+            <span style="float:left;">
+                External Access
+            </span>
+            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button ui-state-default  fg-buton-icon-solo ui-corner-all" title="show/hide">
+                <span class="ui-icon ui-icon-circle-triangle-e"></span>
+            </a>
             <div class="access_list3"></div>
           </td>
         </tr>
         <tr>
             <td>
-                Token Access <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle"></a>
-                            <a class="create_token_link" href="{{ experiment.get_create_token_url }}">Create Token</a>
+                <span style="float:left;">
+                    Token Access
+                </span>
+                <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all" title="show/hide">
+                    <span class="ui-icon ui-icon-circle-triangle-e"></span>
+                </a>
+                            <a title="Create Token" class="create_token_link fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{{ experiment.get_create_token_url }}">
+                                <span class="ui-icon ui-icon-plusthick"></span>
+                            </a>
+                <div style="clear:both;"></div>
                 <div class="access_list" style="display:none;"></div>
             </td>
         </tr>
