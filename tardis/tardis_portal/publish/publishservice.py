@@ -72,7 +72,7 @@ class PublishService():
             self._manual_init()
         path_list = []
         for pp in self._publish_providers:
-            # logger.debug("group provider: " + gp.name)
+            logger.debug("group provider: %s %s" % (pp.name,pp.get_path()))
             path_list.append(pp.get_path())
         return path_list
 

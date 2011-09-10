@@ -2531,7 +2531,7 @@ def publish_experiment(request, experiment_id):
 
         legaltext = legalfile.read()
         legalfile.close()
-
+        logger.debug("templatepaths=%s" % publishService.get_template_paths())
         context_dict = \
         {'username': username,
         'publish_forms': publishService.get_template_paths(),
