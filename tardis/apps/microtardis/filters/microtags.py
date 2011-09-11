@@ -38,20 +38,40 @@ microtags.py
 .. moduleauthor:: Ian Thomas <Ian.Edward.Thomas@rmit.edu.au>
 
 """
-from fractions import Fraction
 
-try:
-    from pyexiv2 import Image
-    from pyexiv2 import Rational
-except:
-    raise ImportError("Can't import pyexiv2 please install it")
+
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
 import logging
 
+from fractions import Fraction
+
+
+
 
 logger = logging.getLogger(__name__)
+
+try:
+    # Try for version 0.3.0 first
+    logger.error("importing pyexiv2")
+    from pyexiv2 import ImageMetadata
+except:
+    logger.debug("0.3.0 failed")
+    try:
+        # then try 0.1.3
+        from pyexiv2 import Image
+        from pyexiv2 import Rational
+        logger.debug("0.1.3 done")
+    except: 
+        logger.debug("0.1.3 failed")
+        raise ImportError("Can't import pyexiv2 please install it")
+    else:
+        version='0.1.3'
+else:
+    version = '0.3.0'
+
+
 
 class MicroTagsFilter(object):
     """This filter provides extraction of metadata extraction of images from the RMMF
@@ -212,12 +232,8 @@ class MicroTagsFilter(object):
             # detect type of parameter
             datatype = ParameterName.STRING
              
-            if isinstance(metadata[p], Rational):
-                datatype = ParameterName.STRING
-            # Fraction test
-            elif isinstance(metadata[p], Fraction):
-                datatype = ParameterName.STRING
-            else:
+             
+            if version == '0.3.0':
                 # Int test
                 try:
                     int(metadata[p])
@@ -226,6 +242,10 @@ class MicroTagsFilter(object):
                 except TypeError:
                     pass
                 else:
+                    datatype = ParameterName.NUMERIC
+    
+                # Fraction test
+                if isinstance(metadata[p], Fraction):
                     datatype = ParameterName.NUMERIC
     
                 # Float test
@@ -237,6 +257,35 @@ class MicroTagsFilter(object):
                     pass
                 else:
                     datatype = ParameterName.NUMERIC
+                   
+            elif version == '0.1.3':
+                
+                if isinstance(metadata[p], Rational):
+                    datatype = ParameterName.STRING
+                # Fraction test
+                elif isinstance(metadata[p], Fraction):
+                    datatype = ParameterName.STRING
+                else:
+                    # Int test
+                    try:
+                        int(metadata[p])
+                    except ValueError:
+                        pass
+                    except TypeError:
+                        pass
+                    else:
+                        datatype = ParameterName.NUMERIC
+        
+                    # Float test
+                    try:
+                        float(metadata[p])
+                    except ValueError:
+                        pass
+                    except TypeError:
+                        pass
+                    else:
+                        datatype = ParameterName.NUMERIC
+            
 
             new_param = ParameterName(schema=schema,
                                       name=p,
@@ -257,20 +306,35 @@ class MicroTagsFilter(object):
             schema.save()
             return schema
 
+
+
+
     def getExif(self, filename):
         """Return a dictionary of the metadata.
         """
-
-        ret = {}
-        image = Image(filename)
-        try:
-            image.readMetadata()
-        except IOError:
+        logger.debug("found version %s" % version)
+        if version == '0.3.0':
+            ret = {}
+            image = ImageMetadata(filename)
+            try:
+                image.read()
+            except IOError:
+                return ret
+            for tag in image.values():
+                ret[tag.key] = tag.value
             return ret
-        for tag in image.exifKeys():
-            ret[tag] = image[tag]
-        return ret
-
+        elif version == '0.1.3':
+            ret = {}
+            image = Image(filename)
+            try:
+                image.readMetadata()
+            except IOError:
+                return ret
+            for tag in image.exifKeys():
+                ret[tag] = image[tag]
+            return ret
+        else:
+            raise ValueError()
 
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
