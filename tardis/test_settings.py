@@ -137,5 +137,5 @@ if not SINGLE_SEARCH_ENABLED:
 # Post Save Filters
 POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-#    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
     ]
