@@ -73,7 +73,7 @@ class XMLWriter:
         """
 
         filename = settings.OAI_DOCS_PATH + path.sep + prefix_dir + \
-            path.sep + str(objectprefix) + "-" + uniqueid + ".xml"
+            path.sep + str(objectprefix) + "-" + str(uniqueid) + ".xml"
 
         render_to_file(templatepath,
             filename, context)
