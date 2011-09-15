@@ -20,26 +20,31 @@
        }
 
     });
+    var refreshFunctionFor = function($toggle) {
+        return function(data, textStatus, jqXHR) {
+            if (data.success) {
+                if ($toggle.hasClass('tokens_shown')) {
+                    $toggle.click();
+                    $toggle.click();
+                } else {
+                    $toggle.click();
+                }
+            } else {
+                alert('An error occurred.  Please try again later');
+            }
+        };
+    };
+    $('.token_delete').live('click', function(evt){
+        evt.preventDefault();
+        var $toggle = $($(this).attr('data-toggle_selector'));
+        $.post(this.href, {}, refreshFunctionFor($toggle));
+    });
 
       $(document).ready(function() {
-          var refreshFunctionFor = function(create_token_link) {
-              return function(data, textStatus, jqXHR) {
-                  if (data.success) {
-                      var toggle = $(create_token_link).siblings('.access_list_token_toggle');
-                      if (toggle.hasClass('tokens_shown')) {
-                          toggle.click();
-                          toggle.click();
-                      } else {
-                          toggle.click();
-                      }
-                  } else {
-                      alert('Error creating token.  Please try again later');
-                  }
-              };
-          };
           $('.create_token_link').click(function(evt){
               evt.preventDefault();
-              $.post(this.href, {}, refreshFunctionFor(this));  // TODO error-handling
+              var $toggle = $(this).siblings('.access_list_token_toggle');
+              $.post(this.href, {}, refreshFunctionFor($toggle));  // TODO error-handling
           });
 
     //beginswith, endswith
@@ -423,7 +428,8 @@
                 <span style="float:left;">
                     Token Access
                 </span>
-                <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all" title="show/hide">
+                <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all" title="show/hide"
+                    id="token_toggle_{{experiment.id}}">
                     <span class="ui-icon ui-icon-circle-triangle-e"></span>
                 </a>
                             <a title="Create Token" class="create_token_link fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{{ experiment.get_create_token_url }}">

@@ -14,6 +14,8 @@
                 <th align="center">
                     URL 
                 </th>
+                <th>
+                </th>
             </tr>
             {% for token in tokens %}
             <tr>
@@ -25,6 +27,9 @@
                 </td>
                 <td>
                     <a href="{{ token.url }}" class="token_url">{{ token.url }}</a>
+                </td>
+                <td>
+                    <a href="{% url tardis.tardis_portal.views.token_delete token.id %}" class="token_delete" data-toggle_selector="#token_toggle_{{token.experiment_id}}">delete</a>
                 </td>
             </tr>
             {% endfor %}
