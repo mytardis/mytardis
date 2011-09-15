@@ -828,3 +828,6 @@ div.edit_schema {
     margin-bottom: 5px;
     width: 40%;
 }
+.token_user {
+    color:#AAA;
+}

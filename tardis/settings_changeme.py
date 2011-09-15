@@ -91,6 +91,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
                                'django.core.context_processors.debug',
                                'django.core.context_processors.i18n',
                                 'tardis.tardis_portal.context_processors.single_search_processor',
+                                'tardis.tardis_portal.context_processors.tokenuser_processor',
                                 )
 
 # Put strings here, like "/home/html/django_templates" or
