@@ -1652,6 +1652,8 @@ def retrieve_access_list_tokens(request, experiment_id):
     tokens = [{'expiry_date': token.expiry_date,
                  'user': token.user,
                  'url': request.build_absolute_uri(token.get_absolute_url()),
+                 'id': token.id,
+                 'experiment_id': experiment_id,
               } for token in tokens]
     c = Context({'tokens': tokens})
     return HttpResponse(render_response_index(request,
@@ -2632,6 +2634,14 @@ def create_token(request, experiment_id):
     token.save_with_random_token()
     logger.info('created token: %s' % token)
     return HttpResponse('{"success": true}', mimetype='application/json');
+
+
+@require_POST
+def token_delete(request, token_id):
+    token = Token.objects.get(id=token_id)
+    if authz.has_experiment_ownership(request, token.experiment_id):
+        token.delete()
+        return HttpResponse('{"success": true}', mimetype='application/json');
 
 
 def token_login(request, token):

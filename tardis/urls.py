@@ -59,6 +59,7 @@ experiment_urls = patterns(
 token_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/(?P<token>.+)/', 'token_login'),
+    (r'^delete/(?P<token_id>.+)/', 'token_delete'),
     )
 
 accounts_urls = patterns(
