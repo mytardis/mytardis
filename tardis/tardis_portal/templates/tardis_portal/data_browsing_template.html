@@ -23,13 +23,13 @@
               <li><a href="{% url tardis.tardis_portal.views.manage_groups %}">Group Management</a></li>
               {% endif %}
             </ul>
-            {% if perms.tardis_portal.change_userauthentication %}
+        {% endif %}
+        {% if perms.tardis_portal.change_userauthentication %}
             <br/>
             <h2>Account Management</h2>
             <ul>
               <li><a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">Authentication Panel</a></li>
             </ul>
-            {% endif %}
         {% endif %}
     {% endif %}
       </li>

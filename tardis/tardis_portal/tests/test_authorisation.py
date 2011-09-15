@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 from django.test.client import Client
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
@@ -20,6 +20,14 @@ class ExperimentACLTestCase(TestCase):
         self.user2 = User.objects.create_user('testuser2', '', 'secret')
         self.user3 = User.objects.create_user('testuser3', '', 'secret')
         self.user4 = User.objects.create_user('testuser4', '', 'secret')
+
+        # with standard permissions
+        for user in [self.user1, self.user2, self.user3, self.user4]:
+            user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
+            user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
+            user.user_permissions.add(Permission.objects.get(codename='change_group'))
+            user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
+            user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
 
         self.userProfile1 = UserProfile(user=self.user1)
         self.userProfile2 = UserProfile(user=self.user2)

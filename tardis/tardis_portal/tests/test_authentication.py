@@ -5,7 +5,7 @@ Created on 19/01/2011
 '''
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.utils import simplejson
 
 from tardis.tardis_portal.models import UserAuthentication
@@ -19,6 +19,7 @@ class AuthenticationTestCase(TestCase):
         self.manageAuthMethodsUrl = "/accounts/manage_auth_methods/"
 
         self.user = User.objects.create_user('test', '', 'test')
+        self.user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
 
     def testSimpleAuthenticate(self):
         response = self.client.post(self.loginUrl, {'username': 'test',

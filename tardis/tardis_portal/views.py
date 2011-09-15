@@ -523,7 +523,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
-@permission_required('tardis.tardis_portal.add_experiment')
+@permission_required('tardis_portal.add_experiment')
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -609,7 +609,7 @@ def metsexport_experiment(request, experiment_id):
 
 
 @login_required
-@permission_required('tardis.tardis_portal.change_experiment')
+@permission_required('tardis_portal.change_experiment')
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
@@ -706,7 +706,7 @@ def login(request):
                         'tardis_portal/login.html', c))
 
 
-@permission_required('tardis.tardis_portal.change_userauthentication')
+@permission_required('tardis_portal.change_userauthentication')
 @login_required()
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
@@ -1673,7 +1673,7 @@ def retrieve_group_userlist(request, group_id):
 
 
 @never_cache
-@permission_required('tardis.tardis_portal.change_group')
+@permission_required('tardis_portal.change_group')
 @login_required()
 def manage_groups(request):
 
