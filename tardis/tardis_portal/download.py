@@ -205,8 +205,7 @@ def download_datafiles(request):
     # the following protocols can be handled by this module
     protocols = ['', 'file', 'tardis']
     known_protocols = len(protocols)
-
-    if 'datafile' or 'dataset' in request.POST:
+    if 'datafile' in request.POST or 'dataset' in request.POST:
         if (len(request.POST.getlist('datafile')) > 0 \
                 or len(request.POST.getlist('dataset'))) > 0:
 
@@ -314,7 +313,7 @@ def download_datafiles(request):
                             filepath = '\"%s/%s\" ' %\
                                        (expid, absolute_filename)
 
-                        fileString += ('\"' + filePath + '\" ')
+                        fileString += ('\"' + filepath + '\" ')
                         print fileString
                     else:
                         fileString += '\"%s/%s\" ' % (expid, absolute_filename)
