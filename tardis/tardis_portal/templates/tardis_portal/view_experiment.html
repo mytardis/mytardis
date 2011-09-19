@@ -303,7 +303,6 @@
         var html = $(this).html();
         $(this).html(html + " " + loadingHTML);
         $(this).parents('.datafile_list').load(href, function(){
-
             $(".dataset_selector_all").unbind('click');
             $(".dataset_selector_none").unbind('click');
             // file selectors
@@ -316,9 +315,6 @@
                 $(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
             });
-
-            $(this).html(html);
-
         })
         return false;
         });
