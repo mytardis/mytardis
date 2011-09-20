@@ -7,8 +7,6 @@
   <strong>{{ experiments|length }}</strong>
   experiment{{ experiments|length|pluralize }} found.
 </em>
-{% else %}
-No experiments found
 {% endif %}
 {% include "search/search_result_list.html" %}
 {% endblock %}

@@ -9,7 +9,7 @@ DATABASES = {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': ':memory:',
+        'NAME': 'db.sqlite3',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -74,9 +74,8 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-#TARDIS_APPS = ('equipment',)
-
-TARDIS_APPS = ()
+TARDIS_APPS = ('equipment',)
+#TARDIS_APPS = ()
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
@@ -128,9 +127,12 @@ UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 DEFAULT_INSTITUTION = "Monash University"
 
 IMMUTABLE_METS_DATASETS = True
+
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = False 
+SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+if not SINGLE_SEARCH_ENABLED:
+    HAYSTACK_ENABLE_REGISTRATIONS = False
