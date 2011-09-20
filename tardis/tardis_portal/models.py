@@ -662,13 +662,17 @@ class ParameterName(models.Model):
     FILENAME = 5
     DATETIME = 6
 
+    LONGSTRING = 7
+
     __TYPE_CHOICES = (
         (NUMERIC, 'NUMERIC'),
         (STRING, 'STRING'),
         (URL, 'URL'),
         (LINK, 'LINK'),
         (FILENAME, 'FILENAME'),
-        (DATETIME, 'DATETIME'))
+        (DATETIME, 'DATETIME'),
+        (LONGSTRING, 'LONGSTRING')
+        )
 
     schema = models.ForeignKey(Schema)
     name = models.CharField(max_length=60)
@@ -700,6 +704,9 @@ class ParameterName(models.Model):
             return True
         else:
             return False
+
+    def isLongString(self):
+        return self.data_type == self.LONGSTRING
 
     def isString(self):
         if self.data_type == self.STRING:
@@ -740,6 +747,9 @@ def _getParameter(parameter):
         if units:
             value += ' %s' % units
         return value
+
+    elif parameter.name.isLongString():
+        return parameter.string_value
 
     elif parameter.name.isString():
         if parameter.name.name.endswith('Image'):
