@@ -1,6 +1,6 @@
-=======
-Install
-=======
+===================
+Installing MyTARDIS
+===================
 
 Prerequisites
 -------------
@@ -11,19 +11,89 @@ Redhat::
 
 Debian/Ubuntu::
 
-   sudo apt-get install libssl-dev libsasl2-dev libldap-2.4-2 libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
+   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
 
-Configuration
--------------
+Download
+--------
+
+To get the current trunk::
+
+   svn co https://mytardis.googlecode.com/svn/trunk/ mytardis
+   cd mytardis
+
+Quick configuration
+-------------------
+
+MyTARDIS is using the Buildout build system to handle dependencies and create the python class path.
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
-file there are some extra configuration options that are specific to
-MyTARDIS.
+file. MyTARDIS comes with a sample configuration file at ``tardis/settings_changeme.py``. You can import this as the basis of your own config file - options defined here will override the relevant options in ``settings_changeme.py``.
 
-.. attribute:: tardis.settings_changeme.FILE_STORE_PATH
+Create a new file ``tardis/settings.py`` containing the following::
 
-   The location of the file store.
+    from os import path
+    from settings_changeme import *
 
+    # Add site specific changes here.
+
+    # Turn on django debug mode.
+    DEBUG = True
+
+    # Use the built-in SQLite database for testing.
+    # The database needs to be named something other than "tardis" to avoid
+    # a conflict with a directory of the same name.
+    DATABASES['default']['ENGINE'] = 'django.db.backends.sqlite3'
+    DATABASES['default']['NAME'] = 'tardis_db'
+
+Create a new file ``buildout-dev.cfg`` containing the following::
+
+    [buildout]
+    extends = buildout.cfg
+
+    [django]
+    settings = settings
+
+.. note::
+    The ``settings = settings`` line tells Buildout to use the settings
+    file you just created.
+
+This is the minimum set of changes required to successfully run the server. You can make any other site-specific changes as necessary.
+
+Building
+--------
+
+Run the Buildout bootstrap script to initialise Buildout::
+
+   python bootstrap.py
+
+Download and build django and all dependencies::
+
+   ./bin/buildout -c buildout-dev.cfg
+
+This can be run again at any time to check for and download any new dependencies.
+
+Create and configure the database::
+
+    ./bin/django syncdb && ./bin/django migrate
+
+Answer "no" when asked to create a superuser. More information about the ``syncdb`` and ``migrate`` commands can be found at :doc:`admin`.
+
+Create a superuser::
+
+    ./bin/django createsuperuser
+
+This is deferred until after the migrate as the command has been overridden to set up MyTARDIS specific information.
+
+MyTARDIS can now be executed in its simplest form using::
+
+   ./bin/django runserver
+
+This will start the Django web server at http://localhost:8000/.
+
+Extended configuration
+----------------------
+
+See below for some extra configuration options that are specific to MyTARDIS.
 
 Database
 ~~~~~~~~
@@ -73,7 +143,7 @@ Repository
 
 .. attribute:: tardis.settings_changeme.FILE_STORE_PATH
 
-   The path to the MyTARDIS repository. This i where files will be
+   The path to the MyTARDIS repository. This is where files will be
    copied to once they are ingested into the system.
 
 .. attribute:: tardis.settings_changeme.STAGING_PATH

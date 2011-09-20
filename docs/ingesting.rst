@@ -25,6 +25,7 @@ The Meta-data Encoding and Transmission Standard was recommended by
 Monash Librarians and ANU in 2008 as the XML description format for
 MyTARDIS datasets.
 
+For details about the METS format and how it is used by MyTARDIS, please see :doc:`ref/mets-format`.
 
 Ingestion Script
 ----------------

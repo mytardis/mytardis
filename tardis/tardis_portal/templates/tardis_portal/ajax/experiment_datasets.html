@@ -100,9 +100,9 @@
 		</div> <!-- dataset metadata -->
 
 	      <div class="dataset_datafiles">
-              <span{% if dataset.pk in file_matched_datasets %} style="background-color: #FFFF00"{% endif %}>
-              <strong style="float:left; margin-right: 5px">Data Files ({{ dataset.dataset_file_set.count }}) </strong>
-              </span>
+              
+              <strong style="float:left; margin-right: 5px"><span{% if dataset.pk in file_matched_datasets %} style="background-color: #FFFF00"{% endif %}>Data Files ({{ dataset.dataset_file_set.count }})</span></strong>
+              
 		      {% if dataset.dataset_file_set.count|lt:"1000000" %}
                 {% if has_write_permissions %}
                   {% if not experiment.public %}

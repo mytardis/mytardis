@@ -21,7 +21,7 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}, filename=None, export_images=False):
+    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True):
         self.export_images = export_images
         # initialise the metadata counter
         metadataCounter = 1
@@ -48,9 +48,9 @@ class MetsExporter():
 
         experimentMdWrap = mdWrap(MDTYPE="OTHER",
             OTHERMDTYPE="TARDISEXPERIMENT")
-        if parameterSets.count() > 0:
+        if parameterSets:
             _xmlData = self.getTechMDXmlDataForParameterSets(
-                parameterSets, "experiment")
+                experiment, parameterSets, "experiment")
             experimentMdWrap.set_xmlData(_xmlData)
 
         # create an amdSec entry for the experiment
@@ -89,9 +89,9 @@ class MetsExporter():
             parameterSets = DatasetParameterSet.objects.filter(dataset=dataset)
 
             datasetMdWrap = mdWrap(MDTYPE="OTHER", OTHERMDTYPE="TARDISDATASET")
-            if parameterSets.count() > 0:
+            if parameterSets:
                 _xmlData = self.getTechMDXmlDataForParameterSets(
-                    parameterSets, "dataset")
+                    experiment, parameterSets, "dataset")
                 datasetMdWrap.set_xmlData(_xmlData)
 
             # create an amdSec entry for the experiment
@@ -139,9 +139,9 @@ class MetsExporter():
 
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")
-                if parameterSets.count() > 0:
+                if parameterSets:
                     _xmlData = self.getTechMDXmlDataForParameterSets(
-                        parameterSets, "datafile")
+                        experiment, parameterSets, "datafile")
                     datafileMdWrap.set_xmlData(_xmlData)
 
                 # create an amdSec entry for the experiment
@@ -180,22 +180,22 @@ class MetsExporter():
         outfile.close()
         return filepath
 
-    def getTechMDXmlDataForParameterSets(self, parameterSets, type="experiment"):
-
+    def getTechMDXmlDataForParameterSets(self, experiment, parameterSets, type="experiment"):
         _xmlData = xmlData()
-        for parameterSet in parameterSets:
+        paramObj = ExperimentParameter
+        if type == "experiment":
+            elementName = "experiment"
             paramObj = ExperimentParameter
-            if type == "experiment":
-                elementName = "experiment"
-                paramObj = ExperimentParameter
-            elif type == "dataset":
-                elementName = "dataset"
-                paramObj = DatasetParameter
-            else:
-                elementName = "datafile"
-                paramObj = DatafileParameter
+        elif type == "dataset":
+            elementName = "dataset"
+            paramObj = DatasetParameter
+        else:
+            elementName = "datafile"
+            paramObj = DatafileParameter
 
-            parameters = paramObj.objects.filter(parameterset=parameterSet)
+
+        for parameterSet in parameterSets:
+            parameters = paramObj.objects.filter(parameterset=parameterSet).select_related('name')
 
             metadataDict = {}
             for parameter in parameters:
@@ -209,8 +209,7 @@ class MetsExporter():
                         self.export_images == True:
 
                     # encode image as b64
-                    file_path = abspath(experiment.get_or_create_directory(),
-                                        parameter.string_value)
+                    file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
                     try:
                         metadataDict[parameter.name.name] = \
                         b64encode(open(file_path).read())
@@ -223,7 +222,6 @@ class MetsExporter():
                     except AttributeError:
                         metadataDict[parameter.name.name] = \
                         'None'
-
 
             _xmlData.add_xsdAny_(self.createXmlDataContentForParameterSets(
                 elementName=elementName,
