@@ -1,8 +1,8 @@
 {% load xmldate %}
 {# {% load partyactivitykeys %} #}
 <registryObject group="RMIT University">
-	<key>MYTARDIS-CHANGEME-{{experiment.id}}</key>
-	<originatingSource>http://www.monash.edu.au</originatingSource>
+	<key>http://www.rmit.edu.au/HPC/{{experiment.id}}</key>
+	<originatingSource>http://www.rmit.edu.au</originatingSource>
 	<collection type="dataset" dateAccessioned="{{experiment.update_time|toxmldatetime}}" dateModified="{{experiment.update_time|toxmldatetime}}">
 		<identifier type="local">experiment/view/{{experiment.id}}</identifier>
 		<identifier type="handle">hdl:{{experiment.handle}}</identifier>
@@ -25,7 +25,7 @@
 			<key>{{experiment.id}}</key>
 			<relation type="isOwnedBy">
 				<description>Is owned by</description>
-				<url>http://www.monash.edu.au</url>
+				<url>http://www.rmit.edu.au</url>
 			</relation>
 		</relatedObject>
 		{#  {% for party_key in experiment.id|party_keys %} #}

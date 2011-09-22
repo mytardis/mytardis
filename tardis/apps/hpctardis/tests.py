@@ -95,10 +95,12 @@ class SimplePublishTest(TestCase):
         
         response = self.client.post("/apps/hpctardis/rif_cs/")
         self.assertTrue(_grep("test exp1",str(response)))
-        self.assertTrue(_grep("<key>MYTARDIS-CHANGEME-1</key>",str(response)))
+        
+        
+        self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/1</key>",str(response)))
         self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
       
-        self.assertFalse(_grep("<key>MYTARDIS-CHANGEME-2</key>",str(response)))
+        self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2</key>",str(response)))
       
         logger.debug("response=%s" % response)
       
