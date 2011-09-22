@@ -32,6 +32,7 @@ def authenticate(request, token_string):
 
     request.session[TOKEN_EXPERIMENT] = token.experiment.id
     _ensure_acl_exists(token.experiment.id)
+    request.session.set_expiry(token.get_session_expiry())
 
     return user
 
