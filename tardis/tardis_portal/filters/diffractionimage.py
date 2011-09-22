@@ -236,7 +236,7 @@ class DiffractionImageFilter(object):
         return line.split(':')[0].replace(' ', '')
 
     def parse_value(self, line):
-        return line.split(':')[1].replace(' ', '').replace('\n', '')
+        return line.split(':')[1].replace('\n', '').strip()
 
     def output_metadata(self, term, value):
         return {'key': self.terms[term], 'value': value}

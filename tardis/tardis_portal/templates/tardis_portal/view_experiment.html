@@ -71,16 +71,23 @@
 		var new_name = name;
 
 		var i = 1;
-		while($("input[name=" + new_name + "__" + i + "]").length == 1)
+		while($("[name=" + new_name + "__" + i + "]").length == 1)
 		{
 			i++;
 		}
 		return new_name + "__" + i;
 	}
 
-	function get_form_input_html(label, name)
+	function get_form_input_html(label, name, use_textarea)
 	{
-		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>';
+        var widget;
+        if (use_textarea) {
+            widget = '<textarea ' + 'name="' + name + '" id="' + name + '"/>';
+        } else {
+            widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
+        }
+        var label = '<label for="' + name + '">' + label + '</label>';
+		return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
 	}
 
     $('.dataset_checkbox').live('click', function( event ) {
@@ -93,7 +100,7 @@
 	}
     })
 
-	$(document).ready(function() {
+$(document).ready(function() {
 	$("#tabs").tabs({
 	   ajaxOptions: {dataType: "html"},
 	   cookie: { expires: 30 },
@@ -108,8 +115,8 @@
 
         }
 
-	});
-
+    });
+});
 	$('#schemaselect').live('change', function(e) {
 		e.preventDefault();
 
@@ -126,12 +133,12 @@
 	});
 
 	$('#add_new_parameter').live('click', function(){		
-		$("#parameternameselect > option:selected").each(function() {
-            var $selected_option = $(this);
-			var new_element_name = get_new_parameter_name($selected_option.val());
-			$("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name));
-			$("#" + new_element_name).focus();
-		});
+        // assuming whenever add_new_parameter is clicked an option is selected
+		var $selected_option = $("#parameternameselect > option:selected");
+        var is_long = $selected_option.attr('data-longstring');
+        var new_element_name = get_new_parameter_name($selected_option.val());
+        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
+        $("#" + new_element_name).focus();
 	});
     $('#add_metadata_form').live('submit', function(e) {
         e.preventDefault();
@@ -175,11 +182,6 @@
     }
 
 	$(document).ready(function() {
-        $("#tabs").tabs({
-            ajaxOptions: {dataType: "html"},
-            cookie: { expires: 30 }
-        });
-
         // Close Button Highlighting. IE doesn't support :hover. Surprise?
         if($.browser.msie) {
             $('div.jqmAlert .jqmClose').hover(
@@ -301,7 +303,6 @@
         var html = $(this).html();
         $(this).html(html + " " + loadingHTML);
         $(this).parents('.datafile_list').load(href, function(){
-
             $(".dataset_selector_all").unbind('click');
             $(".dataset_selector_none").unbind('click');
             // file selectors
@@ -314,12 +315,8 @@
                 $(this).parent().find('.datafile_checkbox').removeAttr("checked");
 
             });
-
-            $(this).html(html);
-
-        })
-        return false;
         });
+        return false;
     });
 </script>
 

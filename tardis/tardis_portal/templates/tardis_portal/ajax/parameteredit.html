@@ -19,7 +19,7 @@
 		<select id="parameternameselect">
 		{% for pn in parameternames %}
 		
-			<option value="{{pn.name|parametername_form}}">{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
+			<option value="{{pn.name|parametername_form}}" {% if pn.isLongString %} data-longstring="true"{% endif %}>{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
 	
 		{% endfor %}
 		</select>

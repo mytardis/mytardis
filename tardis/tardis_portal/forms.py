@@ -66,6 +66,8 @@ from tardis.tardis_portal.auth.localdb_auth \
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
+import logging
+logger = logging.getLogger(__name__)
 
 def getAuthMethodChoices():
     authMethodChoices = ()
@@ -866,6 +868,11 @@ def create_parameterset_edit_form(
                         forms.DecimalField(label=parameter_name.full_name + units,
                                            required=False,
                                            initial=value)
+                elif parameter_name.isLongString():
+                    fields[key] = \
+                        forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value)
                 else:
                     fields[key] = \
                         forms.CharField(label=parameter_name.full_name + units,
@@ -900,6 +907,13 @@ def create_parameterset_edit_form(
                     forms.DecimalField(label=dfp.name.full_name + units,
                                        required=False,
                                        initial=dfp.numerical_value)
+            elif dfp.name.isLongString():
+                fields[form_id] = \
+                    forms.CharField(widget=forms.Textarea, label=dfp.name.full_name + units,
+                                    max_length=255,
+                                    required=False,
+                                    initial=dfp.string_value)
+                
             else:
                 fields[form_id] = \
                     forms.CharField(label=dfp.name.full_name + units,
@@ -961,6 +975,8 @@ def create_datafile_add_form(
                                        required=False,
                                        initial=value,
                                        )
+            elif parameter_name.isLongString():
+                fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
             else:
                 fields[key] = \
                     forms.CharField(label=parameter_name.full_name + units,
@@ -997,6 +1013,8 @@ def create_datafile_add_form(
                 fields[form_id] = \
                 forms.DecimalField(label=dfp.full_name + units,
                 required=False)
+            elif dfp.isLongString():
+                fields[form_id] = forms.CharField(label=dfp.full_name + units, widget=forms.Textarea, required=False, max_length=255)
             else:
                 fields[form_id] = \
                 forms.CharField(label=dfp.full_name + units,

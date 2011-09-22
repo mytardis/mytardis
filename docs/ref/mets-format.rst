@@ -12,7 +12,7 @@ The XML fragments below are all taken from this :doc:`mets-example`.
 
 The METS file is broken up in to a number of sections:
 
-<metsHrd>
+<metsHdr>
 ---------
 
 The metsHdr contains the institution name of the experiment, as shown below::
