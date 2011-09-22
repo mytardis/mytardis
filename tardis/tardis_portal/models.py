@@ -940,6 +940,42 @@ class Token(models.Model):
         import datetime as dt
         return self.expiry_date and self.expiry_date < dt.datetime.now().date()
 
+    def _get_expiry_as_datetime(self):
+        import datetime as dt
+        exp = self.expiry_date
+        return dt.datetime(exp.year, exp.month, exp.day, 23, 59, 59)
+
+    @staticmethod
+    def _tomorrow_4am():
+        import datetime as dt
+        today = dt.datetime.now().date()
+        tomorrow = today + dt.timedelta(1)
+        tomorrow_4am = dt.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 4)
+        return tomorrow_4am
+        
+    def get_session_expiry(self):
+        '''
+            A token login should expire at the earlier of
+            a) tomorrow at 4am
+            b) the (end of) the token's expiry date
+            
+            It is the responsibility of token_auth to set the session expiry
+        '''
+        if self.is_expired():
+            import datetime as dt
+            return dt.datetime.now()
+
+        expire_tomorrow_morning = self._tomorrow_4am()
+        token_as_datetime = self._get_expiry_as_datetime()
+
+        print expire_tomorrow_morning
+        print token_as_datetime
+
+        if expire_tomorrow_morning < token_as_datetime:
+            return expire_tomorrow_morning
+        else:
+            return token_as_datetime
+
 
 @receiver(pre_save, sender=ExperimentParameter)
 @receiver(pre_save, sender=DatasetParameter)

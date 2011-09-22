@@ -43,8 +43,14 @@ import sys
 
 
 class FrozenTime:
-    def __init__(*args, **kwargs):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.year = args[0]
+        self.month = args[1]
+        self.day = args[2]
+        self.hour = args[3]
+
+    def __lt__(a, b):
+        return old_datetime(a.year, a.month, a.day, a.hour) < old_datetime(b.year, b.month, b.day, b.hour)
 
     @classmethod
     def freeze_time(cls, time):
@@ -53,6 +59,9 @@ class FrozenTime:
     @classmethod
     def now(cls):
         return cls.frozen_time
+
+    def __str__(self):
+        return "%s %s %s  %s" % (self.year, self.month, self.day, self.hour)
 
 
 def _raise_integrity_error():
@@ -111,6 +120,53 @@ class TokenTestCase(TestCase):
 
         t.expiry_date = tomorrow
         self.assertFalse(t.is_expired())
+
+    def test_get_session_expiry(self):
+        three_am = old_datetime(2011, 8, 20, 3)
+        now = three_am
+
+        FrozenTime.freeze_time(now)
+        tomorrow_4am = old_datetime(2011, 8, 21, 4)
+
+        t = Token()
+        expected_expiry = tomorrow_4am
+
+        self.assertEqual(expected_expiry.year, t.get_session_expiry().year)
+        self.assertEqual(expected_expiry.month, t.get_session_expiry().month)
+        self.assertEqual(expected_expiry.day, t.get_session_expiry().day)
+        self.assertEqual(expected_expiry.hour, t.get_session_expiry().hour)
+
+    def test_get_session_expiry_near_expiry(self):
+        now = old_datetime(2011,8,20,3)
+        FrozenTime.freeze_time(now)
+
+        t = Token()
+        t.expiry_date = now.date()
+
+        expected_expiry = old_datetime(2011, 8, 20, 23, 59, 59)
+
+        actual_expiry = t.get_session_expiry()
+        print actual_expiry
+
+        self.assertEqual(expected_expiry.year, actual_expiry.year)
+        self.assertEqual(expected_expiry.month, actual_expiry.month)
+        self.assertEqual(expected_expiry.day, actual_expiry.day)
+        self.assertEqual(expected_expiry.hour, actual_expiry.hour)
+
+    def test_get_session_expiry_expired_token(self):
+        now = old_datetime(2011, 8, 20, 13)
+        FrozenTime.freeze_time(now)
+
+        yesterday = (now - datetime.timedelta(1)).date()
+
+        t = Token()
+        t.expiry_date = yesterday
+
+        self.assertEqual(now.year, t.get_session_expiry().year)
+        self.assertEqual(now.month, t.get_session_expiry().month)
+        self.assertEqual(now.day, t.get_session_expiry().day)
+        self.assertEqual(now.hour, t.get_session_expiry().hour)
+
 
 # check that we don't loop indefinitely when success is impossible
 # check no token is assigned
