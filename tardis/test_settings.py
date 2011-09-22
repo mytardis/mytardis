@@ -31,7 +31,21 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
-TEMPLATE_DIRS = ['.']
+#TEMPLATE_DIRS = ['.']
+# Put strings here, like "/home/html/django_templates" or
+# "C:/www/django/templates". Always use forward slashes, even on Windows.
+# Don't forget to use absolute paths, not relative paths.
+TEMPLATE_DIRS = (
+    path.join(path.dirname(__file__),
+    'tardis_portal/templates/').replace('\\', '/'),
+                 
+  path.join(path.dirname(__file__),
+    'apps/hpctardis/publish/').replace('\\', '/'),
+                 
+    path.join(path.dirname(__file__),
+    'tardis_portal/publish/').replace('\\', '/'),                 
+)
+
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
@@ -139,3 +153,10 @@ POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
     ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
     ]
+
+PUBLISH_PROVIDERS = (
+                 #   'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    'tardis.apps.hpctardis.publish.rif_cs_profile.'
+                    + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    )
