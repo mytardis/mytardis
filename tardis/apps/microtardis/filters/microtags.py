@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 try:
     # Try for version 0.3.0 first
-    logger.error("importing pyexiv2")
+    logger.debug("importing pyexiv2")
     from pyexiv2 import ImageMetadata
 except:
     logger.debug("0.3.0 failed")
