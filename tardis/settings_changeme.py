@@ -101,6 +101,12 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 TEMPLATE_DIRS = (
     path.join(path.dirname(__file__),
     'tardis_portal/templates/').replace('\\', '/'),
+                 
+  path.join(path.dirname(__file__),
+    'apps/hpctardis/publish/').replace('\\', '/'),
+                 
+    path.join(path.dirname(__file__),
+    'tardis_portal/publish/').replace('\\', '/'),                 
 )
 
 DOWNLOAD_PROVIDERS = (
@@ -170,7 +176,9 @@ INSTALLED_APPS = (
 
 
 PUBLISH_PROVIDERS = (
-                    'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    'tardis.apps.hpctardis.publish.rif_cs_profile.'
                     + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
                     )
 
