@@ -1,31 +1,12 @@
-{% if parametersets %}
+<div class="datafile_parameters">
 {% for parameterset in parametersets %}
-	<div class="datafile_parameters">
-        <div class="schema_name" title="{{ parameterset.schema.namespace }}">
-            <span>
-                {% if parameterset.schema.name %}
-                    {{ parameterset.schema.name }}
-                {% endif %}
-            </span>
-            <hr>
-        </div>
-	{% if has_write_permissions %}{% if not experiment.public %}
-      <div class="edit_schema"><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
+    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all %}
+    {% if has_write_permissions %}{% if not parameterset.dataset_file.dataset.experiment.public %}
+      <div class="edit_schema" style="display: inline;"><a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
      data-toggle_selector="#datafile_metadata_toggle_{{parameterset.dataset_file_id}}"
-	    class="jqModalDfEdit"><img src="/site_media/images/icon_changelink.gif" /></a></div>
+        class="jqModalDfEdit"><img src="/site_media/images/icon_changelink.gif" /></a></div>
     {% endif %}{% endif %}
-	{% for parameter in parameterset.datafileparameter_set.all %}
-		<li><strong>{{ parameter.name.full_name }}: </strong>
-            {% if parameter.name.isLongString %}
-                {{parameter.get|linebreaks}}
-            {% else %}
-                {{parameter.get}}
-            {% endif %}
-		</li>
-	{% endfor %}
-	</div>
-	<br/><br/>
+{% empty %}
+    There is no metadata for this file
 {% endfor %}
-{% else %}
-	There is no metadata for this file
-{% endif %}
+</div>

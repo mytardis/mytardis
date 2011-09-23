@@ -1,0 +1,17 @@
+<table class="parameter_table {{ parameterset.schema.name|slugify }}">
+    {% if parameterset.schema.name %}
+    <tr><th class="schema_name" title="{{ parameterset.schema.namespace }}" colspan="2">{{ parameterset.schema.name }}</th></tr>
+    {% endif %}
+    {% for parameter in parameters %}
+    <tr class="{% cycle 'odd' 'even' %}">
+        <td class="parameter_name">{{ parameter.name.full_name }}</td>
+        <td class="parameter_value">
+            {% if parameter.name.isLongString %}
+                {{ parameter.get|linebreaks }}
+            {% else %}
+                {{ parameter.get }}
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
