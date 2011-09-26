@@ -1,4 +1,5 @@
 from os import path
+import logging
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -56,6 +57,7 @@ DEFAULT_AUTH = 'localdb'
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
 
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 )
 
@@ -112,8 +114,8 @@ LDAP_BASE = 'dc=example, dc=com'
 LDAP_USER_BASE = 'ou=People, ' + LDAP_BASE
 LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
 
-SYSTEM_LOG_LEVEL = 'DEBUG'
-MODULE_LOG_LEVEL = 'DEBUG'
+SYSTEM_LOG_LEVEL = logging.DEBUG
+MODULE_LOG_LEVEL = logging.DEBUG
 
 SYSTEM_LOG_FILENAME = 'request.log'
 MODULE_LOG_FILENAME = 'tardis.log'
@@ -136,3 +138,7 @@ HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
+
+TOKEN_EXPIRY_DAYS = 30
+TOKEN_LENGTH = 30
+TOKEN_USERNAME = 'tokenuser'

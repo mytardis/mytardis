@@ -30,3 +30,7 @@ def single_search_processor(request):
         context.update(search_view.extra_context())
 
     return context
+
+def tokenuser_processor(request):
+    is_token_user = request.user.username == settings.TOKEN_USERNAME
+    return {'is_token_user': is_token_user}

@@ -1,0 +1,11 @@
+<p>
+A new token has been created.
+It will expire on {{ token.expiry_date }}
+</p>
+
+<div>
+Use it by visiting <input id="token_url" value="{{full_url}}" style="width:100%;"/>
+</div>
+<script>
+$('#token_url').click(function(){this.select();}).select();
+</script>

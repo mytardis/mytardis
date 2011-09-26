@@ -49,10 +49,11 @@ from django.db import transaction
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -72,7 +73,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
-    UserProfile, UserAuthentication
+    UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -88,6 +89,8 @@ from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from haystack.query import SearchQuerySet
 from tardis.tardis_portal.forms import RawSearchForm
 from haystack.views import SearchView
+
+from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
@@ -294,6 +297,8 @@ def view_experiment(request, experiment_id):
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+    if request.user.is_authenticated():
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
     c['subtitle'] = experiment.title
     c['nav'] = [{'name': 'Data', 'link': '/experiment/view/'},
                 {'name': experiment.title,
@@ -518,6 +523,7 @@ def retrieve_experiment_metadata(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
+@permission_required('tardis_portal.add_experiment')
 @login_required
 def create_experiment(request,
                       template_name='tardis_portal/create_experiment.html'):
@@ -603,6 +609,7 @@ def metsexport_experiment(request, experiment_id):
 
 
 @login_required
+@permission_required('tardis_portal.change_experiment')
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
                       template="tardis_portal/create_experiment.html"):
@@ -699,6 +706,7 @@ def login(request):
                         'tardis_portal/login.html', c))
 
 
+@permission_required('tardis_portal.change_userauthentication')
 @login_required()
 def manage_auth_methods(request):
     '''Manage the user's authentication methods using AJAX.'''
@@ -1637,6 +1645,20 @@ def retrieve_access_list_external(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))
 
+@never_cache
+@authz.experiment_ownership_required
+def retrieve_access_list_tokens(request, experiment_id):
+    tokens = Token.objects.filter(experiment=experiment_id)
+    tokens = [{'expiry_date': token.expiry_date,
+                 'user': token.user,
+                 'url': request.build_absolute_uri(token.get_absolute_url()),
+                 'id': token.id,
+                 'experiment_id': experiment_id,
+              } for token in tokens]
+    c = Context({'tokens': tokens})
+    return HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/access_list_tokens.html', c))
+
 
 @never_cache
 @authz.group_ownership_required
@@ -1651,6 +1673,7 @@ def retrieve_group_userlist(request, group_id):
 
 
 @never_cache
+@permission_required('tardis_portal.change_group')
 @login_required()
 def manage_groups(request):
 
@@ -2601,3 +2624,35 @@ def choose_license(request, experiment_id):
     c = Context(context_dict)
     return HttpResponse(render_response_index(request,
                         'tardis_portal/choose_license.html', c))
+
+
+@require_POST
+@authz.experiment_ownership_required
+def create_token(request, experiment_id):
+    experiment = Experiment.objects.get(id=experiment_id)
+    token = Token(experiment=experiment, user=request.user)
+    token.save_with_random_token()
+    logger.info('created token: %s' % token)
+    return HttpResponse('{"success": true}', mimetype='application/json');
+
+
+@require_POST
+def token_delete(request, token_id):
+    token = Token.objects.get(id=token_id)
+    if authz.has_experiment_ownership(request, token.experiment_id):
+        token.delete()
+        return HttpResponse('{"success": true}', mimetype='application/json');
+
+
+def token_login(request, token):
+    django_logout(request)
+
+    from tardis.tardis_portal.auth import login, token_auth
+    logger.debug('token login')
+
+    user = token_auth.authenticate(request, token)
+    if not user:
+        return return_response_error(request)
+    login(request, user)
+    experiment = Experiment.objects.get(token__token=token)
+    return HttpResponseRedirect(experiment.get_absolute_url())
