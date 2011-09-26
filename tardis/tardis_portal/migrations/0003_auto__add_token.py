@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('token', self.gf('django.db.models.fields.CharField')(unique=True, max_length=30)),
             ('experiment', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Experiment'])),
-            ('expiry_date', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2011, 9, 23, 19, 39, 34, 719536))),
+            ('expiry_date', self.gf('django.db.models.fields.DateField')()),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
         ))
         db.send_create_signal('tardis_portal', ['Token'])
