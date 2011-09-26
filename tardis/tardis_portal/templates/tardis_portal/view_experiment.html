@@ -92,8 +92,7 @@
 
     $('.dataset_checkbox').live('click', function( event ) {
 	if ($(this).is(':checked')) {
-	    $(this).parents('.dataset').find('.datafile_checkbox'
-					    ).attr('disabled', true);
+	    $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
 	    $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
 	} else {
 	    $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
@@ -197,7 +196,6 @@ $(document).ready(function() {
             closeClass: 'jqmClose',
             onHide: refreshMetadataDisplay
         });
-
     });
 
 	// metadata text / ajax toggle
@@ -326,29 +324,29 @@ $(document).ready(function() {
 
 {% block fullpage %}
 
-   <div class="jqmAlert" id="jqmAlertExpAdd">
-
-       <div class="jqmAlertWindow">
-           <div class="jqmAlertTitle clearfix">
-           <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-         </div>
-
-         <div class="jqmAlertContent" id="jqmAlertContentexperimentA{{experiment.id}}">
-         <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
-         </div>
-       </div>
-   </div>
+    <div class="jqmAlert" id="jqmAlertExpAdd">
+ 
+        <div class="jqmAlertWindow">
+            <div class="jqmAlertTitle clearfix">
+                <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+            </div>
+ 
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
+        </div>
+    </div>
 
 	<div class="jqmAlert" id="jqmAlertExpEdit">
 
 		<div class="jqmAlertWindow">
 		    <div class="jqmAlertTitle clearfix">
-		    <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-		  </div>
+                <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+		    </div>
 
-		  <div class="jqmAlertContent">
-		  <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
-		  </div>
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="/site_media/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
 		</div>
 	</div>
 

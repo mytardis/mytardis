@@ -91,6 +91,7 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
                                'django.core.context_processors.debug',
                                'django.core.context_processors.i18n',
                                 'tardis.tardis_portal.context_processors.single_search_processor',
+                                'tardis.tardis_portal.context_processors.tokenuser_processor',
                                 )
 
 # Put strings here, like "/home/html/django_templates" or
@@ -161,6 +162,7 @@ USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
 
 GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+                    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
                    'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
 
 )
@@ -242,3 +244,7 @@ DEFAULT_INSTITUTION = "Monash University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = True
+
+TOKEN_EXPIRY_DAYS = 30
+TOKEN_LENGTH = 30
+TOKEN_USERNAME = 'tokenuser'

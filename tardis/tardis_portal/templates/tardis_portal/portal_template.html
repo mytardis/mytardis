@@ -124,7 +124,6 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 </head>
 
 <body>
-
   <div id="header">
     <div id="logo">
       <h1><img src="/site_media/images/mytardis_logo.png"></h1>
@@ -147,8 +146,12 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
         {% if is_superuser %}
           <a href="{% url admin:index %}"><em>{{ username }}</em></a>
         {% else %}
+            {% if is_token_user %}
+          <em class="token_user">{{ username }}</em>
+              {% else %}
           <em>{{ username }}</em>
-	{% endif %}
+          {% endif %}
+	  {% endif %}
 	  - <a href="{% url django.contrib.auth.views.logout %}"> [Log Out]</a>
       {% else %}
 	  <a href="{% url registration.views.register %}"> [Register] </a>
