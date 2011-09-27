@@ -57,9 +57,10 @@
     (t.toLowerCase() == this.substring(this.length -
     t.length).toLowerCase()); } }
 
-    $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).next().toggle(); });
-    $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).next().toggle(); });
-    $('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+    $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).siblings('.access_list1').toggle(); });
+    $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).siblings('.access_list2, .access_list3').toggle(); });
+    //$('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+    $('.access_list3').hide();
     $('.access_list_token_toggle').click(function(evt){
         evt.preventDefault();
         var $this = $(this);
@@ -93,9 +94,10 @@
 
       var href = $(this).attr("href");
 
-      $(this).next().html(loadingHTML + "</br>");
+      var $target = $(this).siblings('.access_list1');
+      $target.html(loadingHTML + "</br>");
 
-      $(this).next().load(href, function() {
+      $target.load(href, function() {
         $(document).ready(function() {
           $("#id_adduser").unbind('click focus');
           $('#id_adduser').bind('click focus', function() {
@@ -212,9 +214,10 @@
 
         var href = $(this).attr("href");
 
-        $(this).next().html(loadingHTML + "</br>");
+        var $target = $(this).siblings('.access_list2, .access_list3');
+        $target.html(loadingHTML + "</br>");
 
-        $(this).next().load(href, function(){
+        $target.load(href, function(){
 
         $(document).ready(function(){
 
@@ -398,6 +401,7 @@
             <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all">
                 <span class="ui-icon ui-icon-circle-triangle-e"></span>
             </a>
+                <div style="clear:both;"></div>
             <div class="access_list1"></div>
           </td>
         </tr>
@@ -409,6 +413,7 @@
             <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button ui-state-default fg-button-icon-solo ui-corner-all">
                 <span class="ui-icon ui-icon-circle-triangle-e"></span>
             </a>
+                <div style="clear:both;"></div>
             <div class="access_list2"></div>
           </td>
         </tr>
@@ -420,6 +425,7 @@
             <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button ui-state-default  fg-buton-icon-solo ui-corner-all" title="show/hide">
                 <span class="ui-icon ui-icon-circle-triangle-e"></span>
             </a>
+                <div style="clear:both;"></div>
             <div class="access_list3"></div>
           </td>
         </tr>
