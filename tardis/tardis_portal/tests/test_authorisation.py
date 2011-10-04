@@ -3,7 +3,7 @@ import datetime
 from django.test import TestCase
 from django.test.client import Client
 
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
@@ -528,3 +528,14 @@ class ExperimentACLTestCase(TestCase):
         self.client1.logout()
         self.client2.logout()
         self.client3.logout()
+
+    def testOwnedExperiments(self):
+        user = AnonymousUser()
+        # not logged in
+        class MockRequest:
+            pass
+        request = MockRequest()
+        request.user = user
+        num_exps = Experiment.safe.owned(request).count()
+        self.assertEqual(num_exps, 0)
+

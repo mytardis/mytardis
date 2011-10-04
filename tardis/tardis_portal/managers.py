@@ -150,7 +150,7 @@ class ExperimentManager(OracleSafeManager):
 
         # the user must be authenticated
         if not request.user.is_authenticated():
-            return []
+            return super(ExperimentManager, self).get_empty_query_set()
 
         # build the query to filter the ACL table
         query = Q(experimentacl__pluginId=django_user,
