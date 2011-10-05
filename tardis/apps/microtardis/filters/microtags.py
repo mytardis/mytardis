@@ -46,8 +46,13 @@ from tardis.tardis_portal.models import ParameterName, DatafileParameter
 import logging
 
 from fractions import Fraction
-
-
+from django.conf import settings
+try:
+    import EXIF  # Assumed to be in the same directory.
+except ImportError:
+    import sys
+    logger.debug("Error: Can't find the file 'EXIF.py' in the directory containing %r" % __file__)
+    sys.exit(1)
 
 
 logger = logging.getLogger(__name__)
@@ -96,8 +101,17 @@ class MicroTagsFilter(object):
         self.tagsToExclude = tagsToExclude
 
         self.delim = '\r\n'
-        self.instruments = {'FEIQuanta200':(('FEIQuanta-1','FEIQuanta1',('HV','Spot','abc')),('FEIQuanta-2','FEIQuanta2',('Brightness',))),
- 			    'nanoSEM':(('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),)}
+        if settings.INSTRUMENTS_SCHEMA:
+            logger.debug("instrument schemas from settings file loaded.")
+            self.instruments = settings.INSTRUMENTS_SCHEMA
+        else:
+            logger.debug("Failed to load instruments schema from settings file, used default values instead.")
+            self.instruments = {'FEIQuanta200': (('FEIQuanta-1','FEIQuanta1',('HV','Spot')),
+                                                 ('FEIQuanta-2','FEIQuanta2',('Brightness')),
+                                                 ),
+ 			                    'nanoSEM': (('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),
+                                             )
+                                }
         logger.debug('initialising MicroTagsFilter')
 
     def __call__(self, sender, **kwargs):
@@ -140,7 +154,7 @@ class MicroTagsFilter(object):
 
             for exifTag in exifs:
                 logger.debug("exifTag=%s" % exifTag)
-                if exifTag == 'Exif.Image.0x877a':
+                if exifTag == 'Image Tag 0x877A':
                     
                     # splitup tag value
                     splited =  exifs[exifTag].split(self.delim)                  
@@ -312,29 +326,20 @@ class MicroTagsFilter(object):
     def getExif(self, filename):
         """Return a dictionary of the metadata.
         """
-        logger.debug("found version %s" % version)
-        if version == '0.3.0':
-            ret = {}
-            image = ImageMetadata(filename)
-            try:
-                image.read()
-            except IOError:
-                return ret
-            for tag in image.values():
-                ret[tag.key] = tag.value
+        logger.debug("Extracting EXIF metadata from image...")
+        ret = {}
+        try:
+            img = open(filename)
+            exif_tags = EXIF.process_file(img)
+            for tag in exif_tags:
+                ret[tag] = str(exif_tags[tag])
+        except:
+            logger.debug("Failed to extract EXIF metadata from image.")
             return ret
-        elif version == '0.1.3':
-            ret = {}
-            image = Image(filename)
-            try:
-                image.readMetadata()
-            except IOError:
-                return ret
-            for tag in image.exifKeys():
-                ret[tag] = image[tag]
-            return ret
-        else:
-            raise ValueError()
+        
+        logger.debug("Successed extracting EXIF metadata from image.")
+        return ret
+
 
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
