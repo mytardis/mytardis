@@ -127,12 +127,19 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
-STAGING_PROTOCOL = 'ldap'
+STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 
 GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
+
+INSTRUMENTS_SCHEMA = {'FEIQuanta200': (('FEIQuanta-1','FEIQuanta1',('HV','Spot')),
+                                       ('FEIQuanta-2','FEIQuanta2',('Brightness')),
+                                       ),
+                      'nanoSEM': (('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),
+                                  ),
+                      }
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
