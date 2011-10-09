@@ -1656,5 +1656,19 @@
         }, 
         "model": "tardis_portal.parametername", 
         "pk": 116
+    },
+    {
+        "fields": {
+            "parameter_name": "103" 
+        }, 
+        "model": "tardis_portal.freetextsearchfield", 
+        "pk": 1
+    },
+    {
+        "fields": {
+            "parameter_name": "104" 
+        }, 
+        "model": "tardis_portal.freetextsearchfield", 
+        "pk": 2
     }
 ]
