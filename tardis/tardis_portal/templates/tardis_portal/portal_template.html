@@ -67,7 +67,11 @@ $(document).ready(function(){
 })();
   
 $("#id_q").autocomplete(users.split(" "), {
-matchContains: true, multiple: true, multipleSeparator: " "
+    matchContains: true, 
+    multiple: true, 
+    multipleSeparator: " ",
+    selectFirst: false,
+    autoFill: true
 });
 
 
