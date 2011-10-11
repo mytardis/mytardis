@@ -38,9 +38,9 @@ exif.py
 from fractions import Fraction
 
 try:
-    from pyexiv2 import ImageMetadata
-except:
-    raise ImportError("Can't import pyexiv2 please install it")
+    import tardis.apps.microtardis.filters.EXIF as EXIF
+except ImportError:
+    raise ImportError("Can't import EXIF please ensure that the file exists in tardis.apps.microtardis.filters.")
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
@@ -185,13 +185,18 @@ class EXIFFilter(object):
         """Return a dictionary of the metadata.
         """
         ret = {}
-        image = ImageMetadata(filename)
         try:
-            image.read()
-        except IOError:
+            img = open(filename)
+            exif_tags = EXIF.process_file(img)
+            for tag in exif_tags:
+                s = str(exif_tags[tag])
+                try:
+                    ret[tag] = int(s)
+                except ValueError:
+                    ret[tag] = s
+        except:
             return ret
-        for tag in image.values():
-            ret[tag.key] = tag.value
+        
         return ret
 
 

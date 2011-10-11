@@ -52,64 +52,60 @@ class ExifFilterTestCase(TestCase):
     def test_metadata_extraction(self):
         from os import path
         import datetime
-        from fractions import Fraction
         try:
             from tardis.tardis_portal.filters.exif import EXIFFilter
         except:
             raise SkipTest()
         f = EXIFFilter("EXIF", "http://exif.schema")
         filename = path.join(path.abspath(path.dirname(__file__)), 'test.jpg')
-        metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
-                    'Exif.Photo.ColorSpace': 65535,
-                    'Exif.Image.Orientation': 1,
-                    'Exif.Photo.PixelYDimension': 768L,
-                    'Exif.Image.XResolution': Fraction(72, 1),
-                    'Exif.Photo.PixelXDimension': 978L,
-                    'Exif.Image.ExifTag': 164L,
-                    'Exif.Thumbnail.Compression': 6,
-                    'Exif.Image.DateTime': datetime.datetime(2005, 7, 8,
-                                                             19, 17, 44),
-                    'Exif.Image.YResolution': Fraction(72, 1),
-                    'Exif.Image.ResolutionUnit': 2,
-                    'Exif.Thumbnail.YResolution': Fraction(72, 1),
-                    'Exif.Thumbnail.XResolution': Fraction(72, 1),
-                    'Exif.Image.Software': 'Adobe Photoshop Elements 2.0'}
+        metadata = {'EXIF ColorSpace': 'Uncalibrated',
+                    'EXIF ExifImageLength': 768, 
+                    'EXIF ExifImageWidth': 978, 
+                    'Image DateTime': '2005:07:08 19:17:44',
+                    'Image ExifOffset': 164, 
+                    'Image XResolution': 72,
+                    'Image YResolution': 72,
+                    'Image Orientation': 'Horizontal (normal)',
+                    'Image ResolutionUnit': 'Pixels/Inch',
+                    'Image Software': 'Adobe Photoshop Elements 2.0',
+                    'Thumbnail Compression': 'JPEG (old-style)',
+                    'Thumbnail XResolution': 72,
+                    'Thumbnail YResolution': 72,
+                    'Thumbnail ResolutionUnit': 'Pixels/Inch'}
         self.assertEqual(f.getExif(filename), metadata)
 
     def test_parameter_filters(self):
         from os import path
         import datetime
-        from fractions import Fraction
         try:
             from tardis.tardis_portal.filters.exif import EXIFFilter
         except:
             raise SkipTest()
 
-        metadata = {'Exif.Thumbnail.ResolutionUnit': 2,
-                    'Exif.Photo.ColorSpace': 65535,
-                    'Exif.Image.Orientation': 1,
-                    'Exif.Photo.PixelYDimension': 768L,
-                    'Exif.Image.XResolution': Fraction(72, 1),
-                    'Exif.Photo.PixelXDimension': 978L,
-                    'Exif.Image.ExifTag': 164L,
-                    'Exif.Thumbnail.Compression': 6,
-                    'Exif.Image.DateTime': datetime.datetime(2005, 7, 8,
-                                                             19, 17, 44),
-                    'Exif.Image.YResolution': Fraction(72, 1),
-                    'Exif.Image.ResolutionUnit': 2,
-                    'Exif.Thumbnail.YResolution': Fraction(72, 1),
-                    'Exif.Thumbnail.XResolution': Fraction(72, 1),
-                    'Exif.Image.Software': 'Adobe Photoshop Elements 2.0'}
+        metadata = {'EXIF ColorSpace': 'Uncalibrated',
+                    'EXIF ExifImageLength': 768, 
+                    'EXIF ExifImageWidth': 978, 
+                    'Image DateTime': '2005:07:08 19:17:44',
+                    'Image ExifOffset': 164, 
+                    'Image XResolution': 72,
+                    'Image YResolution': 72,
+                    'Image Orientation': 'Horizontal (normal)',
+                    'Image ResolutionUnit': 'Pixels/Inch',
+                    'Image Software': 'Adobe Photoshop Elements 2.0',
+                    'Thumbnail Compression': 'JPEG (old-style)',
+                    'Thumbnail XResolution': 72,
+                    'Thumbnail YResolution': 72,
+                    'Thumbnail ResolutionUnit': 'Pixels/Inch'}
 
         f = EXIFFilter("EXIF", "http://exif.schema",
-                       tagsToFind=["Exif.Photo.ColorSpace",
-                                   'Exif.Image.Orientation'])
+                       tagsToFind=["EXIF ColorSpace",
+                                   'Image Orientation'])
         s = f.getSchema()
         self.assertEqual(len(f.getParamaters(s, metadata)), 2)
 
         f = EXIFFilter("EXIF", "http://exif.schema",
-                       tagsToExclude=["Exif.Photo.ColorSpace",
-                                      'Exif.Image.Orientation'])
+                       tagsToExclude=["EXIF ColorSpace",
+                                      'Image Orientation'])
         s = f.getSchema()
         self.assertEqual(len(f.getParamaters(s, metadata)), 12)
 
