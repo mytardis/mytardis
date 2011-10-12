@@ -231,7 +231,11 @@ class MicroTagsFilter(object):
             except (ValueError, TypeError):
                 pass
             else:
-                datatype = ParameterName.NUMERIC   
+                datatype = ParameterName.NUMERIC
+            
+            # fraction data type test
+            if isinstance(metadata[p], Fraction):
+                datatype = ParameterName.NUMERIC
 
             new_param = ParameterName(schema=schema,
                                       name=p,
