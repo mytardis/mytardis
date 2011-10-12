@@ -224,9 +224,16 @@ class MicroTagsFilter(object):
             # detect type of parameter
             datatype = ParameterName.STRING
              
-            # integer/float data type test
+            # integer data type test
             try:
                 int(metadata[p])
+            except (ValueError, TypeError):
+                pass
+            else:
+                datatype = ParameterName.NUMERIC
+            
+            # float data type test
+            try:
                 float(metadata[p])
             except (ValueError, TypeError):
                 pass
