@@ -446,8 +446,10 @@ def experiment_datasets(request, experiment_id):
         # Only pass back matching datafiles
         sqs = SearchQuerySet() 
         
+        query = request.GET['query']
+        
         #raw_search doesn't chain...
-        results = sqs.raw_search(request.GET['query'])
+        results = sqs.raw_search(query)
         
         matching_datasets = [d.object for d in results if 
                 d.model_name == 'dataset' and 
@@ -465,8 +467,11 @@ def experiment_datasets(request, experiment_id):
         c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
         c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
-        c['query'] = request.GET['query']
+        
+        plus_separated_query = query.replace(' ', '+')
+        c['query'] = plus_separated_query 
     
+        # replace '+'s with spaces
     elif 'datafileResults' in request.session and 'search' in request.GET: 
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
@@ -946,8 +951,13 @@ def retrieve_datafile_list(request, dataset_id):
             authz.has_write_permissions(request, experiment_id)
     
     if 'query' in request.GET:
+        query =  request.GET['query']
+       
+        # replaces '+'s with spaces
+        space_separated_query = query.replace('+', ' ')
+
         sqs = SearchQuerySet()
-        results = sqs.raw_search(request.GET['query'])
+        results = sqs.raw_search(space_separated_query)
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
     
     elif 'datafileResults' in request.session and 'search' in request.GET: 
@@ -2480,9 +2490,15 @@ class ExperimentSearchView(SearchView):
     # override SearchView's method in order to
     # return a ResponseContext
     def create_response(self):
+        import re
         (paginator, page) = self.build_page()
+       
+        # Remove unnecessary whitespace and replace necessary whitespace with '+'
+        # TODO this should just be done in the form clean...
+        query = re.sub('\s*?:\s*', ':', self.query).replace(' ','+')
+        
         context = {
-                'query': self.query,
+                'query': query,
                 'form': self.form,
                 'page': page,
                 'paginator' : paginator,

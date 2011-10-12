@@ -84,7 +84,7 @@ def _getDataType(param_name):
     elif param_name.isDateTime():
         return DateTimeField()
     else:
-        return CharField()
+        return NgramField()
 
 def _getParamValue(param):
     if param.name.isNumeric():
@@ -137,7 +137,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
     __metaclass__ = GetDatasetFileParameters
     
     text=NgramField(document=True)
-    datafile_filename  = CharField(model_attr='filename')
+    datafile_filename  = NgramField(model_attr='filename')
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=False)
     dataset_description_stored = CharField(model_attr='dataset__description', indexed=False)
     experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=False)
@@ -205,7 +205,7 @@ class DatasetIndex(OracleSafeIndex):
     __metaclass__ = GetDatasetParameters
     
     text=NgramField(document=True)
-    dataset_description = CharField(model_attr='description')
+    dataset_description = NgramField(model_attr='description')
     experiment_id_stored = IntegerField(model_attr='experiment__pk', indexed=False)
     experiment_title_stored = CharField(model_attr='experiment__title', indexed=False)
     experiment_description_stored = CharField(model_attr='experiment__description', indexed=False)
@@ -272,15 +272,14 @@ class ExperimentIndex(OracleSafeIndex):
 
     text= NgramField(document=True)
     experiment_id_stored = IntegerField(model_attr='pk', indexed=False)
-    experiment_description = CharField(model_attr='description')
-    experiment_title = CharField(model_attr='title')
+    experiment_description = NgramField(model_attr='description')
+    experiment_title = NgramField(model_attr='title')
     experiment_created_time = DateTimeField(model_attr='created_time')
     experiment_start_time = DateTimeField(model_attr='start_time', default=None)
     experiment_end_time = DateTimeField(model_attr='end_time', default=None)
     experiment_update_time = DateTimeField(model_attr='update_time', default=None)
-    experiment_institution_name = CharField(model_attr='institution_name', default=None)
-    experiment_creator=CharField(model_attr='created_by__username')
-    experiment_institution_name=CharField(model_attr='institution_name')
+    experiment_institution_name = NgramField(model_attr='institution_name', default=None)
+    experiment_creator= NgramField(model_attr='created_by__username')
     experiment_authors = MultiValueField()
 
     def prepare_experiment_authors(self, obj):
