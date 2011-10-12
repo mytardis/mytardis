@@ -54,29 +54,7 @@ except ImportError:
     logger.debug("Error: Can't find the file 'EXIF.py' in the directory containing %r" % __file__)
     sys.exit(1)
 
-
 logger = logging.getLogger(__name__)
-
-try:
-    # Try for version 0.3.0 first
-    logger.debug("importing pyexiv2")
-    from pyexiv2 import ImageMetadata
-except:
-    logger.debug("0.3.0 failed")
-    try:
-        # then try 0.1.3
-        from pyexiv2 import Image
-        from pyexiv2 import Rational
-        logger.debug("0.1.3 done")
-    except: 
-        logger.debug("0.1.3 failed")
-        raise ImportError("Can't import pyexiv2 please install it")
-    else:
-        version='0.1.3'
-else:
-    version = '0.3.0'
-
-
 
 class MicroTagsFilter(object):
     """This filter provides extraction of metadata extraction of images from the RMMF
@@ -246,60 +224,14 @@ class MicroTagsFilter(object):
             # detect type of parameter
             datatype = ParameterName.STRING
              
-             
-            if version == '0.3.0':
-                # Int test
-                try:
-                    int(metadata[p])
-                except ValueError:
-                    pass
-                except TypeError:
-                    pass
-                else:
-                    datatype = ParameterName.NUMERIC
-    
-                # Fraction test
-                if isinstance(metadata[p], Fraction):
-                    datatype = ParameterName.NUMERIC
-    
-                # Float test
-                try:
-                    float(metadata[p])
-                except ValueError:
-                    pass
-                except TypeError:
-                    pass
-                else:
-                    datatype = ParameterName.NUMERIC
-                   
-            elif version == '0.1.3':
-                
-                if isinstance(metadata[p], Rational):
-                    datatype = ParameterName.STRING
-                # Fraction test
-                elif isinstance(metadata[p], Fraction):
-                    datatype = ParameterName.STRING
-                else:
-                    # Int test
-                    try:
-                        int(metadata[p])
-                    except ValueError:
-                        pass
-                    except TypeError:
-                        pass
-                    else:
-                        datatype = ParameterName.NUMERIC
-        
-                    # Float test
-                    try:
-                        float(metadata[p])
-                    except ValueError:
-                        pass
-                    except TypeError:
-                        pass
-                    else:
-                        datatype = ParameterName.NUMERIC
-            
+            # integer/float data type test
+            try:
+                int(metadata[p])
+                float(metadata[p])
+            except (ValueError, TypeError):
+                pass
+            else:
+                datatype = ParameterName.NUMERIC   
 
             new_param = ParameterName(schema=schema,
                                       name=p,
@@ -332,7 +264,14 @@ class MicroTagsFilter(object):
             img = open(filename)
             exif_tags = EXIF.process_file(img)
             for tag in exif_tags:
-                ret[tag] = str(exif_tags[tag])
+                # EXIF.py has custom str function, use it to get correct values.
+                s = str(exif_tags[tag])
+                try:
+                    ret[tag] = int(s)
+                except ValueError:
+                    ret[tag] = s
+                
+                
         except:
             logger.debug("Failed to extract EXIF metadata from image.")
             return ret
