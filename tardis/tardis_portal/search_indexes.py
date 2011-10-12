@@ -47,6 +47,37 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# This is a text index so any numeric fields 
+# will default to being rounded to ints
+# as there's no real intuitive way to do
+# text search on floats etc.
+#
+# NOTE: Datatypes of paramternames are a bit of a circus (e.g. EPN is a string)
+# so this function tries to do the most intelligent possible thing for each
+# situation.
+#
+# For non NUMERIC types, check if string can be converted to a float. If so, then it's a string representation
+# if a number and should be converted to a number. If that fails, it's probably a string and 
+# can go in as is. If converted to a float, see the steps below for numeric types.
+#
+# For NUMERIC types, convert to an int to remove decimal points. Text search for
+# the number '3.12159' probably isn't very handy so assume that if someone has specified
+# this field as text searchable, then it's actually in int.
+#
+def toIntIfNumeric(param):
+    val = ''
+    if not param.name.isNumeric():
+        val = _getParamValue(param)
+        try:
+            val = float(val)
+        except (ValueError, TypeError):
+            return val
+
+    else:
+        val = _getParamValue(param)
+    
+    return  int(val)
+
 def _getDataType(param_name):
     if param_name.isNumeric():
         return FloatField()
@@ -105,7 +136,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
     
     __metaclass__ = GetDatasetFileParameters
     
-    text = CharField(document=True)
+    text=NgramField(document=True)
     datafile_filename  = CharField(model_attr='filename')
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=False)
     dataset_description_stored = CharField(model_attr='dataset__description', indexed=False)
@@ -145,15 +176,6 @@ class DatasetFileIndex(RealTimeSearchIndex):
                 parameterset__dataset_file__id=obj.id,
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
-
-        # This is a text index so any numeric fields 
-        # will default to being rounded to ints
-        # as there's no real intuitive way to do
-        # text search on floats etc.
-        def toIntIfNumeric(param):
-            if param.name.isNumeric():
-                return int(_getParamValue(param))
-            return  _getParamValue(param)
         
         text_list.extend(map(toIntIfNumeric, params))
         
@@ -161,7 +183,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         self.prepared_data['text'] = ' '.join(map(str,text_list))
 
         # add all soft parameters listed as searchable as in field search
-        for par in DatafileParameter.objects.filter(parameterset__dataset_file__pk=obj.pk).filter(name__is_searchable=True):
+        for par in DatafileParameter.objects.filter(
+                parameterset__dataset_file__pk=obj.pk, 
+                name__is_searchable=True):
             self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
         return self.prepared_data
 
@@ -180,7 +204,7 @@ class DatasetIndex(OracleSafeIndex):
     
     __metaclass__ = GetDatasetParameters
     
-    text = CharField(document=True)
+    text=NgramField(document=True)
     dataset_description = CharField(model_attr='description')
     experiment_id_stored = IntegerField(model_attr='experiment__pk', indexed=False)
     experiment_title_stored = CharField(model_attr='experiment__title', indexed=False)
@@ -217,15 +241,6 @@ class DatasetIndex(OracleSafeIndex):
                 parameterset__dataset__id=obj.id,
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
-
-        # This is a text index so any numeric fields 
-        # will default to being rounded to ints
-        # as there's no real intuitive way to do
-        # text search on floats etc.
-        def toIntIfNumeric(param):
-            if param.name.isNumeric():
-                return int(_getParamValue(param))
-            return  _getParamValue(param)
         
         text_list.extend(map(toIntIfNumeric, params))
         
@@ -233,7 +248,9 @@ class DatasetIndex(OracleSafeIndex):
         self.prepared_data['text'] = ' '.join(map(str,text_list))
 
         # add all soft parameters listed as searchable as in field search
-        for par in DatasetParameter.objects.filter(parameterset__dataset__pk=obj.pk).filter(name__is_searchable=True):
+        for par in DatasetParameter.objects.filter(
+                parameterset__dataset__pk=obj.pk, 
+                name__is_searchable=True):
             self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
         return self.prepared_data
 
@@ -253,7 +270,7 @@ class ExperimentIndex(OracleSafeIndex):
     
     __metaclass__ = GetExperimentParameters
 
-    text=CharField(document=True)
+    text= NgramField(document=True)
     experiment_id_stored = IntegerField(model_attr='pk', indexed=False)
     experiment_description = CharField(model_attr='description')
     experiment_title = CharField(model_attr='title')
@@ -296,14 +313,7 @@ class ExperimentIndex(OracleSafeIndex):
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
 
-        # This is a text index so any numeric fields 
-        # will default to being rounded to ints
-        # as there's no real intuitive way to do
-        # text search on floats etc.
-        def toIntIfNumeric(param):
-            if param.name.isNumeric():
-                return int(_getParamValue(param))
-            return  _getParamValue(param)
+
         
         text_list.extend(map(toIntIfNumeric, params))
         
@@ -314,8 +324,11 @@ class ExperimentIndex(OracleSafeIndex):
         self.prepared_data['text'] = ' '.join(map(str,text_list))
         
         # add all soft parameters listed as searchable as in field search
-        for par in ExperimentParameter.objects.filter(parameterset__experiment__id=obj.id, name__is_searchable=True):
-	    self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
+        for par in ExperimentParameter.objects.filter(
+                        parameterset__experiment__id=obj.id, 
+                        name__is_searchable=True):
+	        self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
+
         return self.prepared_data
 
 site.register(Dataset_File, DatasetFileIndex)
