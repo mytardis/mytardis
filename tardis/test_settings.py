@@ -31,6 +31,13 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
+INSTRUMENTS_SCHEMA = {'FEIQuanta200': (('FEIQuanta-1','FEIQuanta1',('HV','Spot')),
+                                       ('FEIQuanta-2','FEIQuanta2',('Brightness')),
+                                       ),
+                      'nanoSEM': (('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),
+                                  ),
+                      }
+
 #TEMPLATE_DIRS = ['.']
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
