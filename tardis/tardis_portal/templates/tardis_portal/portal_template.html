@@ -71,7 +71,10 @@ $("#id_q").autocomplete(users.split(" "), {
     multiple: true, 
     multipleSeparator: " ",
     selectFirst: false,
-    autoFill: true
+    autoFill: false,
+    max: 10,
+    minChars: 3,
+    scroll: false
 });
 
 
@@ -161,23 +164,21 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 	  <a href="{% url registration.views.register %}"> [Register] </a>
 	  <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
       {% endif %}
-  </div> <!-- headerloginstatus -->
+    </div> <!-- headerloginstatus -->
     {% if form %}
-    <div class="searchmenu" style="float: right">
+    <div class="search-bar">
+      <div class="search-bar-wrapper clearfix">
         <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
-        <table>
-        <tr>
-            <td>
-                <input type="submit" value="search"/>
-            </td>
-            <td>
-                <input type="text" name="q" id="id_q"{% if query %} value="{{ query }}"{% endif %} />
-            </td>
-        </tr>
+            <div class="search-text-wrapper">
+              <input type="text" name="q" id="id_q" placeholder="Enter EPN, author, beamline etc."{% if query %} value="{{ query }}"{% endif %} />
+            </div> <!-- search-text-wrapper -->
+            <div class="search-submit-wrapper">
+              <input type="submit" id="search_btn" value="Search"/>
+            </div><!-- search-submit-wrapper -->       
         
-        </table>
         </form>
-    </div> <!-- searchmenu --> 
+      </div> <!-- search-menu-wrapper --> 
+    </div> <!-- search-menu-bar --> 
     {% endif %}
   </div> <!-- headerbg -->
 

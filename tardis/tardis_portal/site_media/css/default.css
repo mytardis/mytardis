@@ -113,6 +113,7 @@ img.right {
 #headerloginstatus {
 	padding: 10px;
 	color: white;
+    float: left;
 }
 
 #headerloginstatus a {
@@ -274,9 +275,101 @@ img.right {
 
 }
 
-#id_q {
-    width: 400px;
+/* Single search bar */
+
+.search-bar {
+    width: 600px;
+    margin-right: 10px;
+    margin-top: 7px;
+    border-radius: 7px;
+    -moz-border-radius: 7px;
+    background: none;
+    float: right;    
+    border: none;
 }
+
+.search-bar-wrapper {
+    padding: 6px;
+}
+
+.search-bar .search-text-wrapper
+{
+    width: 85%;
+    float: left;
+}
+
+.search-bar input[type="text"] {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-bottomleft: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-bottom-left-radius: 5px;
+    width: 100%;
+    border: 1px solid #BFBFBF;
+    font-size: 12pt;
+}
+
+.search-bar input:-webkit-input-placeholder {
+    color: #999;
+}
+
+input:-moz-placeholder {
+    color: #999;
+}
+
+.search-bar input:focus {
+    outline: none;
+}
+
+.search-bar .search-submit-wrapper {
+    width: 15%;
+    float: left;
+}
+
+.search-bar input[type="submit"] {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+    height: 40px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid #BFBFBF;
+    font-size: 12pt;
+    font-weight:bold;
+}
+
+.search-bar input[type="submit"]:hover {
+    background-color: #651219;
+    color: white;
+    border-color: #651219;;
+}
+
+.search-bar input {
+    margin: 0;
+    height: 28px;
+    padding: 5px;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+}
+
+/* Single Search autocomplete drop down */
+
+.ac_odd {
+    background-color: #E8D7D7; 
+}
+.ac_over {
+    background-color: #651219; 
+}
+.ac_results li{
+    font-size: 16px;
+    line-height: 24px;
+}
+
 /* Sidebar */
 
 #bottombar {
@@ -861,3 +954,7 @@ div.edit_schema img {
 .token_user {
     color:#AAA;
 }
+
+span.highlighted {
+}
+
