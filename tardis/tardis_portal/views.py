@@ -1593,11 +1593,11 @@ def retrieve_field_list(request):
 
     users = User.objects.all()
 
-    usernames = [u.username for u in users]
+    usernames = [u.username + ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
-    searchableFields = ([key for key,f in allFields if f.indexed == True and key is not 'text' ])
+    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key is not 'text' ])
 
     auto_list = usernames + searchableFields
 
