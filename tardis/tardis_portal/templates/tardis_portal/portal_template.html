@@ -60,21 +60,38 @@ $(document).ready(function(){
     'data': data,
     'url': '/ajax/parameter_field_list/',
     'success': function (data) {
-       val = data;
+        data = data.split(" ");
+        var list = new Array();
+        $.each(data, function(i,l) {
+            var name = l.split(":")[0];
+            var type = l.split(":")[1];
+            list[i] = [name, type]});
+        val = list;
      }
      });
- return val;
+  return val;
 })();
-  
-$("#id_q").autocomplete(users.split(" "), {
+
+
+$("#id_q").autocomplete(users, { //users.split(" "), {
     matchContains: true, 
     multiple: true, 
     multipleSeparator: " ",
     selectFirst: false,
     autoFill: false,
     max: 10,
-    minChars: 3,
-    scroll: false
+    minChars: 1,
+    scroll: false,
+    formatResult: function (item, position, length){
+        if (item[1] == 'search_field')
+        {
+            return item[0] + ":";
+        }
+        else
+        {
+            return item[0];
+        }
+    }
 });
 
 
