@@ -722,6 +722,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
     '''
 
+    
     f = open(filename)
     firstline = f.readline()
     f.close()
@@ -1520,7 +1521,7 @@ def retrieve_group_list(request):
 
 def retrieve_field_list(request):
     
-    from  tardis.tardis_portal.search_indexes import ExperimentIndex
+    from tardis.tardis_portal.search_indexes import ExperimentIndex
     from tardis.tardis_portal.search_indexes import DatasetIndex
     from tardis.tardis_portal.search_indexes import DatasetFileIndex
 

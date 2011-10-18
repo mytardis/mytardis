@@ -124,6 +124,7 @@ class StagingHook():
         """
         instance = kwargs.get('instance')
         created = kwargs.get('created')
+        logger.debug('Test Stage file: %s ' % instance.protocol)
         if not created:
             # Don't extract on edit
             return

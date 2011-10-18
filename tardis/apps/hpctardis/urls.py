@@ -1,6 +1,9 @@
 from django.conf.urls.defaults import patterns
 
-urlpatterns = patterns('',
-    (r'^$','tardis.apps.hpctardis.views.test'),
+urlpatterns = patterns('tardis.apps.hpctardis.views',
+    (r'^$','test'),
+    (r'^protocol/$','protocol'),
+    (r'^login/$','login'),
+    (r'^addfiles/$','addfiles')
     )
     
