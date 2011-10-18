@@ -307,11 +307,12 @@ class ExperimentIndex(OracleSafeIndex):
         # NOTE: soft params that are flagged as not being 
         # searchable will be silently ignored if specified
         # in the settings
+        #
+        # TODO maybe this should be a static variable?
         params = ExperimentParameter.objects.filter(
                 parameterset__experiment__id=obj.id,
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
-
 
         
         text_list.extend(map(toIntIfNumeric, params))
