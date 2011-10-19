@@ -2104,5 +2104,19 @@
                 "http://www.tardis.edu.au/schemas/trdDatafile/1"
             ]
         }
+    },
+    {
+        "fields": {
+            "parameter_name": "103" 
+        }, 
+        "model": "tardis_portal.freetextsearchfield", 
+        "pk": 1
+    },
+    {
+        "fields": {
+            "parameter_name": "104" 
+        }, 
+        "model": "tardis_portal.freetextsearchfield", 
+        "pk": 2
     }
 ]
