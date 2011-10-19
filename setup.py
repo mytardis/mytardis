@@ -27,6 +27,7 @@ setup(
         'django-form-utils',
         'django-haystack',
         'pysolr',
+        'beautifulsoup',
         'south',
         ],
 )

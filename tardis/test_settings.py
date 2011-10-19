@@ -96,6 +96,7 @@ INSTALLED_APPS = (
         'tardis.tardis_portal.templatetags',
         'registration',
         'django_nose',
+        'haystack',
 
 ) + apps
 

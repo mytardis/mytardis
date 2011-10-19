@@ -88,6 +88,8 @@ class ExperimentAclAdmin(admin.ModelAdmin):
         'canWrite', 'canDelete', 'isOwner'
     ]
 
+class FreeTextSearchFieldAdmin(admin.ModelAdmin):
+    pass
 
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.Dataset, DatasetAdmin)
@@ -106,4 +108,5 @@ admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
 admin.site.register(models.ExperimentACL, ExperimentAclAdmin)
+admin.site.register(models.FreeTextSearchField, FreeTextSearchFieldAdmin)
 # admin.site.register(MigrationHistory)
