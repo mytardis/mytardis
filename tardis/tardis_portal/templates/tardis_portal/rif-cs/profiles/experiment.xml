@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/1.2.0/schema/registryObjects.xsd">
+    <registryObject
+        group="Australian Nuclear Science and Technology Organisation">
+        <key>{{key}}</key>
+        <originatingSource>{{originating_source}}</originatingSource>
+
+        <collection type="dataset">
+            <identifier type="local">{{identifier}}/</identifier>
+            <name type="primary">
+                <namePart>{{experiment_name}}</namePart>
+            </name>
+            <location>
+                <address>
+                    <electronic type="email">
+                        <value>{{beamline_email}}</value>
+                    </electronic>
+                </address>
+            </location>
+            <coverage>
+                <temporal>
+                    <date type="dateFrom" dateFormat="W3C">{{experiment_end_date}}</date>
+                </temporal>
+            </coverage>
+
+            <subject type="anzsrc-for">029904</subject>
+
+            <description type="accessRights">This collection of data is released as-is. Where data is publicly accessible, data will no longer be subject to embargo and can be used freely provided attribution for the source is given. It is encouraged that persons interested in using the data contact the parties listed for this record to obtain guidance and context in applying this data set and to stay informed about upcoming revisions and related releases of interest. </description>
+            <description type="rights">This information is supplied on the condition that the primary investigators are credited in any publications that use the data.</description>
+            <description type="note">Information on the format and analysis of the data in this collection is available from the {{beamline_name}} beamline link on this page (Is produced by:).</description>
+            <description type="note">For access to this dataset please contact the e-mail address included on this page.  This e-mail address will be replaced with a URL to the public catalogue once it is in production.</description>
+            <description type="brief">Samples: 
+  
+{{sample_description_list}}
+    Analysis of the sample(s) listed above by the {{beamline}} beamline at {{institution}}   
+
+Investigators:    
+{{investigator_list}}   
+            </description>
+        </collection>
+
+    </registryObject>
+</registryObjects>

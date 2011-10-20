@@ -2687,3 +2687,42 @@ def token_login(request, token):
     login(request, user)
     experiment = Experiment.objects.get(token__token=token)
     return HttpResponseRedirect(experiment.get_absolute_url())
+
+@authz.experiment_access_required
+def view_rifcs(request, experiment_id):
+    """View the rif-cs of an existing experiment.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be viewed
+    :type experiment_id: string
+    :rtype: :class:`django.http.HttpResponse`
+
+    """
+    c = Context({})
+
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+    
+    from tardis.tardis_portal.publish.rifcs_value_builder import *
+    beamline = get_beamline(experiment)
+    c['originating_source'] = get_originating_source(beamline)
+    c['experiment_name'] = experiment.title
+    c['beamline_email'] = get_beamline_email(beamline)
+    c['experiment_end_date'] = experiment.end_time
+    c['beamline'] = get_beamline(experiment)
+    c['institution'] = get_institution(beamline)
+    c['key'] = get_key(experiment, beamline)
+    c['identifier'] = get_key(experiment, beamline)
+    c['sample_description_list'] = get_sample_description_list(experiment, beamline)
+    c['investigator_list'] = get_investigator_list(experiment)
+    
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/rif-cs/profiles/experiment.xml', c), 
+                        mimetype="text/xml")
+
+
