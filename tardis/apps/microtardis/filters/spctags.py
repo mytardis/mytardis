@@ -82,12 +82,15 @@ class SPCTagsFilter(object):
                               "l": ("long",   4),
                               }
         # shown spectrum fields
-        # example: fields = {offset: ("field name", "binary format", rounded to n digits after the decimal point)}
-        self.fields = {104: ("Sample Type (Label)",        "c", None),
-                       392: ("Preset",                     "f", 1),
-                       456: ("Live Time",                  "f", 1),
-                       532: ("Acc. Voltage",               "f", 3),
-                       638: ("Number of Peak ID Elements", "h", 0),
+        # example: fields = {offset: ("field name", 
+        #                             "binary format", 
+        #                             integer (rounded to n digits after the decimal point), 
+        #                             "unit")}
+        self.fields = {104: ("Sample Type (Label)",        "c", None, None),
+                       392: ("Preset",                     "f",    1, None),
+                       456: ("Live Time",                  "f",    1, "sec"),
+                       532: ("Acc. Voltage",               "f",    3, "kV"),
+                       638: ("Number of Peak ID Elements", "h",    0, None),
                        }
         
         # Atomic elements from http://en.wikipedia.org/wiki/List_of_elements
@@ -106,6 +109,9 @@ class SPCTagsFilter(object):
             101:  "Md", 102:  "No", 103:  "Lr", 104:  "Rf", 105:  "Db", 106:  "Sg", 107:  "Bh", 108:  "Hs", 109:  "Mt", 110:  "Ds",
             111:  "Rg", 112:  "Cn", 113: "Uut", 114: "Uuq", 115: "Uup", 116: "Uuh", 117: "Uus", 118: "Uuo", 
         }
+        
+        # Shells
+        self.shells = {1: "K", 6: "L", 16: "M"}
         
         self.instruments = {'Quanta200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
                             'NovaNanoSEM': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
@@ -189,9 +195,9 @@ class SPCTagsFilter(object):
                 dfp = DatafileParameter(parameterset=ps,
                                         name=p)
                 if p.isNumeric():
-                    dfp.numerical_value = metadata[p.name]
+                    dfp.numerical_value = metadata[p.name][0]
                 else:
-                    dfp.string_value = metadata[p.name]
+                    dfp.string_value = metadata[p.name][0]
                 dfp.save()
                 
         return ps
@@ -220,7 +226,7 @@ class SPCTagsFilter(object):
              
             # integer data type test
             try:
-                int(metadata[p])
+                int(metadata[p][0])
             except (ValueError, TypeError):
                 pass
             else:
@@ -228,16 +234,21 @@ class SPCTagsFilter(object):
             
             # float data type test
             try:
-                float(metadata[p])
+                float(metadata[p][0])
             except (ValueError, TypeError):
                 pass
             else:
                 datatype = ParameterName.NUMERIC
 
+            unit = ""
+            if metadata[p][1]:
+                unit = metadata[p][1]
+      
             new_param = ParameterName(schema=schema,
                                       name=p,
                                       full_name=p,
-                                      data_type=datatype)
+                                      data_type=datatype,
+                                      units=unit)
             new_param.save()
             parameters.append(new_param)
         return parameters
@@ -275,6 +286,7 @@ class SPCTagsFilter(object):
                 field_name = self.fields[offset][0]
                 format = self.fields[offset][1]
                 rounded_digits = self.fields[offset][2]
+                unit = self.fields[offset][3]
                 byte_size = self.binary_format[format][1]
                 if format == 'c': # extract strings
                     value_string = spc.next()
@@ -286,18 +298,36 @@ class SPCTagsFilter(object):
                         value = string.join(value_tuple,"")
                 elif field_name == "Number of Peak ID Elements": # extract atomic peak numbers
                     number_of_peak = struct.unpack(format, spc.read(byte_size))[0]
-                    offset += 2
-                    for peak_offset in range(offset, offset+number_of_peak*2, 2):
+                    atomic_offset = offset + 2 # should be 640 for the beginning offset of atomic numbers
+                    line_offset = 736 # the beginning offset of line numbers
+                    for peak_offset in range(atomic_offset, atomic_offset+number_of_peak*2, 2):
+                        #
                         spc.seek(peak_offset)
-                        value = struct.unpack(format, spc.read(byte_size))[0]
-                        value = "%d (%s)" % (value, self.atomic_elements[int(value)])
-                        ret["Atomic Numbers (peak %s)" % ((peak_offset-offset)/2+1)] = value
+                        atomic_value = struct.unpack(format, spc.read(byte_size))[0]
+                        
+                        #
+                        spc.seek(line_offset+peak_offset-atomic_offset)
+                        line_value = struct.unpack(format, spc.read(byte_size))[0]
+                        if line_value < 6: # K shells: 1-5
+                            line_value = 1
+                        elif line_value >= 6 and line_value <16: # L shells: 6-15
+                            line_value = 6
+                        else: # M shells: 16~
+                            line_value = 16
+                        
+                        # compose the peak value
+                        value = "%d-%s %s" % (atomic_value, self.atomic_elements[int(atomic_value)], self.shells[line_value])
+                        ret["Peak ID Element %s" % ((peak_offset-atomic_offset)/2+1)] = [value, unit]
                     continue
                 else: # extract numbers
                     value = round( struct.unpack(format, spc.read(byte_size))[0], rounded_digits)
                 
-                ret[field] = value
+                ret[field] = [value, unit]
         except:
+            print "Failed to extract spectrum metadata from *.spc file."
+            import sys
+            print sys.exc_info()
+            print ret
             logger.debug("Failed to extract spectrum metadata from *.spc file.")
             return ret
         

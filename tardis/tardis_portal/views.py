@@ -106,12 +106,11 @@ def logout(request):
                         'tardis_portal/index.html', c))
 
 
-def index(request):
+def index(request, template_name='tardis_portal/index.html'):
     status = ''
 
     c = Context({'status': status})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/index.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 def site_settings(request):
@@ -222,20 +221,18 @@ def display_datafile_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-def about(request):
+def about(request, template_name='tardis_portal/about.html'):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
                  'nav': [{'name': 'About', 'link': '/about/'}]})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/about.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
-def partners(request):
+def partners(request, template_name='tardis_portal/partners.html'):
 
     c = Context({})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/partners.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 def experiment_index(request, 
@@ -593,7 +590,8 @@ def metsexport_experiment(request, experiment_id):
 @login_required
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
-                      template="tardis_portal/create_experiment.html"):
+                    template_name="tardis_portal/create_experiment.html", 
+                    portal_template_name='tardis_portal/portal_template.html'):
     """Edit an existing experiment.
 
     :param request: a HTTP Request instance
@@ -643,9 +641,9 @@ def edit_experiment(request, experiment_id,
         form = ExperimentForm(instance=experiment, extra=0)
 
     c['form'] = form
+    c['portal_template_name'] = portal_template_name
 
-    return HttpResponse(render_response_index(request,
-                        template, c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 # todo complete....
