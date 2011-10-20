@@ -101,6 +101,12 @@ TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
 TEMPLATE_DIRS = (
     path.join(path.dirname(__file__),
     'tardis_portal/templates/').replace('\\', '/'),
+                 
+  path.join(path.dirname(__file__),
+    'apps/hpctardis/publish/').replace('\\', '/'),
+                 
+    path.join(path.dirname(__file__),
+    'tardis_portal/publish/').replace('\\', '/'),                 
 )
 
 DOWNLOAD_PROVIDERS = (
@@ -121,12 +127,11 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
-STAGING_PROTOCOL = 'ldap'
+STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 
 GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
-
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -170,7 +175,9 @@ INSTALLED_APPS = (
 
 
 PUBLISH_PROVIDERS = (
-                    'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    'tardis.apps.hpctardis.publish.rif_cs_profile.'
                     + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
                     )
 
@@ -233,7 +240,8 @@ EMAIL_USE_TLS = True
 # Post Save Filters
 POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
     ]
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
@@ -264,7 +272,7 @@ if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
 
 
-DEFAULT_INSTITUTION = "Monash University"
+DEFAULT_INSTITUTION = "RMIT University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = True

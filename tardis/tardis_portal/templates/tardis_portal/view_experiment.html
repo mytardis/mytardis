@@ -1,4 +1,4 @@
-{% extends "tardis_portal/portal_template.html" %}
+{% extends portal_template_name|default:"tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
 {% load uploadify_tags %}
 {% load dynurl %}
@@ -32,7 +32,7 @@
 	$(document).ready(function() {
 	$("#tabs").tabs({
 	    ajaxOptions: {dataType: "html"},
-	    cookie: { expires: 30 },
+	    cookie: { expires: 30 }
 	});
 
 	  // Close Button Highlighting. IE doesn't support :hover. Surprise?

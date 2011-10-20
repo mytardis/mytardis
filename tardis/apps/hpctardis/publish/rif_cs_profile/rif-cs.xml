@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+{% load xmldate %}
+<registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/home/orca/schemata/registryObjects.xsd">                    
+	{% for experiment in experiments %}
+		{% include experiment.profile %}
+	{% endfor %}
+	{# {{ party_rif_cs|safe }}
+	{{ activity_rif_cs|safe }} #}
+</registryObjects>

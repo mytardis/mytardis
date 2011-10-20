@@ -1,4 +1,4 @@
-{% extends "tardis_portal/portal_template.html" %}
+{% extends portal_template_name|default:"tardis_portal/portal_template.html" %}
 
 {% block script %}
 
@@ -151,7 +151,7 @@
 	    $('#jqmAlertLoading').jqm({
 		ajax: '',
 		target: '',
-		overlay: 0,
+		overlay: 0
 	    });
 
 	    $(window).bind("resize", function() {
@@ -299,7 +299,7 @@
 						   removed: removeDatasetCB,
 						   deleteText: 'Remove Dataset',
 						   formCssClass: "dataset_container",
-						   formTemplate: ".fsTemplate",
+						   formTemplate: ".fsTemplate"
 						   });
 
 		  $(document).find('.dataset_container.immutable').find('.delete-row').hide();

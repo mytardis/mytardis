@@ -1,0 +1,16 @@
+{% if parametersets %}
+{% for schema, parameters in parametersets.items %}
+	<div class="datafile_parameters">
+	{% autoescape off %}
+	    {% for parameter in parameters %}
+		<li>
+		  <strong>{{ parameter.name.full_name }}: </strong>
+		  {{ parameter.get }}
+		</li>
+		{% endfor %}
+    {% endautoescape %}
+	</div>
+{% endfor %}
+{% else %}
+	There is no metadata for this file
+{% endif %}

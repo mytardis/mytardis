@@ -35,7 +35,21 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
-TEMPLATE_DIRS = ['.']
+#TEMPLATE_DIRS = ['.']
+# Put strings here, like "/home/html/django_templates" or
+# "C:/www/django/templates". Always use forward slashes, even on Windows.
+# Don't forget to use absolute paths, not relative paths.
+TEMPLATE_DIRS = (
+    path.join(path.dirname(__file__),
+    'tardis_portal/templates/').replace('\\', '/'),
+                 
+  path.join(path.dirname(__file__),
+    'apps/hpctardis/publish/').replace('\\', '/'),
+                 
+    path.join(path.dirname(__file__),
+    'tardis_portal/publish/').replace('\\', '/'),                 
+)
+
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
@@ -126,7 +140,7 @@ MODULE_LOG_MAXBYTES = 0
 UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 
-DEFAULT_INSTITUTION = "Monash University"
+DEFAULT_INSTITUTION = "RMIT University"
 
 IMMUTABLE_METS_DATASETS = True
 # Settings for the single search box
@@ -141,5 +155,13 @@ if not SINGLE_SEARCH_ENABLED:
 # Post Save Filters
 POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
     ]
+
+PUBLISH_PROVIDERS = (
+                 #   'tardis.tardis_portal.publish.rif_cs_profile.'
+                 #   + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    'tardis.apps.hpctardis.publish.rif_cs_profile.'
+                    + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
+                    )

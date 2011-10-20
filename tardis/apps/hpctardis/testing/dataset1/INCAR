@@ -1,0 +1,12 @@
+WARNING: This data is completely fake and should only be used for testing purposes
+System = foobar
+LREAL= Auto
+ISMEAR = -4
+IALGO = 48
+NSW = 22
+ISIF =3
+NELMIN = 4     !  do a minimum of four electronic steps
+IBRION =  2    !  use CG algorithm for ions
+PREC = Accurate    
+ADDGRID = TRUE
+NPAR=1

@@ -32,28 +32,36 @@
 #
 
 """
-microtags.py
+exiftags.py
 
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 .. moduleauthor:: Ian Thomas <Ian.Edward.Thomas@rmit.edu.au>
+.. moduleauthor:: Joanna H. Huang <Joanna.Huang@versi.edu.au>
 
 """
-from fractions import Fraction
 
-try:
-    from pyexiv2 import Image
-    from pyexiv2 import Rational
-except:
-    raise ImportError("Can't import pyexiv2 please install it")
+
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet
 from tardis.tardis_portal.models import ParameterName, DatafileParameter
 import logging
+import os
+import random
+import ConfigParser
+from django.core.exceptions import ImproperlyConfigured
 
+from fractions import Fraction
+from django.conf import settings
+try:
+    import EXIF  # Assumed to be in the same directory.
+except ImportError:
+    import sys
+    logger.debug("Error: Can't find the file 'EXIF.py' in the directory containing %r" % __file__)
+    sys.exit(1)
 
 logger = logging.getLogger(__name__)
 
-class MicroTagsFilter(object):
+class EXIFTagsFilter(object):
     """This filter provides extraction of metadata extraction of images from the RMMF
     from images.
 
@@ -76,9 +84,46 @@ class MicroTagsFilter(object):
         self.tagsToExclude = tagsToExclude
 
         self.delim = '\r\n'
-        self.instruments = {'FEIQuanta200':(('FEIQuanta-1','FEIQuanta1',('HV','Spot','abc')),('FEIQuanta-2','FEIQuanta2',('Brightness',))),
- 			    'nanoSEM':(('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),)}
-        logger.debug('initialising MicroTagsFilter')
+        
+        
+        self.instruments = {
+            'Quanta200': (('Quanta200_EXIF', 
+                           'Quanta200_EXIF', 
+                           ('User::Usertext', 
+                            'User::Date', 
+                            'User::Time',
+                            'Beam::HV',
+                            'Beam::Spot',
+                            'Scan::Horfieldsize',
+                            'Stage::WorkingDistance',
+                            'Vacuum::UserMode',
+                            'Vacuum::CHPressure',
+                            'Detectors::Name',
+                            'Lfd::Contrast',
+                            'Lfd::Brightness',
+                            ),
+                           ),
+                          ),
+            'NovaNanoSEM': (('NovaNanoSEM_EXIF',
+                             'NovaNanoSEM_EXIF',
+                             ('User::UserText', 
+                              'User::Date', 
+                              'User::Time',
+                              'Beam::HV',
+                              'Beam::Spot',
+                              'Scan::HorFieldsize',
+                              'Stage::WorkingDistance',
+                              'Vacuum::UserMode',
+                              'Vacuum::ChPressure',
+                              'Detectors::Name',
+                              'TLD::Contrast',
+                              'TLD::Brightness',
+                              ),
+                             ),
+                            ),
+        }
+        
+        logger.debug('initialising EXIFTagsFilter')
 
     def __call__(self, sender, **kwargs):
         """post save callback entry point.
@@ -95,39 +140,42 @@ class MicroTagsFilter(object):
             return
         #  schema = self.getSchema()
         
-        
         filepath = instance.get_absolute_filepath()
         if not filepath:
             # TODO log that exited early
             return
         
+        #ignore non-image file
+        if filepath[-4:].lower() != ".tif":
+            return
        
         # Find instrument name in filepath
-        filterMatch = None 
+        instr_name = None 
         import re
         pathSep = re.compile(r'\\|\/')
         for part in pathSep.split(filepath):
             if part in self.instruments.keys():
-                filterMatch = part
+                instr_name = part
 
         logger.debug("filepath=%s" % filepath)
-        logger.debug("filterMatch=%s" % filterMatch)
+        logger.debug("instr_name=%s" % instr_name)
 
-        if (filterMatch != None and len(filterMatch) > 1):
+        if (instr_name != None and len(instr_name) > 1):
             
-            logger.debug("filterMatch %s" % filterMatch)
+            logger.debug("instr_name %s" % instr_name)
             exifs = self.getExif(filepath)
 
             for exifTag in exifs:
                 logger.debug("exifTag=%s" % exifTag)
-                if exifTag == 'Exif.Image.0x877a':
+                if exifTag == 'Image Tag 0x877A':
+                    tmpfile = "/tmp/workfile_%s" % random.randint(1, 9999)
+                    f = open(tmpfile, 'w')
+                    f.write(exifs[exifTag])
+                    f.close()
+                    x877a_tags = ConfigParser.RawConfigParser()
+                    x877a_tags.read(tmpfile)
                     
-                    # splitup tag value
-                    splited =  exifs[exifTag].split(self.delim)                  
-                    nosections = [ e for e in splited if (len(e) > 0 
-                              and e[0] != '[' and e[-1] != ']')]
-                    instrSchemas = self.instruments[filterMatch]
-
+                    instrSchemas = self.instruments[instr_name]
                     # for each schema for this instrument 
                     for sch in instrSchemas:
                      
@@ -136,10 +184,13 @@ class MicroTagsFilter(object):
 
                         # find property value in tag
                         metadata = {}
-                        for keyval in nosections:
-                            (key,val) = keyval.split('=')
-                            if key in tagsToFind:
-                                metadata[key]=val
+                        for tag in tagsToFind:
+                            (section, option) = tag.split("::")
+                            try:
+                                value = x877a_tags.get(section, option)
+                                metadata["[%s] %s" % (section, option)] = value
+                            except ConfigParser.NoSectionError:
+                                pass
 
                         # only save exif data if we found some expected metadata
                         logger.debug("metadata = %s" % metadata)
@@ -162,6 +213,8 @@ class MicroTagsFilter(object):
                             # and save metadata
                             ps = self.saveExifMetadata(instance, schema, metadata)
                             logger.debug("ps=%s" % ps)
+                            
+                    os.remove(tmpfile)
 
     def saveExifMetadata(self, instance, schema, metadata):
         """Save all the metadata to a Dataset_Files paramamter set.
@@ -170,14 +223,11 @@ class MicroTagsFilter(object):
         if not parameters:
             return None
 
-        try:
-            ps = DatafileParameterSet.objects.get(schema=schema,
-                                                  dataset_file=instance)
-            return ps  # if already exists then just return it
-        except DatafileParameterSet.DoesNotExist:
-            ps = DatafileParameterSet(schema=schema,
-                                      dataset_file=instance)
+        (ps, created) = DatafileParameterSet.objects.get_or_create(schema=schema, dataset_file=instance)
+        if created: # new object was created
             ps.save()
+        else: # if parameter set already exists then just return it
+            return ps 
 
         for p in parameters:
             if p.name in metadata:
@@ -212,31 +262,25 @@ class MicroTagsFilter(object):
             # detect type of parameter
             datatype = ParameterName.STRING
              
-            if isinstance(metadata[p], Rational):
-                datatype = ParameterName.STRING
-            # Fraction test
-            elif isinstance(metadata[p], Fraction):
-                datatype = ParameterName.STRING
+            # integer data type test
+            try:
+                int(metadata[p])
+            except (ValueError, TypeError):
+                pass
             else:
-                # Int test
-                try:
-                    int(metadata[p])
-                except ValueError:
-                    pass
-                except TypeError:
-                    pass
-                else:
-                    datatype = ParameterName.NUMERIC
-    
-                # Float test
-                try:
-                    float(metadata[p])
-                except ValueError:
-                    pass
-                except TypeError:
-                    pass
-                else:
-                    datatype = ParameterName.NUMERIC
+                datatype = ParameterName.NUMERIC
+            
+            # float data type test
+            try:
+                float(metadata[p])
+            except (ValueError, TypeError):
+                pass
+            else:
+                datatype = ParameterName.NUMERIC
+            
+            # fraction data type test
+            if isinstance(metadata[p], Fraction):
+                datatype = ParameterName.NUMERIC
 
             new_param = ParameterName(schema=schema,
                                       name=p,
@@ -257,27 +301,38 @@ class MicroTagsFilter(object):
             schema.save()
             return schema
 
+
+
+
     def getExif(self, filename):
         """Return a dictionary of the metadata.
         """
-
+        logger.debug("Extracting EXIF metadata from image...")
         ret = {}
-        image = Image(filename)
         try:
-            image.readMetadata()
-        except IOError:
+            img = open(filename)
+            exif_tags = EXIF.process_file(img)
+            for tag in exif_tags:
+                # EXIF.py has custom str function, use it to get correct values.
+                s = str(exif_tags[tag])
+                try:
+                    ret[tag] = float(s)
+                except ValueError:
+                    ret[tag] = s
+        except:
+            logger.debug("Failed to extract EXIF metadata from image.")
             return ret
-        for tag in image.exifKeys():
-            ret[tag] = image[tag]
+        
+        logger.debug("Successed extracting EXIF metadata from image.")
         return ret
 
 
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
     if not name:
-        raise ValueError("MicroTagsFilter requires a name to be specified")
+        raise ValueError("EXIFTagsFilter requires a name to be specified")
     if not schema:
-        raise ValueError("MictoTagsFilter required a schema to be specified") 
-    return MicroTagsFilter(name, schema, tagsToFind, tagsToExclude)
+        raise ValueError("EXIFTagsFilter required a schema to be specified") 
+    return EXIFTagsFilter(name, schema, tagsToFind, tagsToExclude)
 
-make_filter.__doc__ = MicroTagsFilter.__doc__
+make_filter.__doc__ = EXIFTagsFilter.__doc__
