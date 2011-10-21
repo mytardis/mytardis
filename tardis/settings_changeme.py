@@ -133,14 +133,6 @@ STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
-
-INSTRUMENTS_SCHEMA = {'FEIQuanta200': (('FEIQuanta-1','FEIQuanta1',('HV','Spot')),
-                                       ('FEIQuanta-2','FEIQuanta2',('Brightness')),
-                                       ),
-                      'nanoSEM': (('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),
-                                  ),
-                      }
-
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 
@@ -248,7 +240,8 @@ EMAIL_USE_TLS = True
 # Post Save Filters
 POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
     ]
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
@@ -279,7 +272,7 @@ if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
 
 
-DEFAULT_INSTITUTION = "Monash University"
+DEFAULT_INSTITUTION = "RMIT University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = True
