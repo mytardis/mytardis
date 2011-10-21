@@ -31,13 +31,6 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
-INSTRUMENTS_SCHEMA = {'FEIQuanta200': (('FEIQuanta-1','FEIQuanta1',('HV','Spot')),
-                                       ('FEIQuanta-2','FEIQuanta2',('Brightness')),
-                                       ),
-                      'nanoSEM': (('nanoSEM','nanoSEM',('HV','PixelHeight','Aperture')),
-                                  ),
-                      }
-
 #TEMPLATE_DIRS = ['.']
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
@@ -143,7 +136,7 @@ MODULE_LOG_MAXBYTES = 0
 UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
 UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
 
-DEFAULT_INSTITUTION = "Monash University"
+DEFAULT_INSTITUTION = "RMIT University"
 
 IMMUTABLE_METS_DATASETS = True
 # Settings for the single search box
@@ -158,7 +151,8 @@ if not SINGLE_SEARCH_ENABLED:
 # Post Save Filters
 POST_SAVE_FILTERS = [
 #  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.microtags.make_filter", ["microscopy","http://tardis.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
     ]
 
 PUBLISH_PROVIDERS = (
