@@ -310,7 +310,7 @@ def view_experiment(request, experiment_id):
         c['error'] = request.POST['error']
 
     if 'query' in request.GET:
-        c['query'] = request.GET['query']
+        c['query'] = SearchQueryString(request.GET['query'])
     
     if  'search' in request.GET:
         c['search'] = request.GET['search']
@@ -407,7 +407,25 @@ def experiment_description(request, experiment_id):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_description.html', c))
+#
+# Class to manage switching between space separated search queries and 
+# '+' separated search queries (for addition to urls
+#
+# TODO This would probably be better handled with filters
+#
+class SearchQueryString():
+    
+    def __init__(self, query_string):
+        self.query_terms = query_string.split()
 
+    def __unicode__(self):
+        return ' '.join(self.query_terms)
+
+    def  url_safe_query(self):
+        return '+'.join(self.query_terms)
+
+    def query_string(self):
+        return self.__unicode__()
 
 @never_cache
 @authz.experiment_access_required
@@ -446,8 +464,10 @@ def experiment_datasets(request, experiment_id):
         # Only pass back matching datafiles
         sqs = SearchQuerySet() 
         
+        query = SearchQueryString(request.GET['query'])
+        
         #raw_search doesn't chain...
-        results = sqs.raw_search(request.GET['query'])
+        results = sqs.raw_search(query.query_string())
         
         matching_datasets = [d.object for d in results if 
                 d.model_name == 'dataset' and 
@@ -465,8 +485,10 @@ def experiment_datasets(request, experiment_id):
         c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
         c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
-        c['query'] = request.GET['query']
+        
+        c['query'] = query
     
+        # replace '+'s with spaces
     elif 'datafileResults' in request.session and 'search' in request.GET: 
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
@@ -825,7 +847,6 @@ def register_experiment_ws_xmldata(request):
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
-            print filename
             f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 f.write(chunk)
@@ -946,8 +967,11 @@ def retrieve_datafile_list(request, dataset_id):
             authz.has_write_permissions(request, experiment_id)
     
     if 'query' in request.GET:
+        query =  SearchQueryString(request.GET['query'])
+        # replaces '+'s with spaces
+
         sqs = SearchQuerySet()
-        results = sqs.raw_search(request.GET['query'])
+        results = sqs.raw_search(query.query_string())
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
     
     elif 'datafileResults' in request.session and 'search' in request.GET: 
@@ -2480,9 +2504,15 @@ class ExperimentSearchView(SearchView):
     # override SearchView's method in order to
     # return a ResponseContext
     def create_response(self):
+        import re
         (paginator, page) = self.build_page()
+       
+        # Remove unnecessary whitespace and replace necessary whitespace with '+'
+        # TODO this should just be done in the form clean...
+        query = re.sub('\s*?:\s*', ':', self.query).replace(' ','+')
+        query = SearchQueryString(query) 
         context = {
-                'query': self.query,
+                'query': query,
                 'form': self.form,
                 'page': page,
                 'paginator' : paginator,
