@@ -987,6 +987,13 @@ class Token(models.Model):
             return token_as_datetime
 
 
+class FreeTextSearchField(models.Model):
+
+    parameter_name = models.ForeignKey(ParameterName)
+
+    def __unicode__(self):
+        return "Index on %s" % (self.parameter_name)
+
 @receiver(pre_save, sender=ExperimentParameter)
 @receiver(pre_save, sender=DatasetParameter)
 @receiver(pre_save, sender=DatafileParameter)
