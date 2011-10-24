@@ -2699,7 +2699,7 @@ def view_rifcs(request, experiment_id):
     :rtype: :class:`django.http.HttpResponse`
 
     """
-    c = Context({})
+    c = None
 
     try:
         experiment = Experiment.safe.get(request, experiment_id)
@@ -2707,19 +2707,43 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
-    
-    from tardis.tardis_portal.publish.rifcs_value_builder import *
-    beamline = get_beamline(experiment)
-    c['originating_source'] = get_originating_source(beamline)
-    c['experiment_name'] = experiment.title
-    c['beamline_email'] = get_beamline_email(beamline)
-    c['experiment_end_date'] = experiment.end_time
-    c['beamline'] = get_beamline(experiment)
-    c['institution'] = get_institution(beamline)
-    c['key'] = get_key(experiment, beamline)
-    c['identifier'] = get_key(experiment, beamline)
-    c['sample_description_list'] = get_sample_description_list(experiment, beamline)
-    c['investigator_list'] = get_investigator_list(experiment)
+
+    rc_providers = settings.RIFCS_PROVIDERS
+    if rc_providers is None:
+        # return error page or something
+        return return_response_error(request)
+       
+    # get the appropriate provider
+    # return the context from the provider 
+    from django.utils.importlib import import_module  
+    provider = None
+    c = None
+    for pmodule in rc_providers:
+        # Import the module
+        try:
+            module_name, klass_name = pmodule.rsplit('.', 1)
+            module = import_module(module_name)
+        except ImportError, e:
+            # TODO Handle error
+            raise e
+        
+        # Create the Instance
+        try:            
+            provider_class = getattr(module, klass_name)
+            provider = provider_class()
+        except AttributeError, e:
+            # TODO Handle Error
+            raise e  
+        
+        # Now get the correct schema (if any)
+        if provider and provider.is_schema_valid(experiment):
+            c = provider.get_rifcs_context(experiment)
+            break
+        
+    if c is None:
+       # return error page or something
+       raise Exception("Von")
+       return return_response_error(request)
     
     return HttpResponse(render_response_index(request,
                         'tardis_portal/rif-cs/profiles/experiment.xml', c), 

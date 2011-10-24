@@ -1029,3 +1029,10 @@ def pre_save_parameter(sender, **kwargs):
                 f.write(b64)
             f.close()
             parameter.string_value = filename
+
+@receiver(post_save, sender=ExperimentParameter)
+@receiver(post_save, sender=Experiment)
+@receiver(post_save, sender=Author_Experiment)
+def post_save_parameter(sender, **kwargs):
+    # TODO
+    return
