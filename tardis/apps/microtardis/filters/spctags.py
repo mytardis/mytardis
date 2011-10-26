@@ -107,8 +107,8 @@ class SPCTagsFilter(object):
             111:  "Rg", 112:  "Cn", 113: "Uut", 114: "Uuq", 115: "Uup", 116: "Uuh", 117: "Uus", 118: "Uuo", 
         }
         
-        self.instruments = {'FEIQuanta200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
-                            'nanoSEM':      (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
+        self.instruments = {'Quanta200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
+                            'NovaNanoSEM200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
                             }
         
         logger.debug('initialising SPCTagsFilter')
