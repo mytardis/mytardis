@@ -34,7 +34,9 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    {% block icon %}
 	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
+	{% endblock icon %}
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
 	{% block title %}
 	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
@@ -216,9 +218,14 @@ matchContains: true, multiple: true, multipleSeparator: " ",
       {% endblock fullpage %}
 
     </div> <!-- content box -->
-
-    <div id="bottombar" style="padding-bottom: 5px; padding-left: 17px;">
+    
+    {% block bottomicons %}
+    {% endblock bottomicons %}
+    
+    <div id="bottombar" style="padding-bottom: 5px; text-align: center;">
+    {% block bottombar %}
       Created by the <a target="_blank" style="text-decoration: underline" href="http://code.google.com/p/mytardis/">MyTARDIS Team</a> - Version 2.00
+    {% endblock bottombar %}
     </div> <!-- bottombar -->
   </div> <!-- page -->
 
