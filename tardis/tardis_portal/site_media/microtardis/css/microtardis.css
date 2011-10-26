@@ -1,8 +1,9 @@
 
 h1 {
-	color: #087391;
+	color: red;
     font-weight: normal;
 }
+
 
 #headerbg {
 	clear: both;
@@ -27,13 +28,25 @@ h1 {
 
 /* Logo */
 
+#logo-img {
+background:url("../img/rmit_symbol.png") no-repeat scroll left top transparent;
+height:40px;
+width:40px;
+left:40px;
+float: left;
+margin-top: 7px;
+}
+
 #logo {
 	float:left;
     margin-top: 30px;
+    display: table-cell;
+    vertical-align: middle;
 }
 
 #logo-subtext {
     text-align: right;
+    letter-spacing: 0;
 }
 
 
