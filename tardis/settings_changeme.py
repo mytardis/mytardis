@@ -251,5 +251,6 @@ TOKEN_USERNAME = 'tokenuser'
 
 # RIF-CS Settings
 OAI_DOCS_PATH = 'var/oai'
-RIFCS_PROVIDERS = ()
-
+RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.AnstoRifCsProvider',
+                   'tardis.tardis_portal.publish.provider.SynchrotronProvider')
+RIFCS_TEMPLATE_DIR = 'tardis_portal/rif-cs/profiles/'

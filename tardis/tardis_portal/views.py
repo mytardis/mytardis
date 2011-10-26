@@ -2746,7 +2746,7 @@ def view_rifcs(request, experiment_id):
        return return_response_error(request)
     
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/rif-cs/profiles/experiment.xml', c), 
+                        'tardis_portal/rif-cs/profiles/default.xml', c), 
                         mimetype="text/xml")
 
 
