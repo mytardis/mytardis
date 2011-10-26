@@ -2699,8 +2699,6 @@ def view_rifcs(request, experiment_id):
     :rtype: :class:`django.http.HttpResponse`
 
     """
-    c = None
-
     try:
         experiment = Experiment.safe.get(request, experiment_id)
     except PermissionDenied:
@@ -2708,45 +2706,19 @@ def view_rifcs(request, experiment_id):
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
-    rc_providers = settings.RIFCS_PROVIDERS
-    if rc_providers is None:
+    if settings.RIFCS_PROVIDERS is None:
         # return error page or something
         return return_response_error(request)
        
-    # get the appropriate provider
-    # return the context from the provider 
-    from django.utils.importlib import import_module  
-    provider = None
-    c = None
-    for pmodule in rc_providers:
-        # Import the module
-        try:
-            module_name, klass_name = pmodule.rsplit('.', 1)
-            module = import_module(module_name)
-        except ImportError, e:
-            # TODO Handle error
-            raise e
-        
-        # Create the Instance
-        try:            
-            provider_class = getattr(module, klass_name)
-            provider = provider_class()
-        except AttributeError, e:
-            # TODO Handle Error
-            raise e  
-        
-        # Now get the correct schema (if any)
-        if provider and provider.is_schema_valid(experiment):
-            c = provider.get_rifcs_context(experiment)
-            break
-        
-    if c is None:
-       # return error page or something
-       raise Exception("Von")
-       return return_response_error(request)
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
+    context = pservice.get_context()
+    if context is None:
+        # return error page or something
+        return return_response_error(request)
     
+    template = pservice.get_template()
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/rif-cs/profiles/default.xml', c), 
-                        mimetype="text/xml")
+                        template, context), mimetype="text/xml")
 
 

@@ -1,3 +1,4 @@
+from django.conf import settings
 from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema
 
 class RifCsProvider(object):
@@ -25,7 +26,7 @@ class RifCsProvider(object):
         raise Exception(NotImplemented())
     
     def get_template(self, experiment):
-        return "default.xml"
+        return settings.RIFCS_TEMPLATE_DIR + "default.xml"
         
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.author_experiment_set.all()]

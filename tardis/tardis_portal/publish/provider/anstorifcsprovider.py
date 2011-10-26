@@ -1,5 +1,7 @@
-from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema  
 from django.template import Context 
+from django.conf import settings
+from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema  
+
 import rifcsprovider
     
 class AnstoRifCsProvider(rifcsprovider.RifCsProvider):      

@@ -1,5 +1,7 @@
-from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema
 from django.template import Context
+from django.conf import settings
+from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema
+
 import rifcsprovider    
     
 class SynchrotronRifCsProvider(rifcsprovider.RifCsProvider):
@@ -20,13 +22,15 @@ class SynchrotronRifCsProvider(rifcsprovider.RifCsProvider):
     
     def get_template(self, experiment):
         beamline = self.get_beamline(experiment)
+        filename = ""
         if beamline == 'IR':
-            return "IR.xml"
+            filename = "IR.xml"
         elif beamline == 'SAX':
-            return "SAX.xml"
+            filename = "SAX.xml"
         else:
-            return "default.xml"   
-         
+            filename = "default.xml"   
+        return settings.RIFCS_TEMPLATE_DIR + filename
+     
     def get_rifcs_context(self, experiment):
         c = Context({})
         beamline = self.get_beamline(experiment)
