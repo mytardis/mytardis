@@ -108,7 +108,7 @@ class SPCTagsFilter(object):
         }
         
         self.instruments = {'Quanta200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
-                            'NovaNanoSEM200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
+                            'NovaNanoSEM': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
                             }
         
         logger.debug('initialising SPCTagsFilter')
