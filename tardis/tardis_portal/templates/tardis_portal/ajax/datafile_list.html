@@ -70,13 +70,13 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
     {% if has_write_permissions and not immutable %}
     <a title="Add" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
      data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-	 class="fg-button ui-state-default fg-button-icon-solo ui-corner-all jqModalDfAdd">
+	 class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all jqModalDfAdd">
         <span class="ui-icon ui-icon-plusthick"></span>
         Add
      </a>
      {% endif %}
 
-	<a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide" class="datafile_info_toggle metadata_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/parameters/{{ datafile.id}}/">
+	<a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide" class="datafile_info_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/parameters/{{ datafile.id}}/">
         <span class="ui-icon ui-icon-circle-triangle-e"></span>
         Show/Hide
     </a>
