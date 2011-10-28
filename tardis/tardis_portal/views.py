@@ -790,26 +790,41 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     except AttributeError:
         logger.error('no default authentication for experiment ownership set (settings.DEFAULT_AUTH)')
 
+    force_user_create = False
+    try:
+        force_user_create = settings.DEFAULT_AUTH_FORCE_USER_CREATE
+    except AttributeError:
+        pass
+
     if auth_key:
         for owner in owners:
             # for each PI
-            if owner:
-                user = auth_service.getUser({'pluginname': auth_key,
-                                             'id': owner})
-                # if exist, create ACL
-                if user:
-                    logger.debug('registering owner: ' + owner)
-                    e = Experiment.objects.get(pk=eid)
+            if not owner:
+                continue
 
-                    acl = ExperimentACL(experiment=e,
-                                        pluginId=django_user,
-                                        entityId=str(user.id),
-                                        canRead=True,
-                                        canWrite=True,
-                                        canDelete=True,
-                                        isOwner=True,
-                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-                    acl.save()
+            owner_username = None
+            if '@' in owner:
+                owner_username = auth_service.getUsernameByEmail(auth_key,
+                                    owner)
+            if not owner_username:
+                owner_username = owner
+
+            owner_user = auth_service.getUser(auth_key, owner_username,
+                      force_user_create=force_user_create)
+            # if exist, create ACL
+            if owner_user:
+                logger.debug('registering owner: ' + owner)
+                e = Experiment.objects.get(pk=eid)
+
+                acl = ExperimentACL(experiment=e,
+                                    pluginId=django_user,
+                                    entityId=str(owner_user.id),
+                                    canRead=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl.save()
 
     return eid
 
@@ -1804,17 +1819,10 @@ def add_experiment_access_user(request, experiment_id, username):
         if request.GET['canDelete'] == 'true':
             canDelete = True
 
-    try:
-        authMethod = request.GET['authMethod']
-        if authMethod == localdb_auth_key:
-            user = User.objects.get(username=username)
-        else:
-            user = UserAuthentication.objects.get(username=username,
-                authenticationMethod=authMethod).userProfile.user
-    except User.DoesNotExist:
+    authMethod = request.GET['authMethod']
+    user = auth_service.getUser(authMethod, username)
+    if user is None:
         return HttpResponse('User %s does not exist.' % (username))
-    except UserAuthentication.DoesNotExist:
-        return HttpResponse('User %s does not exist' % (username))
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)

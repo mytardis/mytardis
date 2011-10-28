@@ -36,13 +36,15 @@ models.py
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
 """
+import logging
 
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
 from tardis.tardis_portal.staging import get_full_staging_path
-import logging
+from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
+
 logger = logging.getLogger(__name__)
 
 
@@ -101,35 +103,134 @@ class AuthService():
         auth_instance = auth_class()
         return auth_instance
 
+
+    def _get_or_create_user_from_dict(self, user_dict, auth_method):
+        from tardis.tardis_portal.auth.utils import get_or_create_user
+        (user, created) = get_or_create_user(auth_method, user_dict['id'])
+        if user and created:
+            self._set_user_from_dict(user, user_dict, auth_method)
+        return user
+
+
+    def _set_user_from_dict(self, user, user_dict, auth_method):
+        for field in [ 'first_name', 'last_name', 'email' ]:
+            if field not in user_dict:
+                logger.warning('%s.get_user did not return %s' %
+                    (auth_method, field))
+        user.email = user_dict.get('email', '')
+        user.first_name = user_dict.get('first_name', '')
+        user.last_name = user_dict.get('last_name', '')
+        user.save()
+
+
     def authenticate(self, authMethod, **credentials):
         """Try and authenticate the user using the auth type he/she
         specified to use and if authentication didn't work using that
-        method, try each Django AuthProvider.
 
         :param authMethod: the shortname of the auth method.
         :type authMethod: string
         :param **credentials: the credentials as expected by the auth plugin
         :type **credentials: kwargs
         """
-
         if not self._initialised:
             self._manual_init()
-        # if authMethod, else fall back to Django internal auth
-        if authMethod:
-            if authMethod in self._authentication_backends:
-                # note that it's the backend's job to create a user entry
-                # for a user in the DB if he has successfully logged in using
-                # the auth method he has picked and he doesn't exist in the DB
-                user = self._authentication_backends[
-                    authMethod].authenticate(**credentials)
-                if isinstance(user, dict):
-                    user['pluginname'] = authMethod
-                    return self.getUser(user)
-                return user
-            else:
-                return None
-        else:
-            return auth.authenticate(**credentials)
+
+        user = None
+
+        if authMethod in self._authentication_backends:
+            # authenticate() returns either a User or a dictionary describing a
+            # user (id, display, email, first_name, last_name).
+            user = self._authentication_backends[
+                authMethod].authenticate(**credentials)
+            if isinstance(user, dict):
+                user_dict = user
+                user = self._get_or_create_user_from_dict(user_dict, authMethod)
+        return user
+
+
+    def getUser(self, authMethod, user_id, force_user_create=False):
+        """Return a user model based on the given auth method and user id.
+
+        This function is responsible for creating the
+        user within the Django DB and returning the resulting
+        user model.
+        """
+        if not self._initialised:
+            self._manual_init()
+
+        user = None
+
+        if authMethod in self._authentication_backends:
+            try:
+                # get_user returns either a User or a dictionary describing a
+                # user (id, display, email, first_name, last_name).
+                user = self._authentication_backends[authMethod].get_user(user_id)
+            except NotImplementedError, AttributeError:
+                # For backwards compatibility
+                try:
+                    from tardis.tardis_portal.models import UserAuthentication
+                    # Check if the given username in combination with the
+                    # auth method is already in the UserAuthentication table
+                    user = UserAuthentication.objects.get(username=user_id,
+                        authenticationMethod=authMethod).userProfile.user
+                except UserAuthentication.DoesNotExist:
+                    # As a last resort, create the user anyway. Not recommended
+                    # as this could fill the db with non-existent users.
+                    if force_user_create:
+                        user = { 'id': user_id }
+
+            if isinstance(user, dict):
+                user_dict = user
+                user = self._get_or_create_user_from_dict(user_dict, authMethod)
+
+        if user is None:
+            return None
+
+#       # TODO: This does not belong here... This function will be called in more
+#       # cases than just experiment ingestion.
+#       if settings.STAGING_PROTOCOL == authMethod:
+#           # to be put in its own function
+#           from os import path
+#           staging_path = path.join(settings.STAGING_PATH, user_id)
+#           logger.debug('new staging path calced to be ' + str(staging_path))
+#           if staging_path != None:
+#               import os
+#               if not os.path.exists(staging_path):
+#                   try:
+#                       os.makedirs(staging_path)
+#                       #os.system('chmod g+w ' + staging_path)
+#                       os.system('chown ' + user_id + ' ' + staging_path)
+#                   except OSError:
+#                       logger.error("Couldn't create staging directory " +\
+#                           str(staging_path))
+        return user
+
+
+    def getUsernameByEmail(self, authMethod, email):
+        """Return a username given the auth method and email address of a user.
+        """
+        if not self._initialised:
+            self._manual_init()
+
+        username = None
+
+        # If the auth method is set, use it, otherwise use the built-in
+        # Django auth.
+        if not authMethod or authMethod == localdb_auth_key:
+            from django.contrib.auth.models import User
+            try:
+                user = User.objects.get(email=email)
+                if user:
+                    username = user.username
+            except User.DoesNotExist:
+                pass
+        elif authMethod in self._authentication_backends:
+            try:
+                username = self._authentication_backends[authMethod].getUsernameByEmail(email)
+            except NotImplementedError, AttributeError:
+                pass
+        return username
+
 
     def getGroups(self, request):
         """Return a list of tuples containing pluginname and group id
@@ -227,95 +328,3 @@ class AuthService():
                 group["pluginname"] = gp.name
                 yield group
 
-    def getUser(self, user_dict):
-        """Return a user model based on the user dict.
-
-        This function is responsible for creating the
-        user within the Django DB and returning the resulting
-        user model.
-        """
-        from django.contrib.auth.models import User
-        from tardis.tardis_portal.models import UserProfile, UserAuthentication
-
-        if not self._initialised:
-            self._manual_init()
-
-        plugin = user_dict['pluginname']
-
-        logger.debug('Trying to find user in user_dict:')
-        logger.debug(user_dict)
-        username = ''
-        email = user_dict['id']
-        logger.debug('trying to get username by' +
-            ' email ' + email)
-
-        username = email
-        try:
-            username =\
-                self._authentication_backends[plugin].getUsernameByEmail(email)
-            logger.debug('get username by email returned ' + str(username))
-        except AttributeError:
-            try:
-                u = User.objects.get(email=email)
-                username = u.username
-            except User.DoesNotExist:
-                pass
-
-        try:
-            user = UserAuthentication.objects.get(username=username,
-                            authenticationMethod=plugin).userProfile.user
-            return user
-        except UserAuthentication.DoesNotExist:
-            pass
-
-        # length of the maximum username
-        max_length = 30
-
-        # the username to be used on the User table
-        if username.find('@') > 0:
-            unique_username = username.partition('@')[0][:max_length]
-        else:
-            unique_username = username[:max_length]
-
-        # Generate a unique username
-        i = 0
-        try:
-            while (User.objects.get(username=unique_username)):
-                i += 1
-                unique_username = username[:max_length - len(str(i))] + str(i)
-        except User.DoesNotExist:
-            pass
-
-        password = User.objects.make_random_password()
-        user = User.objects.create_user(username=unique_username,
-                                        password=password,
-                                        email=user_dict.get("email", ""))
-        user.save()
-
-        userProfile = UserProfile(user=user,
-                                  isDjangoAccount=False)
-        userProfile.save()
-
-        userAuth = UserAuthentication(userProfile=userProfile,
-            username=username, authenticationMethod=plugin)
-        userAuth.save()
-
-        logger.debug(str(settings.STAGING_PROTOCOL) + ' ' + str(plugin))
-
-        if settings.STAGING_PROTOCOL == plugin:
-            # to be put in its own function
-            from os import path
-            staging_path = path.join(settings.STAGING_PATH, username)
-            logger.debug('new staging path calced to be ' + str(staging_path))
-            if staging_path != None:
-                import os
-                if not os.path.exists(staging_path):
-                    try:
-                        os.makedirs(staging_path)
-                        #os.system('chmod g+w ' + staging_path)
-                        os.system('chown ' + username + ' ' + staging_path)
-                    except OSError:
-                        logger.error("Couldn't create staging directory " +\
-                            str(staging_path))
-                   
-        return user
