@@ -40,6 +40,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 
 from django.test import TestCase
+from django.conf import settings
 from nose.plugins.skip import SkipTest        
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 import logging
@@ -49,6 +50,11 @@ logger = logging.getLogger(__name__)
 
 class EXIFTagsTestCase(TestCase):
 
+  
+    def tearDown(self):
+        from shutil import rmtree
+        rmtree(self.experiment_path)
+          
     def setUp(self):
         from django.contrib.auth.models import User
         user = 'tardis_user1'
@@ -70,6 +76,12 @@ class EXIFTagsTestCase(TestCase):
                                 public=False)
         exp.save()
         logger.debug("experiment %s" % exp)
+        
+        self.assertEqual(exp.get_or_create_directory(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+
+        self.experiment_path = path.join(settings.FILE_STORE_PATH, str(exp.id))
+      
         
         dataset = models.Dataset(description="dataset description...", experiment=exp)
         dataset.save()
@@ -150,6 +162,12 @@ class SPCTagsTestCase(TestCase):
                                 public=False)
         exp.save()
         logger.debug("experiment %s" % exp)
+        
+        self.assertEqual(exp.get_or_create_directory(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+
+        self.experiment_path = path.join(settings.FILE_STORE_PATH, str(exp.id))
+      
         
         dataset = models.Dataset(description="dataset description...", experiment=exp)
         dataset.save()
