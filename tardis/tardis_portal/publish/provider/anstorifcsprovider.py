@@ -2,16 +2,16 @@ from django.template import Context
 from django.conf import settings
 from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema  
 
-import rifcsprovider
+import schemarifcsprovider
     
-class AnstoRifCsProvider(rifcsprovider.RifCsProvider):      
+class AnstoRifCsProvider(schemarifcsprovider.SchemaRifCsProvider):      
     
     def __init__(self):
         super(AnstoRifCsProvider, self).__init__()
         self.namespace = 'http://www.tardis.edu.au/schemas/ansto/experiment/2011/06/21'  
         self.sample_desc_schema_ns = 'http://www.tardis.edu.au/schemas/ansto/sample/2011/06/21'
       
-    def get_beamline_email(self, beamline):
+    def get_email(self, beamline):
         return "%s@ansto.gov.au" % beamline
         
     def get_originating_source(self, beamline):
@@ -25,7 +25,7 @@ class AnstoRifCsProvider(rifcsprovider.RifCsProvider):
         beamline = self.get_beamline(experiment)
         c['originating_source'] = self.get_originating_source(beamline)
         c['experiment_name'] = experiment.title
-        c['beamline_email'] = self.get_beamline_email(beamline)
+        c['beamline_email'] = self.get_email(beamline)
         c['experiment_end_date'] = experiment.end_time
         c['beamline'] = self.get_beamline(experiment)
         c['key'] = self.get_key(experiment, beamline)

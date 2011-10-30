@@ -2,9 +2,9 @@ from django.template import Context
 from django.conf import settings
 from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema
 
-import rifcsprovider    
+import schemarifcsprovider    
     
-class SynchrotronRifCsProvider(rifcsprovider.RifCsProvider):
+class SynchrotronRifCsProvider(schemarifcsprovider.SchemaRifCsProvider):
     
     def __init__(self):
         super(SynchrotronRifCsProvider, self).__init__()
