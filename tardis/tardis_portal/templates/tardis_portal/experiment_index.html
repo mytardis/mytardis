@@ -27,9 +27,7 @@
 <div id="content">
   {% if user.is_authenticated %}
     <div class="post">
-      <h1 class="title">
-	<a href="#">My Experiments</a>
-      </h1>
+      <h1 class="title">My Experiments</h1>
 
       {% if experiments %}
         <strong>{{ experiments.count }}</strong> experiment{{ experiments.count|pluralize}}
@@ -77,9 +75,7 @@
   {% endif %}
 
   <div class="post">
-    <h1 class="title">
-      <a href="#">Public Experiments</a>
-    </h1>
+    <h1 class="title">Public Experiments</h1>
 
     {% if experiments %}
       <strong>{{ public_experiments.count }}</strong>
