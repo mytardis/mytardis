@@ -1048,19 +1048,6 @@ def post_save_author_experiment(sender, **kwargs):
 
 def _write_rifcs_to_oai_dir(experiment):
     from tardis.tardis_portal.publish.publishservice import PublishService
-    from tardis.tardis_portal.xmlwriter import XMLWriter
     pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
-    context = pservice.get_context()
-    xmlwriter = XMLWriter()
-    subdir =_get_subdir_path(str(experiment.id))   
-    xmlwriter.write_template_to_file(subdir, "experiment", 
-                                     experiment.id, pservice.get_template(),
-                                     context)
-
-def _get_subdir_path(expid):
-    import os
-    path = settings.OAI_DOCS_PATH + os.path.sep + expid 
-    if not os.path.exists(path):       
-        # directory with experiment id for name does not exists, create now
-        os.mkdir(path)
-    return expid
+    pservice.write_rifcs_to_oai_dir(settings.OAI_DOCS_PATH)
+    

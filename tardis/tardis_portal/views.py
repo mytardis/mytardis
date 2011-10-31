@@ -2705,13 +2705,14 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
-
-    if settings.RIFCS_PROVIDERS is None:
-        # return error page or something
-        return return_response_error(request)
-       
+    
+    try:
+        rifcs_provs = settings.RIFCS_PROVIDERS   
+    except AttributeError:
+        rifcs_provs = ()
+           
     from tardis.tardis_portal.publish.publishservice import PublishService
-    pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
+    pservice = PublishService(rifcs_provs, experiment)
     context = pservice.get_context()
     if context is None:
         # return error page or something

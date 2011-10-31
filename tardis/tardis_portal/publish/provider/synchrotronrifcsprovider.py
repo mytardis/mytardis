@@ -19,17 +19,6 @@ class SynchrotronRifCsProvider(schemarifcsprovider.SchemaRifCsProvider):
         
     def get_key(self, experiment, beamline):
         return "tardis.synchrotron.org.au/experiment/view/%s" % experiment.id
-    
-    def get_template(self, experiment):
-        beamline = self.get_beamline(experiment)
-        filename = ""
-        if beamline == 'IR':
-            filename = "IR.xml"
-        elif beamline == 'SAX':
-            filename = "SAX.xml"
-        else:
-            filename = "default.xml"   
-        return settings.RIFCS_TEMPLATE_DIR + filename
      
     def get_rifcs_context(self, experiment):
         c = Context({})
