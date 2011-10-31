@@ -37,11 +37,9 @@ class AnstoRifCsProvider(schemarifcsprovider.SchemaRifCsProvider):
         beamline = self.get_beamline(experiment)
         c['experiment'] = experiment
         c['originating_source'] = self.get_originating_source(beamline)
-        c['institution'] = experiment.institution_name
         c['email'] = self.get_email(beamline)
         c['beamline'] = self.get_beamline(experiment)
         c['key'] = self.get_key(experiment, beamline)
-        c['identifier'] = self.get_key(experiment, beamline)
         c['sample_description_list'] = self.get_sample_description_list(experiment, beamline)
         c['investigator_list'] = self.get_investigator_list(experiment)
         c['produced_by'] = self.get_produced_by(beamline)
