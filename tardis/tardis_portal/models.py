@@ -1034,20 +1034,21 @@ def pre_save_parameter(sender, **kwargs):
 def post_save_experiment_parameter(sender, **kwargs):
     experiment_param = kwargs['instance']
     experiment = Experiment.objects.get(pk=experiment_param.getExpId())
-    _write_rifcs_to_oai_dir(author_experiment.experiment)   
+    _publish_public_expt_rifcs(experiment)   
 
 @receiver(post_save, sender=Experiment)
 def post_save_experiment(sender, **kwargs):
     experiment = kwargs['instance']
-    _write_rifcs_to_oai_dir(experiment)    
+    _publish_public_expt_rifcs(experiment)    
 
 @receiver(post_save, sender=Author_Experiment)
 def post_save_author_experiment(sender, **kwargs):
     author_experiment = kwargs['instance']
-    _write_rifcs_to_oai_dir(author_experiment.experiment)   
+    _publish_public_expt_rifcs(author_experiment.experiment)   
 
-def _write_rifcs_to_oai_dir(experiment):
-    from tardis.tardis_portal.publish.publishservice import PublishService
-    pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
-    pservice.write_rifcs_to_oai_dir(settings.OAI_DOCS_PATH)
+def _publish_public_expt_rifcs(experiment):
+    if experiment.public:
+        from tardis.tardis_portal.publish.publishservice import PublishService
+        pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
+        pservice.write_rifcs_to_oai_dir(settings.OAI_DOCS_PATH)
     
