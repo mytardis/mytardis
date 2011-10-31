@@ -277,6 +277,15 @@ class ExperimentACL(models.Model):
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
 
+    def get_related_object(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.get(pk=self.entityId)
+        return None
+
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)
 
