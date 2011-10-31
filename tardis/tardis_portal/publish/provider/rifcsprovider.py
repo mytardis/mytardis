@@ -8,8 +8,7 @@ class RifCsProvider(object):
     
     def get_rifcs_context(self, experiment):
         c = Context({})
-        c['experiment_name'] = experiment.title
-        c['institution'] = experiment.institution
+        c['experiment'] = experiment
         return c
     
     def get_template(self, experiment):

@@ -28,8 +28,8 @@ class PublishService():
             # Retrieve the provider that can deal with the experiment
             if provider and provider.is_schema_valid(self.experiment):
                 return provider  
-                     
-        # return default provider
+        from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
+        return RifCsProvider(self.experiment)            
     
     def get_context(self):
         return self.provider.get_rifcs_context(self.experiment)

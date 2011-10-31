@@ -1,4 +1,5 @@
-from tardis.tardis_portal.models import ExperimentParameter, ParameterName, Schema
+from tardis.tardis_portal.models import ExperimentParameter, ExperimentParameterSet, ParameterName, Schema
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 import rifcsprovider
 
@@ -7,6 +8,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def __init__(self):
         self.namespace = None
         self.sample_desc_schema_ns = None
+        self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         
     def is_schema_valid(self, experiment):
         eps = ExperimentParameter.objects.filter(
@@ -22,7 +24,10 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         param = ParameterName.objects.get(schema=sch, name='beamline')
         res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
         return res.string_value
-    
+         
+    def get_produced_by(self, beamline):
+        return 'tardis.synchrotron.org.au/%s' % beamline
+   
     def get_rifcs_context(self):
         raise Exception(NotImplemented())
         
@@ -37,3 +42,21 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                          ExperimentParameter.objects.filter(
                           parameterset__experiment=experiment, name=params)]
         return "\n".join(descriptions)
+    
+    def get_license_uri(self, experiment):
+        parameterset = ExperimentParameterSet.objects.filter(
+                            schema__namespace=self.creative_commons_schema_ns,
+                            experiment__id=experiment.id)
+        if len(parameterset) > 0:
+            psm = ParameterSetManager(parameterset=parameterset[0])
+            return psm.get_param("license_uri", True)
+        return None
+    
+    def get_license_title(self, experiment):
+        parameterset = ExperimentParameterSet.objects.filter(
+                            schema__namespace=self.creative_commons_schema_ns,
+                            experiment__id=experiment.id)
+        if len(parameterset) > 0:
+            psm = ParameterSetManager(parameterset=parameterset[0])
+            return psm.get_param("license_name", True)
+        return None

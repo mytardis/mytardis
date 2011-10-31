@@ -20,17 +20,31 @@ class AnstoRifCsProvider(schemarifcsprovider.SchemaRifCsProvider):
     def get_key(self, experiment, beamline):
         return "mecat-test.nbi.ansto.gov.au:8080/experiment/%s" % experiment.id
     
+    def get_anzsrcfor_subjectcodes(self):
+        codes = ['029904']
+        # TODO: The experiment ANDS schema should allow the user to add their own codes,
+        #  which should be appended here
+        return codes
+
+    def get_local_subjectcodes(self):
+        codes = []
+        # TODO: The experiment ANDS schema should allow the user to add their own
+        #  local codes, which should be appended here
+        return codes
+    
     def get_rifcs_context(self, experiment):
         c = Context({})
         beamline = self.get_beamline(experiment)
+        c['experiment'] = experiment
         c['originating_source'] = self.get_originating_source(beamline)
-        c['experiment_name'] = experiment.title
-        c['beamline_email'] = self.get_email(beamline)
-        c['experiment_end_date'] = experiment.end_time
+        c['institution'] = experiment.institution_name
+        c['email'] = self.get_email(beamline)
         c['beamline'] = self.get_beamline(experiment)
         c['key'] = self.get_key(experiment, beamline)
         c['identifier'] = self.get_key(experiment, beamline)
         c['sample_description_list'] = self.get_sample_description_list(experiment, beamline)
         c['investigator_list'] = self.get_investigator_list(experiment)
-        c['institution'] = experiment.institution_name
+        c['produced_by'] = self.get_produced_by(beamline)
+        c['license_title'] = self.get_license_title(experiment)
+        c['license_uri'] = self.get_license_uri(experiment)
         return c
