@@ -13,9 +13,11 @@
             </name>
             <location>
                 <address>
+{% if url %}                    
                     <electronic type="url">
-                        <value>https://tardis.synchrotron.org.au/experiment/view/{{experiment.id}}/</value>
+                        <value>{{url}}</value>
                     </electronic>
+{% endif %}
 {% if email %}
                     <electronic type="email">
                         <value>{{email}}</value>
