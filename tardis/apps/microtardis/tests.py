@@ -87,15 +87,15 @@ class EXIFTagsTestCase(TestCase):
         dataset.save()
         
         ## FEIQuanta200 TIF image testing ##
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/FEIQuanta200/test.tif')
+        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/Quanta200/test.tif')
         logger.debug("filename %s" % filename)
  
         df_file = models.Dataset_File(dataset=dataset, filename='test.tif', url=filename, protocol='staging')
         df_file.save()
 
         #self.assertEqual("",models.Schema.objects.all())
-        sch = models.Schema.objects.get(name="FEIQuanta_EXIF")
-        self.assertEqual("FEIQuanta_EXIF",sch.name)
+        sch = models.Schema.objects.get(name="Quanta200_EXIF")
+        self.assertEqual("Quanta200_EXIF",sch.name)
         datafileparameterset = models.DatafileParameterSet.objects.get(schema=sch, dataset_file=df_file)
         psm = ParameterSetManager(parameterset=datafileparameterset)
         self.assertEqual(12,len(psm.parameters))
@@ -113,15 +113,15 @@ class EXIFTagsTestCase(TestCase):
         self.assertEqual(str(psm.get_param("[Lfd] Brightness").numerical_value), "21.2")
         
         ## nanoSEM TIF image testing ##
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/nanoSEM/test.tif')
+        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/NovaNanoSEM/test.tif')
         logger.debug("filename %s" % filename)
  
         df_file = models.Dataset_File(dataset=dataset, filename='test.tif', url=filename, protocol='staging')
         df_file.save()
 
         #self.assertEqual("",models.Schema.objects.all())
-        sch = models.Schema.objects.get(name="nanoSEM_EXIF")
-        self.assertEqual("nanoSEM_EXIF",sch.name)
+        sch = models.Schema.objects.get(name="NovaNanoSEM_EXIF")
+        self.assertEqual("NovaNanoSEM_EXIF",sch.name)
         datafileparameterset = models.DatafileParameterSet.objects.get(schema=sch, dataset_file=df_file)
         psm = ParameterSetManager(parameterset=datafileparameterset)
         self.assertEqual(12,len(psm.parameters))
@@ -173,7 +173,7 @@ class SPCTagsTestCase(TestCase):
         dataset.save()
         
         ## FEIQuanta200 TIF image testing ##
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/FEIQuanta200/test.spc')
+        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/Quanta200/test.spc')
         logger.debug("filename %s" % filename)
  
         df_file = models.Dataset_File(dataset=dataset, filename='test.spc', url=filename, protocol='staging')
@@ -197,7 +197,7 @@ class SPCTagsTestCase(TestCase):
         self.assertEqual(str(psm.get_param("Sample Type (Label)").string_value), "sample 2 - 20 kv area")
         
         ## nanoSEM TIF image testing ##
-        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/nanoSEM/test.spc')
+        filename = path.join(path.abspath(path.dirname(__file__)), 'testing/NovaNanoSEM/test.spc')
         logger.debug("filename %s" % filename)
  
         df_file = models.Dataset_File(dataset=dataset, filename='test.spc', url=filename, protocol='staging')
