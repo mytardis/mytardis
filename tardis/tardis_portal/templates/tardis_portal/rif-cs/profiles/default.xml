@@ -23,6 +23,13 @@
                         <value>{{email}}</value>
                     </electronic>
 {% endif %}
+{% if address %}
+                    <physical type="streetAddress">
+                        <addressPart type="text">
+                            {{address}}
+                        </addressPart>
+                    </physical> 
+{% endif %}
                 </address>
             </location>
             <coverage>
@@ -46,7 +53,17 @@
 {% for lcode in localcodes %}
             <subject type="local">{{lcode}}</subject>
 {% endfor %}
-            <description type="note">Information on the format and analysis of the data in this collection is available from the {{beamline_name}} beamline link on this page (Is produced by:).</description>
+
+            <description type="rights">{{license_title}} (link below)</description>
+
+            <description type="note">
+{% if notes %}
+{{notes}}
+{% else %}
+Information on the format and analysis of the data in this collection is available from the {{beamline_name}} beamline link on this page (Is produced by:).
+{% endif %}            
+            </description>
+            
             <description type="brief">
 {{description}}
 {% if sample_description_list %}
@@ -60,10 +77,12 @@ Investigators:
 {{investigator_list}}
 {% endif %}
             </description>
+         
             <relatedInfo>
                 <identifier type="uri">{{license_uri}}</identifier>
                 <title>{{license_title}}</title>
-            </relatedInfo>
+            </relatedInfo>            
+
         </collection>
 
     </registryObject>

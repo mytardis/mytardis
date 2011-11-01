@@ -1,6 +1,7 @@
 from tardis.tardis_portal.models import ExperimentParameter, ExperimentParameterSet, ParameterName, Schema
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from django.template import Context
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 import rifcsprovider
 
@@ -42,22 +43,10 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         return "\n".join(descriptions)
     
     def get_license_uri(self, experiment):
-        parameterset = ExperimentParameterSet.objects.filter(
-                            schema__namespace=self.creative_commons_schema_ns,
-                            experiment__id=experiment.id)
-        if len(parameterset) > 0:
-            psm = ParameterSetManager(parameterset=parameterset[0])
-            return psm.get_param("license_uri", True)
-        return None
+        return self._get_creative_commons_param("license_uri", self.creative_commons_schema_ns, experiment)
     
     def get_license_title(self, experiment):
-        parameterset = ExperimentParameterSet.objects.filter(
-                            schema__namespace=self.creative_commons_schema_ns,
-                            experiment__id=experiment.id)
-        if len(parameterset) > 0:
-            psm = ParameterSetManager(parameterset=parameterset[0])
-            return psm.get_param("license_name", True)
-        return None
+        return self._get_creative_commons_param("license_name", self.creative_commons_schema_ns, experiment)
     
     def get_rifcs_context(self, experiment):
         c = Context({})
@@ -70,3 +59,16 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
         return c
+        
+    def _get_creative_commons_param(self, key, namespace, experiment):
+        parameterset = ExperimentParameterSet.objects.filter(
+                            schema__namespace=namespace,
+                            experiment__id=experiment.id)
+        if len(parameterset) > 0:
+            psm = ParameterSetManager(parameterset=parameterset[0])
+            try:
+                return psm.get_param(key, True)
+            except MultipleObjectsReturned:
+                return psm.get_params(key, True)
+            except ObjectDoesNotExist:
+                return None
