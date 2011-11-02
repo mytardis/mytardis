@@ -4,7 +4,7 @@
     xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/1.2.0/schema/registryObjects.xsd">
     <registryObject
         group="Australian Synchrotron">
-        <key>tardis.synchrotron.org.au/experiment/view/{{experiment.id}}/</key>
+        <key>{{key}}</key>
         <originatingSource>{{originating_source}}</originatingSource>
 
         <collection type="dataset">
@@ -43,10 +43,14 @@
                 <relation type="isProducedBy"/>
             </relatedObject>
 {% endif %}
+
+{% if located_in %}
             <relatedObject>
                 <key>synchrotron.org.au/mytardis</key>
                 <relation type="isLocatedIn"/>
             </relatedObject>
+{% endif %}
+
 {% for forcode in anzsrcfor %}
             <subject type="anzsrc-for">{{forcode}}</subject>
 {% endfor %}
@@ -54,7 +58,9 @@
             <subject type="local">{{lcode}}</subject>
 {% endfor %}
 
+{% if license_title %}
             <description type="rights">{{license_title}} (link below)</description>
+{% endif %}
 
             <description type="note">
 {% if notes %}
@@ -77,12 +83,13 @@ Investigators:
 {{investigator_list}}
 {% endif %}
             </description>
-         
+
+{% if license_uri %}         
             <relatedInfo>
                 <identifier type="uri">{{license_uri}}</identifier>
                 <title>{{license_title}}</title>
             </relatedInfo>            
-
+{% endif %}
         </collection>
 
     </registryObject>
