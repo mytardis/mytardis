@@ -87,9 +87,10 @@ from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
 from haystack.query import SearchQuerySet
-from tardis.tardis_portal.forms import RawSearchForm
+from haystack import backend
 from haystack.views import SearchView
-
+from tardis.tardis_portal.forms import RawSearchForm
+from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
@@ -467,7 +468,7 @@ def experiment_datasets(request, experiment_id):
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
-        results = sqs.raw_search(query.query_string())
+        results = sqs.raw_search(query.query_string()).highlight()
         
         matching_datasets = [d.object for d in results if 
                 d.model_name == 'dataset' and 
@@ -971,7 +972,7 @@ def retrieve_datafile_list(request, dataset_id):
         # replaces '+'s with spaces
 
         sqs = SearchQuerySet()
-        results = sqs.raw_search(query.query_string())
+        results = sqs.raw_search(query.query_string()).highlight()
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
     
     elif 'datafileResults' in request.session and 'search' in request.GET: 
@@ -2477,26 +2478,28 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        for r in results:
-            i = int(r.experiment_id_stored)
-
-            if i not in access_list:
+        from itertools import groupby, chain
+        
+        for k, g in groupby(results, lambda x: x.experiment_id_stored):
+            if k not in access_list:
                 continue
-
-            if i not in experiments.keys():
-                experiments[i]= {}
-                experiments[i]['sr'] = r
-                experiments[i]['dataset_hit'] = False
-                experiments[i]['dataset_file_hit'] = False
-                experiments[i]['experiment_hit'] =False
-
-            if r.model == Experiment:
-                experiments[i]['experiment_hit'] = True
-            elif r.model == Dataset:
-                experiments[i]['dataset_hit'] = True
-            elif r.model == Dataset_File:
-                experiments[i]['dataset_file_hit'] = True
-
+            
+            g = list(g)
+            experiments[k] = {}
+            experiments[k]['sr'] = g[0] # for now
+           
+            # get a flat list of all the field names that are highlighted in any of
+            # the search results for this group
+            hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
+            
+            # generate a list of all the unique prefixes of the field names
+            unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
+            print unique_prefixes 
+            
+            experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
+            experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
+            experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
+        
         extra['experiments'] = experiments
         return extra
 
@@ -2519,12 +2522,14 @@ class ExperimentSearchView(SearchView):
         context.update(self.extra_context())
 
         return render_response_index(self.request, self.template, context)
-        #return render_to_response(self.template, context, context_instance=self.context_class(self.request))
 
 
 @login_required
 def single_search(request):
-    sqs = SearchQuerySet()
+    query = backend.SearchQuery(backend=HighlightSearchBackend())
+    sqs = SearchQuerySet(query=query)# HighlightSearchQuerySet()
+    sqs.highlight()
+
     return ExperimentSearchView(
             template = 'search/search.html',
             searchqueryset=sqs,
