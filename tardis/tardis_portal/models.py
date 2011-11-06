@@ -1047,8 +1047,14 @@ def post_save_author_experiment(sender, **kwargs):
     _publish_public_expt_rifcs(author_experiment.experiment)   
 
 def _publish_public_expt_rifcs(experiment):
+    try:
+        providers = settings.RIFCS_PROVIDERS
+    except:
+        providers = None
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(providers, experiment)
     if experiment.public:
-        from tardis.tardis_portal.publish.publishservice import PublishService
-        pservice = PublishService(settings.RIFCS_PROVIDERS, experiment)
         pservice.write_rifcs_to_oai_dir(settings.OAI_DOCS_PATH)
-    
+    else:
+        # Don't publish, and delete rif-cs file, if any
+        pservice.remove_rifcs_from_oai_dir(settings.OAI_DOCS_PATH)

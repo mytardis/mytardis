@@ -11,3 +11,6 @@ class RifCsProvider(object):
     
     def get_template(self, experiment):
         return settings.RIFCS_TEMPLATE_DIR + "default.xml"
+    
+    def can_publish(self, experiment):
+        return experiment.public
