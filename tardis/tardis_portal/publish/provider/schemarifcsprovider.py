@@ -28,9 +28,6 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         param = ParameterName.objects.get(schema=sch, name='beamline')
         res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
         return res.string_value
-         
-    def get_produced_by(self, beamline):
-        return 'tardis.synchrotron.org.au/%s' % beamline
    
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.author_experiment_set.all()]
