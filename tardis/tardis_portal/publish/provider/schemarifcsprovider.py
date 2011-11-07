@@ -66,7 +66,6 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['beamline'] = self.get_beamline(experiment)
         c['sample_description_list'] = self.get_sample_description_list(experiment, beamline)
         c['investigator_list'] = self.get_investigator_list(experiment)
-        c['produced_by'] = self.get_produced_by(beamline)
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
         return c

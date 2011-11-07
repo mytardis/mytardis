@@ -37,12 +37,12 @@ class PublishService():
         return self.provider.get_rifcs_context(self.experiment)
         
     def manage_rifcs(self, oaipath):
-        if provider.canPublish(self.experiment):
-            self.write_rifcs_to_oai_dir(oaipath)
+        if self.provider.can_publish(self.experiment):
+            self._write_rifcs_to_oai_dir(oaipath)
         else:
-            self.remove_rifcs_from_oai_dir(oaipath)    
+            self._remove_rifcs_from_oai_dir(oaipath)    
         
-    def remove_rifcs_from_oai_dir(self, oaipath):    
+    def _remove_rifcs_from_oai_dir(self, oaipath):    
         exp_subdir = subdir_name = str(self.experiment.id)
         import os
         exp_subdir_path = os.path.join(oaipath, exp_subdir) 
@@ -51,7 +51,7 @@ class PublishService():
             shutil.rmtree(exp_subdir_path)
         return
     
-    def write_rifcs_to_oai_dir(self, oaipath):
+    def _write_rifcs_to_oai_dir(self, oaipath):
         from tardis.tardis_portal.xmlwriter import XMLWriter
         subdir = self._get_subdir_path(oaipath)   
         xmlwriter = XMLWriter()
