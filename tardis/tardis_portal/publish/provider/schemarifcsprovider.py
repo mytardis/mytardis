@@ -11,6 +11,8 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         self.namespace = None
         self.sample_desc_schema_ns = None
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
+        self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
+        
         
     def is_schema_valid(self, experiment):
         eps = ExperimentParameter.objects.filter(
@@ -41,12 +43,24 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                          ExperimentParameter.objects.filter(
                           parameterset__experiment=experiment, name=params)]
         return "\n".join(descriptions)
+        
+    def get_anzsrcfor_subjectcodes(self, experiment):
+        return self._get_param("anzsrcfor_codes", self.annotation_schema_ns, experiment)
+ 
+    def get_local_subjectcodes(self, experiment):
+        return self._get_param("local_subject_codes", self.annotation_schema_ns, experiment) 
     
+    def get_notes(self, experiment):
+        return self._get_param("exp_notes", self.annotation_schema_ns, experiment)
+    
+    def get_address(self, experiment):    
+        return self._get_param("exp_address", self.annotation_schema_ns, experiment)
+        
     def get_license_uri(self, experiment):
-        return self._get_creative_commons_param("license_uri", self.creative_commons_schema_ns, experiment)
+        return self._get_param("license_uri", self.creative_commons_schema_ns, experiment)
     
     def get_license_title(self, experiment):
-        return self._get_creative_commons_param("license_name", self.creative_commons_schema_ns, experiment)
+        return self._get_param("license_name", self.creative_commons_schema_ns, experiment)
     
     def get_rifcs_context(self, experiment):
         c = Context({})
@@ -60,7 +74,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['license_uri'] = self.get_license_uri(experiment)
         return c
         
-    def _get_creative_commons_param(self, key, namespace, experiment):
+    def _get_param(self, key, namespace, experiment):
         parameterset = ExperimentParameterSet.objects.filter(
                             schema__namespace=namespace,
                             experiment__id=experiment.id)
@@ -72,3 +86,4 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                 return psm.get_params(key, True)
             except ObjectDoesNotExist:
                 return None
+    
