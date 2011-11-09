@@ -93,14 +93,14 @@ Investigators:
 
 {% for rel_inf in uri_related_info_list %}
             <relatedInfo>
-                <identifier type="uri">{{rel_inf.identifier}}</identifier>
+                <identifier type="uri">{{rel_inf.uri}}</identifier>
                 <title>{{rel_inf.title}}</title>
                 <notes>{{rel_inf.notes}}</notes>
             </relatedInfo>         
 {% endfor %}
 {% for rel_inf in publication_related_info_list %}
             <relatedInfo>
-                <identifier type="publication">{{rel_inf.identifier}}</identifier>
+                <identifier type="publication">{{rel_inf.uri}}</identifier>
                 <title>{{rel_inf.title}}</title>
                 <notes>{{rel_inf.notes}}</notes>
             </relatedInfo>         
