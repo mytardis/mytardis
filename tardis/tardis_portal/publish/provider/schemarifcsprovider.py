@@ -10,6 +10,8 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def __init__(self):
         self.namespace = None
         self.sample_desc_schema_ns = None
+        self.publication_related_info_schema_ns = "http://publicationschema.com/"
+        self.uri_related_info_schema_ns = "http://urischema.com/"        
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
         
@@ -58,6 +60,36 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     
     def get_license_title(self, experiment):
         return self._get_param("license_name", self.creative_commons_schema_ns, experiment)
+
+    def get_publications_related_info_list(self, experiment):
+        return self._get_related_info(self.publication_related_info_schema_ns, experiment)
+    
+    def get_uri_related_info_list(self, experiment):
+        return self._get_related_info(self.uri_related_info_schema_ns, experiment)
+    
+    def _get_related_info(self, namespace, experiment):
+        related_info_dicts = []
+        # Get all the titles, notes and urls belonging to that experiment
+        sch = Schema.objects.get(namespace=namespace)         
+        exp_params = ExperimentParameter.objects.filter(name__schema=sch, parameterset__experiment=experiment)
+        selected_values = exp_params.values('parameterset__id', 'string_value', 'name__name')
+        
+        # Get the list of unique parameterset ids in the param set
+        ids = [x['parameterset__id'] for x in selected_values]
+        uniq_ids = list(set(ids))
+        
+        for id in uniq_ids:
+            # Get the title, notes and url belonging to a specific parameter set 
+            related_info_params = [x for x in selected_values if x['parameterset__id'] == id]
+            related_info_dicts.append(self._create_related_info_dict(related_info_params))
+        
+        return related_info_dicts
+        
+    def _create_related_info_dict(self, related_info_params):
+        dict= {}
+        for x in related_info_params:
+            dict[x['name__name']] = x['string_value']
+        return dict
     
     def get_rifcs_context(self, experiment):
         c = Context({})
