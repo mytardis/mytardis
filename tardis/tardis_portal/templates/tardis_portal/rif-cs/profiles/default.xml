@@ -61,6 +61,9 @@
 {% if license_title %}
             <description type="rights">{{license_title}} (link below)</description>
 {% endif %}
+      <description type="accessRights">This collection of data is released as-is. Where data is publicly accessible, data will
+no longer be subject to embargo and can be used freely provided attribution for the source is given. It is encouraged that persons interested in using the data contact the parties listed for this record to obtain guidance and context in applying this data set and to stay informed about upcoming revisions and related releases of interest.
+      </description>
 
             <description type="note">
 {% if notes %}
