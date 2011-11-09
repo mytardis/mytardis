@@ -8,6 +8,7 @@
         <originatingSource>{{originating_source}}</originatingSource>
 
         <collection type="dataset">
+            <identifier type="local">{{experiment.id}}</identifier>
             <name type="primary">
                 <namePart>{{experiment.title}}</namePart>
             </name>
