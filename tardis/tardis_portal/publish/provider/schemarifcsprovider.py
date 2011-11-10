@@ -61,7 +61,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def get_license_title(self, experiment):
         return self._get_param("license_name", self.creative_commons_schema_ns, experiment)
 
-    def get_related_info_list(self, namespace, experiment):
+    def get_related_info_list(self, experiment):
         related_info_dicts = []
         # Get all the titles, notes and urls belonging to that experiment
         sch = Schema.objects.get(namespace=self.related_info_schema_ns)         
