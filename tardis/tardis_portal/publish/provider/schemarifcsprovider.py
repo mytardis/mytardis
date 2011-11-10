@@ -44,13 +44,13 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         return "\n".join(descriptions)
         
     def get_anzsrcfor_subjectcodes(self, experiment):
-        return self._get_param("anzsrcfor_codes", self.annotation_schema_ns, experiment)
+        return self._get_params("anzsrcfor_codes", self.annotation_schema_ns, experiment)
  
     def get_local_subjectcodes(self, experiment):
-        return self._get_param("local_subject_codes", self.annotation_schema_ns, experiment) 
+        return self._get_params("local_subject_codes", self.annotation_schema_ns, experiment) 
     
     def get_notes(self, experiment):
-        return self._get_param("exp_notes", self.annotation_schema_ns, experiment)
+        return self._get_params("exp_notes", self.annotation_schema_ns, experiment)
     
     def get_address(self, experiment):    
         return self._get_param("exp_address", self.annotation_schema_ns, experiment)
@@ -95,7 +95,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
         return c
-        
+
     def _get_param(self, key, namespace, experiment):
         parameterset = ExperimentParameterSet.objects.filter(
                             schema__namespace=namespace,
@@ -108,4 +108,15 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                 return psm.get_params(key, True)
             except ObjectDoesNotExist:
                 return None
+
+
+    def _get_params(self, key, namespace, experiment):
+        parameterset = ExperimentParameterSet.objects.filter(
+                            schema__namespace=namespace,
+                            experiment__id=experiment.id)
+        if len(parameterset) > 0:
+            psm = ParameterSetManager(parameterset=parameterset[0])
+            return psm.get_params(key, True)
+        else:
+            return []
     
