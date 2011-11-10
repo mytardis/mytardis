@@ -60,8 +60,8 @@ $(document).ready(function(){
     'data': data,
     'url': '/ajax/parameter_field_list/',
     'success': function (data) {
-        data = data.split(" ");
-        var list = new Array();
+        data = data.split("+");
+	var list = new Array();
         $.each(data, function(i,l) {
             var name = l.split(":")[0];
             var type = l.split(":")[1];
@@ -182,12 +182,12 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 	  <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
       {% endif %}
     </div> <!-- headerloginstatus -->
-    {% if form %}
+    {% if search_form %}
     <div class="search-bar">
       <div class="search-bar-wrapper clearfix">
         <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
             <div class="search-text-wrapper">
-              <input type="text" name="q" id="id_q" placeholder="Enter EPN, author, beamline etc."{% if query %} value="{{ query }}"{% endif %} />
+              <input type="text" name="q" id="id_q" placeholder="Enter EPN, author, beamline etc."{% if search_query %} value="{{ search_query }}"{% endif %} />
             </div> <!-- search-text-wrapper -->
             <div class="search-submit-wrapper">
               <input type="submit" id="search_btn" value="Search"/>

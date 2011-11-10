@@ -2,15 +2,15 @@
   <div class="pagination">
     <span class="step-links">
       {% if dataset.has_previous %}
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
       {% endif %}
 
       {% for pagenum in dataset.paginator.page_range %}
-	<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
+	<a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
       {% endfor %}
 
       {% if dataset.has_next %}
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
       {% endif %}
       <br/>
       <span class="current">
@@ -38,25 +38,6 @@ File filter: <input title='Enter part or all of a filename, then press enter. e.
 <br/>
 Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
 <br/><br/>
-<script type="text/javascript">
-  $("input[name$='show_datafile_search']").click(function() {
-    if($(this).val() == "matches")
-    {   
-      $(".datafile").hide();
-      $(".search_match_file").show();
-    } 
-    else
-    {
-      $(".datafile").show();
-    }
-  }); 
-</script>
-{% if highlighted_dataset_files %}
-<form name="datafile_search_select_form" id="datafile_search_form" method="post" action="">
-    <div><label><input type="radio" name="show_datafile_search" value="all" checked>Show all</label></div>  
-    <div><label><input type="radio" name="show_datafile_search" value="matches">Search matches only</label></div>  
-</form>
-{% endif %}
 {% for datafile in dataset.object_list %}
 <li class="datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
 	<input type="checkbox" style="float:left;" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
@@ -91,17 +72,17 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
 <br/>
 <div class="pagination">
   <span class="step-links">
-    {% if dataset.has_previous %}
-      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Previous</a>
-    {% endif %}
+  {% if dataset.has_previous %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
+  {% endif %}
 
-    {% for pagenum in dataset.paginator.page_range %}
-      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}{% if filename_search %}&filename={{filename_search}}{% endif %}">{{pagenum}}</a>
-    {% endfor %}
+  {% for pagenum in dataset.paginator.page_range %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
+  {% endfor %}
 
-    {% if dataset.has_next %}
-      <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}{% if filename_search %}&filename={{filename_search}}{% endif %}">Next</a>
-    {% endif %}
+  {% if dataset.has_next %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
+  {% endif %}
     <br/>
     <span class="current">
       Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.

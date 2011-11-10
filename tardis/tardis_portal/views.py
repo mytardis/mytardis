@@ -922,10 +922,31 @@ def retrieve_parameters(request, dataset_file_id):
 @never_cache
 @authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
+
+    params = {}
+
+    query = None
+    highlighted_dsf_pks = []
+    
+    if 'query' in request.GET:
+        query =  SearchQueryString(request.GET['query'])
+        results = SearchQuerySet().raw_search(query.query_string()).load_all()
+        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+
+        params['query'] = query.query_string()
+
+    elif 'datafileResults' in request.session and 'search' in request.GET: 
+        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
     
     dataset_results = \
         Dataset_File.objects.filter(
-        dataset__pk=dataset_id).order_by('filename')
+            dataset__pk=dataset_id,
+        ).order_by('filename')
+
+    if request.GET.get('limit', False) and len(highlighted_dsf_pks):			
+        dataset_results = \
+	    dataset_results.filter(pk__in=highlighted_dsf_pks)
+        params['limit'] = request.GET['limit']
 
     filename_search = None
 
@@ -934,9 +955,11 @@ def retrieve_datafile_list(request, dataset_id):
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
 
+        params['filename'] = filename_search
+
     # pagination was removed by someone in the interface but not here.
     # need to fix.
-    pgresults = 500
+    pgresults = 100
     # if request.mobile:
     #     pgresults = 30
     # else:
@@ -966,22 +989,11 @@ def retrieve_datafile_list(request, dataset_id):
         has_write_permissions = \
             authz.has_write_permissions(request, experiment_id)
     
-    if 'query' in request.GET:
-        query =  SearchQueryString(request.GET['query'])
-        # replaces '+'s with spaces
-
-        sqs = SearchQuerySet()
-        results = sqs.raw_search(query.query_string())
-        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
-    
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
-        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
-    
-    else:
-        highlighted_dsf_pks = []
     
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
+    params = urlencode(params)   
+ 
     c = Context({
         'dataset': dataset,
         'paginator': paginator,
@@ -991,6 +1003,9 @@ def retrieve_datafile_list(request, dataset_id):
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
+	'query' : query,
+        'params' : params
+        
         })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/datafile_list.html', c))
@@ -1617,7 +1632,7 @@ def retrieve_field_list(request):
 
     users = User.objects.all()
 
-    usernames = [u.username + ':username' for u in users]
+    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
@@ -1625,7 +1640,7 @@ def retrieve_field_list(request):
 
     auto_list = usernames + searchableFields
 
-    fieldList = ' '.join([str(fn) for fn in auto_list])
+    fieldList = '+'.join([str(fn) for fn in auto_list])
     return HttpResponse(fieldList)
 
 @never_cache
@@ -2509,7 +2524,7 @@ class ExperimentSearchView(SearchView):
        
         # Remove unnecessary whitespace and replace necessary whitespace with '+'
         # TODO this should just be done in the form clean...
-        query = re.sub('\s*?:\s*', ':', self.query).replace(' ','+')
+        query = re.sub('\s*?:\s*', ':', self.query)
         query = SearchQueryString(query) 
         context = {
                 'query': query,

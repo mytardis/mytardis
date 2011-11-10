@@ -126,8 +126,12 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
         # dynamically add all the searchable parameter fields
         # catch 
         try:    
-            for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-                attrs['datafile_' + n.name] = _getDataType(n)
+	    pns = ParameterName.objects.filter(
+		schema__type=Schema.DATAFILE,
+		is_searchable=True
+		)
+            for pn in pns:
+                attrs['datafile_' + pn.name] = _getDataType(pn)
         except DatabaseError:
             pass
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
@@ -193,11 +197,16 @@ class GetDatasetParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        try:
-            for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
-                attrs['dataset_' + n.name] = _getDataType(n)
+        try:    
+	    pns = ParameterName.objects.filter(
+		schema__type=Schema.DATASET,
+		is_searchable=True
+		)
+            for pn in pns:
+                attrs['dataset_' + pn.name] = _getDataType(pn)
         except DatabaseError:
             pass
+        
         return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetIndex(OracleSafeIndex):
@@ -258,12 +267,16 @@ class GetExperimentParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
         
         # dynamically add all the searchable parameter fields
-        try:
-            pns = ParameterName.objects.filter(schema__type=Schema.EXPERIMENT, is_searchable=True)
-            for n in pns:
-                attrs['experiment_' + n.name] = _getDataType(n)
+        try:    
+	    pns = ParameterName.objects.filter(
+		schema__type=Schema.EXPERIMENT,
+		is_searchable=True
+		)
+            for pn in pns:
+                attrs['experiment_' + pn.name] = _getDataType(pn)
         except DatabaseError:
-            pass 
+            pass
+        
         return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
 
 class ExperimentIndex(OracleSafeIndex):
@@ -285,6 +298,10 @@ class ExperimentIndex(OracleSafeIndex):
     def prepare_experiment_authors(self, obj):
         return [a.author for a in obj.author_experiment_set.all()]
 
+    def prepare_experiment_creator(self, obj):
+        return ' '.join([obj.created_by.first_name, obj.created_by.last_name,\
+                obj.created_by.username, obj.created_by.email]) 
+    
     def prepare(self,obj):
         self.prepared_data = super(ExperimentIndex, self).prepare(obj)
         
@@ -318,8 +335,9 @@ class ExperimentIndex(OracleSafeIndex):
         
         # add all authors to the free text search
         text_list.extend(self.prepare_experiment_authors(obj))
+        text_list.extend(self.prepare_experiment_creator(obj))
         
-        # Always convert to strings as this is a text index
+	# Always convert to strings as this is a text index
         self.prepared_data['text'] = ' '.join(map(str,text_list))
         
         # add all soft parameters listed as searchable as in field search
