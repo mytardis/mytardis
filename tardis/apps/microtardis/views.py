@@ -37,19 +37,32 @@ def retrieve_parameters(request, dataset_file_id):
     schema_id = 0
     if schema_edaxgenesis_spc:
         schema_id = schema_edaxgenesis_spc[0].id
-    ordered_fields = ["Sample Type (Label)", "Preset", "Live Time", "Acc. Voltage"]
+    field_order_spc = ["Sample Type (Label)", "Preset", "Live Time", "Acc. Voltage"]
     datafileparametersets = DatafileParameterSet.objects.filter(dataset_file__pk=dataset_file_id)
     parametersets = {}
     for parameterset in datafileparametersets:
+        # sort spectrum tags
         if parameterset.schema.id == schema_id:
             unsorted = {}
             sorted = []
+            # get list of parameter
             for parameter in parameterset.datafileparameter_set.all():
                 unsorted[str(parameter.name.full_name)] = parameter
-            for field in ordered_fields:
+            # sort spectrum tags defined in field_order_spc                
+            for field in field_order_spc:
                 if field in unsorted:
                     sorted.append(unsorted[field])
                     unsorted.pop(field)
+            # sort atomic peak numbers
+            peaks = []
+            for field in unsorted:
+                if field.startswith("Atomic Numbers"):
+                    peaks.append(field)
+            peaks.sort(key=lambda peak: int(peak.split("peak ")[-1][:-1])) 
+            for field in peaks:
+                sorted.append(unsorted[field])
+                unsorted.pop(field)
+            # sort the rest of unsorted parameters
             if unsorted:
                 sorted_keys = unsorted.keys()
                 sorted_keys.sort()
