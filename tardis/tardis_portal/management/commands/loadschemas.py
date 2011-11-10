@@ -73,8 +73,7 @@ class Command(BaseCommand):
                 try:
                     objects = serializers.deserialize(format, data)
                     for obj in objects:
-                        if not options.replace:
-                            obj.object.id = None
+                        if not options.get('replace', False):
                             obj.object.pk = None
                         obj.save(using=using)
                 except (SystemExit, KeyboardInterrupt):
