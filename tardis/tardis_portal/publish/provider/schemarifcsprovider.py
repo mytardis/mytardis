@@ -1,6 +1,7 @@
 from tardis.tardis_portal.models import ExperimentParameter, ExperimentParameterSet, ParameterName, Schema
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from django.template import Context
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 
 import rifcsprovider
@@ -10,8 +11,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def __init__(self):
         self.namespace = None
         self.sample_desc_schema_ns = None
-        self.publication_related_info_schema_ns = "http://publicationschema.com/"
-        self.uri_related_info_schema_ns = "http://urischema.com/"        
+        self.related_info_schema_ns = settings.RELATED_INFO_SCHEMA_NAMESPACE 
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
         
@@ -61,16 +61,10 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def get_license_title(self, experiment):
         return self._get_param("license_name", self.creative_commons_schema_ns, experiment)
 
-    def get_publications_related_info_list(self, experiment):
-        return self._get_related_info(self.publication_related_info_schema_ns, experiment)
-    
-    def get_uri_related_info_list(self, experiment):
-        return self._get_related_info(self.uri_related_info_schema_ns, experiment)
-    
-    def _get_related_info(self, namespace, experiment):
+    def get_related_info_list(self, namespace, experiment):
         related_info_dicts = []
         # Get all the titles, notes and urls belonging to that experiment
-        sch = Schema.objects.get(namespace=namespace)         
+        sch = Schema.objects.get(namespace=self.related_info_schema_ns)         
         exp_params = ExperimentParameter.objects.filter(name__schema=sch, parameterset__experiment=experiment)
         selected_values = exp_params.values('parameterset__id', 'string_value', 'name__name')
         
