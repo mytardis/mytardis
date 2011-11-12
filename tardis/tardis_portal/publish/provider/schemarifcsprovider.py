@@ -3,6 +3,10 @@ from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from django.template import Context
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from html2text import html2text
+
+import as_ands.publishing as publishing
+from as_ands.publishing import PublishHandler
 
 import rifcsprovider
 
@@ -15,7 +19,12 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         self.creative_commons_schema_ns = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
         
-        
+    def can_publish(self, experiment):
+        phandler = PublishHandler(experiment.id) 
+        if (not experiment.public) or (phandler.access_type() is publishing.UNPUBLISHED):
+            return False
+        return True
+
     def is_schema_valid(self, experiment):
         eps = ExperimentParameter.objects.filter(
                                     parameterset__experiment = experiment, 
@@ -30,10 +39,41 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         param = ParameterName.objects.get(schema=sch, name='beamline')
         res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
         return res.string_value
+    
+    def get_proposal_id(self, experiment):
+        sch = Schema.objects.get(namespace=self.namespace)         
+        param = ParameterName.objects.get(schema=sch, name='EPN')
+        res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
+        return res.string_value
    
+    def get_description(self, experiment):
+        phandler = PublishHandler(experiment.id) 
+        desc = phandler.custom_description()
+        if not desc:
+            desc = experiment.description
+        if self._is_html_formatted(desc):
+            desc = html2text(desc)
+        desc = desc.strip()
+        return desc
+        
+    def get_authors(self, experiment):
+        phandler = PublishHandler(experiment.id) 
+        authors = phandler.custom_authors()
+        if authors:
+            return authors
+        else:
+            return self.get_investigator_list(experiment)
+                
+    def get_url(self, experiment):
+       """Only public experiments can show the direct link to the experiment
+       in the rif-cs"""
+       phandler = PublishHandler(experiment.id)     
+       if phandler.access_type() == publishing.PUBLIC:
+           return "%s/experiment/view/%s" % (SERVER_URL, experiment.id)        
+                 
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.author_experiment_set.all()]
-        return "\n*".join(authors)
+        return "* " + "\n* ".join(authors)
            
     def get_sample_description_list(self, experiment, beamline):
         sch = Schema.objects.get(namespace=self.sample_desc_schema_ns)
@@ -78,6 +118,12 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
             related_info_dicts.append(self._create_related_info_dict(related_info_params))
         
         return related_info_dicts
+
+    def get_group(self):
+        return settings.RIFCS_GROUP
+    
+    def get_located_in(self):
+        return settings.RIFCS_MYTARDIS_KEY
         
     def _create_related_info_dict(self, related_info_params):
         dict= {}
@@ -94,6 +140,19 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['investigator_list'] = self.get_investigator_list(experiment)
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
+        c['description'] = self.get_description(experiment)
+        c['anzsrcfor'] = self.get_anzsrcfor_subjectcodes(experiment)
+        c['localcodes'] = self.get_local_subjectcodes(experiment)
+        c['license_title'] = self.get_license_title(experiment)
+        c['license_uri'] = self.get_license_uri(experiment)
+        c['url'] = self.get_url(experiment)
+        c['address'] = self.get_address(experiment)
+        c['related_info_list'] = self.get_related_info_list(experiment)
+        c['group'] = self.get_group()
+        c['proposal_id'] = self.get_proposal_id(experiment)
+        c['located_in'] = self.get_located_in()
+        c['rights'] = []
+        c['access_rights'] = []
         return c
 
     def _get_param(self, key, namespace, experiment):
