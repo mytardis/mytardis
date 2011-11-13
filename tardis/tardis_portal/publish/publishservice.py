@@ -53,18 +53,9 @@ class PublishService():
     
     def _write_rifcs_to_oai_dir(self, oaipath):
         from tardis.tardis_portal.xmlwriter import XMLWriter
-        subdir = self._get_subdir_path(oaipath)   
         xmlwriter = XMLWriter()
-        xmlwriter.write_template_to_file(subdir, "experiment", 
+        xmlwriter.write_template_to_file(oaipath, "experiment", 
                                          self.experiment.id, self.get_template(),
                                          self.get_context())    
-    def _get_subdir_path(self, oaipath):
-        import os
-        subdir_name = str(self.experiment.id)
-        path = os.path.join(oaipath, subdir_name)
-        if not os.path.exists(path):
-            os.mkdir(path)
-        return subdir_name 
-      
     def get_template(self):
         return self.provider.get_template(self.experiment)

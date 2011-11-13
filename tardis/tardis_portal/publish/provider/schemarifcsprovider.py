@@ -64,12 +64,12 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         else:
             return self.get_investigator_list(experiment)
                 
-    def get_url(self, experiment):
+    def get_url(self, experiment, server_url):
        """Only public experiments can show the direct link to the experiment
        in the rif-cs"""
-       phandler = PublishHandler(experiment.id)     
-       if phandler.access_type() == publishing.PUBLIC:
-           return "%s/experiment/view/%s" % (SERVER_URL, experiment.id)        
+       phandler = PublishHandler(experiment.id)
+       if experiment.public or (phandler.access_type() == publishing.PUBLIC):
+           return "%s/experiment/view/%s/" % (server_url, experiment.id)        
                  
     def get_investigator_list(self, experiment):
         authors = [a.author for a in experiment.author_experiment_set.all()]
@@ -145,7 +145,6 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['localcodes'] = self.get_local_subjectcodes(experiment)
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
-        c['url'] = self.get_url(experiment)
         c['address'] = self.get_address(experiment)
         c['related_info_list'] = self.get_related_info_list(experiment)
         c['group'] = self.get_group()
