@@ -82,42 +82,38 @@ class EXIFTagsFilter(object):
         self.schema = schema
         self.tagsToFind = tagsToFind
         self.tagsToExclude = tagsToExclude
-
-        self.delim = '\r\n'
-        
-        
         self.instruments = {
             'Quanta200': (('Quanta200_EXIF', 
                            'Quanta200_EXIF', 
-                           ('User::Usertext', 
-                            'User::Date', 
-                            'User::Time',
-                            'Beam::HV',
-                            'Beam::Spot',
-                            'Scan::Horfieldsize',
-                            'Stage::WorkingDistance',
-                            'Vacuum::UserMode',
-                            'Vacuum::CHPressure',
-                            'Detectors::Name',
-                            'Lfd::Contrast',
-                            'Lfd::Brightness',
+                           (['User', 'Usertext', None, None], 
+                            ['User', 'Date', None, None], 
+                            ['User', 'Time', None, None],
+                            ['Beam', 'HV', "kV", 0.001],
+                            ['Beam', 'Spot', None, None],
+                            ['Scan', 'Horfieldsize', None, None],
+                            ['Stage', 'WorkingDistance', "mm", 1000],
+                            ['Vacuum', 'UserMode', None, None],
+                            ['Vacuum', 'CHPressure', None, None],
+                            ['Detectors', 'Name', None, None],
+                            ['Lfd', 'Contrast', None, None],
+                            ['Lfd', 'Brightness', None, None],
                             ),
                            ),
                           ),
             'NovaNanoSEM': (('NovaNanoSEM_EXIF',
                              'NovaNanoSEM_EXIF',
-                             ('User::UserText', 
-                              'User::Date', 
-                              'User::Time',
-                              'Beam::HV',
-                              'Beam::Spot',
-                              'Scan::HorFieldsize',
-                              'Stage::WorkingDistance',
-                              'Vacuum::UserMode',
-                              'Vacuum::ChPressure',
-                              'Detectors::Name',
-                              'TLD::Contrast',
-                              'TLD::Brightness',
+                             (['User', 'UserText', None, None], 
+                              ['User', 'Date', None, None], 
+                              ['User', 'Time', None, None],
+                              ['Beam', 'HV', "kV", 0.001],
+                              ['Beam', 'Spot', None, None],
+                              ['Scan', 'HorFieldsize', None, None],
+                              ['Stage', 'WorkingDistance', "mm", 1000],
+                              ['Vacuum', 'UserMode', None, None],
+                              ['Vacuum', 'ChPressure', None, None],
+                              ['Detectors', 'Name', None, None],
+                              ['TLD', 'Contrast', None, None],
+                              ['TLD', 'Brightness', None, None],
                               ),
                              ),
                             ),
@@ -185,10 +181,12 @@ class EXIFTagsFilter(object):
                         # find property value in tag
                         metadata = {}
                         for tag in tagsToFind:
-                            (section, option) = tag.split("::")
+                            (section, option, unit, multiplier) = tag
                             try:
                                 value = x877a_tags.get(section, option)
-                                metadata["[%s] %s" % (section, option)] = value
+                                if multiplier:
+                                    value = float(value) * multiplier
+                                metadata["[%s] %s" % (section, option)] = [value, unit]
                             except ConfigParser.NoSectionError:
                                 pass
 
@@ -196,11 +194,7 @@ class EXIFTagsFilter(object):
                         logger.debug("metadata = %s" % metadata)
                         if len(metadata) > 0:
                             # Make instrument specific schema                          
-                            logger.debug("existing schema is %s" % self.schema)
                             instrNamespace = ''.join([self.schema, "/" , schemaSuffix]) 
-
-                            logger.debug("full instrument schema namespace is %s" %instrNamespace)
-                            logger.debug("full instrument schema name is %s" %schemaName)
 
                             # create schema if needed
                             try:
@@ -234,9 +228,9 @@ class EXIFTagsFilter(object):
                 dfp = DatafileParameter(parameterset=ps,
                                         name=p)
                 if p.isNumeric():
-                    dfp.numerical_value = metadata[p.name]
+                    dfp.numerical_value = metadata[p.name][0]
                 else:
-                    dfp.string_value = metadata[p.name]
+                    dfp.string_value = metadata[p.name][0]
                 dfp.save()
         return ps
 
@@ -264,7 +258,7 @@ class EXIFTagsFilter(object):
              
             # integer data type test
             try:
-                int(metadata[p])
+                int(metadata[p][0])
             except (ValueError, TypeError):
                 pass
             else:
@@ -272,20 +266,25 @@ class EXIFTagsFilter(object):
             
             # float data type test
             try:
-                float(metadata[p])
+                float(metadata[p][0])
             except (ValueError, TypeError):
                 pass
             else:
                 datatype = ParameterName.NUMERIC
             
             # fraction data type test
-            if isinstance(metadata[p], Fraction):
+            if isinstance(metadata[p][0], Fraction):
                 datatype = ParameterName.NUMERIC
 
+            unit = ""
+            if metadata[p][1]:
+                unit = metadata[p][1]
+                
             new_param = ParameterName(schema=schema,
                                       name=p,
                                       full_name=p,
-                                      data_type=datatype)
+                                      data_type=datatype,
+                                      units=unit)
             new_param.save()
             parameters.append(new_param)
         return parameters
