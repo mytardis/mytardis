@@ -52,8 +52,6 @@ from django.db import transaction
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from haystack.forms import SearchForm
-
 from form_utils import forms as formutils
 from registration.models import RegistrationProfile
 
@@ -65,6 +63,9 @@ from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+
+if settings.SINGLE_SEARCH_ENABLED:
+    from single_search_forms import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1034,14 +1035,3 @@ def save_datafile_add_form(schema, parentObject, request):
             stripped_key = stripped_key.rpartition('__')[0]
 
             psm.new_param(stripped_key, value)
-
-class RawSearchForm(SearchForm):
-    
-    def search(self):
-        #self.clean()
-        sqs = self.searchqueryset.raw_search(self.cleaned_data['q'])
-
-        if self.load_all:
-            sqs.load_all()
-
-        return sqs
