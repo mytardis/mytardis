@@ -7,8 +7,10 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 #
-# settings_pre can safely define the following variables:
+# settings_core can safely define the following variables:
 #
+#    PROJ_DIR
+#    TARDIS_DIR
 #    LOCAL_APPS            # Used to list additional applications to install
 #    TARDIS_APPS
 #    SINGLE_SEARCH_ENABLED
@@ -16,11 +18,16 @@ TEMPLATE_DEBUG = DEBUG
 # and must define:
 #
 #    DATABASES
-#    
+#
+PROJ_DIR = path.abspath(path.dirname(__file__))
+TARDIS_DIR = PROJ_DIR
 TARDIS_APPS = ()
 LOCAL_APPS = ()
 SINGLE_SEARCH_ENABLED = False 
-from settings_pre import *
+try:
+    from settings_core import *
+except:
+    pass
 
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 #MODULE_LOG_LEVEL = logging.DEBUG
@@ -148,13 +155,16 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'tardis.urls'
 
-TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
-                               'django.contrib.auth.context_processors.auth',
-                               'django.core.context_processors.debug',
-                               'django.core.context_processors.i18n',
-                                'tardis.tardis_portal.context_processors.single_search_processor',
-                                'tardis.tardis_portal.context_processors.tokenuser_processor',
-                                )
+context_processors = ['django.core.context_processors.request',
+       'django.contrib.auth.context_processors.auth',
+       'django.core.context_processors.debug',
+       'django.core.context_processors.i18n',
+        'tardis.tardis_portal.context_processors.tokenuser_processor',
+        ]
+
+if SINGLE_SEARCH_ENABLED:
+    context_processors.append('tardis.tardis_portal.single_search_processors.single_search_processor')
+TEMPLATE_CONTEXT_PROCESSORS = tuple(context_processors)
 
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
@@ -294,12 +304,13 @@ DEBUG_TOOLBAR_PANELS = (
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-HAYSTACK_SITECONF = 'tardis.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'solr'
-HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
-HAYSTACK_ENABLE_REGISTRATIONS = SINGLE_SEARCH_ENABLED
+if SINGLE_SEARCH_ENABLED:
+    HAYSTACK_SITECONF = 'tardis.search_sites'
+    HAYSTACK_SEARCH_ENGINE = 'solr'
+    HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
+    HAYSTACK_ENABLE_REGISTRATIONS = SINGLE_SEARCH_ENABLED
 
-DEFAULT_INSTITUTION = "AKG @ Home"
+DEFAULT_INSTITUTION = "MyTARDIS Default Installation"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?
 IMMUTABLE_METS_DATASETS = False
@@ -320,5 +331,8 @@ RELATED_OTHER_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/experime
 
 
 # Allow the local installation to override the defaults
-from settings_post import *
+try:
+    from settings_custom import *
+except:
+    pass
 
