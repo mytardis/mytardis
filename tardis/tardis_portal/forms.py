@@ -871,7 +871,7 @@ def create_parameterset_edit_form(
                 elif parameter_name.isLongString():
                     fields[key] = \
                         forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units,
-                                        max_length=255, required=False,
+                                        required=False,
                                         initial=value)
                 else:
                     fields[key] = \
@@ -910,7 +910,6 @@ def create_parameterset_edit_form(
             elif dfp.name.isLongString():
                 fields[form_id] = \
                     forms.CharField(widget=forms.Textarea, label=dfp.name.full_name + units,
-                                    max_length=255,
                                     required=False,
                                     initial=dfp.string_value)
                 
