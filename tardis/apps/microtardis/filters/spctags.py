@@ -110,6 +110,9 @@ class SPCTagsFilter(object):
             111:  "Rg", 112:  "Cn", 113: "Uut", 114: "Uuq", 115: "Uup", 116: "Uuh", 117: "Uus", 118: "Uuo", 
         }
         
+        # Shells
+        self.shells = {1: "K", 6: "L", 16: "M"}
+        
         self.instruments = {'Quanta200': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
                             'NovaNanoSEM': (('EDAXGenesis_SPC', 'EDAXGenesis_SPC', None),),
                             }
@@ -295,18 +298,36 @@ class SPCTagsFilter(object):
                         value = string.join(value_tuple,"")
                 elif field_name == "Number of Peak ID Elements": # extract atomic peak numbers
                     number_of_peak = struct.unpack(format, spc.read(byte_size))[0]
-                    offset += 2
-                    for peak_offset in range(offset, offset+number_of_peak*2, 2):
+                    atomic_offset = offset + 2 # should be 640 for the beginning offset of atomic numbers
+                    line_offset = 736 # the beginning offset of line numbers
+                    for peak_offset in range(atomic_offset, atomic_offset+number_of_peak*2, 2):
+                        #
                         spc.seek(peak_offset)
-                        value = struct.unpack(format, spc.read(byte_size))[0]
-                        value = "%s (%d)" % (self.atomic_elements[int(value)], value)
-                        ret["Atomic Numbers peak %s" % ((peak_offset-offset)/2+1)] = [value, unit]
+                        atomic_value = struct.unpack(format, spc.read(byte_size))[0]
+                        
+                        #
+                        spc.seek(line_offset+peak_offset-atomic_offset)
+                        line_value = struct.unpack(format, spc.read(byte_size))[0]
+                        if line_value < 6: # K shells: 1-5
+                            line_value = 1
+                        elif line_value >= 6 and line_value <16: # L shells: 6-15
+                            line_value = 6
+                        else: # M shells: 16~
+                            line_value = 16
+                        
+                        # compose the peak value
+                        value = "%d-%s %s" % (atomic_value, self.atomic_elements[int(atomic_value)], self.shells[line_value])
+                        ret["Peak ID Element %s" % ((peak_offset-atomic_offset)/2+1)] = [value, unit]
                     continue
                 else: # extract numbers
                     value = round( struct.unpack(format, spc.read(byte_size))[0], rounded_digits)
                 
                 ret[field] = [value, unit]
         except:
+            print "Failed to extract spectrum metadata from *.spc file."
+            import sys
+            print sys.exc_info()
+            print ret
             logger.debug("Failed to extract spectrum metadata from *.spc file.")
             return ret
         
