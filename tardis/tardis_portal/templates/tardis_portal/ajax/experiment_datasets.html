@@ -30,12 +30,12 @@
         $(".dataset").hide();
         $(".search_match").show();
         $(".datafile_match").show();
-      }  
+      }
       else
       {
         $(".dataset").show();
       }
-    }); 
+    });
   </script>
 
 {% endblock %}
@@ -57,8 +57,8 @@
   </div> <!-- download_entire_experiment -->
   {% if highlighted_datasets or file_matched_datasets %}
   <form name="search_select_form" id="search_form" method="post" action="">
-    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>  
-    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>  
+    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>
+    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>
   </form>
   {% endif %}
   <form method="POST" action="{% url tardis.tardis_portal.download.download_datafiles %}" target="_blank">

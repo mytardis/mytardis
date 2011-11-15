@@ -41,20 +41,20 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
 <script type="text/javascript">
   $("input[name$='show_datafile_search']").click(function() {
     if($(this).val() == "matches")
-    {   
+    {
       $(".datafile").hide();
       $(".search_match_file").show();
-    } 
+    }
     else
     {
       $(".datafile").show();
     }
-  }); 
+  });
 </script>
 {% if highlighted_dataset_files %}
 <form name="datafile_search_select_form" id="datafile_search_form" method="post" action="">
-    <div><label><input type="radio" name="show_datafile_search" value="all" checked>Show all</label></div>  
-    <div><label><input type="radio" name="show_datafile_search" value="matches">Search matches only</label></div>  
+    <div><label><input type="radio" name="show_datafile_search" value="all" checked>Show all</label></div>
+    <div><label><input type="radio" name="show_datafile_search" value="matches">Search matches only</label></div>
 </form>
 {% endif %}
 {% for datafile in dataset.object_list %}
