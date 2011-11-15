@@ -67,9 +67,9 @@ def retrieve_parameters(request, dataset_file_id):
             # sort atomic peak numbers
             peaks = []
             for field in unsorted:
-                if field.startswith("Atomic Numbers"):
+                if field.startswith("Peak ID Element"):
                     peaks.append(field)
-            peaks.sort(key=lambda peak: int(peak.split("peak ")[-1])) 
+            peaks.sort(key=lambda peak: int(peak.split(" ")[-1])) 
             for field in peaks:
                 sorted.append(unsorted[field])
                 unsorted.pop(field)
