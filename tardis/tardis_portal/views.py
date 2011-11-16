@@ -613,6 +613,7 @@ def create_experiment(request,
 
     c['form'] = form
     c['default_institution'] = settings.DEFAULT_INSTITUTION
+    c['single_search'] = settings.SINGLE_SEARCH_ENABLED
     return HttpResponse(render_response_index(request, template_name, c))
 
 
