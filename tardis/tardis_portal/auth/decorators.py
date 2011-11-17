@@ -33,7 +33,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 
-from tardis.tardis_portal.models import Experiment, Dataset_File, GroupAdmin
+from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin
 from tardis.tardis_portal.shortcuts import return_response_error
 
 
@@ -284,6 +284,18 @@ def write_permissions_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+def dataset_write_permissions_required(f):
+    def wrap(request, *args, **kwargs):
+        dataset_id = kwargs['dataset_id']
+        experiment_id = Dataset.objects.get(pk=dataset_id).experiment_id
+        if not has_write_permissions(request, experiment_id):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+        
 
 def delete_permissions_required(f):
 
@@ -291,6 +303,21 @@ def delete_permissions_required(f):
 
         if not has_delete_permissions(request, kwargs['experiment_id']):
             return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+import logging
+logger = logging.getLogger(__name__)
+from tardis.tardis_portal.models import User
+from django.contrib.sessions.models import Session
+def upload_auth(f):
+    def wrap(request, *args, **kwargs):
+        logger.debug(request)
+        session_id = request.POST['session_id']
+        request.user = User.objects.get(pk=Session.objects.get(session_key=session_id).get_decoded()['_auth_user_id']) 
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__

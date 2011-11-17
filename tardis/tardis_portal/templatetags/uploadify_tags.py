@@ -25,4 +25,5 @@ def multi_file_upload(context, upload_complete_url, dataset_id):
         'uploadify_path': settings.UPLOADIFY_PATH,
         'upload_path': settings.UPLOADIFY_UPLOAD_PATH,
         'dataset_id': dataset_id,
+        'session_id': context['session_id']
     }
