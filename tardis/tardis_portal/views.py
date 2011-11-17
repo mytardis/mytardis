@@ -2274,7 +2274,6 @@ def upload(request, dataset_id):
 
     return HttpResponse('True')
 
-@authz.upload_auth
 @authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
                  template_name='tardis_portal/ajax/upload_files.html'):
