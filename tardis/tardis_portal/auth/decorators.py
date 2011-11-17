@@ -30,10 +30,11 @@
 #
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin
+from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
 
 
@@ -309,15 +310,13 @@ def delete_permissions_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
-import logging
-logger = logging.getLogger(__name__)
-from tardis.tardis_portal.models import User
-from django.contrib.sessions.models import Session
 def upload_auth(f):
     def wrap(request, *args, **kwargs):
-        logger.debug(request)
+        from datetime import datetime
         session_id = request.POST['session_id']
-        request.user = User.objects.get(pk=Session.objects.get(session_key=session_id).get_decoded()['_auth_user_id']) 
+        s = Session.objects.get(pk=session_id)
+        if s.expire_date < datetime.now():
+            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id']) 
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__
