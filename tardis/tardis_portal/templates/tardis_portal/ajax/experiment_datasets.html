@@ -24,13 +24,37 @@
         }
     });
 
-    $("input[name$='show_search']").click(function() {
+    $("input[name$='show_search']").live('click', function() {
+      var show_search = $(this).val();
+      $('.datafile_list').each(function(){
+        var dataset_id = $(this).find('.dataset_id').val();
+	var params = [];
+        var toggle = $(this).siblings('.datafile_list_toggle');
+	var loadHtml = "<img src='/site_media/images/ajax-loader.gif'/><br />";  
+
+	html = $(this).siblings('.datafile_list_toggle').attr('href')
+ 	if(show_search == "matches")
+	{
+          html  = html + '&limit=true'
+	}
+        else
+        {
+          html =  html.replace('&limit=true', '')
+        }
+        toggle.attr('href', html);
+        
+        if(toggle.hasClass('files_shown'))
+        { 
+	  $(this).html(loadHtml); 
+          $(this).load(html);
+        }
+      });        
       if($(this).val() == "matches")
       {
         $(".dataset").hide();
         $(".search_match").show();
         $(".datafile_match").show();
-      }  
+      }   
       else
       {
         $(".dataset").show();

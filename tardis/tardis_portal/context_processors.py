@@ -9,25 +9,17 @@ def single_search_processor(request):
 
     if settings.SINGLE_SEARCH_ENABLED: 
         sqs = SearchQuerySet()
+	
+	form = RawSearchForm() 
 
-        search_view = ExperimentSearchView(
-                template = "search/search.html",
-                searchqueryset = sqs,
-                form_class = RawSearchForm,
-                )
-        search_view.request = request
-        search_view.form = search_view.build_form()
-        search_view.query = search_view.get_query()
-
-        (paginator, page) = search_view.build_page()
-
-        context =  {'form': search_view.form,
-                #'results': search_view.get_results(),
-                'query': search_view.query,
-                'page' : page,
-                'paginator' : paginator 
+	q = ''
+	if form.is_valid():
+		q = form.cleaned_data['q']
+	
+        context =  {
+		'search_form': form,
+                'search_query': form.cleaned_data['q'] if form.is_valid() else '',
                 }
-        context.update(search_view.extra_context())
 
     return context
 

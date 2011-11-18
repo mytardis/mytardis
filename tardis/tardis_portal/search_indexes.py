@@ -167,6 +167,11 @@ class DatasetFileIndex(RealTimeSearchIndex):
     def prepare_experiment_authors(self, obj):
         return [a.author for a in obj.dataset.experiment.author_experiment_set.all()]
     
+    def prepare_experiment_creator(self, obj):
+        exp = obj.dataset.experiment 
+        return ' '.join([exp.created_by.first_name, exp.created_by.last_name,\
+                exp.created_by.username, exp.created_by.email]) 
+    
     def prepare(self, obj):
         
         self.prepared_data = super(DatasetFileIndex, self).prepare(obj)
@@ -211,6 +216,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         
         # add all authors to the free text search
         text_list.extend(self.prepare_experiment_authors(obj))
+        text_list.extend(self.prepare_experiment_creator(obj))
+        
+	    # Always convert to strings as this is a text index
         self.prepared_data['text'] = ' '.join(map(str,text_list))
         
         # add all soft parameters listed as searchable as in field search
