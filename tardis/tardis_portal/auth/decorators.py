@@ -30,10 +30,11 @@
 #
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 
-from tardis.tardis_portal.models import Experiment, Dataset_File, GroupAdmin
+from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
 
 
@@ -284,6 +285,18 @@ def write_permissions_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+def dataset_write_permissions_required(f):
+    def wrap(request, *args, **kwargs):
+        dataset_id = kwargs['dataset_id']
+        experiment_id = Dataset.objects.get(pk=dataset_id).experiment_id
+        if not has_write_permissions(request, experiment_id):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+        
 
 def delete_permissions_required(f):
 
@@ -291,6 +304,19 @@ def delete_permissions_required(f):
 
         if not has_delete_permissions(request, kwargs['experiment_id']):
             return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+def upload_auth(f):
+    def wrap(request, *args, **kwargs):
+        from datetime import datetime
+        session_id = request.POST['session_id']
+        s = Session.objects.get(pk=session_id)
+        if s.expire_date < datetime.now():
+            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id']) 
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__
