@@ -322,7 +322,7 @@ TOKEN_USERNAME = 'tokenuser'
 
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(PROJ_DIR, 'var/oai'))
-RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.RifCsProvider',)
+RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
 RIFCS_TEMPLATE_DIR = path.join(TARDIS_DIR, 
     'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
 RIFCS_GROUP = "MyTARDIS Default Group"

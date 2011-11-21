@@ -20,3 +20,7 @@ class RifCsProvider(object):
         if re.search(r'<.*?>',text):
             return True
         return False
+    
+    def is_schema_valid(self, experiment):
+        # No schema, so always valid
+        return True

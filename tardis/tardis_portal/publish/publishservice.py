@@ -16,7 +16,7 @@ class PublishService():
                     module_name, klass_name = pmodule.rsplit('.', 1)
                     module = import_module(module_name)
                 except ImportError, e:
-                    # TODO Handle error
+                    # TODO Show appropriate error msg
                     raise e
                 
                 # Create the Instance
@@ -24,7 +24,7 @@ class PublishService():
                     provider_class = getattr(module, klass_name)
                     provider = provider_class()
                 except AttributeError, e:
-                    # TODO Handle Error
+                    # TODO Show appropriate error msg
                     raise e  
                 
                 # Retrieve the provider that can deal with the experiment
@@ -43,19 +43,16 @@ class PublishService():
             self._remove_rifcs_from_oai_dir(oaipath)    
         
     def _remove_rifcs_from_oai_dir(self, oaipath):    
-        exp_subdir = subdir_name = str(self.experiment.id)
         import os
-        exp_subdir_path = os.path.join(oaipath, exp_subdir) 
-        if os.path.exists(exp_subdir_path):
-            import shutil
-            shutil.rmtree(exp_subdir_path)
-        return
+        filename = os.path.join(oaipath, "MYTARDIS-%s.xml" % self.experiment.id)
+        if os.path.exists(filename):
+            os.remove(filename)
     
     def _write_rifcs_to_oai_dir(self, oaipath):
         from tardis.tardis_portal.xmlwriter import XMLWriter
         xmlwriter = XMLWriter()
-        xmlwriter.write_template_to_file(oaipath, "experiment", 
-                                         self.experiment.id, self.get_template(),
-                                         self.get_context())    
+        xmlwriter.write_template_to_dir(oaipath, "MYTARDIS-%s.xml" % self.experiment.id, 
+                                        self.get_template(), self.get_context())
+
     def get_template(self):
         return self.provider.get_template(self.experiment)
