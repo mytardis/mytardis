@@ -417,7 +417,13 @@ def experiment_description(request, experiment_id):
 class SearchQueryString():
     
     def __init__(self, query_string):
-        self.query_terms = query_string.split()
+        import re
+        # remove extra spaces around colons 
+        stripped_query = re.sub('\s*?:\s*', ':', query_string)
+
+        # create a list of terms which can be easily joined by
+        # spaces or pluses
+        self.query_terms = stripped_query.split()
 
     def __unicode__(self):
         return ' '.join(self.query_terms)
@@ -944,9 +950,9 @@ def retrieve_datafile_list(request, dataset_id):
             dataset__pk=dataset_id,
         ).order_by('filename')
 
-    if request.GET.get('limit', False) and len(highlighted_dsf_pks):			
+    if request.GET.get('limit', False) and len(highlighted_dsf_pks):
         dataset_results = \
-	    dataset_results.filter(pk__in=highlighted_dsf_pks)
+        dataset_results.filter(pk__in=highlighted_dsf_pks)
         params['limit'] = request.GET['limit']
 
     filename_search = None
@@ -1003,7 +1009,7 @@ def retrieve_datafile_list(request, dataset_id):
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
-	'query' : query,
+        'query' : query,
         'params' : params
         
         })
@@ -1635,7 +1641,7 @@ def retrieve_field_list(request):
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
-    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key is not 'text' ])
+    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key != 'text' ])
 
     auto_list = usernames + searchableFields
 
@@ -2275,14 +2281,11 @@ def upload(request, dataset_id, *args, **kwargs):
 
             uploaded_file_post = request.FILES['Filedata']
 
-            #print 'about to write uploaded file'
             filepath = write_uploaded_file_to_dataset(dataset,
                     uploaded_file_post)
-            #print filepath
 
             add_datafile_to_dataset(dataset, filepath,
                                     uploaded_file_post.size)
-            #print 'added datafile to dataset'
 
     return HttpResponse('True')
 
@@ -2520,13 +2523,11 @@ class ExperimentSearchView(SearchView):
     # override SearchView's method in order to
     # return a ResponseContext
     def create_response(self):
-        import re
         (paginator, page) = self.build_page()
        
-        # Remove unnecessary whitespace and replace necessary whitespace with '+'
+        # Remove unnecessary whitespace
         # TODO this should just be done in the form clean...
-        query = re.sub('\s*?:\s*', ':', self.query)
-        query = SearchQueryString(query) 
+        query = SearchQueryString(self.query) 
         context = {
                 'query': query,
                 'form': self.form,

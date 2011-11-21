@@ -28,15 +28,15 @@
       var show_search = $(this).val();
       $('.datafile_list').each(function(){
         var dataset_id = $(this).find('.dataset_id').val();
-	var params = [];
+    var params = [];
         var toggle = $(this).siblings('.datafile_list_toggle');
-	var loadHtml = "<img src='/site_media/images/ajax-loader.gif'/><br />";  
+    var loadHtml = "<img src='/site_media/images/ajax-loader.gif'/><br />";  
 
-	html = $(this).siblings('.datafile_list_toggle').attr('href')
- 	if(show_search == "matches")
-	{
+    html = $(this).siblings('.datafile_list_toggle').attr('href')
+     if(show_search == "matches")
+    {
           html  = html + '&limit=true'
-	}
+    }
         else
         {
           html =  html.replace('&limit=true', '')
@@ -45,7 +45,7 @@
         
         if(toggle.hasClass('files_shown'))
         { 
-	  $(this).html(loadHtml); 
+      $(this).html(loadHtml); 
           $(this).load(html);
         }
       });        
@@ -69,11 +69,11 @@
 
   {% for p in protocols %}
     <p>
-	{% if p.0 %}
-	  <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
-	{% else %}
-	  <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
-	{% endif %}
+    {% if p.0 %}
+      <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
+    {% else %}
+      <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
+    {% endif %}
     </p>
 
   {% endfor %}
@@ -90,44 +90,43 @@
 
     <div id="datasets">
       {% for dataset in datasets %} <!-- experiment.dataset_set.all %}-->
-	<div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
+    <div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
         <div class="dataset_title">
         <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
-	    <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
+        <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
         <strong><span style="color: #5e5e5e">DATASET {{ forloop.counter }}</span></strong>
         </span>
-	  </div> <!-- dataset title -->
+      </div> <!-- dataset title -->
 
-	  <div class="dataset_info">
-	    <div class="dataset_description">
-	      <strong>Dataset Description</strong>: {{ dataset.description|safe }} <br />
-	    </div> <!-- dataset_description -->
+      <div class="dataset_info">
+        <div class="dataset_description">
+          <strong>Dataset Description</strong>: {{ dataset.description|safe }} <br />
+        </div> <!-- dataset_description -->
 
-	    <div class="dataset_extrainfo">
+        <div class="dataset_extrainfo">
 
-		<strong style="float:left; margin-right: 5px">Dataset Metadata </strong>
-
-		{% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
-		<a title="Add" href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
-		 class="fg-button ui-state-default fg-button-icon-solo ui-corner-all jqModalDsAdd" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
+        <strong style="float:left; margin-right: 5px">Dataset Metadata </strong>
+        {% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
+        <a title="Add" href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
+         class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all jqModalDsAdd" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
             <span class="ui-icon ui-icon-plusthick"></span>
             Add
         </a>
-		{% endif %}{% endif %}{% endif %}
+        {% endif %}{% endif %}{% endif %}
 
         <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide" class="dataset_metadata_toggle metadata_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/dataset_metadata/{{dataset.id}}/">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
             Show/Hide
         </a>
         <div style="clear:both;"></div>
-		<div class="dataset_metadata">
-		</div> <!-- dataset metadata -->
+        <div class="dataset_metadata">
+        </div> <!-- dataset metadata -->
 
-	      <div class="dataset_datafiles">
+          <div class="dataset_datafiles">
               
               <strong style="float:left; margin-right: 5px"><span{% if dataset.pk in file_matched_datasets %} style="background-color: #FFFF00"{% endif %}>Data Files ({{ dataset.dataset_file_set.count }})</span></strong>
               
-		      {% if dataset.dataset_file_set.count|lt:"1000000" %}
+              {% if dataset.dataset_file_set.count|lt:"1000000" %}
                 {% if has_write_permissions %}
                   {% if not experiment.public %}
                     {% if not immutable %}
@@ -142,21 +141,21 @@
                     <span class="ui-icon ui-icon-circle-triangle-e"></span>
                     Show/Hide
                 </a>
-		  {% else %}
-		    <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
-		  {% endif %}
+          {% else %}
+            <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
+          {% endif %}
           <div style="clear:both;"></div>
 
-		  {% if dataset.dataset_file_set.count|gt:"1000000" %}
-		    <br/>
-		    <p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
-		  {% endif %}
+          {% if dataset.dataset_file_set.count|gt:"1000000" %}
+            <br/>
+            <p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
+          {% endif %}
 
-		  <ul class="datafile_list" style="display:none;">
-		  </ul>
-	      </div> <!-- dataset_datafiles -->
-	    </div> <!-- dataset_extrainfo -->
-	  </div> <!-- dataset_info -->
+          <ul class="datafile_list" style="display:none;">
+          </ul>
+          </div> <!-- dataset_datafiles -->
+        </div> <!-- dataset_extrainfo -->
+      </div> <!-- dataset_info -->
   </div> <!-- dataset -->
       {% endfor %}
     </div> <!-- datasets -->

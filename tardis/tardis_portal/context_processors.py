@@ -1,25 +1,23 @@
-from tardis.tardis_portal.views import ExperimentSearchView
 from tardis.tardis_portal.forms import RawSearchForm
-from haystack.query import SearchQuerySet
 from django.conf import settings
 
 def single_search_processor(request):
 
     context = {}
+    form = None
+    query = ''
+    try:
+        if settings.SINGLE_SEARCH_ENABLED: 	
+            form = RawSearchForm() 
+            if form.is_valid():
+                query = form.cleaned_data['q'] 
+    except AttributeError:
+        pass
 
-    if settings.SINGLE_SEARCH_ENABLED: 
-        sqs = SearchQuerySet()
-	
-	form = RawSearchForm() 
-
-	q = ''
-	if form.is_valid():
-		q = form.cleaned_data['q']
-	
-        context =  {
-		'search_form': form,
-                'search_query': form.cleaned_data['q'] if form.is_valid() else '',
-                }
+    context =  {
+	    'search_form': form,
+        'search_query': query,
+    }
 
     return context
 
