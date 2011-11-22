@@ -3,9 +3,6 @@ from tardis.urls import urlpatterns as tardisurls
 
 urlpatterns = patterns('tardis.apps.microtardis.views',
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^$', 'index_mt'),
-    (r'^about/$', 'about_mt'),
-    (r'^partners/$', 'partners_mt'),
 )
 
 urlpatterns += patterns('tardis.tardis_portal.views',
@@ -18,6 +15,8 @@ urlpatterns += patterns('tardis.tardis_portal.views',
     (r'^stats/$', 'stats', {'portal_template_name': 'portal_template_mt.html'}),
     (r'^groups/$', 'manage_groups', {'portal_template_name': 'portal_template_mt.html'}),
     (r'^login/$', 'login', {'portal_template_name': 'portal_template_mt.html'}),
-    
+    (r'^about/$', 'about', {'template_name': 'about_mt.html'}),
+    (r'^partners/$', 'partners', {'template_name': 'partners_mt.html'}),
+    (r'^$', 'index', {'template_name': 'index_mt.html'}),
 )
 urlpatterns += tardisurls

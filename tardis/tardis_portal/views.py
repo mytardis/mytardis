@@ -106,12 +106,11 @@ def logout(request):
                         'tardis_portal/index.html', c))
 
 
-def index(request):
+def index(request, template_name='tardis_portal/index.html'):
     status = ''
 
     c = Context({'status': status})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/index.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 def site_settings(request):
@@ -222,20 +221,18 @@ def display_datafile_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-def about(request):
+def about(request, template_name='tardis_portal/about.html'):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
                  'nav': [{'name': 'About', 'link': '/about/'}]})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/about.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
-def partners(request):
+def partners(request, template_name='tardis_portal/partners.html'):
 
     c = Context({})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/partners.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 def experiment_index(request, 
