@@ -4,32 +4,10 @@ from django.views.decorators.cache import never_cache
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import render_response_index
-from tardis.tardis_portal.views import *
 
 from tardis.tardis_portal.models import DatafileParameterSet
 from tardis.tardis_portal.models import Schema
-    
-def index_mt(request):
-    status = ''
 
-    c = Context({'status': status})
-    return HttpResponse(render_response_index(request,
-                        'index_mt.html', c))
-
-def about_mt(request):
-    c = Context({'subtitle': 'About',
-                 'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}]})
-    
-    return HttpResponse(render_response_index(request,
-                        'about_mt.html', c))
-    
-def partners_mt(request):
-    c = Context({})
-    
-    return HttpResponse(render_response_index(request,
-                        'partners_mt.html', c))
-    
 @never_cache
 @authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
