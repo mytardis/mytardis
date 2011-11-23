@@ -590,7 +590,8 @@ def metsexport_experiment(request, experiment_id):
 @login_required
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
-                      template="tardis_portal/create_experiment.html"):
+                    template_name="tardis_portal/create_experiment.html", 
+                    portal_template_name='tardis_portal/portal_template.html'):
     """Edit an existing experiment.
 
     :param request: a HTTP Request instance
@@ -640,9 +641,9 @@ def edit_experiment(request, experiment_id,
         form = ExperimentForm(instance=experiment, extra=0)
 
     c['form'] = form
+    c['portal_template_name'] = portal_template_name
 
-    return HttpResponse(render_response_index(request,
-                        template, c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 # todo complete....
