@@ -2,13 +2,13 @@ from django.test import TestCase
 from django.template import Context
 from django.conf import settings
 from tardis.tardis_portal.models import User, Experiment
-from tardis.tardis_portal.publish.provider.schemarifcsprovider import SchemaRifCsProvider
+from tardis.tardis_portal.publish.provider.rifcsprovider import RifCsProvider
 from tardis.tardis_portal.publish.publishservice import PublishService
         
 BEAMLINE_VALUE = "myBeamline"  
 LICENSE_URL_VALUE = "http://some.uri.com"
         
-class MockRifCsProvider(SchemaRifCsProvider):
+class MockRifCsProvider(RifCsProvider):
     
     def is_schema_valid(self, experiment):
         return True
@@ -66,26 +66,26 @@ class PublishServiceTestCase(TestCase):
         self.assertFalse(service.provider.can_publish(self.e1))
         import os
         service.manage_rifcs(settings.OAI_DOCS_PATH)
-        rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH, self.e1.id)
-        self.assertFalse(os.path.exists(rifcs_output_dir))
+        rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH)
+        rifcs_file = os.path.join(rifcs_output_dir, "MyTARDIS-1.xml")
+        self.assertFalse(os.path.exists(rifcs_file))
         
         self.e1.public = True
         service.manage_rifcs(settings.OAI_DOCS_PATH)
-        self.assertTrue(os.path.exists(rifcs_output_dir))
+        self.assertTrue(os.path.exists(rifcs_file))
     
         # Set to false again and see if it deletes it
         self.e1.public = False
         service.manage_rifcs(settings.OAI_DOCS_PATH)
-        self.assertFalse(os.path.exists(rifcs_output_dir))
+        self.assertFalse(os.path.exists(rifcs_file))
         
     def testManageRifCsCheckContent(self):
         service = PublishService(self.settings, self.e1)
         self.e1.public = True
         service.manage_rifcs(settings.OAI_DOCS_PATH)
         import os
-        rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH, self.e1.id)
-        self.assertTrue(os.path.exists(rifcs_output_dir))
-        rifcs_file = os.path.join(rifcs_output_dir, "experiment-1.xml")
+        rifcs_output_dir = os.path.join(settings.OAI_DOCS_PATH)
+        rifcs_file = os.path.join(rifcs_output_dir, "MyTARDIS-1.xml")
         self.assertTrue(os.path.exists(rifcs_file))
         output = open(rifcs_file)
         lines = output.readlines()
@@ -98,7 +98,7 @@ class PublishServiceTestCase(TestCase):
         # Set to false again and see if it deletes it
         self.e1.public = False
         service.manage_rifcs(settings.OAI_DOCS_PATH)
-        self.assertFalse(os.path.exists(rifcs_output_dir))
+        self.assertFalse(os.path.exists(rifcs_file))
         
     
         

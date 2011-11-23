@@ -44,14 +44,14 @@ class PublishService():
         
     def _remove_rifcs_from_oai_dir(self, oaipath):    
         import os
-        filename = os.path.join(oaipath, "MYTARDIS-%s.xml" % self.experiment.id)
+        filename = os.path.join(oaipath, "MyTARDIS-%s.xml" % self.experiment.id)
         if os.path.exists(filename):
             os.remove(filename)
     
     def _write_rifcs_to_oai_dir(self, oaipath):
         from tardis.tardis_portal.xmlwriter import XMLWriter
         xmlwriter = XMLWriter()
-        xmlwriter.write_template_to_dir(oaipath, "MYTARDIS-%s.xml" % self.experiment.id, 
+        xmlwriter.write_template_to_dir(oaipath, "MyTARDIS-%s.xml" % self.experiment.id, 
                                         self.get_template(), self.get_context())
 
     def get_template(self):
