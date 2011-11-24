@@ -1,5 +1,5 @@
 """
- Command for dumping soft schema definitions
+ Command for loading soft schema definitions
 """
 import sys
 
@@ -13,13 +13,18 @@ from tardis.tardis_portal import models
 
 
 class Command(BaseCommand):
-    help = "Dump soft schema definitions"
+    help = "Load soft schema definitions"
     args = "schema [schema ...]"
 
     option_list = BaseCommand.option_list + (
         make_option('--database', action='store', dest='database',
                     default=DEFAULT_DB_ALIAS,
                     help='Nominates a specific database'),
+        make_option('--replace', action="store_true", dest="replace",
+                    default=False,
+                    help=("Replace the schema and parameter names with the same pk.  "
+                          "Warning: This will overwrite the entries with the same "
+                          "primary keys, even if the entries don't match."))
         )
 
     def handle(self, *args, **options):
@@ -68,7 +73,9 @@ class Command(BaseCommand):
                 try:
                     objects = serializers.deserialize(format, data)
                     for obj in objects:
-			obj.save(using=using)
+                        if not options.get('replace', False):
+                            obj.object.pk = None
+                        obj.save(using=using)
                 except (SystemExit, KeyboardInterrupt):
                     raise
                 except Exception:

@@ -850,7 +850,6 @@ def register_experiment_ws_xmldata(request):
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
-            print filename
             f = open(filename, 'wb+')
             for chunk in xmldata.chunks():
                 f.write(chunk)
@@ -1621,11 +1620,11 @@ def retrieve_field_list(request):
 
     users = User.objects.all()
 
-    usernames = [u.username for u in users]
+    usernames = [u.username + ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
-    searchableFields = ([key for key,f in allFields if f.indexed == True and key is not 'text' ])
+    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key is not 'text' ])
 
     auto_list = usernames + searchableFields
 
@@ -2244,7 +2243,9 @@ def upload_complete(request,
     return render_to_response(template_name, c)
 
 
-def upload(request, dataset_id, *args, **kwargs):
+@authz.upload_auth
+@authz.dataset_write_permissions_required
+def upload(request, dataset_id):
     """
     Uploads a datafile to the store and datafile metadata
 
@@ -2276,7 +2277,7 @@ def upload(request, dataset_id, *args, **kwargs):
 
     return HttpResponse('True')
 
-
+@authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
                  template_name='tardis_portal/ajax/upload_files.html'):
     """
@@ -2300,6 +2301,7 @@ def upload_files(request, dataset_id,
     c = Context({'upload_complete_url': url,
                  'dataset_id': dataset_id,
                  'message': message,
+                 'session_id': request.session.session_key
                  })
     return render_to_response(template_name, c)
 

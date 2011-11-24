@@ -314,7 +314,6 @@ class ExperimentIndex(OracleSafeIndex):
                 name__is_searchable=True,
                 name__freetextsearchfield__isnull=False)
 
-        
         text_list.extend(map(toIntIfNumeric, params))
         
         # add all authors to the free text search

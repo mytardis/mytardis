@@ -1,12 +1,11 @@
 <div class="access_list_user">
   <p>
     {% if user.groupadmin_set.count %}
-      <img src="/site_media/images/icon_adminstrator.jpg">
+      <img src="/site_media/images/icon_adminstrator.jpg"/>
     {% else %}
-      <img src="/site_media/images/icon_user.jpg">
+      <img src="/site_media/images/icon_user.jpg"/>
     {% endif %}
     <strong>{{ user.username }}</strong> ({{user.email}})
-    <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}"><img src="/site_media/images/icon_deletelink.gif"></a>
-    </div>
+    <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}"><img src="/site_media/images/icon_deletelink.gif"/></a>
   </p>
 </div> <!-- access_list_user -->
