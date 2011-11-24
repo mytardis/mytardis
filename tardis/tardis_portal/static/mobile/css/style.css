@@ -23,7 +23,7 @@ a.button {
 		1px for the middle
 	*/
 	border-width: 0 14px 0 14px;
-	-webkit-border-image: url(/site_media/mobile/images/whiteButton.png) 0 14 0 14;
+	-webkit-border-image: url(../mobile/images/whiteButton.png) 0 14 0 14;
 }
 a.buttoninline {
 	/* Default positioning of button */
@@ -47,7 +47,7 @@ a.buttoninline {
 		1px for the middle
 	*/
 	border-width: 0 14px 0 14px;
-	-webkit-border-image: url(/site_media/mobile/images/whiteButton.png) 0 14 0 14;
+	-webkit-border-image: url(../mobile/images/whiteButton.png) 0 14 0 14;
 }
 .dataset_metadata {
 	margin: 10px 0 10px 0;
