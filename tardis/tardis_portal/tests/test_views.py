@@ -122,9 +122,10 @@ class UploadTestCase(TestCase):
 
         c = Client()
         c.login(username='tardis_user1', password='secret')
+        session_id = c.session.session_key
 
         response = c.post('/upload/' + str(self.dataset.id) + '/',
-            {'Filedata': self.f1})
+            {'Filedata': self.f1, 'session_id': session_id})
 
         test_files_db = \
             Dataset_File.objects.filter(dataset__id=self.dataset.id)

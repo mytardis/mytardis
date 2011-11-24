@@ -114,7 +114,7 @@
         </a>
         {% endif %}{% endif %}{% endif %}
 
-        <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide" class="dataset_metadata_toggle metadata_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/dataset_metadata/{{dataset.id}}/">
+        <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide" class="dataset_metadata_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/dataset_metadata/{{dataset.id}}/">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
             Show/Hide
         </a>
@@ -130,14 +130,14 @@
                 {% if has_write_permissions %}
                   {% if not experiment.public %}
                     {% if not immutable %}
-                        <a  data-dataset_id="{{dataset.id}}" class="upload_files_link fg-button ui-state-default fg-button-icon-solo ui-corner-all" title="Upload Files">
+                        <a  data-dataset_id="{{dataset.id}}" class="upload_files_link fg-button small ui-state-default fg-button-icon-solo ui-corner-all" title="Upload Files">
                             <span class="ui-icon ui-icon-circle-arrow-n"></span>
                             Upload Files
                         </a>
                     {% endif %}
                   {% endif %}
                 {% endif %}
-                <a class="datafile_list_toggle files_hidden fg-button ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if query %}query={{ query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
+                <a class="datafile_list_toggle files_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if query %}query={{ query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
                     <span class="ui-icon ui-icon-circle-triangle-e"></span>
                     Show/Hide
                 </a>

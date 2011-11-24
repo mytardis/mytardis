@@ -5,200 +5,124 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
+//beginswith, endswith
+String.prototype.beginsWith = function(t, i) { if (i==false) { return
+(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+== this.substring(0, t.length).toLowerCase()); } }
+
+String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+== this.substring(this.length - t.length)); } else { return
+(t.toLowerCase() == this.substring(this.length -
+t.length).toLowerCase()); } }
+
+$("#user.form_submit").live('click', function(evt) {
+    evt.preventDefault();
+    var authMethod = $(this).siblings("#id_authMethod").val();
+    var usersuggest = $(this).siblings(".usersuggest").val();
+    var group_id = $(this).siblings(".group_id").val();
+    var users_div = $(this).parents('.access_list').children('.users');
+    var isAdmin = $(this).siblings(".isAdmin").is(':checked');
+    var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
+    $.ajax({
+        'async': false,
+        'global': true,
+        type: "GET",
+        url: action,
+        success: function(data) {
+           if (data.beginsWith("<div class=", true) == true) {
+                users_div.hide().append(data).fadeIn();
+           } else {
+               alert(data);
+           }
+        },
+        error: function(data) {
+           alert('Error adding user');
+        }
+    });
+});
+$(".remove_user").live('click', function(evt) {
+    evt.preventDefault();
+
+    var $access_list = $(this).parents('.access_list_user');
+
+    $.ajax({
+        'async': false,
+        'global': false,
+        'url': this.href,
+        'success': function (data) {
+            if(data === "OK") {
+                $access_list.fadeOut(500);
+            } else {
+               alert(data);
+            }
+        }
+    });
+});
 $(document).ready(function() {
 
-		//beginswith, endswith
-		String.prototype.beginsWith = function(t, i) { if (i==false) { return
-		(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
-		== this.substring(0, t.length).toLowerCase()); } }
+    var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/><br/>";
 
-		String.prototype.endsWith = function(t, i) { if (i==false) { return (t
-		== this.substring(this.length - t.length)); } else { return
-		(t.toLowerCase() == this.substring(this.length -
-		t.length).toLowerCase()); } }
+    $(".member_list_user_toggle").click(function(evt){
+        evt.preventDefault()
 
-$('.access_list').hide().end().find('.member_list_user_toggle').click(function() { $(this).next().toggle(); });
+        var $this = $(this);
+        var $icon = $this.find('.ui-icon');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        $this.toggleClass('members-shown members-hidden');
 
-$(".member_list_user_toggle").text("[Show]");
+        var $user_list = $this.next();
+        if ($this.hasClass('members-shown')){
+            $user_list.html(loadingHTML);
+            $user_list.load(this.href, function(){
+                var authMethod = $("#id_authMethod").val();
+                var data = { authMethod: authMethod };
+                $.ajax({
+                    'async': false,
+                    'global': false,
+                    'data': data,
+                    'url': '/ajax/user_list/',
+                    'success': function (data) {
+                        var users = data;
+                        $(".usersuggest").autocomplete(users.split(" "), {
+                            matchContains: true
+                        });
+                    }
+                });
+            }).show();
+        } else {
+            $user_list.hide();
+        }
+    });
+});
+</script>
+{% endblock %}
 
-
-var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
-
-
-			// member list
-			 $(".member_list_user_toggle").toggle(function(){
-			   $(this).text("[Hide]");
-				var href = $(this).attr("href");
-
-				$(this).next().html(loadingHTML + "</br>");
-
-				$(this).next().load(href, function(){
-						$(document).ready(function(){
-
-				              var users = (function () {
-				                var val = null;
-				                var authMethod = $("#id_authMethod").val();
-				                var data = { authMethod: authMethod };
-				                $.ajax({
-				                  'async': false,
-				                  'global': false,
-				                  'data': data,
-				                  'url': '/ajax/user_list',
-				                  'success': function (data) {
-				                     val = data;
-				                   }
-				                });
-				                return val;
-				              })();
-
-								//var users = (function () {
-								//    var val = null;
-                                //
-								//    $.ajax({
-								//        'async': false,
-								//        'global': false,
-								//        'url': '/ajax/user_list',
-								//        'success': function (data) {
-								//            val = data;
-								//        }
-								//    });
-								//    return val;
-								//})();
-
-								$(".usersuggest").autocomplete(users.split(" "), {
-									matchContains: true,
-									//minChars: 0
-								});
-
-								$("#user.form_submit").unbind('click');
-								$("#user.form_submit").click(function(event) {
-									event.preventDefault();
-									var authMethod = $(this).siblings("#id_authMethod").val();
-								    var usersuggest = $(this).siblings(".usersuggest").val();
-								    var group_id = $(this).siblings(".group_id").val();
-		                                                    var users_div = $(this).parents('.access_list').children('.users');
-		                                                    var isAdmin = $(this).siblings(".isAdmin").is(':checked');
-		                                                    action = '/group/' + group_id + '/add/' + usersuggest + '?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
-								    $.ajax({
-							        'async': false,
-							        'global': true,
-								     type: "GET",
-								     url: action,
-								     success: function(data) {
-										if (data.beginsWith("<div class=", true) == true)
-										{
-										     users_div.hide().append(data).fadeIn();
-										// todo this is a duplicate function..
-										   $(".remove_user").unbind('click');
-										   $(".remove_user").click(function() {
-												var href = $(this).attr("href");
-												remove_user = $(this);
-
-												$.ajax({
-												        'async': false,
-												        'global': false,
-												        'url': href,
-												        'success': function (data) {
-
-												            val = data;
-													    if(val == "OK")
-															{
-																remove_user.fadeOut(500, function(){
-																remove_user.parents('.access_list_user').remove();
-																});
-															}
-															else
-															{
-															        alert(val);
-															}
-														}
-												    }); // end ajax
-
-												return false;
-
-											 }); // end remove user
-										}
-										else
-										{
-											alert(data);
-										}
-								     },
-								     error: function(data) {
-										alert('Error adding user');
-								     }
-								    });
-
-								    return false;
-
-								});
-
-							   $(".remove_user").unbind('click');
-							   $(".remove_user").click(function() {
-
-									var href = $(this).attr("href");
-
-									remove_user = $(this);
-
-									$.ajax({
-									        'async': false,
-									        'global': false,
-									        'url': href,
-									        'success': function (data) {
-
-									            val = data;
-												if(val == "OK")
-												{
-													remove_user.fadeOut(500, function(){
-													remove_user.parents('.access_list_user').remove();
-													});
-												}
-												else {
-												   alert(val);
-												}
-											}
-									    }); // end ajax
-
-									return false;
-
-								 }); // end remove user
-							});
-						});
-
-			 },function(){
-			   $(this).text("[Show]");
-			 });
-		});
-
-		</script>
-		{% endblock %}
-
-		{% block content %}
-		<div id="content">
-			<div class="post">
-				<h1 class="title"><a href="#">Manage Group Members</a></h1>
-				<div class="entry">
-				  <br/>
-				  <p>
-				    {% if groups %}
-				    <table class="member-table">
-				      {% for group in groups %}
-				      <tr>
-					<td>
-					  {{ group.name }} <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="member_list_user_toggle"></a>
-					  <div class="access_list">
-					  </div>
-					  <br/>
-					</td>
-				      </tr>
-				      {%endfor %}
-
-				    </table>
-
-				    {% else %}
-				    There are no groups under your control.
-				    {% endif %}
-				  </p>
-				</div>
-			</div>
-		</div>
-		{% endblock %}
+{% block content %}
+    <div id="content">
+        <div class="post">
+            <h1 class="title"><a href="#">Manage Group Members</a></h1>
+            <div class="entry">
+                <br/>
+                <p>
+                {% if groups %}
+                    <table class="member-table">
+                        {% for group in groups %}
+                            <tr>
+                                <td>
+                                    {{ group.name }}
+                                    <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
+                                        <span class="ui-icon ui-icon-circle-triangle-e"></span>
+                                    </a>
+                                    <div class="access_list" style="display:none;"></div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    There are no groups under your control.
+                {% endif %}
+              </p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
