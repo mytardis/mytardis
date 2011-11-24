@@ -143,3 +143,6 @@ if not SINGLE_SEARCH_ENABLED:
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+DOI_ENABLED = True
+DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
