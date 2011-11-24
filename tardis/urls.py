@@ -11,6 +11,12 @@ from tardis.tardis_portal.forms import RegistrationForm
 
 from django.http import HttpResponseRedirect, HttpResponse
 
+def getTardisApps():
+    return map(lambda app: app.split('.').pop(),
+                  filter(
+                         lambda app: app.startswith(settings.TARDIS_APP_ROOT),
+                         settings.INSTALLED_APPS))
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
@@ -19,7 +25,7 @@ core_urls = patterns(
     (r'^partners/$', 'partners'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
-    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))	
+    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))
 )
 
 experiment_urls = patterns(
@@ -145,13 +151,8 @@ display_urls = patterns(
      'display_datafile_image'),
     )
 
-tardis_apps = map(lambda app: app.split('.').pop(),
-                  filter(
-                         lambda app: app.startswith(settings.TARDIS_APP_ROOT),
-                         settings.INSTALLED_APPS))
-
 apppatterns = patterns('',)
-for app in tardis_apps:
+for app in getTardisApps():
     apppatterns += patterns('tardis.apps',
                             (r'^%s/' % app,
                              include('%s.%s.urls' %
