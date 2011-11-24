@@ -56,6 +56,7 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
+from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
@@ -311,17 +312,18 @@ def view_experiment(request, experiment_id):
 
     if 'query' in request.GET:
         c['query'] = SearchQueryString(request.GET['query'])
-    
+
     if  'search' in request.GET:
         c['search'] = request.GET['search']
-    
+
     if  'load' in request.GET:
         c['load'] = request.GET['load']
-        
+
     import sys
+
     appnames = []
     appurls = []
-    for app in settings.TARDIS_APPS:
+    for app in getTardisApps():
         try:
             appnames.append(sys.modules['%s.%s.settings'
                                         % (settings.TARDIS_APP_ROOT, app)].NAME)
@@ -408,13 +410,13 @@ def experiment_description(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_description.html', c))
 #
-# Class to manage switching between space separated search queries and 
+# Class to manage switching between space separated search queries and
 # '+' separated search queries (for addition to urls
 #
 # TODO This would probably be better handled with filters
 #
 class SearchQueryString():
-    
+
     def __init__(self, query_string):
         self.query_terms = query_string.split()
 
@@ -430,7 +432,7 @@ class SearchQueryString():
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-    
+
     """View a listing of dataset of an existing experiment as ajax loaded tab.
 
     :param request: a HTTP Request instance
@@ -456,40 +458,40 @@ def experiment_datasets(request, experiment_id):
         return return_response_not_found(request)
 
     c['experiment'] = experiment
-    
-    #TODO Single search should use sessions as well 
+
+    #TODO Single search should use sessions as well
     if 'query' in request.GET:
 
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
-        sqs = SearchQuerySet() 
-        
+        sqs = SearchQuerySet()
+
         query = SearchQueryString(request.GET['query'])
-        
+
         #raw_search doesn't chain...
         results = sqs.raw_search(query.query_string())
-        
-        matching_datasets = [d.object for d in results if 
-                d.model_name == 'dataset' and 
+
+        matching_datasets = [d.object for d in results if
+                d.model_name == 'dataset' and
                 d.experiment_id_stored == int(experiment_id)
                 ]
 
-        matching_dataset_files = [d for d in results if 
-                d.model_name == 'dataset_file' and 
+        matching_dataset_files = [d for d in results if
+                d.model_name == 'dataset_file' and
                 d.experiment_id_stored == int(experiment_id)
                 ]
-     
-        matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
-        matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
-        
+
+        matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files]
+        matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files]))
+
         c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
         c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
-        c['highlighted_dataset_files'] = matching_dataset_file_pks 
-        
+        c['highlighted_dataset_files'] = matching_dataset_file_pks
+
         c['query'] = query
-    
+
         # replace '+'s with spaces
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
+    elif 'datafileResults' in request.session and 'search' in request.GET:
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
         c['file_matched_datasets'] = \
@@ -500,7 +502,7 @@ def experiment_datasets(request, experiment_id):
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = None
         c['file_matched_datasets'] = None
-    
+
     c['datasets'] = \
          Dataset.objects.filter(experiment=experiment_id)
 
@@ -922,7 +924,7 @@ def retrieve_parameters(request, dataset_file_id):
 @never_cache
 @authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
-    
+
     dataset_results = \
         Dataset_File.objects.filter(
         dataset__pk=dataset_id).order_by('filename')
@@ -965,7 +967,7 @@ def retrieve_datafile_list(request, dataset_id):
 
         has_write_permissions = \
             authz.has_write_permissions(request, experiment_id)
-    
+
     if 'query' in request.GET:
         query =  SearchQueryString(request.GET['query'])
         # replaces '+'s with spaces
@@ -973,13 +975,13 @@ def retrieve_datafile_list(request, dataset_id):
         sqs = SearchQuerySet()
         results = sqs.raw_search(query.query_string())
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
-    
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
+
+    elif 'datafileResults' in request.session and 'search' in request.GET:
         highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
-    
+
     else:
         highlighted_dsf_pks = []
-    
+
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
     c = Context({
@@ -1031,14 +1033,14 @@ def search_experiment(request):
     # remove information from previous searches from session
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
-    
+
     results = {}
     for e in experiments:
         results[e.pk] = (
             {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : False, 
-             'experiment_hit' : True, 
+             'dataset_hit' : False,
+             'dataset_file_hit' : False,
+             'experiment_hit' : True,
             }
          )
     c = Context({'header': 'Search Experiment',
@@ -1546,10 +1548,10 @@ def search_datafile(request):
     import re
     cleanedUpQueryString = re.sub('&page=\d+', '',
         request.META['QUERY_STRING'])
-   
+
     # get experiments associated with datafiles
-    if datafile_results: 
-        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
+    if datafile_results:
+        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True)))
         experiments = Experiment.safe.in_bulk(experiment_pks)
     else:
         experiments = {}
@@ -1558,10 +1560,10 @@ def search_datafile(request):
     for key, e in experiments.items():
         results[key]=\
             {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : True, 
-             'experiment_hit' : False, 
-            }        
+             'dataset_hit' : False,
+             'dataset_file_hit' : True,
+             'experiment_hit' : False,
+            }
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
@@ -1605,7 +1607,7 @@ def retrieve_group_list(request):
     return HttpResponse(grouplist)
 
 def retrieve_field_list(request):
-    
+
     from  tardis.tardis_portal.search_indexes import ExperimentIndex
     from tardis.tardis_portal.search_indexes import DatasetIndex
     from tardis.tardis_portal.search_indexes import DatasetFileIndex
@@ -2408,7 +2410,7 @@ def add_experiment_par(request, experiment_id):
 
 
 def add_par(request, parentObject, otype, stype):
-        
+
     all_schema = Schema.objects.filter(type=stype)
 
     if 'schema_id' in request.GET:
@@ -2465,14 +2467,14 @@ def add_par(request, parentObject, otype, stype):
 class ExperimentSearchView(SearchView):
     def __name__(self):
         return "ExperimentSearchView"
-    
+
     def extra_context(self):
         extra = super(ExperimentSearchView, self).extra_context()
         # Results may contain Experiments, Datasets and Dataset_Files.
         # Group them into experiments, noting whether or not the search
         # hits were in the Dataset(s) or Dataset_File(s)
         results = self.results
-        
+
         experiments = {}
         access_list = []
 
@@ -2509,11 +2511,11 @@ class ExperimentSearchView(SearchView):
     def create_response(self):
         import re
         (paginator, page) = self.build_page()
-       
+
         # Remove unnecessary whitespace and replace necessary whitespace with '+'
         # TODO this should just be done in the form clean...
         query = re.sub('\s*?:\s*', ':', self.query).replace(' ','+')
-        query = SearchQueryString(query) 
+        query = SearchQueryString(query)
         context = {
                 'query': query,
                 'form': self.form,
@@ -2571,7 +2573,7 @@ def publish_experiment(request, experiment_id):
             opt_out_ands = True
 
         has_ands_registered = True
-        if 'monash_ands' in settings.TARDIS_APPS:
+        if 'monash_ands' in getTardisApps():
             from tardis.apps.monash_ands.MonashANDSService\
                 import MonashANDSService
 
@@ -2604,7 +2606,7 @@ def publish_experiment(request, experiment_id):
 
         has_ands_registered = True
 
-        if 'monash_ands' in settings.TARDIS_APPS:
+        if 'monash_ands' in getTardisApps():
             from tardis.apps.monash_ands.MonashANDSService\
                 import MonashANDSService
 
