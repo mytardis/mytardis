@@ -473,22 +473,22 @@ def experiment_datasets(request, experiment_id):
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
-        results = sqs.raw_search(query.query_string()).highlight()
+        results = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id))).highlight()
         
-        matching_datasets = [d.object for d in results if 
-                d.model_name == 'dataset' and 
-                d.experiment_id_stored == int(experiment_id)
-                ]
+        #matching_datasets = [d.object for d in results if 
+        #        d.model_name == 'dataset' and 
+        #        d.experiment_id_stored == int(experiment_id)
+        #        ]
 
-        matching_dataset_files = [d for d in results if 
-                d.model_name == 'dataset_file' and 
-                d.experiment_id_stored == int(experiment_id)
-                ]
-     
+        #matching_dataset_files = [d for d in results if 
+        #        d.model_name == 'dataset_file' and 
+        #        d.experiment_id_stored == int(experiment_id)
+        #        ]
+        matching_dataset_files = results
         matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
         matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
         
-        c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
+        c['highlighted_datasets'] = [ds.pk for ds in []]#matching_datasets]
         c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
         c['highlighted_dataset_files'] = matching_dataset_file_pks 
         
@@ -936,7 +936,7 @@ def retrieve_datafile_list(request, dataset_id):
     
     if 'query' in request.GET:
         query =  SearchQueryString(request.GET['query'])
-        results = SearchQuerySet().raw_search(query.query_string()).load_all()
+        results = SearchQuerySet().raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
 
         params['query'] = query.query_string()
