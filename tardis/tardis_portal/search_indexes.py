@@ -163,7 +163,68 @@ class DatasetFileIndex(RealTimeSearchIndex):
     experiment_creator=CharField(model_attr='dataset__experiment__created_by__username')
     experiment_institution_name=NgramField(model_attr='dataset__experiment__institution_name')
     experiment_authors = MultiValueField()
-    
+   
+    exp_cache = {}
+    ds_cache = {}
+    exp_param_cache = {}
+    ds_param_cache = {}
+   
+    def get_experiment_text(self, obj, exp):
+        
+        if not exp in self.exp_cache:
+            text_list = [exp.title, exp.description, exp.institution_name]
+            params = ExperimentParameter.objects.filter(
+                    parameterset__experiment__id=exp.id,
+                    name__is_searchable=True,
+                    name__freetextsearchfield__isnull=False)
+            
+            text_list.extend(map(toIntIfNumeric, params))
+            
+            # add all authors to the free text search
+            text_list.extend(self.prepare_experiment_authors(obj))
+            text_list.extend(self.prepare_experiment_creator(obj))
+
+            self.exp_cache[exp] = ' '.join(map(str,text_list))
+        return self.exp_cache[exp]
+
+    def get_dataset_text(self, obj, ds):
+        
+        if not ds in self.ds_cache:
+            text_list = [ds.description]
+            params = DatasetParameter.objects.filter(
+                    parameterset__dataset__id=ds.id,
+                    name__is_searchable=True,
+                    name__freetextsearchfield__isnull=False)
+            
+            text_list.extend(map(toIntIfNumeric, params))
+            
+            # Always convert to strings as this is a text index
+            self.ds_cache[ds] = ' '.join(map(str,text_list))
+        return self.ds_cache[ds]
+
+    def get_experiment_params(self, exp):
+        if exp not in self.exp_param_cache:
+            param_dict = {}
+            for par in ExperimentParameter.objects.filter(
+                    parameterset__experiment__pk=exp.id, 
+                    name__is_searchable=True):
+                param_dict['experiment_' + par.name.name] = _getParamValue(par)
+   
+            self.exp_param_cache[exp] = param_dict
+
+        return self.exp_param_cache[exp]
+
+    def get_dataset_params(self, ds):
+        if ds not in self.ds_param_cache:
+            param_dict = {}
+            for par in DatasetParameter.objects.filter(
+                    parameterset__dataset__pk=ds.id, 
+                    name__is_searchable=True):
+                self.param_dict['dataset_'  + par.name.name] = _getParamValue(par)
+            self.ds_param_cache[ds] = param_dict
+
+        return self.ds_param_cache[ds]
+
     def prepare_experiment_authors(self, obj):
         return [a.author for a in obj.dataset.experiment.author_experiment_set.all()]
     
@@ -173,7 +234,6 @@ class DatasetFileIndex(RealTimeSearchIndex):
                 exp.created_by.username, exp.created_by.email]) 
     
     def prepare(self, obj):
-        
         self.prepared_data = super(DatasetFileIndex, self).prepare(obj)
         
         # 
@@ -192,7 +252,6 @@ class DatasetFileIndex(RealTimeSearchIndex):
         # NOTE: soft params that are flagged as not being 
         # searchable will be silently ignored even if they
         # have an associated FreeTextSearchField
-        
         params = DatafileParameter.objects.filter(
                 parameterset__dataset_file__id=obj.id,
                 name__is_searchable=True,
@@ -200,42 +259,22 @@ class DatasetFileIndex(RealTimeSearchIndex):
         
         text_list.extend(map(toIntIfNumeric, params))
         
-        params = DatasetParameter.objects.filter(
-                parameterset__dataset__id=ds.id,
-                name__is_searchable=True,
-                name__freetextsearchfield__isnull=False)
+        exp_text = self.get_experiment_text(obj, exp) 
+        ds_text = self.get_dataset_text(obj, ds)
+       
+        # Always convert to strings as this is a text index
+        df_text  = ' '.join(map(str,text_list))
         
-        text_list.extend(map(toIntIfNumeric, params))
-        
-        params = ExperimentParameter.objects.filter(
-                parameterset__experiment__id=exp.id,
-                name__is_searchable=True,
-                name__freetextsearchfield__isnull=False)
-        
-        text_list.extend(map(toIntIfNumeric, params))
-        
-        # add all authors to the free text search
-        text_list.extend(self.prepare_experiment_authors(obj))
-        text_list.extend(self.prepare_experiment_creator(obj))
-        
-	    # Always convert to strings as this is a text index
-        self.prepared_data['text'] = ' '.join(map(str,text_list))
-        
+        self.prepared_data['text'] = ' '.join([exp_text, ds_text, df_text])
+
         # add all soft parameters listed as searchable as in field search
         for par in DatafileParameter.objects.filter(
                 parameterset__dataset_file__pk=obj.pk, 
                 name__is_searchable=True):
             self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
         
-        for par in ExperimentParameter.objects.filter(
-                parameterset__experiment__pk=exp.id, 
-                name__is_searchable=True):
-            self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
-
-        for par in DatasetParameter.objects.filter(
-                parameterset__dataset__pk=ds.id, 
-                name__is_searchable=True):
-            self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
+        self.prepared_data.update(self.get_experiment_params(exp))
+        self.prepared_data.update(self.get_dataset_params(ds))
         
         return self.prepared_data
 
