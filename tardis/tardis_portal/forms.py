@@ -1046,8 +1046,8 @@ class RawSearchForm(SearchForm):
         #sqs = self.searchqueryset.raw_search(query).highlight().facet('experiment_id_stored')
         # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
         # results even though we dont need them. Fix this to properly set rows=0
-        sqs = self.searchqueryset.raw_search(query, end_offset=1).facet('experiment_id_stored')
+        sqs = self.searchqueryset.facet('experiment_id_stored').raw_search(query, end_offset=1)
         if self.load_all:
-            sqs.load_all()
+            sqs = sqs.load_all()
 
         return sqs

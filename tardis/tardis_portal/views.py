@@ -469,28 +469,27 @@ def experiment_datasets(request, experiment_id):
 
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
-        sqs = SearchQuerySet() 
+        search_query = backend.SearchQuery(backend=HighlightSearchBackend())
+        sqs = SearchQuerySet(query=search_query)# HighlightSearchQuerySet()
+        #sqs.highlight()
+       
+        #sqs = SearchQuerySet() 
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
-        results = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id))).highlight()
+        #results = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id))).facet('dataset_id_stored', end_offset=1).highlight().facet_counts()
         
-        #matching_datasets = [d.object for d in results if 
-        #        d.model_name == 'dataset' and 
-        #        d.experiment_id_stored == int(experiment_id)
-        #        ]
-
-        #matching_dataset_files = [d for d in results if 
-        #        d.model_name == 'dataset_file' and 
-        #        d.experiment_id_stored == int(experiment_id)
-        #        ]
-        matching_dataset_files = results
+        facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
+       
+         
+	matching_dataset_files = []#results
         matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
         matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
         
-        c['highlighted_datasets'] = [ds.pk for ds in []]#matching_datasets]
-        c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
-        c['highlighted_dataset_files'] = matching_dataset_file_pks 
+        c['highlighted_datasets'] = [int(f[0]) for f in facet_counts['fields']['dataset_id_stored']]#[ds.pk for ds in []]#matching_datasets]
+        #c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
+        c['file_matched_datasets'] = []# [f[0] for f in facet_counts['fields']['dataset_id_stored']] 
+        #c['highlighted_dataset_files'] = matching_dataset_file_pks 
         
         c['query'] = query
     
@@ -935,8 +934,10 @@ def retrieve_datafile_list(request, dataset_id):
     highlighted_dsf_pks = []
     
     if 'query' in request.GET:
+    	search_query = backend.SearchQuery(backend=HighlightSearchBackend())
+    	sqs = SearchQuerySet(query=search_query)
         query =  SearchQueryString(request.GET['query'])
-        results = SearchQuerySet().raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
+        results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
 
         params['query'] = query.query_string()
@@ -2490,9 +2491,7 @@ class ExperimentSearchView(SearchView):
         results = self.results
         facets =  results.facet_counts()
         experiment_facets = facets['fields']['experiment_id_stored']
-     
 
-        experiment_ids = []
         access_list = []
 
         if self.request.user.is_authenticated():
@@ -2500,21 +2499,20 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        for f in experiment_facets:
-            experiment_ids.append(f[0])
- 
-        ids = list(set(experiment_ids) and set(access_list))
-        
-        experiments = Experiment.objects.filter(pk__in=ids)
+        experiment_ids = [ int(f[0]) for f in experiment_facets if int(f[1]) > 0 ]
 
-        results = {}
+        ids = list(set(experiment_ids) & set(access_list))
+        
+        experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
+
+        results = []
         for e in experiments:
-            pk = e.pk
-            results[pk] = {}
-            results[pk]['sr'] = e
-            results[pk]['dataset_hit'] = False 
-            results[pk]['dataset_file_hit'] = False
-            results[pk]['experiment_hit'] = False
+            result = {}
+            result['sr'] = e
+            result['dataset_hit'] = False 
+            result['dataset_file_hit'] = False
+            result['experiment_hit'] = False
+            results.append(result)
 
 #       from itertools import groupby, chain
         

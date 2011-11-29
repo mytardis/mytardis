@@ -55,6 +55,8 @@ class HighlightSearchBackend(SearchBackend):
         if facets is not None:
             kwargs['facet'] = 'on'
             kwargs['facet.field'] = facets
+            kwargs['facet.limit'] = -1
+            kwargs['facet.mincount'] = 1
         
         if date_facets is not None:
             kwargs['facet'] = 'on'

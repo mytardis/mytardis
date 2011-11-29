@@ -1,5 +1,5 @@
 <table class="experiment-table">
-      {% for key, result in experiments.items %}
+      {% for result in experiments %}
         {% include "search/experiment_result.html" %}
       {% comment %}
       {% ifequal result.sr.model_name 'experiment' %}
