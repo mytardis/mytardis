@@ -1039,8 +1039,14 @@ def save_datafile_add_form(schema, parentObject, request):
 class RawSearchForm(SearchForm):
     
     def search(self):
-        sqs = self.searchqueryset.raw_search(self.cleaned_data['q']).highlight()
-        
+        #self.clean()
+        # TODO: Fix this quick hack
+        query = self.cleaned_data['q']# + '&facet=true&facet.field=experiment_id_stored'
+
+        #sqs = self.searchqueryset.raw_search(query).highlight().facet('experiment_id_stored')
+        # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
+        # results even though we dont need them. Fix this to properly set rows=0
+        sqs = self.searchqueryset.raw_search(query, end_offset=1).facet('experiment_id_stored')
         if self.load_all:
             sqs.load_all()
 

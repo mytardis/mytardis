@@ -149,10 +149,10 @@ class DatasetFileIndex(RealTimeSearchIndex):
     text=NgramField(document=True)
     datafile_filename  = NgramField(model_attr='filename')
     
-    dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=False)
+    dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=True) #changed
     dataset_description = NgramField(model_attr='dataset__description')
 
-    experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=False)
+    experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=True) # changed
     experiment_description = NgramField(model_attr='dataset__experiment__description')
     experiment_title = NgramField(model_attr='dataset__experiment__title')
     experiment_created_time = DateTimeField(model_attr='dataset__experiment__created_time')

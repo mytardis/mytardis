@@ -470,7 +470,6 @@ def experiment_datasets(request, experiment_id):
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
         sqs = SearchQuerySet() 
-        
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
@@ -2489,8 +2488,11 @@ class ExperimentSearchView(SearchView):
         # Group them into experiments, noting whether or not the search
         # hits were in the Dataset(s) or Dataset_File(s)
         results = self.results
-        
-        experiments = {}
+        facets =  results.facet_counts()
+        experiment_facets = facets['fields']['experiment_id_stored']
+     
+
+        experiment_ids = []
         access_list = []
 
         if self.request.user.is_authenticated():
@@ -2498,29 +2500,44 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        from itertools import groupby, chain
+        for f in experiment_facets:
+            experiment_ids.append(f[0])
+ 
+        ids = list(set(experiment_ids) and set(access_list))
         
-        for k, g in groupby(results, lambda x: x.experiment_id_stored):
-            if k not in access_list:
-                continue
-            
-            g = list(g)
-            experiments[k] = {}
-            experiments[k]['sr'] = g[0] # for now
-           
-            # get a flat list of all the field names that are highlighted in any of
-            # the search results for this group
-            hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
-            
-            # generate a list of all the unique prefixes of the field names
-            unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
-            print unique_prefixes 
-            
-            experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
-            experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
-            experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
+        experiments = Experiment.objects.filter(pk__in=ids)
+
+        results = {}
+        for e in experiments:
+            pk = e.pk
+            results[pk] = {}
+            results[pk]['sr'] = e
+            results[pk]['dataset_hit'] = False 
+            results[pk]['dataset_file_hit'] = False
+            results[pk]['experiment_hit'] = False
+
+#       from itertools import groupby, chain
         
-        extra['experiments'] = experiments
+#       for k, g in groupby(results, lambda x: x.experiment_id_stored):
+#           if k not in access_list:
+#               continue
+#           
+#           g = list(g)
+#           experiments[k] = {}
+#           experiments[k]['sr'] = g[0] # for now
+#          
+#           # get a flat list of all the field names that are highlighted in any of
+#           # the search results for this group
+#           hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
+#           
+#           # generate a list of all the unique prefixes of the field names
+#           unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
+#           
+#           experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
+#           experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
+#           experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
+#       
+        extra['experiments'] = results 
         return extra
 
     # override SearchView's method in order to
@@ -2538,7 +2555,7 @@ class ExperimentSearchView(SearchView):
                 'paginator' : paginator,
                 }
         context.update(self.extra_context())
-
+   
         return render_response_index(self.request, self.template, context)
 
 
