@@ -1,6 +1,6 @@
 <table class="parameter_table {{ parameterset.schema.name|slugify }}">
     {% if parameterset.schema.name %}
-    <tr><th class="schema_name" title="{{ parameterset.schema.namespace }}" colspan="2">{{ parameterset.schema.name }}</th></tr>
+    <tr><th class="schema_name" title="{{ parameterset.schema.namespace }}{% if parameterset.schema.immutable %} (immutable){% endif %}" colspan="2">{{ parameterset.schema.name }}</th></tr>
     {% endif %}
     {% for parameter in parameters %}
     <tr class="{% cycle 'odd' 'even' %}">

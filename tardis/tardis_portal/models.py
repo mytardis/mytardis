@@ -576,6 +576,8 @@ class Schema(models.Model):
     # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
     subtype = models.CharField(blank=True, null=True, max_length=30)
     objects = SchemaManager()
+    immutable = models.BooleanField(default=False)
+    
 
     def natural_key(self):
         return (self.namespace,)
