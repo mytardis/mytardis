@@ -1,0 +1,16 @@
+tardis/settings.py
+*.pyc
+*.log
+*.sqlite
+eggs/
+parts/
+.installed.cfg
+bin/
+*.egg-info/
+develop-eggs/
+docs/make.bat
+docs/Makefile
+.project
+.settings/
+.pydevproject
+var/
