@@ -464,32 +464,29 @@ def experiment_datasets(request, experiment_id):
 
     c['experiment'] = experiment
     
-    #TODO Single search should use sessions as well 
     if 'query' in request.GET:
 
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
         search_query = backend.SearchQuery(backend=HighlightSearchBackend())
-        sqs = SearchQuerySet(query=search_query)# HighlightSearchQuerySet()
+        sqs = SearchQuerySet(query=search_query)
         #sqs.highlight()
        
-        #sqs = SearchQuerySet() 
         query = SearchQueryString(request.GET['query'])
-        
-        #raw_search doesn't chain...
-        #results = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id))).facet('dataset_id_stored', end_offset=1).highlight().facet_counts()
-        
+
         facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
+        if facet_counts:
+            dataset_id_facets = facet_counts['fields']['dataset_id_stored']
+        else:
+            dataset_id_facets = []
        
          
-	matching_dataset_files = []#results
+        matching_dataset_files = []
         matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
         matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
         
-        c['highlighted_datasets'] = [int(f[0]) for f in facet_counts['fields']['dataset_id_stored']]#[ds.pk for ds in []]#matching_datasets]
-        #c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
-        c['file_matched_datasets'] = []# [f[0] for f in facet_counts['fields']['dataset_id_stored']] 
-        #c['highlighted_dataset_files'] = matching_dataset_file_pks 
+        c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
+        c['file_matched_datasets'] = []
         
         c['query'] = query
     
@@ -2489,7 +2486,12 @@ class ExperimentSearchView(SearchView):
         # hits were in the Dataset(s) or Dataset_File(s)
         results = self.results
         facets =  results.facet_counts()
-        experiment_facets = facets['fields']['experiment_id_stored']
+        if facets:
+            experiment_facets = facets['fields']['experiment_id_stored']
+            experiment_ids = [ int(f[0]) for f in experiment_facets if int(f[1]) > 0 ]
+        else:
+            experiment_ids = []
+
 
         access_list = []
 
@@ -2498,10 +2500,7 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        experiment_ids = [ int(f[0]) for f in experiment_facets if int(f[1]) > 0 ]
-
         ids = list(set(experiment_ids) & set(access_list))
-        
         experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
 
         results = []
@@ -2513,27 +2512,6 @@ class ExperimentSearchView(SearchView):
             result['experiment_hit'] = False
             results.append(result)
 
-#       from itertools import groupby, chain
-        
-#       for k, g in groupby(results, lambda x: x.experiment_id_stored):
-#           if k not in access_list:
-#               continue
-#           
-#           g = list(g)
-#           experiments[k] = {}
-#           experiments[k]['sr'] = g[0] # for now
-#          
-#           # get a flat list of all the field names that are highlighted in any of
-#           # the search results for this group
-#           hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
-#           
-#           # generate a list of all the unique prefixes of the field names
-#           unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
-#           
-#           experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
-#           experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
-#           experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
-#       
         extra['experiments'] = results 
         return extra
 
@@ -2559,7 +2537,7 @@ class ExperimentSearchView(SearchView):
 @login_required
 def single_search(request):
     query = backend.SearchQuery(backend=HighlightSearchBackend())
-    sqs = SearchQuerySet(query=query)# HighlightSearchQuerySet()
+    sqs = SearchQuerySet(query=query)
     sqs.highlight()
 
     return ExperimentSearchView(
