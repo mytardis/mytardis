@@ -2412,7 +2412,7 @@ def add_experiment_par(request, experiment_id):
 
 def add_par(request, parentObject, otype, stype):
         
-    all_schema = Schema.objects.filter(type=stype)
+    all_schema = Schema.objects.filter(type=stype, immutable=False)
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
