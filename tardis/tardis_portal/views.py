@@ -1053,15 +1053,14 @@ def search_experiment(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
     
-    results = {}
+    results = []
     for e in experiments:
-        results[e.pk] = (
-            {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : False, 
-             'experiment_hit' : True, 
-            }
-         )
+        result = {}
+        result['sr'] = e
+        result['dataset_hit'] = False 
+        result['dataset_file_hit'] = False
+        result['experiment_hit'] = True
+        results.append(result)
     c = Context({'header': 'Search Experiment',
                  'experiments': results,
                  'bodyclass': bodyclass})
@@ -1575,14 +1574,14 @@ def search_datafile(request):
     else:
         experiments = {}
 
-    results = {}
+    results = []
     for key, e in experiments.items():
-        results[key]=\
-            {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : True, 
-             'experiment_hit' : False, 
-            }        
+        result = {}
+        result['sr'] = e
+        result['dataset_hit'] = False 
+        result['dataset_file_hit'] = True
+        result['experiment_hit'] = False
+        results.append(result)
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
