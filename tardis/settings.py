@@ -24,6 +24,20 @@ TARDIS_DIR = PROJ_DIR
 TARDIS_APPS = ()
 LOCAL_APPS = ()
 SINGLE_SEARCH_ENABLED = False 
+
+DATABASES = {
+    'default': {
+        # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.sqlite3',
+        # Name of the database to use. For SQLite, it's the full path.
+        'NAME': 'db.sqlite3',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+
 try:
     from settings_core import *
 except:

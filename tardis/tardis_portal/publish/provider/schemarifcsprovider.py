@@ -5,8 +5,8 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from html2text import html2text
 
-import tardis.apps.as_ands.publishing as publishing
-from tardis.apps.as_ands.publishing import PublishHandler
+import tardis.apps.ands_register.publishing as publishing
+from tardis.apps.ands_register.publishing import PublishHandler
 
 import rifcsprovider
 
