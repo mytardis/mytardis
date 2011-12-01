@@ -1,13 +1,20 @@
 """ ands_doi.py """
 
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.utils.importlib import import_module
 from urllib2 import HTTPError
-from urllib import urlencode  # no urlencode in urllib2
 
+from tardis.tardis_portal.models import ExperimentParameter, \
+    ExperimentParameterSet, ParameterName, Schema
+
+import re
 import urllib2
 
 import logging
 logger = logging.getLogger(__name__)
+
+DOI_NAME = 'doi'  # the ParameterName.name for the DOI
 
 
 class DOIService(object):
@@ -23,81 +30,124 @@ class DOIService(object):
         :param experiment: The experiment model object
         :type experiment: :class: `tardis.tardis_portal.models.Experiment`
         """
-        if hasattr(settings, 'DOI_ENABLED') and settings.DOI_ENABLED:
+        if hasattr(settings, 'DOI_ENABLE') and settings.DOI_ENABLE:
             self.experiment = experiment
 
             provider = settings.DOI_XML_PROVIDER
-            module, constructor = provider.rsplit('.', 1)
+            module_name, constructor_name = provider.rsplit('.', 1)
 
-            module = __import__(module)
-            constructor = getattr(module, constructor)
+            module = import_module(module_name)
+            constructor = getattr(module, constructor_name)
 
-            self.doi_provider = constructor(experiment)  # FIXME
-
+            self.doi_provider = constructor(experiment)
             self.schema = Schema.objects.get(namespace=settings.DOI_NAMESPACE)
+            self.doi_name = ParameterName.objects.get(name=DOI_NAME)
 
         else:
             raise Exception('DOI is not enabled')
 
     def get_or_mint_doi(self, url):
         """
-            :param url: the URL the DOI will resolve to
-            :type url: string
-            :return: the DOI string
-            :rtype string
+        :param url: the URL the DOI will resolve to
+        :type url: string
+        :return: the DOI string
+        :rtype string
         """
         doi = self.get_doi()
-        if doi:
-            return doi
-        else:
-            try:
-                return self._mint_doi(url)
-            except HTTPError:
-                logger.exception('mint doi failed')
-                raise
+        if not doi:
+            doi = self._mint_doi(url)
+            logger.info("minted DOI %s" % doi)
+            self._save_doi(doi)
+        return doi
 
     def get_doi(self):
-        """ return DOI or None"""
-        .objects.filter(schema=self.schema, experiment=self.experiment)
-        doi_params = ExperimentParameter.objects.get(parameterset__schema=self.schema, parameterset__experiment=self.experiment, name__name='doi')  #TODO un-hardcode
-        if doi_params.count() == 1 
+        """
+        :return: DOI or None
+        :rtype string
+        """
+        doi_params = ExperimentParameter.objects.filter(name=self.doi_name,
+                                    parameterset__schema=self.schema,
+                                    parameterset__experiment=self.experiment)
+        if doi_params.count() == 1:
             return doi_params[0].string_value
         return None
 
+    def _save_doi(self, doi):
+        paramset = self._get_or_create_doi_parameterset()
+        ep = ExperimentParameter(parameterset=paramset, name=self.doi_name,\
+                                    string_value=doi)
+        ep.save()
+        return doi
 
-    def _mint(self, url):
-        xml = self._datacite_xml()
+    def _mint_doi(self, url):
         headers = {
             'Content-type': 'application/x-www-form-urlencoded',
             'Accept': 'text/plain'
         }
-        post_data = urlencode({
-            'xml': xml
-        })
+        post_data = 'xml=' + self._datacite_xml()
 
-        req = urllib2.Request(mint_url, post_data, headers)
-        resp = urllib2.urlopen(req)
+        base_url = settings.DOI_MINT_URL
+        app_id = settings.DOI_APP_ID
+        mint_url = "%s?app_id=%s&url=%s" % (base_url, app_id, url)
 
-        data = response.read()
-
-        paramset = self._get_or_create_doi_parameterset()
-        ep = ExperimentParameter(parameterset=paramset, name='doi', string_value=data)
-        ep.save()
-
-        return data
+        doi_response = DOIService._post(mint_url, post_data, headers)
+        doi = DOIService._read_doi(doi_response)
+        return doi
 
     def _datacite_xml(self):
-        return self.doi_provider.xml(experiment)
-        
+        return self.doi_provider.datacite_xml()
+
+    def _get_or_create_doi_parameterset(self):
+        eps, _ = ExperimentParameterSet.objects.\
+                    get_or_create(experiment=self.experiment,\
+                        schema=self.schema)
+        return eps
+
+    @staticmethod
+    def _read_doi(doi_response):
+        pattern = re.compile(r'\[MT001\] DOI (.+) was successfully minted.')
+        match = pattern.match(doi_response)
+        if not match:
+            raise Exception('unrecognised response: %s' + doi_response)
+        return match.group(1)
+
+    @staticmethod
+    def _post(url, post_data, headers):
+        try:
+            request = urllib2.Request(url, post_data, headers)
+            response = urllib2.urlopen(request)
+            return response.read()
+        except HTTPError as e:
+            logger.error(e.read())
+            raise e
+
 
 class DOIXMLProvider(object):
+    """
+    DOIXMLProvider
+
+    provides datacite XML metadata for a given experiment
+    """
+
     def __init__(self, experiment):
         self.experiment = experiment
 
-    def xml(self):
+    def datacite_xml(self):
+        """
+        :return: datacite XML for self.experiment
+        :rtype: string
+        """
+
+        from datetime import date
         from django.template import Context
-        c = Context({
-            'experiment': self.experiment
-        })
+        import os
+        template = os.path.join(settings.DOI_TEMPLATE_DIR, 'default.xml')
+
+        ex = self.experiment
+        c = Context()
+        c['title'] = ex.title
+        c['institution_name'] = ex.institution_name
+        c['publication_year'] = date.today().year
+        c['creator_names'] = [a.author for a in ex.author_experiment_set.all()]
         doi_xml = render_to_string(template, context_instance=c)
         return doi_xml

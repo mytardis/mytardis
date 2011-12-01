@@ -34,16 +34,25 @@ test_ands_doi.py
 from django.conf import settings
 from django.test import TestCase
 
-import sys
+from tardis.tardis_portal.ands_doi import DOIService
+from tardis.tardis_portal.models import User, Experiment, Schema, ParameterName
 
 
 class ANDSDOITestCase(TestCase):
 
     def setUp(self):
-        pass
+        self.user = User.objects.create_user('test', '', 'test')
+        self.expt = Experiment(title='test exp1',
+                                institution_name='monash',
+                                created_by=self.user,
+                                )
+        self.schema, _ = Schema.objects.get_or_create(namespace=settings.DOI_NAMESPACE)
+        self.doi_name, _ = ParameterName.objects.get_or_create(schema=self.schema, full_name='DOI', name='doi')
+        self.expt.save()
 
-    def tearDown(self):
-        pass
+    def test_init(self):
+        doi_service = DOIService(self.expt)
 
-    def test_default_expiry(self):
-        pass
+    def test_get_doi_none(self):
+        doi_service = DOIService(self.expt)
+        self.assertEquals(None, doi_service.get_doi())

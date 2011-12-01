@@ -249,4 +249,11 @@ TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
 
-DOI_NAMESPACE='http://doi.com/'
+DOI_ENABLE = False
+DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
+#DOI_TEMPLATE_DIR = path.join(TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
+DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
+DOI_APP_ID = ''
+DOI_NAMESPACE = 'http://www.doi.com'
+DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
+DOI_ACCESS_URL = "http://dx.doi.org/"
