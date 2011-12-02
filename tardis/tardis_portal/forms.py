@@ -922,8 +922,10 @@ def create_parameterset_edit_form(
                                     required=False,
                                     initial=dfp.string_value)
 
-            if dfp.name.immutable:
-                fields[form_id].widget.attrs['readonly'] = 'readonly'
+            if dfp.name.immutable or dfp.name.schema.immutable:
+                fields[form_id].widget.attrs['readonly'] = True
+                fields[form_id].label = \
+                    fields[form_id].label + " (read only)"
 
         return type('DynamicForm', (forms.BaseForm, ),
                     {'base_fields': fields})
@@ -965,25 +967,26 @@ def create_datafile_add_form(
                 schema__namespace=schema,
                 name=stripped_key)
 
-            units = ""
-            if parameter_name.units:
-                units = " (" + parameter_name.units + ")"
+            if parameter_name.immutable == False:
+                units = ""
+                if parameter_name.units:
+                    units = " (" + parameter_name.units + ")"
 
-            # if not valid, spit back as exact
-            if parameter_name.isNumeric():
-                fields[key] = \
-                    forms.DecimalField(label=parameter_name.full_name + units,
-                                       required=False,
-                                       initial=value,
-                                       )
-            elif parameter_name.isLongString():
-                fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
-            else:
-                fields[key] = \
-                    forms.CharField(label=parameter_name.full_name + units,
-                                    max_length=255, required=False,
-                                    initial=value,
-                                    )
+                # if not valid, spit back as exact
+                if parameter_name.isNumeric():
+                    fields[key] = \
+                        forms.DecimalField(label=parameter_name.full_name + units,
+                                           required=False,
+                                           initial=value,
+                                           )
+                elif parameter_name.isLongString():
+                    fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                else:
+                    fields[key] = \
+                        forms.CharField(label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value,
+                                        )
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
@@ -992,7 +995,8 @@ def create_datafile_add_form(
         fields = SortedDict()
 
         parameternames = ParameterName.objects.filter(
-            schema__namespace=schema).order_by('name')
+            schema__namespace=schema,
+            immutable=False).order_by('name')
 
         for dfp in parameternames:
 
