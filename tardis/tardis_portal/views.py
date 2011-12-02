@@ -1620,6 +1620,9 @@ def retrieve_user_list(request):
                     auth_methods[ua.authenticationMethod]) \
                     for ua in user_auths if ua.userProfile == u.get_profile() ]
         except UserProfile.DoesNotExist:
+            user['auth_methods'] = []
+
+        if not user['auth_methods']:
             user['auth_methods'] = [ '%s:localdb:%s' % \
                     (u.username, auth_methods['localdb']) ]
         users.append(user)
