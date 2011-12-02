@@ -7,7 +7,7 @@ Prerequisites
 
 Redhat::
 
-   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python python26-devel gcc openssl-devel 
+   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python
 
 Debian/Ubuntu::
 

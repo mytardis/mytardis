@@ -1031,28 +1031,3 @@ def pre_save_parameter(sender, **kwargs):
                 f.write(b64)
             f.close()
             parameter.string_value = filename
-
-@receiver(post_save, sender=ExperimentParameter)
-def post_save_experiment_parameter(sender, **kwargs):
-    experiment_param = kwargs['instance']
-    experiment = Experiment.objects.get(pk=experiment_param.getExpId())
-    _publish_public_expt_rifcs(experiment)   
-
-@receiver(post_save, sender=Experiment)
-def post_save_experiment(sender, **kwargs):
-    experiment = kwargs['instance']
-    _publish_public_expt_rifcs(experiment)    
-
-@receiver(post_save, sender=Author_Experiment)
-def post_save_author_experiment(sender, **kwargs):
-    author_experiment = kwargs['instance']
-    _publish_public_expt_rifcs(author_experiment.experiment)   
-
-def _publish_public_expt_rifcs(experiment):
-    try:
-        providers = settings.RIFCS_PROVIDERS
-    except:
-        providers = None
-    from tardis.tardis_portal.publish.publishservice import PublishService
-    pservice = PublishService(providers, experiment)
-    pservice.manage_rifcs(settings.OAI_DOCS_PATH)
