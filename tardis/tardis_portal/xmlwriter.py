@@ -48,6 +48,27 @@ A set of static methods for writing xml files.
 class XMLWriter:
 
     @staticmethod
+    def write_template_to_dir(dest_dir, dest_filename, template_path, context):
+        """
+        :param dest_dir: The directory to store the resulting document in
+        :type dest_dir: string
+        :param dest_filename: The name of the file to be output
+        :type dest_filename: string
+        :param template_path: The relative path to the Django template to be
+        rendered
+        :type template_path: string
+        :param context: The Context object (dictionary of variables for
+        template output)
+        :type context: :class:`django.template.context.Context`
+        :returns: The full path to the created file
+        :rtype: string
+        """
+        import os
+        filename = os.path.join(dest_dir, dest_filename)
+        render_to_file(template_path, filename, context)
+        return filename
+
+    @staticmethod
     def write_template_to_file(prefix_dir,
         objectprefix,
         uniqueid,

@@ -143,3 +143,8 @@ if not SINGLE_SEARCH_ENABLED:
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+# RIF-CS Settings
+OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
+RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
+RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'

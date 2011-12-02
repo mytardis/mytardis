@@ -1,0 +1,5 @@
+experiment id: {{experiment.id}}
+experiment title: {{experiment.title}}
+experiment description: {{description}}
+beamline: {{beamline}}
+license uri: {{license_url}}
