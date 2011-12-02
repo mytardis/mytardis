@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/documentation/rifcs/1.2.0/schema/registryObjects.xsd">
+    <registryObject group="{{group}}">
+        <key>{{key}}</key>
+        <originatingSource>{{originating_source}}</originatingSource>
+        <collection type="dataset">
+            <identifier type="local">{{proposal_id}}</identifier>
+            <name type="primary">
+                <namePart>{{experiment.title}}</namePart>
+            </name>
+            <location>
+                <address>
+{% if url %}                    <electronic type="url">
+                        <value>{{url}}</value>
+                    </electronic>{% endif %}
+{% if email %}                    <electronic type="email">
+                        <value>{{email}}</value>
+                    </electronic>{% endif %}
+{% if address %}                    <physical type="streetAddress">
+                        <addressPart type="text">{{address}}</addressPart>
+                    </physical>{% endif %}
+                </address>
+            </location>
+            <coverage>
+                <temporal>
+                    <date type="dateFrom" dateFormat="UTC">{{experiment.end_time|date:"c"}}</date>
+                </temporal>
+            </coverage>
+{% if produced_by %}
+            <relatedObject>
+                <key>{{produced_by}}</key>
+                <relation type="isProducedBy"/>
+            </relatedObject>
+{% endif %}
+            <relatedObject>
+                <key>{{located_in}}</key>
+                <relation type="isLocatedIn"/>
+            </relatedObject>
+{% for forcode in anzsrcfor %}            <subject type="anzsrc-for">{{forcode}}</subject>{% endfor %}
+{% for lcode in localcodes %}            <subject type="local">{{lcode}}</subject>{% endfor %}
+{% if license_title %}            <description type="rights">This work is licensed under a {{license_title}} (link below)</description>{% endif %}
+{% for note in notes %}            <description type="note">{{note}}</description>{% endfor %}
+{% if produced_by %}			<description type="note">Information on the format and analysis of the data in this collection is available from the {{beamline}} beamline link on this page (Is produced by:).</description>{% endif %}            
+            <description type="brief">{{description}}
+{% if sample_description_list %}
+Samples: 
+  
+{{sample_description_list}}
+
+Analysis of the sample(s) listed above by the {{beamline}} beamline at {{experiment.institution_name}}   
+{% endif %}{% if investigator_list %}
+Investigators:    
+{{investigator_list}}
+{% endif %}</description>
+{% for right in rights %}            <description type="rights">{{right}}</description>{% endfor %}
+{% for right in access_rights %}            <description type="accessRights">{{right}}</description>{% endfor %}
+{% if license_uri %}         
+            <relatedInfo>
+                <identifier type="uri">{{license_uri}}</identifier>
+                <title>{{license_title}}</title>
+            </relatedInfo>            
+{% endif %}
+{% for rel_inf in related_info_list %}
+            <relatedInfo>
+                <identifier type="{{rel_inf.type}}">{{rel_inf.identifier}}</identifier>
+                <title>{{rel_inf.title}}</title>
+{% if rel_inf.notes %}                <notes>{{rel_inf.notes}}</notes>{% endif %}
+            </relatedInfo>         
+{% endfor %}
+        </collection>
+
+    </registryObject>
+</registryObjects>
