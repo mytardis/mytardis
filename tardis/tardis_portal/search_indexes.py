@@ -43,7 +43,7 @@ from models import Dataset_File, \
     ParameterName, Schema
 from django.db.utils import DatabaseError
 import logging
-from django.db import models
+
 
 logger = logging.getLogger(__name__)
 
@@ -120,70 +120,6 @@ class OracleSafeIndex(RealTimeSearchIndex):
     def index_queryset(self):
         return self.model._default_manager.all().defer(None)
 
-class CachedField(SearchField):
-    
-
-    def __init__(self, **kwargs):
-        
-        self.cache = {}
-        
-        super(CachedField, self).__init__(**kwargs)
-
-    def prepare(self, obj):
-
-        fk  = False
-        if self.model_attr is not None:
-            attrs = self.model_attr.split('__')
-            current_obj = obj
-            for attr in attrs:
-                if not hasattr(current_obj, attr):
-                    break
-                next_obj = getattr(current_obj, attr, None)
-                if not isinstance(next_obj, models.Model):
-                    break
-                current_obj = next_obj
-            if not current_obj is obj:
-                pk = current_obj.pk
-                fk = True
-
-        if fk and pk in self.cache:
-            return self.cache[pk]
-        if fk:
-            print 'not in cache, so generate it (pk:%d, object: %s, attr: %s)' % (pk, current_obj, self.model_attr)
-        result = super(CachedField, self).prepare(obj)
-        
-        if fk:
-            self.cache[pk] = result
-        
-        return result
-
-class CachedCharField(CachedField, CharField):
-    pass
-
-class CachedIntegerField(CachedField, CharField):
-    pass
-
-class CachedFloatField(CachedField, CharField):
-    pass
-
-class CachedDecimalField(CachedField, CharField):
-    pass
-
-class CachedBooleanField(CachedField, CharField):
-    pass
-
-class CachedDateField(CachedField, CharField):
-    pass
-
-class CachedDateTimeField(CachedField, CharField):
-    pass
-
-class CachedMultiValueField(CachedField, CharField):
-    pass
-
-class CachedNgramField(CachedField, NgramField):
-    pass
-
 class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
@@ -216,17 +152,17 @@ class DatasetFileIndex(RealTimeSearchIndex):
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=True) #changed
     dataset_description = NgramField(model_attr='dataset__description')
 
-    experiment_id_stored = CachedIntegerField(model_attr='dataset__experiment__pk', indexed=True) # changed
-    experiment_description = CachedNgramField(model_attr='dataset__experiment__description')
-    experiment_title = CachedNgramField(model_attr='dataset__experiment__title')
-    experiment_created_time = CachedDateTimeField(model_attr='dataset__experiment__created_time')
-    experiment_start_time = CachedDateTimeField(model_attr='dataset__experiment__start_time', default=None)
-    experiment_end_time = CachedDateTimeField(model_attr='dataset__experiment__end_time', default=None)
-    experiment_update_time = CachedDateTimeField(model_attr='dataset__experiment__update_time', default=None)
-    experiment_institution_name = CachedNgramField(model_attr='dataset__experiment__institution_name', default=None)
-    experiment_creator= CachedCharField(model_attr='dataset__experiment__created_by__username')
-    experiment_institution_name=CachedNgramField(model_attr='dataset__experiment__institution_name')
-    experiment_authors = CachedMultiValueField()
+    experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=True) # changed
+    experiment_description = NgramField(model_attr='dataset__experiment__description')
+    experiment_title = NgramField(model_attr='dataset__experiment__title')
+    experiment_created_time = DateTimeField(model_attr='dataset__experiment__created_time')
+    experiment_start_time = DateTimeField(model_attr='dataset__experiment__start_time', default=None)
+    experiment_end_time = DateTimeField(model_attr='dataset__experiment__end_time', default=None)
+    experiment_update_time = DateTimeField(model_attr='dataset__experiment__update_time', default=None)
+    experiment_institution_name = NgramField(model_attr='dataset__experiment__institution_name', default=None)
+    experiment_creator=CharField(model_attr='dataset__experiment__created_by__username')
+    experiment_institution_name=NgramField(model_attr='dataset__experiment__institution_name')
+    experiment_authors = MultiValueField()
    
     exp_cache = {}
     ds_cache = {}
