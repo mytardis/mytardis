@@ -41,10 +41,19 @@ class AuthProvider:
         from a request authenticate try to authenticate the user.
         return a user dict if successful.
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def get_user(self, user_id):
-        raise NotImplemented()
+        raise NotImplementedError
+
+    def getUsernameByEmail(self, email):
+        """
+        returns the username (format string) from the auth domain
+
+        Implementing this function is optional- it is needed for resolving
+        experiment owner email addresses to usernames during ingestion.
+        """
+        raise NotImplementedError
 
 
 class UserProvider:
@@ -58,9 +67,9 @@ class UserProvider:
             "email": "john@example.com"}
 
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
-    def searchUsers(self, request):
+    def searchUsers(self, **filter):
         """
         return a list of user descriptions from the auth domain.
 
@@ -71,14 +80,14 @@ class UserProvider:
             "email": "john@example.com"}
 
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def getUsernameByEmail(self, email):
         """
         returns the username (format string) from the auth domain
         needed for resolving experiment owners during ingestion
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
 
 class GroupProvider:
@@ -87,22 +96,22 @@ class GroupProvider:
         """
         return an iteration of the available groups.
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def getGroupById(self, id):
         """
         return the group associated with the id
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def searchGroups(self, **filter):
         """
         return a list of groups that match the filter
         """
-        raise NotImplemented()
+        raise NotImplementedError
 
     def getGroupsForEntity(self, id):
         """
         return a list of groups associated with a particular entity id
         """
-        raise NotImplemented()
+        raise NotImplementedError
