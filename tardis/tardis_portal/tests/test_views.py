@@ -37,6 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
 
 """
+import json
 
 from django.conf import settings
 from django.contrib.auth import authenticate
@@ -155,16 +156,19 @@ class listTestCase(TestCase):
 
     def setUp(self):
 
-        self.accounts = [('user1', 'pwd1'),
-                         ('user2', 'pwd2'),
-                         ('user3', 'pwd3')]
+        self.accounts = [('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
+                         ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
+                         ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
 
-        for (uname, pwd) in self.accounts:
+        for (uname, pwd, first, last) in self.accounts:
             user = User.objects.create_user(uname, '', pwd)
+            user.first_name = first
+            user.last_name = last
             user.save()
             profile = UserProfile(user=user,
                                          isDjangoAccount=True)
             profile.save()
+        self.users = User.objects.all()
 
         self.client = Client()
         login = self.client.login(username=self.accounts[0][0],
@@ -178,13 +182,38 @@ class listTestCase(TestCase):
 
     def testGetUserList(self):
 
-        response = self.client.get('/ajax/user_list/?authMethod=%s'
-                                   % localdb_auth_key)
+        # Match all
+        response = self.client.get('/ajax/user_list/?q=')
         self.assertEqual(response.status_code, 200)
-        ret_names = response.content.split(' ')
-        self.assertTrue(len(ret_names) == len(self.accounts))
-        for (a, b) in zip([u for (u, p) in self.accounts], ret_names):
-            self.assertTrue(a == b)
+        users_dict = json.loads(response.content)
+        self.assertTrue(len(users_dict) == self.users.count())
+        for user in self.users:
+            user_info = [ u for u in users_dict if u['username'] == user.username ]
+            self.assertTrue(len(user_info) == 1)
+            self.assertTrue(user_info[0]['first_name'] == user.first_name)
+            self.assertTrue(user_info[0]['last_name'] == user.last_name)
+
+        # Match on first name
+        response = self.client.get('/ajax/user_list/?q=threefirst')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+
+        self.assertTrue(len(users_dict) == 1)
+        acct = self.users.get(username='user3')
+        self.assertTrue(users_dict[0]['username'] == acct.username)
+        self.assertTrue(users_dict[0]['first_name'] == acct.first_name)
+        self.assertTrue(users_dict[0]['last_name'] == acct.last_name)
+
+        # Match on last name
+        response = self.client.get('/ajax/user_list/?q=twolast')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+
+        self.assertTrue(len(users_dict) == 1)
+        acct = self.users.get(username='user2')
+        self.assertTrue(users_dict[0]['username'] == acct.username)
+        self.assertTrue(users_dict[0]['first_name'] == acct.first_name)
+        self.assertTrue(users_dict[0]['last_name'] == acct.last_name)
 
     def testGetGroupList(self):
 
