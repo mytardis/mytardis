@@ -2689,3 +2689,39 @@ def token_login(request, token):
     login(request, user)
     experiment = Experiment.objects.get(token__token=token)
     return HttpResponseRedirect(experiment.get_absolute_url())
+
+@authz.experiment_access_required
+def view_rifcs(request, experiment_id):
+    """View the rif-cs of an existing experiment.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be viewed
+    :type experiment_id: string
+    :rtype: :class:`django.http.HttpResponse`
+
+    """
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+    
+    try:
+        rifcs_provs = settings.RIFCS_PROVIDERS   
+    except AttributeError:
+        rifcs_provs = ()
+           
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(rifcs_provs, experiment)
+    context = pservice.get_context()
+    if context is None:
+        # return error page or something
+        return return_response_error(request)
+    
+    template = pservice.get_template()
+    return HttpResponse(render_response_index(request,
+                        template, context), mimetype="text/xml")
+
+
