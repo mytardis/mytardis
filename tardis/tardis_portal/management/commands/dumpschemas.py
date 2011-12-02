@@ -1,6 +1,7 @@
 """
  Command for dumping soft schema definitions
 """
+import sys
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections, DEFAULT_DB_ALIAS
 from django.core import serializers
@@ -11,7 +12,8 @@ from tardis.tardis_portal import models
 
 
 class Command(BaseCommand):
-    help = "Dump soft schema definitions"
+    args = "[namespace...]"
+    help = "Dump soft schema definitions.  No namespace = dump all schemas"
 
     option_list = BaseCommand.option_list + (
         make_option('--format', default='json', dest='format',
@@ -35,8 +37,21 @@ class Command(BaseCommand):
             raise CommandError("Unknown serialization format: %s" % format)
 
         objects = []
-        objects.extend(models.Schema.objects.all())
-        objects.extend(models.ParameterName.objects.all())
+        if len(args) == 0:
+            objects.extend(models.Schema.objects.all())
+            objects.extend(models.ParameterName.objects.all())
+        else:
+            schemas = models.Schema.objects.filter(namespace__in=args)
+            if len(schemas) == 0:
+                raise CommandError('No schemas found')
+            schema_set = set([s.namespace for s in schemas])
+            arg_set = set(args)
+            skipped = arg_set - schema_set
+            if len(skipped) > 0:
+                sys.stderr.write('Schema not found: {0}\n'.format( \
+                    ', '.join(skipped)))
+            objects.extend(schemas)
+            objects.extend(models.ParameterName.objects.filter(schema__namespace__in=args))
         try:
             return serializers.serialize(format, objects, indent=4,
                         use_natural_keys=True)

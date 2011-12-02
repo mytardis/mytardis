@@ -183,7 +183,6 @@ class ParameterSetManager(object):
                 self.new_param(parname, value, fullparname)
 
     def set_params_from_dict(self, dict):
-        print type(dict)
         for (key, value) in dict.iteritems():
             if type(value) is list:
                 self.set_param_list(key, value)

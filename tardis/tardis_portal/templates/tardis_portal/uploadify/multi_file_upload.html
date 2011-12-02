@@ -11,6 +11,7 @@ $('#fileInput').uploadify({
 'auto'      : false,
 'folder'    : '{{ upload_path }}',
 'multi'     : true,
+'scriptData': {'session_id': '{{ session_id }}'},
 'onAllComplete' : allComplete
 });
 });

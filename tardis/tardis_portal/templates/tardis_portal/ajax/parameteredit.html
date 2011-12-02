@@ -18,9 +18,9 @@
 		
 		<select id="parameternameselect">
 		{% for pn in parameternames %}
-		
+		    {% if not pn.immutable %}
 			<option value="{{pn.name|parametername_form}}" {% if pn.isLongString %} data-longstring="true"{% endif %}>{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
-	
+	        {% endif %}
 		{% endfor %}
 		</select>
 
