@@ -182,7 +182,7 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 	  <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
       {% endif %}
     </div> <!-- headerloginstatus -->
-    {% if form %}
+    {% if form %}{% if single_search %}
     <div class="search-bar">
       <div class="search-bar-wrapper clearfix">
         <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
@@ -196,7 +196,7 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
         </form>
       </div> <!-- search-menu-wrapper --> 
     </div> <!-- search-menu-bar --> 
-    {% endif %}
+    {% endif %}{% endif %}
   </div> <!-- headerbg -->
 
   <div id="page"> <!-- start page -->	

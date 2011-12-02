@@ -55,6 +55,7 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/license/$', 'choose_license'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
+    (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
     )
 token_urls = patterns(
     'tardis.tardis_portal.views',
@@ -192,12 +193,15 @@ urlpatterns = patterns(
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
     
-    # Search
-    (r'^search/$', 'tardis.tardis_portal.views.single_search'),
-
     # Apps
     (r'^apps/', include(apppatterns)),
 
     # Token login
     (r'^token/', include(token_urls)),
 )
+
+if settings.SINGLE_SEARCH_ENABLED:
+    urlpatterns += patterns(
+        # Search
+        (r'^search/$', 'tardis.tardis_portal.single_search_views.single_search'),
+        )
