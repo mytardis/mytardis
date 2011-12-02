@@ -209,14 +209,15 @@ class ChangeGroupPermissionsForm(forms.Form):
 
 class AddUserPermissionsForm(forms.Form):
 
+    entered_user = forms.CharField(label='User', required=False, max_length=100)
+    autocomp_user = forms.CharField(label='', required=False, max_length=100,
+                                   widget=forms.HiddenInput)
     authMethod = forms.CharField(required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
-    adduser = forms.CharField(label='User', required=False, max_length=100)
-    adduser.widget.attrs['class'] = 'usersuggest'
-    read = forms.BooleanField(label='READ', required=False, initial=True)
+    read = forms.BooleanField(label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='EDIT', required=False)
+    write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
                                    widget=forms.HiddenInput)

@@ -42,10 +42,13 @@ import urllib2
 from urllib import urlencode, urlopen
 from os import path
 import logging
+import json
+from operator import itemgetter
 
 from django.template import Context
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse
@@ -93,6 +96,7 @@ from haystack.views import SearchView
 from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
+
 
 
 def getNewSearchDatafileSelectionForm(initial=None):
@@ -1579,22 +1583,52 @@ def search_datafile(request):
 @never_cache
 @login_required()
 def retrieve_user_list(request):
-    authMethod = request.GET['authMethod']
-    if authMethod == localdb_auth_key:
-        users = [userProfile.user for userProfile in
-                 UserProfile.objects.filter(isDjangoAccount=True)]
-        users = sorted(users, key=lambda user: user.username)
-    else:
-        users = [userAuth for userAuth in
-                 UserAuthentication.objects.filter(
-                     authenticationMethod=authMethod)
-                 if userAuth.userProfile.isDjangoAccount == False]
-        if users:
-            users = sorted(users, key=lambda userAuth: userAuth.username)
-        else:
-            users = User.objects.none()
-    userlist = ' '.join([str(u) for u in users])
-    return HttpResponse(userlist)
+    # TODO: Hook this up to authservice.searchUsers() to actually get
+    # autocompletion data directly from auth backends.
+    # The following local DB query would be moved to auth.localdb_auth.SearchUsers.
+    query = request.GET['q']
+    limit = int(request.GET.get('limit', '10'))
+    # Search all user fields and also the UserAuthentication username.
+    q = Q(username__contains=query)   | \
+        Q(first_name__contains=query) | \
+        Q(last_name__contains=query)  | \
+        Q(email__contains=query) | \
+        Q(userprofile__userauthentication__username__contains=query)
+    users_query = User.objects.filter(q).distinct().select_related('userprofile')
+    users_query = users_query[0:limit]
+
+    user_auths = list(UserAuthentication.objects.filter(userProfile__user__in=users_query))
+    auth_methods = dict( (ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
+    """
+    users = [ {
+        "username": "ksr",
+        "first_name": "Kieran",
+        "last_name": "Spear",
+        "email": "email@address.com",
+        "auth_methods": [ "ksr:vbl:VBL", "ksr:localdb:Local DB" ]
+    } , ... ]
+    """
+    users = []
+    for u in users_query:
+        fields = ('first_name', 'last_name', 'username', 'email')
+        # Convert attributes to dictionary keys and make sure all values
+        # are strings.
+        user = dict( [ (k, str(getattr(u, k))) for k in fields ] )
+        try:
+            user['auth_methods'] = [ '%s:%s:%s' % \
+                    (ua.username, ua.authenticationMethod, \
+                    auth_methods[ua.authenticationMethod]) \
+                    for ua in user_auths if ua.userProfile == u.get_profile() ]
+        except UserProfile.DoesNotExist:
+            user['auth_methods'] = []
+
+        if not user['auth_methods']:
+            user['auth_methods'] = [ '%s:localdb:%s' % \
+                    (u.username, auth_methods['localdb']) ]
+        users.append(user)
+
+    users.sort(key=itemgetter('first_name'))
+    return HttpResponse(json.dumps(users))
 
 
 @never_cache
@@ -1631,12 +1665,11 @@ def retrieve_field_list(request):
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
-
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    users = Experiment.safe.users(request, experiment_id)
+    user_acls = Experiment.safe.user_acls(request, experiment_id)
 
-    c = Context({'users': users, 'experiment_id': experiment_id,
-                 'addUserPermissionsForm': AddUserPermissionsForm()})
+    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id,
+                 'addUserPermissionsForm': AddUserPermissionsForm() })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
@@ -1840,6 +1873,7 @@ def add_experiment_access_user(request, experiment_id, username):
         acl.save()
         c = Context({'authMethod': authMethod,
                      'user': user,
+                     'user_acl': acl,
                      'username': username,
                      'experiment_id': experiment_id})
 

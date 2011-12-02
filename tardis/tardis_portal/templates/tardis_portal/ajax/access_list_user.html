@@ -1,6 +1,9 @@
-<div class="users">
-{% for user in users %}
+<div class="users" style="background-color: #eee; padding: 10px">
+<h3>Current user permissions</h2>
+{% for user_acl in user_acls %}
+  {% with user=user_acl.get_related_object %}
   {% include "tardis_portal/ajax/add_user_result.html" %}
+  {% endwith %}
 {% endfor %}
 </div> <!-- users -->
 <p>
