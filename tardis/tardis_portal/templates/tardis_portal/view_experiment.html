@@ -137,8 +137,16 @@ $(document).ready(function() {
         var $selected_option = $("#parameternameselect > option:selected");
         var is_long = $selected_option.attr('data-longstring');
         var new_element_name = get_new_parameter_name($selected_option.val());
-        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
-        $("#" + new_element_name).focus();
+
+        if($selected_option.text())
+        {
+            $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
+            $("#" + new_element_name).focus();
+        }
+        else
+        {
+            alert('There are no parameters allowed to be added by users in this schema');
+        }
     });
     $('#add_metadata_form').live('submit', function(e) {
         e.preventDefault();

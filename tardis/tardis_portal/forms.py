@@ -209,14 +209,15 @@ class ChangeGroupPermissionsForm(forms.Form):
 
 class AddUserPermissionsForm(forms.Form):
 
+    entered_user = forms.CharField(label='User', required=False, max_length=100)
+    autocomp_user = forms.CharField(label='', required=False, max_length=100,
+                                   widget=forms.HiddenInput)
     authMethod = forms.CharField(required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
-    adduser = forms.CharField(label='User', required=False, max_length=100)
-    adduser.widget.attrs['class'] = 'usersuggest'
-    read = forms.BooleanField(label='READ', required=False, initial=True)
+    read = forms.BooleanField(label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='EDIT', required=False)
+    write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
                                    widget=forms.HiddenInput)
@@ -921,8 +922,10 @@ def create_parameterset_edit_form(
                                     required=False,
                                     initial=dfp.string_value)
 
-            if dfp.name.immutable:
-                fields[form_id].widget.attrs['readonly'] = 'readonly'
+            if dfp.name.immutable or dfp.name.schema.immutable:
+                fields[form_id].widget.attrs['readonly'] = True
+                fields[form_id].label = \
+                    fields[form_id].label + " (read only)"
 
         return type('DynamicForm', (forms.BaseForm, ),
                     {'base_fields': fields})
@@ -964,25 +967,26 @@ def create_datafile_add_form(
                 schema__namespace=schema,
                 name=stripped_key)
 
-            units = ""
-            if parameter_name.units:
-                units = " (" + parameter_name.units + ")"
+            if parameter_name.immutable == False:
+                units = ""
+                if parameter_name.units:
+                    units = " (" + parameter_name.units + ")"
 
-            # if not valid, spit back as exact
-            if parameter_name.isNumeric():
-                fields[key] = \
-                    forms.DecimalField(label=parameter_name.full_name + units,
-                                       required=False,
-                                       initial=value,
-                                       )
-            elif parameter_name.isLongString():
-                fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
-            else:
-                fields[key] = \
-                    forms.CharField(label=parameter_name.full_name + units,
-                                    max_length=255, required=False,
-                                    initial=value,
-                                    )
+                # if not valid, spit back as exact
+                if parameter_name.isNumeric():
+                    fields[key] = \
+                        forms.DecimalField(label=parameter_name.full_name + units,
+                                           required=False,
+                                           initial=value,
+                                           )
+                elif parameter_name.isLongString():
+                    fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                else:
+                    fields[key] = \
+                        forms.CharField(label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value,
+                                        )
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
@@ -991,7 +995,8 @@ def create_datafile_add_form(
         fields = SortedDict()
 
         parameternames = ParameterName.objects.filter(
-            schema__namespace=schema).order_by('name')
+            schema__namespace=schema,
+            immutable=False).order_by('name')
 
         for dfp in parameternames:
 
