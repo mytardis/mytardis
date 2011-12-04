@@ -1,54 +1,54 @@
-{#  Copyright (c) 2010-2011, Monash e-Research Centre			   #}
-{#    (Monash University, Australia)					   #}
-{#  Copyright (c) 2010-2011, VeRSI Consortium				   #}
-{#    (Victorian eResearch Strategic Initiative, Australia)		   #}
-{#  All rights reserved.						   #}
-{# 									   #}
-{#  Redistribution and use in source and binary forms, with or without	   #}
-{#  modification, are permitted provided that the following conditions	   #}
-{#  are met:								   #}
-{# 									   #}
-{#     * Redistributions of source code must retain the above copyright	   #}
-{#       notice, this list of conditions and the following disclaimer.	   #}
-{#     * Redistributions in binary form must reproduce the above	   #}
-{#       copyright notice, this list of conditions and the following	   #}
+{#  Copyright (c) 2010-2011, Monash e-Research Centre               #}
+{#    (Monash University, Australia)                       #}
+{#  Copyright (c) 2010-2011, VeRSI Consortium                   #}
+{#    (Victorian eResearch Strategic Initiative, Australia)           #}
+{#  All rights reserved.                           #}
+{#                                        #}
+{#  Redistribution and use in source and binary forms, with or without       #}
+{#  modification, are permitted provided that the following conditions       #}
+{#  are met:                                   #}
+{#                                        #}
+{#     * Redistributions of source code must retain the above copyright       #}
+{#       notice, this list of conditions and the following disclaimer.       #}
+{#     * Redistributions in binary form must reproduce the above       #}
+{#       copyright notice, this list of conditions and the following       #}
 {#       disclaimer in the documentation and/or other materials provided   #}
-{#       with the distribution.						   #}
+{#       with the distribution.                           #}
 {#     * Neither the name of the VeRSI, the VeRSI Consortium members, nor  #}
 {#       the names of its contributors may be used to endorse or promote   #}
-{#       products derived from this software without specific prior	   #}
-{#       written permission.						   #}
-{# 									   #}
-{#  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS''	   #}
+{#       products derived from this software without specific prior       #}
+{#       written permission.                           #}
+{#                                        #}
+{#  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS''       #}
 {#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,  #}
-{#  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A		   #}
+{#  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A           #}
 {#  PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND   #}
 {#  CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,  #}
-{#  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,	   #}
-{#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR	   #}
-{#  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY	   #}
-{#  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT	   #}
+{#  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,       #}
+{#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR       #}
+{#  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY       #}
+{#  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT       #}
 {#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  #}
 {#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.   #}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
-	<meta name="keywords" content="">
-	<meta name="description" content="">
+    <link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
 
     {% include "tardis_portal/javascript_libraries.html" %} 
 
-	{% block script %}
-	{% endblock script %}
+    {% block script %}
+    {% endblock script %}
 
-	<link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
+    <link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
 
 
-	<script type="text/javascript">
+    <script type="text/javascript">
 $(document).ready(function(){
   var users = (function () {
   var val = null;
@@ -60,8 +60,8 @@ $(document).ready(function(){
     'data': data,
     'url': '/ajax/parameter_field_list/',
     'success': function (data) {
-        data = data.split(" ");
-        var list = new Array();
+        data = data.split("+");
+    var list = new Array();
         $.each(data, function(i,l) {
             var name = l.split(":")[0];
             var type = l.split(":")[1];
@@ -96,42 +96,42 @@ $("#id_q").autocomplete(users, { //users.split(" "), {
 
 
       });
-	</script>
+    </script>
 
-	      <script type="text/javascript">
+          <script type="text/javascript">
 
-		$(document).ready(function() {
-			var myClose=function(hash) {
-					hash.w.fadeOut('2000',function(){ hash.o.remove()});
-					window.location.hash = "";
-				};
-			
-		    // $("#fuzz").css("height", $(document).height());
-		    $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
+        $(document).ready(function() {
+            var myClose=function(hash) {
+                    hash.w.fadeOut('2000',function(){ hash.o.remove()});
+                    window.location.hash = "";
+                };
+            
+            // $("#fuzz").css("height", $(document).height());
+            $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
 
-			// 			    $(window).bind("resize", function() {
-			// $("#fuzz").css("height", $(window).height());
-			// 			    });
-			
-			{% if status %}
-			$('#jqmAlertStatus').jqmShow();
-			{% endif %}
-			// $("#fuzz").fadeIn();
-			if(window.location.hash) {
-				if(window.location.hash == '#created')
-				{
-					$('#jqmStatusMessage').html('Experiment Created');
-					$("#jqmAlertStatus").jqmShow();
-				}
-				else if(window.location.hash == '#saved')
-				{
-					$('#jqmStatusMessage').html('Experiment Saved');
-					$("#jqmAlertStatus").jqmShow();					
-				}
-			}		
-		});		
-			
-	      </script>
+            //                 $(window).bind("resize", function() {
+            // $("#fuzz").css("height", $(window).height());
+            //                 });
+            
+            {% if status %}
+            $('#jqmAlertStatus').jqmShow();
+            {% endif %}
+            // $("#fuzz").fadeIn();
+            if(window.location.hash) {
+                if(window.location.hash == '#created')
+                {
+                    $('#jqmStatusMessage').html('Experiment Created');
+                    $("#jqmAlertStatus").jqmShow();
+                }
+                else if(window.location.hash == '#saved')
+                {
+                    $('#jqmStatusMessage').html('Experiment Saved');
+                    $("#jqmAlertStatus").jqmShow();                    
+                }
+            }        
+        });        
+            
+          </script>
 
 {# icons #}
 <script type="text/javascript">
@@ -154,11 +154,11 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
     </div> <!-- logo -->
     <div id="menu">
       <ul>
-	<li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
-	<li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
-	<li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
-	<li><a href="{% url tardis.tardis_portal.views.partners %}">Partners</a></li>
-	<li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
+    <li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
+    <li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
+    <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
+    <li><a href="{% url tardis.tardis_portal.views.partners %}">Partners</a></li>
+    <li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
       </ul>
     </div> <!-- menu -->
   </div> <!-- end header -->
@@ -175,19 +175,19 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
               {% else %}
           <em>{{ username }}</em>
           {% endif %}
-	  {% endif %}
-	  - <a href="{% url django.contrib.auth.views.logout %}"> [Log Out]</a>
+      {% endif %}
+      - <a href="{% url django.contrib.auth.views.logout %}"> [Log Out]</a>
       {% else %}
-	  <a href="{% url registration.views.register %}"> [Register] </a>
-	  <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
+      <a href="{% url registration.views.register %}"> [Register] </a>
+      <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
       {% endif %}
     </div> <!-- headerloginstatus -->
-    {% if form %}
+    {% if search_form %}
     <div class="search-bar">
       <div class="search-bar-wrapper clearfix">
         <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
             <div class="search-text-wrapper">
-              <input type="text" name="q" id="id_q" placeholder="Enter EPN, author, beamline etc."{% if query %} value="{{ query }}"{% endif %} />
+              <input type="text" name="q" id="id_q" placeholder="Enter EPN, author, beamline etc."{% if search_query %} value="{{ search_query }}"{% endif %} />
             </div> <!-- search-text-wrapper -->
             <div class="search-submit-wrapper">
               <input type="submit" id="search_btn" value="Search"/>
@@ -199,37 +199,37 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
     {% endif %}
   </div> <!-- headerbg -->
 
-  <div id="page"> <!-- start page -->	
+  <div id="page"> <!-- start page -->
     <div id="content-box">
-		      <div class="jqmAlertStatus" id="jqmAlertStatus">
-				  <div class="jqmAlertWindowStatus">
+              <div class="jqmAlertStatus" id="jqmAlertStatus">
+                  <div class="jqmAlertWindowStatus">
 
-					{% if error %}
-					<div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
-					  <br/>{{status}}
-					
-					</div> <!-- statusBoxError -->
-					{% else %}
-					<div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
-					  <br/><span id="jqmStatusMessage">{{status}}</span>
-					</div> <!-- statusBox -->
-					{% endif %}
-				   </div> <!-- window -->
-			   </div> <!-- status -->
+                    {% if error %}
+                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
+                      <br/>{{status}}
+                    
+                    </div> <!-- statusBoxError -->
+                    {% else %}
+                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
+                      <br/><span id="jqmStatusMessage">{{status}}</span>
+                    </div> <!-- statusBox -->
+                    {% endif %}
+                   </div> <!-- window -->
+               </div> <!-- status -->
       {% block content %}
       {% endblock content %}
 
       <!-- start recent-posts -->
       <div id="recent-posts" class="sidebar">
-	<div class="post">
-	  {% block sidebar %}
-	  {% endblock sidebar %}
-	</div> <!-- post -->
+    <div class="post">
+      {% block sidebar %}
+      {% endblock sidebar %}
+    </div> <!-- post -->
       </div> <!-- recent-posts -->
 
       <div id="bottom" style="clear: both; width: 700px;">
-	{% block bottom %}
-	{% endblock bottom %}
+    {% block bottom %}
+    {% endblock bottom %}
       </div> <!-- block bottem -->
 
       {% block fullpage %}
@@ -238,10 +238,10 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
     </div> <!-- content box -->
 
     <div id="bottombar" style="padding-bottom: 5px; padding-left: 0px;">
-	<div style="padding-left: 17px">
+    <div style="padding-left: 17px">
         Created by the <a target="_blank" style="text-decoration: underline" href="http://code.google.com/p/mytardis/">MyTARDIS Team</a> - Version 2.1
-    	</div>
-	</div> <!-- bottombar -->
+        </div>
+    </div> <!-- bottombar -->
   </div> <!-- page -->
 </body>
 

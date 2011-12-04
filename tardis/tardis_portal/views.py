@@ -90,9 +90,10 @@ from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
 from haystack.query import SearchQuerySet
-from tardis.tardis_portal.forms import RawSearchForm
+from haystack import backend
 from haystack.views import SearchView
-
+from tardis.tardis_portal.forms import RawSearchForm
+from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
@@ -420,7 +421,13 @@ def experiment_description(request, experiment_id):
 class SearchQueryString():
     
     def __init__(self, query_string):
-        self.query_terms = query_string.split()
+        import re
+        # remove extra spaces around colons 
+        stripped_query = re.sub('\s*?:\s*', ':', query_string)
+
+        # create a list of terms which can be easily joined by
+        # spaces or pluses
+        self.query_terms = stripped_query.split()
 
     def __unicode__(self):
         return ' '.join(self.query_terms)
@@ -471,7 +478,7 @@ def experiment_datasets(request, experiment_id):
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
-        results = sqs.raw_search(query.query_string())
+        results = sqs.raw_search(query.query_string()).highlight()
         
         matching_datasets = [d.object for d in results if 
                 d.model_name == 'dataset' and 
@@ -941,10 +948,31 @@ def retrieve_parameters(request, dataset_file_id):
 @never_cache
 @authz.dataset_access_required
 def retrieve_datafile_list(request, dataset_id):
+
+    params = {}
+
+    query = None
+    highlighted_dsf_pks = []
+    
+    if 'query' in request.GET:
+        query =  SearchQueryString(request.GET['query'])
+        results = SearchQuerySet().raw_search(query.query_string()).load_all()
+        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+
+        params['query'] = query.query_string()
+
+    elif 'datafileResults' in request.session and 'search' in request.GET: 
+        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
     
     dataset_results = \
         Dataset_File.objects.filter(
-        dataset__pk=dataset_id).order_by('filename')
+            dataset__pk=dataset_id,
+        ).order_by('filename')
+
+    if request.GET.get('limit', False) and len(highlighted_dsf_pks):
+        dataset_results = \
+        dataset_results.filter(pk__in=highlighted_dsf_pks)
+        params['limit'] = request.GET['limit']
 
     filename_search = None
 
@@ -953,9 +981,11 @@ def retrieve_datafile_list(request, dataset_id):
         dataset_results = \
             dataset_results.filter(url__icontains=filename_search)
 
+        params['filename'] = filename_search
+
     # pagination was removed by someone in the interface but not here.
     # need to fix.
-    pgresults = 500
+    pgresults = 100
     # if request.mobile:
     #     pgresults = 30
     # else:
@@ -985,22 +1015,10 @@ def retrieve_datafile_list(request, dataset_id):
         has_write_permissions = \
             authz.has_write_permissions(request, experiment_id)
     
-    if 'query' in request.GET:
-        query =  SearchQueryString(request.GET['query'])
-        # replaces '+'s with spaces
-
-        sqs = SearchQuerySet()
-        results = sqs.raw_search(query.query_string())
-        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
-    
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
-        highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
-    
-    else:
-        highlighted_dsf_pks = []
-    
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
+    params = urlencode(params)   
+ 
     c = Context({
         'dataset': dataset,
         'paginator': paginator,
@@ -1010,6 +1028,9 @@ def retrieve_datafile_list(request, dataset_id):
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
+        'query' : query,
+        'params' : params
+        
         })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/datafile_list.html', c))
@@ -1655,26 +1676,25 @@ def retrieve_group_list(request):
 
 def retrieve_field_list(request):
     
-    from  tardis.tardis_portal.search_indexes import ExperimentIndex
-    from tardis.tardis_portal.search_indexes import DatasetIndex
     from tardis.tardis_portal.search_indexes import DatasetFileIndex
 
     # Get all of the fields in the indexes
-    allFields = ExperimentIndex.fields.items() + \
-             DatasetIndex.fields.items() + \
-             DatasetFileIndex.fields.items()
+    #
+    # TODO: these should be onl read from registered indexes
+    #
+    allFields = DatasetFileIndex.fields.items()
 
     users = User.objects.all()
 
-    usernames = [u.username + ':username' for u in users]
+    usernames = [u.first_name + ' ' + u.last_name + ':username' for u in users]
 
     # Collect all of the indexed (searchable) fields, except
     # for the main search document ('text')
-    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key is not 'text' ])
+    searchableFields = ([key + ':search_field' for key,f in allFields if f.indexed == True and key != 'text' ])
 
     auto_list = usernames + searchableFields
 
-    fieldList = ' '.join([str(fn) for fn in auto_list])
+    fieldList = '+'.join([str(fn) for fn in auto_list])
     return HttpResponse(fieldList)
 
 @never_cache
@@ -2305,14 +2325,11 @@ def upload(request, dataset_id):
 
             uploaded_file_post = request.FILES['Filedata']
 
-            #print 'about to write uploaded file'
             filepath = write_uploaded_file_to_dataset(dataset,
                     uploaded_file_post)
-            #print filepath
 
             add_datafile_to_dataset(dataset, filepath,
                                     uploaded_file_post.size)
-            #print 'added datafile to dataset'
 
     return HttpResponse('True')
 
@@ -2523,39 +2540,39 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        for r in results:
-            i = int(r.experiment_id_stored)
-
-            if i not in access_list:
+        from itertools import groupby, chain
+        
+        for k, g in groupby(results, lambda x: x.experiment_id_stored):
+            if k not in access_list:
                 continue
-
-            if i not in experiments.keys():
-                experiments[i]= {}
-                experiments[i]['sr'] = r
-                experiments[i]['dataset_hit'] = False
-                experiments[i]['dataset_file_hit'] = False
-                experiments[i]['experiment_hit'] =False
-
-            if r.model == Experiment:
-                experiments[i]['experiment_hit'] = True
-            elif r.model == Dataset:
-                experiments[i]['dataset_hit'] = True
-            elif r.model == Dataset_File:
-                experiments[i]['dataset_file_hit'] = True
-
+            
+            g = list(g)
+            experiments[k] = {}
+            experiments[k]['sr'] = g[0] # for now
+           
+            # get a flat list of all the field names that are highlighted in any of
+            # the search results for this group
+            hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
+            
+            # generate a list of all the unique prefixes of the field names
+            unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
+            print unique_prefixes 
+            
+            experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
+            experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
+            experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
+        
         extra['experiments'] = experiments
         return extra
 
     # override SearchView's method in order to
     # return a ResponseContext
     def create_response(self):
-        import re
         (paginator, page) = self.build_page()
        
-        # Remove unnecessary whitespace and replace necessary whitespace with '+'
+        # Remove unnecessary whitespace
         # TODO this should just be done in the form clean...
-        query = re.sub('\s*?:\s*', ':', self.query).replace(' ','+')
-        query = SearchQueryString(query) 
+        query = SearchQueryString(self.query) 
         context = {
                 'query': query,
                 'form': self.form,
@@ -2565,12 +2582,14 @@ class ExperimentSearchView(SearchView):
         context.update(self.extra_context())
 
         return render_response_index(self.request, self.template, context)
-        #return render_to_response(self.template, context, context_instance=self.context_class(self.request))
 
 
 @login_required
 def single_search(request):
-    sqs = SearchQuerySet()
+    query = backend.SearchQuery(backend=HighlightSearchBackend())
+    sqs = SearchQuerySet(query=query)# HighlightSearchQuerySet()
+    sqs.highlight()
+
     return ExperimentSearchView(
             template = 'search/search.html',
             searchqueryset=sqs,

@@ -38,7 +38,7 @@ search indexes for single search
 '''
 from haystack.indexes import *
 from haystack import site
-from models import Dataset, Experiment, Dataset_File, \
+from models import Dataset_File, \
     DatafileParameter, DatasetParameter, ExperimentParameter, \
     ParameterName, Schema
 from django.db.utils import DatabaseError
@@ -124,12 +124,22 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
     def __new__(cls, name, bases, attrs):
 
         # dynamically add all the searchable parameter fields
-        # catch 
-        try:    
-            for n in [pn for pn in ParameterName.objects.all() if pn.datafileparameter_set.count() and pn.is_searchable is True]:
-                attrs['datafile_' + n.name] = _getDataType(n)
+        try:
+            pns = ParameterName.objects.filter(is_searchable=True)
+            for pn in pns:
+                prefix = ''
+                if pn.schema.type == Schema.DATAFILE:
+                    prefix = 'datafile_'
+                elif pn.schema.type == Schema.DATASET:
+                    prefix = 'dataset_'
+                elif pn.schema.type == Schema.EXPERIMENT:
+                    prefix = 'experiment_'
+                else:
+                    pass
+                attrs[prefix + pn.name] = _getDataType(pn)
         except DatabaseError:
             pass
+        
         return super(GetDatasetFileParameters, cls).__new__(cls, name, bases, attrs)
 
 class DatasetFileIndex(RealTimeSearchIndex):
@@ -138,31 +148,42 @@ class DatasetFileIndex(RealTimeSearchIndex):
     
     text=NgramField(document=True)
     datafile_filename  = NgramField(model_attr='filename')
+    
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=False)
-    dataset_description_stored = CharField(model_attr='dataset__description', indexed=False)
+    dataset_description = NgramField(model_attr='dataset__description')
+
     experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=False)
-    experiment_title_stored = CharField(model_attr='dataset__experiment__title', indexed=False)
-    experiment_description_stored = CharField(model_attr='dataset__experiment__description', indexed=False)
-    experiment_created_time_stored = DateTimeField(model_attr='dataset__experiment__created_time', indexed=False)
-    experiment_start_time_stored = DateTimeField(model_attr='dataset__experiment__start_time', indexed=False, default=None)
-    experiment_end_time_stored = DateTimeField(model_attr='dataset__experiment__end_time', indexed=False, default=None)
-    experiment_institution_name_stored = CharField(model_attr='dataset__experiment__institution_name', indexed=False)
-    experiment_update_time_stored = DateTimeField(model_attr='dataset__experiment__update_time', indexed=False)
+    experiment_description = NgramField(model_attr='dataset__experiment__description')
+    experiment_title = NgramField(model_attr='dataset__experiment__title')
+    experiment_created_time = DateTimeField(model_attr='dataset__experiment__created_time')
+    experiment_start_time = DateTimeField(model_attr='dataset__experiment__start_time', default=None)
+    experiment_end_time = DateTimeField(model_attr='dataset__experiment__end_time', default=None)
+    experiment_update_time = DateTimeField(model_attr='dataset__experiment__update_time', default=None)
+    experiment_institution_name = NgramField(model_attr='dataset__experiment__institution_name', default=None)
+    experiment_creator=CharField(model_attr='dataset__experiment__created_by__username')
+    experiment_institution_name=NgramField(model_attr='dataset__experiment__institution_name')
+    experiment_authors = MultiValueField()
+    
+    def prepare_experiment_authors(self, obj):
+        return [a.author for a in obj.dataset.experiment.author_experiment_set.all()]
+    
+    def prepare_experiment_creator(self, obj):
+        exp = obj.dataset.experiment 
+        return ' '.join([exp.created_by.first_name, exp.created_by.last_name,\
+                exp.created_by.username, exp.created_by.email]) 
     
     def prepare(self, obj):
+        
         self.prepared_data = super(DatasetFileIndex, self).prepare(obj)
         
         # 
         # prepare the free text field and also add all searchable
         # soft parameters as field-searchable fields
         #
+        exp = obj.dataset.experiment
+        ds = obj.dataset
+        text_list = [exp.title, exp.description, exp.institution_name, ds.description, obj.filename]
         
-        # Default fields to be added to free text index to  be used in the 
-        # absence of valid settings
-        freetext_params = ['filename']
-        
-        text_list = []
-        text_list.extend([val for key, val in obj.__dict__.items() if key in freetext_params])
         
         # Get all searchable soft params for this experiment that
         # appear in the list of soft params to be indexed for
@@ -179,157 +200,43 @@ class DatasetFileIndex(RealTimeSearchIndex):
         
         text_list.extend(map(toIntIfNumeric, params))
         
-        # Always convert to strings as this is a text index
+        params = DatasetParameter.objects.filter(
+                parameterset__dataset__id=ds.id,
+                name__is_searchable=True,
+                name__freetextsearchfield__isnull=False)
+        
+        text_list.extend(map(toIntIfNumeric, params))
+        
+        params = ExperimentParameter.objects.filter(
+                parameterset__experiment__id=exp.id,
+                name__is_searchable=True,
+                name__freetextsearchfield__isnull=False)
+        
+        text_list.extend(map(toIntIfNumeric, params))
+        
+        # add all authors to the free text search
+        text_list.extend(self.prepare_experiment_authors(obj))
+        text_list.extend(self.prepare_experiment_creator(obj))
+        
+	    # Always convert to strings as this is a text index
         self.prepared_data['text'] = ' '.join(map(str,text_list))
-
+        
         # add all soft parameters listed as searchable as in field search
         for par in DatafileParameter.objects.filter(
                 parameterset__dataset_file__pk=obj.pk, 
                 name__is_searchable=True):
             self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
-        return self.prepared_data
-
-class GetDatasetParameters(SearchIndex.__metaclass__):
-    def __new__(cls, name, bases, attrs):
-
-        # dynamically add all the searchable parameter fields
-        try:
-            for n in [pn for pn in ParameterName.objects.all() if pn.datasetparameter_set.count() and pn.is_searchable is True]:
-                attrs['dataset_' + n.name] = _getDataType(n)
-        except DatabaseError:
-            pass
-        return super(GetDatasetParameters, cls).__new__(cls, name, bases, attrs)
-
-class DatasetIndex(OracleSafeIndex):
-    
-    __metaclass__ = GetDatasetParameters
-    
-    text=NgramField(document=True)
-    dataset_description = NgramField(model_attr='description')
-    experiment_id_stored = IntegerField(model_attr='experiment__pk', indexed=False)
-    experiment_title_stored = CharField(model_attr='experiment__title', indexed=False)
-    experiment_description_stored = CharField(model_attr='experiment__description', indexed=False)
-    experiment_created_time_stored = DateTimeField(model_attr='experiment__created_time', indexed=False)
-    experiment_start_time_stored = DateTimeField(model_attr='experiment__start_time', indexed=False, default=None)
-    experiment_end_time_stored = DateTimeField(model_attr='experiment__end_time', indexed=False, default=None)
-    experiment_institution_name_stored = CharField(model_attr='experiment__institution_name', indexed=False)
-    experiment_update_time_stored = DateTimeField(model_attr='experiment__update_time', indexed=False)
-    
-    def prepare(self, obj):
-        self.prepared_data = super(DatasetIndex, self).prepare(obj)
-
-        # 
-        # prepare the free text field and also add all searchable
-        # soft parameters as field-searchable fields
-        #
         
-        # Default fields to be added to free text index to  be used in the 
-        # absence of valid settings
-        freetext_params = ['description']
-        
-        text_list = []
-        text_list.extend([val for key, val in obj.__dict__.items() if key in freetext_params])
-        
-        # Get all searchable soft params for this experiment that
-        # appear in the list of soft params to be indexed for
-        # full text search
-        #
-        # NOTE: soft params that are flagged as not being 
-        # searchable will be silently ignored even if they
-        # have an associated FreeTextSearchField
-        params = DatasetParameter.objects.filter(
-                parameterset__dataset__id=obj.id,
-                name__is_searchable=True,
-                name__freetextsearchfield__isnull=False)
-        
-        text_list.extend(map(toIntIfNumeric, params))
-        
-        # Always convert to strings as this is a text index
-        self.prepared_data['text'] = ' '.join(map(str,text_list))
+        for par in ExperimentParameter.objects.filter(
+                parameterset__experiment__pk=exp.id, 
+                name__is_searchable=True):
+            self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
 
-        # add all soft parameters listed as searchable as in field search
         for par in DatasetParameter.objects.filter(
-                parameterset__dataset__pk=obj.pk, 
+                parameterset__dataset__pk=ds.id, 
                 name__is_searchable=True):
             self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
-        return self.prepared_data
-
-class GetExperimentParameters(SearchIndex.__metaclass__):
-    def __new__(cls, name, bases, attrs):
         
-        # dynamically add all the searchable parameter fields
-        try:
-            pns = ParameterName.objects.filter(schema__type=Schema.EXPERIMENT, is_searchable=True)
-            for n in pns:
-                attrs['experiment_' + n.name] = _getDataType(n)
-        except DatabaseError:
-            pass 
-        return super(GetExperimentParameters, cls).__new__(cls, name, bases, attrs)
-
-class ExperimentIndex(OracleSafeIndex):
-    
-    __metaclass__ = GetExperimentParameters
-
-    text= NgramField(document=True)
-    experiment_id_stored = IntegerField(model_attr='pk', indexed=False)
-    experiment_description = NgramField(model_attr='description')
-    experiment_title = NgramField(model_attr='title')
-    experiment_created_time = DateTimeField(model_attr='created_time')
-    experiment_start_time = DateTimeField(model_attr='start_time', default=None)
-    experiment_end_time = DateTimeField(model_attr='end_time', default=None)
-    experiment_update_time = DateTimeField(model_attr='update_time', default=None)
-    experiment_institution_name = NgramField(model_attr='institution_name', default=None)
-    experiment_creator= NgramField(model_attr='created_by__username')
-    experiment_authors = MultiValueField()
-
-    def prepare_experiment_authors(self, obj):
-        return [a.author for a in obj.author_experiment_set.all()]
-
-    def prepare(self,obj):
-        self.prepared_data = super(ExperimentIndex, self).prepare(obj)
-        
-        # 
-        # prepare the free text field and also add all searchable
-        # soft parameters as field-searchable fields
-        #
-        
-        # Default fields to be added to free text index to  be used in the 
-        # absence of valid settings
-        freetext_params = ['title', 'description', 'institution_name']
-        
-        text_list = []
-        text_list.extend([val for key, val in obj.__dict__.items() if key in freetext_params])
-        
-        # Get all searchable soft params for this experiment that
-        # appear in the list of soft params to be indexed for
-        # full text search
-        #
-        # NOTE: soft params that are flagged as not being 
-        # searchable will be silently ignored if specified
-        # in the settings
-        #
-        # TODO maybe this should be a static variable?
-        params = ExperimentParameter.objects.filter(
-                parameterset__experiment__id=obj.id,
-                name__is_searchable=True,
-                name__freetextsearchfield__isnull=False)
-
-        text_list.extend(map(toIntIfNumeric, params))
-        
-        # add all authors to the free text search
-        text_list.extend(self.prepare_experiment_authors(obj))
-        
-        # Always convert to strings as this is a text index
-        self.prepared_data['text'] = ' '.join(map(str,text_list))
-        
-        # add all soft parameters listed as searchable as in field search
-        for par in ExperimentParameter.objects.filter(
-                        parameterset__experiment__id=obj.id, 
-                        name__is_searchable=True):
-	        self.prepared_data['experiment_' + par.name.name] = _getParamValue(par)
-
         return self.prepared_data
 
 site.register(Dataset_File, DatasetFileIndex)
-site.register(Dataset, DatasetIndex)
-site.register(Experiment, ExperimentIndex)
