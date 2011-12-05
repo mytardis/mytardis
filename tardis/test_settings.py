@@ -148,3 +148,13 @@ TOKEN_USERNAME = 'tokenuser'
 OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
 RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
+
+DOI_ENABLE = True
+DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
+#DOI_TEMPLATE_DIR = path.join(TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
+DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
+DOI_APP_ID = ''
+DOI_NAMESPACE = 'http://www.doi.com'
+DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
+DOI_ACCESS_URL = "http://dx.doi.org/"
+DOI_RELATED_INFO_ENABLE = False
