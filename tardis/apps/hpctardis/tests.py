@@ -136,7 +136,7 @@ class HPCprotocolTest(TestCase):
         try:
             e = Experiment.objects.get(pk=expid1)
         except Experiment.DoesNotExist:
-            logger.exception('Experiment for eid %i in TestCase does not exist' % eid)
+            logger.exception('Experiment for eid %i in TestCase does not exist' % expid1)
      
         self.assertEquals(str(e.title).rstrip('\n'),'Test Exp')
         self.assertEquals(str(e.institution_name),'RMIT University')
@@ -254,7 +254,7 @@ class VASPMetadataTest(TestCase):
                 self.assertEquals(param.name.data_type,field_type,"incorrect type in %s: expected %s found %s" % (key,param.name.data_type, field_type))
             except DatasetParameter.DoesNotExist:
                 logger.error("cannot find %s" % key)
-                self.assertTrue(False)
+                self.assertTrue(False, "cannot find %s" % key)
                 
     def _metadata_extract(self,expname,files,ns,schname,results):
         """ Check that we can create an VASP experiment and extract metadata from it"""
@@ -324,15 +324,14 @@ class VASPMetadataTest(TestCase):
                                           ("IBRION",ParameterName.NUMERIC,"2.0"),
                                           ("ISMEAR",ParameterName.NUMERIC,"-6.0"),
                                           ("POTIM",ParameterName.NUMERIC,"0.5"),
-                                          ("MAGMOM",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n"),
-                                          ("EDIFF",ParameterName.NUMERIC,"0.0001"),
+                                           ("EDIFF",ParameterName.NUMERIC,"0.0001"),
                                           ("EDIFFG",ParameterName.NUMERIC,"0.001"),
-                                          ("ISTART",ParameterName.STRING,""),
                                           ("Descriptor Line",ParameterName.STRING,"Bulk Diamond"),
                                           ("NELM",ParameterName.NUMERIC,"60.0"),
                                           ("TEEND",ParameterName.NUMERIC,"0.0"),
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
-                                          #("TITEL",ParameterName.STRING,""),
+                                          ("TITEL",ParameterName.STRING,'PAW_PBE C 08Apr2002'),
+                                      
                                           ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
                                           ])
         
@@ -367,7 +366,6 @@ class VASPMetadataTest(TestCase):
                                           ("IBRION",ParameterName.NUMERIC,"-1.0"),
                                           ("ISMEAR",ParameterName.NUMERIC,"-99.0"),
                                           ("POTIM",ParameterName.NUMERIC,"0.5"),
-                                          ("MAGMOM",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n"),
                                           ("EDIFF",ParameterName.NUMERIC,"5e-06"),
                                           ("EDIFFG",ParameterName.NUMERIC,"5e-05"),
                                           ("NELM",ParameterName.NUMERIC,"60.0"),
@@ -375,8 +373,10 @@ class VASPMetadataTest(TestCase):
                                           ("TEBEG",ParameterName.NUMERIC,"0.0"),
                                           ("TEEND",ParameterName.NUMERIC,"0.0"),
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
+                                          ("LEXCH",ParameterName.STRING,"PE\n PE\n 8\n 8"),
+                                          
                             
-                                          #("TITEL",ParameterName.STRING,""),
+                                          ("TITEL",ParameterName.STRING,"PAW_PBE C 08Apr2002\n PAW_PBE N 08Apr2002"),
                                           ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
                                           ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
                                           ("Final Iteration",ParameterName.NUMERIC,"17.0")

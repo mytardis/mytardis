@@ -53,8 +53,8 @@ from tardis.tardis_portal.models import DatasetParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import Experiment
 
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 number = "[+-]?((\d+)(\.\d*)?)|(\d+\.\d+)([eE][+-]?[0-9]+)?"
 rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
@@ -92,8 +92,8 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
                 ('POTIM',("OUTCAR[_0-9]*",),
                  "get_file_regex(context,'POTIM\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
-                ('MAGMOM',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,1,4)"), 
+                #('MAGMOM',("POSCAR[_0-9]*",),
+                 #"get_file_lines(context,1,4)"), 
                 ('Descriptor Line',("INCAR[_0-9]*",),
                  "get_file_regex(context,'System = (?P<value>.*)(?P<unit>)',False)"), 
                 ('EDIFF',("OUTCAR[_0-9]*",),
@@ -112,8 +112,13 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)',False)"),  
                 ('Final Iteration',("OSZICAR[_0-9]*",),
                  "get_final_iteration(context)"), 
+             
                 ('TITEL',("OUTCAR[_0-9]*",),
-                 "'\n'.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)'))"), 
+                 "('\\n '.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)$')),'')"), 
+             
+                ('LEXCH',("OUTCAR[_0-9]*",),
+                 "('\\n '.join(get_file_regex_all(context,'LEXCH\s+\=\s+(?P<value>[^\s]+)')),'')"), 
+             
                 ('Cell Parameters',("POSCAR[_0-9]*",),
                  "get_file_lines(context,1,5)")),
             
@@ -316,7 +321,7 @@ def get_file_line(context,lineno):
         if fp:
             line_list = fp.readlines()
             fp.close()
-            print line_list 
+            logger.debug(line_list) 
             return (str(line_list[lineno]),'')
     return ('','')  
     
@@ -413,12 +418,13 @@ def get_file_regex(context,regex,return_max):
     filename = _get_file_from_regex(fileregex,context['ready'],return_max)
     
     if not filename or filename not in context['ready']:
-        print "found None"
+        logger.debug("found None")
         return ('','')
     else:
         try:
             fp = _get_file_handle(context, filename)
-        except Exception:
+        except Exception,e:
+            logger.error("problem with filehandle %s" % e)
             return ('','')
         if fp:
             regx = re.compile(regex)
@@ -430,13 +436,15 @@ def get_file_regex(context,regex,return_max):
                     unit = str(match.group('unit'))
                     if not unit:
                         unit = ''
-                    print "value=%s unit=%s" % (value,unit)
+                    logger.debug("value=%s unit=%s" % (value,unit))
                     fp.close()
                     res = (value,unit)
                     for g in res:
-                        print "final matched %s" % g
+                        logger.debug("final matched %s" % g)
                     return res
-            fp.close() 
+        else:
+            logger.debug("no filehandle")
+        fp.close() 
         return ('','')     
 
 
@@ -456,19 +464,23 @@ def get_file_regex_all(context,regex):
     #        filename = key
     #        break
 
-    # FIXME: only handles single file pattern    
+    # FIXME: only handles single file pattern   
+    logger.debug("get_file_regex_all") 
     fileregex = context['fileregex'][0]
+    logger.debug("fileregex=%s" % fileregex)
     filename = _get_file_from_regex(fileregex,context['ready'],False)
+    logger.debug("filename=%s" % filename)
     
     final_res = []
     if not filename or filename not in context['ready']:
-        print "found None"
-        return ([],'')
+        logger.debug("found None")
+        return []
     else:
         try:
             fp = _get_file_handle(context, filename)
         except Exception:
-            return ([],'')
+            logger.error("bad file handle")
+            return []
         if fp:
             regx = re.compile(regex)
             for line in fp:
@@ -476,13 +488,11 @@ def get_file_regex_all(context,regex):
                 
                 if match:
                     value = match.group('value')
-                    print "value=%s" % value
-                    fp.close()
-                    for g in value:
-                        print "final matched %s" % g
-                    final_res.append(value)
-            fp.close() 
-        return (final_res,'')     
+                    logger.debug("value=%s" % value)
+                    final_res.append(value.rstrip())
+            fp.close()
+        logger.debug("final_res=%s" % final_res) 
+        return final_res     
 
 
 
@@ -553,6 +563,7 @@ def get_metadata(ruleset):
                                          {"get_file_line":get_file_line,
                                           "get_file_lines":get_file_lines,
                                           "get_file_regex":get_file_regex,
+                                          "get_file_regex_all":get_file_regex_all,
                                           "get_regex_lines":get_regex_lines,
                                           "get_regex_lines_vallist":get_regex_lines_vallist,
                                           "get_final_iteration":get_final_iteration,
@@ -560,7 +571,7 @@ def get_metadata(ruleset):
                                           'context':data_context})
                     except Exception,e:
                         logger.error("Exception %s" % e)
-                    logger.debug("value,unit=%s %s" % (value,unit))
+                        logger.debug("value,unit=%s %s" % (value,unit))
                  
                     meta[tagname] = (value,unit)
                      
@@ -647,19 +658,30 @@ def save_metadata(instance,schema,metadata):
         logger.debug("p=%s\n" % p)
         if p.name in metadata:
             logger.debug("found p =%s %s\n" % (p.name,p.units))
-            try:
-                dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
-            except DatasetParameter.DoesNotExist:           
-                dfp = DatasetParameter(parameterset=ps,
-                                    name=p)
-            # TODO: handle bad type 
+            
             if p.isNumeric():
-                dfp.numerical_value = metadata[p.name][0]
-                logger.debug("numeric")
+                val = metadata[p.name][0]
+                if val:
+                           
+                    try:
+                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                    except DatasetParameter.DoesNotExist:           
+                        dfp = DatasetParameter(parameterset=ps,
+                                    name=p)
+                    dfp.numerical_value = val
+                    logger.debug("numeric")
+                    dfp.save()
             else:
-                dfp.string_value = metadata[p.name][0]
-            logger.debug("dfp=%(dfp)s" % locals())
-            dfp.save()
+                val = metadata[p.name][0]
+                if val:
+                    try:
+                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                    except DatasetParameter.DoesNotExist:           
+                        dfp = DatasetParameter(parameterset=ps,
+                                    name=p)
+                        dfp.string_value = metadata[p.name][0]
+                    dfp.save()
+                    logger.debug("string")
             
             
 def go():
