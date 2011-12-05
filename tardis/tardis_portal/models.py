@@ -277,6 +277,15 @@ class ExperimentACL(models.Model):
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
 
+    def get_related_object(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.get(pk=self.entityId)
+        return None
+
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)
 
@@ -576,6 +585,8 @@ class Schema(models.Model):
     # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
     subtype = models.CharField(blank=True, null=True, max_length=30)
     objects = SchemaManager()
+    immutable = models.BooleanField(default=False)
+    
 
     def natural_key(self):
         return (self.namespace,)
@@ -835,9 +846,9 @@ class DatafileParameter(models.Model):
 
     parameterset = models.ForeignKey(DatafileParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
 
     def get(self):
@@ -857,9 +868,9 @@ class DatasetParameter(models.Model):
 
     parameterset = models.ForeignKey(DatasetParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
 
     def get(self):
@@ -878,9 +889,9 @@ class DatasetParameter(models.Model):
 class ExperimentParameter(models.Model):
     parameterset = models.ForeignKey(ExperimentParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
 
     def get(self):
@@ -1029,3 +1040,28 @@ def pre_save_parameter(sender, **kwargs):
                 f.write(b64)
             f.close()
             parameter.string_value = filename
+
+@receiver(post_save, sender=ExperimentParameter)
+def post_save_experiment_parameter(sender, **kwargs):
+    experiment_param = kwargs['instance']
+    experiment = Experiment.objects.get(pk=experiment_param.getExpId())
+    _publish_public_expt_rifcs(experiment)   
+
+@receiver(post_save, sender=Experiment)
+def post_save_experiment(sender, **kwargs):
+    experiment = kwargs['instance']
+    _publish_public_expt_rifcs(experiment)    
+
+@receiver(post_save, sender=Author_Experiment)
+def post_save_author_experiment(sender, **kwargs):
+    author_experiment = kwargs['instance']
+    _publish_public_expt_rifcs(author_experiment.experiment)   
+
+def _publish_public_expt_rifcs(experiment):
+    try:
+        providers = settings.RIFCS_PROVIDERS
+    except:
+        providers = None
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(providers, experiment)
+    pservice.manage_rifcs(settings.OAI_DOCS_PATH)

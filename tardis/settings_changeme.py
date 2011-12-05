@@ -248,3 +248,12 @@ IMMUTABLE_METS_DATASETS = True
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+# RIF-CS Settings
+OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
+RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
+RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__), 
+    'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
+RIFCS_GROUP = "MyTARDIS Default Group"
+RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
+RELATED_OTHER_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'

@@ -160,6 +160,9 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
             if l:
                 l.unbind_s()
 
+    def get_user(self, user_id):
+        return self.getUserById(user_id)
+
     #
     # User Provider
     #

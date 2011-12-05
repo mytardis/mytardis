@@ -42,10 +42,13 @@ import urllib2
 from urllib import urlencode, urlopen
 from os import path
 import logging
+import json
+from operator import itemgetter
 
 from django.template import Context
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse
@@ -87,14 +90,13 @@ from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
 from haystack.query import SearchQuerySet
-#from haystack import backend
 from tardis.tardis_portal.search_query import FacetFixedSearchQuery
-from haystack.views import SearchView
 from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
+
 
 
 def getNewSearchDatafileSelectionForm(initial=None):
@@ -474,6 +476,14 @@ def experiment_datasets(request, experiment_id):
         sqs = SearchQuerySet(query=search_query)
        
         query = SearchQueryString(request.GET['query'])
+        
+        #raw_search doesn't chain...
+        results = sqs.raw_search(query.query_string()).highlight()
+        
+        matching_datasets = [d.object for d in results if 
+                d.model_name == 'dataset' and 
+                d.experiment_id_stored == int(experiment_id)
+                ]
 
         facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
         if facet_counts:
@@ -788,26 +798,41 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     except AttributeError:
         logger.error('no default authentication for experiment ownership set (settings.DEFAULT_AUTH)')
 
+    force_user_create = False
+    try:
+        force_user_create = settings.DEFAULT_AUTH_FORCE_USER_CREATE
+    except AttributeError:
+        pass
+
     if auth_key:
         for owner in owners:
             # for each PI
-            if owner:
-                user = auth_service.getUser({'pluginname': auth_key,
-                                             'id': owner})
-                # if exist, create ACL
-                if user:
-                    logger.debug('registering owner: ' + owner)
-                    e = Experiment.objects.get(pk=eid)
+            if not owner:
+                continue
 
-                    acl = ExperimentACL(experiment=e,
-                                        pluginId=django_user,
-                                        entityId=str(user.id),
-                                        canRead=True,
-                                        canWrite=True,
-                                        canDelete=True,
-                                        isOwner=True,
-                                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-                    acl.save()
+            owner_username = None
+            if '@' in owner:
+                owner_username = auth_service.getUsernameByEmail(auth_key,
+                                    owner)
+            if not owner_username:
+                owner_username = owner
+
+            owner_user = auth_service.getUser(auth_key, owner_username,
+                      force_user_create=force_user_create)
+            # if exist, create ACL
+            if owner_user:
+                logger.debug('registering owner: ' + owner)
+                e = Experiment.objects.get(pk=eid)
+
+                acl = ExperimentACL(experiment=e,
+                                    pluginId=django_user,
+                                    entityId=str(owner_user.id),
+                                    canRead=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True,
+                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl.save()
 
     return eid
 
@@ -928,7 +953,7 @@ def retrieve_datafile_list(request, dataset_id):
     
     if 'query' in request.GET:
         search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-    	sqs = SearchQuerySet(query=search_query)
+        sqs = SearchQuerySet(query=search_query)
         query =  SearchQueryString(request.GET['query'])
         results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
@@ -937,7 +962,7 @@ def retrieve_datafile_list(request, dataset_id):
 
     elif 'datafileResults' in request.session and 'search' in request.GET: 
         highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
-    
+
     dataset_results = \
         Dataset_File.objects.filter(
             dataset__pk=dataset_id,
@@ -1592,22 +1617,52 @@ def search_datafile(request):
 @never_cache
 @login_required()
 def retrieve_user_list(request):
-    authMethod = request.GET['authMethod']
-    if authMethod == localdb_auth_key:
-        users = [userProfile.user for userProfile in
-                 UserProfile.objects.filter(isDjangoAccount=True)]
-        users = sorted(users, key=lambda user: user.username)
-    else:
-        users = [userAuth for userAuth in
-                 UserAuthentication.objects.filter(
-                     authenticationMethod=authMethod)
-                 if userAuth.userProfile.isDjangoAccount == False]
-        if users:
-            users = sorted(users, key=lambda userAuth: userAuth.username)
-        else:
-            users = User.objects.none()
-    userlist = ' '.join([str(u) for u in users])
-    return HttpResponse(userlist)
+    # TODO: Hook this up to authservice.searchUsers() to actually get
+    # autocompletion data directly from auth backends.
+    # The following local DB query would be moved to auth.localdb_auth.SearchUsers.
+    query = request.GET['q']
+    limit = int(request.GET.get('limit', '10'))
+    # Search all user fields and also the UserAuthentication username.
+    q = Q(username__contains=query)   | \
+        Q(first_name__contains=query) | \
+        Q(last_name__contains=query)  | \
+        Q(email__contains=query) | \
+        Q(userprofile__userauthentication__username__contains=query)
+    users_query = User.objects.filter(q).distinct().select_related('userprofile')
+    users_query = users_query[0:limit]
+
+    user_auths = list(UserAuthentication.objects.filter(userProfile__user__in=users_query))
+    auth_methods = dict( (ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
+    """
+    users = [ {
+        "username": "ksr",
+        "first_name": "Kieran",
+        "last_name": "Spear",
+        "email": "email@address.com",
+        "auth_methods": [ "ksr:vbl:VBL", "ksr:localdb:Local DB" ]
+    } , ... ]
+    """
+    users = []
+    for u in users_query:
+        fields = ('first_name', 'last_name', 'username', 'email')
+        # Convert attributes to dictionary keys and make sure all values
+        # are strings.
+        user = dict( [ (k, str(getattr(u, k))) for k in fields ] )
+        try:
+            user['auth_methods'] = [ '%s:%s:%s' % \
+                    (ua.username, ua.authenticationMethod, \
+                    auth_methods[ua.authenticationMethod]) \
+                    for ua in user_auths if ua.userProfile == u.get_profile() ]
+        except UserProfile.DoesNotExist:
+            user['auth_methods'] = []
+
+        if not user['auth_methods']:
+            user['auth_methods'] = [ '%s:localdb:%s' % \
+                    (u.username, auth_methods['localdb']) ]
+        users.append(user)
+
+    users.sort(key=itemgetter('first_name'))
+    return HttpResponse(json.dumps(users))
 
 
 @never_cache
@@ -1643,12 +1698,11 @@ def retrieve_field_list(request):
 @never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
-
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    users = Experiment.safe.users(request, experiment_id)
+    user_acls = Experiment.safe.user_acls(request, experiment_id)
 
-    c = Context({'users': users, 'experiment_id': experiment_id,
-                 'addUserPermissionsForm': AddUserPermissionsForm()})
+    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id,
+                 'addUserPermissionsForm': AddUserPermissionsForm() })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_user.html', c))
 
@@ -1816,17 +1870,10 @@ def add_experiment_access_user(request, experiment_id, username):
         if request.GET['canDelete'] == 'true':
             canDelete = True
 
-    try:
-        authMethod = request.GET['authMethod']
-        if authMethod == localdb_auth_key:
-            user = User.objects.get(username=username)
-        else:
-            user = UserAuthentication.objects.get(username=username,
-                authenticationMethod=authMethod).userProfile.user
-    except User.DoesNotExist:
+    authMethod = request.GET['authMethod']
+    user = auth_service.getUser(authMethod, username)
+    if user is None:
         return HttpResponse('User %s does not exist.' % (username))
-    except UserAuthentication.DoesNotExist:
-        return HttpResponse('User %s does not exist' % (username))
 
     try:
         experiment = Experiment.objects.get(pk=experiment_id)
@@ -1852,6 +1899,7 @@ def add_experiment_access_user(request, experiment_id, username):
         acl.save()
         c = Context({'authMethod': authMethod,
                      'user': user,
+                     'user_acl': acl,
                      'username': username,
                      'experiment_id': experiment_id})
 
@@ -2418,7 +2466,7 @@ def add_experiment_par(request, experiment_id):
 
 def add_par(request, parentObject, otype, stype):
         
-    all_schema = Schema.objects.filter(type=stype)
+    all_schema = Schema.objects.filter(type=stype, immutable=False)
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
@@ -2696,3 +2744,39 @@ def token_login(request, token):
     login(request, user)
     experiment = Experiment.objects.get(token__token=token)
     return HttpResponseRedirect(experiment.get_absolute_url())
+
+@authz.experiment_access_required
+def view_rifcs(request, experiment_id):
+    """View the rif-cs of an existing experiment.
+
+    :param request: a HTTP Request instance
+    :type request: :class:`django.http.HttpRequest`
+    :param experiment_id: the ID of the experiment to be viewed
+    :type experiment_id: string
+    :rtype: :class:`django.http.HttpResponse`
+
+    """
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except PermissionDenied:
+        return return_response_error(request)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+    
+    try:
+        rifcs_provs = settings.RIFCS_PROVIDERS   
+    except AttributeError:
+        rifcs_provs = ()
+           
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(rifcs_provs, experiment)
+    context = pservice.get_context()
+    if context is None:
+        # return error page or something
+        return return_response_error(request)
+    
+    template = pservice.get_template()
+    return HttpResponse(render_response_index(request,
+                        template, context), mimetype="text/xml")
+
+

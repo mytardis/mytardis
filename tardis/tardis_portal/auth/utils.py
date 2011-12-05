@@ -4,57 +4,54 @@ Created on 15/03/2011
 @author: gerson
 '''
 
-
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 
 
-def get_or_create_user_with_username(request, username, auth_key):
-    isDjangoAccount = True
-
+def get_or_create_user(auth_method, user_id, email=''):
     try:
-        # check if the given username in combination with the LDAP
+        # check if the given username in combination with the
         # auth method is already in the UserAuthentication table
-        user = UserAuthentication.objects.get(username=username,
-            authenticationMethod=auth_key).userProfile.user
-
+        user = UserAuthentication.objects.get(username=user_id,
+            authenticationMethod=auth_method).userProfile.user
+        created = False
     except UserAuthentication.DoesNotExist:
-        # if request.user is not null, then we can assume that we are only
-        # calling this function to verify if the provided username and
-        # password will authenticate with the provided backend
-        if type(request.user) is not AnonymousUser:
-            user = request.user
+        user = create_user(auth_method, user_id, email)
+        created = True
+    return (user, created)
 
-        # else, create a new user with a random password
-        else:
-            isDjangoAccount = False
 
-            if username.find('@') > 0:
-                # the username to be used on the User table
-                name = username.partition('@')[0]
-            else:
-                name = username
+def create_user(auth_method, user_id, email=''):
+    # length of the maximum username
+    max_length = 30
 
-            # length of the maximum username and the separator `_`
-            max_length = 31 - len(name)
-            name = '%s_%s' % (auth_key, name[0:max_length])
-            password = User.objects.make_random_password()
-            user = User.objects.create_user(username=name,
-                                            password=password,
-                                            email=username)
-            user.save()
+    # the username to be used on the User table
+    if user_id.find('@') > 0:
+        unique_username = user_id.partition('@')[0][:max_length]
+    else:
+        unique_username = user_id[:max_length]
 
-        try:
-            # we'll also try and check if the user already has an
-            # existing userProfile attached to his/her account
-            userProfile = UserProfile.objects.get(user=user)
-        except UserProfile.DoesNotExist:
-            userProfile = UserProfile(user=user,
-                isDjangoAccount=isDjangoAccount)
-            userProfile.save()
+    # Generate a unique username
+    i = 0
+    try:
+        while (User.objects.get(username=unique_username)):
+            i += 1
+            unique_username = user_id[:max_length - len(str(i))] + str(i)
+    except User.DoesNotExist:
+        pass
 
-        userAuth = UserAuthentication(userProfile=userProfile,
-            username=username, authenticationMethod=auth_key)
-        userAuth.save()
+    password = User.objects.make_random_password()
+    user = User.objects.create_user(username=unique_username,
+                                    password=password,
+                                    email=email)
+    user.save()
+
+    userProfile = UserProfile(user=user, isDjangoAccount=False)
+    userProfile.save()
+
+    userAuth = UserAuthentication(userProfile=userProfile,
+        username=user_id, authenticationMethod=auth_method)
+    userAuth.save()
 
     return user
+

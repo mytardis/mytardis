@@ -188,6 +188,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         return self.exp_cache[exp]
 
     def get_dataset_text(self, obj, ds):
+        exp = obj.dataset.experiment
+        ds = obj.dataset
+        text_list = [exp.title, exp.description, exp.institution_name, ds.description, obj.filename]
         
         if not ds in self.ds_cache:
             text_list = [ds.description]
@@ -252,6 +255,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         # NOTE: soft params that are flagged as not being 
         # searchable will be silently ignored even if they
         # have an associated FreeTextSearchField
+
         params = DatafileParameter.objects.filter(
                 parameterset__dataset_file__id=obj.id,
                 name__is_searchable=True,
@@ -275,6 +279,11 @@ class DatasetFileIndex(RealTimeSearchIndex):
         
         self.prepared_data.update(self.get_experiment_params(exp))
         self.prepared_data.update(self.get_dataset_params(ds))
+        
+        for par in DatasetParameter.objects.filter(
+                parameterset__dataset__pk=ds.id, 
+                name__is_searchable=True):
+            self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
         
         return self.prepared_data
 
