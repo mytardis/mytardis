@@ -89,6 +89,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
+from haystack.views import SearchView
 from haystack.query import SearchQuerySet
 from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.forms import RawSearchForm
