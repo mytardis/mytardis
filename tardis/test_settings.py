@@ -17,6 +17,10 @@ DATABASES = {
     }
 }
 
+# default authentication module for experiment ownership user during
+# ingestion? Must be one of the above authentication provider names
+DEFAULT_AUTH = 'localdb'
+
 ROOT_URLCONF = 'tardis.urls'
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
