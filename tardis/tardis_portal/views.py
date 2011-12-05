@@ -87,7 +87,8 @@ from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
 from haystack.query import SearchQuerySet
-from haystack import backend
+#from haystack import backend
+from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from haystack.views import SearchView
 from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
@@ -468,9 +469,9 @@ def experiment_datasets(request, experiment_id):
 
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
-        search_query = backend.SearchQuery(backend=HighlightSearchBackend())
+        # 
+        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
         sqs = SearchQuerySet(query=search_query)
-        #sqs.highlight()
        
         query = SearchQueryString(request.GET['query'])
 
@@ -479,11 +480,6 @@ def experiment_datasets(request, experiment_id):
             dataset_id_facets = facet_counts['fields']['dataset_id_stored']
         else:
             dataset_id_facets = []
-       
-         
-        matching_dataset_files = []
-        matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
-        matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
         
         c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
         c['file_matched_datasets'] = []
@@ -931,7 +927,7 @@ def retrieve_datafile_list(request, dataset_id):
     highlighted_dsf_pks = []
     
     if 'query' in request.GET:
-    	search_query = backend.SearchQuery(backend=HighlightSearchBackend())
+        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
     	sqs = SearchQuerySet(query=search_query)
         query =  SearchQueryString(request.GET['query'])
         results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
@@ -2536,8 +2532,8 @@ class ExperimentSearchView(SearchView):
 
 @login_required
 def single_search(request):
-    query = backend.SearchQuery(backend=HighlightSearchBackend())
-    sqs = SearchQuerySet(query=query)
+    search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+    sqs = SearchQuerySet(query=search_query)
     sqs.highlight()
 
     return ExperimentSearchView(
