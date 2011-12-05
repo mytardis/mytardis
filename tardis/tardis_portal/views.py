@@ -89,9 +89,9 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 
-from haystack.query import SearchQuerySet
-from haystack import backend
 from haystack.views import SearchView
+from haystack.query import SearchQuerySet
+from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
@@ -468,13 +468,14 @@ def experiment_datasets(request, experiment_id):
 
     c['experiment'] = experiment
     
-    #TODO Single search should use sessions as well 
     if 'query' in request.GET:
 
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
-        sqs = SearchQuerySet() 
-        
+        # 
+        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+        sqs = SearchQuerySet(query=search_query)
+       
         query = SearchQueryString(request.GET['query'])
         
         #raw_search doesn't chain...
@@ -485,17 +486,14 @@ def experiment_datasets(request, experiment_id):
                 d.experiment_id_stored == int(experiment_id)
                 ]
 
-        matching_dataset_files = [d for d in results if 
-                d.model_name == 'dataset_file' and 
-                d.experiment_id_stored == int(experiment_id)
-                ]
-     
-        matching_dataset_file_pks = [dsf.object.dataset for dsf in matching_dataset_files] 
-        matching_file_datasets = list(set([dsf.object.dataset for dsf in matching_dataset_files])) 
+        facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
+        if facet_counts:
+            dataset_id_facets = facet_counts['fields']['dataset_id_stored']
+        else:
+            dataset_id_facets = []
         
-        c['highlighted_datasets'] = [ds.pk for ds in matching_datasets]
-        c['file_matched_datasets'] = [ds.pk for ds in matching_file_datasets]
-        c['highlighted_dataset_files'] = matching_dataset_file_pks 
+        c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
+        c['file_matched_datasets'] = []
         
         c['query'] = query
     
@@ -955,15 +953,17 @@ def retrieve_datafile_list(request, dataset_id):
     highlighted_dsf_pks = []
     
     if 'query' in request.GET:
+        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+        sqs = SearchQuerySet(query=search_query)
         query =  SearchQueryString(request.GET['query'])
-        results = SearchQuerySet().raw_search(query.query_string()).load_all()
+        results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
         highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
 
         params['query'] = query.query_string()
 
     elif 'datafileResults' in request.session and 'search' in request.GET: 
         highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
-    
+
     dataset_results = \
         Dataset_File.objects.filter(
             dataset__pk=dataset_id,
@@ -1072,15 +1072,14 @@ def search_experiment(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
     
-    results = {}
+    results = []
     for e in experiments:
-        results[e.pk] = (
-            {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : False, 
-             'experiment_hit' : True, 
-            }
-         )
+        result = {}
+        result['sr'] = e
+        result['dataset_hit'] = False 
+        result['dataset_file_hit'] = False
+        result['experiment_hit'] = True
+        results.append(result)
     c = Context({'header': 'Search Experiment',
                  'experiments': results,
                  'bodyclass': bodyclass})
@@ -1594,14 +1593,14 @@ def search_datafile(request):
     else:
         experiments = {}
 
-    results = {}
+    results = []
     for key, e in experiments.items():
-        results[key]=\
-            {'sr' : e,
-             'dataset_hit' : False, 
-             'dataset_file_hit' : True, 
-             'experiment_hit' : False, 
-            }        
+        result = {}
+        result['sr'] = e
+        result['dataset_hit'] = False 
+        result['dataset_file_hit'] = True
+        result['experiment_hit'] = False
+        results.append(result)
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
@@ -2531,8 +2530,14 @@ class ExperimentSearchView(SearchView):
         # Group them into experiments, noting whether or not the search
         # hits were in the Dataset(s) or Dataset_File(s)
         results = self.results
-        
-        experiments = {}
+        facets =  results.facet_counts()
+        if facets:
+            experiment_facets = facets['fields']['experiment_id_stored']
+            experiment_ids = [ int(f[0]) for f in experiment_facets if int(f[1]) > 0 ]
+        else:
+            experiment_ids = []
+
+
         access_list = []
 
         if self.request.user.is_authenticated():
@@ -2540,29 +2545,19 @@ class ExperimentSearchView(SearchView):
 
         access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
 
-        from itertools import groupby, chain
-        
-        for k, g in groupby(results, lambda x: x.experiment_id_stored):
-            if k not in access_list:
-                continue
-            
-            g = list(g)
-            experiments[k] = {}
-            experiments[k]['sr'] = g[0] # for now
-           
-            # get a flat list of all the field names that are highlighted in any of
-            # the search results for this group
-            hl_keys = chain.from_iterable([sr.highlighted.keys() for sr in g if sr.highlighted])
-            
-            # generate a list of all the unique prefixes of the field names
-            unique_prefixes = set([hlk.split('_')[0] for hlk in hl_keys])
-            print unique_prefixes 
-            
-            experiments[k]['dataset_hit'] = 'dataset' in unique_prefixes
-            experiments[k]['dataset_file_hit'] = 'datafile' in unique_prefixes
-            experiments[k]['experiment_hit'] = 'experiment' in unique_prefixes
-        
-        extra['experiments'] = experiments
+        ids = list(set(experiment_ids) & set(access_list))
+        experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
+
+        results = []
+        for e in experiments:
+            result = {}
+            result['sr'] = e
+            result['dataset_hit'] = False 
+            result['dataset_file_hit'] = False
+            result['experiment_hit'] = False
+            results.append(result)
+
+        extra['experiments'] = results 
         return extra
 
     # override SearchView's method in order to
@@ -2580,14 +2575,14 @@ class ExperimentSearchView(SearchView):
                 'paginator' : paginator,
                 }
         context.update(self.extra_context())
-
+   
         return render_response_index(self.request, self.template, context)
 
 
 @login_required
 def single_search(request):
-    query = backend.SearchQuery(backend=HighlightSearchBackend())
-    sqs = SearchQuerySet(query=query)# HighlightSearchQuerySet()
+    search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
+    sqs = SearchQuerySet(query=search_query)
     sqs.highlight()
 
     return ExperimentSearchView(
