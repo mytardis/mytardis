@@ -112,8 +112,12 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)',False)"),  
                 ('Final Iteration',("OSZICAR[_0-9]*",),
                  "get_final_iteration(context)"), 
+                ('TITEL',("OUTCAR[_0-9]*",),
+                 "'\n'.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)'))"), 
                 ('Cell Parameters',("POSCAR[_0-9]*",),
                  "get_file_lines(context,1,5)")),
+            
+            
                  
                  
                 ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
@@ -123,8 +127,10 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                    "get_file_regex(context,'MeshCutoff\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
                 ('ElectronicTemperature',("input\.fdf",),
                    "get_file_regex(context,'ElectronicTemperature\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
+                #('k-grid',("input\.fdf",),
+                #   "get_regex_lines(context,'\%block k_grid_Monkhorst_Pack','\%endblock k_grid_Monkhorst_Pack')"),
                 ('k-grid',("input\.fdf",),
-                   "get_regex_lines(context,'\%block k_grid_Monkhorst_Pack','\%endblock k_grid_Monkhorst_Pack')"),
+                   "get_regex_lines(context,'\%block kgridMonkhorstPack','\%endblock kgridMonkhorstPack')"),
                 ('PAO.Basis',("input\.fdf",),
                    "get_regex_lines(context,'\%block PAO.Basis','\%endblock PAO.Basis')"),
                 ('Project',("^siesta.*[_0-9]*\.o(\d+)$",),
@@ -135,8 +141,30 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                 ('Maximum virtual memory',("^siesta.*[_0-9]*\.o(\d+)$",),
                      "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
                 ('Max jobfs disk use',("^siesta.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)")),
+                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
       
+                ('MD.TypeOfRun',('input\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.TypeOfRun\s+(?P<value>.*)(?P<unit>)',False)"),
+      
+                ('MD.NumCGsteps',('input\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.NumCGsteps\s+(?P<value>[^\s]+)(?P<unit>)',False)"),
+            
+                ('iscf',('output',),
+                 "(get_regex_lines_vallist(context,'siesta\:\siscf','^$')[-1],'')"),
+             
+             
+                ('E_KS',('output',),
+                 "get_file_regex(context,'^siesta:\s+E\_KS\(eV\)\s+\=\s+(?P<value>.*)(?P<unit>)',False)"),
+             
+                ('Occupation Function',('input\.fdf',),
+                 "get_file_regex(context,'(?<!\#)OccupationFunction\s+(?P<value>.*)(?P<unit>)',False)"),
+             
+                ('OccupationMPOrder',('input\.fdf',),
+                 "get_file_regex(context,'(?<!\#)OccupationMPOrder\s+(?P<value>.*)(?P<unit>)',False)"),
+             
+                
+                ('MD.MaxForceTol',('input\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.MaxForceTol\s+(?P<value>[^\s]+)\s+(?P<unit>.*)',False)")),
                        
                        ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
                   "get_constant(context,'99','foobars')"),
@@ -229,6 +257,8 @@ def _get_file_from_regex(regex,context, return_max):
             
     logger.debug("max_match=%s" % max_match)
     return max_match
+
+
 
 def get_file_lines(context, linestart,lineend):
     """ Returns value and units from the filenameregex where value is 
@@ -326,6 +356,43 @@ def get_regex_lines(context, startregex,endregex):
         return ("\n".join(res),'')     
                 
                 
+                
+                
+def get_regex_lines_vallist(context, startregex,endregex):
+    
+    fileregex = context['fileregex'][0]
+  
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return ['']
+    else:
+        
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ['']
+        if fp:
+            startreg = re.compile(startregex)
+            endreg = re.compile(endregex)
+            res = []
+            in_region = False
+            for line in fp:
+                start_match = startreg.search(line)
+                end_match = endreg.search(line)    
+                if start_match:
+                    in_region = True
+                    continue
+                if end_match:
+                    in_region = False
+                    continue
+                if in_region:
+                    res.append(line)
+            fp.close() 
+        return res     
+                
+                
           
 def get_file_regex(context,regex,return_max):
     """ Searches all files that match file regex and searches for regex in contents.
@@ -371,6 +438,53 @@ def get_file_regex(context,regex,return_max):
                     return res
             fp.close() 
         return ('','')     
+
+
+                
+          
+def get_file_regex_all(context,regex):
+    """ Searches all files that match file regex and searches for regex in contents.
+        Returns the contents of groups 'name' and 'unit' as a tuple
+    """
+
+    # match fileregex to available files
+    #regx = re.compile(fileregex)
+    #filename = None
+    #for key in context['ready']:
+    #    match = regx.match(key)
+    #    if match:
+    #        filename = key
+    #        break
+
+    # FIXME: only handles single file pattern    
+    fileregex = context['fileregex'][0]
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    
+    final_res = []
+    if not filename or filename not in context['ready']:
+        print "found None"
+        return ([],'')
+    else:
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ([],'')
+        if fp:
+            regx = re.compile(regex)
+            for line in fp:
+                match = regx.search(line)
+                
+                if match:
+                    value = match.group('value')
+                    print "value=%s" % value
+                    fp.close()
+                    for g in value:
+                        print "final matched %s" % g
+                    final_res.append(value)
+            fp.close() 
+        return (final_res,'')     
+
+
 
     
 def get_constant(context,val,unit):
@@ -440,6 +554,7 @@ def get_metadata(ruleset):
                                           "get_file_lines":get_file_lines,
                                           "get_file_regex":get_file_regex,
                                           "get_regex_lines":get_regex_lines,
+                                          "get_regex_lines_vallist":get_regex_lines_vallist,
                                           "get_final_iteration":get_final_iteration,
                                           "get_constant":get_constant,
                                           'context':data_context})

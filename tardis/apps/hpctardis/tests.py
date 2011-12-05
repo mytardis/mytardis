@@ -248,10 +248,10 @@ class VASPMetadataTest(TestCase):
             try:
                 # First check stringed value
                 param = psm.get_param(key,value=True)
-                self.assertEquals(str(param),str(value),"incorrect in %s: expected %s found %s" % (key,repr(param),repr(value)))
+                self.assertEquals(str(param),str(value),"incorrect value in %s: expected %s found %s" % (key,repr(value),repr(param)))
                 # Then correct type
                 param = psm.get_param(key,value=False)
-                self.assertEquals(param.name.data_type,field_type,"incorrect in %s: expected %s found %s" % (key,param.name.data_type, field_type))
+                self.assertEquals(param.name.data_type,field_type,"incorrect type in %s: expected %s found %s" % (key,param.name.data_type, field_type))
             except DatasetParameter.DoesNotExist:
                 logger.error("cannot find %s" % key)
                 self.assertTrue(False)
@@ -332,6 +332,7 @@ class VASPMetadataTest(TestCase):
                                           ("NELM",ParameterName.NUMERIC,"60.0"),
                                           ("TEEND",ParameterName.NUMERIC,"0.0"),
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
+                                          #("TITEL",ParameterName.STRING,""),
                                           ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
                                           ])
         
@@ -374,6 +375,8 @@ class VASPMetadataTest(TestCase):
                                           ("TEBEG",ParameterName.NUMERIC,"0.0"),
                                           ("TEEND",ParameterName.NUMERIC,"0.0"),
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
+                            
+                                          #("TITEL",ParameterName.STRING,""),
                                           ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
                                           ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
                                           ("Final Iteration",ParameterName.NUMERIC,"17.0")
@@ -384,21 +387,26 @@ class VASPMetadataTest(TestCase):
         
         self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
-                                          #'testing/dataset3/output',
-                                          'testing/dataset3/siesta.sub.o923124',
-                                          'testing/dataset3/siesta_bulk_si.txt',
-                                          'testing/dataset3/system.STRUCT_IN'],
+                                          'testing/dataset3/output',
+                                          'testing/dataset3/siesta.sub.o923124'],
                                ns="http://tardis.edu.au/schemas/siesta/1",
                                schname="siesta 1.0",
-                               results= [("SystemName",ParameterName.STRING,"512-atom silicon"),
-                                        ("MeshCutoff",ParameterName.NUMERIC,"300.0"),
-                                          ("ElectronicTemperature",ParameterName.NUMERIC,"0.0"),
-                                          ("k-grid",ParameterName.STRING,' 1   0   0  0.0\n\n 0   1   0  0.0\n\n 0   0   1  0.0\n'),
+                               results= [("SystemName",ParameterName.STRING,"my System"),
+                                        ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
+                                          ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
                                            ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
                                            ("Walltime",ParameterName.STRING,"04:27:18"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
                                           ("Max jobfs disk use",ParameterName.NUMERIC,"2.1"),
-                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=3  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n')
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("MD.TypeOfRun",ParameterName.STRING,"cg"),
+                                          ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
+                                          ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),
+                                          ("iscf",ParameterName.STRING,'siesta:   19   -34376.1097   -34376.0348   -34376.0689  0.0026 -3.1498\n'),
+                                          ("E_KS",ParameterName.NUMERIC,'-34376.0348'),
+                                          ("Occupation Function",ParameterName.STRING,'FD'),
+                                          ("OccupationMPOrder",ParameterName.NUMERIC,'1.0')
                                           ])
         
     def _make_datafile(self,dataset,filename):
