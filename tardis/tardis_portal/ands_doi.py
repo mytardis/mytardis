@@ -92,6 +92,17 @@ class DOIService(object):
 
         doi_response = DOIService._post(mint_url, post_data, headers)
         doi = DOIService._read_doi(doi_response)
+        if hasattr(settings, 'DOI_RELATED_INFO_ENABLE') and settings.DOI_RELATED_INFO_ENABLE:
+            import tardis.apps.related_info.related_info as ri
+            rih = ri.RelatedInfoHandler(self.experiment.id)
+            doi_info = {
+                ri.type_name: 'website',
+                ri.identifier_type_name: 'doi',
+                ri.identifier_name: doi,
+                ri.title_name: '',
+                ri.notes_name: '',
+            }
+            rih.add_info(doi_info)
         return doi
 
     def _datacite_xml(self):
@@ -105,11 +116,10 @@ class DOIService(object):
 
     @staticmethod
     def _read_doi(doi_response):
-        pattern = re.compile(r'\[MT001\] DOI (.+) was successfully minted.')
-        match = pattern.match(doi_response)
-        if not match:
+        matches = re.match(r'\[MT001\] DOI (.+) was successfully minted.', doi_response)
+        if not matches:
             raise Exception('unrecognised response: %s' + doi_response)
-        return match.group(1)
+        return matches.group(1)
 
     @staticmethod
     def _post(url, post_data, headers):
