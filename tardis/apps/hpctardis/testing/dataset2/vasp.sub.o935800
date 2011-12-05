@@ -1,0 +1,18 @@
+
+
+=============================================================================
+                                     Resource usage:
+                                       CPU time:             28:34:10
+   JobId:    XXXXXXXXXX                Elapsed time:          04:27:18
+   Project:            XXXX            Requested time:       100:00:00
+   Service Units:    249.48 
+                                       Max physical memory:    4864MB
+                                       Max virtual memory:     7537MB
+                                       Requested memory:       8120MB
+
+                                       Number of cpus:              6
+
+                                       Max jobfs disk use:       2.1GB
+                                       Requested jobfs:          1.7GB
+=============================================================================
+

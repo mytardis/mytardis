@@ -1,5 +1,5 @@
-System = NV-Diamond Static  WARNING: This data is completely fake and should only be used for testing purposes
-
+WARNING: This data is completely fake and should only be used for testing purposes
+System = NV-Diamond Static
 NEDOS= 600
 ISPIN= 1 	! spin polarised
 LREAL= Auto

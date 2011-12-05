@@ -67,80 +67,84 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  
                  # TODO: remove number as can cause bad matches 
                  ('ENCUT',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ENCUT\s*=\s*(?P<value>%s)\s+(?P<unit>eV)')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ENCUT\s*=\s*(?P<value>%s)\s+(?P<unit>eV)',False)" % number),
                  
                  ('NIONS',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NIONS\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NIONS\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
                  
                  ('NELECT',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NELECT\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NELECT\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),
                  
                  ('ISIF',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$')" % number), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number), 
                  
                  ('ISPIN',("OUTCAR[0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),
                  
-                 ('Walltime',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)')"),
+                 ('Walltime',("^vasp.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'^vasp.*[_0-9]*\.o(\d+)$','Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)"),
                  
-                 ('Number Of CPUs',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Number of cpus:\s+(?P<value>.+)(?P<unit>)')"),
+                 ('Number Of CPUs',("^vasp.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'^vasp.*[_0-9]*\.o(\d+)$','Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
                  
-                 ('Maximum virtual memory',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)')"),
+                 ('Maximum virtual memory',("^vasp.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'^vasp.*[_0-9]*\.o(\d+)$','Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
                  
-                 ('Max jobfs disk use',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)')"),
+                 ('Max jobfs disk use',("^vasp.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'^vasp.*[_0-9]*\.o(\d+)$','Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
                  
                  
                  ('NSW',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$',False)" % number),
                 
                  ('IBRION',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','IBRION\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','IBRION\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),
             
             
                  ('ISMEAR',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
             
             
                  ('POTIM',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','POTIM\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
+                 "get_file_regex(context,'OUTCAR[_0-9]*','POTIM\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
                  
                  ('MAGMOM',("POSCAR[_0-9]*",),
                  "get_file_lines(context,'POSCAR[_0-9]*',1,4)"), 
                  
-                 #('Descriptorline',("metadata[_0-9]*.vasp",),
-                 #"get_file_regex(context,'metadata[_0-9]*.vasp','Experiment:\s(?P<value>.*)$')"), 
+                 ('Descriptor Line',("INCAR[_0-9]*",),
+                 "get_file_regex(context,'INCAR[_0-9]*','System = (?P<value>.*)(?P<unit>)',False)"), 
        
                  ('EDIFF',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFF\s*\=\s*(?P<value>[^\s]+)(?P<unit>)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFF\s*\=\s*(?P<value>[^\s]+)(?P<unit>)',False)"), 
                  
                  ('EDIFFG',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFFG\s*\=\s*(?P<value>[^\s]+)(?P<unit>)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFFG\s*\=\s*(?P<value>[^\s]+)(?P<unit>)',False)"), 
                  
                  
                  ('NELM',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','NELM\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','NELM\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
                  
                  ('ISTART',("INCAR[_0-9]*",),
-                 "get_file_regex(context,'INCAR[_0-9]*','ISTART\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
+                 "get_file_regex(context,'INCAR[_0-9]*','ISTART\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
                  
                  
                  ('TEBEG',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','TEBEG\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','TEBEG\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
                  
                   ('TEEND',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','TEEND\s*\=\s*(?P<value>[^;\s]+)(?P<unit>.*)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','TEEND\s*\=\s*(?P<value>[^;\s]+)(?P<unit>.*)',False)"), 
               
               
                  ('SMASS',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)')"), 
+                 "get_file_regex(context,'OUTCAR[_0-9]*','SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)',False)"), 
+                 
+                 ('Final Iteration',("OSZICAR[_0-9]*",),
+                 "get_final_iteration(context,'OSZICAR[_0-9]*')"), 
+                 
                  
                 
-                ('Cell Parameters',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,'POSCAR[_0-9]*',1,4)")),
+                 ('Cell Parameters',("POSCAR[_0-9]*",),
+                  "get_file_lines(context,'POSCAR[_0-9]*',1,5)")),
                  
                  
                  ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
@@ -151,17 +155,83 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  }
                       
 
-def _get_file_from_regex(regex,context):
-    """Returns the single key from ready dict which matches the regex """
-    regx = re.compile(regex)
-    res = None
-    for key in dict(context):
-        match = regx.match(key)
-        if match:
-            res = key
-            break
-    return res
 
+def get_final_iteration(context,fileregex):
+    """ Return the final iteration number from a VASP run 
+    """
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    logger.debug("filename=%s" % filename)
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return ("","")
+    else:
+        logger.debug("found ready %s" % filename)
+        datafile = context['ready'][filename]
+        url = datafile.get_download_url()
+        
+        if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
+            raw_path = url.partition('//')[2]
+            file_path = path.join(settings.FILE_STORE_PATH,
+                                  str(context['expid']),
+                                  str(datafile.dataset.id),
+                                  raw_path,datafile.url.partition('//')[2])
+        
+            logger.debug("file_path=%s" % file_path)
+        
+            file_handle = open(file_path,"r")
+            regex = "RMM\:\s*(?P<value>\d+)\s*"
+            regx = re.compile(regex)
+            max_value = 0
+            for line in file_handle:
+                logger.debug("line=%s" % line)
+                match = regx.search(line)
+                
+                if match:
+                    val = match.group('value') 
+                    try:
+                        value = int(val)
+                    except ValueError:
+                        value = 0
+                    logger.debug("value=%s" % value)
+                    if value > max_value:
+                        max_value = value            
+            file_handle.close()
+            logger.debug("max_value = %s" % max_value)
+            return (max_value,"") 
+        return ("","")   
+    
+
+def _get_file_from_regex(regex,context, return_max):
+    """Returns the single key from ready dict which matches the regex.
+    If return_max, then only use file which the largest group match in regex
+    """
+    regx = re.compile(regex)
+    logger.debug("return_max=%s" % return_max)
+    key = None
+    max_match = ""
+    max_value = 0
+    logger.debug("regex=%s" % regex)
+    for key in dict(context):
+        logger.debug("key=%s" % key)
+        match = regx.match(key)
+        logger.debug("match=%s" % match)
+        if return_max:
+            logger.debug("return_max")
+            if match:
+                logger.debug("match=%s" % match)
+                matched_groups = match.groups()
+                if matched_groups:
+                    if len(matched_groups) == 1:
+                        if matched_groups[0] > max_value:
+                            max_match = key
+                            max_value=matched_groups[0]
+        else:
+            if match:
+                logger.debug("matched to %s" % str(match.group(0)))
+                return match.group(0) 
+            
+    logger.debug("max_match=%s" % max_match)
+    return max_match
 
 def get_file_lines(context,fileregex, linestart,lineend):
     """ Returns value and units from the filenameregex where value is 
@@ -174,7 +244,7 @@ def get_file_lines(context,fileregex, linestart,lineend):
     #    if match:
     #        filename = key
     #        break
-    filename = _get_file_from_regex(fileregex,context['ready'])
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
     if filename not in context['ready']:
         return (None,'')
     else:
@@ -208,7 +278,7 @@ def get_file_line(context,fileregex,lineno):
         #if match:
             #filename = key
             #break
-    filename = _get_file_from_regex(fileregex,context['ready'])
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
     if filename not in context['ready']:
         return (None,'')
     else:
@@ -235,7 +305,7 @@ def get_file_line(context,fileregex,lineno):
     return (None,'')  
     
         
-def get_file_regex(context,fileregex,regex):
+def get_file_regex(context,fileregex,regex,return_max):
     """ Searches all files that match file regex and searches for regex in contents.
         Returns the contents of groups 'name' and 'unit' as a tuple
     """
@@ -249,11 +319,11 @@ def get_file_regex(context,fileregex,regex):
     #        filename = key
     #        break
     
-    filename = _get_file_from_regex(fileregex,context['ready'])
+    filename = _get_file_from_regex(fileregex,context['ready'],return_max)
     
     if not filename or filename not in context['ready']:
         print "found None"
-        return None
+        return ('','')
     else:
         print "found ready %s" % filename
         datafile = context['ready'][filename]
@@ -300,7 +370,7 @@ def get_metadata(ruleset):
     # TODO: handle files that have not arrived yet
     expectedmd5 = None
                   
-    
+    #TODO: missing values default to STRING, but later could be numeric when have value
     metadatas = {}
     for exp in Experiment.objects.all():
         logger.debug("exp=%s\n" % exp)
@@ -351,10 +421,11 @@ def get_metadata(ruleset):
                                'ready':ready}
                     logger.debug("data_context=%s" % data_context)
                     try:
-                        (value,unit) = eval(code,{"__builtins__":None},
+                        (value,unit) = eval(code,{},
                                          {"get_file_line":get_file_line,
                                           "get_file_lines":get_file_lines,
                                           "get_file_regex":get_file_regex,
+                                          "get_final_iteration":get_final_iteration,
                                           "get_constant":get_constant,
                                           'context':data_context})
                     except Exception,e:

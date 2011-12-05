@@ -249,8 +249,15 @@ class VASPMetadataTest(TestCase):
                                           ("MAGMOM",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n"),
                                           ("EDIFF",ParameterName.NUMERIC,"0.0001"),
                                           ("EDIFFG",ParameterName.NUMERIC,"0.001"),
-                                          ("NELM",ParameterName.NUMERIC,"60.0")
-                                                                         ])
+                                          ("ISTART",ParameterName.STRING,""),
+                                          ("Descriptor Line",ParameterName.STRING,"Bulk Diamond"),
+                                          ("NELM",ParameterName.NUMERIC,"60.0"),
+                                          ("TEEND",ParameterName.NUMERIC,"0.0"),
+                                          ("SMASS",ParameterName.NUMERIC,"-3.0"),
+                                          ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
+                                          ])
+        
+                                                                         
         
     def test_metadata2(self):
         """ Tests second set of VASP data"""
@@ -259,8 +266,10 @@ class VASPMetadataTest(TestCase):
                                  files = ['testing/dataset2/OUTCAR',
                                           'testing/dataset2/KPOINTS',
                                           'testing/dataset2/vasp.sub.o935843',
+                                          'testing/dataset2/vasp.sub.o935800',
                                           'testing/dataset2/INCAR',
-                                          'testing/dataset2/POSCAR' ],
+                                          'testing/dataset2/POSCAR',
+                                          'testing/dataset2/OSZICAR' ],
                                ns="http://tardis.edu.au/schemas/vasp/1",
                                schname="vasp 1.0",
                                results= [("kpoint_grid",ParameterName.STRING," 8  8  8   \n"),
@@ -281,8 +290,15 @@ class VASPMetadataTest(TestCase):
                                           ("MAGMOM",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n"),
                                           ("EDIFF",ParameterName.NUMERIC,"5e-06"),
                                           ("EDIFFG",ParameterName.NUMERIC,"5e-05"),
-                                          ("NELM",ParameterName.NUMERIC,"60.0")
-                                                                         ])
+                                          ("NELM",ParameterName.NUMERIC,"60.0"),
+                                          ("ISTART",ParameterName.NUMERIC,"0.0"),
+                                          ("TEBEG",ParameterName.NUMERIC,"0.0"),
+                                          ("TEEND",ParameterName.NUMERIC,"0.0"),
+                                          ("SMASS",ParameterName.NUMERIC,"-3.0"),
+                                          ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
+                                          ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
+                                          ("Final Iteration",ParameterName.NUMERIC,"17.0")
+                                          ])
         
     def _make_datafile(self,dataset,filename):
         """ Make datafile from filename in given dataset"""
