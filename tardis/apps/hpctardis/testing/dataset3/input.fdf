@@ -1,0 +1,35 @@
+# -----------------------------------------------------------------------------
+# Bulk Si   WARNING: this data is fake and should only be used for testing purposes!
+#
+# M. C. Per, December 2010
+# -----------------------------------------------------------------------------
+
+SystemName          my System
+SystemLabel         system
+
+NumberOfSpecies     2
+
+%block PAO.Basis
+Si  3 0.2658542
+ n=3  0  2  E  4.9054837  -0.5515252
+   5.6679504  1.8444465
+   1.000   1.000
+ n=3  1  2  E  15.6700423  -0.8457466
+   5.6151626  3.9384685
+   1.000   1.000
+ n=3  2  1  E  44.0436726  -0.4370817
+   4.5403665
+   1.000
+%endblock PAO.Basis
+
+MeshCutoff          500.0 Ry
+DM.NumberPulay       4  
+ElectronicTemperature 100 K
+
+
+
+%block k_grid_Monkhorst_Pack
+ 1   0   0  0.0
+ 0   1   0  0.0
+ 0   0   1  0.0
+%endblock k_grid_Monkhorst_Pack

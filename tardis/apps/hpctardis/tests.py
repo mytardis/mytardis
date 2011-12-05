@@ -248,10 +248,10 @@ class VASPMetadataTest(TestCase):
             try:
                 # First check stringed value
                 param = psm.get_param(key,value=True)
-                self.assertEquals(str(param),str(value))
+                self.assertEquals(str(param),str(value),"incorrect in %s: expected %s found %s" % (key,repr(param),repr(value)))
                 # Then correct type
                 param = psm.get_param(key,value=False)
-                self.assertEquals(param.name.data_type,field_type)
+                self.assertEquals(param.name.data_type,field_type,"incorrect in %s: expected %s found %s" % (key,param.name.data_type, field_type))
             except DatasetParameter.DoesNotExist:
                 logger.error("cannot find %s" % key)
                 self.assertTrue(False)
@@ -315,6 +315,7 @@ class VASPMetadataTest(TestCase):
                                           ("NELECT",ParameterName.NUMERIC,"864.0"),
                                           ("ISIF",ParameterName.NUMERIC,"3.0"),
                                           ("ISPIN",ParameterName.NUMERIC,"4.0"),
+                                          ("Project",ParameterName.STRING,"XXXXX"),
                                           ("Walltime",ParameterName.STRING,"01:59:17"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"64.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"27047.0"),
@@ -356,6 +357,7 @@ class VASPMetadataTest(TestCase):
                                           ("NELECT",ParameterName.NUMERIC,"800.0"),
                                           ("ISIF",ParameterName.NUMERIC,"2.0"),
                                           ("ISPIN",ParameterName.NUMERIC,"1.0"),
+                                          ("Project",ParameterName.STRING,"XXXX"),
                                           ("Walltime",ParameterName.STRING,"04:27:18"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"56.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"57537.0"),
@@ -375,6 +377,28 @@ class VASPMetadataTest(TestCase):
                                           ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
                                           ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
                                           ("Final Iteration",ParameterName.NUMERIC,"17.0")
+                                          ])
+        
+    def test_metadata3(self):
+        """ Tests first set of SIESTA data"""
+        
+        self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset3/input.fdf',
+                                          #'testing/dataset3/output',
+                                          'testing/dataset3/siesta.sub.o923124',
+                                          'testing/dataset3/siesta_bulk_si.txt',
+                                          'testing/dataset3/system.STRUCT_IN'],
+                               ns="http://tardis.edu.au/schemas/siesta/1",
+                               schname="siesta 1.0",
+                               results= [("SystemName",ParameterName.STRING,"512-atom silicon"),
+                                        ("MeshCutoff",ParameterName.NUMERIC,"300.0"),
+                                          ("ElectronicTemperature",ParameterName.NUMERIC,"0.0"),
+                                          ("k-grid",ParameterName.STRING,' 1   0   0  0.0\n\n 0   1   0  0.0\n\n 0   0   1  0.0\n'),
+                                           ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                                           ("Walltime",ParameterName.STRING,"04:27:18"),
+                                          ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
+                                          ("Max jobfs disk use",ParameterName.NUMERIC,"2.1"),
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=3  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n')
                                           ])
         
     def _make_datafile(self,dataset,filename):
