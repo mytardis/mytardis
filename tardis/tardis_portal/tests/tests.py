@@ -147,7 +147,7 @@ class SearchTestCase(TestCase):
         from tardis.tardis_portal.models import Dataset_File
         from tardis.tardis_portal.models import Experiment 
         
-        values = response.context['experiments'].values()
+        values = response.context['experiments']
         experiment = values[0]
         datafile = response.context['datafiles'][0]
         self.assertTrue(
@@ -213,7 +213,7 @@ class SearchTestCase(TestCase):
  
         from tardis.tardis_portal.models import Experiment 
         
-        values = response.context['experiments'].values()
+        values = response.context['experiments']
         experiment = values[0]
         
         self.assertTrue(
