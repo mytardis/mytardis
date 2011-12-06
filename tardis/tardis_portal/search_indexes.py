@@ -223,7 +223,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
             for par in DatasetParameter.objects.filter(
                     parameterset__dataset__pk=ds.id, 
                     name__is_searchable=True):
-                self.param_dict['dataset_'  + par.name.name] = _getParamValue(par)
+                param_dict['dataset_'  + par.name.name] = _getParamValue(par)
             self.ds_param_cache[ds] = param_dict
 
         return self.ds_param_cache[ds]
