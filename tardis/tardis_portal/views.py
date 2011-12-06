@@ -1214,20 +1214,16 @@ def __getFilteredExperiments(request, searchFilterData):
         experiments = \
             experiments.filter(start_time__lt=date, end_time__gt=date)
 
-    # initialise the extra experiment parameters
-    parameters = []
-
     # get all the experiment parameters
-    for experimentSchema in Schema.getNamespaces(Schema.EXPERIMENT):
-        parameters += ParameterName.objects.filter(
-            schema__namespace__exact=experimentSchema)
+    exp_schema_namespaces = Schema.getNamespaces(Schema.EXPERIMENT)
+    parameters = ParameterName.objects.filter(
+        schema__namespace__in=exp_schema_namespaces, is_searchable=True)
 
     experiments = __filterParameters(parameters, experiments,
             searchFilterData, 'experimentparameterset__experimentparameter')
 
     # let's sort it in the end
-    if experiments:
-        experiments = experiments.order_by('title')
+    experiments = experiments.order_by('title')
 
     return experiments
 
