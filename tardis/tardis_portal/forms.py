@@ -772,7 +772,8 @@ def createSearchExperimentForm():
 
     for schema, fieldlist in schemaAndFieldLists:
         name = schema.name if schema.name != None else 'No schema name'
-        fieldsets.append((name, {'fields': fieldlist}))
+        if fieldlist:
+            fieldsets.append((name, {'fields': fieldlist}))
 
     return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
                     {'base_fields': fields, 'base_fieldsets': fieldsets,
