@@ -43,10 +43,30 @@ from models import Dataset_File, \
     ParameterName, Schema
 from django.db.utils import DatabaseError
 import logging
+from django.template.defaultfilters import slugify
 
 
 logger = logging.getLogger(__name__)
 
+# Take the paramtername and massage it 
+# into a suitable search field name
+# based on the paramtername schema type
+# and the paramtername full name
+
+def prepareFieldName(parameter_name):
+    
+    prefix = ''
+    if parameter_name.schema.type == Schema.DATAFILE:
+        prefix = 'datafile_'
+    elif parameter_name.schema.type == Schema.DATASET:
+        prefix = 'dataset_'
+    elif parameter_name.schema.type == Schema.EXPERIMENT:
+        prefix = 'experiment_'
+    else:
+        pass
+    slug = slugify(parameter_name.full_name).replace('-', '_')
+    return prefix + slug
+    
 # This is a text index so any numeric fields 
 # will default to being rounded to ints
 # as there's no real intuitive way to do
@@ -127,16 +147,18 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
         try:
             pns = ParameterName.objects.filter(is_searchable=True)
             for pn in pns:
-                prefix = ''
-                if pn.schema.type == Schema.DATAFILE:
-                    prefix = 'datafile_'
-                elif pn.schema.type == Schema.DATASET:
-                    prefix = 'dataset_'
-                elif pn.schema.type == Schema.EXPERIMENT:
-                    prefix = 'experiment_'
-                else:
-                    pass
-                attrs[prefix + pn.name] = _getDataType(pn)
+                fn = prepareFieldName(pn)
+                #prefix = ''
+                #if pn.schema.type == Schema.DATAFILE:
+                #    prefix = 'datafile_'
+                #elif pn.schema.type == Schema.DATASET:
+                #    prefix = 'dataset_'
+                #elif pn.schema.type == Schema.EXPERIMENT:
+                #    prefix = 'experiment_'
+                #else:
+                #    pass
+                #attrs[prefix + slugify(pn.full_name)] = _getDataType(pn)
+                attrs[fn] = _getDataType(pn)
         except DatabaseError:
             pass
         
@@ -275,7 +297,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         for par in DatafileParameter.objects.filter(
                 parameterset__dataset_file__pk=obj.pk, 
                 name__is_searchable=True):
-            self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
+            fn = prepareFieldName(par.name)
+            #self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
+            self.prepared_data[fn] = _getParamValue(par) 
         
         self.prepared_data.update(self.get_experiment_params(exp))
         self.prepared_data.update(self.get_dataset_params(ds))
@@ -283,6 +307,9 @@ class DatasetFileIndex(RealTimeSearchIndex):
         for par in DatasetParameter.objects.filter(
                 parameterset__dataset__pk=ds.id, 
                 name__is_searchable=True):
+            fn = prepareFieldName(par.name)
+            #self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
+            fn = prepareFieldName(par.name)
             self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
         
         return self.prepared_data
