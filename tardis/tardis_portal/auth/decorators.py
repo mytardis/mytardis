@@ -315,7 +315,7 @@ def upload_auth(f):
         from datetime import datetime
         session_id = request.POST['session_id']
         s = Session.objects.get(pk=session_id)
-        if s.expire_date < datetime.now():
+        if s.expire_date > datetime.now():
             request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id']) 
         return f(request, *args, **kwargs)
 
