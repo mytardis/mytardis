@@ -1,3 +1,5 @@
+*.conf
+*.wsgi
 tardis/settings.py
 *.pyc
 *.log
