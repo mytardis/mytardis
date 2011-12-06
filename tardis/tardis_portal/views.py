@@ -475,17 +475,7 @@ def experiment_datasets(request, experiment_id):
         # 
         search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
         sqs = SearchQuerySet(query=search_query)
-       
         query = SearchQueryString(request.GET['query'])
-        
-        #raw_search doesn't chain...
-        results = sqs.raw_search(query.query_string()).highlight()
-        
-        matching_datasets = [d.object for d in results if 
-                d.model_name == 'dataset' and 
-                d.experiment_id_stored == int(experiment_id)
-                ]
-
         facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
         if facet_counts:
             dataset_id_facets = facet_counts['fields']['dataset_id_stored']
