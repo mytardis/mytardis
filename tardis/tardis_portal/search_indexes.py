@@ -148,16 +148,6 @@ class GetDatasetFileParameters(SearchIndex.__metaclass__):
             pns = ParameterName.objects.filter(is_searchable=True)
             for pn in pns:
                 fn = prepareFieldName(pn)
-                #prefix = ''
-                #if pn.schema.type == Schema.DATAFILE:
-                #    prefix = 'datafile_'
-                #elif pn.schema.type == Schema.DATASET:
-                #    prefix = 'dataset_'
-                #elif pn.schema.type == Schema.EXPERIMENT:
-                #    prefix = 'experiment_'
-                #else:
-                #    pass
-                #attrs[prefix + slugify(pn.full_name)] = _getDataType(pn)
                 attrs[fn] = _getDataType(pn)
         except DatabaseError:
             pass
@@ -233,7 +223,8 @@ class DatasetFileIndex(RealTimeSearchIndex):
             for par in ExperimentParameter.objects.filter(
                     parameterset__experiment__pk=exp.id, 
                     name__is_searchable=True):
-                param_dict['experiment_' + par.name.name] = _getParamValue(par)
+                fn = prepareFieldName(par.name)
+                param_dict[fn] = _getParamValue(par)
    
             self.exp_param_cache[exp] = param_dict
 
@@ -245,7 +236,8 @@ class DatasetFileIndex(RealTimeSearchIndex):
             for par in DatasetParameter.objects.filter(
                     parameterset__dataset__pk=ds.id, 
                     name__is_searchable=True):
-                param_dict['dataset_'  + par.name.name] = _getParamValue(par)
+                fn = prepareFieldName(par.name)
+                param_dict[fn] = _getParamValue(par)
             self.ds_param_cache[ds] = param_dict
 
         return self.ds_param_cache[ds]
