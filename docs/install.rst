@@ -171,3 +171,9 @@ Filters
 
    http://www.buildout.org
       The Buildout homepage.
+
+Single Search
+~~~~~~~~~~~~~
+
+Instructions on installing and configuring Solr for advanced search are available from :doc:`searchsetup`.
+
