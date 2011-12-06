@@ -277,5 +277,5 @@ DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
 DOI_APP_ID = ''
 DOI_NAMESPACE = 'http://www.doi.com'
 DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
-DOI_ACCESS_URL = "http://dx.doi.org/"
 DOI_RELATED_INFO_ENABLE = False
+DOI_BASE_URL='http://mytardis.example.com'
