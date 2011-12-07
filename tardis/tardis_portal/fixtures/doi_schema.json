@@ -1,0 +1,31 @@
+[
+    {
+        "pk": 10, 
+        "model": "tardis_portal.schema", 
+        "fields": {
+            "type": 1, 
+            "namespace": "http://www.tardis.edu.au/schemas/doi/2011/12/07", 
+            "name": "DOI", 
+            "immutable": true, 
+            "subtype": ""
+        }
+    }, 
+    {
+        "pk": 117, 
+        "model": "tardis_portal.parametername", 
+        "fields": {
+            "name": "doi", 
+            "data_type": 2, 
+            "is_searchable": false, 
+            "choices": "", 
+            "comparison_type": 1, 
+            "full_name": "DOI", 
+            "units": "", 
+            "order": 1, 
+            "immutable": true, 
+            "schema": [
+                "http://www.tardis.edu.au/schemas/doi/2011/12/07"
+            ]
+        }
+    }
+]
