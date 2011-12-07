@@ -118,6 +118,8 @@ def has_write_permissions(request, experiment_id):
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
     experiment = Experiment.safe.get(request, experiment_id)
+    if experiment.public:
+        return False
 
     # does the user own this experiment
     query = Q(experiment=experiment,
