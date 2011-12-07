@@ -547,7 +547,6 @@ class ExperimentACLTestCase(TestCase):
         response = self.client3.get('/experiment/edit/%i/' % (self.experiment3.id))
         self.assertEqual(response.status_code, 403)
 
-        # change effictive date to TODAY
         response = self.client3.post('/experiment/edit/%i/' % (self.experiment3.id),
                                      {'anything': True, })
         self.assertEqual(response.status_code, 403)
