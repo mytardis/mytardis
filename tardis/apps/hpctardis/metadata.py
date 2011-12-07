@@ -126,17 +126,17 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  
                  
                 ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
-                (('SystemName',("input\.fdf",),
+                (('SystemName',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'SystemName\s+(?P<value>.*)(?P<unit>)',False)"),
-                ('MeshCutoff',("input\.fdf",),
+                ('MeshCutoff',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'MeshCutoff\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
-                ('ElectronicTemperature',("input\.fdf",),
+                ('ElectronicTemperature',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'ElectronicTemperature\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
                 #('k-grid',("input\.fdf",),
                 #   "get_regex_lines(context,'\%block k_grid_Monkhorst_Pack','\%endblock k_grid_Monkhorst_Pack')"),
-                ('k-grid',("input\.fdf",),
+                ('k-grid',("input[_0-9]*\.fdf",),
                    "get_regex_lines(context,'\%block kgridMonkhorstPack','\%endblock kgridMonkhorstPack')"),
-                ('PAO.Basis',("input\.fdf",),
+                ('PAO.Basis',("input[_0-9]*\.fdf",),
                    "get_regex_lines(context,'\%block PAO.Basis','\%endblock PAO.Basis')"),
                 ('Project',("^siesta.*[_0-9]*\.o(\d+)$",),
                    "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',False)"),
@@ -148,27 +148,27 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                 ('Max jobfs disk use',("^siesta.*[_0-9]*\.o(\d+)$",),
                  "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
       
-                ('MD.TypeOfRun',('input\.fdf',),
+                ('MD.TypeOfRun',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.TypeOfRun\s+(?P<value>.*)(?P<unit>)',False)"),
       
-                ('MD.NumCGsteps',('input\.fdf',),
+                ('MD.NumCGsteps',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.NumCGsteps\s+(?P<value>[^\s]+)(?P<unit>)',False)"),
             
-                ('iscf',('output',),
+                ('iscf',('output[_0-9]*',),
                  "(get_regex_lines_vallist(context,'siesta\:\siscf','^$')[-1],'')"),
              
              
-                ('E_KS',('output',),
+                ('E_KS',('output[_0-9]*',),
                  "get_file_regex(context,'^siesta:\s+E\_KS\(eV\)\s+\=\s+(?P<value>.*)(?P<unit>)',False)"),
              
-                ('Occupation Function',('input\.fdf',),
+                ('Occupation Function',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)OccupationFunction\s+(?P<value>.*)(?P<unit>)',False)"),
              
-                ('OccupationMPOrder',('input\.fdf',),
+                ('OccupationMPOrder',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)OccupationMPOrder\s+(?P<value>.*)(?P<unit>)',False)"),
              
                 
-                ('MD.MaxForceTol',('input\.fdf',),
+                ('MD.MaxForceTol',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.MaxForceTol\s+(?P<value>[^\s]+)\s+(?P<unit>.*)',False)")),
                        
                        ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
