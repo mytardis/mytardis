@@ -44,9 +44,30 @@ from models import Dataset_File, \
 from django.db.utils import DatabaseError
 import logging
 from django.template.defaultfilters import slugify
-
+import re
 
 logger = logging.getLogger(__name__)
+
+
+#
+# Removes anything unwholesome before text is added to a text field for
+# a search document
+#
+def cleanText(text):
+    p = re.compile(r'<.*?>')
+    
+    # convert to unicode rather than
+    # str. Solr isn't set up to search
+    # on unicode, but it will at least
+    # harmlessly index it and we can
+    # change the configuration later
+    # to do the searches.
+    clean_text = unicode(text)
+
+    # Remove html tags
+    clean_text = p.sub('', clean_text)
+
+    return clean_text
 
 # Take the paramtername and massage it 
 # into a suitable search field name
@@ -195,8 +216,8 @@ class DatasetFileIndex(RealTimeSearchIndex):
             # add all authors to the free text search
             text_list.extend(self.prepare_experiment_authors(obj))
             text_list.extend(self.prepare_experiment_creator(obj))
-
-            self.exp_cache[exp] = ' '.join(map(str,text_list))
+            self.exp_cache[exp] = ' '.join(map(cleanText,text_list))
+        
         return self.exp_cache[exp]
 
     def get_dataset_text(self, obj, ds):
@@ -214,7 +235,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
             text_list.extend(map(toIntIfNumeric, params))
             
             # Always convert to strings as this is a text index
-            self.ds_cache[ds] = ' '.join(map(str,text_list))
+            self.ds_cache[ds] = ' '.join(map(cleanText,text_list))
         return self.ds_cache[ds]
 
     def get_experiment_params(self, exp):
@@ -281,7 +302,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         ds_text = self.get_dataset_text(obj, ds)
        
         # Always convert to strings as this is a text index
-        df_text  = ' '.join(map(str,text_list))
+        df_text  = ' '.join(map(cleanText, text_list))
         
         self.prepared_data['text'] = ' '.join([exp_text, ds_text, df_text])
 
