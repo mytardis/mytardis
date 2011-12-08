@@ -1607,14 +1607,22 @@ def retrieve_user_list(request):
     # TODO: Hook this up to authservice.searchUsers() to actually get
     # autocompletion data directly from auth backends.
     # The following local DB query would be moved to auth.localdb_auth.SearchUsers.
-    query = request.GET['q']
+    query = request.GET.get('q', '')
     limit = int(request.GET.get('limit', '10'))
+
     # Search all user fields and also the UserAuthentication username.
-    q = Q(username__contains=query)   | \
-        Q(first_name__contains=query) | \
-        Q(last_name__contains=query)  | \
-        Q(email__contains=query) | \
-        Q(userprofile__userauthentication__username__contains=query)
+    q = Q(username__icontains=query)   | \
+        Q(email__icontains=query) | \
+        Q(userprofile__userauthentication__username__icontains=query)
+
+    # Tokenize query string so "Bob Sm" matches (first_name~=Bob & last_name~=Smith).
+    tokens = query.split()
+    if len(tokens) < 2:
+        q |= Q(first_name__icontains=query.strip())
+        q |= Q(last_name__icontains=query.strip())
+    else:
+        q |= Q(first_name__icontains=' '.join(tokens[:-1])) & Q(last_name__icontains=tokens[-1])
+
     users_query = User.objects.filter(q).distinct().select_related('userprofile')
     users_query = users_query[0:limit]
 
