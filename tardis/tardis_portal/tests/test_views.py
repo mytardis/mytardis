@@ -216,6 +216,22 @@ class listTestCase(TestCase):
         self.assertTrue(users_dict[0]['first_name'] == acct.first_name)
         self.assertTrue(users_dict[0]['last_name'] == acct.last_name)
 
+        # Case insensitive matching
+        response = self.client.get('/ajax/user_list/?q=TWOFIRSTNAME')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+        self.assertTrue(len(users_dict) == 1)
+        acct = self.users.get(username='user2')
+        self.assertTrue(users_dict[0]['username'] == acct.username)
+
+        # Partial match on "first_name last_name"
+        response = self.client.get('/ajax/user_list/?q=onefirstname useronelast')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+        self.assertTrue(len(users_dict) == 1)
+        self.assertTrue(users_dict[0]['username'] == 'user1')
+
+
     def testGetGroupList(self):
 
         response = self.client.get('/ajax/group_list/')
