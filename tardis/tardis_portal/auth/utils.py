@@ -27,16 +27,17 @@ def create_user(auth_method, user_id, email=''):
 
     # the username to be used on the User table
     if user_id.find('@') > 0:
-        unique_username = user_id.partition('@')[0][:max_length]
+        username_prefix = user_id.partition('@')[0][:max_length]
     else:
-        unique_username = user_id[:max_length]
+        username_prefix = user_id[:max_length]
+    unique_username = username_prefix
 
     # Generate a unique username
     i = 0
     try:
         while (User.objects.get(username=unique_username)):
             i += 1
-            unique_username = user_id[:max_length - len(str(i))] + str(i)
+            unique_username = username_prefix[:max_length - len(str(i))] + str(i)
     except User.DoesNotExist:
         pass
 
