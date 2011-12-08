@@ -57,7 +57,20 @@ from tardis.tardis_portal.models import Experiment
 logger = logging.getLogger(__name__)
 
 number = "[+-]?((\d+)(\.\d*)?)|(\d+\.\d+)([eE][+-]?[0-9]+)?"
-rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
+rulesets = {
+            ('http://tardis.edu.au/schemas/general/1','general 1.0'):
+            ( ('Project',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',True)"), 
+              ('Number Of CPUs',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
+                ('Maximum virtual memory',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
+                ('Max jobfs disk use',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
+                ('Walltime',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)")),
+            
+            ('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
             (
                 ('kpoint_grid',("KPOINTS[_0-9]*",),
                  "get_file_line(context,-3)"),
@@ -74,16 +87,8 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),  
                 ('ISPIN',("OUTCAR[0-9]*",),
                  "get_file_regex(context,'\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),                  
-                ('Project',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',False)"), 
-                ('Walltime',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)"),
-                ('Number Of CPUs',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
-                ('Maximum virtual memory',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
-                ('Max jobfs disk use',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
+               
+                
                 ('NSW',("OUTCAR[_0-9]*",),
                  "get_file_regex(context,'NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$',False)" % number),
                 ('IBRION',("OUTCAR[_0-9]*",),
@@ -119,8 +124,18 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                 ('LEXCH',("OUTCAR[_0-9]*",),
                  "('\\n '.join(get_file_regex_all(context,'LEXCH\s+\=\s+(?P<value>[^\s]+)')),'')"), 
              
-                ('Cell Parameters',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,1,5)")),
+                ('Cell Scaling',("POSCAR[_0-9]*",),
+                 "get_file_line(context,1)"),
+            
+                ('Cell Parameter1',("POSCAR[_0-9]*",),
+                 "get_file_line(context,2)"),
+            
+                ('Cell Parameter2',("POSCAR[_0-9]*",),
+                 "get_file_line(context,3)"),
+            
+                ('Cell Parameter3',("POSCAR[_0-9]*",),
+                 "get_file_line(context,4)")),
+            
             
             
                  
@@ -138,16 +153,7 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                    "get_regex_lines(context,'\%block kgridMonkhorstPack','\%endblock kgridMonkhorstPack')"),
                 ('PAO.Basis',("input[_0-9]*\.fdf",),
                    "get_regex_lines(context,'\%block PAO.Basis','\%endblock PAO.Basis')"),
-                ('Project',("^siesta.*[_0-9]*\.o(\d+)$",),
-                   "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',False)"),
-                ('Walltime',("^siesta.*[_0-9]*\.o(\d+)$",),
-                    "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)"),
-                    #TODO: refactor these rules
-                ('Maximum virtual memory',("^siesta.*[_0-9]*\.o(\d+)$",),
-                     "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
-                ('Max jobfs disk use',("^siesta.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
-      
+               
                 ('MD.TypeOfRun',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.TypeOfRun\s+(?P<value>.*)(?P<unit>)',False)"),
       
@@ -585,11 +591,14 @@ def get_schema(schema,name):
     """Return the schema object that the paramaterset will use.
     """
     try:
-        return Schema.objects.get(namespace__exact=schema)
+        sch = Schema.objects.get(namespace__exact=schema)
+        logger.debug("found %s %s" % (sch.namespace, sch.name))
+        return sch
     except Schema.DoesNotExist:
         schema = Schema(namespace=schema, name=name,
                         type=Schema.DATASET)
         schema.save()
+        logger.debug("creating %s %s " % (schema,name))
         return schema          
             
 def get_parameters(schema,metadata):
@@ -679,7 +688,7 @@ def save_metadata(instance,schema,metadata):
                     except DatasetParameter.DoesNotExist:           
                         dfp = DatasetParameter(parameterset=ps,
                                     name=p)
-                        dfp.string_value = metadata[p.name][0]
+                    dfp.string_value = metadata[p.name][0]
                     dfp.save()
                     logger.debug("string")
             

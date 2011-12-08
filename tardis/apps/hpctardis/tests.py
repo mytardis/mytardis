@@ -235,6 +235,7 @@ class VASPMetadataTest(TestCase):
         try:
             sch = models.Schema.objects.get(namespace__exact=schema,name=name)
         except Schema.DoesNotExist:
+            logger.error("could not find schema %s %s" % (schema,name))
             self.assertTrue(False)
         self.assertEqual(schema,sch.namespace)
         self.assertEqual(name,sch.name)
@@ -297,10 +298,11 @@ class VASPMetadataTest(TestCase):
                        path.join(path.abspath(path.dirname(__file__)),f))       
         go()
         self._test_metadata(ns,schname,dataset,results)
+        return dataset
                 
     def test_metadata1(self):
         """ Test first set of VASP data"""
-        self._metadata_extract(expname="testexp1",
+        dataset = self._metadata_extract(expname="testexp1",
                                  files = ['testing/dataset1/OUTCAR',
                                           'testing/dataset1/KPOINTS',
                                           'testing/dataset1/vasp.sub.o813344',
@@ -315,11 +317,7 @@ class VASPMetadataTest(TestCase):
                                           ("NELECT",ParameterName.NUMERIC,"864.0"),
                                           ("ISIF",ParameterName.NUMERIC,"3.0"),
                                           ("ISPIN",ParameterName.NUMERIC,"4.0"),
-                                          ("Project",ParameterName.STRING,"XXXXX"),
-                                          ("Walltime",ParameterName.STRING,"01:59:17"),
-                                          ("Number Of CPUs",ParameterName.NUMERIC,"64.0"),
-                                          ("Maximum virtual memory",ParameterName.NUMERIC,"27047.0"),
-                                          ("Max jobfs disk use",ParameterName.NUMERIC,"0.1"),
+                                         
                                           ("NSW",ParameterName.NUMERIC,"42.0"),
                                           ("IBRION",ParameterName.NUMERIC,"2.0"),
                                           ("ISMEAR",ParameterName.NUMERIC,"-6.0"),
@@ -332,15 +330,27 @@ class VASPMetadataTest(TestCase):
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
                                           ("TITEL",ParameterName.STRING,'PAW_PBE C 08Apr2002'),
                                       
-                                          ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
+                                      ("Cell Scaling",ParameterName.NUMERIC,"1.0"),
+                                           ("Cell Parameter1",ParameterName.STRING,'    10.6863390000000003    0.0000000000000000    0.0000000000000000\n'),
+                                           ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6863390000000003    0.0000000000000000\n'),
+                                           ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6863390000000003\n'),
+                                        
+                                        #  ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
                                           ])
-        
+        self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
+                               name="general 1.0",
+                               dataset=dataset,
+                               fields= [ ("Project",ParameterName.STRING,"XXXXX"),
+                                          ("Walltime",ParameterName.STRING,"01:59:17"),
+                                          ("Number Of CPUs",ParameterName.NUMERIC,"64.0"),
+                                          ("Maximum virtual memory",ParameterName.NUMERIC,"27047.0"),
+                                          ("Max jobfs disk use",ParameterName.NUMERIC,"0.1")])
                                                                          
         
     def test_metadata2(self):
         """ Tests second set of VASP data"""
         
-        self._metadata_extract(expname="testexp2",
+        dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset2/OUTCAR',
                                           'testing/dataset2/KPOINTS',
                                           'testing/dataset2/vasp.sub.o935843',
@@ -357,11 +367,7 @@ class VASPMetadataTest(TestCase):
                                           ("NELECT",ParameterName.NUMERIC,"800.0"),
                                           ("ISIF",ParameterName.NUMERIC,"2.0"),
                                           ("ISPIN",ParameterName.NUMERIC,"1.0"),
-                                          ("Project",ParameterName.STRING,"XXXX"),
-                                          ("Walltime",ParameterName.STRING,"04:27:18"),
-                                          ("Number Of CPUs",ParameterName.NUMERIC,"56.0"),
-                                          ("Maximum virtual memory",ParameterName.NUMERIC,"57537.0"),
-                                          ("Max jobfs disk use",ParameterName.NUMERIC,"0.1"),
+                                        
                                           ("NSW",ParameterName.NUMERIC,"0.0"),
                                           ("IBRION",ParameterName.NUMERIC,"-1.0"),
                                           ("ISMEAR",ParameterName.NUMERIC,"-99.0"),
@@ -375,17 +381,32 @@ class VASPMetadataTest(TestCase):
                                           ("SMASS",ParameterName.NUMERIC,"-3.0"),
                                           ("LEXCH",ParameterName.STRING,"PE\n PE\n 8\n 8"),
                                           
+                                           ("Cell Scaling",ParameterName.NUMERIC,"1.0"),
+                                           ("Cell Parameter1",ParameterName.STRING,'    10.6851970403940548    0.0000000000000000    0.0000000000000000\n'),
+                                           ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6851970403940548    0.0000000000000000\n'),
+                                           ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6851970403940548\n'),
+                                           
+                                            #("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
+                                      
                             
                                           ("TITEL",ParameterName.STRING,"PAW_PBE C 08Apr2002\n PAW_PBE N 08Apr2002"),
-                                          ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
-                                          ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
+                                           ("Descriptor Line",ParameterName.STRING,"NV-Diamond Static"),
                                           ("Final Iteration",ParameterName.NUMERIC,"17.0")
                                           ])
+        
+        self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
+                               name="general 1.0",
+                               dataset=dataset,
+                               fields= [   ("Project",ParameterName.STRING,"XXXX"),
+                                          ("Walltime",ParameterName.STRING,"04:27:18"),
+                                          ("Number Of CPUs",ParameterName.NUMERIC,"56.0"),
+                                          ("Maximum virtual memory",ParameterName.NUMERIC,"57537.0"),
+                                          ("Max jobfs disk use",ParameterName.NUMERIC,"0.1"),])
         
     def test_metadata3(self):
         """ Tests first set of SIESTA data"""
         
-        self._metadata_extract(expname="testexp2",
+        dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
                                           'testing/dataset3/siesta.sub.o923124'],
@@ -395,10 +416,7 @@ class VASPMetadataTest(TestCase):
                                         ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
                                           ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
                                           ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
-                                           ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
-                                           ("Walltime",ParameterName.STRING,"04:27:18"),
-                                          ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
-                                          ("Max jobfs disk use",ParameterName.NUMERIC,"2.1"),
+                                     
                                           ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
                                           ("MD.TypeOfRun",ParameterName.STRING,"cg"),
                                           ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
@@ -408,7 +426,15 @@ class VASPMetadataTest(TestCase):
                                           ("Occupation Function",ParameterName.STRING,'FD'),
                                           ("OccupationMPOrder",ParameterName.NUMERIC,'1.0')
                                           ])
-        
+        self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
+                               name="general 1.0",
+                               dataset=dataset,
+                               fields= [  ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                                   ("Walltime",ParameterName.STRING,"04:27:18"), 
+                                     ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
+                                     ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
+                                      ("Max jobfs disk use",ParameterName.NUMERIC,"2.1")
+                 ])
     def _make_datafile(self,dataset,filename):
         """ Make datafile from filename in given dataset"""
  
