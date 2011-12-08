@@ -2039,9 +2039,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         if request.GET['canWrite'] == 'true':
             canWrite = True
 
-    if 'canDelete' in request.GET:
-        if request.GET['canDelete'] == 'true':
-            canDelete = True
+#    if 'canDelete' in request.GET:
+#        if request.GET['canDelete'] == 'true':
+#            canDelete = True
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
@@ -2057,7 +2057,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return HttpResponse('Experiment (id=%d) does not exist' %
                             (experiment_id))
 
-    # TODO: enable transaction management here...
     if create:
         try:
             group = Group(name=groupname)
@@ -2080,11 +2079,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() > 0:
-        # an acl role already exists
-        # todo: not sure why this was the only error condition
-        # that returns an error
+        # An ACL already exists for this experiment/group.
         transaction.rollback()
-        return return_response_error(request)
+        return HttpResponse('Could not create group %s ' \
+            '(It is likely that it already exists)' % (groupname))
 
     acl = ExperimentACL(experiment=experiment,
                         pluginId=django_group,
@@ -2095,10 +2093,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
-    # todo if the admin specified doesnt exist then the 'add group + add user'
-    # workflow bails halfway through. This seems to add a group which wont be
-    # displayed in the manage groups view but does appear in the admin
-    # page. Is this the desired behaviour?
     adminuser = None
     if admin:
         try:
@@ -2133,10 +2127,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    transaction.commit()
     c = Context({'group': group,
                  'experiment_id': experiment_id})
-    return HttpResponse(render_response_index(request,
+    response = HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
     transaction.commit()
     return response

@@ -239,7 +239,7 @@ class AddGroupPermissionsForm(forms.Form):
     read.widget.attrs['class'] = 'canRead'
     write = forms.BooleanField(label='EDIT', required=False)
     write.widget.attrs['class'] = 'canWrite'
-    delete = forms.BooleanField(label='', required=False,
+    delete = forms.BooleanField(label='DELETE', required=False,
                                    widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
 
