@@ -10,6 +10,9 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
 import os
 import logging
 
+
+from tardis.apps.hpctardis.forms import ActivitiesSelectForm
+
 logger = logging.getLogger(__name__)
 
 
@@ -29,6 +32,17 @@ class rif_cs_PublishProvider(PublishProvider):
         :type request: :class:`django.http.HttpRequest`
 
         """
+        
+        activities_select_form = ActivitiesSelectForm(request.POST)
+        
+        if activities_select_form.is_valid():
+            data = activities_select_form.cleaned_data
+        else:
+            return {'status': True,
+                'message': 'Invalid party selection'}
+            
+        logger.debug("data=%s" % data['activities'])
+        
         if request.POST['profile']:
             experiment = Experiment.objects.get(id=self.experiment_id)
 
@@ -56,9 +70,12 @@ class rif_cs_PublishProvider(PublishProvider):
 
         if self.get_profile():
             selected_profile = self.get_profile()
+            
+        activity_form = ActivitiesSelectForm() 
 
         return {"rif_cs_profiles": rif_cs_profiles,
-                "selected_profile": selected_profile}
+                "selected_profile": selected_profile,
+                "activity_form": activity_form}
 
     def get_path(self):
         """

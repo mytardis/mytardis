@@ -260,10 +260,6 @@ def addfiles(request):
 
 logger = logging.getLogger(__name__)
 
-def test(request):
-    return HttpResponse(render_response_index(request,
-                                              'hpctardis/test.html'))
-    
 @never_cache
 @authz.experiment_ownership_required
 def publish_experiment(request, experiment_id):
