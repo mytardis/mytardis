@@ -12,6 +12,9 @@ import logging
 
 
 from tardis.apps.hpctardis.forms import ActivitiesSelectForm
+from tardis.apps.hpctardis.models import ActivityPartyRelation
+from tardis.apps.hpctardis.models import PartyLocation
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,11 +40,25 @@ class rif_cs_PublishProvider(PublishProvider):
         
         if activities_select_form.is_valid():
             data = activities_select_form.cleaned_data
+            
+            activities = data['activities']
+            for activity in activities:
+                
+                activity_party_relations = ActivityPartyRelation.objects.filter(
+                                                        activity=activity,
+                                                        relation="isManagedBy")
+                for activity_party_relation in activity_party_relations:
+                    party = activity_party_relation.party
+                    logger.debug("authparty for %s is %s" %
+                                  (activity.name, party.get_fullname()))
+                    party_locations = PartyLocation.objects.filter(party=party)
+                    for location in party_locations:
+                        logger.debug("location is %s" % location)
+            
         else:
             return {'status': True,
                 'message': 'Invalid party selection'}
             
-        logger.debug("data=%s" % data['activities'])
         
         if request.POST['profile']:
             experiment = Experiment.objects.get(id=self.experiment_id)
