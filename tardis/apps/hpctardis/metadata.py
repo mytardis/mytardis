@@ -53,117 +53,225 @@ from tardis.tardis_portal.models import DatasetParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import Experiment
 
+
 logger = logging.getLogger(__name__)
 
-
 number = "[+-]?((\d+)(\.\d*)?)|(\d+\.\d+)([eE][+-]?[0-9]+)?"
-rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
-                (
-                 ('kpoint_grid',("KPOINTS[_0-9]*",),
-                 "get_file_line(context,'KPOINTS[_0-9]*',-3)"),
-                 
-                 ('kpoint_grid_offset',("KPOINTS[_0-9]*",),
-                 "get_file_line(context,'KPOINTS[_0-9]*',-2)"),
-                 
+rulesets = {
+            ('http://tardis.edu.au/schemas/general/1','general 1.0'):
+            ( ('Project',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',True)"), 
+              ('Number Of CPUs',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
+                ('Maximum virtual memory',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
+                ('Max jobfs disk use',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
+                ('Walltime',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)")),
+            
+            ('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
+            (
+                ('kpoint_grid',("KPOINTS[_0-9]*",),
+                 "get_file_line(context,-3)"),
+                ('kpoint_grid_offset',("KPOINTS[_0-9]*",),
+                 "get_file_line(context,-2)"),
                  # TODO: remove number as can cause bad matches 
-                 ('ENCUT',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ENCUT\s*=\s*(?P<value>%s)\s+(?P<unit>eV)')" % number),
-                 
-                 ('NIONS',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NIONS\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
-                 
-                 ('NELECT',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+NELECT\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$')" % number),
-                 
-                 ('ISIF',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$')" % number), 
-                 
-                 ('ISPIN',("OUTCAR[0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$')" % number),
-                 
-                 ('Walltime',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)')"),
-                 
-                 ('Number Of CPUs',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Number of cpus:\s+(?P<value>.+)(?P<unit>)')"),
-                 
-                 ('Maximum virtual memory',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)')"),
-                 
-                 ('Max jobfs disk use',("^vasp\.sub[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'^vasp\.sub[_0-9]*\.o(\d+)$','Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)')"),
-                 
-                 
-                 ('NSW',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$')" % number),
+                ('ENCUT',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'\s+ENCUT\s*=\s*(?P<value>%s)\s+(?P<unit>eV)',False)" % number),
+                ('NIONS',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'\s+NIONS\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number), 
+                ('NELECT',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'\s+NELECT\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),
+                ('ISIF',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),  
+                ('ISPIN',("OUTCAR[0-9]*",),
+                 "get_file_regex(context,'\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),                  
+               
                 
-                 ('IBRION',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','IBRION\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$')" % number),
+                ('NSW',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$',False)" % number),
+                ('IBRION',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'IBRION\s*\=\s*(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),
+                ('ISMEAR',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
+                ('POTIM',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'POTIM\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
+                #('MAGMOM',("POSCAR[_0-9]*",),
+                 #"get_file_lines(context,1,4)"), 
+                ('Descriptor Line',("INCAR[_0-9]*",),
+                 "get_file_regex(context,'System = (?P<value>.*)(?P<unit>)',False)"), 
+                ('EDIFF',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'EDIFF\s*\=\s*(?P<value>[^\s]+)(?P<unit>)',False)"), 
+                ('EDIFFG',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'EDIFFG\s*\=\s*(?P<value>[^\s]+)(?P<unit>)',False)"), 
+                ('NELM',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'NELM\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
+                ('ISTART',("INCAR[_0-9]*",),
+                 "get_file_regex(context,'ISTART\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
+                ('TEBEG',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'TEBEG\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)',False)"), 
+                ('TEEND',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'TEEND\s*\=\s*(?P<value>[^;\s]+)(?P<unit>.*)',False)"), 
+                ('SMASS',("OUTCAR[_0-9]*",),
+                 "get_file_regex(context,'SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)',False)"),  
+                ('Final Iteration',("OSZICAR[_0-9]*",),
+                 "get_final_iteration(context)"), 
+             
+                ('TITEL',("OUTCAR[_0-9]*",),
+                 "('\\n '.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)$')),'')"), 
+             
+                ('LEXCH',("OUTCAR[_0-9]*",),
+                 "('\\n '.join(get_file_regex_all(context,'LEXCH\s+\=\s+(?P<value>[^\s]+)')),'')"), 
+             
+                ('Cell Scaling',("POSCAR[_0-9]*",),
+                 "get_file_line(context,1)"),
+            
+                ('Cell Parameter1',("POSCAR[_0-9]*",),
+                 "get_file_line(context,2)"),
+            
+                ('Cell Parameter2',("POSCAR[_0-9]*",),
+                 "get_file_line(context,3)"),
+            
+                ('Cell Parameter3',("POSCAR[_0-9]*",),
+                 "get_file_line(context,4)")),
             
             
-                 ('ISMEAR',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
             
+                 
+                 
+                ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
+                (('SystemName',("input[_0-9]*\.fdf",),
+                   "get_file_regex(context,'SystemName\s+(?P<value>.*)(?P<unit>)',False)"),
+                ('MeshCutoff',("input[_0-9]*\.fdf",),
+                   "get_file_regex(context,'MeshCutoff\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
+                ('ElectronicTemperature',("input[_0-9]*\.fdf",),
+                   "get_file_regex(context,'ElectronicTemperature\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
+                #('k-grid',("input\.fdf",),
+                #   "get_regex_lines(context,'\%block k_grid_Monkhorst_Pack','\%endblock k_grid_Monkhorst_Pack')"),
+                ('k-grid',("input[_0-9]*\.fdf",),
+                   "get_regex_lines(context,'\%block kgridMonkhorstPack','\%endblock kgridMonkhorstPack')"),
+                ('PAO.Basis',("input[_0-9]*\.fdf",),
+                   "get_regex_lines(context,'\%block PAO.Basis','\%endblock PAO.Basis')"),
+               
+                ('MD.TypeOfRun',('input[_0-9]*\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.TypeOfRun\s+(?P<value>.*)(?P<unit>)',False)"),
+      
+                ('MD.NumCGsteps',('input[_0-9]*\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.NumCGsteps\s+(?P<value>[^\s]+)(?P<unit>)',False)"),
             
-                 ('POTIM',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','POTIM\s*\=\s*(?P<value>%s)(?P<unit>)')" % number),
-                 
-                 ('MAGMOM',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,'POSCAR[_0-9]*',1,4)"), 
-                 
-                 #('Descriptorline',("metadata[_0-9]*.vasp",),
-                 #"get_file_regex(context,'metadata[_0-9]*.vasp','Experiment:\s(?P<value>.*)$')"), 
-       
-                 ('EDIFF',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFF\s*\=\s*(?P<value>[^\s]+)(?P<unit>)')"), 
-                 
-                 ('EDIFFG',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','EDIFFG\s*\=\s*(?P<value>[^\s]+)(?P<unit>)')"), 
-                 
-                 
-                 ('NELM',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','NELM\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
-                 
-                 ('ISTART',("INCAR[_0-9]*",),
-                 "get_file_regex(context,'INCAR[_0-9]*','ISTART\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
-                 
-                 
-                 ('TEBEG',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','TEBEG\s*\=\s*(?P<value>[^;\s]+)(?P<unit>)')"), 
-                 
-                  ('TEEND',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','TEEND\s*\=\s*(?P<value>[^;\s]+)(?P<unit>.*)')"), 
-              
-              
-                 ('SMASS',("OUTCAR[_0-9]*",),
-                 "get_file_regex(context,'OUTCAR[_0-9]*','SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)')"), 
-                 
+                ('iscf',('output[_0-9]*',),
+                 "(get_regex_lines_vallist(context,'siesta\:\siscf','^$')[-1],'')"),
+             
+             
+                ('E_KS',('output[_0-9]*',),
+                 "get_file_regex(context,'^siesta:\s+E\_KS\(eV\)\s+\=\s+(?P<value>.*)(?P<unit>)',False)"),
+             
+                ('Occupation Function',('input[_0-9]*\.fdf',),
+                 "get_file_regex(context,'(?<!\#)OccupationFunction\s+(?P<value>.*)(?P<unit>)',False)"),
+             
+                ('OccupationMPOrder',('input[_0-9]*\.fdf',),
+                 "get_file_regex(context,'(?<!\#)OccupationMPOrder\s+(?P<value>.*)(?P<unit>)',False)"),
+             
                 
-                ('Cell Parameters',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,'POSCAR[_0-9]*',1,4)")),
-                 
-                 
-                 ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
-                 [],
-                 ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
+                ('MD.MaxForceTol',('input[_0-9]*\.fdf',),
+                 "get_file_regex(context,'(?<!\#)MD\.MaxForceTol\s+(?P<value>[^\s]+)\s+(?P<unit>.*)',False)")),
+                       
+                       ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
                   "get_constant(context,'99','foobars')"),
                  ('Test2',("R-2-2.tif","R-2-5.tif"),"get_constant(context,'hello','')"))
                  }
-                      
 
-def _get_file_from_regex(regex,context):
-    """Returns the single key from ready dict which matches the regex """
+def _get_file_handle(context, filename):
+    datafile = context['ready'][filename]
+    url = datafile.get_download_url()
+    file_handle = None
+    if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
+        raw_path = url.partition('//')[2]
+        file_path = path.join(settings.FILE_STORE_PATH,
+                                  str(context['expid']),
+                                  str(datafile.dataset.id),
+                                  raw_path,datafile.url.partition('//')[2])
+        
+        logger.debug("file_path=%s" % file_path)
+        
+        file_handle = open(file_path,"r")
+    return file_handle
+
+
+def get_final_iteration(context):
+    """ Return the final iteration number from a VASP run 
+    """
+    fileregex = context['fileregex'][0]
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    logger.debug("filename=%s" % filename)
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return ("","")
+    else:
+        logger.debug("found ready %s" % filename)
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ("","")
+        if fp:
+            regex = "RMM\:\s*(?P<value>\d+)\s*"
+            regx = re.compile(regex)
+            max_value = 0
+            for line in fp:
+                logger.debug("line=%s" % line)
+                match = regx.search(line)  
+                if match:
+                    val = match.group('value') 
+                    try:
+                        value = int(val)
+                    except ValueError:
+                        value = 0
+                    logger.debug("value=%s" % value)
+                    if value > max_value:
+                        max_value = value            
+            fp.close()
+            logger.debug("max_value = %s" % max_value)
+            return (str(max_value),"") 
+        else:
+            return ("","")
+
+
+def _get_file_from_regex(regex,context, return_max):
+    """Returns the single key from ready dict which matches the regex.
+    If return_max, then only use file which the largest group match in regex
+    """
     regx = re.compile(regex)
-    res = None
+    logger.debug("return_max=%s" % return_max)
+    key = None
+    max_match = ""
+    max_value = 0
+    logger.debug("regex=%s" % regex)
     for key in dict(context):
+        logger.debug("key=%s" % key)
         match = regx.match(key)
-        if match:
-            res = key
-            break
-    return res
+        logger.debug("match=%s" % match)
+        if return_max:
+            logger.debug("return_max")
+            if match:
+                logger.debug("match=%s" % match)
+                matched_groups = match.groups()
+                if matched_groups:
+                    if len(matched_groups) == 1:
+                        if matched_groups[0] > max_value:
+                            max_match = key
+                            max_value=matched_groups[0]
+        else:
+            if match:
+                logger.debug("matched to %s" % str(match.group(0)))
+                return match.group(0) 
+            
+    logger.debug("max_match=%s" % max_match)
+    return max_match
 
 
-def get_file_lines(context,fileregex, linestart,lineend):
+
+def get_file_lines(context, linestart,lineend):
     """ Returns value and units from the filenameregex where value is 
     newline joined lines from linestart to lineend.  Only works for local files""" 
     # match fileregex to available files
@@ -174,22 +282,19 @@ def get_file_lines(context,fileregex, linestart,lineend):
     #    if match:
     #        filename = key
     #        break
-    filename = _get_file_from_regex(fileregex,context['ready'])
+    fileregex = context['fileregex'][0]
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
     if filename not in context['ready']:
         return (None,'')
     else:
-        datafile = context['ready'][filename]
-        url = datafile.get_download_url()
-        # FIXME: add other protocols
-        if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
-            raw_path = url.partition('//')[2]
-            file_path = path.join(settings.FILE_STORE_PATH,
-                                  str(context['expid']),
-                                  str(datafile.dataset.id),
-                                  raw_path,datafile.url.partition('//')[2])
-            file_handle = open(file_path,"r")
+        
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ('','')
+        if fp:
             res = []
-            for i,line in enumerate(file_handle):
+            for i,line in enumerate(fp):
                 if i in range(linestart,lineend):
                     res.append(line)
              
@@ -197,7 +302,8 @@ def get_file_lines(context,fileregex, linestart,lineend):
     return ('','')
     
     
-def get_file_line(context,fileregex,lineno):
+    
+def get_file_line(context,lineno):
     """Returns the context of relative linenumber
     Assumes no units value and only works for smallish file"""
     # match fileregex to available files
@@ -208,34 +314,98 @@ def get_file_line(context,fileregex,lineno):
         #if match:
             #filename = key
             #break
-    filename = _get_file_from_regex(fileregex,context['ready'])
+    fileregex = context['fileregex'][0]
+  
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
     if filename not in context['ready']:
         return (None,'')
     else:
-        datafile = context['ready'][filename]
-        url = datafile.get_download_url()
-        
-        if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
-            raw_path = url.partition('//')[2]
-            file_path = path.join(settings.FILE_STORE_PATH,
-                                  str(context['expid']),
-                                  str(datafile.dataset.id),
-                                  raw_path,datafile.url.partition('//')[2])
-        
-            print "file_path=%s" % file_path
-        
-            #FIXME: does not work for large files
-        
-            file_handle = open(file_path,"r")
-            line_list = file_handle.readlines()
-        
-            file_handle.close()
-            print line_list 
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ("","")
+        if fp:
+            line_list = fp.readlines()
+            fp.close()
+            logger.debug(line_list) 
             return (str(line_list[lineno]),'')
-    return (None,'')  
+    return ('','')  
     
+
+def get_regex_lines(context, startregex,endregex):
+    
+    fileregex = context['fileregex'][0]
+  
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return ('','')
+    else:
         
-def get_file_regex(context,fileregex,regex):
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ('','')
+        if fp:
+            startreg = re.compile(startregex)
+            endreg = re.compile(endregex)
+            res = []
+            in_region = False
+            for line in fp:
+                start_match = startreg.search(line)
+                end_match = endreg.search(line)    
+                if start_match:
+                    in_region = True
+                    continue
+                if end_match:
+                    in_region = False
+                    continue
+                if in_region:
+                    res.append(line)
+            fp.close() 
+        return ("\n".join(res),'')     
+                
+                
+                
+                
+def get_regex_lines_vallist(context, startregex,endregex):
+    
+    fileregex = context['fileregex'][0]
+  
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return ['']
+    else:
+        
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            return ['']
+        if fp:
+            startreg = re.compile(startregex)
+            endreg = re.compile(endregex)
+            res = []
+            in_region = False
+            for line in fp:
+                start_match = startreg.search(line)
+                end_match = endreg.search(line)    
+                if start_match:
+                    in_region = True
+                    continue
+                if end_match:
+                    in_region = False
+                    continue
+                if in_region:
+                    res.append(line)
+            fp.close() 
+        return res     
+                
+                
+          
+def get_file_regex(context,regex,return_max):
     """ Searches all files that match file regex and searches for regex in contents.
         Returns the contents of groups 'name' and 'unit' as a tuple
     """
@@ -248,30 +418,23 @@ def get_file_regex(context,fileregex,regex):
     #    if match:
     #        filename = key
     #        break
-    
-    filename = _get_file_from_regex(fileregex,context['ready'])
+
+    # FIXME: only handles single file pattern    
+    fileregex = context['fileregex'][0]
+    filename = _get_file_from_regex(fileregex,context['ready'],return_max)
     
     if not filename or filename not in context['ready']:
-        print "found None"
-        return None
+        logger.debug("found None")
+        return ('','')
     else:
-        print "found ready %s" % filename
-        datafile = context['ready'][filename]
-        url = datafile.get_download_url()
-        
-        if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
-            raw_path = url.partition('//')[2]
-            file_path = path.join(settings.FILE_STORE_PATH,
-                                  str(context['expid']),
-                                  str(datafile.dataset.id),
-                                  raw_path,datafile.url.partition('//')[2])
-        
-            print "file_path=%s" % file_path
-        
-            file_handle = open(file_path,"r")
-          
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception,e:
+            logger.error("problem with filehandle %s" % e)
+            return ('','')
+        if fp:
             regx = re.compile(regex)
-            for line in file_handle:
+            for line in fp:
                 match = regx.search(line)
                 
                 if match:
@@ -279,20 +442,70 @@ def get_file_regex(context,fileregex,regex):
                     unit = str(match.group('unit'))
                     if not unit:
                         unit = ''
-                    print "value=%s unit=%s" % (value,unit)
-                    file_handle.close()
+                    logger.debug("value=%s unit=%s" % (value,unit))
+                    fp.close()
                     res = (value,unit)
                     for g in res:
-                        print "final matched %s" % g
+                        logger.debug("final matched %s" % g)
                     return res
-            file_handle.close() 
+        else:
+            logger.debug("no filehandle")
+        fp.close() 
         return ('','')     
+
+
+                
+          
+def get_file_regex_all(context,regex):
+    """ Searches all files that match file regex and searches for regex in contents.
+        Returns the contents of groups 'name' and 'unit' as a tuple
+    """
+
+    # match fileregex to available files
+    #regx = re.compile(fileregex)
+    #filename = None
+    #for key in context['ready']:
+    #    match = regx.match(key)
+    #    if match:
+    #        filename = key
+    #        break
+
+    # FIXME: only handles single file pattern   
+    logger.debug("get_file_regex_all") 
+    fileregex = context['fileregex'][0]
+    logger.debug("fileregex=%s" % fileregex)
+    filename = _get_file_from_regex(fileregex,context['ready'],False)
+    logger.debug("filename=%s" % filename)
+    
+    final_res = []
+    if not filename or filename not in context['ready']:
+        logger.debug("found None")
+        return []
+    else:
+        try:
+            fp = _get_file_handle(context, filename)
+        except Exception:
+            logger.error("bad file handle")
+            return []
+        if fp:
+            regx = re.compile(regex)
+            for line in fp:
+                match = regx.search(line)
+                
+                if match:
+                    value = match.group('value')
+                    logger.debug("value=%s" % value)
+                    final_res.append(value.rstrip())
+            fp.close()
+        logger.debug("final_res=%s" % final_res) 
+        return final_res     
+
+
+
     
 def get_constant(context,val,unit):
     return (val,unit)
 
-    
-    
             
 def get_metadata(ruleset):
     from collections import defaultdict
@@ -300,7 +513,7 @@ def get_metadata(ruleset):
     # TODO: handle files that have not arrived yet
     expectedmd5 = None
                   
-    
+    #TODO: missing values default to STRING, but later could be numeric when have value
     metadatas = {}
     for exp in Experiment.objects.all():
         logger.debug("exp=%s\n" % exp)
@@ -348,18 +561,23 @@ def get_metadata(ruleset):
                 if count == len(file_patterns):
                     logger.debug("ready to start extracting on %s files\n" % count)
                     data_context = {'expid':exp.id,
-                               'ready':ready}
+                               'ready':ready,
+                               'fileregex':file_patterns}
                     logger.debug("data_context=%s" % data_context)
                     try:
-                        (value,unit) = eval(code,{"__builtins__":None},
+                        (value,unit) = eval(code,{},
                                          {"get_file_line":get_file_line,
                                           "get_file_lines":get_file_lines,
                                           "get_file_regex":get_file_regex,
+                                          "get_file_regex_all":get_file_regex_all,
+                                          "get_regex_lines":get_regex_lines,
+                                          "get_regex_lines_vallist":get_regex_lines_vallist,
+                                          "get_final_iteration":get_final_iteration,
                                           "get_constant":get_constant,
                                           'context':data_context})
                     except Exception,e:
                         logger.error("Exception %s" % e)
-                    logger.debug("value,unit=%s %s" % (value,unit))
+                        logger.debug("value,unit=%s %s" % (value,unit))
                  
                     meta[tagname] = (value,unit)
                      
@@ -367,16 +585,20 @@ def get_metadata(ruleset):
             metadatas[dataset] = meta
         
     return metadatas
+        
             
 def get_schema(schema,name):
     """Return the schema object that the paramaterset will use.
     """
     try:
-        return Schema.objects.get(namespace__exact=schema)
+        sch = Schema.objects.get(namespace__exact=schema)
+        logger.debug("found %s %s" % (sch.namespace, sch.name))
+        return sch
     except Schema.DoesNotExist:
         schema = Schema(namespace=schema, name=name,
                         type=Schema.DATASET)
         schema.save()
+        logger.debug("creating %s %s " % (schema,name))
         return schema          
             
 def get_parameters(schema,metadata):
@@ -384,7 +606,6 @@ def get_parameters(schema,metadata):
     param_objects = ParameterName.objects.filter(schema=schema)
     logger.debug("param_objects=%s\n" % param_objects)
     parameters = []
-    
     for p in metadata.keys():
         logger.debug("pp=%s\n" % p)
         logger.debug("metadata[pp][0] = %s" % metadata[p][0])
@@ -394,10 +615,8 @@ def get_parameters(schema,metadata):
         if parameter:
             parameters.append(parameter[0])
             continue
-        
         datatype = ParameterName.STRING
         units = None
-        
         try:
             int(metadata[p][0])
         except (ValueError,TypeError):
@@ -405,7 +624,6 @@ def get_parameters(schema,metadata):
         else:
             datatype = ParameterName.NUMERIC
             units = str(metadata[p][1])
-        
         try:
             float(metadata[p][0])
         except (ValueError,TypeError):
@@ -413,7 +631,6 @@ def get_parameters(schema,metadata):
         else:
             datatype = ParameterName.NUMERIC
             units = str(metadata[p][1])
-        
         logger.debug("units=%s" % str(metadata[p][1]))
         if units:
             new_param = ParameterName(schema=schema,
@@ -426,7 +643,6 @@ def get_parameters(schema,metadata):
                                   name=p,
                                   full_name=p,
                                   data_type=datatype)
-        
         new_param.save()
         logger.debug("new_param=%s" % new_param)
         logger.debug("datatype=%s" % datatype)
@@ -438,7 +654,6 @@ def save_metadata(instance,schema,metadata):
     logger.debug("parameters=%s" % parameters)
     if not parameters:
         return None
-      
     try:
         ps = DatasetParameterSet.objects.get(schema=schema,
                                                 dataset=instance)
@@ -446,32 +661,39 @@ def save_metadata(instance,schema,metadata):
     except DatasetParameterSet.DoesNotExist:
         ps = DatasetParameterSet(schema=schema,dataset=instance)
         ps.save()
-        
     logger.debug("ps=%s\n" % ps)
     logger.debug("metadata2=%s\n" % metadata)
-        
     for p in parameters:
         logger.debug("p=%s\n" % p)
         if p.name in metadata:
             logger.debug("found p =%s %s\n" % (p.name,p.units))
-            try:
-                dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
-            except DatasetParameter.DoesNotExist:           
-                dfp = DatasetParameter(parameterset=ps,
-                                    name=p)
-          
-            # TODO: handle bad type 
+            
             if p.isNumeric():
-                dfp.numerical_value = metadata[p.name][0]
-                logger.debug("numeric")
+                val = metadata[p.name][0]
+                if val:
+                           
+                    try:
+                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                    except DatasetParameter.DoesNotExist:           
+                        dfp = DatasetParameter(parameterset=ps,
+                                    name=p)
+                    dfp.numerical_value = val
+                    logger.debug("numeric")
+                    dfp.save()
             else:
-                dfp.string_value = metadata[p.name][0]
-            logger.debug("dfp=%(dfp)s" % locals())
-            dfp.save()
+                val = metadata[p.name][0]
+                if val:
+                    try:
+                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                    except DatasetParameter.DoesNotExist:           
+                        dfp = DatasetParameter(parameterset=ps,
+                                    name=p)
+                    dfp.string_value = metadata[p.name][0]
+                    dfp.save()
+                    logger.debug("string")
             
             
 def go():
-    
     for schemainfo in rulesets:
         metadatas = get_metadata(rulesets[schemainfo])
         logger.debug("metadatas=%s\n" % metadatas)

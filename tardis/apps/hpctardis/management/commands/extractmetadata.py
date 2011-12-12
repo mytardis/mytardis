@@ -21,10 +21,8 @@ from tardis.tardis_portal.models import Experiment
 
 import itertools
 
-from tardis.apps.hpctardis.metadata import get_metadata
-from tardis.apps.hpctardis.metadata import get_schema
-from tardis.apps.hpctardis.metadata import save_metadata
 from tardis.apps.hpctardis.metadata import go
+
 
 
 class Command(BaseCommand):
