@@ -290,7 +290,6 @@ class DatasetFileIndex(RealTimeSearchIndex):
                 parameterset__dataset_file__pk=obj.pk, 
                 name__is_searchable=True):
             fn = prepareFieldName(par.name)
-            #self.prepared_data['datafile_' + par.name.name] = _getParamValue(par) 
             self.prepared_data[fn] = _getParamValue(par) 
         
         self.prepared_data.update(self.get_experiment_params(exp))
@@ -300,9 +299,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
                 parameterset__dataset__pk=ds.id, 
                 name__is_searchable=True):
             fn = prepareFieldName(par.name)
-            #self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
-            fn = prepareFieldName(par.name)
-            self.prepared_data['dataset_'  + par.name.name] = _getParamValue(par)
+            self.prepared_data[fn] = _getParamValue(par)
         
         return self.prepared_data
 
