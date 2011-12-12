@@ -39,19 +39,21 @@ exiftags.py
 .. moduleauthor:: Joanna H. Huang <Joanna.Huang@versi.edu.au>
 
 """
-
-
-
-from tardis.tardis_portal.models import Schema, DatafileParameterSet
-from tardis.tardis_portal.models import ParameterName, DatafileParameter
 import logging
 import os
 import random
 import ConfigParser
+import Image
+
 from django.core.exceptions import ImproperlyConfigured
+from django.conf import settings
+
+from tardis.tardis_portal.models import Schema, DatafileParameterSet
+from tardis.tardis_portal.models import ParameterName, DatafileParameter
+from tardis.apps.microtardis.views import write_thumbnails
 
 from fractions import Fraction
-from django.conf import settings
+
 try:
     import EXIF  # Assumed to be in the same directory.
 except ImportError:
@@ -141,7 +143,16 @@ class EXIFTagsFilter(object):
             # TODO log that exited early
             return
         
-        #ignore non-image file
+        # generate thumbnails for image file
+        try:
+            img =  Image.open(filepath)
+            extention = '_tif_thumb.jpg'
+            write_thumbnails(instance, img, filepath, extention)
+        except IOError:
+            # file not an image file
+            pass
+        
+        # ignore non-image file
         if filepath[-4:].lower() != ".tif":
             return
        
@@ -160,7 +171,7 @@ class EXIFTagsFilter(object):
             
             logger.debug("instr_name %s" % instr_name)
             exifs = self.getExif(filepath)
-
+            
             for exifTag in exifs:
                 logger.debug("exifTag=%s" % exifTag)
                 if exifTag == 'Image Tag 0x877A':

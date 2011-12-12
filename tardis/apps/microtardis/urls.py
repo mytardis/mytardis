@@ -2,6 +2,7 @@ from django.conf.urls.defaults import patterns
 from tardis.urls import urlpatterns as tardisurls
 
 urlpatterns = patterns('tardis.apps.microtardis.views',
+    (r'^thumbnails/(?P<experiment_id>\d+)/(?P<dataset_id>\d+)/(?P<instrument>[\w\.]+)/(?P<filename>[\w\.]+)/$', 'display_thumbnails'),
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
 )
 

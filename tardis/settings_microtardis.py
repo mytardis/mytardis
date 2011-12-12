@@ -72,3 +72,6 @@ SYSTEM_LOG_FILENAME = 'request.log'
 MODULE_LOG_FILENAME = 'tardis.log'
 
 DEFAULT_INSTITUTION = "RMIT Microscopy and Microanalysis Facility"
+
+THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
+    '../var/thumbnails/')).replace('\\', '/')
