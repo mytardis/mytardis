@@ -28,10 +28,16 @@
 #
 
 
+
+from datetime import date                     
+import datetime
+
+
 from django.http import HttpResponse,HttpResponseRedirect
 from tardis.tardis_portal.shortcuts import render_response_index
 from django.conf import settings
 from django.shortcuts import render_to_response
+
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
@@ -63,8 +69,8 @@ from tardis.tardis_portal.shortcuts import return_response_error
 
 from tardis.apps.hpctardis.publish.RMITANDSService import RMITANDSService
 
-
-
+from tardis.apps.hpctardis.models import PublishAuthorisation
+from tardis.apps.hpctardis.models import PublishAuthEvent
 
 
 def test(request):
@@ -296,8 +302,11 @@ def publish_experiment(request, experiment_id):
         #fix this slightly dodgy logic
         context_dict['publish_result'] = "submitted"
         if 'legal' in request.POST:
-            experiment.public = True
-            experiment.save()
+            
+            
+           # only make public when all providers signal okay
+           # experiment.public = True
+           # experiment.save()
 
             context_dict['publish_result'] = \
             publishService.execute_publishers(request)
@@ -360,7 +369,6 @@ def rif_cs(request):
     #currently set up to work with EIF038 dummy data
 
     experiments = Experiment.objects.filter(public=True)
-    import datetime
     c = Context({
             'experiments': experiments,
             'now': datetime.datetime.now(),
@@ -372,3 +380,85 @@ def rif_cs(request):
         mimetype='application/xml')
    
 
+def auth_exp_publish(request):
+    """
+        Check the provided authcode against outstanding experiments awaiting
+        authorisation and if match, then give authorisation.
+    """
+
+    context = {}
+    if request.method == 'GET':
+        
+        exp_id = None
+        if 'expid' in request.GET:
+            exp_id = request.GET['expid']   
+        else:
+            context[u'message'] = u'Unknown experiment'
+            return HttpResponse(render_response_index(request,
+                        u'hpctardis/authorise_publish.html', Context(context)))
+        
+        try:
+            experiment = Experiment.objects.get(id=exp_id)
+        except Experiment.DoesNotExist:
+            context[u'message'] = u'Unkown experiment'
+            return HttpResponse(render_response_index(request,
+                        'hpctardis/authorise_publish.html', Context(context)))
+    
+        if experiment.public:
+            context[u'message'] = u'Experiment already public'
+            return HttpResponse(render_response_index(request,
+                        'hpctardis/authorise_publish.html', Context(context)))
+        
+        if 'authcode' in request.GET:        
+            authcode = request.GET['authcode']
+        else:
+            context[u'message'] = u'bad authcode'
+            return HttpResponse(render_response_index(request,
+                        'hpctardis/authorise_publish.html', Context(context)))
+    
+                   
+        auths = PublishAuthorisation.objects.filter(auth_key=authcode,
+                                                    experiment=experiment)
+        for auth in auths:
+            if auth.status == PublishAuthorisation.PENDING_APPROVAL:
+                if authcode == auth.auth_key:
+                    auth.status = PublishAuthorisation.APPROVED_PUBLIC
+                    auth.date_authorised = datetime.datetime.now()
+                    auth.save()
+                    context[u'message'] = u'Thank you for your approval %s' %auth.party_record        
+                    break
+                
+            elif auth.status == PublishAuthorisation.APPROVED_PUBLIC:
+                if authcode == auth.auth_key:
+                    context[u'message'] = u'Already authorised'
+                    break        
+            else:
+                context[u'message'] = u'unknown command %s' % auth.status
+        
+        
+        # FIXME: this promotion code should be in separate page so we can 
+        # redo it if we have made manual changes in admin tool.
+        all_auths = PublishAuthorisation.objects.filter(experiment=experiment)
+        
+        if all_auths:
+              
+            approved_public = [ x for x in all_auths 
+                        if x.status == PublishAuthorisation.APPROVED_PUBLIC]
+      
+            if len(approved_public) == len(all_auths):            
+                experiment.public = True
+                experiment.save()
+                context[u'message'] = u'Experiment is now public'
+            else:
+                context[u'message'] = u'Experiment still awaiting additional authorisation'
+        else:
+            # Bad experiment or no publish authorisations
+            context[u'message'] = u'bad authcode or experiment id'
+            
+    else:
+        context[u'message'] = u'Unknown command'
+    return HttpResponse(render_response_index(request,
+                        'hpctardis/authorise_publish.html', Context(context)))
+    
+
+        
