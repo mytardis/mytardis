@@ -760,6 +760,9 @@ class ParameterName(models.Model):
         else:
             return False
 
+    def getUniqueShortName(self):
+        return self.name + '_' + str(self.id)
+
 
 def _getParameter(parameter):
 

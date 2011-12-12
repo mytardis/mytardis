@@ -1248,43 +1248,44 @@ def __filterParameters(parameters, datafile_results,
     """
 
     for parameter in parameters:
-        kwargs = {paramType + '__name__name__icontains': parameter.name}
+        fieldName = parameter.getUniqueShortName()
+        kwargs = {paramType + '__name__id': parameter.id}
         try:
 
             # if parameter is a string...
             if not parameter.data_type == ParameterName.NUMERIC:
-                if searchFilterData[parameter.name] != '':
+                if searchFilterData[fieldName] != '':
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
                     if parameter.choices != '':
-                        if searchFilterData[parameter.name] != '-':
+                        if searchFilterData[fieldName] != '-':
                             kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                     else:
                         if parameter.comparison_type == \
                                 ParameterName.EXACT_VALUE_COMPARISON:
                             kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                         elif parameter.comparison_type == \
                                 ParameterName.CONTAINS_COMPARISON:
                             # we'll implement exact comparison as 'icontains'
                             # for now
                             kwargs[paramType + '__string_value__icontains'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                         else:
                             # if comparison_type on a string is a comparison
                             # type that can only be applied to a numeric value,
                             # we'll default to just using 'icontains'
                             # comparison
                             kwargs[paramType + '__string_value__icontains'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                 else:
                     pass
             else:  # parameter.isNumeric():
                 if parameter.comparison_type == \
                         ParameterName.RANGE_COMPARISON:
-                    fromParam = searchFilterData[parameter.name + 'From']
-                    toParam = searchFilterData[parameter.name + 'To']
+                    fromParam = searchFilterData[fieldName + 'From']
+                    toParam = searchFilterData[fieldName + 'To']
                     if fromParam is None and toParam is None:
                         pass
                     else:
@@ -1302,14 +1303,14 @@ def __filterParameters(parameters, datafile_results,
                              toParam is not None and toParam or
                              constants.FORM_RANGE_HIGHEST_NUM)
 
-                elif searchFilterData[parameter.name] is not None:
+                elif searchFilterData[fieldName] is not None:
 
                     # if parameter is an number and we want to handle other
                     # type of number comparisons
                     if parameter.comparison_type == \
                             ParameterName.EXACT_VALUE_COMPARISON:
                         kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
 
                     # TODO: is this really how not equal should be declared?
                     # elif parameter.comparison_type ==
@@ -1324,25 +1325,25 @@ def __filterParameters(parameters, datafile_results,
                     elif parameter.comparison_type == \
                             ParameterName.GREATER_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__gt'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.GREATER_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__gte'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.LESS_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__lt'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.LESS_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__lte'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     else:
                         # if comparison_type on a numeric is a comparison type
                         # that can only be applied to a string value, we'll
                         # default to just using 'exact' comparison
                         kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                 else:
                     # ignore...
                     pass
