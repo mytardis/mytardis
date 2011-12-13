@@ -43,7 +43,7 @@ from os import path
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 from django.dispatch import receiver
@@ -1045,20 +1045,32 @@ def pre_save_parameter(sender, **kwargs):
             parameter.string_value = filename
 
 @receiver(post_save, sender=ExperimentParameter)
+@receiver(post_delete, sender=ExperimentParameter)
 def post_save_experiment_parameter(sender, **kwargs):
     experiment_param = kwargs['instance']
-    experiment = Experiment.objects.get(pk=experiment_param.getExpId())
-    _publish_public_expt_rifcs(experiment)   
+    try:
+        experiment = Experiment.objects.get(pk=experiment_param.getExpId())
+        _publish_public_expt_rifcs(experiment)
+    except ExperimentParameterSet.DoesNotExist:
+        # If for some reason the experiment parameter set is missing,
+        # then ignore update
+        pass    
 
 @receiver(post_save, sender=Experiment)
+@receiver(post_delete, sender=Experiment)
 def post_save_experiment(sender, **kwargs):
     experiment = kwargs['instance']
     _publish_public_expt_rifcs(experiment)    
 
 @receiver(post_save, sender=Author_Experiment)
+@receiver(post_delete, sender=Author_Experiment)
 def post_save_author_experiment(sender, **kwargs):
     author_experiment = kwargs['instance']
-    _publish_public_expt_rifcs(author_experiment.experiment)   
+    try:
+        _publish_public_expt_rifcs(author_experiment.experiment)
+    except Experiment.DoesNotExist:
+        # If for some reason the experiment is missing, then ignore update
+        pass
 
 def _publish_public_expt_rifcs(experiment):
     try:
