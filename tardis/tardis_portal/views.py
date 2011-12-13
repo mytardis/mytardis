@@ -2557,7 +2557,7 @@ class ExperimentSearchView(SearchView):
         # TODO this should just be done in the form clean...
         query = SearchQueryString(self.query) 
         context = {
-                'query': query,
+                'search_query': query,
                 'form': self.form,
                 'page': page,
                 'paginator' : paginator,

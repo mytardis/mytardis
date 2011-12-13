@@ -1,22 +1,17 @@
-from tardis.tardis_portal.forms import RawSearchForm
 from django.conf import settings
 
 def single_search_processor(request):
 
     context = {}
-    form = None
-    query = ''
+    single_search_on = True
     try:
         if settings.SINGLE_SEARCH_ENABLED: 	
-            form = RawSearchForm() 
-            if form.is_valid():
-                query = form.cleaned_data['q'] 
+            single_search_on = True
     except AttributeError:
         pass
 
     context =  {
-	    'search_form': form,
-        'search_query': query,
+	    'search_form': single_search_on,
     }
 
     return context
