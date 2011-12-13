@@ -71,6 +71,9 @@ from tardis.apps.hpctardis.publish.RMITANDSService import RMITANDSService
 
 from tardis.apps.hpctardis.models import PublishAuthorisation
 from tardis.apps.hpctardis.models import PublishAuthEvent
+from tardis.apps.hpctardis.models import PartyRecord
+from tardis.apps.hpctardis.models import ActivityRecord
+
 
 
 def test(request):
@@ -285,12 +288,28 @@ def publish_experiment(request, experiment_id):
     logger.debug("started publish")
     experiment = Experiment.objects.get(id=experiment_id)
     username = str(request.user).partition('_')[2]
-
+            
         
     publishService = RMITANDSService(experiment.id)
     logger.debug("made service")
- 
+    
+    if publishService.is_under_review():
+        context_dict = {}
+        context_dict['status'] = False
+        context_dict['message'] = 'Experiment is under review'
+        c = Context(context_dict)
+        return HttpResponse(render_response_index(request,
+                        'tardis_portal/publish_experiment.html', c))
 
+    if experiment.public:
+        context_dict = {}
+        context_dict['publish_result'] = {'status':True,
+                                          'legal':True,
+                                          'message':'Experiment is already published'}
+        c = Context(context_dict)
+        return HttpResponse(render_response_index(request,
+                        'tardis_portal/publish_experiment.html', c))
+        
     if request.method == 'POST':  # If the form has been submitted...
 
     
@@ -351,6 +370,7 @@ def publish_experiment(request, experiment_id):
         **publishService.get_contexts(request))
 
     c = Context(context_dict)
+    # FIXME: make own versionso publish_experiment template
     return HttpResponse(render_response_index(request,
                         'tardis_portal/publish_experiment.html', c))
     
@@ -366,15 +386,27 @@ def rif_cs(request):
 
     """
 
-    #currently set up to work with EIF038 dummy data
-
     experiments = Experiment.objects.filter(public=True)
+    
+    try:
+        parties = PartyRecord.objects.all()
+    except PartyRecord.DoesNotExist:
+        parties = PartyRecord.objects.none()
+        
+    try:
+        activities = ActivityRecord.objects.all()
+    except ActivityRecord.DoesNotExist:
+        activities = ActivityRecord.objects.none()
+   
     c = Context({
             'experiments': experiments,
             'now': datetime.datetime.now(),
-            'party_rif_cs': None,
-            'activity_rif_cs': None,
+            'parties': parties,
+            'activities':activities
         })
+    
+    
+        
     return HttpResponse(render_response_index(request,\
         'rif_cs_profile/rif-cs.xml', c),
         mimetype='application/xml')
@@ -400,7 +432,7 @@ def auth_exp_publish(request):
         try:
             experiment = Experiment.objects.get(id=exp_id)
         except Experiment.DoesNotExist:
-            context[u'message'] = u'Unkown experiment'
+            context[u'message'] = u'Unknown experiment'
             return HttpResponse(render_response_index(request,
                         'hpctardis/authorise_publish.html', Context(context)))
     
@@ -435,30 +467,30 @@ def auth_exp_publish(request):
             else:
                 context[u'message'] = u'unknown command %s' % auth.status
         
+        # TODO: send message to original owner if exp now public
+        _ = _promote_experiments_to_public(experiment)
         
-        # FIXME: this promotion code should be in separate page so we can 
-        # redo it if we have made manual changes in admin tool.
-        all_auths = PublishAuthorisation.objects.filter(experiment=experiment)
-        
-        if all_auths:
-              
-            approved_public = [ x for x in all_auths 
-                        if x.status == PublishAuthorisation.APPROVED_PUBLIC]
-      
-            if len(approved_public) == len(all_auths):            
-                experiment.public = True
-                experiment.save()
-                context[u'message'] = u'Experiment is now public'
-            else:
-                context[u'message'] = u'Experiment still awaiting additional authorisation'
-        else:
-            # Bad experiment or no publish authorisations
-            context[u'message'] = u'bad authcode or experiment id'
-            
-    else:
-        context[u'message'] = u'Unknown command'
-    return HttpResponse(render_response_index(request,
+         
+        return HttpResponse(render_response_index(request,
                         'hpctardis/authorise_publish.html', Context(context)))
     
 
-        
+def _promote_experiments_to_public(experiment):
+    #TODO: Make a management command for this so we can trigger after
+    #changes in admin tool.
+    all_auths = PublishAuthorisation.objects.filter(experiment=experiment)
+    if all_auths:
+          
+        approved_public = [ x for x in all_auths 
+                    if x.status == PublishAuthorisation.APPROVED_PUBLIC]
+    
+        if len(approved_public) == len(all_auths):            
+            experiment.public = True
+            experiment.save()
+            return u'Experiment is now public'
+        else:
+            return u'Experiment still awaiting additional authorisation'
+    else:
+        # Bad experiment or no publish authorisations
+        return u'bad authcode or experiment id'
+    

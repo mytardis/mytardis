@@ -12,7 +12,6 @@ import random
 
 
 from django.forms.formsets import formset_factory
-from django.utils.hashcompat import sha_constructor
 
 from tardis.tardis_portal.publish.interfaces import PublishProvider
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
@@ -24,7 +23,11 @@ from tardis.apps.hpctardis.models import PartyLocation
 from tardis.apps.hpctardis.forms import CollectionPartyRelation
 from tardis.apps.hpctardis.models import PublishAuthorisation
 
+from tardis.apps.hpctardis.publish.RMITANDSService import send_request_email
+
+
 logger = logging.getLogger(__name__)
+
 
 
 class rif_cs_PublishProvider(PublishProvider):
@@ -34,65 +37,7 @@ class rif_cs_PublishProvider(PublishProvider):
 
     name = u'ANDS'
 
-    def _send_request_email(self,emailaddress, auth_party,activity):
-        """ Make record that describes authkey, address of correspondance,
-            and state of authorisation.  Send email to address, and wait for 
-            verification.
-        """
     
-        exp = Experiment.objects.get(pk=self.experiment_id)    
-  
-    
-        salt = sha_constructor(str(random.random())).hexdigest()[:5]
-        logger.debug("salt=%s" % salt)
-        username = unicode(auth_party.partyname)
-        if isinstance(username, unicode):
-            username = username.encode('utf-8')
-        logger.debug("usernane=%s" % username)
-        activation_key = sha_constructor(salt+username).hexdigest()
-        logger.debug("activation_key=%s" % activation_key)
-        try:
-            party_email = auth_party.get_email_addresses()[0]
-        except IndexError:
-            party_email = ""
-            
-        logger.debug("party_email=%s" % party_email)
-        
-        # we assume email is unique identifier with this experiment. We 
-        # do not want to spam approvers, though we should build tool
-        # to resend email to specific ones?
-        try:
-            publish_auths= PublishAuthorisation.objects.get(experiment=exp,
-                                                              email=party_email)
-        except PublishAuthorisation.DoesNotExist:
-               
-            
-            publish_auth = PublishAuthorisation(auth_key=activation_key,
-                                                experiment=exp,
-                                                authoriser=auth_party.get_fullname(),
-                                                email=party_email,
-                                                status=PublishAuthorisation.PENDING_APPROVAL,
-                                                party_record=auth_party,
-                                                activity_record=activity)
-            
-            publish_auth.save()
-        
-            logger.debug("publish auth=%s" % publish_auth)
-            from django.template import Context, Template
-            t = Template('<a href="{{domain}}/{{path}}?expid={{exp}}&authcode={{code}}">Press here to validate</a>')
-            d = {"code": activation_key,
-                 "domain": "http://127.0.0.1:8000",
-                 "path":"apps/hpctardis/publishauth",
-                 "exp":exp.id}
-            email_to_send =  t.render(Context(d))
-            logger.debug("email to send = %s" % email_to_send)
-        except PublishAuthorisation.MultipleObjectsReturned:
-            #FIXME: this is an inconsistent state
-            # probably want to delete all extra records?
-            pass
-        else:
-            logger.debug("already found record")
-            logger.debug("publish auth=%s" % publish_auths)
         
         
     def execute_publish(self, request):
@@ -104,26 +49,25 @@ class rif_cs_PublishProvider(PublishProvider):
         :type request: :class:`django.http.HttpRequest`
 
         """
+        
+        experiment = Experiment.objects.get(id=self.experiment_id)
         activities_select_form = ActivitiesSelectForm(request.POST)
         if activities_select_form.is_valid():
             data = activities_select_form.cleaned_data
             activities = data['activities']
             for activity in activities:     
+                logger.debug("processing activity %s" % activity)
                 activity_party_relations = ActivityPartyRelation.objects.filter(
                                                         activity=activity,
                                                         relation=u"isManagedBy")
                 for activity_party_relation in activity_party_relations:
                     party = activity_party_relation.party
                     logger.debug("authparty for %s is %s" %
-                                  (activity.activityname, party.get_fullname()))
-                    party_locations = PartyLocation.objects.filter(party=party)
-                    for location in party_locations:
-                        logger.debug("location is %s" % location)
-                        if location.type == u'email':
-                            self._send_request_email(location.value,
-                                                     party,
-                                                     activity
-                                                     ) 
+                                  (activity.activityname, party.get_fullname()))      
+                    send_request_email(party,activity, self.experiment_id) 
+                            
+                
+                                          
         else:
             return {'status': True,
                 'message': 'Invalid party selection'}

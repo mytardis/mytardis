@@ -66,7 +66,8 @@ class ActivityRecord(models.Model):
     type = models.CharField(default="",max_length=80)
     activityname = models.ForeignKey(NameParts)
     description = models.TextField(default="",blank=True)
-    parties = models.ManyToManyField(PartyRecord,through="ActivityPartyRelation")
+    parties = models.ManyToManyField(PartyRecord,
+                                     through="ActivityPartyRelation")
     
     def __unicode__(self):
         return u"%s" % (self.activityname)  
@@ -90,6 +91,7 @@ class ActivityPartyRelation(models.Model):
     activity = models.ForeignKey(ActivityRecord)
     party = models.ForeignKey(PartyRecord)
     relation = models.CharField(max_length=80,default="isManagedBy")
+    
     
 class PublishAuthorisation(models.Model):
     
