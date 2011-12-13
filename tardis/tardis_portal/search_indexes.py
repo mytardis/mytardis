@@ -221,9 +221,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         return self.exp_cache[exp]
 
     def get_dataset_text(self, obj, ds):
-        exp = obj.dataset.experiment
         ds = obj.dataset
-        text_list = [exp.title, exp.description, exp.institution_name, ds.description, obj.filename]
         
         if not ds in self.ds_cache:
             text_list = [ds.description]
@@ -280,7 +278,7 @@ class DatasetFileIndex(RealTimeSearchIndex):
         #
         exp = obj.dataset.experiment
         ds = obj.dataset
-        text_list = [exp.title, exp.description, exp.institution_name, ds.description, obj.filename]
+        text_list = [obj.filename]
         
         
         # Get all searchable soft params for this experiment that
