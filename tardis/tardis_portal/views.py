@@ -1248,43 +1248,44 @@ def __filterParameters(parameters, datafile_results,
     """
 
     for parameter in parameters:
-        kwargs = {paramType + '__name__name__icontains': parameter.name}
+        fieldName = parameter.getUniqueShortName()
+        kwargs = {paramType + '__name__id': parameter.id}
         try:
 
             # if parameter is a string...
             if not parameter.data_type == ParameterName.NUMERIC:
-                if searchFilterData[parameter.name] != '':
+                if searchFilterData[fieldName] != '':
                     # let's check if this is a field that's specified to be
                     # displayed as a dropdown menu in the form
                     if parameter.choices != '':
-                        if searchFilterData[parameter.name] != '-':
+                        if searchFilterData[fieldName] != '-':
                             kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                     else:
                         if parameter.comparison_type == \
                                 ParameterName.EXACT_VALUE_COMPARISON:
                             kwargs[paramType + '__string_value__iexact'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                         elif parameter.comparison_type == \
                                 ParameterName.CONTAINS_COMPARISON:
                             # we'll implement exact comparison as 'icontains'
                             # for now
                             kwargs[paramType + '__string_value__icontains'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                         else:
                             # if comparison_type on a string is a comparison
                             # type that can only be applied to a numeric value,
                             # we'll default to just using 'icontains'
                             # comparison
                             kwargs[paramType + '__string_value__icontains'] = \
-                                searchFilterData[parameter.name]
+                                searchFilterData[fieldName]
                 else:
                     pass
             else:  # parameter.isNumeric():
                 if parameter.comparison_type == \
                         ParameterName.RANGE_COMPARISON:
-                    fromParam = searchFilterData[parameter.name + 'From']
-                    toParam = searchFilterData[parameter.name + 'To']
+                    fromParam = searchFilterData[fieldName + 'From']
+                    toParam = searchFilterData[fieldName + 'To']
                     if fromParam is None and toParam is None:
                         pass
                     else:
@@ -1302,14 +1303,14 @@ def __filterParameters(parameters, datafile_results,
                              toParam is not None and toParam or
                              constants.FORM_RANGE_HIGHEST_NUM)
 
-                elif searchFilterData[parameter.name] is not None:
+                elif searchFilterData[fieldName] is not None:
 
                     # if parameter is an number and we want to handle other
                     # type of number comparisons
                     if parameter.comparison_type == \
                             ParameterName.EXACT_VALUE_COMPARISON:
                         kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
 
                     # TODO: is this really how not equal should be declared?
                     # elif parameter.comparison_type ==
@@ -1324,25 +1325,25 @@ def __filterParameters(parameters, datafile_results,
                     elif parameter.comparison_type == \
                             ParameterName.GREATER_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__gt'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.GREATER_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__gte'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.LESS_THAN_COMPARISON:
                         kwargs[paramType + '__numerical_value__lt'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     elif parameter.comparison_type == \
                             ParameterName.LESS_THAN_EQUAL_COMPARISON:
                         kwargs[paramType + '__numerical_value__lte'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                     else:
                         # if comparison_type on a numeric is a comparison type
                         # that can only be applied to a string value, we'll
                         # default to just using 'exact' comparison
                         kwargs[paramType + '__numerical_value__exact'] = \
-                            searchFilterData[parameter.name]
+                            searchFilterData[fieldName]
                 else:
                     # ignore...
                     pass
@@ -1607,14 +1608,22 @@ def retrieve_user_list(request):
     # TODO: Hook this up to authservice.searchUsers() to actually get
     # autocompletion data directly from auth backends.
     # The following local DB query would be moved to auth.localdb_auth.SearchUsers.
-    query = request.GET['q']
+    query = request.GET.get('q', '')
     limit = int(request.GET.get('limit', '10'))
+
     # Search all user fields and also the UserAuthentication username.
-    q = Q(username__contains=query)   | \
-        Q(first_name__contains=query) | \
-        Q(last_name__contains=query)  | \
-        Q(email__contains=query) | \
-        Q(userprofile__userauthentication__username__contains=query)
+    q = Q(username__icontains=query)   | \
+        Q(email__icontains=query) | \
+        Q(userprofile__userauthentication__username__icontains=query)
+
+    # Tokenize query string so "Bob Sm" matches (first_name~=Bob & last_name~=Smith).
+    tokens = query.split()
+    if len(tokens) < 2:
+        q |= Q(first_name__icontains=query.strip())
+        q |= Q(last_name__icontains=query.strip())
+    else:
+        q |= Q(first_name__icontains=' '.join(tokens[:-1])) & Q(last_name__icontains=tokens[-1])
+
     users_query = User.objects.filter(q).distinct().select_related('userprofile')
     users_query = users_query[0:limit]
 
@@ -2039,9 +2048,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         if request.GET['canWrite'] == 'true':
             canWrite = True
 
-    if 'canDelete' in request.GET:
-        if request.GET['canDelete'] == 'true':
-            canDelete = True
+#    if 'canDelete' in request.GET:
+#        if request.GET['canDelete'] == 'true':
+#            canDelete = True
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
@@ -2057,7 +2066,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return HttpResponse('Experiment (id=%d) does not exist' %
                             (experiment_id))
 
-    # TODO: enable transaction management here...
     if create:
         try:
             group = Group(name=groupname)
@@ -2080,11 +2088,10 @@ def add_experiment_access_group(request, experiment_id, groupname):
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
     if acl.count() > 0:
-        # an acl role already exists
-        # todo: not sure why this was the only error condition
-        # that returns an error
+        # An ACL already exists for this experiment/group.
         transaction.rollback()
-        return return_response_error(request)
+        return HttpResponse('Could not create group %s ' \
+            '(It is likely that it already exists)' % (groupname))
 
     acl = ExperimentACL(experiment=experiment,
                         pluginId=django_group,
@@ -2095,10 +2102,6 @@ def add_experiment_access_group(request, experiment_id, groupname):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
 
-    # todo if the admin specified doesnt exist then the 'add group + add user'
-    # workflow bails halfway through. This seems to add a group which wont be
-    # displayed in the manage groups view but does appear in the admin
-    # page. Is this the desired behaviour?
     adminuser = None
     if admin:
         try:
@@ -2133,10 +2136,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    transaction.commit()
     c = Context({'group': group,
                  'experiment_id': experiment_id})
-    return HttpResponse(render_response_index(request,
+    response = HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
     transaction.commit()
     return response

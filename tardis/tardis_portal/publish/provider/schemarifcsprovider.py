@@ -60,7 +60,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         phandler = PublishHandler(experiment.id) 
         authors = phandler.custom_authors()
         if authors:
-            return authors
+            return "* " + "\n* ".join(authors)
         else:
             return self.get_investigator_list(experiment)
                 
@@ -137,7 +137,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         c['experiment'] = experiment
         c['beamline'] = self.get_beamline(experiment)
         c['sample_description_list'] = self.get_sample_description_list(experiment, beamline)
-        c['investigator_list'] = self.get_investigator_list(experiment)
+        c['investigator_list'] = self.get_authors(experiment)
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
         c['description'] = self.get_description(experiment)

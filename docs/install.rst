@@ -2,6 +2,8 @@
 Installing MyTARDIS
 ===================
 
+The sections through to Extended Configuration below provide a Quick Start guide for getting a basic MyTARDIS installation up and running.  The following section provides additional information on advanced configuration and add-on capabilities of MyTARDIS.
+
 Prerequisites
 -------------
 
