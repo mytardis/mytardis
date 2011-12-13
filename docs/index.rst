@@ -47,6 +47,7 @@ Contents
    ingesting
 
    searching
+   tabs
 
    ref/auth_framework
    ref/filters
