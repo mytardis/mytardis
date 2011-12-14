@@ -151,13 +151,6 @@ HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
-    
-# Post Save Filters
-POST_SAVE_FILTERS = [
-#  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
-    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
-    ]
 
 PUBLISH_PROVIDERS = (
                  #   'tardis.tardis_portal.publish.rif_cs_profile.'
@@ -175,5 +168,12 @@ PUBLISH_PROVIDERS = (
 # -- MicroTardis settings for testing --
 # --------------------------------------
 
+# Post Save Filters
+POST_SAVE_FILTERS = [
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ]
+
+# Directory path for storing image thumbnails
 THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/thumbnails/')).replace('\\', '/')
