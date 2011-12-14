@@ -165,3 +165,15 @@ PUBLISH_PROVIDERS = (
                     'tardis.apps.hpctardis.publish.rif_cs_profile.'
                     + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
                     )
+
+# ------------------------------------
+# -- HPCTardis settings for testing --
+# ------------------------------------
+
+
+# --------------------------------------
+# -- MicroTardis settings for testing --
+# --------------------------------------
+
+THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
+    '../var/thumbnails/')).replace('\\', '/')
