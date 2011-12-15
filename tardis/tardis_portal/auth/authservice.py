@@ -42,6 +42,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
+from django.contrib.auth.models import Permission
 from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 
@@ -120,7 +121,13 @@ class AuthService():
         user.email = user_dict.get('email', '')
         user.first_name = user_dict.get('first_name', '')
         user.last_name = user_dict.get('last_name', '')
+        
         user.save()
+        user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
+        user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
+        user.user_permissions.add(Permission.objects.get(codename='change_group'))
+        user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
+        user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
 
 
     def authenticate(self, authMethod, **credentials):
