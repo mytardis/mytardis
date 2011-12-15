@@ -15,9 +15,10 @@
 {% if url %}                    <electronic type="url">
                         <value>{{url}}</value>
                     </electronic>{% endif %}
-{% if email %}                    <electronic type="email">
+{% if emails %}{% for email in emails %}                    <electronic type="email">
                         <value>{{email}}</value>
-                    </electronic>{% endif %}
+                    </electronic>
+{% endfor %}{% endif %}
 {% if address %}                    <physical type="streetAddress">
                         <addressPart type="text">{{address}}</addressPart>
                     </physical>{% endif %}
@@ -28,12 +29,12 @@
                     <date type="dateFrom" dateFormat="UTC">{{experiment.end_time|date:"c"}}</date>
                 </temporal>
             </coverage>
-{% if produced_by %}
+{% if produced_bys %}{% for produced_by in produced_bys %}
             <relatedObject>
                 <key>{{produced_by}}</key>
                 <relation type="isProducedBy"/>
             </relatedObject>
-{% endif %}
+{% endfor %}{% endif %}
             <relatedObject>
                 <key>{{located_in}}</key>
                 <relation type="isLocatedIn"/>
@@ -42,14 +43,14 @@
 {% for lcode in localcodes %}            <subject type="local">{{lcode}}</subject>{% endfor %}
 {% if license_title %}            <description type="rights">This work is licensed under a {{license_title}} (link below)</description>{% endif %}
 {% for note in notes %}            <description type="note">{{note}}</description>{% endfor %}
-{% if produced_by %}			<description type="note">Information on the format and analysis of the data in this collection is available from the {{beamline}} beamline link on this page (Is produced by:).</description>{% endif %}            
+{% if produced_bys %}			<description type="note">Information on the format and analysis of the data in this collection is available from the {{blnoun}} link(s) on this page (Is produced by:).</description>{% endif %}            
             <description type="brief">{{description}}
 {% if sample_description_list %}
 Samples: 
   
 {{sample_description_list}}
 
-Analysis of the sample(s) listed above by the {{beamline}} beamline at {{experiment.institution_name}}   
+Analysis of the sample(s) listed above by the {{blnoun}}s at the {{group}}.
 {% endif %}{% if investigator_list %}
 Investigators:    
 {{investigator_list}}

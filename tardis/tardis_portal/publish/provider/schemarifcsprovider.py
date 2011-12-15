@@ -34,11 +34,12 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
             return True
         return False
             
-    def get_beamline(self, experiment):    
-        sch = Schema.objects.get(namespace=self.namespace)         
-        param = ParameterName.objects.get(schema=sch, name='beamline')
-        res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
-        return res.string_value
+    def get_beamlines(self, experiment):    
+#        sch = Schema.objects.get(namespace=self.namespace)         
+#        param = ParameterName.objects.get(schema=sch, name='beamline')
+#        res = ExperimentParameter.objects.get(parameterset__experiment = experiment, name=param)
+#        return res.string_value
+        return self._get_params('beamline', self.namespace, experiment)
     
     def get_proposal_id(self, experiment):
         sch = Schema.objects.get(namespace=self.namespace)         
@@ -75,7 +76,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         authors = [a.author for a in experiment.author_experiment_set.all()]
         return "* " + "\n* ".join(authors)
            
-    def get_sample_description_list(self, experiment, beamline):
+    def get_sample_description_list(self, experiment):
         sch = Schema.objects.get(namespace=self.sample_desc_schema_ns)
         params = ParameterName.objects.get(schema=sch, name='SampleDescription')
         descriptions = [x.string_value for x in 
@@ -133,10 +134,11 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     
     def get_rifcs_context(self, experiment):
         c = Context({})
-        beamline = self.get_beamline(experiment)
+        beamlines = self.get_beamlines(experiment)
+        c['blnoun'] = 'beamline'
         c['experiment'] = experiment
-        c['beamline'] = self.get_beamline(experiment)
-        c['sample_description_list'] = self.get_sample_description_list(experiment, beamline)
+        c['beamlines'] = beamlines
+        c['sample_description_list'] = self.get_sample_description_list(experiment)
         c['investigator_list'] = self.get_authors(experiment)
         c['license_title'] = self.get_license_title(experiment)
         c['license_uri'] = self.get_license_uri(experiment)
