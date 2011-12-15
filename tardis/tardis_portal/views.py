@@ -874,7 +874,7 @@ def retrieve_parameters(request, dataset_file_id):
 
 @never_cache
 @authz.dataset_access_required
-def retrieve_datafile_list(request, dataset_id):
+def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/ajax/datafile_list.html'):
 
     dataset_results = \
         Dataset_File.objects.filter(
@@ -945,8 +945,7 @@ def retrieve_datafile_list(request, dataset_id):
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
         })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/datafile_list.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 @login_required()
