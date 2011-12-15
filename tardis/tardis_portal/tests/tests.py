@@ -58,7 +58,6 @@ class SearchTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.experiments = []
 
         try:
             user = User.objects.get(username='test')
@@ -69,32 +68,32 @@ class SearchTestCase(TestCase):
         files = ['286-notmets.xml',
                  'Edward-notmets.xml',
                  'Cookson-notmets.xml']
-        for f in files:
-            filename = path.join(path.abspath(path.dirname(__file__)), f)
-            expid = _registerExperimentDocument(filename=filename,
-                                                created_by=user,
-                                                expid=None)
-            experiment = Experiment.objects.get(pk=expid)
 
-            acl = ExperimentACL(pluginId=django_user,
-                                entityId=str(user.id),
-                                experiment=experiment,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True)
-            acl.save()
-            self.experiments += [experiment]
+        self.experiments = map(lambda f: self._loadFileWithUser(f, user), files)
 
-        schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
-        parameter = ParameterName.objects.get(schema=schema, name='io')
-        parameter.is_searchable = True
-        parameter.save()
+        searchableParams = [(Schema.DATAFILE,'io'),(Schema.DATASET,'frqimn')]
+        for schemaType, paramName in searchableParams:
+            schema = Schema.objects.get(type=schemaType, subtype='saxs')
+            parameter = ParameterName.objects.get(schema=schema, name=paramName)
+            parameter.is_searchable = True
+            parameter.save()
 
-        schema = Schema.objects.get(type=Schema.DATASET, subtype='saxs')
-        parameter = ParameterName.objects.get(schema=schema, name='frqimn')
-        parameter.is_searchable = True
-        parameter.save()
+    def _loadFileWithUser(self, f, user):
+        filename = path.join(path.abspath(path.dirname(__file__)), f)
+        expid = _registerExperimentDocument(filename=filename,
+                                            created_by=user,
+                                            expid=None)
+        experiment = Experiment.objects.get(pk=expid)
+
+        acl = ExperimentACL(pluginId=django_user,
+                            entityId=str(user.id),
+                            experiment=experiment,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True)
+        acl.save()
+        return experiment
 
     def tearDown(self):
         for experiment in self.experiments:
@@ -145,8 +144,8 @@ class SearchTestCase(TestCase):
             'tardis_portal/search_experiment_results.html')
 
         from tardis.tardis_portal.models import Dataset_File
-        from tardis.tardis_portal.models import Experiment 
-        
+        from tardis.tardis_portal.models import Experiment
+
         values = response.context['experiments'].values()
         experiment = values[0]
         datafile = response.context['datafiles'][0]
@@ -155,7 +154,7 @@ class SearchTestCase(TestCase):
         self.assertTrue(
             type(datafile) is Dataset_File)
 
-        
+
         self.assertTrue(experiment['dataset_file_hit'] is True)
         self.assertTrue(experiment['dataset_hit'] is False)
         self.assertTrue(experiment['experiment_hit'] is False)
@@ -210,15 +209,15 @@ class SearchTestCase(TestCase):
 
         self.assertTrue(
             len(response.context['experiments']) == 1)
- 
-        from tardis.tardis_portal.models import Experiment 
-        
+
+        from tardis.tardis_portal.models import Experiment
+
         values = response.context['experiments'].values()
         experiment = values[0]
-        
+
         self.assertTrue(
             type(experiment['sr']) is Experiment)
-        
+
         self.assertTrue(experiment['dataset_file_hit'] is False)
         self.assertTrue(experiment['dataset_hit'] is False)
         self.assertTrue(experiment['experiment_hit'] is True)
