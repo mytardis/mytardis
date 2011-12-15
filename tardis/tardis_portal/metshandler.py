@@ -6,6 +6,18 @@ that do not conform to the recommended key-value pair metadata format.
 '''
 
 
+def store_metadata_value(dict, key, value):
+    """To support multiple parameter values the metadata dictionary stores a 
+    list of values for each key.  This is a convenience routine used by the
+    parser and writer to store parameter values."""
+    lst = dict.get(key, None)
+    if lst:
+        lst.append(value)
+    else:
+        lst = [value]
+        dict[key] = lst
+
+
 class CustomHandler():
 
     def __init__(self):
@@ -46,11 +58,17 @@ class MxDatafileHandler(CustomHandler):
 
     def characters(self, chars):
         if self.grabOscillationRangeStart:
-            self.metadataDict['oscillationRange/start'] = chars
+            store_metadata_value(self.metadataDict, 
+                                 'oscillationRange/start', chars)
+#            self.metadataDict['oscillationRange/start'] = chars
         elif self.grabOscillationRangeEnd:
-            self.metadataDict['oscillationRange/end'] = chars
+            store_metadata_value(self.metadataDict, 
+                                 'oscillationRange/end', chars)
+#            self.metadataDict['oscillationRange/end'] = chars
         else:
-            self.metadataDict[self.parameterName] = chars
+            store_metadata_value(self.metadataDict, 
+                                 self.parameterName, chars)
+#            self.metadataDict[self.parameterName] = chars
 
 # the list of custom handlers the metsparser will use
 customHandlers = {

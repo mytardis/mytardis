@@ -88,6 +88,7 @@ from xml.sax import make_parser
 
 from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
+from tardis.tardis_portal.metshandler import store_metadata_value
 
 from django.conf import settings
 
@@ -779,12 +780,8 @@ class MetsMetadataInfoHandler(ContentHandler):
                 self.processMetadata:
             # save the parameter value in the temporary metadata dictionary
 #            self.tempMetadataHolder[self.parameterName] = chars
-            lst = self.tempMetadataHolder.get(self.parameterName, None)
-            if lst:
-                lst.append(chars)
-            else:
-                lst = [chars]
-                self.tempMetadataHolder[self.parameterName] = lst
+            store_metadata_value(self.tempMetadataHolder,
+                                 self.parameterName, chars)
 
 
 def _getAttrValue(attrs, attrName):
