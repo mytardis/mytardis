@@ -1,6 +1,8 @@
 import os
 import Image
 import imghdr
+import struct
+import csv
 
 from django.template import Context
 from django.http import HttpResponse
@@ -135,3 +137,38 @@ def display_thumbnails(request, experiment_id, dataset_id, instrument, filename)
     image_data = open(thumbpath, "rb").read()
 
     return HttpResponse(image_data, mimetype="image/jpeg")
+
+def get_spectrum_values(datafile):
+    basepath = settings.FILE_STORE_PATH
+    experiment_id = str(datafile.dataset.experiment.id)
+    dataset_id = str(datafile.dataset.id)
+    raw_path = datafile.url.partition('//')[2]
+    file_path = os.path.join(basepath,
+                            experiment_id,
+                            dataset_id,
+                            raw_path)
+    spc = open(file_path)
+    offset = 3840
+    channel = 4000 # number of spectrum channels
+    format = 'i' # long integer
+    byte_size = 4
+    
+    spc.seek(offset)
+    values_tuple = struct.unpack(format * channel, spc.read(byte_size * channel))
+    
+    return values_tuple
+
+def get_spectrum_csv(request, datafile_id):
+    datafile = Dataset_File.objects.get(pk=datafile_id)
+    filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
+    writer = csv.writer(response)
+    values = get_spectrum_values(datafile)
+    index = 0
+    for value in values:
+        index += 1
+        row = [index, value]
+        writer.writerow(row)
+
+    return response

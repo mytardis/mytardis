@@ -1,0 +1,7 @@
+{% extends "tardis_portal/ajax/datafile_list.html" %}
+
+{% block extra_links %}
+    {% if datafile.mimetype == "application/octet-stream" %}
+        <a class="filelink" href="/spectrum_csv/{{ datafile.id }}">[CSV Spectral Data]</a>
+    {% endif %}
+{% endblock extra_links %}
