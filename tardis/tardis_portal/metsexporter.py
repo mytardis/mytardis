@@ -201,8 +201,10 @@ class MetsExporter():
             for parameter in parameters:
                 # print parameter.name
                 if parameter.name.data_type is ParameterName.NUMERIC:
-                    metadataDict[parameter.name.name] = \
-                        str(parameter.numerical_value) or 'None'
+#                    metadataDict[parameter.name.name] = \
+#                        str(parameter.numerical_value) or 'None'
+                    _add_to_dict(metadataDict, parameter.name.name,
+                                 str(parameter.numerical_value) or 'None')
 
                 elif parameter.name.data_type is ParameterName.FILENAME and \
                         parameter.name.units.startswith('image') and \
@@ -211,17 +213,22 @@ class MetsExporter():
                     # encode image as b64
                     file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
                     try:
-                        metadataDict[parameter.name.name] = \
-                        b64encode(open(file_path).read())
+#                        metadataDict[parameter.name.name] = \
+#                        b64encode(open(file_path).read())
+                        _add_to_dict(metadataDict, parameter.name.name,
+                                     b64encode(open(file_path).read()))
                     except:
                         logger.exception('b64encoding failed: %s' % file_path)
                 else:
                     try:
-                        metadataDict[parameter.name.name] = \
-                        parameter.string_value.strip() or 'None'
+#                        metadataDict[parameter.name.name] = \
+#                        parameter.string_value.strip() or 'None'
+                        _add_to_dict(metadataDict, parameter.name.name,
+                                     parameter.string_value.strip() or 'None')
                     except AttributeError:
-                        metadataDict[parameter.name.name] = \
-                        'None'
+#                        metadataDict[parameter.name.name] = \
+#                        'None'
+                        _add_to_dict(metadataDict, parameter.name.name, 'None')
 
             _xmlData.add_xsdAny_(self.createXmlDataContentForParameterSets(
                 elementName=elementName,
@@ -236,16 +243,17 @@ class MetsExporter():
         elName - can be experiment, dataset, datafile or something else
         schemaURI - URI of the schema
         metadataDict - a dictionary of the metadata fields where key is the
-            name of the field while the value is the value of the field.
+            name of the field while the value is a list of field values.
         """
         import xml.etree.ElementTree as ET
 
         # build a tree structure
         xmlDataContentEl = ET.Element('%s:%s' % (prefix, elementName))
 
-        for k, v in metadataDict.iteritems():
-            metadataField = ET.SubElement(xmlDataContentEl, '%s:%s' % (prefix, k))
-            metadataField.text = v
+        for k, vl in metadataDict.iteritems():
+            for v in vl:
+                metadataField = ET.SubElement(xmlDataContentEl, '%s:%s' % (prefix, k))
+                metadataField.text = v
 
         xmlDataContentEl.set('xmlns:' + prefix, schemaURI)
         return xmlDataContentEl
@@ -316,3 +324,12 @@ class MetsExporter():
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
+
+def _add_to_dict(dict, key, value):
+    "Add the supplied value to the list at key"
+    lst = dict.get(key, None)
+    if lst:
+        lst.append(value)
+    else:
+        lst = [value]
+        dict[key] = lst
