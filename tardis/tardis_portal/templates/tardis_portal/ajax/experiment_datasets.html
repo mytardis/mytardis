@@ -31,7 +31,7 @@
 		});
 
 		$(".datafile_info_toggle").text("[Show]");
-		$(".datafile_info_toggle").next().hide();
+		$(".datafile_info_toggle").nextAll(".datafile_info").hide();
 		var loadingHTML = "<img src='/site_media/images/ajax-loader.gif'/>";
 
 		// metadata text / ajax toggle
@@ -47,15 +47,15 @@
 					$(this).text("[Hide]");
 					var href= $(this).attr("href");
 
-			    	$(this).next().html(loadingHTML + "</br>");
-			        $(this).next().load(href);
-					$(this).next().show();
+			    	$(this).nextAll(".datafile_info").html(loadingHTML + "</br>");
+			        $(this).nextAll(".datafile_info").load(href);
+					$(this).nextAll(".datafile_info").show();
 				}
 				else
 				{
 					$(this).text("[Show]");
 					var href= $(this).attr("href");
-					$(this).next().hide();
+					$(this).nextAll(".datafile_info").hide();
 				}
 				return false;
 			});
@@ -195,19 +195,18 @@
 		datafile_info_selectors.toggle(function(){
 		    $(this).text("[Hide]");
 		    var href = $(this).attr("href");
-
 		    //if($(this).next().text().replace(/^\s+|\s+$/g,'') == "")
 		    //{
-		    $(this).next().html(loadingHTML);
+		    $(this).nextAll(".datafile_info").html(loadingHTML);
 		    //}
-		    $(this).next().load(href);
+		    $(this).nextAll(".datafile_info").load(href);
 
 		},function(){
 		    $(this).text("[Show]");
 		});
 
 		datafile_info_selectors.click(function() {
-		    $(this).next().toggle();
+		    $(this).nextAll(".datafile_info").toggle();
 		});
 		// file selectors
 		datafile_info_container.find('.dataset_selector_all').click(function() {
