@@ -101,4 +101,9 @@ def return_response_error(request):
                                  'tardis_portal/blank_status.html', c))
 
 def render_to_file(template, filename, context):
-    open(filename, "w").write(render_to_string(template, context))
+    string_for_output = render_to_string(template, context)
+    # The render_to_string method returns a unicode string, which will cause
+    # an error when written to file if the string contain diacritics. We
+    # need to do a utf-8 encoding before writing to file
+    # see http://packages.python.org/kitchen/unicode-frustrations.html
+    open(filename, "w").write(string_for_output.encode('utf8', 'replace'))
