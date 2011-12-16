@@ -146,8 +146,7 @@ class EXIFTagsFilter(object):
         # generate thumbnails for image file
         try:
             img =  Image.open(filepath)
-            extention = '_tif_thumb.jpg'
-            write_thumbnails(instance, img, filepath, extention)
+            write_thumbnails(instance, img)
         except IOError:
             # file not an image file
             pass

@@ -92,13 +92,9 @@ def retrieve_parameters(request, dataset_file_id):
     qs = Dataset_File.objects.filter(id=dataset_file_id)
     if qs:
         datafile = qs[0]
-        basepath = "/thumbnails"
-        img_path = str(datafile.url)
-        if img_path.endswith(".tif"):
-            extention = "_tif_thumb.jpg"
-        elif img_path.endswith(".spc"):
-            extention = "_spc_thumb.jpg"
-        thumbpath = get_thumbnail_path(basepath, datafile, img_path, extention)
+        basepath = "/thumbnails/small"
+        thumbname = str(datafile.id)
+        thumbpath = os.path.join(basepath, thumbname)
 
     c = Context({'parametersets': parametersets,
                  'thumbpath': thumbpath,})
@@ -106,35 +102,36 @@ def retrieve_parameters(request, dataset_file_id):
     return HttpResponse(render_response_index(request,
                         'parameters_mt.html', c))
 
-def get_thumbnail_path(basepath, datafile, img_path, extention):
-    experiment_id = str(datafile.dataset.experiment.id)
-    dataset_id = str(datafile.dataset.id)
-    parts = img_path.split('/')
-    instrument = parts[-2]
-    filename = parts[-1]
-    doc_idx = filename.rindex('.')
-    thumbname = filename[:doc_idx] + extention
-    thumbpath = os.path.join(basepath, experiment_id, dataset_id, instrument, thumbname)
-    
-    return thumbpath
-    
-
-def write_thumbnails(datafile, img, img_path, extention):
-    img.thumbnail( (400, 400), Image.ANTIALIAS )
+def write_thumbnails(datafile, img):
     basepath = settings.THUMBNAILS_PATH
-    thumbpath = get_thumbnail_path(basepath, datafile, img_path, extention)
-    dirpath = thumbpath[:thumbpath.rindex('/')]
-    if not os.path.exists(dirpath):
-        os.makedirs(dirpath)
+    if not os.path.exists(basepath):
+        os.makedirs(basepath)
+    # original size
+    thumbname = str(datafile.id) + ".jpg"
+    thumbpath = os.path.join(basepath, thumbname)
+    out = file(thumbpath, "w")
+    try:
+        img.save(out, "JPEG")
+    finally:
+        out.close()
+    # small size (400x400)
+    img.thumbnail( (400, 400), Image.ANTIALIAS )
+    thumbname = str(datafile.id) + "_small.jpg"
+    thumbpath = os.path.join(basepath, thumbname)
     out = file(thumbpath, "w")
     try:
         img.save(out, "JPEG")
     finally:
         out.close()
         
-def display_thumbnails(request, experiment_id, dataset_id, instrument, filename):
+def display_thumbnails(request, size, datafile_id):
     basepath = settings.THUMBNAILS_PATH
-    thumbpath = os.path.join(basepath, experiment_id, dataset_id, instrument, filename)
+    datafile = Dataset_File.objects.get(pk=datafile_id)
+    extention = ".jpg"
+    if size == 'small':
+        extention = "_small.jpg"
+    thumbname = str(datafile.id) + extention
+    thumbpath = os.path.join(basepath, thumbname)
     image_data = open(thumbpath, "rb").read()
 
     return HttpResponse(image_data, mimetype="image/jpeg")
