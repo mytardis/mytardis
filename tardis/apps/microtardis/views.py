@@ -8,6 +8,7 @@ from django.template import Context
 from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.conf import settings
+from django.utils import simplejson as json
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import render_response_index
@@ -171,4 +172,18 @@ def get_spectrum_csv(request, datafile_id):
         row = [index, value]
         writer.writerow(row)
 
+    return response
+
+def get_spectrum_json(request, datafile_id):
+    datafile = Dataset_File.objects.get(pk=datafile_id)
+    filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
+    values = get_spectrum_values(datafile)
+    index = 0
+    data = []
+    for value in values:
+        data.append([index, value])
+        index += 1
+    content = '{"label": "%s", "data": %s}' % (filename, json.dumps(data))
+    response = HttpResponse(content, mimetype='application/json')
+    
     return response
