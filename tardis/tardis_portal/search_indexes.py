@@ -125,7 +125,7 @@ def _getDataType(param_name):
     elif param_name.isDateTime():
         return DateTimeField()
     else:
-        return NgramField()
+        return CharField()
 
 def _getParamValue(param):
     if param.name.isNumeric():
@@ -179,22 +179,22 @@ class DatasetFileIndex(RealTimeSearchIndex):
     
     __metaclass__ = GetDatasetFileParameters
     
-    text=NgramField(document=True)
-    datafile_filename  = NgramField(model_attr='filename')
+    text=CharField(document=True)
+    datafile_filename  = CharField(model_attr='filename')
     
     dataset_id_stored = IntegerField(model_attr='dataset__pk', indexed=True) #changed
-    dataset_description = NgramField(model_attr='dataset__description')
+    dataset_description = CharField(model_attr='dataset__description')
 
     experiment_id_stored = IntegerField(model_attr='dataset__experiment__pk', indexed=True) # changed
-    experiment_description = NgramField(model_attr='dataset__experiment__description')
-    experiment_title = NgramField(model_attr='dataset__experiment__title')
+    experiment_description = CharField(model_attr='dataset__experiment__description')
+    experiment_title = CharField(model_attr='dataset__experiment__title')
     experiment_created_time = DateTimeField(model_attr='dataset__experiment__created_time')
     experiment_start_time = DateTimeField(model_attr='dataset__experiment__start_time', default=None)
     experiment_end_time = DateTimeField(model_attr='dataset__experiment__end_time', default=None)
     experiment_update_time = DateTimeField(model_attr='dataset__experiment__update_time', default=None)
-    experiment_institution_name = NgramField(model_attr='dataset__experiment__institution_name', default=None)
+    experiment_institution_name = CharField(model_attr='dataset__experiment__institution_name', default=None)
     experiment_creator=CharField(model_attr='dataset__experiment__created_by__username')
-    experiment_institution_name=NgramField(model_attr='dataset__experiment__institution_name')
+    experiment_institution_name=CharField(model_attr='dataset__experiment__institution_name')
     experiment_authors = MultiValueField()
    
     exp_cache = {}
