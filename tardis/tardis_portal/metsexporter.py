@@ -202,8 +202,6 @@ class MetsExporter():
             for parameter in parameters:
                 # print parameter.name
                 if parameter.name.data_type is ParameterName.NUMERIC:
-#                    metadataDict[parameter.name.name] = \
-#                        str(parameter.numerical_value) or 'None'
                     store_metadata_value(metadataDict, parameter.name.name,
                                  str(parameter.numerical_value) or 'None')
 
@@ -214,21 +212,15 @@ class MetsExporter():
                     # encode image as b64
                     file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
                     try:
-#                        metadataDict[parameter.name.name] = \
-#                        b64encode(open(file_path).read())
                         store_metadata_value(metadataDict, parameter.name.name,
                                      b64encode(open(file_path).read()))
                     except:
                         logger.exception('b64encoding failed: %s' % file_path)
                 else:
                     try:
-#                        metadataDict[parameter.name.name] = \
-#                        parameter.string_value.strip() or 'None'
                         store_metadata_value(metadataDict, parameter.name.name,
                                      parameter.string_value.strip() or 'None')
                     except AttributeError:
-#                        metadataDict[parameter.name.name] = \
-#                        'None'
                         store_metadata_value(metadataDict, parameter.name.name, 'None')
 
             _xmlData.add_xsdAny_(self.createXmlDataContentForParameterSets(

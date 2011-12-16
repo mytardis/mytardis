@@ -60,15 +60,12 @@ class MxDatafileHandler(CustomHandler):
         if self.grabOscillationRangeStart:
             store_metadata_value(self.metadataDict, 
                                  'oscillationRange/start', chars)
-#            self.metadataDict['oscillationRange/start'] = chars
         elif self.grabOscillationRangeEnd:
             store_metadata_value(self.metadataDict, 
                                  'oscillationRange/end', chars)
-#            self.metadataDict['oscillationRange/end'] = chars
         else:
             store_metadata_value(self.metadataDict, 
                                  self.parameterName, chars)
-#            self.metadataDict[self.parameterName] = chars
 
 # the list of custom handlers the metsparser will use
 customHandlers = {

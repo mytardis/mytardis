@@ -778,8 +778,7 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         elif chars.strip() != '' and self.parameterName is not None and \
                 self.processMetadata:
-            # save the parameter value in the temporary metadata dictionary
-#            self.tempMetadataHolder[self.parameterName] = chars
+            # save the parameter values in the temporary metadata dictionary
             store_metadata_value(self.tempMetadataHolder,
                                  self.parameterName, chars)
 
