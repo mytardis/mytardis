@@ -15,10 +15,10 @@
 {% if url %}                    <electronic type="url">
                         <value>{{url}}</value>
                     </electronic>{% endif %}
-{% if emails %}{% for email in emails %}                    <electronic type="email">
+{% for email in emails %}                    <electronic type="email">
                         <value>{{email}}</value>
                     </electronic>
-{% endfor %}{% endif %}
+{% endfor %}
 {% if address %}                    <physical type="streetAddress">
                         <addressPart type="text">{{address}}</addressPart>
                     </physical>{% endif %}
@@ -29,12 +29,12 @@
                     <date type="dateFrom" dateFormat="UTC">{{experiment.end_time|date:"c"}}</date>
                 </temporal>
             </coverage>
-{% if produced_bys %}{% for produced_by in produced_bys %}
+{% for produced_by in produced_bys %}
             <relatedObject>
                 <key>{{produced_by}}</key>
                 <relation type="isProducedBy"/>
             </relatedObject>
-{% endfor %}{% endif %}
+{% endfor %}
             <relatedObject>
                 <key>{{located_in}}</key>
                 <relation type="isLocatedIn"/>
