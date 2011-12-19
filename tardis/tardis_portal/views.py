@@ -313,13 +313,10 @@ def view_experiment(request, experiment_id):
         c['status'] = request.POST['status']
     if 'error' in request.POST:
         c['error'] = request.POST['error']
-
     if 'query' in request.GET:
-        c['query'] = SearchQueryString(request.GET['query'])
-    
+        c['search_query'] = SearchQueryString(request.GET['query'])
     if  'search' in request.GET:
         c['search'] = request.GET['search']
-    
     if  'load' in request.GET:
         c['load'] = request.GET['load']
         
@@ -467,9 +464,8 @@ def experiment_datasets(request, experiment_id):
         return return_response_not_found(request)
 
     c['experiment'] = experiment
-    
     if 'query' in request.GET:
-
+        
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
         # 
@@ -484,8 +480,7 @@ def experiment_datasets(request, experiment_id):
         
         c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
         c['file_matched_datasets'] = []
-        
-        c['query'] = query
+        c['search_query'] = query
     
         # replace '+'s with spaces
     elif 'datafileResults' in request.session and 'search' in request.GET: 
@@ -1018,7 +1013,7 @@ def retrieve_datafile_list(request, dataset_id):
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
-        'query' : query,
+        'search_query' : query,
         'params' : params
         
         })
@@ -1588,6 +1583,7 @@ def search_datafile(request):
         result['dataset_file_hit'] = True
         result['experiment_hit'] = False
         results.append(result)
+    
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,

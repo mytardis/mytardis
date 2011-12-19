@@ -1,19 +1,6 @@
 <table class="experiment-table">
       {% for result in experiments %}
-        {% include "search/experiment_result.html" %}
-      {% comment %}
-      {% ifequal result.sr.model_name 'experiment' %}
-        {% include "search/experiment_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset' %}
-          {% include "search/dataset_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset_file' %}
-          {% include "search/dataset_file_result.html" %}
-      {% else %}
           {% include "tardis_portal/experiment_search_result.html" %}
-          {% endifequal %}{% endifequal %}{% endifequal %}
-      {% endcomment %}
       {% empty %}
         <p>No Results found</p>
       {% endfor%}

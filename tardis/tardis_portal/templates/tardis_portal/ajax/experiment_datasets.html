@@ -137,7 +137,7 @@
                     {% endif %}
                   {% endif %}
                 {% endif %}
-                <a class="datafile_list_toggle files_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if query %}query={{ query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
+                <a class="datafile_list_toggle files_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
                     <span class="ui-icon ui-icon-circle-triangle-e"></span>
                     Show/Hide
                 </a>
