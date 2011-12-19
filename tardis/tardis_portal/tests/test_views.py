@@ -244,3 +244,64 @@ class listTestCase(TestCase):
 
     def tearDown(self):
         self.client.logout()
+
+class TokenuserDeniedAccessTestCase(TestCase):
+
+    def setUp(self):
+
+        self.accounts = [('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
+                         ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
+                         ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
+
+        self.token_accounts = [(settings.TOKEN_USERNAME, '', 'Token', 'User')]
+
+        self.accounts += self.token_accounts
+
+        for (uname, pwd, first, last) in self.accounts:
+            user = User.objects.create_user(uname, '', pwd)
+            user.first_name = first
+            user.last_name = last
+            user.save()
+            profile = UserProfile(user=user,
+                                         isDjangoAccount=True)
+            profile.save()
+        self.users = User.objects.all()
+
+        self.client = Client()
+        login = self.client.login(username=self.accounts[0][0],
+                                  password=self.accounts[0][1])
+        self.assertTrue(login)
+
+    def testGetUserList(self):
+
+        # Match all
+        response = self.client.get('/ajax/user_list/?q=')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+        self.assertEqual(len(self.users) - len(self.token_accounts), len(users_dict))
+        for user in self.users:
+            user_info = [ u for u in users_dict if u['username'] == user.username ]
+            if user.username == settings.TOKEN_USERNAME:
+                self.assertEqual([], user_info)
+            else:
+                self.assertEqual(1, len(user_info))
+                self.assertEqual(user_info[0]['first_name'], user.first_name)
+                self.assertEqual(user_info[0]['last_name'], user.last_name)
+
+
+        # Match on first name
+        response = self.client.get('/ajax/user_list/?q=token')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+
+        self.assertEqual(0, len(users_dict))
+
+        # Match on last name
+        response = self.client.get('/ajax/user_list/?q=user')
+        self.assertEqual(response.status_code, 200)
+        users_dict = json.loads(response.content)
+
+        self.assertEqual(len(self.users) - len(self.token_accounts), len(users_dict))
+
+    def tearDown(self):
+        self.client.logout()
