@@ -6,6 +6,7 @@ urlpatterns = patterns('tardis.apps.microtardis.views',
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
     (r'^spectrum_csv/(?P<datafile_id>\d+)/$', 'get_spectrum_csv'),
     (r'^spectrum_json/(?P<datafile_id>\d+)/$', 'get_spectrum_json'),
+    (r'^(?P<datafile_id>\d+)/$', 'direct_to_thumbnail_html'),
 )
 
 urlpatterns += patterns('tardis.tardis_portal.views',

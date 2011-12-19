@@ -28,7 +28,33 @@
 		    <tr><th class="schema_name" title="Preview Image" colspan="2">Preview Image</th></tr>
 		    <tr>
                 <td class="parameter_value">
-                    <img border="0" src="{{ thumbpath }}"> 
+                    <a class="showFullImage{{ datafile_id }}" href="{% url tardis.apps.microtardis.views.direct_to_thumbnail_html datafile_id %}">
+                        <img border="0" src="{{ thumbpath }}"> 
+                    </a>
+                    
+                  
+                    
+			        <script type="text/javascript">
+			        $('#ImageWindow{{ datafile_id }}').die();
+			        $('#ImageWindow{{ datafile_id }}').jqm({
+			            trigger: '.showFullImage{{ datafile_id }}',
+			            ajax: '@href',
+			            target: '#ImageContent{{ datafile_id }}',
+			            overlay: 0
+			        });
+			        </script>
+			        <div class="jqmAlert" id="ImageWindow{{ datafile_id }}" style="top:10px; left: 20%;">
+			            <div class="jqmAlertWindow" style="max-width: 50%;">
+			                <div class="jqmAlertTitle clearfix">
+			                  <h1>Original Image</h1><a href="#" class="jqmClose"><em>Close</em></a>
+			                </div>
+			                <div class="jqmAlertContent" id="ImageContent{{ datafile_id }}" style="">
+			                  <p>Please wait... <img src="/site_media/images/busy.gif" alt="loading" /></p>
+			                </div>
+			            </div>
+			        </div>
+                    
+                    
                 </td>
             </tr>
 		</table>

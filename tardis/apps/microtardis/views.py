@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.views.decorators.cache import never_cache
 from django.conf import settings
 from django.utils import simplejson as json
+from django.shortcuts import render_to_response
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.shortcuts import render_response_index
@@ -97,7 +98,8 @@ def retrieve_parameters(request, dataset_file_id):
         thumbpath = os.path.join(basepath, thumbname)
 
     c = Context({'parametersets': parametersets,
-                 'thumbpath': thumbpath,})
+                 'thumbpath': thumbpath,
+                 'datafile_id': dataset_file_id})
 
     return HttpResponse(render_response_index(request,
                         'parameters_mt.html', c))
@@ -135,6 +137,9 @@ def display_thumbnails(request, size, datafile_id):
     image_data = open(thumbpath, "rb").read()
 
     return HttpResponse(image_data, mimetype="image/jpeg")
+
+def direct_to_thumbnail_html(request, datafile_id):
+    return render_to_response("thumbnail.html", {"datafile_id": datafile_id})
 
 def get_spectrum_values(datafile):
     basepath = settings.FILE_STORE_PATH
