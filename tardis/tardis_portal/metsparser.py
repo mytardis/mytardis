@@ -88,6 +88,7 @@ from xml.sax import make_parser
 
 from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
+from tardis.tardis_portal.metshandler import store_metadata_value
 
 from django.conf import settings
 
@@ -601,11 +602,10 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 for parameterName in parameterNames:
                                     if parameterName.name in \
                                             self.tempMetadataHolder:
-                                        parameterValue = self.tempMetadataHolder[
+                                        parameterValues = self.tempMetadataHolder[
                                             parameterName.name]
-                                        if parameterValue != '':
-                                            self._saveParameter('ExperimentParameter',
-                                                parameterName, parameterValue,
+                                        self._saveParameters('ExperimentParameter',
+                                                parameterName, parameterValues,
                                                 parameterSet)
 
                                 createParamSetFlag['experiment'] = False
@@ -632,11 +632,10 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 for parameterName in parameterNames:
                                     if parameterName.name in \
                                             self.tempMetadataHolder:
-                                        parameterValue = self.tempMetadataHolder[
+                                        parameterValues = self.tempMetadataHolder[
                                             parameterName.name]
-                                        if parameterValue != '':
-                                            self._saveParameter('DatasetParameter',
-                                                parameterName, parameterValue,
+                                        self._saveParameters('DatasetParameter',
+                                                parameterName, parameterValues,
                                                 datasetParameterSet)
 
                                 # disable creation for the next visit
@@ -693,11 +692,10 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 for parameterName in parameterNames:
                                     if parameterName.name in \
                                             self.tempMetadataHolder:
-                                        parameterValue = self.tempMetadataHolder[
+                                        parameterValues = self.tempMetadataHolder[
                                             parameterName.name]
-                                        if parameterValue != '':
-                                            self._saveParameter('DatafileParameter',
-                                                parameterName, parameterValue,
+                                        self._saveParameters('DatafileParameter',
+                                                parameterName, parameterValues,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
 
@@ -717,8 +715,8 @@ class MetsMetadataInfoHandler(ContentHandler):
             # processed
             self.parameterName = None
 
-    def _saveParameter(self, parameterTypeClass, parameterName,
-                       parameterValue, parameterSet):
+    def _saveParameters(self, parameterTypeClass, parameterName,
+                       parameterValues, parameterSet):
         '''Save the metadata field in the database.
 
         Reference:
@@ -727,21 +725,24 @@ class MetsMetadataInfoHandler(ContentHandler):
         '''
         #logger.debug('saving parameter %s: %s' %
         #    (parameterName, parameterValue))
-        if parameterName.isNumeric():
-            parameter = \
-                getattr(models, parameterTypeClass)(
-                parameterset=parameterSet,
-                name=parameterName,
-                string_value=None,
-                numerical_value=float(parameterValue))
-        else:
-            parameter = \
-                getattr(models, parameterTypeClass)(
-                parameterset=parameterSet,
-                name=parameterName,
-                string_value=parameterValue,
-                numerical_value=None)
-        parameter.save()
+        for parameterValue in parameterValues:
+            if parameterValue == '':
+                continue
+            if parameterName.isNumeric():
+                parameter = \
+                    getattr(models, parameterTypeClass)(
+                    parameterset=parameterSet,
+                    name=parameterName,
+                    string_value=None,
+                    numerical_value=float(parameterValue))
+            else:
+                parameter = \
+                    getattr(models, parameterTypeClass)(
+                    parameterset=parameterSet,
+                    name=parameterName,
+                    string_value=parameterValue,
+                    numerical_value=None)
+            parameter.save()
 
     def characters(self, chars):
         if self.processExperimentStruct:
@@ -777,8 +778,9 @@ class MetsMetadataInfoHandler(ContentHandler):
 
         elif chars.strip() != '' and self.parameterName is not None and \
                 self.processMetadata:
-            # save the parameter value in the temporary metadata dictionary
-            self.tempMetadataHolder[self.parameterName] = chars
+            # save the parameter values in the temporary metadata dictionary
+            store_metadata_value(self.tempMetadataHolder,
+                                 self.parameterName, chars)
 
 
 def _getAttrValue(attrs, attrName):
