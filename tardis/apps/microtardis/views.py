@@ -108,23 +108,30 @@ def write_thumbnails(datafile, img):
     basepath = settings.THUMBNAILS_PATH
     if not os.path.exists(basepath):
         os.makedirs(basepath)
-    # original size
-    thumbname = str(datafile.id) + ".jpg"
-    thumbpath = os.path.join(basepath, thumbname)
-    out = file(thumbpath, "w")
-    try:
-        img.save(out, "JPEG")
-    finally:
-        out.close()
-    # small size (400x400)
-    img.thumbnail( (400, 400), Image.ANTIALIAS )
-    thumbname = str(datafile.id) + "_small.jpg"
-    thumbpath = os.path.join(basepath, thumbname)
-    out = file(thumbpath, "w")
-    try:
-        img.save(out, "JPEG")
-    finally:
-        out.close()
+    
+    # [ThumbSize, Extenstion]
+    thumbnails = [(None,       ".jpg"),
+                  ((400, 400), "_small.jpg")
+                  ]
+    
+    for thumb in thumbnails:
+        size = thumb[0]
+        extention = thumb[1]
+        if size: # None for creating thumbnail with original size
+            img.thumbnail( size, Image.ANTIALIAS )
+        if img.mode != "L": 
+            # "L": 8-bit grayscale TIFF images, PIL can process it without problem.
+            # "I;16": 16-bit grayscale TIFF images, need conversion before processing it.
+            img = img.convert('I')
+            table=[ i/256 for i in range(65536) ]
+            img = img.point(table, 'L')
+        thumbname = str(datafile.id) + extention
+        thumbpath = os.path.join(basepath, thumbname)
+        out = file(thumbpath, "w")
+        try:
+            img.save(out, "JPEG")
+        finally:
+            out.close()
         
 def display_thumbnails(request, size, datafile_id):
     basepath = settings.THUMBNAILS_PATH
