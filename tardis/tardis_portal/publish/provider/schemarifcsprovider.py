@@ -21,9 +21,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         
     def can_publish(self, experiment):
         phandler = PublishHandler(experiment.id) 
-        if (not experiment.public) or (phandler.access_type() is publishing.UNPUBLISHED):
-            return False
-        return True
+        return experiment.public or (phandler.access_type() is not publishing.UNPUBLISHED)
 
     def is_schema_valid(self, experiment):
         eps = ExperimentParameter.objects.filter(
