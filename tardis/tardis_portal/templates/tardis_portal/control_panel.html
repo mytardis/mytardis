@@ -138,7 +138,7 @@
               $(this).siblings("#id_authMethod").attr('disabled', '');
           });
 
-          $("#id_entered_user").autocomplete('/ajax/user_list', {
+          $("#id_entered_user").autocomplete('/ajax/user_list/', {
             matchContains: true,
             timeout: 300,
             max: 5,
