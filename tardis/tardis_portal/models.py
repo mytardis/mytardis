@@ -155,6 +155,10 @@ class Experiment(models.Model):
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
 
+    def save(self, *args, **kwargs):
+        super(Experiment, self).save(*args, **kwargs)
+        _publish_public_expt_rifcs(self)
+
     def getParameterSets(self, schemaType=None):
         """Return the experiment parametersets associated with this
         experiment.
@@ -298,6 +302,13 @@ class Author_Experiment(models.Model):
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+
+    def save(self, *args, **kwargs):
+        super(Author_Experiment, self).save(*args, **kwargs)
+        try:
+            _publish_public_expt_rifcs(self.experiment)
+        except StandardError:
+            logger.exception('')
 
     def __unicode__(self):
         return SafeUnicode(self.author) + ' | ' \
@@ -896,6 +907,13 @@ class ExperimentParameter(models.Model):
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
+
+    def save(self, *args, **kwargs):
+        super(ExperimentParameter, self).save(*args, **kwargs)
+        try:
+            _publish_public_expt_rifcs(self.parameterset.experiment)
+        except StandardError:
+            logger.exception('')
 
     def get(self):
         return _getParameter(self)
