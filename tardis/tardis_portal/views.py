@@ -1627,7 +1627,7 @@ def retrieve_user_list(request):
 
     # HACK FOR ORACLE - QUERY GENERATED DOES NOT WORK WITH LIMIT SO USING ITERATOR INSTEAD
     from itertools import islice
-    first_n_users = list(islice(users_query), limit)
+    first_n_users = list(islice(users_query, limit))
 
     user_auths = list(UserAuthentication.objects.filter(userProfile__user__in=first_n_users))
     auth_methods = dict( (ap[0], ap[1]) for ap in settings.AUTH_PROVIDERS)
