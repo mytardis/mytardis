@@ -304,7 +304,7 @@ class Author_Experiment(models.Model):
     order = models.PositiveIntegerField()
 
     def save(self, *args, **kwargs):
-        super(Author_Expeirment, self).save(*args, **kwargs)
+        super(Author_Experiment, self).save(*args, **kwargs)
         try:
             _publish_public_expt_rifcs(self.experiment)
         except StandardError:
