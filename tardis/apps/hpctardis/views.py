@@ -416,6 +416,9 @@ def auth_exp_publish(request):
     """
         Check the provided authcode against outstanding experiments awaiting
         authorisation and if match, then give authorisation.
+        
+        :param request: the web request
+        :type request: :class:`django.http.HttpRequest`
     """
 
     context = {}

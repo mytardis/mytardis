@@ -11,7 +11,7 @@ class NameParts(models.Model):
     
     def __unicode__(self):
         return u' '.join((self.title,self.given,
-                          self.family,self.suffix))
+                          self.family,self.suffix)).strip()
 
 
 class PartyRecord(models.Model):

@@ -61,6 +61,14 @@ from tardis.apps.hpctardis.metadata import get_metadata
 from tardis.apps.hpctardis.metadata import get_schema
 from tardis.apps.hpctardis.metadata import save_metadata
 from tardis.apps.hpctardis.metadata import go
+from tardis.apps.hpctardis.models import PartyRecord
+from tardis.apps.hpctardis.models import ActivityRecord
+from tardis.apps.hpctardis.models import NameParts
+from tardis.apps.hpctardis.models import PartyRecord
+from tardis.apps.hpctardis.models import PartyLocation
+from tardis.apps.hpctardis.models import ActivityPartyRelation
+from tardis.apps.hpctardis.models import PublishAuthorisation
+
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.models import ParameterName
@@ -421,7 +429,188 @@ class VASPMetadataTest(TestCase):
  
         
         
+class AuthPublishTest(TestCase):
+    """ Tests ability to publish experiment with associated parties and
+        authorised activities"""
+     
+    def setUp(self):
+        self.client = Client()
+        from django.contrib.auth.models import User
+        self.username = 'tardis_user1'
+        self.pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(self.username, email, self.pwd)
+        self.userprofile = UserProfile(user=self.user)
+        party = PartyRecord()
+        party.key = "http://www.rmit.edu.au/2/1"
+        party.type = "person"
+        np = NameParts()
+        np.title="Mr"
+        np.given="Joe"
+        np.family="Bloggs"
+        np.save()
+        party.partyname = np
+        party.save()
+        
+        email = PartyLocation()
+        email.type ="email"
+        email.value="test@email.com"
+        email.party = party
+        email.save()
+        
+        party = PartyRecord()
+        party.key = "http://www.rmit.edu.au/2/2"
+        party.type = "person"
+        np = NameParts()
+        np.title="Ms"
+        np.given="Alice"
+        np.family="Smith"
+        np.save()
+        party.partyname = np
+        party.save()
+        
+        email = PartyLocation()
+        email.type ="email"
+        email.value="test@email.com"
+        email.party = party
+        email.save()
+        
+        activity = ActivityRecord()
+        activity.key="http://www.rmit.edu.au/1/1"
+        activity.type = "project"
+        np = NameParts()
+        np.title="My Secret Project"
+        np.save()
+        activity.activityname = np
+        activity.description = "World Domination"
+        
+        activity.save()
+        
+        apr = ActivityPartyRelation()
+        apr.activity = activity
+        apr.party = party
+        
+        apr.save()
+        
+        
+        
+        
+      
+    def tearDown(self):
+        from shutil import rmtree
+        rmtree(self.experiment_path)
+        
+    def test_publish(self):
+        """ Create an experiment and publish it as RIF-CS using RMITANDSService"""
+        login = self.client.login(username=self.username,
+                                  password=self.pwd)
+        self.assertTrue(login)
+        # Create simple experiment
+        exp = models.Experiment(title='test exp1',
+                                institution_name='rmit',
+                                created_by=self.user,
+                                public=False
+                                )
+        exp.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+        self.assertEqual(exp.title, 'test exp1')
+        self.assertEqual(exp.url, None)
+        self.assertEqual(exp.institution_name, 'rmit')
+        self.assertEqual(exp.approved, False)
+        self.assertEqual(exp.handle, None)
+        self.assertEqual(exp.created_by, self.user)
+        self.assertEqual(exp.public, False)
+        self.assertEqual(exp.get_or_create_directory(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+
+        self.experiment_path = path.join(settings.FILE_STORE_PATH, str(exp.id))
+        # publish
+        data = {'legal':'on',
+                'activities':'1',
+                'form-0-party':'1',
+                'form-0-relation':'hasCollector',
+                'form-TOTAL_FORMS': u'1',
+                'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
+                 'profile':'default.xml'}
+        response = self.client.post("/apps/hpctardis/publisher/1/", data)
+        
+        logger.debug("response=%s" % response)
+        
+        exp = models.Experiment.objects.get(title="test exp1")
+        self.assertEqual(exp.public, False)
+        
+        auth = PublishAuthorisation.objects.get(experiment=exp)
+       
+   
+        logger.debug("auth=%s" % auth)
+        self.assertEquals(auth.status,PublishAuthorisation.PENDING_APPROVAL)
+         
+        # wrong auth
+        data={'expid':str(exp.id),
+                          'authcode':'invalidkey'}
+        logger.debug("data=%s" % data)
+        response = self.client.get("/apps/hpctardis/publishauth/",
+                         data)
+        updated_auth = PublishAuthorisation.objects.get(id=auth.id)
+        self.assertEquals(updated_auth.status,
+                          PublishAuthorisation.PENDING_APPROVAL)
+        self.assertEquals(response.status_code,
+                          200)
+        
+     
+        logger.debug("reponse=%s" % response)
+        
+        # write auth
+        exp = models.Experiment.objects.get(title="test exp1")
+        self.assertEqual(exp.public, False)
+        
+        data={'expid':str(exp.id),
+                          'authcode':auth.auth_key}
+        logger.debug("data=%s" % data)
+        response = self.client.get("/apps/hpctardis/publishauth/",
+                         data)
+        updated_auth = PublishAuthorisation.objects.get(id=auth.id)
+        self.assertEquals(updated_auth.status,
+                          PublishAuthorisation.APPROVED_PUBLIC)
+        self.assertEquals(response.status_code,
+                          200)
+        self.assertEquals(response.context[u'message'],u"Thank you for your approval Ms Alice Smith")
+     
+        logger.debug("reponse=%s" % response)
+        
+        exp = models.Experiment.objects.get(title="test exp1")
+        self.assertEqual(exp.public, True)
+         
+        data={'expid':str(exp.id),
+                          'authcode':auth.auth_key}
+        logger.debug("data=%s" % data)
+        response = self.client.get("/apps/hpctardis/publishauth/",
+                         data)
+        updated_auth = PublishAuthorisation.objects.get(id=auth.id)
+        self.assertEquals(updated_auth.status,
+                          PublishAuthorisation.APPROVED_PUBLIC)
+        self.assertEquals(response.status_code,
+                          200)
+        self.assertEquals(response.context[u'message'],u"Experiment already public")
+        logger.debug("reponse=%s" % response)
+        
+        # check resulting rif-cs
+        response = self.client.post("/apps/hpctardis/rif_cs/")
+        logger.debug("rifcs response=%s" % response)
+
+        self.assertTrue(_grep("test exp1",str(response)))
+        self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
+        self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
+        self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2/2</key>",str(response)))
+        
         
     
-      
 
