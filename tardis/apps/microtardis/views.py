@@ -102,7 +102,7 @@ def retrieve_parameters(request, dataset_file_id):
                  'datafile_id': dataset_file_id})
 
     return HttpResponse(render_response_index(request,
-                        'parameters_mt.html', c))
+                        'tardis_portal/ajax/parameters.html', c))
 
 def write_thumbnails(datafile, img):
     basepath = settings.THUMBNAILS_PATH
