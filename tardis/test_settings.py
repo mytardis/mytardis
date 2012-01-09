@@ -177,3 +177,15 @@ POST_SAVE_FILTERS = [
 # Directory path for storing image thumbnails
 THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/thumbnails/')).replace('\\', '/')
+    
+# Template loaders
+TEMPLATE_LOADERS = (
+    'tardis.apps.microtardis.templates.loaders.app_specific.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
+)
+
+# Microtardis Media
+MT_STATIC_URL_ROOT = '/static'
+MT_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                               'apps/microtardis/static').replace('\\', '/')
