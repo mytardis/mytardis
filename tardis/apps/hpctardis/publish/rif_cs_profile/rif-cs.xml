@@ -1,61 +1,43 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 {% load xmldate %}
 {% load extras %}
 <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/home/orca/schemata/registryObjects.xsd">                    
-	{% for experiment in experiments %}
-		{% include experiment.profile %}
-	{% endfor %}	
-	
+	{% for experiment in experiments %}{% include experiment.profile %}{% endfor %}	
 	{% for party in parties%}
-    
-        <registryObject group="RMIT University">
-            <key>http://www.rmit.edu.au/HPC/1/{{party.id}}</key>
-            <orginatingSource></orginatingSource>
-            <party type="{{party.type}}">
-                <identifier type="uri">
-                http://www.rmit.edu.au/HPC/1/{{party.id}}
-                </identifier>
-                <name type="primary">
-                    <namePart type="family">{{party.partyname.family}}</namePart>
-                    <namePart type="given">{{party.partyname.given}}</namePart>
-                </name>
-                <subject type="anzsrc-for">190204</subject>               
-            </party>
-        </registryObject>
+    <registryObject group="RMIT University">
+        <key>http://www.rmit.edu.au/HPC/1/{{party.id}}</key>
+        <orginatingSource>http://www.rmit.edu.au</orginatingSource>
+        <party type="{{party.type}}">
+            <identifier type="uri">http://www.rmit.edu.au/HPC/1/{{party.id}}</identifier>
+            <name type="primary">
+                <namePart type="family">{{party.partyname.family}}</namePart>
+                <namePart type="given">{{party.partyname.given}}</namePart>
+            </name>
+            <subject type="anzsrc-for">190204</subject>               
+        </party>
+    </registryObject>
     {% endfor %}
-    
-    
-    
     {% for activity in activities %}
-    
-        <registryObject group="RMIT University">
-            <key>http://www.rmit.edu.au/HPC/3/{{activity.id}}</key>
-            <orginatingSource></orginatingSource>
-            <activity type="{{activity.type}}">
-                <identifier type="uri">
+    <registryObject group="RMIT University">
+        <key>http://www.rmit.edu.au/HPC/3/{{activity.id}}</key>
+        <orginatingSource>http://www.rmit.edu.au</orginatingSource>
+        <activity type="{{activity.type}}">
+            <identifier type="uri">
                 http://www.rmit.edu.au/HPC/3/{{activity.id}}
-                </identifier>
-                <name type="primary">
-                    <namePart>{{activity.activityname}}</namePart>
-                </name>
-                
-                {% for party in activity|partyforact:"" %}
-                <relatedObject>
-                    <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
+            </identifier>
+            <name type="primary">
+                <namePart>{{activity.activityname}}</namePart>
+            </name>
+            {% for party in activity|partyforact:"" %}
+            <relatedObject>
+                <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
                 <relation type="{{party.1}}"/> 
-                </relatedObject> 
-                {% endfor %}
-                
-                
-                
-                <subject type="anzsrc-for">190204</subject>               
-            </activity>
-        </registryObject>
+            </relatedObject> 
+            {% endfor %}
+            <subject type="anzsrc-for">190204</subject>               
+        </activity>
+    </registryObject>
     {% endfor %}
-    
-    
-    
-	
 </registryObjects>

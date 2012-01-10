@@ -58,12 +58,13 @@ class rif_cs_PublishProvider(PublishProvider):
             for activity in activities:     
                 logger.debug("processing activity %s" % activity)
                 activity_party_relations = ActivityPartyRelation.objects.filter(
-                                                        activity=activity,
-                                                        relation=u"isManagedBy")
+                                                    activity=activity,
+                                                    relation=u"isManagedBy")
                 for activity_party_relation in activity_party_relations:
                     party = activity_party_relation.party
                     logger.debug("authparty for %s is %s" %
-                                  (activity.activityname, party.get_fullname()))      
+                                  (activity.activityname, 
+                                   party.get_fullname()))      
                     send_request_email(party,activity, self.experiment_id) 
                             
                 

@@ -428,7 +428,22 @@ class VASPMetadataTest(TestCase):
         return df_file
  
         
+def _get_XML_tag(xml,xpath):
+    """ 
+    For the given xml string, look for tag with tagtitle and 
+    the innertag child and return list of all values
+    """
+    
+    from lxml import etree
+    tree = etree.fromstring(xml)
+    r = tree.xpath(xpath,
+                       namespaces={
+            'rifcs':"http://ands.org.au/standards/rif-cs/registryObjects"})
+    logger.debug("r=%s" % r)
         
+    return r[0]
+    
+    
 class AuthPublishTest(TestCase):
     """ Tests ability to publish experiment with associated parties and
         authorised activities"""
@@ -442,7 +457,7 @@ class AuthPublishTest(TestCase):
         self.user = User.objects.create_user(self.username, email, self.pwd)
         self.userprofile = UserProfile(user=self.user)
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/2/1"
+        party.key = "http://www.rmit.edu.au/1/1"
         party.type = "person"
         np = NameParts()
         np.title="Mr"
@@ -458,8 +473,28 @@ class AuthPublishTest(TestCase):
         email.party = party
         email.save()
         
+        
+            
+        activity = ActivityRecord()
+        activity.key="http://www.rmit.edu.au/3/2"
+        activity.type = "project"
+        np = NameParts()
+        np.title="My Other Secret Project"
+        np.save()
+        activity.activityname = np
+        activity.description = "Next stop, the galaxy"
+        
+        activity.save()
+        
+        apr = ActivityPartyRelation()
+        apr.activity = activity
+        apr.party = party
+        
+        apr.save()
+        
+        
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/2/2"
+        party.key = "http://www.rmit.edu.au/1/2"
         party.type = "person"
         np = NameParts()
         np.title="Ms"
@@ -476,7 +511,7 @@ class AuthPublishTest(TestCase):
         email.save()
         
         activity = ActivityRecord()
-        activity.key="http://www.rmit.edu.au/1/1"
+        activity.key="http://www.rmit.edu.au/3/1"
         activity.type = "project"
         np = NameParts()
         np.title="My Secret Project"
@@ -485,16 +520,24 @@ class AuthPublishTest(TestCase):
         activity.description = "World Domination"
         
         activity.save()
-        
+         
         apr = ActivityPartyRelation()
         apr.activity = activity
         apr.party = party
         
         apr.save()
-        
-        
-        
-        
+    
+        party = PartyRecord()
+        party.key = "http://www.rmit.edu.au/1/3"
+        party.type = "person"
+        np = NameParts()
+        np.title="Mr"
+        np.given="John"
+        np.family="Smith"
+        np.save()
+        party.partyname = np
+        party.save()
+            
       
     def tearDown(self):
         from shutil import rmtree
@@ -534,8 +577,8 @@ class AuthPublishTest(TestCase):
         self.experiment_path = path.join(settings.FILE_STORE_PATH, str(exp.id))
         # publish
         data = {'legal':'on',
-                'activities':'1',
-                'form-0-party':'1',
+                'activities':[1,2],
+                'form-0-party':'3',
                 'form-0-relation':'hasCollector',
                 'form-TOTAL_FORMS': u'1',
                 'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
@@ -547,28 +590,25 @@ class AuthPublishTest(TestCase):
         exp = models.Experiment.objects.get(title="test exp1")
         self.assertEqual(exp.public, False)
         
-        auth = PublishAuthorisation.objects.get(experiment=exp)
+        auths = PublishAuthorisation.objects.filter(experiment=exp)
        
-   
+        auth = auths[0]
         logger.debug("auth=%s" % auth)
-        self.assertEquals(auth.status,PublishAuthorisation.PENDING_APPROVAL)
-         
+        self.assertEquals(auth.status,
+                          PublishAuthorisation.PENDING_APPROVAL)
         # wrong auth
         data={'expid':str(exp.id),
                           'authcode':'invalidkey'}
         logger.debug("data=%s" % data)
         response = self.client.get("/apps/hpctardis/publishauth/",
-                         data)
+                                   data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
                           PublishAuthorisation.PENDING_APPROVAL)
         self.assertEquals(response.status_code,
                           200)
-        
-     
         logger.debug("reponse=%s" % response)
-        
-        # write auth
+        # right auth
         exp = models.Experiment.objects.get(title="test exp1")
         self.assertEqual(exp.public, False)
         
@@ -582,10 +622,51 @@ class AuthPublishTest(TestCase):
                           PublishAuthorisation.APPROVED_PUBLIC)
         self.assertEquals(response.status_code,
                           200)
-        self.assertEquals(response.context[u'message'],u"Thank you for your approval Ms Alice Smith")
-     
+        self.assertEquals(response.context[u'message'],
+                          u"Thank you for your approval Mr Joe Bloggs")
         logger.debug("reponse=%s" % response)
         
+        
+            
+        exp = models.Experiment.objects.get(title="test exp1")
+        self.assertEqual(exp.public, False)
+        
+        auth = auths[1]
+        logger.debug("auth=%s" % auth)
+        self.assertEquals(auth.status,
+                          PublishAuthorisation.PENDING_APPROVAL)
+        # wrong auth
+        data={'expid':str(exp.id),
+                          'authcode':'invalidkey'}
+        logger.debug("data=%s" % data)
+        response = self.client.get("/apps/hpctardis/publishauth/",
+                                   data)
+        updated_auth = PublishAuthorisation.objects.get(id=auth.id)
+        self.assertEquals(updated_auth.status,
+                          PublishAuthorisation.PENDING_APPROVAL)
+        self.assertEquals(response.status_code,
+                          200)
+        logger.debug("reponse=%s" % response)
+        # right auth
+        exp = models.Experiment.objects.get(title="test exp1")
+        self.assertEqual(exp.public, False)
+        
+        data={'expid':str(exp.id),
+                          'authcode':auth.auth_key}
+        logger.debug("data=%s" % data)
+        response = self.client.get("/apps/hpctardis/publishauth/",
+                         data)
+        updated_auth = PublishAuthorisation.objects.get(id=auth.id)
+        self.assertEquals(updated_auth.status,
+                          PublishAuthorisation.APPROVED_PUBLIC)
+        self.assertEquals(response.status_code,
+                          200)
+        self.assertEquals(response.context[u'message'],
+                          u"Thank you for your approval Ms Alice Smith")
+        logger.debug("reponse=%s" % response)
+        
+        
+            
         exp = models.Experiment.objects.get(title="test exp1")
         self.assertEqual(exp.public, True)
          
@@ -604,13 +685,48 @@ class AuthPublishTest(TestCase):
         
         # check resulting rif-cs
         response = self.client.post("/apps/hpctardis/rif_cs/")
-        logger.debug("rifcs response=%s" % response)
+        logger.debug("rifcs response=%s" % response.content)
 
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:key').text,
+                   "http://www.rmit.edu.au/HPC/1/3")
+
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:relation').attrib['type'],
+                   "hasCollector")
+        
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:key').text,
+                   "http://www.rmit.edu.au/HPC/3/1")
+
+
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:relation').attrib['type'],
+                   "isOutputOf")
+        
+        
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:key').text,
+                   "http://www.rmit.edu.au/HPC/3/2")
+        
+
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:relation').attrib['type'],
+                   "isOutputOf")
+        
+        
         self.assertTrue(_grep("test exp1",str(response)))
         self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
         self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
         self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2/2</key>",str(response)))
         
-        
-    
+       
+       
+ 
 
