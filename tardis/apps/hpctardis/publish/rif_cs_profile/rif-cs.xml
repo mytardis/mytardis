@@ -24,9 +24,7 @@
         <key>http://www.rmit.edu.au/HPC/3/{{activity.id}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <activity type="{{activity.type}}">
-            <identifier type="uri">
-                http://www.rmit.edu.au/HPC/3/{{activity.id}}
-            </identifier>
+            <identifier type="uri">http://www.rmit.edu.au/HPC/3/{{activity.id}}</identifier>
             <name type="primary">
                 <namePart>{{activity.activityname}}</namePart>
             </name>

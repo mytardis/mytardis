@@ -49,7 +49,7 @@ class rif_cs_PublishProvider(PublishProvider):
         :type request: :class:`django.http.HttpRequest`
 
         """
-        
+        auth_pending = False
         experiment = Experiment.objects.get(id=self.experiment_id)
         activities_select_form = ActivitiesSelectForm(request.POST)
         if activities_select_form.is_valid():
@@ -65,8 +65,13 @@ class rif_cs_PublishProvider(PublishProvider):
                     logger.debug("authparty for %s is %s" %
                                   (activity.activityname, 
                                    party.get_fullname()))      
-                    send_request_email(party,activity, self.experiment_id) 
-                            
+                    if send_request_email(party,activity, self.experiment_id):  
+                        auth_pending = True 
+                        logger.debug("auth_pending=%s" % auth_pending)
+                        
+                        
+        
+                    
                 
                                           
         else:
@@ -98,7 +103,12 @@ class rif_cs_PublishProvider(PublishProvider):
             experiment = Experiment.objects.get(id=self.experiment_id)
             profile = request.POST['profile']
             self.save_rif_cs_profile(experiment, profile)
-            return {'status': True,
+            logger.debug("auth_pending=%s" % auth_pending)
+            if auth_pending:
+                return {'status': True,
+                        'message': 'Experiment ready of publishing, awaiting authorisation by activity managers'}
+            else:
+                return {'status': True,
             'message': 'Success'}
         else:
             return {'status': True,

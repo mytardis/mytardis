@@ -303,9 +303,12 @@ def publish_experiment(request, experiment_id):
 
     if experiment.public:
         context_dict = {}
-        context_dict['publish_result'] = {'status':True,
-                                          'legal':True,
-                                          'message':'Experiment is already published'}
+        logger.debug("Already published")
+        context_dict['legal'] = True
+        context_dict['success'] = False
+        context_dict['publish_result'] = [{'status':True,
+                                          
+                                          'message':'Experiment is already published'}]
         c = Context(context_dict)
         return HttpResponse(render_response_index(request,
                         'tardis_portal/publish_experiment.html', c))

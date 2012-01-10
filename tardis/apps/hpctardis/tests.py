@@ -441,7 +441,7 @@ def _get_XML_tag(xml,xpath):
             'rifcs':"http://ands.org.au/standards/rif-cs/registryObjects"})
     logger.debug("r=%s" % r)
         
-    return r[0]
+    return r
     
     
 class AuthPublishTest(TestCase):
@@ -584,8 +584,17 @@ class AuthPublishTest(TestCase):
                 'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
                  'profile':'default.xml'}
         response = self.client.post("/apps/hpctardis/publisher/1/", data)
-        
+        self.assertEquals(response.status_code,
+                          200)
         logger.debug("response=%s" % response)
+        
+        
+        self.assertEquals(response.context['publish_result'][0]['status'],
+                          True)         
+        self.assertEquals(response.context['publish_result'][0]['message'],
+                          'Experiment ready of publishing, awaiting authorisation by activity managers')
+        self.assertEquals(response.context['success'],
+                          True)
         
         exp = models.Experiment.objects.get(title="test exp1")
         self.assertEqual(exp.public, False)
@@ -689,44 +698,109 @@ class AuthPublishTest(TestCase):
 
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:key').text,
+                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:key')[0].text,
                    "http://www.rmit.edu.au/HPC/1/3")
 
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:relation').attrib['type'],
+                   '//rifcs:collection/rifcs:relatedObject[1]/rifcs:relation')[0].attrib['type'],
                    "hasCollector")
         
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:key').text,
+                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:key')[0].text,
                    "http://www.rmit.edu.au/HPC/3/1")
 
 
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:relation').attrib['type'],
+                   '//rifcs:collection/rifcs:relatedObject[2]/rifcs:relation')[0].attrib['type'],
                    "isOutputOf")
         
         
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:key').text,
+                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:key')[0].text,
                    "http://www.rmit.edu.au/HPC/3/2")
         
 
         self.assertEquals(_get_XML_tag(
                    response.content,
-                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:relation').attrib['type'],
+                   '//rifcs:collection/rifcs:relatedObject[3]/rifcs:relation')[0].attrib['type'],
                    "isOutputOf")
         
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:party/rifcs:identifier')[0].text,
+                   "http://www.rmit.edu.au/HPC/1/1")
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:party/rifcs:identifier')[1].text,
+                   "http://www.rmit.edu.au/HPC/1/2")
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:party/rifcs:identifier')[2].text,
+                   "http://www.rmit.edu.au/HPC/1/3")
+    
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:identifier')[0].text,
+                   "http://www.rmit.edu.au/HPC/3/1")
         
-        self.assertTrue(_grep("test exp1",str(response)))
-        self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
-        self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
-        self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2/2</key>",str(response)))
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:relatedObject/rifcs:key')[0].text,
+                   "http://www.rmit.edu.au/HPC/1/1")
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:relatedObject/rifcs:relation')[0].attrib['type'],
+                   "isManagedBy")
+    
         
-       
-       
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:identifier')[1].text,
+                   "http://www.rmit.edu.au/HPC/3/2")
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:relatedObject/rifcs:key')[1].text,
+                   "http://www.rmit.edu.au/HPC/1/2")
+    
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:activity/rifcs:relatedObject/rifcs:relation')[1].attrib['type'],
+                   "isManagedBy")
+    
+        self.assertEquals(_get_XML_tag(
+                   response.content,
+                   '//rifcs:collection/rifcs:name/rifcs:namePart')[0].text,
+                   "test exp1")
+        
+        # try to republish
+        data = {'legal':'on',
+                'activities':[1,2],
+                'form-0-party':'3',
+                'form-0-relation':'hasCollector',
+                'form-TOTAL_FORMS': u'1',
+                'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
+                 'profile':'default.xml'}
+        response = self.client.post("/apps/hpctardis/publisher/1/", data)
+        
+        self.assertEquals(response.context['publish_result'][0]['status'],
+                          True)         
+        self.assertEquals(response.context['publish_result'][0]['message'],
+                          'Experiment is already published')
+        self.assertEquals(response.context['success'],
+                          False)
+         
+        self.assertEquals(response.status_code,
+                          200)
+        logger.debug("response=%s" % response)
  
 

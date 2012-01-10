@@ -59,6 +59,7 @@ def _send_email(publish_auth,activation_key, exp, activity,auth_party,
     send_mail('Authorisation required for experiment', 
                   email_to_send, 'admin@hpctardis.rmit.edu.au',
                 [party_email], fail_silently=False)
+    
 
 def send_request_email(auth_party,activity,exp_id):
         """ Make record that describes authkey, address of correspondance,
@@ -109,12 +110,13 @@ def send_request_email(auth_party,activity,exp_id):
                         activity=activity,
                         auth_party=auth_party,
                         party_email=party_email)
+            return True
             
            
         except PublishAuthorisation.MultipleObjectsReturned:
             #FIXME: this is an inconsistent state
             # probably want to delete all extra records?
-            pass
+            return False
         else:
             
             logger.debug("already found record")
@@ -130,6 +132,7 @@ def send_request_email(auth_party,activity,exp_id):
             
             logger.debug("publish auth=%s" % publish_auth)
             
+            return True
             
             
             
