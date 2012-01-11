@@ -1,3 +1,16 @@
+
+{% block script %}
+
+  {% include "tardis_portal/javascript_libraries.html" %}
+  <script type="text/javascript" src="/site_media/js/jquery.customised-formset.js" ></script>
+  <script type="text/javascript">
+  $(function() {
+    $('div.form-container-class').formset();
+  })
+</script>
+
+{% endblock %}
+
 <strong>ANDS</strong>
 
 <p>
@@ -11,4 +24,21 @@
 	{% else %}
 		<p>Error: no valid profiles found.</p>
 	{% endif %}
+ <p>
+ Please select at least ONE activity that this experiment will be associated with:
+ <p>
+ {{activity_form}}
+ <p>
+ Please select one or associated party records:
+  {% for party_form in party_formset.forms %}
+   <div class="form-container-class">
+   <tr>
+ {{ party_form.relation}}
+ {{ party_form.party}}
+   </tr>
+    </div>
+    {% endfor %}
+    
+ {{ party_formset.management_form }}
+ <p>
 </p>

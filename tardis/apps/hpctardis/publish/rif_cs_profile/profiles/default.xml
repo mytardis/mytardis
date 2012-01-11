@@ -1,45 +1,37 @@
 {% load xmldate %}
-{# {% load partyactivitykeys %} #}
-<registryObject group="RMIT University">
-	<key>http://www.rmit.edu.au/HPC/{{experiment.id}}</key>
-	<originatingSource>http://www.rmit.edu.au</originatingSource>
-	<collection type="dataset" dateAccessioned="{{experiment.update_time|toxmldatetime}}" dateModified="{{experiment.update_time|toxmldatetime}}">
-		<identifier type="local">experiment/view/{{experiment.id}}</identifier>
-		<identifier type="handle">hdl:{{experiment.handle}}</identifier>
-		<name type="primary">
-			<namePart>
-			{{experiment.title}}
-			</namePart>
-		</name>
-		<location>
-			<address>
-				<electronic type="url">
-					<value>{{experiment.id}}</value>
-				</electronic>
-				<physical>
-					<addressPart type="text">{{experiment.institution_name}}</addressPart>
-				</physical>
-			</address>
-		</location>
-		<relatedObject>
-			<key>{{experiment.id}}</key>
-			<relation type="isOwnedBy">
-				<description>Is owned by</description>
-				<url>http://www.rmit.edu.au</url>
-			</relation>
-		</relatedObject>
-		{#  {% for party_key in experiment.id|party_keys %} #}
-		{#    <relatedObject> #}
-		{# 		<key>{{party_key.string_value}}</key> #}
-		{# 		<relation type="isPartOf"/> #}
-		{# 	</relatedObject> #}
-		{# {% endfor %} #}
-		{# {% for activity_key in experiment.id|activity_keys %} #}
-		{#    <relatedObject> #}
-		{# 		<key>{{activity_key.string_value}}</key> #}
-		{# 		<relation type="isPartOf"/> #}
-		{# 	</relatedObject> #}
-		{# {% endfor %} #}
-    <description type="about">{{experiment.description}}</description>
-  </collection>
-</registryObject>
+{% load extras %}
+    <registryObject group="RMIT University">
+	    <key>http://www.rmit.edu.au/HPC/2/{{experiment.id}}</key>
+       	<originatingSource>http://www.rmit.edu.au</originatingSource>
+	    <collection type="dataset" dateAccessioned="{{experiment.update_time|toxmldatetime}}" dateModified="{{experiment.update_time|toxmldatetime}}">
+		    <identifier type="local">experiment/view/{{experiment.id}}</identifier>
+		    <identifier type="handle">hdl:{{experiment.handle}}</identifier>
+            <identifier type="uri">http://www.rmit.edu.au/HPC/2/{{experiment.id}}</identifier>
+		    <name type="primary">
+		     	<namePart>{{experiment.title}}</namePart>
+		    </name>
+		    <location>
+			    <address>
+				    <electronic type="url">
+					    <value>http://127.0.0.1/experiment/view/{{experiment.id}}</value>
+				    </electronic>
+				    <physical>
+					    <addressPart type="text">{{experiment.institution_name}}</addressPart>
+				    </physical>
+			    </address>
+		    </location>
+            {% for party in experiment|partyinfo:"" %}
+            <relatedObject>
+                <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
+                <relation type="{{party.1}}"/>
+            </relatedObject> 
+            {% endfor %}
+            {% for activity in experiment|activityinfo:"" %}
+            <relatedObject>
+                <key>http://www.rmit.edu.au/HPC/3/{{activity.0}}</key> 
+                <relation type="{{activity.1}}"/> 
+            </relatedObject> 
+            {% endfor %}
+            <description type="about">{{experiment.description}}</description>
+         </collection>
+    </registryObject>
