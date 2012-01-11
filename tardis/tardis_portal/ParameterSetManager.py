@@ -158,7 +158,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         else:
-            param.string_value = str(value)
+            param.string_value = unicode(value)
         param.save()
         return param.id
 
@@ -171,7 +171,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         else:
-            param.string_value = str(value)
+            param.string_value = unicode(value)
         param.save()
         return param.id
 
