@@ -2,11 +2,19 @@
     hacks.py
     For hacks which should be removed at a later stage
 """
-import django.db.backends.oracle.base
+from django.core.exceptions import ImproperlyConfigured
 
 def oracle_dbops_hack(f):
     """ affects only oracle - safe for other database engines """
     #  see https://code.djangoproject.com/ticket/11580
+
+    # If the import fails, then we can't be using Oracle.
+    try:
+        import django.db.backends.oracle.base
+    except ImproperlyConfigured:
+        # We're not using Oracle, so return "f" (ie. no-op).
+        return f
+
     def wrap(*args, **kwargs):
         original = django.db.backends.oracle.base.DatabaseOperations.field_cast_sql
         django.db.backends.oracle.base.DatabaseOperations.field_cast_sql = _patched_cast
@@ -14,7 +22,7 @@ def oracle_dbops_hack(f):
             return f(*args, **kwargs)
         finally:
             django.db.backends.oracle.base.DatabaseOperations.field_cast_sql = original
-            
+
 
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
