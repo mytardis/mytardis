@@ -233,6 +233,7 @@ class Migration(SchemaMigration):
         'tardis_portal.schema': {
             'Meta': {'object_name': 'Schema'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'immutable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '50', 'null': 'True', 'blank': 'True'}),
             'namespace': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '255'}),
             'subtype': ('django.db.models.fields.CharField', [], {'max_length': '30', 'null': 'True', 'blank': 'True'}),
