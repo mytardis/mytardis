@@ -7,6 +7,9 @@ urlpatterns = patterns('',
     (r'^rif_cs/$','tardis.apps.hpctardis.views.rif_cs'),
     (r'^protocol/$','tardis.apps.hpctardis.views.protocol'),
     (r'^login/$','tardis.apps.hpctardis.views.login'),
-    (r'^addfiles/$','tardis.apps.hpctardis.views.addfiles')
+    (r'^addfiles/$','tardis.apps.hpctardis.views.addfiles'),
+    (r'^publishauth/$','tardis.apps.hpctardis.views.auth_exp_publish')
+    
+    
    )
     

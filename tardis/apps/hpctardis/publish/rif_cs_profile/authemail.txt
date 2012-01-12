@@ -1,0 +1,29 @@
+Hello {{ authoriser }},
+
+This is the automated HPCtardis publishing facility
+
+You are the designated manager of HPCTardis activity:
+{{ activity.activityname }}
+
+This is request to authorise experiment #{{exp}} named 
+{{ expname}}
+
+This experiment was created by 
+{% if expauthor.firstname %}
+{{expauthor.first_name|default:""}} {{expauthor.last_name|default:""}}
+{% else %}
+{{expauthor.username}}
+{% endif %}
+at {{expauthor.email|default:""}} as the owner claims that this experiment is an output
+of this activity.
+
+If you click on the following link:
+
+{{domain}}/{{path}}?expid={{exp}}&authcode={{code}}
+
+you will be authorising to make
+this experiment PUBLIC in association with your activity.
+If you don't want this, just ignore this email.
+
+Regards,
+HPCTardis PublishAuthoriser
