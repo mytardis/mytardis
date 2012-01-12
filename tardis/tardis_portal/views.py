@@ -1761,7 +1761,7 @@ def retrieve_group_userlist(request, group_id):
 
 
 @never_cache
-@permission_required('tardis_portal.change_group')
+@permission_required('auth.change_group')
 @login_required()
 def manage_groups(request):
 
