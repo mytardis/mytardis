@@ -200,7 +200,9 @@ def _get_file_handle(context, filename):
 
 
 def get_final_iteration(context):
-    """ Return the final iteration number from a VASP run 
+    """ Return the final iteration number from a VASP run
+    
+        :param context: package of parameter data
     """
     fileregex = context['fileregex'][0]
     filename = _get_file_from_regex(fileregex,context['ready'],False)
@@ -270,7 +272,6 @@ def _get_file_from_regex(regex,context, return_max):
     return max_match
 
 
-
 def get_file_lines(context, linestart,lineend):
     """ Returns value and units from the filenameregex where value is 
     newline joined lines from linestart to lineend.  Only works for local files""" 
@@ -301,8 +302,7 @@ def get_file_lines(context, linestart,lineend):
             return ("\n".join(res),'')
     return ('','')
     
-    
-    
+       
 def get_file_line(context,lineno):
     """Returns the context of relative linenumber
     Assumes no units value and only works for smallish file"""
@@ -506,40 +506,59 @@ def get_file_regex_all(context,regex):
 def get_constant(context,val,unit):
     return (val,unit)
 
-            
-def get_metadata(ruleset):
-    from collections import defaultdict
-    
-    # TODO: handle files that have not arrived yet
-    expectedmd5 = None
-                  
+
+def _process_experiments(ruleset):
+    """
+    """
     #TODO: missing values default to STRING, but later could be numeric when have value
     metadatas = {}
     for exp in Experiment.objects.all():
         logger.debug("exp=%s\n" % exp)
-        for dataset in Dataset.objects.filter(experiment=exp):
-            meta = {}
-            logger.debug("\tdataset=%s\n" % dataset)
-            ready = defaultdict()
-            for datafile in Dataset_File.objects.filter(dataset=dataset):
-                logger.debug("\t\tdatafile=%s\n" % str(datafile))
-                ready[datafile.filename] = datafile
-                if datafile not in ready:
-                    logger.debug(datafile.md5sum + "\n")
-                    try:
-                        datafile._set_md5sum() 
-                    except IOError:
-                        pass
-                    except OSError:
-                        pass
-                    logger.debug("hello from %s\n" % datafile)
-                    #if (datafile.md5sum == datafile.expectedmd5):
-                    #    ready[datafile] = True
-                    
-            logger.debug("ready=%s\n" % ready)
+        metadatas = process_experiment(metadatas, exp, ruleset)
+        #metadatas = _process_datasets(metadatas,exp,ruleset)
+    return metadatas
+
+
+def _process_datasets(metadatas,exp,ruleset):
+    """
+    """
+    for dataset in Dataset.objects.filter(experiment=exp):
+        logger.debug("\tdataset=%s\n" % dataset)
+        meta = _process_datafiles(exp,dataset,ruleset)
+        logger.debug("meta=%s\n" % meta)
+        metadatas[dataset] = meta
+            
+    logger.debug("metadatas=%s\n" % metadatas)
+    return metadatas
+
+
+            
+def _process_datafiles(exp,dataset,ruleset):
+    """
+    """
+    from collections import defaultdict
+    ready = defaultdict()
+    meta = {}
+    for datafile in Dataset_File.objects.filter(dataset=dataset):
+        logger.debug("\t\tdatafile=%s\n" % str(datafile))
+        ready[datafile.filename] = datafile
+        if datafile not in ready:
+            logger.debug(datafile.md5sum + "\n")
+            try:
+                datafile._set_md5sum() 
+            except IOError:
+                pass
+            except OSError:
+                pass
+            logger.debug("hello from %s\n" % datafile)
+            #if (datafile.md5sum == datafile.expectedmd5):
+            #    ready[datafile] = True
+            
+        logger.debug("ready=%s\n" % ready)
+        try:
             for tagname,file_patterns,code in ruleset:
                 logger.debug("file_patterns=%s,code=%s\n" % (file_patterns,code))
-            
+                
                 # check whether we have all files available.
                 # f could have _number regex
                 count = 0
@@ -580,9 +599,25 @@ def get_metadata(ruleset):
                         logger.debug("value,unit=%s %s" % (value,unit))
                  
                     meta[tagname] = (value,unit)
-                     
-            logger.debug("meta=%s\n" % meta)
-            metadatas[dataset] = meta
+        except ValueError:
+            logger.error("ruleset = %s" % ruleset )
+            raise
+            
+                    
+    return meta
+       
+def get_metadata(ruleset):
+    """ Extracts metadata tags and values for each datafile in experiments
+    
+        :param ruleset: rules that define the extraction of metadata
+        :returns: dict from datafile to dict of tagname/tagvalue pairs
+    """
+ 
+    # TODO: handle files that have not arrived yet
+    expectedmd5 = None
+    metadatas = _process_experiments(ruleset)
+    
+    logger.debug("metadatas=%s\n" % metadatas)
         
     return metadatas
         
@@ -600,9 +635,12 @@ def get_schema(schema,name):
         schema.save()
         logger.debug("creating %s %s " % (schema,name))
         return schema          
+          
             
 def get_parameters(schema,metadata):
-    
+    """ Returns set of parameters from schema matched to elements in 
+        metadata
+    """
     param_objects = ParameterName.objects.filter(schema=schema)
     logger.debug("param_objects=%s\n" % param_objects)
     parameters = []
@@ -649,8 +687,9 @@ def get_parameters(schema,metadata):
         parameters.append(new_param)
     return parameters
 
-def save_metadata(instance,schema,metadata):
-    parameters = get_parameters(schema, metadata)
+
+def save_metadata(instance,schema,metadataset):
+    parameters = get_parameters(schema, metadataset)
     logger.debug("parameters=%s" % parameters)
     if not parameters:
         return None
@@ -662,46 +701,123 @@ def save_metadata(instance,schema,metadata):
         ps = DatasetParameterSet(schema=schema,dataset=instance)
         ps.save()
     logger.debug("ps=%s\n" % ps)
-    logger.debug("metadata2=%s\n" % metadata)
+    logger.debug("metadata2=%s\n" % metadataset)
     for p in parameters:
         logger.debug("p=%s\n" % p)
-        if p.name in metadata:
+        if p.name in metadataset:
             logger.debug("found p =%s %s\n" % (p.name,p.units))
             
             if p.isNumeric():
-                val = metadata[p.name][0]
+                val = metadataset[p.name][0]
                 if val:
                            
                     try:
-                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                        dfp = DatasetParameter.objects.get(parameterset=ps,
+                                                           name=p)
                     except DatasetParameter.DoesNotExist:           
                         dfp = DatasetParameter(parameterset=ps,
-                                    name=p)
+                                               name=p)
                     dfp.numerical_value = val
                     logger.debug("numeric")
                     dfp.save()
             else:
-                val = metadata[p.name][0]
+                val = metadataset[p.name][0]
                 if val:
                     try:
-                        dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
+                        dfp = DatasetParameter.objects.get(parameterset=ps,
+                                                           name=p)
                     except DatasetParameter.DoesNotExist:           
                         dfp = DatasetParameter(parameterset=ps,
-                                    name=p)
-                    dfp.string_value = metadata[p.name][0]
+                                               name=p)
+                    dfp.string_value = metadataset[p.name][0]
                     dfp.save()
                     logger.debug("string")
+          
+
+       
+       
+def process_datafile(datafile, ruleset):
+    """
+    """
+    from collections import defaultdict
+    ready = defaultdict()
+    meta = {}
             
+    logger.debug("ready=%s\n" % ready)
+    try:
+        
+        regex_cache = {}
+        ready[datafile.filename] = datafile 
+        for tagname,file_patterns,code in ruleset:
+            #logger.debug("file_patterns=%s,code=%s\n" % (file_patterns,code))
             
+            # check whether we have all files available.
+            # f could have _number regex 
+            # This is a potential performance bottleneck           
+            count = 0
+            for file_pattern in file_patterns:
+                # cache the reges
+                if file_pattern in regex_cache:
+                    rule_file_regx = regex_cache[file_pattern]
+                else:                    
+                    rule_file_regx = re.compile(file_pattern)
+                    regex_cache[file_pattern] = rule_file_regx              
+                filename= None
+                for datafilename in ready:
+                        match = rule_file_regx.match(datafilename)
+                        if match:
+                            #logger.debug("matched % s" % datafilename)
+                            filename = datafilename
+                            break
+                #logger.debug("filename=%s\n" % filename)
+                if filename in ready:
+                    count += 1
+        
+            if count == len(file_patterns):
+    
+                data_context = {'expid':datafile.dataset.experiment.id,
+                           'ready':ready,
+                           'fileregex':file_patterns}
+                logger.debug("data_context=%s" % data_context)
+                try:
+                    (value,unit) = eval(code,{},
+                                     {"get_file_line":get_file_line,
+                                      "get_file_lines":get_file_lines,
+                                      "get_file_regex":get_file_regex,
+                                      "get_file_regex_all":get_file_regex_all,
+                                      "get_regex_lines":get_regex_lines,
+                                      "get_regex_lines_vallist":get_regex_lines_vallist,
+                                      "get_final_iteration":get_final_iteration,
+                                      "get_constant":get_constant,
+                                      'context':data_context})
+                except Exception,e:
+                    logger.error("Exception %s" % e)
+                    logger.debug("value,unit=%s %s" % (value,unit))
+             
+                meta[tagname] = (value,unit)
+    except ValueError:
+        logger.error("ruleset = %s" % ruleset )
+        raise
+            
+    return meta
+       
+
+def process_experiment(metadatas, exp, ruleset):
+    """
+    """
+    metadatas = _process_datasets(metadatas,exp,ruleset)
+    return metadatas    
+    
+         
 def go():
     for schemainfo in rulesets:
-        metadatas = get_metadata(rulesets[schemainfo])
-        logger.debug("metadatas=%s\n" % metadatas)
+        metadataset = get_metadata(rulesets[schemainfo])
+        logger.debug("metadatas=%s\n" % metadataset)
     
         schema = get_schema(schemainfo[0],schemainfo[1])
     
-        for metadata in metadatas:
-            save_metadata(metadata,schema,metadatas[metadata])
+        for datafile in metadataset:
+            save_metadata(datafile,schema,metadataset[datafile])
 
       
                    

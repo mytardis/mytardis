@@ -68,11 +68,6 @@ class rif_cs_PublishProvider(PublishProvider):
                     if send_request_email(party,activity, self.experiment_id):  
                         auth_pending = True 
                         logger.debug("auth_pending=%s" % auth_pending)
-                        
-                        
-        
-                    
-                
                                           
         else:
             return {'status': True,
