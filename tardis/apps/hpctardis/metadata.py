@@ -710,28 +710,42 @@ def save_metadata(instance,schema,metadataset):
             if p.isNumeric():
                 val = metadataset[p.name][0]
                 if val:
-                           
-                    try:
-                        dfp = DatasetParameter.objects.get(parameterset=ps,
+                        
+                    dfp = DatasetParameter.objects.filter(parameterset=ps,
                                                            name=p)
-                    except DatasetParameter.DoesNotExist:           
+                    if not dfp:
                         dfp = DatasetParameter(parameterset=ps,
-                                               name=p)
-                    dfp.numerical_value = val
-                    logger.debug("numeric")
-                    dfp.save()
+                                               name=p)                    
+                        dfp.numerical_value = val
+                        logger.debug("new numeric")
+                        dfp.save()    
+                    else:
+                        for dp in dfp:
+                            dp.numerical_value = val
+                            dp.save()    
+                        logger.debug("numeric")
+                            
+                    
+                    
             else:
                 val = metadataset[p.name][0]
+                logger.debug("val=%s" % val)
                 if val:
-                    try:
-                        dfp = DatasetParameter.objects.get(parameterset=ps,
+                    dfp = DatasetParameter.objects.filter(parameterset=ps,
                                                            name=p)
-                    except DatasetParameter.DoesNotExist:           
+                    if not dfp:
                         dfp = DatasetParameter(parameterset=ps,
                                                name=p)
-                    dfp.string_value = metadataset[p.name][0]
-                    dfp.save()
-                    logger.debug("string")
+                        dfp.string_value = metadataset[p.name][0]
+                        dfp.save()
+                        logger.debug("new string")
+                    else:
+                        for dp in dfp:
+                            dp.string_value = metadataset[p.name][0]
+                            dp.save()
+                            logger.debug("string")
+                        logger.debug("done")
+                            
           
 
        
