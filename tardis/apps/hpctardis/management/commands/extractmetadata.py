@@ -21,14 +21,27 @@ from tardis.tardis_portal.models import Experiment
 
 import itertools
 
-from tardis.apps.hpctardis.metadata import go
+from tardis.apps.hpctardis.metadata import process_all_experiments
+from tardis.apps.hpctardis.metadata import process_experimentX
 
 
 
 class Command(BaseCommand):
     
-    help = "help me"
-    
-  
+    help = "Extracts metadata for given experiment, or all experiments"
+     
     def handle(self, *args, **options):
-        go()
+        if len(args) < 1:
+            self.stdout.write("no command specified\n")
+            return
+        
+        if args[0] == 'all':
+            process_all_experiments()
+        else:
+            try:
+                expid = int(args[0])
+            except ValueError: 
+                self.stderr.write("invalid experiment")
+                return
+            exp = Experiment.objects.get(id=expid)    
+            process_experimentX(exp)

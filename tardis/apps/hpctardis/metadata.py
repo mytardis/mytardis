@@ -780,16 +780,16 @@ def process_datafile(datafile, ruleset):
                            'fileregex':file_patterns}
                 logger.debug("data_context=%s" % data_context)
                 try:
-                    (value,unit) = eval(code,{},
-                                     {"get_file_line":get_file_line,
-                                      "get_file_lines":get_file_lines,
-                                      "get_file_regex":get_file_regex,
-                                      "get_file_regex_all":get_file_regex_all,
-                                      "get_regex_lines":get_regex_lines,
-                                      "get_regex_lines_vallist":get_regex_lines_vallist,
-                                      "get_final_iteration":get_final_iteration,
-                                      "get_constant":get_constant,
-                                      'context':data_context})
+                    (value,unit) = eval(code,{}, {
+                              "get_file_line":get_file_line,
+                              "get_file_lines":get_file_lines,
+                              "get_file_regex":get_file_regex,
+                              "get_file_regex_all":get_file_regex_all,
+                              "get_regex_lines":get_regex_lines,
+                              "get_regex_lines_vallist":get_regex_lines_vallist,
+                              "get_final_iteration":get_final_iteration,
+                              "get_constant":get_constant,
+                              'context':data_context})
                 except Exception,e:
                     logger.error("Exception %s" % e)
                     logger.debug("value,unit=%s %s" % (value,unit))
@@ -807,9 +807,24 @@ def process_experiment(metadatas, exp, ruleset):
     """
     metadatas = _process_datasets(metadatas,exp,ruleset)
     return metadatas    
+ 
+ 
+def process_experimentX(exp):
     
+    for schemainfo in rulesets:
+            metadataset = {}
+            metadataset = process_experiment(metadataset, exp, 
+                                           rulesets[schemainfo])
+            logger.debug("extracted metadataset = %s" % metadataset)
+            
+            schema = get_schema(schemainfo[0],schemainfo[1])
+    
+            logger.debug("schema = %s" % schema)
+          
+            for datafile in metadataset:
+                save_metadata(datafile,schema,metadataset[datafile])
          
-def go():
+def process_all_experiments():
     for schemainfo in rulesets:
         metadataset = get_metadata(rulesets[schemainfo])
         logger.debug("metadatas=%s\n" % metadataset)

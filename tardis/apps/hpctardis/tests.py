@@ -60,7 +60,9 @@ from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.apps.hpctardis.metadata import get_metadata
 from tardis.apps.hpctardis.metadata import get_schema
 from tardis.apps.hpctardis.metadata import save_metadata
-from tardis.apps.hpctardis.metadata import go
+from tardis.apps.hpctardis.metadata import process_all_experiments
+from tardis.apps.hpctardis.metadata import process_experimentX
+
 from tardis.apps.hpctardis.models import PartyRecord
 from tardis.apps.hpctardis.models import ActivityRecord
 from tardis.apps.hpctardis.models import NameParts
@@ -304,7 +306,8 @@ class VASPMetadataTest(TestCase):
         for f in files:
             self._make_datafile(dataset,
                        path.join(path.abspath(path.dirname(__file__)),f))       
-        go()
+        #go()
+        process_experimentX(exp)
         self._test_metadata(ns,schname,dataset,results)
         return dataset
                 
@@ -468,7 +471,7 @@ def _get_XML_tag(xml,xpath):
     logger.debug("r=%s" % r)
         
     return r
-    
+
     
 class AuthPublishTest(TestCase):
     """ Tests ability to publish experiment with associated parties and
