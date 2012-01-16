@@ -1,17 +1,7 @@
 <table class="experiment-table">
-      {% for key, result in experiments.items %}
-      {% ifequal result.sr.model_name 'experiment' %}
-        {% include "search/experiment_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset' %}
-          {% include "search/dataset_result.html" %}
-      {% else %}
-        {% ifequal result.sr.model_name 'dataset_file' %}
-          {% include "search/dataset_file_result.html" %}
-      {% else %}
+      {% for result in experiments %}
           {% include "tardis_portal/experiment_search_result.html" %}
-      {% endifequal %}{% endifequal %}{% endifequal %}
       {% empty %}
         <p>No Results found</p>
-        {% endfor%}
+      {% endfor%}
 </table>

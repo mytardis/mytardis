@@ -163,23 +163,34 @@ class ExperimentManager(OracleSafeManager):
 
         return super(ExperimentManager, self).get_query_set().filter(query)
 
-    def users(self, request, experiment_id):
+    def user_acls(self, request, experiment_id):
         """
-        returns a list of users which have ACL rules associated with
-        this to this experiment
+        Returns a list of ACL rules associated with this experiment.
 
         :param request: a HTTP Request instance
         :type request: :py:class:`django.http.HttpRequest`
-        :param experiment_id: the ID of the experiment to be edited
+        :param experiment_id: the ID of the experiment
         :type experiment_id: string
 
         """
-
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(pluginId=django_user,
+        return ExperimentACL.objects.filter(pluginId=django_user,
                                    experiment__id=experiment_id,
                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
-        return [User.objects.get(pk=int(a.entityId)) for a in acl]
+
+    def users(self, request, experiment_id):
+        """
+        Returns a list of users who have ACL rules associated with this
+        experiment.
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment
+        :type experiment_id: string
+
+        """
+        acl = self.user_acls(request, experiment_id)
+        return User.objects.filter(pk__in=[ int(a.entityId) for a in acl ])
 
     def user_owned_groups(self, request, experiment_id):
         """
@@ -198,7 +209,7 @@ class ExperimentManager(OracleSafeManager):
                                    experiment__id=experiment_id,
                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
-        return [Group.objects.get(pk=str(a.entityId)) for a in acl]
+        return Group.objects.filter(pk__in=[ str(a.entityId) for a in acl ])
 
     def system_owned_groups(self, request, experiment_id):
         """
@@ -217,7 +228,7 @@ class ExperimentManager(OracleSafeManager):
                                    experiment__id=experiment_id,
                                    aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
 
-        return [Group.objects.get(pk=str(a.entityId)) for a in acl]
+        return Group.objects.filter(pk__in=[ str(a.entityId) for a in acl ])
 
     def external_users(self, request, experiment_id):
         """

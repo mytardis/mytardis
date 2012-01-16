@@ -90,11 +90,24 @@ class SearchTestCase(TestCase):
         parameter = ParameterName.objects.get(schema=schema, name='io')
         parameter.is_searchable = True
         parameter.save()
+        self.io_param_name = parameter.getUniqueShortName()
 
         schema = Schema.objects.get(type=Schema.DATASET, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='frqimn')
         parameter.is_searchable = True
         parameter.save()
+        self.frqimn_param_name = parameter.getUniqueShortName()
+
+        new_schema = Schema()
+        new_schema.namespace = 'testschemawithduplicatename'
+        new_schema.save()
+        new_param = ParameterName(
+                        schema=new_schema,
+                        name='title',
+                        full_name='Duplicate title parametername',
+                        is_searchable=True)
+        new_param.save()
+
 
     def tearDown(self):
         for experiment in self.experiments:
@@ -147,7 +160,7 @@ class SearchTestCase(TestCase):
         from tardis.tardis_portal.models import Dataset_File
         from tardis.tardis_portal.models import Experiment 
         
-        values = response.context['experiments'].values()
+        values = response.context['experiments']
         experiment = values[0]
         datafile = response.context['datafiles'][0]
         self.assertTrue(
@@ -168,11 +181,11 @@ class SearchTestCase(TestCase):
         self.assertEqual(len(response.context['datafiles']), 129)
 
         response = self.client.get('/datafile/search/',
-            {'type': 'saxs', 'io': '123', })
+            {'type': 'saxs',  self.io_param_name: '123', })
         self.assertEqual(len(response.context['datafiles']), 0)
 
         response = self.client.get('/datafile/search/',
-            {'type': 'saxs', 'frqimn': '0.0450647', })
+            {'type': 'saxs', self.frqimn_param_name: '0.0450647', })
         self.assertEqual(len(response.context['datafiles']), 125)
         self.client.logout()
 
@@ -213,7 +226,7 @@ class SearchTestCase(TestCase):
  
         from tardis.tardis_portal.models import Experiment 
         
-        values = response.context['experiments'].values()
+        values = response.context['experiments']
         experiment = values[0]
         
         self.assertTrue(

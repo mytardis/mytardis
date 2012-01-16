@@ -143,3 +143,48 @@ Class Diagram
 -------------
 
 Unless the application has a very rich business model (which MyTARDIS does not), a Class diagram doesn't convey much information in Django applications (it ends up being a flat list of classes).  To understand the context in which the MyTARDIS classes are created, please refer to the Django documentation, http://docs.djangoproject.com/ on the responsibilities of models, views, managers and templates.
+
+
+Source Code
+-----------
+
+This section describes the top level layout of the source code in the Google svn repository.
+
+* ``apps``
+
+  * Contains all the optional functionality and installation specific functionality.  Examples include the optional ANDS Register (ands_register) and Related Info (related_info) tabs, and the ANSTO (mecat-ansto) and Australian Synchrotron (mecat-as) installation specific modules.
+  * Each application will have its own set of sub-directories for work (branches), releasing (tags) and mainline code (trunk).
+
+* ``attachments``
+
+  * Contains images used in the Google wiki.
+
+* ``branches``
+
+  * Contains a branch for each unit of work being performed on the trunk.  See http://code.google.com/p/mytardis/wiki/DevelopmentCycle for a description of the standard work practices.
+
+* ``tags``
+* ``trunk``
+
+  * The core MyTARDIS code.
+  * ``docs``
+
+    * MyTARDIS User and Administrative documentation
+
+  * tardis
+
+    * ``apps``
+
+      * Mandatory MyTARDIS applications, currently only equipment.
+
+    * ``tardis_portal``
+
+      * This is the main django application that contains all the core MyTARDIS functionality.
+
+    * ``utils``
+
+* ``utils``
+* ``wiki``
+
+  * Google wiki page storage
+

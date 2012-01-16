@@ -3,38 +3,31 @@
 <tr>
   <th>
     <span{% if result.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experiment key %}?search=true&query={{ query.url_safe_query }}#ui-tabs-1">{{result.sr.experiment_title}}</a>
+    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-1">{{result.sr.title}}</a>
     </span>
   </th>
 </tr>
 <tr>
   <td>
-    From <strong>{{ result.sr.experiment_institution_name }} </strong>,
-    deposited <strong>{{ result.sr.experiment_created_time|date:"jS F Y" }} </strong>,
-    last modified <strong>{{ result.sr.experiment_update_time|date:"jS F Y" }} </strong>,
+    From <strong>{{ result.sr.institution_name }} </strong>,
+    deposited <strong>{{ result.sr.created_time|date:"jS F Y" }} </strong>,
+    last modified <strong>{{ result.sr.update_time|date:"jS F Y" }} </strong>,
   </td>
 </tr>    
-{% if result.sr.experiment_start_time and result.sr.experiment_end_time %}
+{% if result.sr.start_time and result.sr.end_time %}
 <tr>
-  <td>
-    <strong>{{ result.sr.experiment_start_time|date:"jS F Y H:i" }}</strong>
-    - <strong>{{ result.sr.experiment_end_time|date:"jS F Y H:i" }}</strong>
+    <td>
+    <strong>{{ result.sr.start_time|date:"jS F Y H:i" }}</strong>
+    - <strong>{{ result.sr.end_time|date:"jS F Y H:i" }}</strong>
   </td>
 </tr>
 {% endif%}
 <tr>
   <td class="experiment-table_stats">
       <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.experiment_id_stored %}?search=true&query={{ query.url_safe_query }}#ui-tabs-2">
-<strong> {{result.sr.object.dataset_set.all.count}} </strong>
-dataset{{result.sr.object.dataset_set.all.count|pluralize }}</strong>
-</a>
-    </span>
-    containing
-    <span{% if result.dataset_file_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.experiment_id_stored %}?search=true&?query={{ query.url_safe_query }}#ui-tabs-2">
-<strong>{{ result.sr.object.id|experiment_file_count }}</strong>
-file{{ result.sr.object.id|experiment_file_count|pluralize }}
+    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
+<strong> {{result.sr.dataset_set.all.count}} </strong>
+dataset{{result.sr.dataset_set.all.count|pluralize }}</strong>
 </a>
     </span>
     <br/>

@@ -9,7 +9,7 @@ import logging
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.backends import ModelBackend
 
-from tardis.tardis_portal.auth.interfaces import GroupProvider, UserProvider
+from tardis.tardis_portal.auth.interfaces import AuthProvider, GroupProvider, UserProvider
 
 
 logger = logging.getLogger(__name__)
@@ -19,29 +19,10 @@ auth_key = u'localdb'
 auth_display_name = u'Local DB'
 
 
-# TODO: remove these functions, they should be obsolete! [UF]
-def get_username_for_email(email):
-    raise NotImplemented()
-
-
-def get_email_for_user(username):
-    raise NotImplemented()
-
-
-def get_or_create_user(email):
-    u, created = User.objects.get_or_create(email=email,
-        defaults={'username': email.split('@')[0],
-        'password': User.objects.make_random_password()})
-    if created:
-        logger.debug("new user account created")
-    else:
-        logger.debug("user found in DB")
-    return u
-
 _modelBackend = ModelBackend()
 
 
-class DjangoAuthBackend():
+class DjangoAuthBackend(AuthProvider):
     """Authenticate against Django's Model Backend.
 
     """
@@ -62,7 +43,11 @@ class DjangoAuthBackend():
         return _modelBackend.authenticate(username, password)
 
     def get_user(self, user_id):
-        return _modelBackend.get_user(user_id)
+        try:
+            user = User.objects.get(username=user_id)
+        except User.DoesNotExist:
+            user = None
+        return user
 
 
 class DjangoGroupProvider(GroupProvider):
@@ -109,11 +94,13 @@ class DjangoUserProvider(UserProvider):
             "email": "john@example.com"}
 
         """
-        userObj = User.objects.get(id=id)
-        if userObj:
+        try:
+            userObj = User.objects.get(username=id)
             return {'id': id, 'display': userObj.first_name + ' ' +
-                userObj.last_name, 'email': userObj.email}
-        return None
+                    userObj.last_name, 'first_name': userObj.first_name,
+                    'last_name': userObj.last_name, 'email': userObj.email}
+        except User.DoesNotExist:
+            return None
 
 
 django_user = DjangoUserProvider.name
