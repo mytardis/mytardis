@@ -3,12 +3,19 @@ admin.autodiscover()
 from django.contrib.auth.views import logout
 from django.conf.urls.defaults import patterns, include
 from django.conf import settings
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 from registration.views import register
 
 from tardis.tardis_portal.forms import RegistrationForm
 
 from django.http import HttpResponseRedirect, HttpResponse
+
+def getTardisApps():
+    return map(lambda app: app.split('.').pop(),
+                  filter(
+                         lambda app: app.startswith(settings.TARDIS_APP_ROOT),
+                         settings.INSTALLED_APPS))
 
 core_urls = patterns(
     'tardis.tardis_portal.views',
@@ -18,7 +25,7 @@ core_urls = patterns(
     (r'^partners/$', 'partners'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
-    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))	
+    (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))
 )
 
 experiment_urls = patterns(
@@ -147,7 +154,7 @@ display_urls = patterns(
     )
 
 apppatterns = patterns('',)
-for app in settings.TARDIS_APPS:
+for app in getTardisApps():
     apppatterns += patterns('tardis.apps',
                             (r'^%s/' % app,
                              include('%s.%s.urls' %
@@ -182,18 +189,12 @@ urlpatterns = patterns(
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^logout/$', logout, {'next_page': '/'}),
 
-    # Media
-    (r'site_media/(?P<path>.*)$', 'django.views.static.serve',
-     {'document_root': settings.STATIC_DOC_ROOT}),
-    (r'media/(?P<path>.*)$', 'django.views.static.serve',
-     {'document_root': settings.ADMIN_MEDIA_STATIC_DOC_ROOT}),
-
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),
     (r'^admin/', include(admin.site.urls)),
 
     (r'^upload/(?P<dataset_id>\d+)/$', 'tardis.tardis_portal.views.upload'),
-    
+
     # Search
     (r'^search/$', 'tardis.tardis_portal.views.single_search'),
 
@@ -203,3 +204,6 @@ urlpatterns = patterns(
     # Token login
     (r'^token/', include(token_urls)),
 )
+
+# Handle static files from /static
+urlpatterns += staticfiles_urlpatterns()

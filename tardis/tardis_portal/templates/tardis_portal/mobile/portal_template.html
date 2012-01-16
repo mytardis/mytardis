@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -34,21 +34,21 @@
 <meta content="yes" name="apple-mobile-web-app-capable" />
 <meta content="index,follow" name="robots" />
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type" />
-<link href="/site_media/mobile/pics/homescreen.gif" rel="apple-touch-icon" />
+<link href="{{ STATIC_URL }}/mobile/pics/homescreen.gif" rel="apple-touch-icon" />
 <meta content="minimum-scale=1.0, width=device-width, maximum-scale=0.6667, user-scalable=no" name="viewport" />
-<link href="/site_media/mobile/css/style.css" rel="stylesheet" media="screen" type="text/css" />
+<link href="{{ STATIC_URL }}/mobile/css/style.css" rel="stylesheet" media="screen" type="text/css" />
 <title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
-<link href="/site_media/mobile/pics/startup.png" rel="apple-touch-startup-image" />
+<link href="{{ STATIC_URL }}/mobile/pics/startup.png" rel="apple-touch-startup-image" />
 <meta content="iPod,iPhone,Webkit,iWebkit,Website,Create,mobile,Tutorial,free" name="keywords" />
 <meta content="Try out all the new features of iWebKit 5 with a simple touch of a finger and a smooth screen rotation!" name="description" />
 
-<link type="text/css" href="/site_media/css/theme/ui.all.css" rel="Stylesheet" />	
-<script type="text/javascript" src="/site_media/js/jquery-1.3.1.js"></script>
-<script type="text/javascript" src="/site_media/js/jquery-ui-personalized-1.6rc6.js"></script>
+<link type="text/css" href="{{ STATIC_URL }}/css/theme/ui.all.css" rel="Stylesheet" />
+<script type="text/javascript" src="{{ STATIC_URL }}/js/jquery-1.3.1.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}/js/jquery-ui-personalized-1.6rc6.js"></script>
 
-<link type="text/css" href="/site_media/css/smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />	
-<script type="text/javascript" src="/site_media/js/jquery-1.3.2.min.js"></script>
-<script type="text/javascript" src="/site_media/js/jquery-ui-1.8.6.custom.min.js"></script>	
+<link type="text/css" href="{{ STATIC_URL }}/css/smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+<script type="text/javascript" src="{{ STATIC_URL }}/js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}/js/jquery-ui-1.8.6.custom.min.js"></script>
 
 <script type="text/javascript">
 var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -67,8 +67,8 @@ pageTracker._trackPageview();
 
 	<div id="topbar" class="transparent">
 		<div id="leftnav">
-			<a href="/"><img alt="home" src="/site_media/mobile/images/home.png" /></a>
-			
+			<a href="/"><img alt="home" src="{{ STATIC_URL }}/mobile/images/home.png" /></a>
+
 			{% if nav %}
 			{% for n in nav %}
 			<a href="{{n.link}}" {% if forloop.last and forloop.counter|gt:"1" %}class="last" {% endif %}>{{n.name}}</a>
@@ -76,7 +76,7 @@ pageTracker._trackPageview();
 			{% endif %}
 			</div>
 		<div id="rightnav">
-			{% if is_authenticated %}<a href="/logout/">Logout</a> {% else %}<a href="/login"> Login </a> {% endif %}			
+			{% if is_authenticated %}<a href="/logout/">Logout</a> {% else %}<a href="/login"> Login </a> {% endif %}
 		 </div>
 	</div>
 	<div id="tributton">
@@ -84,12 +84,12 @@ pageTracker._trackPageview();
 			<a {% if data_pressed %}id="pressed"{% endif %} href="/experiment/view/">Data</a><a {% if search_pressed %}id="pressed"{% endif %} href="/search/experiment/">Search</a><a {% if about_pressed %}id="pressed"{% endif %} href="/about/">About</a>
 		</div>
 	</div>
-		
+
 		{% block content %}
-		
+
 		{% endblock %}
 		<div id="footer">
-			©2010 All Rights Reserved. &nbsp;•&nbsp; <a href="mailto:%20steve.androulakis@med.monash.edu.au">Designed by Steve Androulakis</a> - Version v1.06	
+			©2010 All Rights Reserved. &nbsp;•&nbsp; <a href="mailto:%20steve.androulakis@med.monash.edu.au">Designed by Steve Androulakis</a> - Version v1.06
 		</div>
 </body>
 </html>

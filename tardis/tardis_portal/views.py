@@ -59,6 +59,7 @@ from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
+from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
@@ -324,7 +325,7 @@ def view_experiment(request, experiment_id):
     import sys
     appnames = []
     appurls = []
-    for app in settings.TARDIS_APPS:
+    for app in getTardisApps():
         try:
             appnames.append(sys.modules['%s.%s.settings'
                                         % (settings.TARDIS_APP_ROOT, app)].NAME)
@@ -2623,7 +2624,7 @@ def publish_experiment(request, experiment_id):
             opt_out_ands = True
 
         has_ands_registered = True
-        if 'monash_ands' in settings.TARDIS_APPS:
+        if 'monash_ands' in getTardisApps():
             from tardis.apps.monash_ands.MonashANDSService\
                 import MonashANDSService
 
@@ -2656,7 +2657,7 @@ def publish_experiment(request, experiment_id):
 
         has_ands_registered = True
 
-        if 'monash_ands' in settings.TARDIS_APPS:
+        if 'monash_ands' in getTardisApps():
             from tardis.apps.monash_ands.MonashANDSService\
                 import MonashANDSService
 
