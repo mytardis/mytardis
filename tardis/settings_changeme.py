@@ -15,9 +15,9 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': 'tardis',
+        'NAME': 'db.sqlite3',
         'USER': 'postgres',
         'PASSWORD': '',
         'HOST': '',
@@ -231,11 +231,11 @@ MODULE_LOG_FILENAME = 'tardis.log'
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
-# Uploadify root folder path, relative to MEDIA_ROOT
-UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
+# Uploadify root folder path, relative to STATIC root
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
 
 # Upload path that files are sent to
-UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
@@ -254,3 +254,22 @@ IMMUTABLE_METS_DATASETS = True
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+# RIF-CS Settings
+OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
+RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
+RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__), 
+    'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
+RIFCS_GROUP = "MyTARDIS Default Group"
+RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
+RELATED_OTHER_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
+
+DOI_ENABLE = False
+DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
+#DOI_TEMPLATE_DIR = path.join(TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
+DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
+DOI_APP_ID = ''
+DOI_NAMESPACE = 'http://www.doi.com'
+DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
+DOI_ACCESS_URL = "http://dx.doi.org/"
+DOI_RELATED_INFO_ENABLE = False

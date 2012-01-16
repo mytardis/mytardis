@@ -39,7 +39,8 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 MEDIA_ROOT = STATIC_DOC_ROOT
 
-MEDIA_URL = '/site_media/'
+MEDIA_URL = '/site_media'
+STATIC_URL = '/static'
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
@@ -117,8 +118,8 @@ MODULE_LOG_FILENAME = 'tardis.log'
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
-UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
-UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
 
 DEFAULT_INSTITUTION = "Monash University"
 
@@ -136,3 +137,18 @@ if not SINGLE_SEARCH_ENABLED:
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+# RIF-CS Settings
+OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
+RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
+RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
+
+DOI_ENABLE = True
+DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
+#DOI_TEMPLATE_DIR = path.join(TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
+DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
+DOI_APP_ID = ''
+DOI_NAMESPACE = 'http://www.doi.com'
+DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
+DOI_ACCESS_URL = "http://dx.doi.org/"
+DOI_RELATED_INFO_ENABLE = False

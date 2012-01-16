@@ -1,9 +1,9 @@
-*.conf
-*.wsgi
 tardis/settings.py
 *.pyc
 *.log
 *.sqlite
+*.prof
+*.calltree
 eggs/
 parts/
 .installed.cfg
@@ -12,6 +12,7 @@ bin/
 develop-eggs/
 docs/make.bat
 docs/Makefile
+.noseids
 .project
 .settings/
 .pydevproject

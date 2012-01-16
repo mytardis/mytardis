@@ -529,6 +529,31 @@ class ExperimentACLTestCase(TestCase):
         self.client2.logout()
         self.client3.logout()
 
+    def testCantEditPublicExperiment(self):
+        login = self.client3.login(username=self.user3.username, password='secret')
+        self.assertTrue(login)
+
+        # user3 has acl to write to experiment3
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user3.id),
+            experiment=self.experiment3,
+            canRead=True,
+            canWrite=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+        response = self.client3.get('/experiment/edit/%i/' % (self.experiment3.id))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client3.post('/experiment/edit/%i/' % (self.experiment3.id),
+                                     {'anything': True, })
+        self.assertEqual(response.status_code, 403)
+
+        acl.delete()
+        self.client3.logout()
+
     def testOwnedExperiments(self):
         user = AnonymousUser()
         # not logged in
@@ -539,3 +564,11 @@ class ExperimentACLTestCase(TestCase):
         num_exps = Experiment.safe.owned(request).count()
         self.assertEqual(num_exps, 0)
 
+    def testCantAddTokenuserToGroups(self):
+        from django.conf import settings
+        login = self.client3.login(username=self.user3.username, password='secret')
+        self.assertTrue(login)
+        g = Group()
+        g.save()
+        self.client3.get('/group/%s/%s/' % (g.id, settings.TOKEN_USERNAME))
+        self.assertEqual(0, g.user_set.count())  # user should not be added

@@ -209,14 +209,15 @@ class ChangeGroupPermissionsForm(forms.Form):
 
 class AddUserPermissionsForm(forms.Form):
 
+    entered_user = forms.CharField(label='User', required=False, max_length=100)
+    autocomp_user = forms.CharField(label='', required=False, max_length=100,
+                                   widget=forms.HiddenInput)
     authMethod = forms.CharField(required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
-    adduser = forms.CharField(label='User', required=False, max_length=100)
-    adduser.widget.attrs['class'] = 'usersuggest'
-    read = forms.BooleanField(label='READ', required=False, initial=True)
+    read = forms.BooleanField(label='Read access', required=False, initial=True)
     read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='EDIT', required=False)
+    write = forms.BooleanField(label='Edit access', required=False)
     write.widget.attrs['class'] = 'canWrite'
     delete = forms.BooleanField(label='', required=False,
                                    widget=forms.HiddenInput)
@@ -238,7 +239,7 @@ class AddGroupPermissionsForm(forms.Form):
     read.widget.attrs['class'] = 'canRead'
     write = forms.BooleanField(label='EDIT', required=False)
     write.widget.attrs['class'] = 'canWrite'
-    delete = forms.BooleanField(label='', required=False,
+    delete = forms.BooleanField(label='DELETE', required=False,
                                    widget=forms.HiddenInput)
     delete.widget.attrs['class'] = 'canDelete'
 
@@ -671,13 +672,14 @@ def createSearchDatafileForm(searchQueryType):
                 initial=searchQueryType)
 
         for parameterName in parameterNames:
+            fieldName = parameterName.getUniqueShortName()
             if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
-                    fields[parameterName.name + 'From'] = \
+                    fields[fieldName + 'From'] = \
                         forms.DecimalField(label=parameterName.full_name
                             + ' From', required=False)
-                    fields[parameterName.name + 'To'] = \
+                    fields[fieldName + 'To'] = \
                         forms.DecimalField(label=parameterName.full_name
                             + ' To', required=False)
                 else:
@@ -685,17 +687,17 @@ def createSearchDatafileForm(searchQueryType):
                     # even if it's filled if the parameter is of numeric type
                     # TODO: decide if we are to raise an exception if
                     #       parameterName.choices is not empty
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.DecimalField(label=parameterName.full_name,
                             required=False)
             else:  # parameter is a string
                 if parameterName.choices != '':
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.CharField(label=parameterName.full_name,
                         widget=forms.Select(choices=__getParameterChoices(
                         parameterName.choices)), required=False)
                 else:
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.CharField(label=parameterName.full_name,
                         max_length=255, required=False)
 
@@ -736,42 +738,44 @@ def createSearchExperimentForm():
         fieldNames = []
         schemaAndFieldLists.append((schema, fieldNames))
         for parameterName in searchableParameterNames:
+            fieldName = parameterName.getUniqueShortName()
             if parameterName.data_type == ParameterName.NUMERIC:
                 if parameterName.comparison_type \
                     == ParameterName.RANGE_COMPARISON:
-                    fields[parameterName.name + 'From'] = \
+                    fields[fieldName + 'From'] = \
                         forms.DecimalField(label=parameterName.full_name
                             + ' From', required=False)
-                    fields[parameterName.name + 'To'] = \
+                    fields[fieldName + 'To'] = \
                         forms.DecimalField(label=parameterName.full_name
                             + ' To', required=False)
-                    fieldNames.append(parameterName.name + 'From')
-                    fieldNames.append(parameterName.name + 'To')
+                    fieldNames.append(fieldName + 'From')
+                    fieldNames.append(fieldName + 'To')
                 else:
                     # note that we'll also ignore the choices text box entry
                     # even if it's filled if the parameter is of numeric type
                     # TODO: decide if we are to raise an exception if
                     #       parameterName.choices is not empty
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.DecimalField(label=parameterName.full_name,
                             required=False)
-                    fieldNames.append(parameterName.name)
+                    fieldNames.append(fieldName)
             else:  # parameter is a string
                 if parameterName.choices != '':
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.CharField(label=parameterName.full_name,
                         widget=forms.Select(choices=__getParameterChoices(
                         parameterName.choices)), required=False)
                 else:
-                    fields[parameterName.name] = \
+                    fields[fieldName] = \
                         forms.CharField(label=parameterName.full_name,
                         max_length=255, required=False)
-                fieldNames.append(parameterName.name)
+                fieldNames.append(fieldName)
 
 
     for schema, fieldlist in schemaAndFieldLists:
         name = schema.name if schema.name != None else 'No schema name'
-        fieldsets.append((name, {'fields': fieldlist}))
+        if fieldlist:
+            fieldsets.append((name, {'fields': fieldlist}))
 
     return type('SearchExperimentForm', (formutils.BetterBaseForm, forms.BaseForm, ),
                     {'base_fields': fields, 'base_fieldsets': fieldsets,
@@ -921,8 +925,10 @@ def create_parameterset_edit_form(
                                     required=False,
                                     initial=dfp.string_value)
 
-            if dfp.name.immutable:
-                fields[form_id].widget.attrs['readonly'] = 'readonly'
+            if dfp.name.immutable or dfp.name.schema.immutable:
+                fields[form_id].widget.attrs['readonly'] = True
+                fields[form_id].label = \
+                    fields[form_id].label + " (read only)"
 
         return type('DynamicForm', (forms.BaseForm, ),
                     {'base_fields': fields})
@@ -964,25 +970,26 @@ def create_datafile_add_form(
                 schema__namespace=schema,
                 name=stripped_key)
 
-            units = ""
-            if parameter_name.units:
-                units = " (" + parameter_name.units + ")"
+            if parameter_name.immutable == False:
+                units = ""
+                if parameter_name.units:
+                    units = " (" + parameter_name.units + ")"
 
-            # if not valid, spit back as exact
-            if parameter_name.isNumeric():
-                fields[key] = \
-                    forms.DecimalField(label=parameter_name.full_name + units,
-                                       required=False,
-                                       initial=value,
-                                       )
-            elif parameter_name.isLongString():
-                fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
-            else:
-                fields[key] = \
-                    forms.CharField(label=parameter_name.full_name + units,
-                                    max_length=255, required=False,
-                                    initial=value,
-                                    )
+                # if not valid, spit back as exact
+                if parameter_name.isNumeric():
+                    fields[key] = \
+                        forms.DecimalField(label=parameter_name.full_name + units,
+                                           required=False,
+                                           initial=value,
+                                           )
+                elif parameter_name.isLongString():
+                    fields[key] = forms.CharField(widget=forms.Textarea, label=parameter_name.full_name + units, max_length=255, required=False, initial=value)
+                else:
+                    fields[key] = \
+                        forms.CharField(label=parameter_name.full_name + units,
+                                        max_length=255, required=False,
+                                        initial=value,
+                                        )
 
         return type('DynamicForm', (forms.BaseForm, ), {'base_fields': fields})
 
@@ -991,7 +998,8 @@ def create_datafile_add_form(
         fields = SortedDict()
 
         parameternames = ParameterName.objects.filter(
-            schema__namespace=schema).order_by('name')
+            schema__namespace=schema,
+            immutable=False).order_by('name')
 
         for dfp in parameternames:
 
@@ -1039,10 +1047,11 @@ def save_datafile_add_form(schema, parentObject, request):
 class RawSearchForm(SearchForm):
     
     def search(self):
-        #self.clean()
-        sqs = self.searchqueryset.raw_search(self.cleaned_data['q'])
-
+        query = self.cleaned_data['q']
+        # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
+        # results even though we dont need them. Fix this to properly set rows=0
+        sqs = self.searchqueryset.facet('experiment_id_stored').raw_search(query, end_offset=1)
         if self.load_all:
-            sqs.load_all()
+            sqs = sqs.load_all()
 
         return sqs

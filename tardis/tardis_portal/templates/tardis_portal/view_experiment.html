@@ -55,8 +55,8 @@
             $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
         }
     });
-	
-	var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
+
+    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -66,20 +66,20 @@
         $(this).parent().find('.datafile_checkbox').removeAttr("checked");
     });
 
-	function get_new_parameter_name(name)
-	{
-		var new_name = name;
+    function get_new_parameter_name(name)
+    {
+        var new_name = name;
 
-		var i = 1;
-		while($("[name=" + new_name + "__" + i + "]").length == 1)
-		{
-			i++;
-		}
-		return new_name + "__" + i;
-	}
+        var i = 1;
+        while($("[name=" + new_name + "__" + i + "]").length == 1)
+        {
+            i++;
+        }
+        return new_name + "__" + i;
+    }
 
-	function get_form_input_html(label, name, use_textarea)
-	{
+    function get_form_input_html(label, name, use_textarea)
+    {
         var widget;
         if (use_textarea) {
             widget = '<textarea ' + 'name="' + name + '" id="' + name + '"/>';
@@ -87,23 +87,23 @@
             widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
         }
         var label = '<label for="' + name + '">' + label + '</label>';
-		return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
-	}
+        return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
+    }
 
     $('.dataset_checkbox').live('click', function( event ) {
-	if ($(this).is(':checked')) {
-	    $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
-	    $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
-	} else {
-	    $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
-	    $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
-	}
+    if ($(this).is(':checked')) {
+        $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
+        $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
+    } else {
+        $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
+        $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
+    }
     })
 
 $(document).ready(function() {
-	$("#tabs").tabs({
-	   ajaxOptions: {dataType: "html"},
-	   cookie: { expires: 30 },
+    $("#tabs").tabs({
+       ajaxOptions: {dataType: "html"},
+       cookie: { expires: 30 },
        load: function (e, ui) {
              $(ui.panel).find(".tab-loading").remove();
            },
@@ -117,8 +117,8 @@ $(document).ready(function() {
 
     });
 });
-	$('#schemaselect').live('change', function(e) {
-		e.preventDefault();
+    $('#schemaselect').live('change', function(e) {
+        e.preventDefault();
 
         var $this = $(this);
         var $jqm_content_div = $this.closest('.jqmAlertContent');
@@ -126,20 +126,28 @@ $(document).ready(function() {
         var type = $this.attr('data-type');
         var parent_object_id = $this.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
-		$.get(href, function(data) {
+        $.get(href, function(data) {
             $jqm_content_div.html(data);
         });
-		return false;
-	});
+        return false;
+    });
 
-	$('#add_new_parameter').live('click', function(){		
+    $('#add_new_parameter').live('click', function(){        
         // assuming whenever add_new_parameter is clicked an option is selected
-		var $selected_option = $("#parameternameselect > option:selected");
+        var $selected_option = $("#parameternameselect > option:selected");
         var is_long = $selected_option.attr('data-longstring');
         var new_element_name = get_new_parameter_name($selected_option.val());
-        $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
-        $("#" + new_element_name).focus();
-	});
+
+        if($selected_option.text())
+        {
+            $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
+            $("#" + new_element_name).focus();
+        }
+        else
+        {
+            alert('There are no parameters allowed to be added by users in this schema');
+        }
+    });
     $('#add_metadata_form').live('submit', function(e) {
         e.preventDefault();
 
@@ -181,7 +189,7 @@ $(document).ready(function() {
         hash.o.remove();
     }
 
-	$(document).ready(function() {
+    $(document).ready(function() {
         // Close Button Highlighting. IE doesn't support :hover. Surprise?
         if($.browser.msie) {
             $('div.jqmAlert .jqmClose').hover(
@@ -198,12 +206,13 @@ $(document).ready(function() {
         });
     });
 
-	// metadata text / ajax toggle
+    // metadata text / ajax toggle
     // datafile list
     $(".datafile_list_toggle").live('click', function(evt){
         evt.preventDefault();
         toggle_files.apply(this);
     });
+
     // datafile metadata
     $('ul.datafile_list .datafile_info_toggle').live('click', function(evt){
         evt.preventDefault();
@@ -337,18 +346,18 @@ $(document).ready(function() {
         </div>
     </div>
 
-	<div class="jqmAlert" id="jqmAlertExpEdit">
+    <div class="jqmAlert" id="jqmAlertExpEdit">
 
-		<div class="jqmAlertWindow">
-		    <div class="jqmAlertTitle clearfix">
+        <div class="jqmAlertWindow">
+            <div class="jqmAlertTitle clearfix">
                 <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-		    </div>
+            </div>
 
             <div class="jqmAlertContent">
                 <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
             </div>
-		</div>
-	</div>
+        </div>
+    </div>
 
   <div id="fullpage">
     <div class="post">
@@ -358,19 +367,19 @@ $(document).ready(function() {
           <img src="{{ STATIC_URL }}/images/icon_changelink.gif" >
           </a>
 
-	{% endif %}{% endif %}
+    {% endif %}{% endif %}
       </h1>
     </div>
 
     <div class="tabcontainer">
       <div id="tabs">
-	<ul>
-	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if query %}query={{ query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
-	  {% for appurl, appname in apps %}
-	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
-	  {% endfor %}
-	</ul>
+    <ul>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+      {% for appurl, appname in apps %}
+        <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+      {% endfor %}
+    </ul>
       </div><!-- End tab container -->
 
     </div>

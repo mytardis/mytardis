@@ -43,7 +43,7 @@ from os import path
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, post_save, post_delete
 from django.contrib.auth.models import User, Group
 from django.utils.safestring import SafeUnicode, mark_safe
 from django.dispatch import receiver
@@ -154,6 +154,10 @@ class Experiment(models.Model):
     public = models.BooleanField()
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
+
+    def save(self, *args, **kwargs):
+        super(Experiment, self).save(*args, **kwargs)
+        _publish_public_expt_rifcs(self)
 
     def getParameterSets(self, schemaType=None):
         """Return the experiment parametersets associated with this
@@ -277,6 +281,15 @@ class ExperimentACL(models.Model):
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
 
+    def get_related_object(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.get(pk=self.entityId)
+        return None
+
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)
 
@@ -289,6 +302,13 @@ class Author_Experiment(models.Model):
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+
+    def save(self, *args, **kwargs):
+        super(Author_Experiment, self).save(*args, **kwargs)
+        try:
+            _publish_public_expt_rifcs(self.experiment)
+        except StandardError:
+            logger.exception('')
 
     def __unicode__(self):
         return SafeUnicode(self.author) + ' | ' \
@@ -576,6 +596,8 @@ class Schema(models.Model):
     # subtype might then allow for the following values: 'mx', 'ir', 'saxs'
     subtype = models.CharField(blank=True, null=True, max_length=30)
     objects = SchemaManager()
+    immutable = models.BooleanField(default=False)
+    
 
     def natural_key(self):
         return (self.namespace,)
@@ -749,6 +771,9 @@ class ParameterName(models.Model):
         else:
             return False
 
+    def getUniqueShortName(self):
+        return self.name + '_' + str(self.id)
+
 
 def _getParameter(parameter):
 
@@ -835,9 +860,9 @@ class DatafileParameter(models.Model):
 
     parameterset = models.ForeignKey(DatafileParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
 
     def get(self):
@@ -857,9 +882,9 @@ class DatasetParameter(models.Model):
 
     parameterset = models.ForeignKey(DatasetParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
 
     def get(self):
@@ -878,10 +903,17 @@ class DatasetParameter(models.Model):
 class ExperimentParameter(models.Model):
     parameterset = models.ForeignKey(ExperimentParameterSet)
     name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True)
-    numerical_value = models.FloatField(null=True, blank=True)
-    datetime_value = models.DateTimeField(null=True, blank=True)
+    string_value = models.TextField(null=True, blank=True, db_index=True)
+    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
+    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
+
+    def save(self, *args, **kwargs):
+        super(ExperimentParameter, self).save(*args, **kwargs)
+        try:
+            _publish_public_expt_rifcs(self.parameterset.experiment)
+        except StandardError:
+            logger.exception('')
 
     def get(self):
         return _getParameter(self)
@@ -1029,3 +1061,40 @@ def pre_save_parameter(sender, **kwargs):
                 f.write(b64)
             f.close()
             parameter.string_value = filename
+
+@receiver(post_save, sender=ExperimentParameter)
+@receiver(post_delete, sender=ExperimentParameter)
+def post_save_experiment_parameter(sender, **kwargs):
+    experiment_param = kwargs['instance']
+    try:
+        experiment = Experiment.objects.get(pk=experiment_param.getExpId())
+        _publish_public_expt_rifcs(experiment)
+    except ExperimentParameterSet.DoesNotExist:
+        # If for some reason the experiment parameter set is missing,
+        # then ignore update
+        pass    
+
+@receiver(post_save, sender=Experiment)
+@receiver(post_delete, sender=Experiment)
+def post_save_experiment(sender, **kwargs):
+    experiment = kwargs['instance']
+    _publish_public_expt_rifcs(experiment)    
+
+@receiver(post_save, sender=Author_Experiment)
+@receiver(post_delete, sender=Author_Experiment)
+def post_save_author_experiment(sender, **kwargs):
+    author_experiment = kwargs['instance']
+    try:
+        _publish_public_expt_rifcs(author_experiment.experiment)
+    except Experiment.DoesNotExist:
+        # If for some reason the experiment is missing, then ignore update
+        pass
+
+def _publish_public_expt_rifcs(experiment):
+    try:
+        providers = settings.RIFCS_PROVIDERS
+    except:
+        providers = None
+    from tardis.tardis_portal.publish.publishservice import PublishService
+    pservice = PublishService(providers, experiment)
+    pservice.manage_rifcs(settings.OAI_DOCS_PATH)

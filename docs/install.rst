@@ -2,6 +2,8 @@
 Installing MyTARDIS
 ===================
 
+The sections through to Extended Configuration below provide a Quick Start guide for getting a basic MyTARDIS installation up and running.  The following section provides additional information on advanced configuration and add-on capabilities of MyTARDIS.
+
 Prerequisites
 -------------
 
@@ -171,3 +173,16 @@ Filters
 
    http://www.buildout.org
       The Buildout homepage.
+
+Single Search
+~~~~~~~~~~~~~
+
+Instructions on installing and configuring Solr for advanced search are available from :doc:`searchsetup`.
+
+Additional Tabs
+~~~~~~~~~~~~~~~
+
+Additional and custom tabs may be configured in MyTARDIS on a per-installation basis.  The tabs are implemented as separate Django applications with a single view (index), listed in the TARDIS_APPS configuration item and either linked to, or installed in the TARDS_APP_ROOT directory, by default ``tardis/apps``.
+
+Documentation on the additional tabs is available from :doc:`tabs`.
+
