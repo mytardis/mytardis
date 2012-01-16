@@ -30,7 +30,7 @@
         var dataset_id = $(this).find('.dataset_id').val();
     var params = [];
         var toggle = $(this).siblings('.datafile_list_toggle');
-    var loadHtml = "<img src='/site_media/images/ajax-loader.gif'/><br />";  
+    var loadHtml = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";  
 
     html = $(this).siblings('.datafile_list_toggle').attr('href')
      if(show_search == "matches")
@@ -54,12 +54,12 @@
         $(".dataset").hide();
         $(".search_match").show();
         $(".datafile_match").show();
-      }   
+      }
       else
       {
         $(".dataset").show();
       }
-    }); 
+    });
   </script>
 
 {% endblock %}
@@ -81,8 +81,8 @@
   </div> <!-- download_entire_experiment -->
   {% if highlighted_datasets or file_matched_datasets %}
   <form name="search_select_form" id="search_form" method="post" action="">
-    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>  
-    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>  
+    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>
+    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>
   </form>
   {% endif %}
   <form method="POST" action="{% url tardis.tardis_portal.download.download_datafiles %}" target="_blank">

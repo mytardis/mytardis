@@ -3,7 +3,7 @@
 {% block script %}
 
   {% include "tardis_portal/javascript_libraries.html" %}
-  <script type="text/javascript" src="/site_media/js/jquery.customised-formset.js" ></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}/js/jquery.customised-formset.js" ></script>
 
   <script type="text/javascript">
 
@@ -232,7 +232,7 @@
       <h1>Please Wait...</h1>
     </div>
     <div align="center" class="jqmAlertContentLoading" id="jqmAlertContentLoading">
-      <img src="/site_media/images/ajax-loader-big.gif">
+      <img src="{{ STATIC_URL }}/images/ajax-loader-big.gif">
       </div>
     </div>
   </div>
