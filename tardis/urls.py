@@ -62,7 +62,9 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/license/$', 'choose_license'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
+    (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
     )
+    
 token_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/(?P<token>.+)/', 'token_login'),

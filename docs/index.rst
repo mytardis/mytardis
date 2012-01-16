@@ -40,13 +40,15 @@ Contents
 .. toctree::
    :maxdepth: 2
 
+   userguide
+   searching
+   tabs
+
+   overview
    install
    admin
-   overview
    schemaparamsets
    ingesting
-
-   searching
 
    ref/auth_framework
    ref/filters

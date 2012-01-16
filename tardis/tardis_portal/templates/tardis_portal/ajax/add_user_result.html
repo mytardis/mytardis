@@ -1,7 +1,8 @@
 <div class="access_list_user">
   <p>
-    <strong>{{user.username}}</strong> ({{user.email}})
-    <a class="change_user" href="{% url tardis.tardis_portal.views.change_user_permissions experiment_id user.username %}"><img src="{{ STATIC_URL }}/images/icon_changelink.gif"></a>
-    <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_experiment_access_user experiment_id user.username %}"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif"></a>
+  <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>{% if user.email %} ({{ user.email }}){% endif %}
+  <span style="color: green;">{% if user_acl.canRead %}Read{% endif %}{% if user_acl.canWrite %}/Edit{% endif %}</span>
+    <a class="change_user" title="Edit" href="{% url tardis.tardis_portal.views.change_user_permissions experiment_id user.username %}"><img src="{{ STATIC_URL }}/images/icon_changelink.gif"></a>
+    <a class="remove_user" title="Delete" href="{% url tardis.tardis_portal.views.remove_experiment_access_user experiment_id user.username %}"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif"></a>
   </p>
 </div> <!-- access_list_user -->

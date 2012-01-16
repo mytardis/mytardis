@@ -10,7 +10,6 @@ from optparse import make_option
 from django.contrib.auth.models import User
 from django.core import exceptions
 from django.core.management.base import BaseCommand, CommandError
-from django.db.utils import DatabaseError, IntegrityError
 from django.utils.translation import ugettext as _
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
@@ -142,45 +141,15 @@ class Command(BaseCommand):
                 sys.stderr.write("\nOperation cancelled.\n")
                 sys.exit(1)
 
-        try:
-            # Check to see if UserProfile data table exist.
-            userProfile = UserProfile()
-            userProfile.save()
-        except IntegrityError:
-            # UserProfile exists.
-            user = User.objects.create_superuser(username, email, password)
-    
-            userProfile = UserProfile(user=user, isDjangoAccount=True)
-            userProfile.save()
-    
-            authentication = UserAuthentication(userProfile=userProfile,
-                                                username=username,
-                                                authenticationMethod=locabdb_auth_key)
-            authentication.save()
-            
-            if verbosity >= 1:
-                self.stdout.write("MyTARDIS superuser created successfully.\n")
-        except DatabaseError:
-            # Missing required UserProfile table.
-            print """
-********************************************************************************
-* Two Django models, UserProfile and UserAuthentication, are required before   *
-* creating initial admin during syncdb management command operation in         *
-* MyTARDIS. Please run Django database migration command first to proceed      *
-* creation of initial admin account:                                           *
-*                                                                              *
-*    ./bin/django migrate                                                      *
-*                                                                              *
-* After success of database migration, then please use a command line utility  *
-* to create your admin account:                                                *
-*                                                                              *
-*    ./bin/django createsuperuser --username=<name> --email=<name>@example.com *
-*                                                                              *
-* You will be prompted for a password. After you enter one, the user will be   *
-* created immediately.                                                         *
-********************************************************************************
-"""
+        user = User.objects.create_superuser(username, email, password)
 
-                
-        
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile.save()
 
+        authentication = UserAuthentication(userProfile=userProfile,
+                                            username=username,
+                                            authenticationMethod=locabdb_auth_key)
+        authentication.save()
+
+        if verbosity >= 1:
+          self.stdout.write("MyTARDIS superuser created successfully.\n")

@@ -5,9 +5,9 @@
 <div id = "content">
   <div class="post">
     <div class = "entry">  
-        <h1 class="title">Search Results for <em>{{ query.query_string|default:"' '"}}</em></h1>
+        <h1 class="title">Search Results for <em>{{ search_query.query_string|default:"' '"}}</em></h1>
       {% if experiments%}
-      <strong>{{experiments.items|length}}</strong> Experiment{{experiments.items|length|pluralize}}
+      <strong>{{experiments|length}}</strong> Experiment{{experiments|length|pluralize}}
       {% endif %}
       {% include "search/search_result_list.html"%}
     </div> <!-- entry -->
