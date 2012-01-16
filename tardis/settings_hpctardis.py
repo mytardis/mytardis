@@ -1,3 +1,5 @@
+# Note that this is a deployment script with hardcoded paths
+
 from os import path
 from tardis.settings_changeme import *
 
@@ -7,7 +9,7 @@ DATABASES = {
         # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'ENGINE': 'django.db.backends.sqlite3',
         # Name of the database to use. For SQLite, it's the full path.
-        'NAME': './tardis.sql',
+        'NAME': '/home/user/CoreTardis/tardis.sql',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -36,6 +38,11 @@ tmp.append(("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""]))
 POST_SAVE_FILTERS = tuple(tmp)
 
 
+ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),'../eggs/Django-1.3-py2.6.egg/django/contrib/admin/media/').replace('\\', '/')
+
+STAGING_PATH = path.abspath('/home/user/dcweb.staging/').replace('\\', '/')
+STAGING_PROTOCOL = 'localdb'
+
 # Directory path for image thumbnails
 THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/thumbnails/')).replace('\\', '/')
@@ -49,3 +56,16 @@ TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
 )
 
+
+# logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
+SYSTEM_LOG_LEVEL = 'INFO'
+MODULE_LOG_LEVEL = 'INFO'
+
+SYSTEM_LOG_FILENAME = '/var/www/tardis/request.log'
+MODULE_LOG_FILENAME = '/var/www/tardis/tardis.log'
+
+EMAIL_PORT = 587 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'eresearch.rmit@gmail.com'     
+EMAIL_HOST_PASSWORD = 'PASSWORD'
+EMAIL_USE_TLS = True
