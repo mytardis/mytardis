@@ -61,6 +61,8 @@ MEDIA_URL = '/site_media/'
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
 
+EMAIL_LINK_HOST = "http://127.0.0.1:8080"
+
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),

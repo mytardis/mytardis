@@ -230,6 +230,8 @@ EMAIL_HOST_PASSWORD = 'bob'
 
 EMAIL_USE_TLS = True
 
+EMAIL_LINK_HOST = "http://127.0.0.1:8080"
+
 # Post Save Filters
 #POST_SAVE_FILTERS = [
 #    ("tardis.tardis_portal.filters.exif.make_filter",

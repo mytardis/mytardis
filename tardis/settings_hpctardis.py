@@ -69,3 +69,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'eresearch.rmit@gmail.com'     
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_TLS = True
+EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8090"

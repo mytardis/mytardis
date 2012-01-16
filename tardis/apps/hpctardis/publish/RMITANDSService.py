@@ -43,7 +43,7 @@ def _send_email(publish_auth,activation_key, exp, activity,auth_party,
     
     t = Template(email_contents)
     d = {"code": activation_key,
-         "domain": "http://127.0.0.1:8000",
+         "domain": settings.EMAIL_LINK_HOST,
          "path":"apps/hpctardis/publishauth",
          "exp":exp.id,
          "expname":exp.title,
