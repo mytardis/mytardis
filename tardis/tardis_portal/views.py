@@ -241,13 +241,6 @@ def about(request):
                         'tardis_portal/about.html', c))
 
 
-def partners(request):
-
-    c = Context({})
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/partners.html', c))
-
-
 def experiment_index(request):
 
     experiments = None
@@ -321,7 +314,7 @@ def view_experiment(request, experiment_id):
         c['search'] = request.GET['search']
     if  'load' in request.GET:
         c['load'] = request.GET['load']
-        
+
     import sys
     appnames = []
     appurls = []
@@ -412,16 +405,16 @@ def experiment_description(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_description.html', c))
 #
-# Class to manage switching between space separated search queries and 
+# Class to manage switching between space separated search queries and
 # '+' separated search queries (for addition to urls
 #
 # TODO This would probably be better handled with filters
 #
 class SearchQueryString():
-    
+
     def __init__(self, query_string):
         import re
-        # remove extra spaces around colons 
+        # remove extra spaces around colons
         stripped_query = re.sub('\s*?:\s*', ':', query_string)
 
         # create a list of terms which can be easily joined by
@@ -440,7 +433,7 @@ class SearchQueryString():
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-    
+
     """View a listing of dataset of an existing experiment as ajax loaded tab.
 
     :param request: a HTTP Request instance
@@ -467,10 +460,10 @@ def experiment_datasets(request, experiment_id):
 
     c['experiment'] = experiment
     if 'query' in request.GET:
-        
+
         # We've been passed a query to get back highlighted results.
         # Only pass back matching datafiles
-        # 
+        #
         search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
         sqs = SearchQuerySet(query=search_query)
         query = SearchQueryString(request.GET['query'])
@@ -479,13 +472,13 @@ def experiment_datasets(request, experiment_id):
             dataset_id_facets = facet_counts['fields']['dataset_id_stored']
         else:
             dataset_id_facets = []
-        
+
         c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
         c['file_matched_datasets'] = []
         c['search_query'] = query
-    
+
         # replace '+'s with spaces
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
+    elif 'datafileResults' in request.session and 'search' in request.GET:
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
         c['file_matched_datasets'] = \
@@ -496,7 +489,7 @@ def experiment_datasets(request, experiment_id):
         c['highlighted_datasets'] = None
         c['highlighted_dataset_files'] = None
         c['file_matched_datasets'] = None
-    
+
     c['datasets'] = \
          Dataset.objects.filter(experiment=experiment_id)
 
@@ -938,7 +931,7 @@ def retrieve_datafile_list(request, dataset_id):
 
     query = None
     highlighted_dsf_pks = []
-    
+
     if 'query' in request.GET:
         search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
         sqs = SearchQuerySet(query=search_query)
@@ -948,7 +941,7 @@ def retrieve_datafile_list(request, dataset_id):
 
         params['query'] = query.query_string()
 
-    elif 'datafileResults' in request.session and 'search' in request.GET: 
+    elif 'datafileResults' in request.session and 'search' in request.GET:
         highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
 
     dataset_results = \
@@ -997,11 +990,11 @@ def retrieve_datafile_list(request, dataset_id):
 
         has_write_permissions = \
             authz.has_write_permissions(request, experiment_id)
-    
+
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
-    params = urlencode(params)   
- 
+    params = urlencode(params)
+
     c = Context({
         'dataset': dataset,
         'paginator': paginator,
@@ -1013,7 +1006,7 @@ def retrieve_datafile_list(request, dataset_id):
         'has_write_permissions': has_write_permissions,
         'search_query' : query,
         'params' : params
-        
+
         })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/datafile_list.html', c))
@@ -1055,12 +1048,12 @@ def search_experiment(request):
     # remove information from previous searches from session
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
-    
+
     results = []
     for e in experiments:
         result = {}
         result['sr'] = e
-        result['dataset_hit'] = False 
+        result['dataset_hit'] = False
         result['dataset_file_hit'] = False
         result['experiment_hit'] = True
         results.append(result)
@@ -1566,10 +1559,10 @@ def search_datafile(request):
     import re
     cleanedUpQueryString = re.sub('&page=\d+', '',
         request.META['QUERY_STRING'])
-   
+
     # get experiments associated with datafiles
-    if datafile_results: 
-        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True))) 
+    if datafile_results:
+        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True)))
         experiments = Experiment.safe.in_bulk(experiment_pks)
     else:
         experiments = {}
@@ -1578,11 +1571,11 @@ def search_datafile(request):
     for key, e in experiments.items():
         result = {}
         result['sr'] = e
-        result['dataset_hit'] = False 
+        result['dataset_hit'] = False
         result['dataset_file_hit'] = True
         result['experiment_hit'] = False
         results.append(result)
-    
+
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
@@ -1668,7 +1661,7 @@ def retrieve_group_list(request):
     return HttpResponse(grouplist)
 
 def retrieve_field_list(request):
-    
+
     from tardis.tardis_portal.search_indexes import DatasetFileIndex
 
     # Get all of the fields in the indexes
@@ -2459,7 +2452,7 @@ def add_experiment_par(request, experiment_id):
 
 
 def add_par(request, parentObject, otype, stype):
-        
+
     all_schema = Schema.objects.filter(type=stype, immutable=False)
 
     if 'schema_id' in request.GET:
@@ -2516,7 +2509,7 @@ def add_par(request, parentObject, otype, stype):
 class ExperimentSearchView(SearchView):
     def __name__(self):
         return "ExperimentSearchView"
-    
+
     def extra_context(self):
         extra = super(ExperimentSearchView, self).extra_context()
         # Results may contain Experiments, Datasets and Dataset_Files.
@@ -2545,22 +2538,22 @@ class ExperimentSearchView(SearchView):
         for e in experiments:
             result = {}
             result['sr'] = e
-            result['dataset_hit'] = False 
+            result['dataset_hit'] = False
             result['dataset_file_hit'] = False
             result['experiment_hit'] = False
             results.append(result)
 
-        extra['experiments'] = results 
+        extra['experiments'] = results
         return extra
 
     # override SearchView's method in order to
     # return a ResponseContext
     def create_response(self):
         (paginator, page) = self.build_page()
-       
+
         # Remove unnecessary whitespace
         # TODO this should just be done in the form clean...
-        query = SearchQueryString(self.query) 
+        query = SearchQueryString(self.query)
         context = {
                 'search_query': query,
                 'form': self.form,
@@ -2568,7 +2561,7 @@ class ExperimentSearchView(SearchView):
                 'paginator' : paginator,
                 }
         context.update(self.extra_context())
-   
+
         return render_response_index(self.request, self.template, context)
 
 
@@ -2756,19 +2749,19 @@ def view_rifcs(request, experiment_id):
         return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
-    
+
     try:
-        rifcs_provs = settings.RIFCS_PROVIDERS   
+        rifcs_provs = settings.RIFCS_PROVIDERS
     except AttributeError:
         rifcs_provs = ()
-           
+
     from tardis.tardis_portal.publish.publishservice import PublishService
     pservice = PublishService(rifcs_provs, experiment)
     context = pservice.get_context()
     if context is None:
         # return error page or something
         return return_response_error(request)
-    
+
     template = pservice.get_template()
     return HttpResponse(render_response_index(request,
                         template, context), mimetype="text/xml")

@@ -158,8 +158,8 @@ class SearchTestCase(TestCase):
             'tardis_portal/search_experiment_results.html')
 
         from tardis.tardis_portal.models import Dataset_File
-        from tardis.tardis_portal.models import Experiment 
-        
+        from tardis.tardis_portal.models import Experiment
+
         values = response.context['experiments']
         experiment = values[0]
         datafile = response.context['datafiles'][0]
@@ -168,7 +168,7 @@ class SearchTestCase(TestCase):
         self.assertTrue(
             type(datafile) is Dataset_File)
 
-        
+
         self.assertTrue(experiment['dataset_file_hit'] is True)
         self.assertTrue(experiment['dataset_hit'] is False)
         self.assertTrue(experiment['experiment_hit'] is False)
@@ -223,15 +223,15 @@ class SearchTestCase(TestCase):
 
         self.assertTrue(
             len(response.context['experiments']) == 1)
- 
-        from tardis.tardis_portal.models import Experiment 
-        
+
+        from tardis.tardis_portal.models import Experiment
+
         values = response.context['experiments']
         experiment = values[0]
-        
+
         self.assertTrue(
             type(experiment['sr']) is Experiment)
-        
+
         self.assertTrue(experiment['dataset_file_hit'] is False)
         self.assertTrue(experiment['dataset_hit'] is False)
         self.assertTrue(experiment['experiment_hit'] is True)
@@ -252,7 +252,7 @@ class UserInterfaceTestCase(TestCase):
 
     def test_urls(self):
         c = Client()
-        urls = ['/login/', '/about/', '/partners/', '/stats/']
+        urls = ['/login/', '/about/', '/stats/']
         urls += ['/experiment/register/', '/experiment/view/']
         urls += ['/experiment/search/', '/datafile/search/?type=saxs']
 
