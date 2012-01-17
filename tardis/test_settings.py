@@ -21,7 +21,7 @@ DATABASES = {
 # ingestion? Must be one of the above authentication provider names
 DEFAULT_AUTH = 'localdb'
 
-ROOT_URLCONF = 'tardis.urls'
+#ROOT_URLCONF = 'tardis.urls'
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
@@ -93,7 +93,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-TARDIS_APPS = ('equipment','hpctardis')
+TARDIS_APPS = ('equipment',)
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
@@ -197,4 +197,10 @@ MT_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 tmp = list(POST_SAVE_FILTERS)
 tmp.append(("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""]))
 POST_SAVE_FILTERS = tuple(tmp)
+
+INSTALLED_APPS = (TARDIS_APP_ROOT+".hpctardis",) + INSTALLED_APPS
+
+
+# Changed because hpctardis overrides existing urls, which are called in testcases
+ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
                      

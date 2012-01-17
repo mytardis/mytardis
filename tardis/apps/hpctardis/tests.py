@@ -211,11 +211,11 @@ class SimplePublishTest(TestCase):
         # publish
         data = {'legal':'on',
                 'profile':'default.xml'}
-        response = self.client.post("/apps/hpctardis/publisher/1/", data)
+        response = self.client.post("/experiment/view/publish/1/", data)
         
         logger.debug("response=%s" % response)
         # check resulting rif-cs
-        response = self.client.post("/apps/hpctardis/rif_cs/")
+        response = self.client.post("/rif_cs/")
         self.assertTrue(_grep("test exp1",str(response)))
         self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
         self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
@@ -662,7 +662,7 @@ class AuthPublishTest(TestCase):
                 'form-TOTAL_FORMS': u'1',
                 'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
                  'profile':'default.xml'}
-        response = self.client.post("/apps/hpctardis/publisher/1/", data)
+        response = self.client.post("/experiment/view/1/publish/", data)
         self.assertEquals(response.status_code,
                           200)
         logger.debug("response=%s" % response)
@@ -688,7 +688,7 @@ class AuthPublishTest(TestCase):
         data={'expid':str(exp.id),
                           'authcode':'invalidkey'}
         logger.debug("data=%s" % data)
-        response = self.client.get("/apps/hpctardis/publishauth/",
+        response = self.client.get("/experiment/view/1/publish/",
                                    data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
@@ -703,7 +703,7 @@ class AuthPublishTest(TestCase):
         data={'expid':str(exp.id),
                           'authcode':auth.auth_key}
         logger.debug("data=%s" % data)
-        response = self.client.get("/apps/hpctardis/publishauth/",
+        response = self.client.get("/publishauth/",
                          data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
@@ -727,7 +727,7 @@ class AuthPublishTest(TestCase):
         data={'expid':str(exp.id),
                           'authcode':'invalidkey'}
         logger.debug("data=%s" % data)
-        response = self.client.get("/apps/hpctardis/publishauth/",
+        response = self.client.get("/publishauth/",
                                    data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
@@ -742,7 +742,7 @@ class AuthPublishTest(TestCase):
         data={'expid':str(exp.id),
                           'authcode':auth.auth_key}
         logger.debug("data=%s" % data)
-        response = self.client.get("/apps/hpctardis/publishauth/",
+        response = self.client.get("/publishauth/",
                          data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
@@ -761,7 +761,7 @@ class AuthPublishTest(TestCase):
         data={'expid':str(exp.id),
                           'authcode':auth.auth_key}
         logger.debug("data=%s" % data)
-        response = self.client.get("/apps/hpctardis/publishauth/",
+        response = self.client.get("/publishauth/",
                          data)
         updated_auth = PublishAuthorisation.objects.get(id=auth.id)
         self.assertEquals(updated_auth.status,
@@ -772,7 +772,7 @@ class AuthPublishTest(TestCase):
         logger.debug("reponse=%s" % response)
         
         # check resulting rif-cs
-        response = self.client.post("/apps/hpctardis/rif_cs/")
+        response = self.client.post("/rif_cs/")
         logger.debug("rifcs response=%s" % response.content)
 
         self.assertEquals(_get_XML_tag(
@@ -869,7 +869,7 @@ class AuthPublishTest(TestCase):
                 'form-TOTAL_FORMS': u'1',
                 'form-INITIAL_FORMS': u'0', 'form-MAX_NUM_FORMS': u'',
                  'profile':'default.xml'}
-        response = self.client.post("/apps/hpctardis/publisher/1/", data)
+        response = self.client.post("/experiment/view/1/publish/", data)
         
         self.assertEquals(response.context['publish_result'][0]['status'],
                           True)         
