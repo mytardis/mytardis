@@ -973,10 +973,6 @@ def retrieve_datafile_list(request, dataset_id):
     # pagination was removed by someone in the interface but not here.
     # need to fix.
     pgresults = 100
-    # if request.mobile:
-    #     pgresults = 30
-    # else:
-    #     pgresults = 25
 
     paginator = Paginator(dataset_results, pgresults)
 

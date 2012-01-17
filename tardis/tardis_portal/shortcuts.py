@@ -34,12 +34,6 @@ def render_response_index(request, *args, **kwargs):
     else:
         kwargs['context_instance']['has_staging_access'] = False
 
-
-    #if request.mobile:
-    #    template_path = args[0]
-    #    split = template_path.partition('/')
-    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
-
     return render(request, *args, **kwargs)
 
 
@@ -79,11 +73,6 @@ def render_response_search(request, *args, **kwargs):
         kwargs['context_instance']['has_staging_access'] = True
     else:
         kwargs['context_instance']['has_staging_access'] = False
-
-    #if request.mobile:
-    #    template_path = args[0]
-    #    split = template_path.partition('/')
-    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
 
     return render(request, *args, **kwargs)
 
