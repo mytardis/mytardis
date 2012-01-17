@@ -39,7 +39,8 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 MEDIA_ROOT = STATIC_DOC_ROOT
 
-MEDIA_URL = '/site_media/'
+MEDIA_URL = '/site_media'
+STATIC_URL = '/static'
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
@@ -117,8 +118,8 @@ MODULE_LOG_FILENAME = 'tardis.log'
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
-UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
-UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
 
 DEFAULT_INSTITUTION = "Monash University"
 
