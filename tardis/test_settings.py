@@ -61,6 +61,8 @@ MEDIA_URL = '/site_media/'
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
 
+EMAIL_LINK_HOST = "http://127.0.0.1:8080"
+
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
@@ -158,11 +160,7 @@ PUBLISH_PROVIDERS = (
                     'tardis.apps.hpctardis.publish.rif_cs_profile.'
                     + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
                     )
-
-# ------------------------------------
-# -- HPCTardis settings for testing --
-# ------------------------------------
-
+ 
 
 # --------------------------------------
 # -- MicroTardis settings for testing --
@@ -172,7 +170,8 @@ PUBLISH_PROVIDERS = (
 POST_SAVE_FILTERS = [
     ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
     ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
-    ]
+    ("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""])
+ ]
 
 # Directory path for storing image thumbnails
 THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
@@ -189,3 +188,13 @@ TEMPLATE_LOADERS = (
 MT_STATIC_URL_ROOT = '/static'
 MT_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'apps/microtardis/static').replace('\\', '/')
+                               
+                               
+# ------------------------------------
+# -- HPCTardis settings for testing --
+# ------------------------------------
+
+tmp = list(POST_SAVE_FILTERS)
+tmp.append(("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""]))
+POST_SAVE_FILTERS = tuple(tmp)
+                     

@@ -326,9 +326,9 @@ def publish_experiment(request, experiment_id):
         if 'legal' in request.POST:
             
             
-           # only make public when all providers signal okay
-           # experiment.public = True
-           # experiment.save()
+            # only make public when all providers signal okay
+            # experiment.public = True
+            # experiment.save()
 
             context_dict['publish_result'] = \
             publishService.execute_publishers(request)

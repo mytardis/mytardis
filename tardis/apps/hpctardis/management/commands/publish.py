@@ -9,7 +9,7 @@ from tardis.apps.hpctardis.publish.RMITANDSService import send_request_email
 
 class Command(BaseCommand):
     
-    help = "help me"
+    help = "Allows pending public exeriments to promoted, or allow new verification emails to be sent"
     
     def handle(self, *args, **options):
             

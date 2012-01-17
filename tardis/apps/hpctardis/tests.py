@@ -60,7 +60,9 @@ from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.apps.hpctardis.metadata import get_metadata
 from tardis.apps.hpctardis.metadata import get_schema
 from tardis.apps.hpctardis.metadata import save_metadata
-from tardis.apps.hpctardis.metadata import go
+from tardis.apps.hpctardis.metadata import process_all_experiments
+from tardis.apps.hpctardis.metadata import process_experimentX
+
 from tardis.apps.hpctardis.models import PartyRecord
 from tardis.apps.hpctardis.models import ActivityRecord
 from tardis.apps.hpctardis.models import NameParts
@@ -256,16 +258,25 @@ class VASPMetadataTest(TestCase):
             logger.debug("key=%s,field_type=%s,value=%s" % (key,field_type, value))
             try:
                 # First check stringed value
-                param = psm.get_param(key,value=True)
-                self.assertEquals(str(param),str(value),"incorrect value in %s: expected %s found %s" % (key,repr(value),repr(param)))
+                param = psm.get_params(key,value=True)
+                logger.debug("param val=%s" % param)
+                # assume any duplicate parameters are same value
+                self.assertEquals(str(param[0]),str(value),
+                                  "incorrect value in %s: expected "
+                                  "%s found %s" % (key,repr(value),repr(param)))
                 # Then correct type
-                param = psm.get_param(key,value=False)
-                self.assertEquals(param.name.data_type,field_type,"incorrect type in %s: expected %s found %s" % (key,param.name.data_type, field_type))
+                param = psm.get_params(key,value=False)
+                logger.debug("param type=%s" % param[0])                
+                self.assertEquals(param[0].name.data_type,
+                                  field_type,
+                                  "incorrect type in %s: expected "
+                                  "%s found %s" %
+                                   (key,param[0].name.data_type, field_type))
             except DatasetParameter.DoesNotExist:
                 logger.error("cannot find %s" % key)
                 self.assertTrue(False, "cannot find %s" % key)
                 
-    def _metadata_extract(self,expname,files,ns,schname,results):
+    def _metadata_extract(self,expname,files,ns,schname,results,staging_hook=False):
         """ Check that we can create an VASP experiment and extract metadata from it"""
         
         login = self.client.login(username=self.username,
@@ -304,7 +315,11 @@ class VASPMetadataTest(TestCase):
         for f in files:
             self._make_datafile(dataset,
                        path.join(path.abspath(path.dirname(__file__)),f))       
-        go()
+        if not staging_hook:            
+            process_experimentX(exp)
+        else:
+            logger.debug("use staging hook")
+            pass        
         self._test_metadata(ns,schname,dataset,results)
         return dataset
                 
@@ -443,6 +458,44 @@ class VASPMetadataTest(TestCase):
                                      ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
                                       ("Max jobfs disk use",ParameterName.NUMERIC,"2.1")
                  ])
+   
+        
+    def test_metadata_postsave(self):
+        """ Tests use of postsave hook to trigger metadata extraction"""
+        
+        dataset = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset3/input.fdf',
+                                          'testing/dataset3/output',
+                                          'testing/dataset3/siesta.sub.o923124'],
+                               ns="http://tardis.edu.au/schemas/siesta/1",
+                               schname="siesta 1.0",
+                               results= [("SystemName",ParameterName.STRING,"my System"),
+                                        ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
+                                          ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
+                                     
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("MD.TypeOfRun",ParameterName.STRING,"cg"),
+                                          ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
+                                          ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),
+                                          ("iscf",ParameterName.STRING,'siesta:   19   -34376.1097   -34376.0348   -34376.0689  0.0026 -3.1498\n'),
+                                          ("E_KS",ParameterName.NUMERIC,'-34376.0348'),
+                                          ("Occupation Function",ParameterName.STRING,'FD'),
+                                          ("OccupationMPOrder",ParameterName.NUMERIC,'1.0')
+                                          ],
+                               staging_hook= True)
+        self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
+                               name="general 1.0",
+                               dataset=dataset,
+                               fields= [
+                ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                ("Walltime",ParameterName.STRING,"04:27:18"), 
+                ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
+                ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
+                ("Max jobfs disk use",ParameterName.NUMERIC,"2.1")
+                 ])
+        
+        
     def _make_datafile(self,dataset,filename):
         """ Make datafile from filename in given dataset"""
  
@@ -468,7 +521,7 @@ def _get_XML_tag(xml,xpath):
     logger.debug("r=%s" % r)
         
     return r
-    
+
     
 class AuthPublishTest(TestCase):
     """ Tests ability to publish experiment with associated parties and
