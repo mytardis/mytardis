@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2011-2011, RMIT e-Research Office
+# Copyright (c) 2011-2012, RMIT e-Research Office
 #   (RMIT University, Australia)
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)

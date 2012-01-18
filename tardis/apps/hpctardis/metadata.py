@@ -510,7 +510,8 @@ def get_constant(context,val,unit):
 def _process_experiments(ruleset):
     """
     """
-    #TODO: missing values default to STRING, but later could be numeric when have value
+    #TODO: missing values default to STRING, but later
+    # could be numeric when have value.
     metadatas = {}
     for exp in Experiment.objects.all():
         logger.debug("exp=%s\n" % exp)
@@ -639,7 +640,8 @@ def get_schema(schema,name):
             
 def get_parameters(schema,metadata):
     """ Returns set of parameters from schema matched to elements in 
-        metadata
+        metadata, or creates them based on the metadata values.  Types
+        are based on seen values, favouring numerics over strings. 
     """
     param_objects = ParameterName.objects.filter(schema=schema)
     logger.debug("param_objects=%s\n" % param_objects)
@@ -653,6 +655,7 @@ def get_parameters(schema,metadata):
         if parameter:
             parameters.append(parameter[0])
             continue
+        # work out the best type from the value
         datatype = ParameterName.STRING
         units = None
         try:
@@ -689,6 +692,10 @@ def get_parameters(schema,metadata):
 
 
 def save_metadata(instance,schema,metadataset):
+    """ Creates schema from the metadataset and associates it 
+        with the instance.  If metadata value is empty, then 
+        existing value is unchanged.  
+    """
     parameters = get_parameters(schema, metadataset)
     logger.debug("parameters=%s" % parameters)
     if not parameters:
@@ -696,7 +703,6 @@ def save_metadata(instance,schema,metadataset):
     try:
         ps = DatasetParameterSet.objects.get(schema=schema,
                                                 dataset=instance)
-        #return ps
     except DatasetParameterSet.DoesNotExist:
         ps = DatasetParameterSet(schema=schema,dataset=instance)
         ps.save()
@@ -724,9 +730,6 @@ def save_metadata(instance,schema,metadataset):
                             dp.numerical_value = val
                             dp.save()    
                         logger.debug("numeric")
-                            
-                    
-                    
             else:
                 val = metadataset[p.name][0]
                 logger.debug("val=%s" % val)
@@ -747,9 +750,6 @@ def save_metadata(instance,schema,metadataset):
                         logger.debug("done")
                             
           
-
-       
-       
 def process_datafile(datafile, ruleset):
     """
     """

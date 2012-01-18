@@ -18,7 +18,7 @@ DATABASES = {
 }
 
 # Root URLs in MicroTardis
-ROOT_URLCONF = 'tardis.urls'
+ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
 
 # extend template directory to TEMPLATE_DIRS
 tmp = list(TEMPLATE_DIRS)
