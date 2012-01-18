@@ -97,8 +97,8 @@ class EXIFTagsFilter(object):
                             ['Vacuum', 'UserMode', None, None],
                             ['Vacuum', 'CHPressure', None, None],
                             ['Detectors', 'Name', None, None],
-                            ['Lfd', 'Contrast', None, None],
-                            ['Lfd', 'Brightness', None, None],
+                            ['Detector_Name', 'Contrast', None, None],
+                            ['Detector_Name', 'Brightness', None, None],
                             ),
                            ),
                           ),
@@ -114,8 +114,8 @@ class EXIFTagsFilter(object):
                               ['Vacuum', 'UserMode', None, None],
                               ['Vacuum', 'ChPressure', None, None],
                               ['Detectors', 'Name', None, None],
-                              ['TLD', 'Contrast', None, None],
-                              ['TLD', 'Brightness', None, None],
+                              ['Detector_Name', 'Contrast', None, None],
+                              ['Detector_Name', 'Brightness', None, None],
                               ),
                              ),
                             ),
@@ -190,13 +190,18 @@ class EXIFTagsFilter(object):
 
                         # find property value in tag
                         metadata = {}
+                        detector_name = ""
                         for tag in tagsToFind:
                             (section, option, unit, multiplier) = tag
                             try:
+                                if section == "Detector_Name" and detector_name != "":
+                                    section = detector_name
                                 value = x877a_tags.get(section, option)
                                 if multiplier:
                                     value = float(value) * multiplier
                                 metadata["[%s] %s" % (section, option)] = [value, unit]
+                                if section == "Detectors" and option == "Name":
+                                    detector_name = value
                             except ConfigParser.NoSectionError:
                                 pass
 
