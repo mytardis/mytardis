@@ -6,7 +6,7 @@
  All rights reserved.
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
- 
+
     *  Redistributions of source code must retain the above copyright
        notice, this list of conditions and the following disclaimer.
     *  Redistributions in binary form must reproduce the above copyright
@@ -15,7 +15,7 @@
     *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
        names of its contributors may be used to endorse or promote products
        derived from this software without specific prior written permission.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -27,16 +27,16 @@
  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
-{% extends "mobile/portal_template.html" %} 
+{% extends "mobile/portal_template.html" %}
 
 		{% block content %}
 
 
-			
+
 			<div class="post">
-				<ul class="pageitem"> 
-						<li class="textbox"><span class="header">About MyTARDIS</span>			
-			
+				<ul class="pageitem">
+						<li class="textbox"><span class="header">About MyTARDIS</span>
+
 						<div class="entry">
 
 			    <p>There is a pressing need for the archival and curation of raw data. However, the relatively large size of such data has presented challenges for storage in a single worldwide repository.  This problem can be avoided by using a federated approach, where each institution or university utilizes its institutional repository.</p>
@@ -45,11 +45,11 @@
 
 
 					</div>
-					</li> 
+					</li>
 			</ul>
 		</div>
 				<div class="post">
-					<ul class="pageitem"> 
+					<ul class="pageitem">
 							<li class="textbox"><span class="header">Citation</span>
 			    <div class="entry">
 
@@ -64,39 +64,39 @@
 			  For more information on the MyTARDIS project please contact <a href="mailto:ashley.buckle@med.monash.edu.au">Associate Professor Ashley Buckle</a>.</p>
 
 					</div>
-					</li> 
+					</li>
 			</ul>
 		</div>
-		
-		<div class="post">
-			<ul class="pageitem"> 
-					<li class="textbox"><span class="header">Partners</span>
-	    <div class="entry">		
 
-					<p><a href="http://www.monash.edu.au"><img src="/site_media/images/monash.png" alt="monash university"/></a></p>
+		<div class="post">
+			<ul class="pageitem">
+					<li class="textbox"><span class="header">Partners</span>
+	    <div class="entry">
+
+					<p><a href="http://www.monash.edu.au"><img src="{{ STATIC_URL }}/images/monash.png" alt="monash university"/></a></p>
 
 					<p class="institutionName">Monash University (Lead institution)</p>
 			                	<a href="http://www.med.monash.edu.au/biochem/staff/abuckle.html">A. Prof. Ashley M. Buckle</a><br />
 			              		<a href="http://research.med.monash.edu.au/whisstock">Prof. James C. Whisstock</a>
 			       	<br/><br/>
 
-					<p><a href="http://ands.org.au/"><img src="/site_media/images/ands.png" alt="australian national data service"></a></p>
+					<p><a href="http://ands.org.au/"><img src="{{ STATIC_URL }}/images/ands.png" alt="australian national data service"></a></p>
 					<p class="institutionName">Australian National Data Service</p>
-			       	<br/><br/>		
+			       	<br/><br/>
 
-					<p><a href="https://www.versi.edu.au/"><img src="/site_media/images/VeRSI.png" alt="versi"></a></p>
+					<p><a href="https://www.versi.edu.au/"><img src="{{ STATIC_URL }}/images/VeRSI.png" alt="versi"></a></p>
 					<p class="institutionName">VeRSI</p>
 			       	<br/><br/>
 
-					<p><a href="http://www.usyd.edu.au/"><img src="/site_media/images/unisyd.png" alt="University of Sydney" /></a></p>
+					<p><a href="http://www.usyd.edu.au/"><img src="{{ STATIC_URL }}/images/unisyd.png" alt="University of Sydney" /></a></p>
 					<p class="institutionName">University of Sydney</p>
 			               	  <a href="http://www.usyd.edu.au/">http://www.usyd.edu.au</a><br />
 			               	  Peter Turner <br />
 							  Jim Richardson <br />
 							  Mitchell Guss <br />
-			       	<br/><br/>		
+			       	<br/><br/>
 
-					<p><a href="http://www.uq.edu.au"><img src="/site_media/images/uq.png" alt="university of queensland" /></a><a href="http://www.imb.uq.edu.au"><img style="padding-left: 7px" src="/site_media/images/imblogo.gif" alt="imb uq" /></a></p>
+					<p><a href="http://www.uq.edu.au"><img src="{{ STATIC_URL }}/images/uq.png" alt="university of queensland" /></a><a href="http://www.imb.uq.edu.au"><img style="padding-left: 7px" src="{{ STATIC_URL }}/images/imblogo.gif" alt="imb uq" /></a></p>
 					<p class="institutionName">University of Queensland / Institute for Molecular Bioscience</p>
 
 			               	  <a href="http://www.imb.uq.edu.au/index.html?page=14040&amp;pid=0">Prof. Jenny Martin</a><br />
@@ -106,12 +106,12 @@
 			                    <a href="http://www.uq.edu.au/uqresearchers/researcher/guddatlw.html">Dr. Luke Guddat</a>
 			       	<br/><br/>
 
-					<p><a href="http://www.svi.edu.au"><img src="/site_media/images/st_vincents.png" alt="st vincents" /></a><a href="http://www.unimelb.com.au/"></a></p>
+					<p><a href="http://www.svi.edu.au"><img src="{{ STATIC_URL }}/images/st_vincents.png" alt="st vincents" /></a><a href="http://www.unimelb.com.au/"></a></p>
 					<p class="institutionName">St. Vincent's Health Melbourne</p>
 			                	<a href="http://www.svi.edu.au/index.cfm?objectID=87FC3310-C511-C763-E26610D75551FDAA">Prof. Michael Parker</a>
 			       	<br/><br/>
 
-					<p><a href="http://www.bio21.com.au/"><img src="/site_media/images/bio21logo.png" alt="bio21" /></a></p>
+					<p><a href="http://www.bio21.com.au/"><img src="{{ STATIC_URL }}/images/bio21logo.png" alt="bio21" /></a></p>
 					<p class="institutionName">Bio21 Institute / University of Melbourne</p>
 	               	  Ren Dobson <br /><br />
 
@@ -119,36 +119,36 @@
 			               	  <a href="http://www.unimelb.edu.au">http://www.unimelb.edu.au</a>
 					<br/><br/>
 
-					<p><a href="http://www.csiro.au/"><img src="/site_media/images/csiro.png" alt="csiro" /></a><a href="http://www.ivec.org/"><img src="/site_media/images/ivec.png" alt="ivec" /></a></p>
+					<p><a href="http://www.csiro.au/"><img src="{{ STATIC_URL }}/images/csiro.png" alt="csiro" /></a><a href="http://www.ivec.org/"><img src="{{ STATIC_URL }}/images/ivec.png" alt="ivec" /></a></p>
 					<p class="institutionName">CSIRO / iVEC</p>
 	               	  Robert Mollard <br />
 					  Ankur Sharda <br />
 					<br /><br />
 
-					<p><a href="http://www.anu.edu.au"><img src="/site_media/images/anu.jpg" alt="ANU" /></a></p>
+					<p><a href="http://www.anu.edu.au"><img src="{{ STATIC_URL }}/images/anu.jpg" alt="ANU" /></a></p>
 					<p class="institutionName">The Australian National University</p>
 
 			               	  <a href="http://www.anu.edu.au">http://www.anu.edu.au</a><br />
-			       	<br/><br/> 
+			       	<br/><br/>
 
-					<p><a href="http://ecrystals.chem.soton.ac.uk/"><img src="/site_media/images/ecrystals.png" alt="eCrystals" /></a></p>
+					<p><a href="http://ecrystals.chem.soton.ac.uk/"><img src="{{ STATIC_URL }}/images/ecrystals.png" alt="eCrystals" /></a></p>
 					<p class="institutionName">eCrystals Federation Project</p>
 
 			               	  <a href="http://ecrystals.chem.soton.ac.uk/">http://ecrystals.chem.soton.ac.uk</a><br />
-			       	<br/><br/>      
+			       	<br/><br/>
 
-					<p><a href="http://www.soton.ac.uk/"><img src="/site_media/images/southampton.png" alt="University of Southampton" /></a></p>
+					<p><a href="http://www.soton.ac.uk/"><img src="{{ STATIC_URL }}/images/southampton.png" alt="University of Southampton" /></a></p>
 					<p class="institutionName">University of Southampton</p>
 			               	  <a href="http://www.soton.ac.uk/">http://www.soton.ac.uk</a><br />
 			               	  <a href="http://www.ncs.chem.soton.ac.uk/simon.htm">Simon Coles</a><br />
-			       	<br/><br/>          	    	           	      	      	             	      	
+			       	<br/><br/>
 
 			 	</div>
 
 			  </div>
-			</div>				
+			</div>
 					</div>
-					</li> 
+					</li>
 			</ul>
 		</div>
 

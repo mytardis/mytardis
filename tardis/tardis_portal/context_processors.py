@@ -3,7 +3,7 @@ from django.conf import settings
 def single_search_processor(request):
 
     context = {}
-    single_search_on = True
+    single_search_on = False
     try:
         if settings.SINGLE_SEARCH_ENABLED: 	
             single_search_on = True

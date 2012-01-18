@@ -19,10 +19,10 @@
 	    <tr>
 	      <td><strong>username:</strong></td><td> {{ userAuth.0 }} &nbsp;
 	      {% if userAuth.1 == 'Local DB' %}
-		<a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_changelink.gif"></a>
+		<a class="edit_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="{{ STATIC_URL }}/images/icon_changelink.gif"></a>
               {% else %}
 	        {% if isDjangoAccount %}
-	          <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a>
+	          <a class="remove_auth" id="{{ userAuth.2 }}" href="javascript:void(0);"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif"></a>
 	        {% endif %}
               {% endif %}
 	      </td>
@@ -99,13 +99,13 @@ var edit_auth = function(event) {
 	    var changePassword = $(changePasswordFormStr);
 	    showChangePasswordForm = 1;
 	    changePassword.insertAfter('#' + divId + '.authMethod');
-	    var replacementImg = '<img src="/site_media/images/minus-8.png">';
+	    var replacementImg = '<img src="{{ STATIC_URL }}/images/minus-8.png">';
 	    $('#' + divId + '.edit_auth img').replaceWith(replacementImg);
 	}
 	else {
 		showChangePasswordForm = 0;
 		$('div').remove('.changePassword');
-		var replacementImg = '<img src="/site_media/images/icon_changelink.gif">';
+		var replacementImg = '<img src="{{ STATIC_URL }}/images/icon_changelink.gif">';
         $('#' + divId + '.edit_auth img').replaceWith(replacementImg);
 	}
 }
@@ -117,7 +117,7 @@ var process_new_auth_entry = function(data) {
 
 	var auth_method_str = '<div class="authMethod" id="' + authenticationMethod + '">\n';
 	auth_method_str += '<table><tr><td><strong>username:</strong></td><td>' + username;
-	auth_method_str += '&nbsp;<a class="remove_auth" id="' + authenticationMethod + '" href="javascript:void(0);"><img src="/site_media/images/icon_deletelink.gif"></a></td></tr>\n';
+	auth_method_str += '&nbsp;<a class="remove_auth" id="' + authenticationMethod + '" href="javascript:void(0);"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif"></a></td></tr>\n';
 	auth_method_str += '<tr><td><strong>auth method:</strong></td><td>' + authMethodDict[authenticationMethod] + '</td></tr>\n';
 	auth_method_str += '<tr><td rowspan="2">&nbsp;</td></tr></table>';
     auth_method_str += '</div>\n'
@@ -154,7 +154,7 @@ var edit_account = function() {
             if (status == "success") {
                 showChangePasswordForm = 0;
                 $('div').remove('.changePassword');
-                var replacementImg = '<img src="/site_media/images/icon_changelink.gif">';
+                var replacementImg = '<img src="{{ STATIC_URL }}/images/icon_changelink.gif">';
                 $('a img').replaceWith(replacementImg);
                 var msg_div = $('<div><b>Password successfully changed</b></div>');
                 msg_div.insertAfter('.authMethod').fadeIn("slow").animate({opacity: 1.0}, 5000).fadeOut("slow",function() { msg_div.remove(); });

@@ -39,7 +39,8 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 MEDIA_ROOT = STATIC_DOC_ROOT
 
-MEDIA_URL = '/site_media/'
+MEDIA_URL = '/site_media'
+STATIC_URL = '/static'
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
@@ -76,15 +77,9 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-TARDIS_APPS = ('equipment',)
-#TARDIS_APPS = ()
-
-if TARDIS_APPS:
-    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
-else:
-    apps = ()
 
 INSTALLED_APPS = (
+        TARDIS_APP_ROOT+'.equipment',
         'django.contrib.auth',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
@@ -97,8 +92,7 @@ INSTALLED_APPS = (
         'registration',
         'django_nose',
         'haystack',
-
-) + apps
+)
 
 # LDAP configuration
 LDAP_USE_TLS = False
@@ -124,8 +118,8 @@ MODULE_LOG_FILENAME = 'tardis.log'
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
-UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
-UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
 
 DEFAULT_INSTITUTION = "Monash University"
 

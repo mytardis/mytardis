@@ -60,12 +60,6 @@ SITE_ID = 1
 
 USE_I18N = True
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-
-ADMIN_MEDIA_PREFIX = '/media/'
-
 # Make this unique, and don't share it with anybody.
 
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
@@ -87,12 +81,20 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'tardis.urls'
 
 TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
+                               'django.core.context_processors.static',
                                'django.contrib.auth.context_processors.auth',
                                'django.core.context_processors.debug',
                                'django.core.context_processors.i18n',
                                 'tardis.tardis_portal.context_processors.single_search_processor',
                                 'tardis.tardis_portal.context_processors.tokenuser_processor',
                                 )
+
+TEMPLATE_LOADERS = (
+    'tardis.template.loaders.app_specific.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
+)
+
 
 # Put strings here, like "/home/html/django_templates" or
 # "C:/www/django/templates". Always use forward slashes, even on Windows.
@@ -101,6 +103,7 @@ TEMPLATE_DIRS = (
     path.join(path.dirname(__file__),
     'tardis_portal/templates/').replace('\\', '/'),
 )
+
 
 # Temporarily disable transaction management until everyone agrees that
 # we should start handling transactions
@@ -121,29 +124,30 @@ STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-
 MEDIA_ROOT = STATIC_DOC_ROOT
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
+MEDIA_URL = '/site_media'
 
-MEDIA_URL = '/site_media/'
+# Static content location
+STATIC_URL = '/static'
 
-#set to empty tuple () for no apps
-#TARDIS_APPS = ('mrtardis', )
-TARDIS_APPS = ()
-TARDIS_APP_ROOT = 'tardis.apps'
+# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
+# trailing slash.
+# Examples: "http://foo.com/media/", "/media/".
+ADMIN_MEDIA_PREFIX = STATIC_URL + '/admin/'
 
-if TARDIS_APPS:
-    apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
-else:
-    apps = ()
+STATICFILES_DIRS = (
+    ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT)
+)
 
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
-
+TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
+    TARDIS_APP_ROOT+'.equipment',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -151,12 +155,14 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'django.contrib.staticfiles',
+    'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',
     'south',
     'haystack',
-    ) + apps
+    )
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
@@ -225,15 +231,15 @@ MODULE_LOG_FILENAME = 'tardis.log'
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
-# Uploadify root folder path, relative to MEDIA_ROOT
-UPLOADIFY_PATH = '%s%s' % (MEDIA_URL, 'js/uploadify/')
+# Uploadify root folder path, relative to STATIC root
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
 
 # Upload path that files are sent to
-UPLOADIFY_UPLOAD_PATH = '%s%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance
-SINGLE_SEARCH_ENABLED = False 
+SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'

@@ -151,7 +151,7 @@ class DownloadTestCase(TestCase):
 
         # now check a pdf file
         filename = join(abspath(dirname(__file__)),
-                        '../site_media/downloads/DatasetDepositionGuide.pdf')
+                        '../static/downloads/DatasetDepositionGuide.pdf')
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
