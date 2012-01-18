@@ -46,7 +46,9 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from tardis.tardis_portal.models import Experiment
 import logging
+import socket
 
+from smtplib import SMTPException
 
 from tardis.apps.hpctardis.models import PublishAuthorisation
 
@@ -58,20 +60,13 @@ logger = logging.getLogger(__name__)
 def _send_email(publish_auth,activation_key, exp, activity,auth_party,
                 party_email):
     logger.debug("publish auth=%s" % publish_auth)
-    from django.template import Context, Template
-    
+    from django.template import Context, Template    
     TARDIS_ROOT = os.path.abspath(\
-                        os.path.join(os.path.dirname(__file__)))
-    
+                        os.path.join(os.path.dirname(__file__)))    
     email_path = os.path.join(TARDIS_ROOT,
               "authemail.txt")
-    
-    
-    email_text_fp = open(email_path,"r")
-    
-    
-    email_contents = email_text_fp.read()
-    
+    email_text_fp = open(email_path,"r")    
+    email_contents = email_text_fp.read()    
     t = Template(email_contents)
     d = {"code": activation_key,
          "domain": settings.EMAIL_LINK_HOST,
@@ -81,43 +76,61 @@ def _send_email(publish_auth,activation_key, exp, activity,auth_party,
          "activity": activity,
          "expauthor": exp.created_by,
          "authoriser": auth_party.partyname.given }
-    email_to_send =  t.render(Context(d))
-    
-    from django.core.mail import send_mail
-    
+    email_to_send =  t.render(Context(d))    
+    from django.core.mail import send_mail    
     logger.debug("email to send = %s" % email_to_send)
-    
     send_mail('Authorisation required for experiment', 
                   email_to_send, 'admin@hpctardis.rmit.edu.au',
                 [party_email], fail_silently=False)
     
+def resend_request_email(exp_id, publish_auth):
+    """ resends email for an existing publish_authentication record
+    """
+    exp = Experiment.objects.get(pk=exp_id)
+    logger.debug("already found record")
+    try:                                            
+        _send_email(publish_auth=publish_auth,
+                activation_key=publish_auth.auth_key,
+                exp=exp,
+                activity=publish_auth.activity_record,
+                auth_party=publish_auth.party_record,
+                party_email=publish_auth.email)
+    except SMTPException,e:
+        logger.error(e)
+        return False
+    except socket.gaierror,e:
+        logger.error(e)
+        return False
+    except OSError,e:
+        logger.error("error")
+        logger.error(e)
+        return False
+            
+    logger.debug("publish auth=%s" % publish_auth)    
+    return True
+        
+
 
 def send_request_email(auth_party,activity,exp_id):
         """ Make record that describes authkey, address of correspondance,
             and state of authorisation.  Send email to address, and wait for 
             verification.
-        """
-    
-        exp = Experiment.objects.get(pk=exp_id)    
-  
-    
+        """    
+        exp = Experiment.objects.get(pk=exp_id)        
         try:
             party_email = auth_party.get_email_addresses()[0]
         except IndexError:
-            party_email = ""
-        
+            party_email = ""        
         try:
             publish_auth= PublishAuthorisation.objects.get(experiment=exp,
                                                         party_record=auth_party)
-        except PublishAuthorisation.DoesNotExist:
-               
-            
+        except PublishAuthorisation.DoesNotExist:                        
             salt = sha_constructor(str(random.random())).hexdigest()[:5]
             logger.debug("salt=%s" % salt)
             username = unicode(auth_party.partyname)
             if isinstance(username, unicode):
                 username = username.encode('utf-8')
-            logger.debug("usernane=%s" % username)
+            logger.debug("username=%s" % username)
             activation_key = sha_constructor(salt+username).hexdigest()
             logger.debug("activation_key=%s" % activation_key)
           
@@ -135,31 +148,49 @@ def send_request_email(auth_party,activity,exp_id):
             
             publish_auth.save()
         
-            _send_email(publish_auth=publish_auth,
+            try:                
+                _send_email(publish_auth=publish_auth,
                         activation_key=activation_key,
                         exp=exp,
                         activity=activity,
                         auth_party=auth_party,
                         party_email=party_email)
+            except SMTPException,e:
+                logger.error(e)
+                return False                    
+            except socket.gaierror,e:
+                logger.error(e)
+                return False
+            except OSError,e:
+                logger.error("error")
+                logger.error(e)
+                return False     
             return True
-            
-           
+                       
         except PublishAuthorisation.MultipleObjectsReturned:
             #FIXME: this is an inconsistent state
             # probably want to delete all extra records?
             return False
-        else:
-            
-            logger.debug("already found record")
-            
-            
-            _send_email(publish_auth=publish_auth,
+        else:            
+            logger.debug("already found record")   
+                    
+            try:                             
+                _send_email(publish_auth=publish_auth,
                         activation_key=publish_auth.auth_key,
                         exp=exp,
                         activity=publish_auth.activity_record,
                         auth_party=auth_party,
-                        party_email=party_email)
-            
+                        party_email=publish_auth.email)
+            except SMTPException,e:
+                logger.error(e)
+                return False                    
+            except socket.gaierror,e:
+                logger.error(e)
+                return False
+            except OSError,e:
+                logger.error("error")
+                logger.error(e)
+                return False     
             
             logger.debug("publish auth=%s" % publish_auth)
             

@@ -318,18 +318,12 @@ def publish_experiment(request, experiment_id):
                         'tardis_portal/publish_experiment.html', c))
         
     if request.method == 'POST':  # If the form has been submitted...
-
-    
         legal = True
-        success = True
-    
-            
+        success = True            
         context_dict = {}
         #fix this slightly dodgy logic
         context_dict['publish_result'] = "submitted"
-        if 'legal' in request.POST:
-            
-            
+        if 'legal' in request.POST:                    
             # only make public when all providers signal okay
             # experiment.public = True
             # experiment.save()

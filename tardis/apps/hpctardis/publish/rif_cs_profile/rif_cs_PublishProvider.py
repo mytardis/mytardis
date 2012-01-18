@@ -71,7 +71,7 @@ class rif_cs_PublishProvider(PublishProvider):
                                           
         else:
             return {'status': True,
-                'message': 'Invalid party selection'}
+                'message': 'Invalid activity selection. Please select party record to request authorisation'}
         
         Party_Formset = formset_factory(CollectionPartyRelation,extra=2)        
         party_formset = Party_Formset(request.POST)
