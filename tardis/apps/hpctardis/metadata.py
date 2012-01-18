@@ -182,6 +182,8 @@ rulesets = {
                  ('Test2',("R-2-2.tif","R-2-5.tif"),"get_constant(context,'hello','')"))
                  }
 
+                
+                
 def _get_file_handle(context, filename):
     datafile = context['ready'][filename]
     url = datafile.get_download_url()
@@ -499,13 +501,21 @@ def get_file_regex_all(context,regex):
             fp.close()
         logger.debug("final_res=%s" % final_res) 
         return final_res     
-
-
-
+    
     
 def get_constant(context,val,unit):
     return (val,unit)
 
+
+aux_functions = {
+                              "get_file_line":get_file_line,
+                              "get_file_lines":get_file_lines,
+                              "get_file_regex":get_file_regex,
+                              "get_file_regex_all":get_file_regex_all,
+                              "get_regex_lines":get_regex_lines,
+                              "get_regex_lines_vallist":get_regex_lines_vallist,
+                              "get_final_iteration":get_final_iteration,
+                              "get_constant":get_constant}
 
 def _process_experiments(ruleset):
     """
@@ -607,7 +617,7 @@ def _process_datafiles(exp,dataset,ruleset):
                     
     return meta
        
-def get_metadata(ruleset):
+def _get_metadata(ruleset):
     """ Extracts metadata tags and values for each datafile in experiments
     
         :param ruleset: rules that define the extraction of metadata
@@ -623,7 +633,7 @@ def get_metadata(ruleset):
     return metadatas
         
             
-def get_schema(schema,name):
+def _get_schema(schema,name):
     """Return the schema object that the paramaterset will use.
     """
     try:
@@ -638,7 +648,7 @@ def get_schema(schema,name):
         return schema          
           
             
-def get_parameters(schema,metadata):
+def _get_parameters(schema,metadata):
     """ Returns set of parameters from schema matched to elements in 
         metadata, or creates them based on the metadata values.  Types
         are based on seen values, favouring numerics over strings. 
@@ -691,12 +701,12 @@ def get_parameters(schema,metadata):
     return parameters
 
 
-def save_metadata(instance,schema,metadataset):
+def _save_metadata(instance,schema,metadataset):
     """ Creates schema from the metadataset and associates it 
         with the instance.  If metadata value is empty, then 
         existing value is unchanged.  
     """
-    parameters = get_parameters(schema, metadataset)
+    parameters = _get_parameters(schema, metadataset)
     logger.debug("parameters=%s" % parameters)
     if not parameters:
         return None
@@ -793,17 +803,12 @@ def process_datafile(datafile, ruleset):
                            'ready':ready,
                            'fileregex':file_patterns}
                 logger.debug("data_context=%s" % data_context)
+                
+                
+                aux_context = aux_functions
+                aux_context['context'] = data_context
                 try:
-                    (value,unit) = eval(code,{}, {
-                              "get_file_line":get_file_line,
-                              "get_file_lines":get_file_lines,
-                              "get_file_regex":get_file_regex,
-                              "get_file_regex_all":get_file_regex_all,
-                              "get_regex_lines":get_regex_lines,
-                              "get_regex_lines_vallist":get_regex_lines_vallist,
-                              "get_final_iteration":get_final_iteration,
-                              "get_constant":get_constant,
-                              'context':data_context})
+                    (value,unit) = eval(code,{},aux_context)
                 except Exception,e:
                     logger.error("Exception %s" % e)
                     logger.debug("value,unit=%s %s" % (value,unit))
@@ -831,22 +836,22 @@ def process_experimentX(exp):
                                            rulesets[schemainfo])
             logger.debug("extracted metadataset = %s" % metadataset)
             
-            schema = get_schema(schemainfo[0],schemainfo[1])
+            schema = _get_schema(schemainfo[0],schemainfo[1])
     
             logger.debug("schema = %s" % schema)
           
             for datafile in metadataset:
-                save_metadata(datafile,schema,metadataset[datafile])
+                _save_metadata(datafile,schema,metadataset[datafile])
          
 def process_all_experiments():
     for schemainfo in rulesets:
-        metadataset = get_metadata(rulesets[schemainfo])
+        metadataset = _get_metadata(rulesets[schemainfo])
         logger.debug("metadatas=%s\n" % metadataset)
     
-        schema = get_schema(schemainfo[0],schemainfo[1])
+        schema = _get_schema(schemainfo[0],schemainfo[1])
     
         for datafile in metadataset:
-            save_metadata(datafile,schema,metadataset[datafile])
+            _save_metadata(datafile,schema,metadataset[datafile])
 
       
                    

@@ -295,8 +295,12 @@ def publish_experiment(request, experiment_id):
     
     if publishService.is_under_review():
         context_dict = {}
+        context_dict['legal'] = True
         context_dict['status'] = False
-        context_dict['message'] = 'Experiment is under review'
+        context_dict['success'] = False
+        context_dict['publish_result'] = [{'status':True,                                          
+                                          'message':'Experiment is under review'}]
+      
         c = Context(context_dict)
         return HttpResponse(render_response_index(request,
                         'tardis_portal/publish_experiment.html', c))

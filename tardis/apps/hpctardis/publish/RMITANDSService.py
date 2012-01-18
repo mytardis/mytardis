@@ -75,7 +75,7 @@ def _send_email(publish_auth,activation_key, exp, activity,auth_party,
     t = Template(email_contents)
     d = {"code": activation_key,
          "domain": settings.EMAIL_LINK_HOST,
-         "path":"apps/hpctardis/publishauth",
+         "path":"publishauth",
          "exp":exp.id,
          "expname":exp.title,
          "activity": activity,
@@ -305,7 +305,7 @@ class RMITANDSService(PublishService):
         if publish_auths:        
             logger.debug("publish_auths=%s" % publish_auths)
             for publish_auth in publish_auths:
-                if publish_auth == PublishAuthorisation.PENDING_APPROVAL:
+                if publish_auth.status == PublishAuthorisation.PENDING_APPROVAL:
                     return True
             return False
         else:

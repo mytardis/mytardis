@@ -57,9 +57,9 @@ from django.conf import settings
 from tardis.tardis_portal import models
 from tardis.tardis_portal.auth.localdb_auth import django_user
 
-from tardis.apps.hpctardis.metadata import get_metadata
-from tardis.apps.hpctardis.metadata import get_schema
-from tardis.apps.hpctardis.metadata import save_metadata
+#from tardis.apps.hpctardis.metadata import _get_metadata
+#from tardis.apps.hpctardis.metadata import _get_schema
+#from tardis.apps.hpctardis.metadata import _save_metadata
 from tardis.apps.hpctardis.metadata import process_all_experiments
 from tardis.apps.hpctardis.metadata import process_experimentX
 
@@ -684,6 +684,25 @@ class AuthPublishTest(TestCase):
         logger.debug("auth=%s" % auth)
         self.assertEquals(auth.status,
                           PublishAuthorisation.PENDING_APPROVAL)
+        
+        
+        # try publishing while awaiting results
+        data = {}
+        response = self.client.post("/experiment/view/1/publish/", data)
+        self.assertEquals(response.status_code,
+                          200)
+        logger.debug("response=%s" % response)
+        
+        self.assertEquals(response.context['publish_result'][0]['status'],
+                          True)         
+        self.assertEquals(response.context['publish_result'][0]['message'],
+                          'Experiment is under review')
+        self.assertEquals(response.context['success'],
+                          False)
+        
+        
+        
+        
         # wrong auth
         data={'expid':str(exp.id),
                           'authcode':'invalidkey'}
@@ -699,6 +718,8 @@ class AuthPublishTest(TestCase):
         # right auth
         exp = models.Experiment.objects.get(title="test exp1")
         self.assertEqual(exp.public, False)
+        
+        
         
         data={'expid':str(exp.id),
                           'authcode':auth.auth_key}

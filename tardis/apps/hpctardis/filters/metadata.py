@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 from tardis.apps.hpctardis.metadata import rulesets
 from tardis.apps.hpctardis.metadata import process_datafile
-from tardis.apps.hpctardis.metadata import get_schema
-from tardis.apps.hpctardis.metadata import save_metadata
+from tardis.apps.hpctardis.metadata import _get_schema
+from tardis.apps.hpctardis.metadata import _save_metadata
 
 class MetadataFilter(object):
     """This filter provides extraction of metadata extraction of HPC files
@@ -70,11 +70,11 @@ class MetadataFilter(object):
             metadata = process_datafile(instance, rulesets[schemainfo])
             logger.debug("extracted metadata = %s" % metadata)
             
-            schema = get_schema(schemainfo[0],schemainfo[1])
+            schema = _get_schema(schemainfo[0],schemainfo[1])
     
             logger.debug("schema = %s" % schema)
           
-            save_metadata(instance.dataset,schema,metadata)
+            _save_metadata(instance.dataset,schema,metadata)
 
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):
