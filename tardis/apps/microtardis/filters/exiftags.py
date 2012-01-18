@@ -92,6 +92,7 @@ class EXIFTagsFilter(object):
                             ['User', 'Time', None, None],
                             ['Beam', 'HV', "kV", 0.001],
                             ['Beam', 'Spot', None, None],
+                            ['Scan', 'PixelWidth', None, None],
                             ['Scan', 'Horfieldsize', None, None],
                             ['Stage', 'WorkingDistance', "mm", 1000],
                             ['Vacuum', 'UserMode', None, None],
@@ -109,6 +110,7 @@ class EXIFTagsFilter(object):
                               ['User', 'Time', None, None],
                               ['Beam', 'HV', "kV", 0.001],
                               ['Beam', 'Spot', None, None],
+                              ['Scan', 'PixelWidth', None, None],
                               ['Scan', 'HorFieldsize', None, None],
                               ['Stage', 'WorkingDistance', "mm", 1000],
                               ['Vacuum', 'UserMode', None, None],
@@ -191,6 +193,7 @@ class EXIFTagsFilter(object):
                         # find property value in tag
                         metadata = {}
                         detector_name = ""
+                        pixel_width = 0
                         for tag in tagsToFind:
                             (section, option, unit, multiplier) = tag
                             try:
@@ -202,8 +205,23 @@ class EXIFTagsFilter(object):
                                 metadata["[%s] %s" % (section, option)] = [value, unit]
                                 if section == "Detectors" and option == "Name":
                                     detector_name = value
+                                if section == "Scan" and option == "PixelWidth":
+                                    pixel_width = float(value)
                             except ConfigParser.NoSectionError:
                                 pass
+                            
+                        # Calculate Magnification
+                        if pixel_width:
+                            section = "Scan"
+                            option = "Magnification"
+                            
+                            if instr_name == "Quanta200":
+                                monitor_pixel_width = 0.00025
+                            if instr_name == "NovaNanoSEM":
+                                monitor_pixel_width = 0.000291456
+                            value = round( monitor_pixel_width / pixel_width )
+                            unit = "x"
+                            metadata["[%s] %s" % (section, option)] = [value, unit]
 
                         # only save exif data if we found some expected metadata
                         logger.debug("metadata = %s" % metadata)
