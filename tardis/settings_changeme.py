@@ -112,8 +112,9 @@ DISABLE_TRANSACTION_MANAGEMENT = False
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')
 
-ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
-    '../parts/django/django/contrib/admin/media/').replace('\\', '/')
+from django.contrib.admin import __file__ as admin_module_file
+ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(admin_module_file), \
+                                        'media')
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
@@ -134,13 +135,16 @@ MEDIA_URL = '/site_media'
 # Static content location
 STATIC_URL = '/static'
 
+# Used by "django collectstatic"
+STATIC_ROOT = path.abspath(path.join(path.dirname(__file__),'..','static'))
+
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = STATIC_URL + '/admin/'
 
 STATICFILES_DIRS = (
-    ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT)
+    ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT),
 )
 
 # A tuple of strings designating all applications that are enabled in
@@ -258,7 +262,7 @@ TOKEN_USERNAME = 'tokenuser'
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
 RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
-RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__), 
+RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__),
     'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
 RIFCS_GROUP = "MyTARDIS Default Group"
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'

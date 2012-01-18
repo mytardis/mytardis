@@ -12,10 +12,13 @@ parts/
 bin/
 *.egg-info/
 develop-eggs/
+docs/doctrees/
+docs/html/
 docs/make.bat
 docs/Makefile
 .noseids
 .project
 .settings/
 .pydevproject
+static/
 var/

@@ -42,8 +42,9 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 MEDIA_URL = '/site_media'
 STATIC_URL = '/static'
 
-ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
-                                        '../parts/django/django/contrib/admin/media/').replace('\\', '/')
+from django.contrib.admin import __file__ as admin_module_file
+ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(admin_module_file), \
+                                        'media')
 
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
