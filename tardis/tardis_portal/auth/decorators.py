@@ -111,7 +111,48 @@ def has_datafile_access(request, dataset_file_id):
     else:
         return False
 
+def has_read_ACL(request, experiment_id):
 
+    from datetime import datetime
+    from tardis.tardis_portal.auth.localdb_auth import django_user
+
+    experiment = Experiment.safe.get(request, experiment_id)
+
+    # does the user own this experiment
+    query = Q(experiment=experiment,
+              pluginId=django_user,
+              entityId=str(request.user.id),
+              isOwner=True)
+
+    # check if there is a user based authorisation role
+    query |= Q(experiment=experiment,
+               pluginId=django_user,
+               entityId=str(request.user.id),
+               canRead=True)\
+               & (Q(effectiveDate__lte=datetime.today())
+                  | Q(effectiveDate__isnull=True))\
+               & (Q(expiryDate__gte=datetime.today())
+                  | Q(expiryDate__isnull=True))
+
+    # and finally check all the group based authorisation roles
+    for name, group in request.groups:
+        query |= Q(pluginId=name,
+                   entityId=str(group),
+                   experiment=experiment,
+                   canRead=True)\
+                   & (Q(effectiveDate__lte=datetime.today())
+                      | Q(effectiveDate__isnull=True))\
+                   & (Q(expiryDate__gte=datetime.today())
+                      | Q(expiryDate__isnull=True))
+
+    # is there at least one ACL rule which satisfies the rules?
+    from tardis.tardis_portal.models import ExperimentACL
+    acl = ExperimentACL.objects.filter(query)
+    if acl.count() == 0:
+        return False
+    else:
+        return True
+    
 def has_write_permissions(request, experiment_id):
 
     from datetime import datetime
