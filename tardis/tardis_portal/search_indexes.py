@@ -69,6 +69,9 @@ def cleanText(text):
 
     return clean_text
 
+def _underscoreSlug(text):
+    return slugify(text).replace('-', '_')
+
 # Take the paramtername and massage it 
 # into a suitable search field name
 # based on the paramtername schema type
@@ -77,16 +80,18 @@ def cleanText(text):
 def prepareFieldName(parameter_name):
     
     prefix = ''
+    schema_name = _underscoreSlug(parameter_name.schema.name)
     if parameter_name.schema.type == Schema.DATAFILE:
-        prefix = 'datafile_'
+        prefix = 'datafile'
     elif parameter_name.schema.type == Schema.DATASET:
-        prefix = 'dataset_'
+        prefix = 'dataset'
     elif parameter_name.schema.type == Schema.EXPERIMENT:
-        prefix = 'experiment_'
+        prefix = 'experiment'
     else:
         pass
-    slug = slugify(parameter_name.full_name).replace('-', '_')
-    return prefix + slug
+    slug = _underscoreSlug(parameter_name.full_name)
+     
+    return '_'.join([prefix, schema_name, slug])
     
 # This is a text index so any numeric fields 
 # will default to being rounded to ints
