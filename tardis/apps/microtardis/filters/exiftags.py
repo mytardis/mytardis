@@ -206,7 +206,7 @@ class EXIFTagsFilter(object):
                                 if section == "Vacuum" and option.lower() == "chpressure":
                                     value_in_torr = float(value) / 133.322368
                                     value_in_mbar = float(value) / 100
-                                    value = "%.2e torr (%.2e mbar)" % (value_in_torr, value_in_mbar)
+                                    value = "%.4G Torr (%.4G mbar)" % (value_in_torr, value_in_mbar)
                                     
                                 metadata["[%s] %s" % (section, option)] = [value, unit]
                                 if section == "Detectors" and option == "Name":
