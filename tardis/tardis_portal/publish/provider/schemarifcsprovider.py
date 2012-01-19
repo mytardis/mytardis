@@ -53,6 +53,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         return self.format_desc(desc)
     
     def format_desc(self, desc):
+        formatted_desc = ""
         if self._is_html_formatted(desc):
             formatted_desc = html2text(desc)
         return formatted_desc.strip()
