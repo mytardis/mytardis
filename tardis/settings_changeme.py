@@ -112,9 +112,12 @@ DISABLE_TRANSACTION_MANAGEMENT = False
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')
 
-from django.contrib.admin import __file__ as admin_module_file
-ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(admin_module_file), \
-                                        'media')
+def get_admin_media_path():
+    import pkgutil
+    package = pkgutil.get_loader("django.contrib.admin")
+    return path.join(package.filename, 'media')
+
+ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')

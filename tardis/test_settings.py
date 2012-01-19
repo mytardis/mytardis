@@ -42,9 +42,12 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 MEDIA_URL = '/site_media'
 STATIC_URL = '/static'
 
-from django.contrib.admin import __file__ as admin_module_file
-ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(admin_module_file), \
-                                        'media')
+def get_admin_media_path():
+    import pkgutil
+    package = pkgutil.get_loader("django.contrib.admin")
+    return path.join(package.filename, 'media')
+
+ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
