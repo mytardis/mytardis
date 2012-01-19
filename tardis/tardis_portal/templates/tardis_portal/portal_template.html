@@ -34,24 +34,17 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    {% block icon %}
 	<link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
-	{% endblock icon %}
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	{% block title %}
 	<title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
-	{% endblock title %}
 	<meta name="keywords" content="">
 	<meta name="description" content="">
 	{% include "tardis_portal/javascript_libraries.html" %}
-    {% include "tardis_portal/javascript_libraries.html" %} 
 
 	{% block script %}
 	{% endblock script %}
 
 	<link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
-	{% block css_extra %}
-	{% endblock css_extra %}
 
 	<script type="text/javascript">
 	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
@@ -131,7 +124,6 @@ matchContains: true, multiple: true, multipleSeparator: " "
 <body>
 
   <div id="header">
-  {% block header %}
     <div id="logo">
       <h1><img src="/site_media/images/mytardis_logo.png"></h1>
     </div> <!-- logo -->
@@ -144,7 +136,6 @@ matchContains: true, multiple: true, multipleSeparator: " "
 	<li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
       </ul>
     </div> <!-- menu -->
-  {% endblock header %}
   </div> <!-- end header -->
 
   <div id="headerbg">
@@ -219,13 +210,8 @@ matchContains: true, multiple: true, multipleSeparator: " "
 
     </div> <!-- content box -->
     
-    {% block bottomicons %}
-    {% endblock bottomicons %}
-    
     <div id="bottombar" style="padding-bottom: 5px; text-align: center;">
-    {% block bottombar %}
       Created by the <a target="_blank" style="text-decoration: underline" href="http://code.google.com/p/mytardis/">MyTARDIS Team</a> - Version 2.00
-    {% endblock bottombar %}
     </div> <!-- bottombar -->
   </div> <!-- page -->
 

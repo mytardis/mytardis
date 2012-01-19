@@ -21,7 +21,7 @@ DATABASES = {
 # ingestion? Must be one of the above authentication provider names
 DEFAULT_AUTH = 'localdb'
 
-ROOT_URLCONF = 'tardis.urls'
+#ROOT_URLCONF = 'tardis.urls'
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
@@ -61,6 +61,8 @@ MEDIA_URL = '/site_media/'
 ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                         '../parts/django/django/contrib/admin/media/').replace('\\', '/')
 
+EMAIL_LINK_HOST = "http://127.0.0.1:8080"
+
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
@@ -91,7 +93,7 @@ MIDDLEWARE_CLASSES = (
 )
 
 TARDIS_APP_ROOT = 'tardis.apps'
-TARDIS_APPS = ('equipment','hpctardis')
+TARDIS_APPS = ('equipment',)
 
 if TARDIS_APPS:
     apps = tuple(["%s.%s" % (TARDIS_APP_ROOT, app) for app in TARDIS_APPS])
@@ -151,13 +153,6 @@ HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
 if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
-    
-# Post Save Filters
-POST_SAVE_FILTERS = [
-#  ("tardis.tardis_portal.filters.exif.EXIFFilter", ["exif","http://exif.schema"]),
-    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
-    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
-    ]
 
 PUBLISH_PROVIDERS = (
                  #   'tardis.tardis_portal.publish.rif_cs_profile.'
@@ -165,3 +160,47 @@ PUBLISH_PROVIDERS = (
                     'tardis.apps.hpctardis.publish.rif_cs_profile.'
                     + 'rif_cs_PublishProvider.rif_cs_PublishProvider',
                     )
+ 
+
+# --------------------------------------
+# -- MicroTardis settings for testing --
+# --------------------------------------
+
+# Post Save Filters
+POST_SAVE_FILTERS = [
+    ("tardis.apps.microtardis.filters.exiftags.make_filter", ["MICROSCOPY_EXIF","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.microtardis.filters.spctags.make_filter", ["EDAXGenesis_SPC","http://rmmf.isis.rmit.edu.au/schemas"]),
+    ("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""])
+ ]
+
+# Directory path for storing image thumbnails
+THUMBNAILS_PATH = path.abspath(path.join(path.dirname(__file__),
+    '../var/thumbnails/')).replace('\\', '/')
+    
+# Template loaders
+TEMPLATE_LOADERS = (
+    'tardis.apps.microtardis.templates.loaders.app_specific.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
+)
+
+# Microtardis Media
+MT_STATIC_URL_ROOT = '/static'
+MT_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                               'apps/microtardis/static').replace('\\', '/')
+                               
+                               
+# ------------------------------------
+# -- HPCTardis settings for testing --
+# ------------------------------------
+
+tmp = list(POST_SAVE_FILTERS)
+tmp.append(("tardis.apps.hpctardis.filters.metadata.make_filter", ["",""]))
+POST_SAVE_FILTERS = tuple(tmp)
+
+INSTALLED_APPS = (TARDIS_APP_ROOT+".hpctardis",) + INSTALLED_APPS
+
+
+# Changed because hpctardis overrides existing urls, which are called in testcases
+ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
+                     

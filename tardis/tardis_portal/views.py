@@ -106,11 +106,12 @@ def logout(request):
                         'tardis_portal/index.html', c))
 
 
-def index(request, template_name='tardis_portal/index.html'):
+def index(request):
     status = ''
 
     c = Context({'status': status})
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/index.html', c))
 
 
 def site_settings(request):
@@ -221,23 +222,23 @@ def display_datafile_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
-def about(request, template_name='tardis_portal/about.html'):
+def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
                  'nav': [{'name': 'About', 'link': '/about/'}]})
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/about.html', c))
 
 
-def partners(request, template_name='tardis_portal/partners.html'):
+def partners(request):
 
     c = Context({})
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/partners.html', c))
 
 
-def experiment_index(request, 
-                     template_name="tardis_portal/experiment_index.html", 
-                     portal_template_name='tardis_portal/portal_template.html'):
+def experiment_index(request):
 
     experiments = None
 
@@ -257,17 +258,14 @@ def experiment_index(request,
         'bodyclass': 'list',
         'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
         'next': '/experiment/view/',
-        'data_pressed': True,
-        'portal_template_name': portal_template_name})
+        'data_pressed': True})
 
-    return HttpResponse(render_response_search(request, template_name, c))
+    return HttpResponse(render_response_search(request,
+                        'tardis_portal/experiment_index.html', c))
 
 
 @authz.experiment_access_required
-def view_experiment(request, 
-                    experiment_id,
-                    template_name="tardis_portal/view_experiment.html", 
-                    portal_template_name='tardis_portal/portal_template.html',):
+def view_experiment(request, experiment_id):
 
     """View an existing experiment.
 
@@ -318,9 +316,9 @@ def view_experiment(request,
             pass
 
     c['apps'] = zip(appurls, appnames)
-    c['portal_template_name'] = portal_template_name
 
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/view_experiment.html', c))
 
 
 @authz.experiment_access_required
@@ -503,8 +501,7 @@ def retrieve_experiment_metadata(request, experiment_id):
 
 @login_required
 def create_experiment(request,
-                      template_name='tardis_portal/create_experiment.html',
-                      portal_template_name='tardis_portal/portal_template.html'):
+                      template_name='tardis_portal/create_experiment.html'):
 
     """Create a new experiment view.
 
@@ -567,7 +564,6 @@ def create_experiment(request,
 
     c['form'] = form
     c['default_institution'] = settings.DEFAULT_INSTITUTION
-    c['portal_template_name'] = portal_template_name
     return HttpResponse(render_response_index(request, template_name, c))
 
 
@@ -590,8 +586,7 @@ def metsexport_experiment(request, experiment_id):
 @login_required
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
-                    template_name="tardis_portal/create_experiment.html", 
-                    portal_template_name='tardis_portal/portal_template.html'):
+                      template="tardis_portal/create_experiment.html"):
     """Edit an existing experiment.
 
     :param request: a HTTP Request instance
@@ -641,16 +636,13 @@ def edit_experiment(request, experiment_id,
         form = ExperimentForm(instance=experiment, extra=0)
 
     c['form'] = form
-    c['portal_template_name'] = portal_template_name
 
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        template, c))
 
 
 # todo complete....
-def login(request,
-          template_name="tardis_portal/login.html", 
-          portal_template_name='tardis_portal/portal_template.html',):
-    
+def login(request):
     from tardis.tardis_portal.auth import login, auth_service
 
     if type(request.user) is not AnonymousUser:
@@ -682,10 +674,10 @@ def login(request,
         return return_response_error_message(
             request, 'tardis_portal/login.html', c)
 
-    c = Context({'loginForm': LoginForm(),
-                 'portal_template_name': portal_template_name})
+    c = Context({'loginForm': LoginForm()})
 
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/login.html', c))
 
 
 @login_required()
@@ -874,7 +866,7 @@ def retrieve_parameters(request, dataset_file_id):
 
 @never_cache
 @authz.dataset_access_required
-def retrieve_datafile_list(request, dataset_id):
+def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/ajax/datafile_list.html'):
 
     dataset_results = \
         Dataset_File.objects.filter(
@@ -945,29 +937,24 @@ def retrieve_datafile_list(request, dataset_id):
         'highlighted_dataset_files': highlighted_dsf_pks,
         'has_write_permissions': has_write_permissions,
         })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/datafile_list.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 @login_required()
-def control_panel(request,
-                  template_name="tardis_portal/control_panel.html", 
-                  portal_template_name='tardis_portal/portal_template.html',):
+def control_panel(request):
 
     experiments = Experiment.safe.owned(request)
     if experiments:
         experiments = experiments.order_by('title')
 
     c = Context({'experiments': experiments,
-                 'subtitle': 'Experiment Control Panel',
-                 'portal_template_name': portal_template_name,})
+                 'subtitle': 'Experiment Control Panel'})
 
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/control_panel.html', c))
 
 
-def search_experiment(request,
-                      template_name="tardis_portal/search_experiment_results.html", 
-                      portal_template_name='tardis_portal/portal_template.html',):
+def search_experiment(request):
     
     """Either show the search experiment form or the result of the search
     experiment query.
@@ -975,7 +962,7 @@ def search_experiment(request,
     """
 
     if len(request.GET) == 0:
-        return __forwardToSearchExperimentFormPage(request, portal_template_name)
+        return __forwardToSearchExperimentFormPage(request)
 
     form = __getSearchExperimentForm(request)
     experiments = __processExperimentParameters(request, form)
@@ -984,14 +971,14 @@ def search_experiment(request,
     if experiments is not None:
         bodyclass = 'list'
     else:
-        return __forwardToSearchExperimentFormPage(request, portal_template_name)
+        return __forwardToSearchExperimentFormPage(request)
 
     c = Context({'header': 'Search Experiment',
                  'experiments': experiments,
-                 'bodyclass': bodyclass,
-                 'portal_template_name': portal_template_name,})
+                 'bodyclass': bodyclass})
 
-    return HttpResponse(render_response_search(request, template_name, c))
+    url = 'tardis_portal/search_experiment_results.html'
+    return HttpResponse(render_response_search(request, url, c))
 
 
 def search_quick(request):
@@ -1320,13 +1307,12 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
     return HttpResponse(render_response_search(request, url, c))
 
 
-def __forwardToSearchExperimentFormPage(request, portal_template_name='tardis_portal/portal_template.html'):
+def __forwardToSearchExperimentFormPage(request):
     """Forward to the search experiment form page."""
 
     searchForm = __getSearchExperimentForm(request)
 
-    c = Context({'searchForm': searchForm,
-                 'portal_template_name': portal_template_name})
+    c = Context({'searchForm': searchForm})
     url = 'tardis_portal/search_experiment_form.html'
     return HttpResponse(render_response_search(request, url, c))
 
@@ -1613,14 +1599,12 @@ def retrieve_group_userlist(request, group_id):
 
 @never_cache
 @login_required()
-def manage_groups(request,
-                  template_name='tardis_portal/manage_group_members.html', 
-                  portal_template_name='tardis_portal/portal_template.html',):
+def manage_groups(request):
 
     groups = Group.objects.filter(groupadmin__user=request.user)
-    c = Context({'groups': groups,
-                 'portal_template_name': portal_template_name})
-    return HttpResponse(render_response_index(request, template_name, c))
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_group_members.html', c))
 
 
 @never_cache
@@ -2040,9 +2024,7 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     return HttpResponse('')
 
 
-def stats(request, 
-          template_name='tardis_portal/stats.html', 
-          portal_template_name='tardis_portal/portal_template.html'):
+def stats(request):
 
     # stats
 
@@ -2061,9 +2043,9 @@ def stats(request,
     # using count() is more efficient than using len() on a query set
     c = Context({'public_datafiles': public_datafiles.count(),
                 'public_experiments': public_experiments.count(),
-                'public_datafile_size': public_datafile_size,
-                'portal_template_name': portal_template_name})
-    return HttpResponse(render_response_index(request, template_name, c))
+                'public_datafile_size': public_datafile_size})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/stats.html', c))
 
 
 def import_params(request):
@@ -2488,10 +2470,7 @@ def rif_cs(request):
 
 @never_cache
 @authz.experiment_ownership_required
-def publish_experiment(request, 
-                       experiment_id,
-                       template_name='tardis_portal/publish_experiment.html', 
-                       portal_template_name='tardis_portal/portal_template.html',):
+def publish_experiment(request, experiment_id):
     """
     Make the experiment open to public access.
     Sets off a chain of PublishProvider modules for
@@ -2565,5 +2544,5 @@ def publish_experiment(request,
         **publishService.get_contexts(request))
 
     c = Context(context_dict)
-    c['portal_template_name'] = portal_template_name
-    return HttpResponse(render_response_index(request, template_name, c))
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/publish_experiment.html', c))

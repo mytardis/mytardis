@@ -53,11 +53,24 @@ from tardis.tardis_portal.models import DatasetParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import Experiment
 
+
 logger = logging.getLogger(__name__)
 
-
 number = "[+-]?((\d+)(\.\d*)?)|(\d+\.\d+)([eE][+-]?[0-9]+)?"
-rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
+rulesets = {
+            ('http://tardis.edu.au/schemas/general/1','general 1.0'):
+            ( ('Project',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',True)"), 
+              ('Number Of CPUs',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
+                ('Maximum virtual memory',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
+                ('Max jobfs disk use',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
+                ('Walltime',("^.*[_0-9]*\.o(\d+)$",),
+                 "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)")),
+            
+            ('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
             (
                 ('kpoint_grid',("KPOINTS[_0-9]*",),
                  "get_file_line(context,-3)"),
@@ -74,16 +87,8 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'\s+ISIF\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),  
                 ('ISPIN',("OUTCAR[0-9]*",),
                  "get_file_regex(context,'\s+ISPIN\s+\=\s+(?P<value>%s)\s+(?P<unit>.*)$',False)" % number),                  
-                ('Project',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',False)"), 
-                ('Walltime',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)"),
-                ('Number Of CPUs',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
-                ('Maximum virtual memory',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
-                ('Max jobfs disk use',("^vasp.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
+               
+                
                 ('NSW',("OUTCAR[_0-9]*",),
                  "get_file_regex(context,'NSW\s*\=\s*(?P<value>%s)\s*(?P<unit>.*)$',False)" % number),
                 ('IBRION',("OUTCAR[_0-9]*",),
@@ -92,8 +97,8 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'ISMEAR\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
                 ('POTIM',("OUTCAR[_0-9]*",),
                  "get_file_regex(context,'POTIM\s*\=\s*(?P<value>%s)(?P<unit>)',False)" % number),
-                ('MAGMOM',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,1,4)"), 
+                #('MAGMOM',("POSCAR[_0-9]*",),
+                 #"get_file_lines(context,1,4)"), 
                 ('Descriptor Line',("INCAR[_0-9]*",),
                  "get_file_regex(context,'System = (?P<value>.*)(?P<unit>)',False)"), 
                 ('EDIFF',("OUTCAR[_0-9]*",),
@@ -112,58 +117,64 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  "get_file_regex(context,'SMASS\s*\=\s*(?P<value>[^\s]+)(?P<unit>.*)',False)"),  
                 ('Final Iteration',("OSZICAR[_0-9]*",),
                  "get_final_iteration(context)"), 
+             
                 ('TITEL',("OUTCAR[_0-9]*",),
-                 "'\n'.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)'))"), 
-                ('Cell Parameters',("POSCAR[_0-9]*",),
-                 "get_file_lines(context,1,5)")),
+                 "('\\n '.join(get_file_regex_all(context,'TITEL\s+\=\s+(?P<value>.*)$')),'')"), 
+             
+                ('LEXCH',("OUTCAR[_0-9]*",),
+                 "('\\n '.join(get_file_regex_all(context,'LEXCH\s+\=\s+(?P<value>[^\s]+)')),'')"), 
+             
+                ('Cell Scaling',("POSCAR[_0-9]*",),
+                 "get_file_line(context,1)"),
+            
+                ('Cell Parameter1',("POSCAR[_0-9]*",),
+                 "get_file_line(context,2)"),
+            
+                ('Cell Parameter2',("POSCAR[_0-9]*",),
+                 "get_file_line(context,3)"),
+            
+                ('Cell Parameter3',("POSCAR[_0-9]*",),
+                 "get_file_line(context,4)")),
+            
             
             
                  
                  
                 ('http://tardis.edu.au/schemas/siesta/1','siesta 1.0'):
-                (('SystemName',("input\.fdf",),
+                (('SystemName',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'SystemName\s+(?P<value>.*)(?P<unit>)',False)"),
-                ('MeshCutoff',("input\.fdf",),
+                ('MeshCutoff',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'MeshCutoff\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
-                ('ElectronicTemperature',("input\.fdf",),
+                ('ElectronicTemperature',("input[_0-9]*\.fdf",),
                    "get_file_regex(context,'ElectronicTemperature\s+(?P<value>[^\s]+)(?P<unit>.*)',False)"),
                 #('k-grid',("input\.fdf",),
                 #   "get_regex_lines(context,'\%block k_grid_Monkhorst_Pack','\%endblock k_grid_Monkhorst_Pack')"),
-                ('k-grid',("input\.fdf",),
+                ('k-grid',("input[_0-9]*\.fdf",),
                    "get_regex_lines(context,'\%block kgridMonkhorstPack','\%endblock kgridMonkhorstPack')"),
-                ('PAO.Basis',("input\.fdf",),
+                ('PAO.Basis',("input[_0-9]*\.fdf",),
                    "get_regex_lines(context,'\%block PAO.Basis','\%endblock PAO.Basis')"),
-                ('Project',("^siesta.*[_0-9]*\.o(\d+)$",),
-                   "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',False)"),
-                ('Walltime',("^siesta.*[_0-9]*\.o(\d+)$",),
-                    "get_file_regex(context,'Elapsed time:\s+(?P<value>[\w:]+)(?P<unit>)',True)"),
-                    #TODO: refactor these rules
-                ('Maximum virtual memory',("^siesta.*[_0-9]*\.o(\d+)$",),
-                     "get_file_regex(context,'Max virtual memory:\s+(?P<value>[0-9]+)(?P<unit>(M|G|K)B)',True)"),
-                ('Max jobfs disk use',("^siesta.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Max jobfs disk use:\s+(?P<value>.*)(?P<unit>(M|G|K)B)',True)"),
-      
-                ('MD.TypeOfRun',('input\.fdf',),
+               
+                ('MD.TypeOfRun',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.TypeOfRun\s+(?P<value>.*)(?P<unit>)',False)"),
       
-                ('MD.NumCGsteps',('input\.fdf',),
+                ('MD.NumCGsteps',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.NumCGsteps\s+(?P<value>[^\s]+)(?P<unit>)',False)"),
             
-                ('iscf',('output',),
+                ('iscf',('output[_0-9]*',),
                  "(get_regex_lines_vallist(context,'siesta\:\siscf','^$')[-1],'')"),
              
              
-                ('E_KS',('output',),
+                ('E_KS',('output[_0-9]*',),
                  "get_file_regex(context,'^siesta:\s+E\_KS\(eV\)\s+\=\s+(?P<value>.*)(?P<unit>)',False)"),
              
-                ('Occupation Function',('input\.fdf',),
+                ('Occupation Function',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)OccupationFunction\s+(?P<value>.*)(?P<unit>)',False)"),
              
-                ('OccupationMPOrder',('input\.fdf',),
+                ('OccupationMPOrder',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)OccupationMPOrder\s+(?P<value>.*)(?P<unit>)',False)"),
              
                 
-                ('MD.MaxForceTol',('input\.fdf',),
+                ('MD.MaxForceTol',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.MaxForceTol\s+(?P<value>[^\s]+)\s+(?P<unit>.*)',False)")),
                        
                        ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
@@ -171,6 +182,8 @@ rulesets = {('http://tardis.edu.au/schemas/vasp/1','vasp 1.0'):
                  ('Test2',("R-2-2.tif","R-2-5.tif"),"get_constant(context,'hello','')"))
                  }
 
+                
+                
 def _get_file_handle(context, filename):
     datafile = context['ready'][filename]
     url = datafile.get_download_url()
@@ -189,7 +202,9 @@ def _get_file_handle(context, filename):
 
 
 def get_final_iteration(context):
-    """ Return the final iteration number from a VASP run 
+    """ Return the final iteration number from a VASP run
+    
+        :param context: package of parameter data
     """
     fileregex = context['fileregex'][0]
     filename = _get_file_from_regex(fileregex,context['ready'],False)
@@ -259,7 +274,6 @@ def _get_file_from_regex(regex,context, return_max):
     return max_match
 
 
-
 def get_file_lines(context, linestart,lineend):
     """ Returns value and units from the filenameregex where value is 
     newline joined lines from linestart to lineend.  Only works for local files""" 
@@ -290,8 +304,7 @@ def get_file_lines(context, linestart,lineend):
             return ("\n".join(res),'')
     return ('','')
     
-    
-    
+       
 def get_file_line(context,lineno):
     """Returns the context of relative linenumber
     Assumes no units value and only works for smallish file"""
@@ -316,7 +329,7 @@ def get_file_line(context,lineno):
         if fp:
             line_list = fp.readlines()
             fp.close()
-            print line_list 
+            logger.debug(line_list) 
             return (str(line_list[lineno]),'')
     return ('','')  
     
@@ -413,12 +426,13 @@ def get_file_regex(context,regex,return_max):
     filename = _get_file_from_regex(fileregex,context['ready'],return_max)
     
     if not filename or filename not in context['ready']:
-        print "found None"
+        logger.debug("found None")
         return ('','')
     else:
         try:
             fp = _get_file_handle(context, filename)
-        except Exception:
+        except Exception,e:
+            logger.error("problem with filehandle %s" % e)
             return ('','')
         if fp:
             regx = re.compile(regex)
@@ -430,13 +444,15 @@ def get_file_regex(context,regex,return_max):
                     unit = str(match.group('unit'))
                     if not unit:
                         unit = ''
-                    print "value=%s unit=%s" % (value,unit)
+                    logger.debug("value=%s unit=%s" % (value,unit))
                     fp.close()
                     res = (value,unit)
                     for g in res:
-                        print "final matched %s" % g
+                        logger.debug("final matched %s" % g)
                     return res
-            fp.close() 
+        else:
+            logger.debug("no filehandle")
+        fp.close() 
         return ('','')     
 
 
@@ -456,19 +472,23 @@ def get_file_regex_all(context,regex):
     #        filename = key
     #        break
 
-    # FIXME: only handles single file pattern    
+    # FIXME: only handles single file pattern   
+    logger.debug("get_file_regex_all") 
     fileregex = context['fileregex'][0]
+    logger.debug("fileregex=%s" % fileregex)
     filename = _get_file_from_regex(fileregex,context['ready'],False)
+    logger.debug("filename=%s" % filename)
     
     final_res = []
     if not filename or filename not in context['ready']:
-        print "found None"
-        return ([],'')
+        logger.debug("found None")
+        return []
     else:
         try:
             fp = _get_file_handle(context, filename)
         except Exception:
-            return ([],'')
+            logger.error("bad file handle")
+            return []
         if fp:
             regx = re.compile(regex)
             for line in fp:
@@ -476,54 +496,80 @@ def get_file_regex_all(context,regex):
                 
                 if match:
                     value = match.group('value')
-                    print "value=%s" % value
-                    fp.close()
-                    for g in value:
-                        print "final matched %s" % g
-                    final_res.append(value)
-            fp.close() 
-        return (final_res,'')     
-
-
-
+                    logger.debug("value=%s" % value)
+                    final_res.append(value.rstrip())
+            fp.close()
+        logger.debug("final_res=%s" % final_res) 
+        return final_res     
+    
     
 def get_constant(context,val,unit):
     return (val,unit)
 
-            
-def get_metadata(ruleset):
-    from collections import defaultdict
-    
-    # TODO: handle files that have not arrived yet
-    expectedmd5 = None
-                  
-    #TODO: missing values default to STRING, but later could be numeric when have value
+
+aux_functions = {
+                              "get_file_line":get_file_line,
+                              "get_file_lines":get_file_lines,
+                              "get_file_regex":get_file_regex,
+                              "get_file_regex_all":get_file_regex_all,
+                              "get_regex_lines":get_regex_lines,
+                              "get_regex_lines_vallist":get_regex_lines_vallist,
+                              "get_final_iteration":get_final_iteration,
+                              "get_constant":get_constant}
+
+def _process_experiments(ruleset):
+    """
+    """
+    #TODO: missing values default to STRING, but later
+    # could be numeric when have value.
     metadatas = {}
     for exp in Experiment.objects.all():
         logger.debug("exp=%s\n" % exp)
-        for dataset in Dataset.objects.filter(experiment=exp):
-            meta = {}
-            logger.debug("\tdataset=%s\n" % dataset)
-            ready = defaultdict()
-            for datafile in Dataset_File.objects.filter(dataset=dataset):
-                logger.debug("\t\tdatafile=%s\n" % str(datafile))
-                ready[datafile.filename] = datafile
-                if datafile not in ready:
-                    logger.debug(datafile.md5sum + "\n")
-                    try:
-                        datafile._set_md5sum() 
-                    except IOError:
-                        pass
-                    except OSError:
-                        pass
-                    logger.debug("hello from %s\n" % datafile)
-                    #if (datafile.md5sum == datafile.expectedmd5):
-                    #    ready[datafile] = True
-                    
-            logger.debug("ready=%s\n" % ready)
+        metadatas = process_experiment(metadatas, exp, ruleset)
+        #metadatas = _process_datasets(metadatas,exp,ruleset)
+    return metadatas
+
+
+def _process_datasets(metadatas,exp,ruleset):
+    """
+    """
+    for dataset in Dataset.objects.filter(experiment=exp):
+        logger.debug("\tdataset=%s\n" % dataset)
+        meta = _process_datafiles(exp,dataset,ruleset)
+        logger.debug("meta=%s\n" % meta)
+        metadatas[dataset] = meta
+            
+    logger.debug("metadatas=%s\n" % metadatas)
+    return metadatas
+
+
+            
+def _process_datafiles(exp,dataset,ruleset):
+    """
+    """
+    from collections import defaultdict
+    ready = defaultdict()
+    meta = {}
+    for datafile in Dataset_File.objects.filter(dataset=dataset):
+        logger.debug("\t\tdatafile=%s\n" % str(datafile))
+        ready[datafile.filename] = datafile
+        if datafile not in ready:
+            logger.debug(datafile.md5sum + "\n")
+            try:
+                datafile._set_md5sum() 
+            except IOError:
+                pass
+            except OSError:
+                pass
+            logger.debug("hello from %s\n" % datafile)
+            #if (datafile.md5sum == datafile.expectedmd5):
+            #    ready[datafile] = True
+            
+        logger.debug("ready=%s\n" % ready)
+        try:
             for tagname,file_patterns,code in ruleset:
                 logger.debug("file_patterns=%s,code=%s\n" % (file_patterns,code))
-            
+                
                 # check whether we have all files available.
                 # f could have _number regex
                 count = 0
@@ -553,6 +599,7 @@ def get_metadata(ruleset):
                                          {"get_file_line":get_file_line,
                                           "get_file_lines":get_file_lines,
                                           "get_file_regex":get_file_regex,
+                                          "get_file_regex_all":get_file_regex_all,
                                           "get_regex_lines":get_regex_lines,
                                           "get_regex_lines_vallist":get_regex_lines_vallist,
                                           "get_final_iteration":get_final_iteration,
@@ -560,29 +607,52 @@ def get_metadata(ruleset):
                                           'context':data_context})
                     except Exception,e:
                         logger.error("Exception %s" % e)
-                    logger.debug("value,unit=%s %s" % (value,unit))
+                        logger.debug("value,unit=%s %s" % (value,unit))
                  
                     meta[tagname] = (value,unit)
-                     
-            logger.debug("meta=%s\n" % meta)
-            metadatas[dataset] = meta
+        except ValueError:
+            logger.error("ruleset = %s" % ruleset )
+            raise
+            
+                    
+    return meta
+       
+def _get_metadata(ruleset):
+    """ Extracts metadata tags and values for each datafile in experiments
+    
+        :param ruleset: rules that define the extraction of metadata
+        :returns: dict from datafile to dict of tagname/tagvalue pairs
+    """
+ 
+    # TODO: handle files that have not arrived yet
+    expectedmd5 = None
+    metadatas = _process_experiments(ruleset)
+    
+    logger.debug("metadatas=%s\n" % metadatas)
         
     return metadatas
         
             
-def get_schema(schema,name):
+def _get_schema(schema,name):
     """Return the schema object that the paramaterset will use.
     """
     try:
-        return Schema.objects.get(namespace__exact=schema)
+        sch = Schema.objects.get(namespace__exact=schema)
+        logger.debug("found %s %s" % (sch.namespace, sch.name))
+        return sch
     except Schema.DoesNotExist:
         schema = Schema(namespace=schema, name=name,
                         type=Schema.DATASET)
         schema.save()
+        logger.debug("creating %s %s " % (schema,name))
         return schema          
+          
             
-def get_parameters(schema,metadata):
-    
+def _get_parameters(schema,metadata):
+    """ Returns set of parameters from schema matched to elements in 
+        metadata, or creates them based on the metadata values.  Types
+        are based on seen values, favouring numerics over strings. 
+    """
     param_objects = ParameterName.objects.filter(schema=schema)
     logger.debug("param_objects=%s\n" % param_objects)
     parameters = []
@@ -595,6 +665,7 @@ def get_parameters(schema,metadata):
         if parameter:
             parameters.append(parameter[0])
             continue
+        # work out the best type from the value
         datatype = ParameterName.STRING
         units = None
         try:
@@ -629,48 +700,158 @@ def get_parameters(schema,metadata):
         parameters.append(new_param)
     return parameters
 
-def save_metadata(instance,schema,metadata):
-    parameters = get_parameters(schema, metadata)
+
+def _save_metadata(instance,schema,metadataset):
+    """ Creates schema from the metadataset and associates it 
+        with the instance.  If metadata value is empty, then 
+        existing value is unchanged.  
+    """
+    parameters = _get_parameters(schema, metadataset)
     logger.debug("parameters=%s" % parameters)
     if not parameters:
         return None
     try:
         ps = DatasetParameterSet.objects.get(schema=schema,
                                                 dataset=instance)
-        #return ps
     except DatasetParameterSet.DoesNotExist:
         ps = DatasetParameterSet(schema=schema,dataset=instance)
         ps.save()
     logger.debug("ps=%s\n" % ps)
-    logger.debug("metadata2=%s\n" % metadata)
+    logger.debug("metadata2=%s\n" % metadataset)
     for p in parameters:
         logger.debug("p=%s\n" % p)
-        if p.name in metadata:
+        if p.name in metadataset:
             logger.debug("found p =%s %s\n" % (p.name,p.units))
-            try:
-                dfp = DatasetParameter.objects.get(parameterset=ps,name=p)
-            except DatasetParameter.DoesNotExist:           
-                dfp = DatasetParameter(parameterset=ps,
-                                    name=p)
-            # TODO: handle bad type 
+            
             if p.isNumeric():
-                dfp.numerical_value = metadata[p.name][0]
-                logger.debug("numeric")
+                val = metadataset[p.name][0]
+                if val:
+                        
+                    dfp = DatasetParameter.objects.filter(parameterset=ps,
+                                                           name=p)
+                    if not dfp:
+                        dfp = DatasetParameter(parameterset=ps,
+                                               name=p)                    
+                        dfp.numerical_value = val
+                        logger.debug("new numeric")
+                        dfp.save()    
+                    else:
+                        for dp in dfp:
+                            dp.numerical_value = val
+                            dp.save()    
+                        logger.debug("numeric")
             else:
-                dfp.string_value = metadata[p.name][0]
-            logger.debug("dfp=%(dfp)s" % locals())
-            dfp.save()
+                val = metadataset[p.name][0]
+                logger.debug("val=%s" % val)
+                if val:
+                    dfp = DatasetParameter.objects.filter(parameterset=ps,
+                                                           name=p)
+                    if not dfp:
+                        dfp = DatasetParameter(parameterset=ps,
+                                               name=p)
+                        dfp.string_value = metadataset[p.name][0]
+                        dfp.save()
+                        logger.debug("new string")
+                    else:
+                        for dp in dfp:
+                            dp.string_value = metadataset[p.name][0]
+                            dp.save()
+                            logger.debug("string")
+                        logger.debug("done")
+                            
+          
+def process_datafile(datafile, ruleset):
+    """
+    """
+    from collections import defaultdict
+    ready = defaultdict()
+    meta = {}
             
+    logger.debug("ready=%s\n" % ready)
+    try:
+        
+        regex_cache = {}
+        ready[datafile.filename] = datafile 
+        for tagname,file_patterns,code in ruleset:
+            #logger.debug("file_patterns=%s,code=%s\n" % (file_patterns,code))
             
-def go():
+            # check whether we have all files available.
+            # f could have _number regex 
+            # This is a potential performance bottleneck           
+            count = 0
+            for file_pattern in file_patterns:
+                # cache the reges
+                if file_pattern in regex_cache:
+                    rule_file_regx = regex_cache[file_pattern]
+                else:                    
+                    rule_file_regx = re.compile(file_pattern)
+                    regex_cache[file_pattern] = rule_file_regx              
+                filename= None
+                for datafilename in ready:
+                        match = rule_file_regx.match(datafilename)
+                        if match:
+                            #logger.debug("matched % s" % datafilename)
+                            filename = datafilename
+                            break
+                #logger.debug("filename=%s\n" % filename)
+                if filename in ready:
+                    count += 1
+        
+            if count == len(file_patterns):
+    
+                data_context = {'expid':datafile.dataset.experiment.id,
+                           'ready':ready,
+                           'fileregex':file_patterns}
+                logger.debug("data_context=%s" % data_context)
+                
+                
+                aux_context = aux_functions
+                aux_context['context'] = data_context
+                try:
+                    (value,unit) = eval(code,{},aux_context)
+                except Exception,e:
+                    logger.error("Exception %s" % e)
+                    logger.debug("value,unit=%s %s" % (value,unit))
+             
+                meta[tagname] = (value,unit)
+    except ValueError:
+        logger.error("ruleset = %s" % ruleset )
+        raise
+            
+    return meta
+       
+
+def process_experiment(metadatas, exp, ruleset):
+    """
+    """
+    metadatas = _process_datasets(metadatas,exp,ruleset)
+    return metadatas    
+ 
+ 
+def process_experimentX(exp):
+    
     for schemainfo in rulesets:
-        metadatas = get_metadata(rulesets[schemainfo])
-        logger.debug("metadatas=%s\n" % metadatas)
+            metadataset = {}
+            metadataset = process_experiment(metadataset, exp, 
+                                           rulesets[schemainfo])
+            logger.debug("extracted metadataset = %s" % metadataset)
+            
+            schema = _get_schema(schemainfo[0],schemainfo[1])
     
-        schema = get_schema(schemainfo[0],schemainfo[1])
+            logger.debug("schema = %s" % schema)
+          
+            for datafile in metadataset:
+                _save_metadata(datafile,schema,metadataset[datafile])
+         
+def process_all_experiments():
+    for schemainfo in rulesets:
+        metadataset = _get_metadata(rulesets[schemainfo])
+        logger.debug("metadatas=%s\n" % metadataset)
     
-        for metadata in metadatas:
-            save_metadata(metadata,schema,metadatas[metadata])
+        schema = _get_schema(schemainfo[0],schemainfo[1])
+    
+        for datafile in metadataset:
+            _save_metadata(datafile,schema,metadataset[datafile])
 
       
                    

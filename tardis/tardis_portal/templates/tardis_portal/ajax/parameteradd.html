@@ -17,9 +17,9 @@
 		var toggle = parentdatafile.find('.datafile_info_toggle');	
 			
 		toggle.text('[Hide]');
-		toggle.next().show();
-		toggle.next().html(loadingHTML);
-		toggle.next().load(toggle.attr("href"));				
+		toggle.nextAll(".datafile_info").show();
+		toggle.nextAll(".datafile_info").html(loadingHTML);
+		toggle.nextAll(".datafile_info").load(toggle.attr("href"));				
 		{% endif %}		
 
 		{% if type == "dataset" %}		

@@ -1,0 +1,232 @@
+/**********/
+/* Header */
+/**********/
+
+h1 {
+	color: red;
+    font-weight: normal;
+}
+
+#headerbg {
+	clear: both;
+	margin: 0 auto;
+	width: 1000px;
+	height: 68px;
+	background: url(../img/rmmf_bg_banner2.jpg) left top;
+	margin: 0 auto;
+	margin-top: 20px;
+}
+
+#headerloginstatus {
+	padding: 10px;
+	color: white;
+}
+
+#headerloginstatus a {
+	color: #f1f5f2;
+	font-weight: bold;
+}
+
+/********/
+/* Logo */
+/********/
+
+#logo-img {
+    background:url("../img/rmit_symbol.png") no-repeat scroll left top transparent;
+    height:40px;
+    width:40px;
+    left:40px;
+    float: left;
+    margin-top: 7px;
+}
+
+#logo {
+	float:left;
+    margin-top: 30px;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+#logo-subtext {
+    text-align: right;
+    letter-spacing: 0;
+}
+
+
+#logo h1, #logo h2, #logo p {
+	float: left;
+	margin: 0;
+}
+
+#logo h1 {
+	background: no-repeat left 50%;
+    float: none;
+    display: inline;
+	padding-left: 10px;
+	text-align: center;
+	font-size: 4.0em;
+}
+
+#logo h1 a {
+	color: #000000;
+}
+
+#logo p {
+	padding-top: 24px;
+	padding-left: 10px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:14px;
+	color: #000000;
+}
+
+#logo h2 a, #logo p a {
+	color: #000000;
+}
+
+#logo a {
+	text-decoration: none;
+}
+
+/********************/
+/* Experiment Table */
+/********************/
+
+.experiment-table th
+{
+    width: 70%;
+    text-align: left;
+    border-width: 0 0 1px 0;
+    border-style: dotted;
+    border-color: gray;
+}
+
+/*********/
+/* Links */
+/*********/
+
+a, td a {
+    color: #1C6FB8;
+    outline: medium none;
+    text-decoration: none;
+}
+
+a.filelink {
+    color: #1C6FB8;
+}
+
+/************/
+/* Datasets */
+/************/
+
+.dataset {
+    background-color: #F6F6F6;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px 4px 4px 4px;
+    margin: 2px 2px 10px;
+    padding: 5px;
+    width: 100%;
+}
+
+.dataset_info {
+    border-style: none;
+    padding: 10px;
+}
+
+.dataset_description {
+    background-color: #E0E3E6 !important;
+    border: 1px solid #C0C0C0;
+    border-radius: 4px 4px 4px 4px;
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+.dataset_extrainfo {
+    background-color: #F3F6F9;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px 4px 4px 4px;
+    padding: 5px;
+}
+
+/************/
+/* Datafile */
+/************/
+
+.datafile_info {
+    background-color: #F0F3F6;
+    font-size: 12px;
+    list-style: none inside none;
+    margin: 10px;
+    padding: 10px;
+    width: 95%;
+}
+
+.datafile_list {
+    font-size: 14px;
+    list-style: none inside none;
+}
+
+.datafile_parameters {
+    /* fixed the issue of that container does not stretch to fit floated contents */
+    /* height: 1%; */
+    overflow: hidden; 
+}
+
+/*************/
+/* Parameter */
+/*************/
+
+.parameter_table {
+    display: inline-table;
+    clear: none;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.5em;
+    color: #222222;
+    max-width: 350px;
+}
+.parameter_table .even {
+    background-color: #D0D3D6;
+}
+.parameter_table .odd {
+    background-color: #E0E3E6;
+}
+.parameter_table th {
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+}
+.parameter_table th {
+    background-color: #c0c3c7;
+    font-weight: bold;
+    font-size: 14px;
+    vertical-align: middle;
+    text-align: center;
+    padding: 5px;
+}
+.parameter_table td {
+    padding: 5px 10px;
+}
+.parameter_table .parameter_name {
+    font-weight: bold;
+    width: auto;
+}
+.parameter_table .parameter_value {
+    width: auto;
+}
+.parameter_table.chemical th {
+    font-size: 10px;
+    padding: 2px;
+}
+.parameter_table.sample {
+    clear: both;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/*************/
+/* Lists */
+/*************/
+
+ul {
+    padding: 10px;
+}

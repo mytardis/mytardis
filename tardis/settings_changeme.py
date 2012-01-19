@@ -146,7 +146,7 @@ MEDIA_URL = '/site_media/'
 
 #set to empty tuple () for no apps
 #TARDIS_APPS = ('mrtardis', )
-TARDIS_APPS = ('equipment','hpctardis')
+TARDIS_APPS = ('equipment',)
 TARDIS_APP_ROOT = 'tardis.apps'
 
 if TARDIS_APPS:
@@ -229,6 +229,8 @@ EMAIL_HOST_USER = 'bob@bobmail.com'
 EMAIL_HOST_PASSWORD = 'bob'
 
 EMAIL_USE_TLS = True
+
+EMAIL_LINK_HOST = "http://127.0.0.1:8080"
 
 # Post Save Filters
 #POST_SAVE_FILTERS = [

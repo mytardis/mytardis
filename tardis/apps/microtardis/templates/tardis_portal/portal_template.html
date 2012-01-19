@@ -1,0 +1,195 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    
+    <!-- icon -->
+    <link rel="shortcut icon" href="/static/img/rmit_symbol_transparent.png" type="image/x-icon">
+    
+    <!-- title -->
+    <title>MicroTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+    
+    <!-- CSS Styles -->
+    <link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
+    <link href="/static/css/microtardis.css" rel="stylesheet" type="text/css" media="screen">
+
+    <!-- Javascript -->
+    {% include "tardis_portal/javascript_libraries.html" %}
+    {% block script %}
+    {% endblock script %}
+    
+    <script type="text/javascript">
+    var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+    document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+    </script>
+
+    <script type="text/javascript">
+    try {
+        var pageTracker = _gat._getTracker("UA-5443750-1");
+        pageTracker._trackPageview();
+    } catch(err) {}
+    </script>
+
+    <script type="text/javascript">
+	$(document).ready(function(){
+	    var users = (function () {
+	        var val = null;
+	        var authMethod = "localdb";
+	        var data = { authMethod: authMethod };
+	        $.ajax({
+	            'async': false,
+	            'global': false,
+	            'data': data,
+	            'url': '/ajax/parameter_field_list',
+	            'success': function (data) {
+	                val = data;
+	            }
+	        });
+	        return val;
+	    })();
+	  
+	    $("#id_q").autocomplete(users.split(" "), {
+	        matchContains: true, multiple: true, multipleSeparator: " "
+	    });	
+	});
+    </script>
+
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var myClose=function(hash) {
+                hash.w.fadeOut('2000',function(){ hash.o.remove()});
+                window.location.hash = "";
+            };
+        $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
+        {% if status %}
+        $('#jqmAlertStatus').jqmShow();
+        {% endif %}
+        // $("#fuzz").fadeIn();
+        if(window.location.hash) {
+            if(window.location.hash == '#created') {
+                $('#jqmStatusMessage').html('Experiment Created');
+                $("#jqmAlertStatus").jqmShow();
+            } else if(window.location.hash == '#saved') {
+                $('#jqmStatusMessage').html('Experiment Saved');
+                $("#jqmAlertStatus").jqmShow();                 
+            }
+        }       
+    });         
+    </script>
+
+</head>
+
+<body>
+    <!-- header -->
+    <div id="header">
+    
+        <!-- logo -->
+        <div id="logo">
+            <div id="logo-img">&nbsp;</div>
+            <div style="float: left;">
+                <h1>MicroTARDIS</h1>
+                <span id="logo-subtext">at RMMF</span>
+            </div>
+        </div> 
+    
+        <!-- menu -->
+        <div id="menu">
+            <ul>
+	            <li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
+	            <li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
+	            <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
+	            <li><a href="{% url tardis.tardis_portal.views.partners %}">Partners</a></li>
+	            <li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
+            </ul>
+        </div>
+    </div>
+  
+    <!-- headerbg -->
+    <div id="headerbg">
+	    <div id="headerloginstatus" style="float: left">
+	        {% if is_authenticated %}
+	            Welcome,
+	            {% if is_superuser %}
+	                <a href="{% url admin:index %}"><em>{{ username }}</em></a>
+	            {% else %}
+	                <em>{{ username }}</em>
+	            {% endif %}
+	            - <a href="{% url django.contrib.auth.views.logout %}"> [Log Out]</a>
+	        {% else %}
+	            <a href="{% url registration.views.register %}"> [Register] </a>
+	            <a href="{% url tardis.tardis_portal.views.login %}"> [Log In]</a>
+	        {% endif %}
+	    </div> 
+	    
+	    {% if form %}
+		    <div class="searchmenu" style="float: right">
+		        <form method="get" action="{% url tardis.tardis_portal.views.single_search %}">
+			        <table>
+				        <tr>
+				            <td><input type="submit" value="search"/></td>
+				            <td><input type="text" name="q" id="id_q"{% if query %} value="{{ query }}"{% endif %} /></td>
+				        </tr>
+			        </table>
+		        </form>
+		    </div>
+	    {% endif %}
+    </div>
+
+    <!-- page -->   
+    <div id="page"> 
+        <div id="content-box">
+            <div class="jqmAlertStatus" id="jqmAlertStatus">
+                <div class="jqmAlertWindowStatus">
+                    {% if error %}
+	                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus">
+	                        <a href="#" class="jqmClose"></a>
+	                        <br/>{{status}}
+	                    </div>
+                    {% else %}
+	                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus">
+	                        <a href="#" class="jqmClose"></a>
+	                        <br/><span id="jqmStatusMessage">{{status}}</span>
+	                    </div>
+                    {% endif %}
+                 </div> 
+            </div> 
+            {% block content %}
+            {% endblock content %}
+            <div id="recent-posts" class="sidebar">
+                <div class="post">
+                    {% block sidebar %}
+                    {% endblock sidebar %}
+                </div> 
+            </div> 
+            <div id="bottom" style="clear: both; width: 700px;">
+                {% block bottom %}
+                {% endblock bottom %}
+            </div>
+            {% block fullpage %}
+            {% endblock fullpage %}
+        </div> 
+    
+        <!-- bottom icons -->
+		<div>
+		    <div style="float: right; margin: 0 10px;">
+		        <a target="_blank" href="http://versi.edu.au/">
+		            <img border="0" src="/static/img/VeRSI_Logo.jpg">
+		        </a>
+		    </div>
+		    <div style="float: right;">
+		        <a target="_blank" href="http://www.rmit.edu.au/research/eres/">
+		            <img border="0" src="/static/img/RMIT_Logo.png">
+		        </a>
+		    </div>
+		</div>
+	    
+	    <!-- bottom bar -->
+	    <div id="bottombar" style="padding-bottom: 5px; text-align: center;">
+	        Copyright &copy; 2011 RMIT e-Research Office and Victorian eResearch Strategic Initiative
+	    </div>
+    </div> 
+
+</body>
+
+</html>

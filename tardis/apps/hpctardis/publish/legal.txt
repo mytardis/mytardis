@@ -1,0 +1,6 @@
+This operation will make the current collection PUBLIC. 
+This means that the data and metadata for this collection 
+will be accessible to anonymous users on the Collections page.
+The owner of the collection will be published (username only).
+Furthermore, the collection metadata will be made publically available
+to Research Data Australia (RDA): http://services.ands.org.au/home/orca/rda/

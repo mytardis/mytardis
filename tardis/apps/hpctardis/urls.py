@@ -1,12 +1,19 @@
 from django.conf.urls.defaults import patterns
+from tardis.urls import urlpatterns as tardisurls
 
-
-urlpatterns = patterns('',
-    (r'^$','tardis.apps.hpctardis.views.test'),
-    (r'^publisher/(?P<experiment_id>\d+)/$','tardis.apps.hpctardis.views.publish_experiment'),
-    (r'^rif_cs/$','tardis.apps.hpctardis.views.rif_cs'),
-    (r'^protocol/$','tardis.apps.hpctardis.views.protocol'),
-    (r'^login/$','tardis.apps.hpctardis.views.login'),
-    (r'^addfiles/$','tardis.apps.hpctardis.views.addfiles')
-   )
+# Create the hpcardis links
+urlpatterns = patterns('tardis.apps.hpctardis.views',
+    (r'^rif_cs/$','rif_cs'),
+    (r'^publishauth/$','auth_exp_publish'),
+    (r'^apps/hpctardis/protocol/$','protocol'),
+    (r'^apps/hpctardis/login/$','login'),
+    (r'^apps/addfiles/$','addfiles'),
+)
     
+# Add links that will override existing tardis links
+urlpatterns += patterns('tardis.apps.hpctardis.views',
+                        (r'^experiment/view/(?P<experiment_id>\d+)/publish/$', 
+                            'publish_experiment'))    
+
+# Add remaining tardis links
+urlpatterns += tardisurls
