@@ -218,6 +218,7 @@ def addfiles(request):
     if user:
         eid  = request.POST['eid']
         desc = request.POST['desc']
+        eid  = int(eid)
     #   TODO ask Ian about the error  
     #   staging = get_full_staging_path(user)
         staging = path.join(settings.STAGING_PATH,str(user),str(eid))
@@ -235,7 +236,6 @@ def addfiles(request):
         ds_desc[desc] = filelist
     
 #   TODO Use the try and except
-   
         auth_key = settings.DEFAULT_AUTH
         try:
             exp = Experiment.objects.get(pk=eid)
@@ -259,7 +259,7 @@ def addfiles(request):
                                            url=filepath, size=size, protocol='staging')
                 datafile.save()
                 
-        next = next + ' File path :' + staging
+        next = next + ' File path :' + staging 
                 
         return  HttpResponse(next)
     else:
