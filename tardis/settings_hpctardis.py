@@ -57,6 +57,12 @@ TEMPLATE_LOADERS = (
 )
 
 
+# HPCTardis Media
+HPC_STATIC_URL_ROOT = '/static'
+HPC_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                               'apps/hpctardis/static').replace('\\', '/')
+                               
+
 # logging levels are: DEBUG, INFO, WARN, ERROR, CRITICAL
 SYSTEM_LOG_LEVEL = 'INFO'
 MODULE_LOG_LEVEL = 'INFO'

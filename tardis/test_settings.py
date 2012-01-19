@@ -201,6 +201,11 @@ POST_SAVE_FILTERS = tuple(tmp)
 INSTALLED_APPS = (TARDIS_APP_ROOT+".hpctardis",) + INSTALLED_APPS
 
 
+# HPCTardis Media
+HPC_STATIC_URL_ROOT = '/static'
+HPC_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
+                               'apps/hpctardis/static').replace('\\', '/')
+
 # Changed because hpctardis overrides existing urls, which are called in testcases
 ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
                      
