@@ -1,0 +1,1 @@
+execfile('bin/django.wsgi')

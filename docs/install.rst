@@ -217,6 +217,27 @@ To collect all the static files to a single directory::
    `STATIC_ROOT <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_ROOT>`_,
    `STATIC_URL <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_URL>`_
 
+.. _apache-wsgi:
 
+Serving with Apache HTTPD + mod_wsgi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+See `./apache` for example configurations.
 
+Serving with Nginx + uWSGI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this configuration, Nginx serves static files and proxies application
+requests to a uWSGI server::
+
+             +-----------+ uWSGI +--------------+
+    +------->|   Nginx   +------>| uWSGI Server |
+             +-----------+       +--------------+
+               0.0.0.0:80         127.0.0.1:3031
+
+Unlike :ref:`apache-wsgi`, application requests run in a completely different
+process to web requests. This allows the application server to be run as a
+seperate user to the web server, which can improve security.
+
+This configuration allows more flexibility when tuning for performance, but
+does add additional deployment complexity.

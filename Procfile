@@ -1,0 +1,1 @@
+web: bin/uwsgi -x parts/uwsgi/uwsgi.xml --socket 127.0.0.1:3031
