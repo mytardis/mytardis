@@ -52,17 +52,18 @@ class ActivityLocationInlines(admin.StackedInline):
 class ActivityDescriptionInlines(admin.StackedInline):
     model = ActivityDescription
     extra = 1
-    
+
     
 class ActivityRecordAdmin(admin.ModelAdmin):
     inlines = (ActivityPartyRelationInlines, ActivityDescriptionInlines)
     #filter_horizontal = ('parties',)
-    list_display = ('activityname','type','key','description')
+    list_display = ('activityname','type','key',)
     ordering = ('id',)
     list_filter = ('type','key','parties')
     search_fields = ('activityname__title',
                      'activityname__given',
                      'activityname__family','activityname__suffix',)
+    exclude = ('description',)
     
 
 class PartyLocationInlines(admin.StackedInline):

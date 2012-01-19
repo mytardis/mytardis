@@ -4,8 +4,18 @@
 <registryObjects xmlns="http://ands.org.au/standards/rif-cs/registryObjects"
                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                 xsi:schemaLocation="http://ands.org.au/standards/rif-cs/registryObjects http://services.ands.org.au/home/orca/schemata/registryObjects.xsd">                    
+
+    <!--              -->	
+	<!--  Collections -->
+    <!--              -->
+    
 	{% for experiment in experiments %}{% include experiment.profile %}{% endfor %}	
-	{% for party in parties%}
+	
+	<!--          -->
+    <!--  Parties -->
+    <!--          -->
+    
+    {% for party in parties%}
     <registryObject group="RMIT University">
         <key>{{party.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
@@ -46,13 +56,17 @@
             <subject type="anzsrc-for">{{ party.subject}}</subject>
             {% endif %}                     
             {% for desc in party|descsforparty:"" %}
-            <description type="{{desc.type}}">
-                {{ desc.value}}
-            </description>
+            <description type="{{desc.type}}">{{ desc.value|strip}}</description>
             {% endfor %}
         </party>
     </registryObject>
+    <!--   -->    
     {% endfor %}
+    
+    <!--             -->
+    <!--  Activities -->
+    <!--             -->
+    
     {% for activity in activities %}
     <registryObject group="RMIT University">
         <key>{{activity.key}}</key>
@@ -75,11 +89,10 @@
             {% endif %}
                                 
             {% for desc in activity|descsforactivity:"" %}
-            <description type="{{desc.type}}">
-                {{ desc.value}}
-            </description>
+            <description type="{{desc.type}}">{{ desc.value}}</description>
             {% endfor %}               
         </activity>
     </registryObject>
+    <!--   -->
     {% endfor %}
 </registryObjects>

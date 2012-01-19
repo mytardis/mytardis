@@ -113,7 +113,9 @@ def descs_for_activity(party,name):
     
     descs = ActivityDescription.objects.filter(party=party)
     return descs
-    
+
+def strip(name):
+    return name.strip()    
     
 register = template.Library()
 register.filter('partyinfo',party_info)
@@ -123,3 +125,4 @@ register.filter('locationforparty',location_for_party)
 register.filter('locationforactivity',location_for_activity)
 register.filter('descsforparty',descs_for_party)
 register.filter('descsforactivity',descs_for_activity)
+register.filter('strip',strip)
