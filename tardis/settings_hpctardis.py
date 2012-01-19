@@ -17,7 +17,7 @@ DATABASES = {
     }
 }
 
-# Root URLs in MicroTardis
+# Root URLs in HPCTardi
 ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
 
 # extend template directory to TEMPLATE_DIRS
@@ -75,4 +75,4 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'eresearch.rmit@gmail.com'     
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_TLS = True
-EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8090"
+EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8890"

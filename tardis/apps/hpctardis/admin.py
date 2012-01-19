@@ -39,38 +39,50 @@ from tardis.apps.hpctardis.models import PartyDescription
 from tardis.apps.hpctardis.models import ActivityDescription
 from tardis.apps.hpctardis.models import PublishAuthorisation
 
-class ActivityPartyRelationInlines(admin.TabularInline):
+class ActivityPartyRelationInlines(admin.StackedInline):
     model = ActivityPartyRelation
     
     
     
-class ActivityLocationInlines(admin.TabularInline):
+class ActivityLocationInlines(admin.StackedInline):
     model = ActivityLocation
     extra = 1
     
     
-class ActivityDescriptionInlines(admin.TabularInline):
+class ActivityDescriptionInlines(admin.StackedInline):
     model = ActivityDescription
     extra = 1
     
     
 class ActivityRecordAdmin(admin.ModelAdmin):
-    inlines = (ActivityPartyRelationInlines,ActivityLocationInlines, ActivityDescriptionInlines)
+    inlines = (ActivityPartyRelationInlines, ActivityDescriptionInlines)
+    #filter_horizontal = ('parties',)
+    list_display = ('activityname','type','key','description')
+    ordering = ('id',)
+    list_filter = ('type','key','parties')
+    search_fields = ('activityname__title',
+                     'activityname__given',
+                     'activityname__family','activityname__suffix',)
+    
 
-
-class PartyLocationInlines(admin.TabularInline):
+class PartyLocationInlines(admin.StackedInline):
     model = PartyLocation
     extra = 1
     
     
-class PartyDescriptionInlines(admin.TabularInline):
+class PartyDescriptionInlines(admin.StackedInline):
     model = PartyDescription
     extra = 1
     
     
 class PartyRecordAdmin(admin.ModelAdmin):
     inlines = (PartyLocationInlines,PartyDescriptionInlines)
-    
+    list_display = ('partyname','type','key')
+    #list_filter = ('publication_date',)
+    #date_hierarchy = 'publication_date'
+    ordering = ('id',)
+    list_filter = ('type','key')
+    search_fields = ('partyname__title','partyname__given','partyname__family','partyname__suffix',)
     
 admin.site.register(NameParts)
 #admin.site.register(PartyDescription)

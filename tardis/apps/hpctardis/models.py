@@ -4,22 +4,26 @@ from tardis.tardis_portal.models import Experiment
 
 
 class NameParts(models.Model):
-    title = models.CharField(max_length=200,default="",blank=True)
-    given = models.CharField(max_length=200,default="",blank=True)
-    family = models.CharField(max_length=200,default="",blank=True)
-    suffix = models.CharField(max_length=200,default="",blank=True)
+    title = models.CharField(max_length=200,default="",blank=True,help_text="For example, Mr")
+    given = models.CharField(max_length=200,default="",blank=True,help_text="For example, Joe")
+    family = models.CharField(max_length=200,default="",blank=True,help_text="For example, Bloggs")
+    suffix = models.CharField(max_length=200,default="",blank=True,help_text="For example, OBE")
     
     def __unicode__(self):
         return u' '.join((self.title,self.given,
                           self.family,self.suffix)).strip()
+                          
+                          
+    class Meta:
+        verbose_name_plural = "Names"
 
 
 class PartyRecord(models.Model):
-    key = models.CharField(max_length=200)
-    type = models.CharField(max_length=80,default="person")
-    partyname = models.ForeignKey(NameParts,related_name="reverse")
-    birthdate = models.DateField(null=True,blank=True)
-    deathdate = models.DateField(null=True,blank=True)
+    key = models.CharField(max_length=200,help_text="The full ANDS URI identifier")
+    type = models.CharField(max_length=80,default="person",help_text="The ANDS party type (person, group, or administrativePosition)")
+    partyname = models.ForeignKey(NameParts,related_name="reverse",help_text="The nameof the party")
+    birthdate = models.DateField(null=True,blank=True,help_text="Leave blank if not appropriate")
+    deathdate = models.DateField(null=True,blank=True,help_text="Leave blank if not appropriate")
     #altname = models.ForeignKey(NameParts,blank=True,null=True,related_name="reverse")
     subject = models.CharField(max_length=200,default="",blank=True)
     
@@ -43,7 +47,7 @@ class PartyRecord(models.Model):
         return self.partyname
     
 class PartyLocation(models.Model):
-    type = models.CharField(default="url",max_length=80)
+    type = models.CharField(default="url",max_length=80,help_text="email, postaladdress")
     value = models.TextField(default="",blank=True)
     party = models.ForeignKey(PartyRecord)
     
@@ -52,7 +56,7 @@ class PartyLocation(models.Model):
     
     
 class PartyDescription(models.Model):
-    type = models.CharField(default="",max_length=80)
+    type = models.CharField(default="",max_length=80,help_text="brief,full,logo,note")
     value = models.TextField(default="",blank=True)
     party = models.ForeignKey(PartyRecord)
     
@@ -61,22 +65,24 @@ class PartyDescription(models.Model):
         
     
 class ActivityRecord(models.Model):
-    ident = models.CharField(default="",max_length=200)
-    key = models.CharField(default="",max_length=200)
-    type = models.CharField(default="",max_length=80)
-    activityname = models.ForeignKey(NameParts)
-    description = models.TextField(default="",blank=True)
+    ident = models.CharField(default="",max_length=200,blank=True)
+    key = models.CharField(default="",max_length=200,help_text="The full ANDS identifier")
+    type = models.CharField(default="",max_length=80,help_text="project, program, course, award, event")
+    activityname = models.ForeignKey(NameParts,help_text="The name of the activity")
+    description = models.TextField(default="",blank=True,help_text="Deprecated.  Do not use")
     parties = models.ManyToManyField(PartyRecord,
                                      through="ActivityPartyRelation")
+    subject = models.CharField(max_length=200,default="",blank=True)
+   
     
     def __unicode__(self):
         return u"%s" % (self.activityname)  
 
         
 class ActivityDescription(models.Model):
-    type = models.CharField(default="",max_length=80)
+    type = models.CharField(default="",max_length=80,help_text="brief,full,logo,note")
     value = models.TextField(default="",blank=True)
-    party = models.ForeignKey(ActivityRecord)
+    party = models.ForeignKey(ActivityRecord,help_text="The party")
     
     def __unicode__(self):
         return u"%s:%s" % (self.type, self.value)
@@ -88,9 +94,9 @@ class ActivityLocation(models.Model):
     activity = models.ForeignKey(ActivityRecord)
     
 class ActivityPartyRelation(models.Model):
-    activity = models.ForeignKey(ActivityRecord)
-    party = models.ForeignKey(PartyRecord)
-    relation = models.CharField(max_length=80,default="isManagedBy")
+    activity = models.ForeignKey(ActivityRecord,help_text="The source activity")
+    party = models.ForeignKey(PartyRecord,help_text="The destination party")
+    relation = models.CharField(max_length=80,default="isManagedBy",help_text="isFundedBy, isManagedBy, isOwnedBy, hasParticipant")
     
     
 class PublishAuthorisation(models.Model):

@@ -10,6 +10,10 @@ from tardis.tardis_portal.models import ExperimentParameterSet
 from tardis.tardis_portal.models import ExperimentParameter
 from tardis.apps.hpctardis.models import PublishAuthorisation
 from tardis.apps.hpctardis.models import ActivityPartyRelation
+from tardis.apps.hpctardis.models import PartyLocation
+from tardis.apps.hpctardis.models import PartyDescription
+from tardis.apps.hpctardis.models import ActivityLocation
+from tardis.apps.hpctardis.models import ActivityDescription
 
 def party_info(exp,name):
     namespace = "http://rmit.edu.au/rif-cs/party/1.0/"
@@ -71,10 +75,51 @@ def party_for_act(act,name):
                    activity_party.relation))
     return res
 
+    
+def location_for_party(party,type):
+    
+    locations = PartyLocation.objects.filter(party=party,type=type)
+    
+    
+    if locations:
+        res = locations[0].value
+        return res
+    else:
+        return None
+    return res
 
+    
+        
+def location_for_activity(activity,type):
+    
+    locations = ActivityLocation.objects.filter(activity=activity,type=type)
+    
+    
+    if locations:
+        res = locations[0].value
+        return res
+    else:
+        return None
+    return res
+
+    
+def descs_for_party(party,name):
+    
+    descs = PartyDescription.objects.filter(party=party)
+    return descs
+    
+    
+def descs_for_activity(party,name):
+    
+    descs = ActivityDescription.objects.filter(party=party)
+    return descs
     
     
 register = template.Library()
 register.filter('partyinfo',party_info)
 register.filter('activityinfo',activity_info)
 register.filter('partyforact',party_for_act)
+register.filter('locationforparty',location_for_party)
+register.filter('locationforactivity',location_for_activity)
+register.filter('descsforparty',descs_for_party)
+register.filter('descsforactivity',descs_for_activity)

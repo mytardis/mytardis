@@ -7,34 +7,78 @@
 	{% for experiment in experiments %}{% include experiment.profile %}{% endfor %}	
 	{% for party in parties%}
     <registryObject group="RMIT University">
-        <key>http://www.rmit.edu.au/HPC/1/{{party.id}}</key>
+        <key>{{party.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <party type="{{party.type}}">
             <identifier type="uri">http://www.rmit.edu.au/HPC/1/{{party.id}}</identifier>
             <name type="primary">
                 <namePart type="family">{{party.partyname.family}}</namePart>
                 <namePart type="given">{{party.partyname.given}}</namePart>
-            </name>
-            <subject type="anzsrc-for">190204</subject>               
+            </name>                        
+            {% if party.birthdate or party.deathdate %}
+            <existenceDates>
+            {% if party.birthdate %} 
+                <startDate dateFormat="UTC">{{party.birthdate|toxmldatetime}}</startDate>
+            {% endif %}
+            {% if party.deathdate %} 
+                <endDate dateFormat="UTC">{{party.deathdate|toxmldatetime}}</endDate>
+            {% endif %}
+            </existenceDates>   
+            {% endif %}                               
+            <location>
+                <address>
+                   {% if party|locationforparty:"email" %}                   
+                   <electronic type="email">
+                       <value>{{party|locationforparty:"email"}}</value>
+                   </electronic>
+                   {% endif %}
+                   {% if party|locationforparty:"postaladdress" %}                                     
+                   <physical type="postaladdress">
+                       <addressPart type="text">
+                           <value>{{party|locationforparty:"postaladdress"}}</value>                      
+                       </addressPart>
+                   </physical>
+                   {% endif %}
+                   
+                </address>               
+            </location>
+            {% if party.subject %}
+            <subject type="anzsrc-for">{{ party.subject}}</subject>
+            {% endif %}                     
+            {% for desc in party|descsforparty:"" %}
+            <description type="{{desc.type}}">
+                {{ desc.value}}
+            </description>
+            {% endfor %}
         </party>
     </registryObject>
     {% endfor %}
     {% for activity in activities %}
     <registryObject group="RMIT University">
-        <key>http://www.rmit.edu.au/HPC/3/{{activity.id}}</key>
+        <key>{{activity.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <activity type="{{activity.type}}">
             <identifier type="uri">http://www.rmit.edu.au/HPC/3/{{activity.id}}</identifier>
             <name type="primary">
                 <namePart>{{activity.activityname}}</namePart>
             </name>
+            
             {% for party in activity|partyforact:"" %}
             <relatedObject>
                 <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
                 <relation type="{{party.1}}"/> 
             </relatedObject> 
             {% endfor %}
-            <subject type="anzsrc-for">190204</subject>               
+
+            {% if activity.subject %}
+            <subject type="anzsrc-for">{{activity.subject}}</subject>
+            {% endif %}
+                                
+            {% for desc in activity|descsforactivity:"" %}
+            <description type="{{desc.type}}">
+                {{ desc.value}}
+            </description>
+            {% endfor %}               
         </activity>
     </registryObject>
     {% endfor %}
