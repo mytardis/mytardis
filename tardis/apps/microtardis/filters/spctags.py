@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 class SPCTagsFilter(object):
     """This filter provides extraction of metadata extraction of 
-    EDAX Genesis spectrum files (*.spc) from the RMMF.
+    EDAX Genesis spectral files (*.spc) from the RMMF.
 
     If a white list is specified then it takes precedence and all
     other tags will be ignored.
@@ -81,7 +81,7 @@ class SPCTagsFilter(object):
                               "h": ("short",  2),
                               "l": ("long",   4),
                               }
-        # shown spectrum fields
+        # shown spectral fields
         # example: fields = {offset: ("field name", 
         #                             "binary format", 
         #                             integer (rounded to n digits after the decimal point), 
@@ -139,7 +139,7 @@ class SPCTagsFilter(object):
             # TODO log that exited early
             return
         
-        #ignore non-spectrum file
+        #ignore non-spectra file
         if filepath[-4:].lower() != ".spc":
             return
         
@@ -156,8 +156,8 @@ class SPCTagsFilter(object):
 
         if (instr_name != None and len(instr_name) > 1):
             
-            # get spectrum metadata 
-            metadata = self.getSpectrum(filepath)
+            # get spectral metadata 
+            metadata = self.getSpectra(filepath)
         
             # get schema (create schema if needed)
             instrSchemas = self.instruments[instr_name]
@@ -173,10 +173,10 @@ class SPCTagsFilter(object):
             if created: # new object was created
                 schema.save()
                 
-            # save spectrum metadata
-            self.saveSpectrumMetadata(instance, schema, metadata)
+            # save spectral metadata
+            self.saveSpectraMetadata(instance, schema, metadata)
 
-    def saveSpectrumMetadata(self, instance, schema, metadata):
+    def saveSpectraMetadata(self, instance, schema, metadata):
         """Save all the metadata to a Dataset_Files paramamter set.
         """
         parameters = self.getParamaters(schema, metadata)
@@ -267,10 +267,10 @@ class SPCTagsFilter(object):
 
 
 
-    def getSpectrum(self, filename):
+    def getSpectra(self, filename):
         """Return a dictionary of the metadata.
         """
-        logger.debug("Extracting spectrum metadata from *.spc file...")
+        logger.debug("Extracting spectral metadata from *.spc file...")
         ret = {}
         try:
             spc = open(filename)
@@ -300,12 +300,16 @@ class SPCTagsFilter(object):
                     number_of_peak = struct.unpack(format, spc.read(byte_size))[0]
                     atomic_offset = offset + 2 # should be 640 for the beginning offset of atomic numbers
                     line_offset = 736 # the beginning offset of line numbers
+                    energy_offset = 832 # the beginning offset of energy numbers
+                    height_offset = 1024 # the beginning offset of height numbers
+                    energy_step = 0
+                    height_step = 0
                     for peak_offset in range(atomic_offset, atomic_offset+number_of_peak*2, 2):
-                        #
+                        # Atomic
                         spc.seek(peak_offset)
                         atomic_value = struct.unpack(format, spc.read(byte_size))[0]
                         
-                        #
+                        # Line
                         spc.seek(line_offset+peak_offset-atomic_offset)
                         line_value = struct.unpack(format, spc.read(byte_size))[0]
                         if line_value < 6: # K shells: 1-5
@@ -315,8 +319,24 @@ class SPCTagsFilter(object):
                         else: # M shells: 16~
                             line_value = 16
                         
+                        # Energy
+                        spc.seek(energy_offset + energy_step)
+                        energy_value = struct.unpack('f', spc.read(4))[0]
+                        energy_step += 4
+                        
+                        # Height
+                        print "offset ", height_offset + height_step
+                        spc.seek(height_offset + height_step)
+                        height_value = struct.unpack('I', spc.read(4))[0]
+                        print "height_value ", height_value
+                        height_step += 4
+                        
                         # compose the peak value
-                        value = "%d-%s %s" % (atomic_value, self.atomic_elements[int(atomic_value)], self.shells[line_value])
+                        value = "Atomic=%s, Line=%s, Energy=%.4f, Height=%d" % \
+                                (self.atomic_elements[int(atomic_value)], 
+                                 self.shells[line_value], 
+                                 energy_value, 
+                                 height_value)
                         ret["Peak ID Element %s" % ((peak_offset-atomic_offset)/2+1)] = [value, unit]
                     continue
                 else: # extract numbers
@@ -324,14 +344,14 @@ class SPCTagsFilter(object):
                 
                 ret[field] = [value, unit]
         except:
-            print "Failed to extract spectrum metadata from *.spc file."
+            print "Failed to extract spectral metadata from *.spc file."
             import sys
-            print sys.exc_info()
-            print ret
-            logger.debug("Failed to extract spectrum metadata from *.spc file.")
+            #print sys.exc_info()
+            #print ret
+            logger.debug("Failed to extract spectral metadata from *.spc file.")
             return ret
         
-        logger.debug("Successed extracting spectrum metadata from *.spc file.")
+        logger.debug("Successed extracting spectral metadata from *.spc file.")
         return ret
 
 def make_filter(name='', schema='', tagsToFind=[], tagsToExclude=[]):

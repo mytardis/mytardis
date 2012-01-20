@@ -1,1 +1,7 @@
-<img border="0" src="/thumbnails/full/{{ datafile_id }}"> 
+{% if datafile_type == "tif" %}
+    <img border="0" src="/thumbnails/full/{{ datafile_id }}"> 
+{% endif %}
+
+{% if datafile_type == "spc" %}
+    <img border="0" src="/spectra_png/full/{{ datafile_id }}"> 
+{% endif %}
