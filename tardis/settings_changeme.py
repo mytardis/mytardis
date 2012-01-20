@@ -73,7 +73,6 @@ MIDDLEWARE_CLASSES = (
     #'django.middleware.cache.FetchFromCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'tardis.tardis_portal.minidetector.Middleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.middleware.transaction.TransactionMiddleware')
@@ -258,7 +257,7 @@ TOKEN_USERNAME = 'tokenuser'
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
 RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
-RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__), 
+RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__),
     'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
 RIFCS_GROUP = "MyTARDIS Default Group"
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'

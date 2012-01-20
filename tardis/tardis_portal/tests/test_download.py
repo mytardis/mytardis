@@ -149,9 +149,9 @@ class DownloadTestCase(TestCase):
         self.assertEqual(df.size, str(13))
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
-        # now check a pdf file
+        # now check a JPG file
         filename = join(abspath(dirname(__file__)),
-                        '../static/downloads/DatasetDepositionGuide.pdf')
+                        '../static/images/ands-logo-hi-res.jpg')
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
@@ -162,12 +162,12 @@ class DownloadTestCase(TestCase):
         pdf1.save()
         try:
             from magic import Magic
-            self.assertEqual(pdf1.mimetype, 'application/pdf')
+            self.assertEqual(pdf1.mimetype, 'image/jpeg')
         except:
             # XXX Test disabled becuse lib magic can't be loaded
             pass
-        self.assertEqual(pdf1.size, str(1008475))
-        self.assertEqual(pdf1.md5sum, '9192b3d3e0056412b1d21d3e33562eba')
+        self.assertEqual(pdf1.size, str(14232))
+        self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
         # now check that we can override the physical file meta information
         pdf2 = Dataset_File(dataset=dataset,

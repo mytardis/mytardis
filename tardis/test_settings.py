@@ -72,7 +72,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
-    'tardis.tardis_portal.minidetector.Middleware',
     'django.middleware.transaction.TransactionMiddleware'
 )
 

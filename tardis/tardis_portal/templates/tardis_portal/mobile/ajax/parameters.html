@@ -1,9 +1,0 @@
-{% for parameterset in parametersets %}
-	<p><strong><em>{{parameterset.schema}}</strong></em></p>
-	{% for parameter in parameterset.datafileparameter_set.all %}
-		<li><strong>{{ parameter.name.full_name }}: </strong>
-		  {{ parameter.get }}
-		</li>
-	{% endfor %}
-	<br/><br/>
-{% endfor %}
