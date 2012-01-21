@@ -44,7 +44,7 @@ class Command(BaseCommand):
                   'in until they\'re given a valid password.')),
     )
 
-    help = 'Used to create a MyTARDIS superuser.'
+    help = 'Used to create a MyTardis superuser.'
 
     def handle(self, *args, **options):
         username = options.get('username', None)
@@ -152,4 +152,4 @@ class Command(BaseCommand):
         authentication.save()
 
         if verbosity >= 1:
-          self.stdout.write("MyTARDIS superuser created successfully.\n")
+          self.stdout.write("MyTardis superuser created successfully.\n")

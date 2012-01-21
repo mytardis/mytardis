@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 class AuthService():
     """The AuthService provides an interface for querying the
-    auth(n|z) framework within MyTARDIS. The auth service works by
+    auth(n|z) framework within MyTardis. The auth service works by
     reading the class path to plugins from the settings file.
 
     :param settings: the settings object that contains the list of

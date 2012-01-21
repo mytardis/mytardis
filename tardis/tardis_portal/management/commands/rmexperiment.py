@@ -20,8 +20,8 @@ from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import DatafileParameterSet
 
 class Command(BaseCommand):
-    args = '<MyTARDIS Exp ID>'
-    help = 'Delete the supplied MyTARDIS Experiment ID'
+    args = '<MyTardis Exp ID>'
+    help = 'Delete the supplied MyTardis Experiment ID'
     option_list = BaseCommand.option_list + (
         make_option('--list',
                     action='store_true',
