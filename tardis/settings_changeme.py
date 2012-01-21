@@ -111,8 +111,12 @@ DISABLE_TRANSACTION_MANAGEMENT = False
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'tardis_portal/site_media').replace('\\', '/')
 
-ADMIN_MEDIA_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
-    '../parts/django/django/contrib/admin/media/').replace('\\', '/')
+def get_admin_media_path():
+    import pkgutil
+    package = pkgutil.get_loader("django.contrib.admin")
+    return path.join(package.filename, 'media')
+
+ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
@@ -133,13 +137,16 @@ MEDIA_URL = '/site_media'
 # Static content location
 STATIC_URL = '/static'
 
+# Used by "django collectstatic"
+STATIC_ROOT = path.abspath(path.join(path.dirname(__file__),'..','static'))
+
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = STATIC_URL + '/admin/'
 
 STATICFILES_DIRS = (
-    ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT)
+    ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT),
 )
 
 # A tuple of strings designating all applications that are enabled in

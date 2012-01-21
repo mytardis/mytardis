@@ -186,3 +186,37 @@ Additional and custom tabs may be configured in MyTARDIS on a per-installation b
 
 Documentation on the additional tabs is available from :doc:`tabs`.
 
+
+Deployment
+----------
+
+Collecting Static Files
+~~~~~~~~~~~~~~~~~~~~~~~
+
+For performance reasons you should avoid static files being served via the
+application, and instead serve them directly through the webserver.
+
+To collect all the static files to a single directory::
+
+   ./bin/django collectstatic
+
+
+.. attribute:: tardis.settings_changeme.STATIC_ROOT
+
+   This contains the location to deposit static content for serving.
+
+
+.. attribute:: tardis.settings_changeme.STATIC_URL
+
+   The path static content will be served from. (eg. ``/static`` or
+   ``http://mytardis-resources.example.com/``)
+
+.. seealso::
+
+   `collectstatic <https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#collectstatic>`_,
+   `STATIC_ROOT <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_ROOT>`_,
+   `STATIC_URL <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_URL>`_
+
+
+
+
