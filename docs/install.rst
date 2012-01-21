@@ -217,6 +217,77 @@ To collect all the static files to a single directory::
    `STATIC_ROOT <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_ROOT>`_,
    `STATIC_URL <https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-STATIC_URL>`_
 
+.. _apache-wsgi:
+
+Serving with Apache HTTPD + mod_wsgi
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+See `./apache` for example configurations.
+
+Serving with Nginx + uWSGI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this configuration, Nginx serves static files and proxies application
+requests to a uWSGI server::
+
+       HTTP  +-----------+ uWSGI +--------------+
+    +------->|   Nginx   +------>| uWSGI Server |
+             +-----------+       +--------------+
+               0.0.0.0:80         127.0.0.1:3031
+
+Unlike :ref:`apache-wsgi`, application requests run in a completely different
+process to web requests. This allows the application server to be run as a
+seperate user to the web server, which can improve security.
+
+This configuration allows more flexibility when tuning for performance, but
+does add additional deployment complexity.
+
+MyTardis comes with a Foreman_ Profile, suitable for starting a server or
+exporting system scripts:
+
+.. code-block:: bash
+
+    # Install Foreman (requires rubygems)
+    sudo gem install foreman
+    # Start with Foreman
+    foreman start
+    # Export Upstart start-up scripts (running as user "django")
+    sudo foreman export upstart /etc/init -u django -p 3031
 
 
+Nginx should then be configured to send requests to the server::
 
+    server {
+        listen 80 default;
+        listen 443 default ssl;
+        client_max_body_size 4G;
+        keepalive_timeout 5;
+
+        root /home/django/public;
+
+        location / {
+            include uwsgi_params;
+            uwsgi_pass 127.0.0.1:3031;
+        }
+
+        location /static/ {
+            alias /home/django/mytardis/static/;
+        }
+
+    }
+
+Don't forget to create the static files directory and give it appropriate
+permissions.
+
+.. code-block:: bash
+
+    # Collect static files to /home/django/mytardis/static/
+    bin/django collectstatic
+    # Allow Nginx read permissions
+    setfacl -R -m user:nginx:rx static/
+
+.. seealso::
+            `Django with uWSGI`_
+
+.. _Foreman: http://ddollar.github.com/foreman/
+.. _`Django with uWSGI`: https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/uwsgi/
