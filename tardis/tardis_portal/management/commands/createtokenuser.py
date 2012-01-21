@@ -15,7 +15,7 @@ class Command(BaseCommand):
             help='Specifies the username for the tokenuser.'),
     )
 
-    help = 'Used to create a MyTARDIS tokenuser.'
+    help = 'Used to create a MyTardis tokenuser.'
 
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity', 1))
