@@ -22,7 +22,6 @@ core_urls = patterns(
     (r'^$', 'index'),
     (r'^site-settings.xml/$', 'site_settings'),
     (r'^about/$', 'about'),
-    (r'^partners/$', 'partners'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
     (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))
@@ -64,7 +63,7 @@ experiment_urls = patterns(
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
     )
-    
+
 token_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/(?P<token>.+)/', 'token_login'),
