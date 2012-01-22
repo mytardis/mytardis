@@ -3,6 +3,8 @@ import Image
 import imghdr
 import struct
 import csv
+import StringIO
+import matplotlib.pyplot as pyplot    
 
 from django.template import Context
 from django.http import HttpResponse
@@ -24,7 +26,7 @@ from tardis.tardis_portal.models import Dataset_File
 @never_cache
 @authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
-    # get schema id of EDAX Genesis spectrum schema
+    # get schema id of EDAX Genesis spectra schema
     schema_spc = Schema.objects.filter(name="EDAXGenesis_SPC")
     schema_ids_spc = []
     for schema in schema_spc:
@@ -48,9 +50,9 @@ def retrieve_parameters(request, dataset_file_id):
         for parameter in parameters:
             unsorted[str(parameter.name.full_name)] = parameter
                 
-        # sort spectrum tags
+        # sort spectra tags
         if parameterset.schema.id in schema_ids_spc:
-            # sort spectrum tags defined in field_order_spc                
+            # sort spectra tags defined in field_order_spc                
             for field in field_order_spc:
                 if field in unsorted:
                     sorted.append(unsorted[field])
@@ -90,15 +92,22 @@ def retrieve_parameters(request, dataset_file_id):
             parametersets[parameterset.schema] = parameters
     
     thumbpath = None
+    spc_file = False
     qs = Dataset_File.objects.filter(id=dataset_file_id)
     if qs:
         datafile = qs[0]
-        basepath = "/thumbnails/small"
-        thumbname = str(datafile.id)
-        thumbpath = os.path.join(basepath, thumbname)
+        # .spc image
+        if datafile.mimetype == "application/octet-stream":
+            spc_file = True
+        # .tif thumbnail image
+        elif datafile.mimetype == "image/tiff":
+            basepath = "/thumbnails/small"
+            thumbname = str(datafile.id)
+            thumbpath = os.path.join(basepath, thumbname)
 
     c = Context({'parametersets': parametersets,
                  'thumbpath': thumbpath,
+                 'spc_file': spc_file,
                  'datafile_id': dataset_file_id})
 
     return HttpResponse(render_response_index(request,
@@ -145,10 +154,11 @@ def display_thumbnails(request, size, datafile_id):
 
     return HttpResponse(image_data, mimetype="image/jpeg")
 
-def direct_to_thumbnail_html(request, datafile_id):
-    return render_to_response("thumbnail.html", {"datafile_id": datafile_id})
+def direct_to_thumbnail_html(request, datafile_id, datafile_type):
+    return render_to_response("thumbnail.html", {"datafile_id": datafile_id,
+                                                 "datafile_type": datafile_type,})
 
-def get_spectrum_values(datafile):
+def get_spectra(datafile):
     basepath = settings.FILE_STORE_PATH
     experiment_id = str(datafile.dataset.experiment.id)
     dataset_id = str(datafile.dataset.id)
@@ -159,7 +169,7 @@ def get_spectrum_values(datafile):
                             raw_path)
     spc = open(file_path)
     offset = 3840
-    channel = 4000 # number of spectrum channels
+    channel = 4000 # number of spectral channels
     format = 'i' # long integer
     byte_size = 4
     
@@ -168,13 +178,13 @@ def get_spectrum_values(datafile):
     
     return values_tuple
 
-def get_spectrum_csv(request, datafile_id):
+def get_spectra_csv(request, datafile_id):
     datafile = Dataset_File.objects.get(pk=datafile_id)
     filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
     writer = csv.writer(response)
-    values = get_spectrum_values(datafile)
+    values = get_spectra(datafile)
     index = 0
     for value in values:
         index += 1
@@ -183,10 +193,10 @@ def get_spectrum_csv(request, datafile_id):
 
     return response
 
-def get_spectrum_json(request, datafile_id):
+def get_spectra_json(request, datafile_id):
     datafile = Dataset_File.objects.get(pk=datafile_id)
     filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
-    values = get_spectrum_values(datafile)
+    values = get_spectra(datafile)
     index = 0
     data = []
     for value in values:
@@ -196,3 +206,52 @@ def get_spectrum_json(request, datafile_id):
     response = HttpResponse(content, mimetype='application/json')
     
     return response
+
+def get_spectra_png(request, size, datafile_id):
+    datafile = Dataset_File.objects.get(pk=datafile_id)
+    values = list( get_spectra(datafile) )
+    pyplot.plot([x * 0.01 for x in range(0, 4000)], values)
+    pyplot.xlabel("keV")
+    pyplot.ylabel("Counts")
+    pyplot.grid(True)
+    
+    # set size
+    ratio = 1.5
+    if size == "small":
+        ratio = 0.75
+    fig = pyplot.gcf()
+    default_size = fig.get_size_inches()
+    fig.set_size_inches(default_size[0] * ratio, default_size[1] * ratio)
+    
+    # label peak values
+    datafileparametersets = DatafileParameterSet.objects.filter(dataset_file__pk=datafile_id)
+    peaks = []
+    label = {}
+    for parameterset in datafileparametersets:
+        # get list of parameters
+        parameters = parameterset.datafileparameter_set.all()
+        for parameter in parameters:
+            if str(parameter.name.full_name).startswith("Peak ID Element"):
+                peaks.append(parameter.string_value)
+    for peak in peaks:
+        data = str(peak).split(', ')
+        atomic = data[0].split('=')[-1]
+        line = data[1].split('=')[-1]
+        energy = float(data[2].split('=')[-1])
+        height= int(data[3].split('=')[-1])
+        pyplot.annotate('%s%s' % (atomic, line), 
+                        xy=(energy, height), 
+                        xytext=(energy-0.5, height+50),
+                        )
+    
+    # Write PNG image
+    buffer = StringIO.StringIO()
+    canvas = pyplot.get_current_fig_manager().canvas
+    canvas.draw()
+    img = Image.fromstring('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+    img.save(buffer, 'PNG')
+    pyplot.close()
+    # Django's HttpResponse reads the buffer and extracts the image
+    return HttpResponse(buffer.getvalue(), mimetype='image/png')
+
+

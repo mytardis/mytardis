@@ -6,9 +6,10 @@ from django.conf import settings
 urlpatterns = patterns('tardis.apps.microtardis.views',
     (r'^thumbnails/(?P<size>[\w\.]+)/(?P<datafile_id>[\w\.]+)/$', 'display_thumbnails'),
     (r'^ajax/parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^spectrum_csv/(?P<datafile_id>\d+)/$', 'get_spectrum_csv'),
-    (r'^spectrum_json/(?P<datafile_id>\d+)/$', 'get_spectrum_json'),
-    (r'^(?P<datafile_id>\d+)/$', 'direct_to_thumbnail_html'),
+    (r'^spectra_png/(?P<size>[\w\.]+)/(?P<datafile_id>\d+)/$', 'get_spectra_png'),
+    (r'^spectra_csv/(?P<datafile_id>\d+)/$', 'get_spectra_csv'),
+    (r'^spectra_json/(?P<datafile_id>\d+)/$', 'get_spectra_json'),
+    (r'^(?P<datafile_id>\d+)/(?P<datafile_type>[\w\.]+)/$', 'direct_to_thumbnail_html'),
 )
 
 # Media for MicroTardis

@@ -208,6 +208,11 @@ def addfiles(request):
     from os import path
     from tardis.tardis_portal.models import Dataset_File
     
+    import itertools
+
+    from tardis.apps.hpctardis.metadata import process_all_experiments
+    from tardis.apps.hpctardis.metadata import process_experimentX
+    
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST['authMethod']
