@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.conf import settings
 from tardis.tardis_portal.models import Experiment
 
 
@@ -20,12 +20,15 @@ class NameParts(models.Model):
 
 class PartyRecord(models.Model):
     key = models.CharField(max_length=200,help_text="The full ANDS URI identifier")
-    type = models.CharField(max_length=80,default="person",help_text="The ANDS party type (person, group, or administrativePosition)")
+    type = models.CharField(max_length=80,
+                            default="person",
+                            choices=(('person','person'),('group','group'),('administrativePosition','administrativePosition')),
+                            help_text="The ANDS party type (person, group, or administrativePosition)")
     partyname = models.ForeignKey(NameParts,related_name="reverse",help_text="The nameof the party")
     birthdate = models.DateField(null=True,blank=True,help_text="Leave blank if not appropriate")
     deathdate = models.DateField(null=True,blank=True,help_text="Leave blank if not appropriate")
     #altname = models.ForeignKey(NameParts,blank=True,null=True,related_name="reverse")
-    subject = models.CharField(max_length=200,default="",blank=True)
+    subject = models.CharField(max_length=200,default="",blank=True,help_text="Comma delimited list of subject names or codes")
     
     def __unicode__(self):
         return u"%s" % self.partyname
@@ -47,7 +50,9 @@ class PartyRecord(models.Model):
         return self.partyname
     
 class PartyLocation(models.Model):
-    type = models.CharField(default="url",max_length=80,help_text="email, postaladdress")
+    type = models.CharField(default="url",
+                            choices=(('email','email'),('postaladdress','postaladdress')
+                                                        ),max_length=80,help_text="email, postaladdress")
     value = models.TextField(default="",blank=True)
     party = models.ForeignKey(PartyRecord)
     
@@ -56,7 +61,9 @@ class PartyLocation(models.Model):
     
     
 class PartyDescription(models.Model):
-    type = models.CharField(default="",max_length=80,help_text="brief,full,logo,note")
+    type = models.CharField(default="",          
+          choices=(('brief','brief'),('full','full'),('logo','logo'),('note','note')),
+          max_length=80,help_text="brief,full,logo,note")
     value = models.TextField(default="",blank=True)
     party = models.ForeignKey(PartyRecord)
     
@@ -67,20 +74,27 @@ class PartyDescription(models.Model):
 class ActivityRecord(models.Model):
     ident = models.CharField(default="",max_length=200,blank=True)
     key = models.CharField(default="",max_length=200,help_text="The full ANDS identifier")
-    type = models.CharField(default="",max_length=80,help_text="project, program, course, award, event")
+    type = models.CharField(default="",
+                            choices=(('project','project'),('program','program'),('course','course'),('award','award'),('event','event')),
+                            max_length=80,
+                            help_text="project, program, course, award, event")
     activityname = models.ForeignKey(NameParts,help_text="The name of the activity")
     description = models.TextField(default="",blank=True,help_text="Deprecated.  Do not use")
     parties = models.ManyToManyField(PartyRecord,
                                      through="ActivityPartyRelation")
-    subject = models.CharField(max_length=200,default="",blank=True)
-   
+    subject = models.CharField(max_length=200,default="",blank=True,
+                               help_text="comma delimited list of subjects names or codes")
+    group = models.CharField(max_length=200,blank=True, default=settings.GROUP,
+                             help_text="The origin of the activity")
     
     def __unicode__(self):
         return u"%s" % (self.activityname)  
 
         
 class ActivityDescription(models.Model):
-    type = models.CharField(default="",max_length=80,help_text="brief,full,logo,note")
+    type = models.CharField(default="",
+                            choices=(('brief','brief'),('full','full'),('logo','logo'),('note','note')),
+                            max_length=80,help_text="brief,full,logo,note")
     value = models.TextField(default="",blank=True)
     party = models.ForeignKey(ActivityRecord,help_text="The party")
     
@@ -96,7 +110,12 @@ class ActivityLocation(models.Model):
 class ActivityPartyRelation(models.Model):
     activity = models.ForeignKey(ActivityRecord,help_text="The source activity")
     party = models.ForeignKey(PartyRecord,help_text="The destination party")
-    relation = models.CharField(max_length=80,default="isManagedBy",help_text="isFundedBy, isManagedBy, isOwnedBy, hasParticipant")
+    relation = models.CharField(max_length=80,
+                                default="isManagedBy",
+                                choices=(('isFundedBy','isFundedBy'),('isManagedBy','isManagedBy'),
+                                                                      ('isOwnedBy','isOwnedBy'),
+                                                                      ('hasParticipant','hasParticipant')),
+                                help_text="isFundedBy, isManagedBy, isOwnedBy, hasParticipant")
     
     
 class PublishAuthorisation(models.Model):

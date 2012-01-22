@@ -403,9 +403,11 @@ def rif_cs(request):
             'experiments': experiments,
             'now': datetime.datetime.now(),
             'parties': parties,
-            'activities':activities
+            'collection_subjects': settings.COLLECTION_SUBJECTS,
+            'activities':activities,
+            'localgroup': settings.GROUP
+            
         })
-    
     
         
     return HttpResponse(render_response_index(request,\

@@ -76,3 +76,7 @@ EMAIL_HOST_USER = 'eresearch.rmit@gmail.com'
 EMAIL_HOST_PASSWORD = 'PASSWORD'
 EMAIL_USE_TLS = True
 EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8890"
+
+# The anzsrc codes for subject for all collections
+COLLECTION_SUBJECTS = ['0307','0204']
+GROUP = "RMIT University"

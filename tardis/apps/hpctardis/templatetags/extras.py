@@ -116,6 +116,13 @@ def descs_for_activity(party,name):
 
 def strip(name):
     return name.strip()    
+
+
+def make_list(string):    
+    res = string.split(',')
+    return res    
+
+
     
 register = template.Library()
 register.filter('partyinfo',party_info)
@@ -126,3 +133,4 @@ register.filter('locationforactivity',location_for_activity)
 register.filter('descsforparty',descs_for_party)
 register.filter('descsforactivity',descs_for_activity)
 register.filter('strip',strip)
+register.filter('makelist',make_list)

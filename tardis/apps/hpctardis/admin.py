@@ -53,6 +53,17 @@ class ActivityDescriptionInlines(admin.StackedInline):
     model = ActivityDescription
     extra = 1
 
+
+
+#from django import forms
+
+#class ProductAdminForm(forms.ModelForm):
+#    choices = (("yes",'y'),('no','n'))
+    
+#    def __init__(self, *args, **kwargs):
+#        super(ProductAdminForm, self).__init__(*args, **kwargs)
+#        self.fields['type'].widget = forms.Select(self.choices)
+            
     
 class ActivityRecordAdmin(admin.ModelAdmin):
     inlines = (ActivityPartyRelationInlines, ActivityDescriptionInlines)
@@ -64,6 +75,8 @@ class ActivityRecordAdmin(admin.ModelAdmin):
                      'activityname__given',
                      'activityname__family','activityname__suffix',)
     exclude = ('description',)
+    
+    #form = ProductAdminForm
     
 
 class PartyLocationInlines(admin.StackedInline):
@@ -84,6 +97,8 @@ class PartyRecordAdmin(admin.ModelAdmin):
     ordering = ('id',)
     list_filter = ('type','key')
     search_fields = ('partyname__title','partyname__given','partyname__family','partyname__suffix',)
+    
+    
     
 admin.site.register(NameParts)
 #admin.site.register(PartyDescription)

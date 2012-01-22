@@ -274,6 +274,10 @@ if not SINGLE_SEARCH_ENABLED:
     HAYSTACK_ENABLE_REGISTRATIONS = False
 
 
+# The anzsrc codes for subject for all collections
+COLLECTION_SUBJECTS = None
+GROUP = "Acme University"
+
 DEFAULT_INSTITUTION = "RMIT University"
 
 #Are the datasets ingested via METS xml (web services) to be immutable?

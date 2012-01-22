@@ -16,7 +16,7 @@
     <!--          -->
     
     {% for party in parties%}
-    <registryObject group="RMIT University">
+    <registryObject group="{{ localgroup }}">
         <key>{{party.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <party type="{{party.type}}">
@@ -52,9 +52,11 @@
                    
                 </address>               
             </location>
-            {% if party.subject %}
-            <subject type="anzsrc-for">{{ party.subject}}</subject>
-            {% endif %}                     
+            
+            {% for subject in party.subject|makelist %}
+            <subject type="anzsrc-for">{{ subject }}</subject>
+            {% endfor %}
+                                
             {% for desc in party|descsforparty:"" %}
             <description type="{{desc.type}}">{{ desc.value|strip}}</description>
             {% endfor %}
@@ -68,7 +70,7 @@
     <!--             -->
     
     {% for activity in activities %}
-    <registryObject group="RMIT University">
+    <registryObject group="{{activity.group}}">
         <key>{{activity.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <activity type="{{activity.type}}">
@@ -90,7 +92,11 @@
                                 
             {% for desc in activity|descsforactivity:"" %}
             <description type="{{desc.type}}">{{ desc.value}}</description>
-            {% endfor %}               
+            {% endfor %}
+            
+            {% for subject in activity.subject|makelist %}
+            <subject type="anzsrc-for">{{ subject }}</subject>
+            {% endfor %}
         </activity>
     </registryObject>
     <!--   -->
