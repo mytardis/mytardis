@@ -22,14 +22,14 @@
 		    </location>
             {% for party in experiment|partyinfo:"" %}
             <relatedObject>
-                <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
-                <relation type="{{party.1}}"/>
+                <key>{{party.0}}</key> 
+                <relation type="{{party.1}}"/> 
             </relatedObject> 
             {% endfor %}
             {% for activity in experiment|activityinfo:"" %}
             <relatedObject>
-                <key>http://www.rmit.edu.au/HPC/3/{{activity.0}}</key> 
-                <relation type="{{activity.1}}"/> 
+                <key>{{activity.0}}</key> 
+                <relation type="{{activity.1}}"/>  
             </relatedObject> 
             {% endfor %}
             <description type="about">{{experiment.description}}</description>

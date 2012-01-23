@@ -52,6 +52,8 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     UserProfile, UserAuthentication
 
+from nose.plugins.skip import SkipTest        
+
 from django.conf import settings
 
 from tardis.tardis_portal import models
@@ -462,7 +464,7 @@ class VASPMetadataTest(TestCase):
         
     def test_metadata_postsave(self):
         """ Tests use of postsave hook to trigger metadata extraction"""
-        
+        #raise SkipTest()
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
@@ -536,7 +538,7 @@ class AuthPublishTest(TestCase):
         self.user = User.objects.create_user(self.username, email, self.pwd)
         self.userprofile = UserProfile(user=self.user)
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/1"
+        party.key = "http://www.rmit.edu.au/HPC/1/1"
         party.type = "person"
         np = NameParts()
         np.title="Mr"
@@ -555,7 +557,8 @@ class AuthPublishTest(TestCase):
         
             
         activity = ActivityRecord()
-        activity.key="http://www.rmit.edu.au/3/2"
+        activity.key="http://www.rmit.edu.au/HPC/3/2"
+        activity.ident = activity.key
         activity.type = "project"
         np = NameParts()
         np.title="My Other Secret Project"
@@ -573,7 +576,7 @@ class AuthPublishTest(TestCase):
         
         
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/2"
+        party.key = "http://www.rmit.edu.au/HPC/1/2"        
         party.type = "person"
         np = NameParts()
         np.title="Ms"
@@ -590,7 +593,8 @@ class AuthPublishTest(TestCase):
         email.save()
         
         activity = ActivityRecord()
-        activity.key="http://www.rmit.edu.au/3/1"
+        activity.key="http://www.rmit.edu.au/HPC/3/1"
+        activity.ident = activity.key
         activity.type = "project"
         np = NameParts()
         np.title="My Secret Project"
@@ -607,7 +611,7 @@ class AuthPublishTest(TestCase):
         apr.save()
     
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/3"
+        party.key = "http://www.rmit.edu.au/HPC/1/3"        
         party.type = "person"
         np = NameParts()
         np.title="Mr"
@@ -853,7 +857,7 @@ class AuthPublishTest(TestCase):
         self.assertEquals(_get_XML_tag(
                    response.content,
                    '//rifcs:activity/rifcs:relatedObject/rifcs:key')[0].text,
-                   "http://www.rmit.edu.au/HPC/1/1")
+                   "http://www.rmit.edu.au/HPC/1/2")
     
         self.assertEquals(_get_XML_tag(
                    response.content,
@@ -869,7 +873,7 @@ class AuthPublishTest(TestCase):
         self.assertEquals(_get_XML_tag(
                    response.content,
                    '//rifcs:activity/rifcs:relatedObject/rifcs:key')[1].text,
-                   "http://www.rmit.edu.au/HPC/1/2")
+                   "http://www.rmit.edu.au/HPC/1/1")
     
     
         self.assertEquals(_get_XML_tag(

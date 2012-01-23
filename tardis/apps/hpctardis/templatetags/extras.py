@@ -11,6 +11,7 @@ from tardis.tardis_portal.models import ExperimentParameter
 from tardis.apps.hpctardis.models import PublishAuthorisation
 from tardis.apps.hpctardis.models import ActivityPartyRelation
 from tardis.apps.hpctardis.models import PartyLocation
+from tardis.apps.hpctardis.models import PartyRecord
 from tardis.apps.hpctardis.models import PartyDescription
 from tardis.apps.hpctardis.models import ActivityLocation
 from tardis.apps.hpctardis.models import ActivityDescription
@@ -45,7 +46,13 @@ def party_info(exp,name):
         pres = ["UnknownParty","UnknownRelation"]     
         for p in params:
             if p.name.name=='party_id':
-                pres[0] = int(p.numerical_value)
+                try:
+                    party_record = PartyRecord.objects.get(pk=p.numerical_value)
+                except PartyRecord.DoesNotExist, e:
+                    pass
+                else:
+                    pres[0] = party_record.key
+                #pres[0] = int(p.id)
             if p.name.name =='relationtocollection_id':
                 pres[1] = p.string_value
         res.append(pres)
@@ -57,21 +64,21 @@ def party_info(exp,name):
 def activity_info(exp,name):  
     collection_activities_relations = PublishAuthorisation.objects.filter(
                                 experiment=exp,
-                                status=PublishAuthorisation.APPROVED_PUBLIC)
+                                status=PublishAuthorisation.APPROVED_PUBLIC).order_by('activity_record__key')
     res = []
     for collection_activities_relation in collection_activities_relations:
-        res.append((collection_activities_relation.activity_record.id,
+        res.append((collection_activities_relation.activity_record.key,
                    "isOutputOf"))
     return res
 
     
 def party_for_act(act,name):
     
-    activity_parties = ActivityPartyRelation.objects.filter(activity=act)
+    activity_parties = ActivityPartyRelation.objects.filter(activity=act).order_by('activity__key')
     
     res = []
     for activity_party in activity_parties:
-        res.append((activity_party.party.id,
+        res.append((activity_party.party.key,
                    activity_party.relation))
     return res
 

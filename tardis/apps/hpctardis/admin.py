@@ -46,12 +46,12 @@ class ActivityPartyRelationInlines(admin.StackedInline):
     
 class ActivityLocationInlines(admin.StackedInline):
     model = ActivityLocation
-    extra = 1
+    extra = 0
     
     
 class ActivityDescriptionInlines(admin.StackedInline):
     model = ActivityDescription
-    extra = 1
+    extra = 0
 
 
 
@@ -81,12 +81,12 @@ class ActivityRecordAdmin(admin.ModelAdmin):
 
 class PartyLocationInlines(admin.StackedInline):
     model = PartyLocation
-    extra = 1
+    extra = 0
     
     
 class PartyDescriptionInlines(admin.StackedInline):
     model = PartyDescription
-    extra = 1
+    extra = 0
     
     
 class PartyRecordAdmin(admin.ModelAdmin):
