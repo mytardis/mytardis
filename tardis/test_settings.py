@@ -1,4 +1,4 @@
-from os import path
+from os import listdir, path
 import logging
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -81,8 +81,14 @@ MIDDLEWARE_CLASSES = (
 
 TARDIS_APP_ROOT = 'tardis.apps'
 
-INSTALLED_APPS = (
-        TARDIS_APP_ROOT+'.equipment',
+def get_all_tardis_apps():
+    tardis_app_dir = TARDIS_APP_ROOT.replace('.', path.sep)
+    names = filter(path.isdir, \
+                   map(lambda name: tardis_app_dir+'/'+name,
+                       listdir(tardis_app_dir)))
+    return sorted(map(lambda name: name.replace(path.sep, '.') , names))
+
+INSTALLED_APPS = get_all_tardis_apps() + [
         'django.contrib.auth',
         'django.contrib.contenttypes',
         'django.contrib.sessions',
@@ -95,7 +101,7 @@ INSTALLED_APPS = (
         'registration',
         'django_nose',
         'haystack',
-)
+]
 
 # LDAP configuration
 LDAP_USE_TLS = False
