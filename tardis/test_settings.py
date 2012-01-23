@@ -1,5 +1,6 @@
 from os import listdir, path
 import logging
+import djcelery
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
@@ -17,6 +18,11 @@ DATABASES = {
         'PORT': '',
     }
 }
+
+# Celery queue uses Django for persistence
+BROKER_TRANSPORT = 'django'
+# During testing it's always eager
+CELERY_ALWAYS_EAGER = True
 
 ROOT_URLCONF = 'tardis.urls'
 
@@ -101,6 +107,8 @@ INSTALLED_APPS = get_all_tardis_apps() + [
         'registration',
         'django_nose',
         'haystack',
+        'djcelery',
+        'djkombu',
 ]
 
 # LDAP configuration
@@ -161,3 +169,5 @@ DOI_NAMESPACE = 'http://www.tardis.edu.au/schemas/doi/2011/12/07'
 DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
 DOI_RELATED_INFO_ENABLE = False
 DOI_BASE_URL='http://mytardis.example.com'
+
+djcelery.setup_loader()
