@@ -907,4 +907,40 @@ class AuthPublishTest(TestCase):
                           200)
         logger.debug("response=%s" % response)
  
+ 
+ 
+class Exp():
+    def __init__(self,desc):
+        self.description = desc
+            
+    
+    
+class DescSplitTest(TestCase):
+    """ Tests ability to split description field into brief, full and url sections
+        for RIFCS        
+    """
+    
+    def test_simple(self):
+        from tardis.apps.hpctardis.publish.rif_cs_profile.rif_cs_PublishProvider import paragraphs
+        paras = paragraphs('p1\n\t\np2\t\n\tstill p2\t   \n     \n\tp')
+        output = [x for x in paras]    
+        self.assertEquals(str(output),"['p1\\n', 'p2\\t\\n\\tstill p2\\t   \\n', '\\tp']")
+    
+            
+    def test_breakupdesc(self):
+        from tardis.apps.hpctardis.templatetags.extras import breakup_desc
+        exp = Exp('brief\n\t\n'
+                                            'link1type:link1url\nlink1desc\t\n\n'
+                                            'full1\nfull2\n\n'
+                                            'link2type:link2url\nlink2desc\t\n\n'
+                                                'full3\n\nfull4')
+        res = breakup_desc(exp)
+        logger.debug("res=%s" % res)
+      
+        self.assertEquals(res[0][0],"brief\n")                
+        self.assertEquals(res[0][1],[('link1type', 'link1url', 'link1desc\t\n'), ('link2type', 'link2url', 'link2desc\t\n')])
+        self.assertEquals(res[0][2],('full1\nfull2\n\n\nfull3\n\n\nfull4',))
+    
+        
+        
 

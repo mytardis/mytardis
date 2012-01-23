@@ -32,7 +32,27 @@
                 <relation type="{{activity.1}}"/>  
             </relatedObject> 
             {% endfor %}
-            <description type="about">{{experiment.description}}</description>
+            
+            
+            {% for desc_fields,urls,fulls in experiment|breakupdesc %}
+                <description type="brief">{{desc_fields}}</description>
+                
+                {% for url in urls %}
+                {% if url %}
+                <relatedinfo type="{{url.0}}">
+                <identifier type="url">{{url.1}}</identifier>
+                <notes>{{url.2}}</notes>
+                </relatedinfo>
+                {% endif %}
+                {% endfor %}
+            
+                {% for full in fulls %}
+                {% if full %}
+                <description type="full">{{full}}</description>
+                {% endif %}
+                {% endfor %}
+            {% endfor %}                      
+            
          </collection>
          {# no spatial or temporal coverage #}
          

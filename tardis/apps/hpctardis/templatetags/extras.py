@@ -1,6 +1,8 @@
 
 
 
+import logging
+
 from django.template import Library
 from django import template
 
@@ -15,6 +17,12 @@ from tardis.apps.hpctardis.models import PartyRecord
 from tardis.apps.hpctardis.models import PartyDescription
 from tardis.apps.hpctardis.models import ActivityLocation
 from tardis.apps.hpctardis.models import ActivityDescription
+
+
+
+logger = logging.getLogger(__name__)
+
+
 
 def party_info(exp,name):
     namespace = "http://rmit.edu.au/rif-cs/party/1.0/"
@@ -128,8 +136,44 @@ def strip(name):
 def make_list(string):    
     res = string.split(',')
     return res    
+    
+    
 
-
+def breakup_desc(exp):
+    """ Breaks up exp description into tuple containing brief desc, full
+        description and list of links
+    """
+    from tardis.apps.hpctardis.publish.rif_cs_profile.rif_cs_PublishProvider import paragraphs
+    import re
+    paras = paragraphs(str(exp.description))
+    output = [x for x in paras]
+    if len(output):    
+        brief = output[0]
+    else:
+        return []        
+    regex = re.compile("^([^\:]+)\:(.*)\n")
+    links = []
+    full = []
+    for link_or_full_desc in output[1:]:
+        logger.debug("link_or_full_desc=%s" % repr(link_or_full_desc))
+        link = regex.match(link_or_full_desc)
+        if link:
+            link_groups = link.groups()
+            logger.debug("link_groups=%s" % repr(link_groups))
+            logger.debug("len(link_groups)=%s" % len(link_groups))
+            if len(link_groups) == 2:                
+                (link_type,url) = link_groups
+                match_end = link.end()
+                desc = link_or_full_desc[match_end:]
+                logger.debug("desc=%s" % repr(desc))
+                links.append((link_type, url, desc))
+                continue
+        full.append(link_or_full_desc)
+    joined_full = "\n\n".join(full)
+    res = ((brief, links, (joined_full,)),)
+    return res
+    
+   
     
 register = template.Library()
 register.filter('partyinfo',party_info)
@@ -141,3 +185,4 @@ register.filter('descsforparty',descs_for_party)
 register.filter('descsforactivity',descs_for_activity)
 register.filter('strip',strip)
 register.filter('makelist',make_list)
+register.filter('breakupdesc',breakup_desc)
