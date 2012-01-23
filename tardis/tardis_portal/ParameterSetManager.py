@@ -41,6 +41,8 @@ class ParameterSetManager(object):
           metadata, will be tested for completeness and copied into
           new task if complete
         :type dataset: Dataset
+        :param schema: Schema namespace
+        :type schema: string
         """
 
         if parameterset:
