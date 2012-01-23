@@ -384,15 +384,17 @@ def rif_cs(request):
 
     """
 
-    experiments = Experiment.objects.filter(public=True)
+    experiments = Experiment.objects.filter(public=True).order_by('id')
     
+    
+    logger.debug("exps=%s" % [ x.id for x in experiments])
     try:
-        parties = PartyRecord.objects.all()
+        parties = PartyRecord.objects.all().order_by('key')
     except PartyRecord.DoesNotExist:
         parties = PartyRecord.objects.none()
         
     try:
-        activities = ActivityRecord.objects.all()
+        activities = ActivityRecord.objects.all().order_by('key')
     except ActivityRecord.DoesNotExist:
         activities = ActivityRecord.objects.none()
    
@@ -400,9 +402,11 @@ def rif_cs(request):
             'experiments': experiments,
             'now': datetime.datetime.now(),
             'parties': parties,
-            'activities':activities
+            'collection_subjects': settings.COLLECTION_SUBJECTS,
+            'activities':activities,
+            'localgroup': settings.GROUP
+            
         })
-    
     
         
     return HttpResponse(render_response_index(request,\

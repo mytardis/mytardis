@@ -30,6 +30,16 @@ logger = logging.getLogger(__name__)
 
 
 
+from itertools import groupby
+
+def paragraphs(lines) :
+    """ See http://stackoverflow.com/questions/116494/python-regular-expression-to-split-paragraphs/123806#123806 """
+    for group_separator, line_iteration in groupby(lines.splitlines(True),
+                                                    key = str.isspace) :
+        if not group_separator :
+            yield ''.join(line_iteration)
+
+
 class rif_cs_PublishProvider(PublishProvider):
 
     def __init__(self, experiment_id):
