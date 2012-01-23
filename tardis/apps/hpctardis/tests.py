@@ -101,6 +101,30 @@ class HPCprotocolTest(TestCase):
         self.user = User.objects.create_user(self.user, self.email, self.pwd)
         # TODO extract the only the username form <User:....>
         self.assertEquals(str(User.objects.get(username=self.user)), 'tardis_user1') 
+    
+    def test_protocol1(self):
+        from django.core.urlresolvers import reverse
+        import os
+        
+        url=reverse('tardis.apps.hpctardis.views.protocol')
+        response = self.client.post(url, {'username':self.user, 
+                                               'password':self.pwd,
+                                               'authMethod':'localdb'})
+        self.assertEquals(response.status_code, 200)
+        str_response = str(response.content)   
+        self.assertEquals(str_response, 'Successful') 
+    
+    def test_protocol2(self):
+        from django.core.urlresolvers import reverse
+        import os
+        
+        url=reverse('tardis.apps.hpctardis.views.protocol')
+        response = self.client.post(url, {'authMethod':'localdb'})
+        self.assertEquals(response.status_code, 200)
+        str_response = str(response.content)   
+        self.assertEquals(str_response, 'Please enter Username and Password') 
+                             
+    
        
     def test_authentication(self):
         from django.core.urlresolvers import reverse
@@ -109,13 +133,12 @@ class HPCprotocolTest(TestCase):
         
         url=reverse('tardis.apps.hpctardis.views.login')
         
-#       f = open('Test1.txt','wb+')
+
+
         temp = tempfile.TemporaryFile()
-        temp.write("Username:venki\nName:Venki Bala\nExperiment:Test Exp\nFacility:localhost\nDescription:Test desc")   
+        temp.write("Username:venki\nName:Venki Bala\nExperiment:Test Exp\nFacility:localhost\nDescription:Test desc\nFacility:localhost\nFolderName:myfolder\nCounter:7\nPackage:test_package")   
         temp.seek(0)
-#       f.close()        
         
-#       f = open('Test1.txt','r')
         response = self.client.post(url, {'username':self.user, 
                                                'password':self.pwd, 
                                                'authMethod':'localdb','file':temp}) 
@@ -141,6 +164,9 @@ class HPCprotocolTest(TestCase):
         expid2 = int(content_list[1])
         self.assertEquals(expid1,expid2)
         
+        foldername = 'localhost.test_package.myfolder.7'
+        returnfolder = str(content_list[2])
+        self.assertEquals(foldername,returnfolder)
      #  Test for Creation of experiment
         
         try:
@@ -150,7 +176,7 @@ class HPCprotocolTest(TestCase):
      
         self.assertEquals(str(e.title).rstrip('\n'),'Test Exp')
         self.assertEquals(str(e.institution_name),'RMIT University')
-        self.assertEquals(str(e.description),'Test desc')
+        self.assertEquals(str(e.description).rstrip('\n'),'Test desc')
         self.assertEquals(str(e.created_by),str(self.user))
         
         
