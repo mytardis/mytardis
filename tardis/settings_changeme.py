@@ -165,6 +165,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'django.contrib.markup',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',
     'registration',

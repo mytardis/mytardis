@@ -25,6 +25,7 @@ setup(
         'django-registration',
         'django-extensions',
         'django-form-utils',
+	'markdown',
         'south',
         ],
 )
