@@ -1,0 +1,81 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load basiccomparisonfilters %}
+{% load uploadify_tags %}
+{% load dynurl %}
+
+{% block script %}
+
+  {% include "tardis_portal/javascript_libraries.html" %}
+
+<script type="text/javascript">
+	
+	function get_new_parameter_name(name)
+	{
+		new_name = name
+
+		i = 1
+		while($("input[name=" + new_name + "__" + i + "]").length == 1)
+		{
+			i = i + 1
+		}
+		return new_name + "__" + i
+	}
+
+	function get_form_input_html(label, name)
+	{
+		return '<div class="fieldWrapper"><label for="' + name + '">' + label + '</label><br/><input type="text" name="' + name + '" value="" id="' + name + '" /></div>'
+	}
+
+</script>
+
+  <script type="text/javascript">
+	$(document).ready(function() {
+	$("#tabs").tabs({
+	    ajaxOptions: {dataType: "html"},
+	    cookie: { expires: 30 }
+	});
+
+	  // Close Button Highlighting. IE doesn't support :hover. Surprise?
+	  if($.browser.msie) {
+	  $('div.jqmAlert .jqmClose')
+	  .hover(
+	    function(){ $(this).addClass('jqmCloseHover'); },
+	    function(){ $(this).removeClass('jqmCloseHover'); });
+	  }
+
+    });
+  </script>
+
+{% endblock %}
+
+{% block fullpage %}
+
+  <div id="fullpage">
+    <div class="post">
+      {# Included Experiment ID for the user #}
+      <h1 class="title"><b>Experiment   {{experiment.id}}  :</b>   {{ experiment.title }}</h1>
+        {% if has_write_permissions %}{% if not experiment.public %}
+           <a href="{{ experiment.get_edit_url }}">[Edit]</a>
+	{% endif %}{% endif %}
+      </h1>
+    </div>
+
+    <div class="tabcontainer">
+      <div id="tabs">
+	<ul>
+	  <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}{% if query %}?query={{ query }}{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+	  {% for appurl, appname in apps %}
+	    <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+	  {% endfor %}
+	</ul>
+      </div><!-- End tab container -->
+
+    </div>
+  </div>
+
+
+{# <p><a href="/ajax/edit_datafile_parameters/1/" #}
+{#  class="jqModal">[Edit Metadata]</a></p> #}
+
+{% endblock %}
