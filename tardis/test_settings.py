@@ -213,4 +213,6 @@ HPC_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 # Changed because hpctardis overrides existing urls, which are called in testcases
 ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
+
+PRIVATE_DATAFILES = False
                      

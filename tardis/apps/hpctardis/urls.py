@@ -21,6 +21,15 @@ urlpatterns += patterns('',
 urlpatterns += patterns('tardis.apps.hpctardis.views',
                         (r'^experiment/view/(?P<experiment_id>\d+)/publish/$', 
                             'publish_experiment'))    
+urlpatterns += patterns(
+    'tardis.apps.hpctardis.download',
+    (r'^download/datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
+    (r'^download/experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
+     'download_experiment_alt'),
+    (r'^download/datafiles/$', 'download_datafiles'),
+    (r'^download/datafile/ws/$', 'download_datafile_ws'),
+    )
+
 
 # Add remaining tardis links
 urlpatterns += tardisurls

@@ -41,6 +41,12 @@ from os import path
    
 from django.test import TestCase
 from django.test.client import Client
+from os.path import abspath, basename, dirname, join, exists
+
+from os import makedirs
+from os.path import abspath, basename, dirname, join, exists
+from shutil import rmtree
+
 
 from django.contrib.auth.models import User, Group
 from tempfile import mkdtemp, mktemp
@@ -942,5 +948,68 @@ class DescSplitTest(TestCase):
         self.assertEquals(res[0][2],('full1\nfull2\n\n\nfull3\n\n\nfull4',))
     
         
-        
+class PrivateDataTest(TestCase):
+    
+         
+    def setUp(self):
+        self.client = Client()
+        from django.contrib.auth.models import User
+        self.username = 'tardis_user1'
+        self.pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(self.username, email, self.pwd)
+        settings.PRIVATE_DATAFILES = True
 
+    def tearDown(self):
+        settings.PRIVATE_DATAFILES= False
+        
+    def test_download_exp(self):
+        login = self.client.login(username=self.username,
+                                  password=self.pwd)
+        self.assertTrue(login)
+        # Create simple experiment
+        exp = models.Experiment(title='test exp1',
+                                institution_name='rmit',
+                                created_by=self.user,
+                                public=False
+                                )
+        exp.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+        self.assertEqual(exp.title, 'test exp1')
+        self.assertEqual(exp.url, None)
+        self.assertEqual(exp.institution_name, 'rmit')
+        self.assertEqual(exp.approved, False)
+        self.assertEqual(exp.handle, None)
+        self.assertEqual(exp.created_by, self.user)
+        self.assertEqual(exp.public, False)
+        self.assertEqual(exp.get_or_create_directory(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+
+        response = self.client.get("/download/experiment/%s/zip/" % exp.id)
+        
+        self.assertEqual(response['Content-Disposition'],
+                 'attachment; filename="experiment%s-complete.zip"' % exp.id)
+      
+      
+        self.assertEquals([x.name for x in response.templates
+                            if "contact_download" in x.name],
+                          [])
+        
+        exp.public = True
+        exp.save()
+        
+        response = self.client.get("/download/experiment/%s/zip/" % exp.id)
+        
+        self.assertEquals([x.name for x in response.templates
+                            if "contact_download" in x.name],
+                          ['hpctardis/contact_download.html'])
+                 
+                         

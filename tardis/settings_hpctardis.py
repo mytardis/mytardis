@@ -80,3 +80,5 @@ EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8890"
 # The anzsrc codes for subject for all collections
 COLLECTION_SUBJECTS = ['0307','0204']
 GROUP = "RMIT University"
+
+PRIVATE_DATAFILES = True
