@@ -31,7 +31,7 @@ $(document).ready(function(){
 	    max: 10,
 	    minChars: 1,
 	    scroll: false,
-	    formatResult: function (item, position, length){
+	    formatResult: function(item, position, length) {
 	        if (item[1] == 'search_field')
 	        {
 	            return item[0] + ":";
@@ -42,10 +42,8 @@ $(document).ready(function(){
 	        }
 	    }
 	});
-});
 
 
-$(document).ready(function() {
     var myClose = function(hash) {
             hash.w.fadeOut('2000',function(){ hash.o.remove()});
             window.location.hash = "";
@@ -54,7 +52,7 @@ $(document).ready(function() {
     $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
 
     // Add status messages for create/save
-    if(window.location.hash) {
+    if (window.location.hash) {
         if(window.location.hash == '#created')
         {
             $('#jqmStatusMessage').html('Experiment Created');
@@ -70,13 +68,16 @@ $(document).ready(function() {
     	$('#jqmAlertStatus').jqmShow();
     }
 
+    // Hover events
+    $('.ui-state-default').live('mouseover mouseout', function(evt) {
+        if (evt.type == 'mouseover') {
+            $(this).addClass('ui-state-hover');
+        } else {
+            $(this).removeClass('ui-state-hover');
+        }
+    });
+
 });
 
 
-jQuery('.ui-state-default').live('mouseover mouseout', function(evt) {
-    if (evt.type == 'mouseover') {
-        jQuery(this).addClass('ui-state-hover');
-    } else {
-        jQuery(this).removeClass('ui-state-hover');
-    }
-});
+
