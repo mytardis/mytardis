@@ -41,6 +41,12 @@ from os import path
    
 from django.test import TestCase
 from django.test.client import Client
+from os.path import abspath, basename, dirname, join, exists
+
+from os import makedirs
+from os.path import abspath, basename, dirname, join, exists
+from shutil import rmtree
+
 
 from django.contrib.auth.models import User, Group
 from tempfile import mkdtemp, mktemp
@@ -51,6 +57,8 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     UserProfile, UserAuthentication
+
+from nose.plugins.skip import SkipTest        
 
 from django.conf import settings
 
@@ -101,6 +109,30 @@ class HPCprotocolTest(TestCase):
         self.user = User.objects.create_user(self.user, self.email, self.pwd)
         # TODO extract the only the username form <User:....>
         self.assertEquals(str(User.objects.get(username=self.user)), 'tardis_user1') 
+    
+    def test_protocol1(self):
+        from django.core.urlresolvers import reverse
+        import os
+        
+        url=reverse('tardis.apps.hpctardis.views.protocol')
+        response = self.client.post(url, {'username':self.user, 
+                                               'password':self.pwd,
+                                               'authMethod':'localdb'})
+        self.assertEquals(response.status_code, 200)
+        str_response = str(response.content)   
+        self.assertEquals(str_response, 'Successful') 
+    
+    def test_protocol2(self):
+        from django.core.urlresolvers import reverse
+        import os
+        
+        url=reverse('tardis.apps.hpctardis.views.protocol')
+        response = self.client.post(url, {'authMethod':'localdb'})
+        self.assertEquals(response.status_code, 200)
+        str_response = str(response.content)   
+        self.assertEquals(str_response, 'Please enter Username and Password') 
+                             
+    
        
     def test_authentication(self):
         from django.core.urlresolvers import reverse
@@ -109,13 +141,12 @@ class HPCprotocolTest(TestCase):
         
         url=reverse('tardis.apps.hpctardis.views.login')
         
-#       f = open('Test1.txt','wb+')
+
+
         temp = tempfile.TemporaryFile()
-        temp.write("Username:venki\nName:Venki Bala\nExperiment:Test Exp\nFacility:localhost\nDescription:Test desc")   
+        temp.write("Username:venki\nName:Venki Bala\nExperiment:Test Exp\nFacility:localhost\nDescription:Test desc\nFacility:localhost\nFolderName:myfolder\nCounter:7\nPackage:test_package")   
         temp.seek(0)
-#       f.close()        
         
-#       f = open('Test1.txt','r')
         response = self.client.post(url, {'username':self.user, 
                                                'password':self.pwd, 
                                                'authMethod':'localdb','file':temp}) 
@@ -141,6 +172,9 @@ class HPCprotocolTest(TestCase):
         expid2 = int(content_list[1])
         self.assertEquals(expid1,expid2)
         
+        foldername = 'localhost.test_package.myfolder.7'
+        returnfolder = str(content_list[2])
+        self.assertEquals(foldername,returnfolder)
      #  Test for Creation of experiment
         
         try:
@@ -150,7 +184,7 @@ class HPCprotocolTest(TestCase):
      
         self.assertEquals(str(e.title).rstrip('\n'),'Test Exp')
         self.assertEquals(str(e.institution_name),'RMIT University')
-        self.assertEquals(str(e.description),'Test desc')
+        self.assertEquals(str(e.description).rstrip('\n'),'Test desc')
         self.assertEquals(str(e.created_by),str(self.user))
         
         
@@ -462,7 +496,7 @@ class VASPMetadataTest(TestCase):
         
     def test_metadata_postsave(self):
         """ Tests use of postsave hook to trigger metadata extraction"""
-        
+        #raise SkipTest()
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
@@ -536,7 +570,7 @@ class AuthPublishTest(TestCase):
         self.user = User.objects.create_user(self.username, email, self.pwd)
         self.userprofile = UserProfile(user=self.user)
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/1"
+        party.key = "http://www.rmit.edu.au/HPC/1/1"
         party.type = "person"
         np = NameParts()
         np.title="Mr"
@@ -555,7 +589,8 @@ class AuthPublishTest(TestCase):
         
             
         activity = ActivityRecord()
-        activity.key="http://www.rmit.edu.au/3/2"
+        activity.key="http://www.rmit.edu.au/HPC/3/2"
+        activity.ident = activity.key
         activity.type = "project"
         np = NameParts()
         np.title="My Other Secret Project"
@@ -573,7 +608,7 @@ class AuthPublishTest(TestCase):
         
         
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/2"
+        party.key = "http://www.rmit.edu.au/HPC/1/2"        
         party.type = "person"
         np = NameParts()
         np.title="Ms"
@@ -590,7 +625,8 @@ class AuthPublishTest(TestCase):
         email.save()
         
         activity = ActivityRecord()
-        activity.key="http://www.rmit.edu.au/3/1"
+        activity.key="http://www.rmit.edu.au/HPC/3/1"
+        activity.ident = activity.key
         activity.type = "project"
         np = NameParts()
         np.title="My Secret Project"
@@ -607,7 +643,7 @@ class AuthPublishTest(TestCase):
         apr.save()
     
         party = PartyRecord()
-        party.key = "http://www.rmit.edu.au/1/3"
+        party.key = "http://www.rmit.edu.au/HPC/1/3"        
         party.type = "person"
         np = NameParts()
         np.title="Mr"
@@ -853,7 +889,7 @@ class AuthPublishTest(TestCase):
         self.assertEquals(_get_XML_tag(
                    response.content,
                    '//rifcs:activity/rifcs:relatedObject/rifcs:key')[0].text,
-                   "http://www.rmit.edu.au/HPC/1/1")
+                   "http://www.rmit.edu.au/HPC/1/2")
     
         self.assertEquals(_get_XML_tag(
                    response.content,
@@ -869,7 +905,7 @@ class AuthPublishTest(TestCase):
         self.assertEquals(_get_XML_tag(
                    response.content,
                    '//rifcs:activity/rifcs:relatedObject/rifcs:key')[1].text,
-                   "http://www.rmit.edu.au/HPC/1/2")
+                   "http://www.rmit.edu.au/HPC/1/1")
     
     
         self.assertEquals(_get_XML_tag(
@@ -903,4 +939,103 @@ class AuthPublishTest(TestCase):
                           200)
         logger.debug("response=%s" % response)
  
+ 
+ 
+class Exp():
+    def __init__(self,desc):
+        self.description = desc
+            
+    
+    
+class DescSplitTest(TestCase):
+    """ Tests ability to split description field into brief, full and url sections
+        for RIFCS        
+    """
+    
+    def test_simple(self):
+        from tardis.apps.hpctardis.publish.rif_cs_profile.rif_cs_PublishProvider import paragraphs
+        paras = paragraphs('p1\n\t\np2\t\n\tstill p2\t   \n     \n\tp')
+        output = [x for x in paras]    
+        self.assertEquals(str(output),"['p1\\n', 'p2\\t\\n\\tstill p2\\t   \\n', '\\tp']")
+    
+            
+    def test_breakupdesc(self):
+        from tardis.apps.hpctardis.templatetags.extras import breakup_desc
+        exp = Exp('brief\n\t\n'
+                                            'link1type:link1url\nlink1desc\t\n\n'
+                                            'full1\nfull2\n\n'
+                                            'link2type:link2url\nlink2desc\t\n\n'
+                                                'full3\n\nfull4')
+        res = breakup_desc(exp)
+        logger.debug("res=%s" % res)
+      
+        self.assertEquals(res[0][0],"brief\n")                
+        self.assertEquals(res[0][1],[('link1type', 'link1url', 'link1desc\t\n'), ('link2type', 'link2url', 'link2desc\t\n')])
+        self.assertEquals(res[0][2],('full1\nfull2\n\n\nfull3\n\n\nfull4',))
+    
+        
+class PrivateDataTest(TestCase):
+    
+         
+    def setUp(self):
+        self.client = Client()
+        from django.contrib.auth.models import User
+        self.username = 'tardis_user1'
+        self.pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(self.username, email, self.pwd)
+        settings.PRIVATE_DATAFILES = True
 
+    def tearDown(self):
+        settings.PRIVATE_DATAFILES= False
+        
+    def test_download_exp(self):
+        login = self.client.login(username=self.username,
+                                  password=self.pwd)
+        self.assertTrue(login)
+        # Create simple experiment
+        exp = models.Experiment(title='test exp1',
+                                institution_name='rmit',
+                                created_by=self.user,
+                                public=False
+                                )
+        exp.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+        self.assertEqual(exp.title, 'test exp1')
+        self.assertEqual(exp.url, None)
+        self.assertEqual(exp.institution_name, 'rmit')
+        self.assertEqual(exp.approved, False)
+        self.assertEqual(exp.handle, None)
+        self.assertEqual(exp.created_by, self.user)
+        self.assertEqual(exp.public, False)
+        self.assertEqual(exp.get_or_create_directory(),
+                         path.join(settings.FILE_STORE_PATH, str(exp.id)))
+
+        response = self.client.get("/download/experiment/%s/zip/" % exp.id)
+        
+        self.assertEqual(response['Content-Disposition'],
+                 'attachment; filename="experiment%s-complete.zip"' % exp.id)
+      
+      
+        self.assertEquals([x.name for x in response.templates
+                            if "contact_download" in x.name],
+                          [])
+        
+        exp.public = True
+        exp.save()
+        
+        response = self.client.get("/download/experiment/%s/zip/" % exp.id)
+        
+        self.assertEquals([x.name for x in response.templates
+                            if "contact_download" in x.name],
+                          ['hpctardis/contact_download.html'])
+                 
+                         

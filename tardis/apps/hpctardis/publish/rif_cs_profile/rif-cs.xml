@@ -9,18 +9,20 @@
 	<!--  Collections -->
     <!--              -->
     
-	{% for experiment in experiments %}{% include experiment.profile %}{% endfor %}	
+	{% for experiment in experiments %}
+	{% include experiment.profile %}
+	{% endfor %}	
 	
 	<!--          -->
     <!--  Parties -->
     <!--          -->
     
     {% for party in parties%}
-    <registryObject group="RMIT University">
+    <registryObject group="{{ localgroup }}">
         <key>{{party.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <party type="{{party.type}}">
-            <identifier type="uri">http://www.rmit.edu.au/HPC/1/{{party.id}}</identifier>
+            <identifier type="uri">{{party.key}}</identifier>
             <name type="primary">
                 <namePart type="family">{{party.partyname.family}}</namePart>
                 <namePart type="given">{{party.partyname.given}}</namePart>
@@ -52,9 +54,11 @@
                    
                 </address>               
             </location>
-            {% if party.subject %}
-            <subject type="anzsrc-for">{{ party.subject}}</subject>
-            {% endif %}                     
+            
+            {% for subject in party.subject|makelist %}
+            <subject type="anzsrc-for">{{ subject }}</subject>
+            {% endfor %}
+                                
             {% for desc in party|descsforparty:"" %}
             <description type="{{desc.type}}">{{ desc.value|strip}}</description>
             {% endfor %}
@@ -68,18 +72,18 @@
     <!--             -->
     
     {% for activity in activities %}
-    <registryObject group="RMIT University">
+    <registryObject group="{{activity.group}}">
         <key>{{activity.key}}</key>
         <orginatingSource>http://www.rmit.edu.au</orginatingSource>
         <activity type="{{activity.type}}">
-            <identifier type="uri">http://www.rmit.edu.au/HPC/3/{{activity.id}}</identifier>
+            <identifier type="uri">{{activity.ident}}</identifier>
             <name type="primary">
                 <namePart>{{activity.activityname}}</namePart>
             </name>
             
             {% for party in activity|partyforact:"" %}
             <relatedObject>
-                <key>http://www.rmit.edu.au/HPC/1/{{party.0}}</key> 
+                <key>{{party.0}}</key> 
                 <relation type="{{party.1}}"/> 
             </relatedObject> 
             {% endfor %}
@@ -90,7 +94,11 @@
                                 
             {% for desc in activity|descsforactivity:"" %}
             <description type="{{desc.type}}">{{ desc.value}}</description>
-            {% endfor %}               
+            {% endfor %}
+            
+            {% for subject in activity.subject|makelist %}
+            <subject type="anzsrc-for">{{ subject }}</subject>
+            {% endfor %}
         </activity>
     </registryObject>
     <!--   -->

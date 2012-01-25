@@ -201,6 +201,11 @@ POST_SAVE_FILTERS = tuple(tmp)
 INSTALLED_APPS = (TARDIS_APP_ROOT+".hpctardis",) + INSTALLED_APPS
 
 
+# The anzsrc codes for subject for all collections
+COLLECTION_SUBJECTS = None
+GROUP = "Acme University"
+
+
 # HPCTardis Media
 HPC_STATIC_URL_ROOT = '/static'
 HPC_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
@@ -208,4 +213,6 @@ HPC_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 # Changed because hpctardis overrides existing urls, which are called in testcases
 ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
+
+PRIVATE_DATAFILES = False
                      

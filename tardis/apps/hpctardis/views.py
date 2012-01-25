@@ -74,37 +74,27 @@ from tardis.apps.hpctardis.models import PublishAuthEvent
 from tardis.apps.hpctardis.models import PartyRecord
 from tardis.apps.hpctardis.models import ActivityRecord
 
-
-
 def test(request):
     return HttpResponse(render_response_index(request,'hpctardis/test.html'))
 
-def protocol(request,dl):
-    html="Test for protocol"
- 
-#   dl = request.FILES['file']
+def protocol(request):
+    # Basic Authentication  
+    if 'username' in request.POST and \
+            'password' in request.POST:
+        authMethod = request.POST['authMethod']
         
-    f = open('Test.txt','wb+')
-    for chunk in dl.chunks():
-        f.write(chunk)
-    f.close()
-    
-    metadata = {}
-    
-    f = open('Test.txt')
-    for line in f: 
-        key,value = line.split(':')
-        metadata[key] = value
-    f.close()
-    
-    user    = metadata['Username']
-    author  = metadata['Name']
-    title   = metadata['Experiment']
-    ds_desc = metadata['Facility']
-    desc    = metadata['Description']
-    
-    html = html + desc 
-    return HttpResponse(html)
+        user = auth_service.authenticate(
+            authMethod=authMethod, request=request)
+
+        if user:
+            html = 'Successful'
+            return HttpResponse(html)
+        else:
+            html = 'Unsuccessful'
+            return HttpResponse(html)
+    else:
+        html = 'Please enter Username and Password'
+        return HttpResponse(html)
 
 def login(request):
 
@@ -121,16 +111,12 @@ def login(request):
             dl = request.FILES['file']
             staging = settings.STAGING_PATH + '/' +str(user)+ '/' 
             
-            #if staging:
-            #   c['directory_listing'] = staging_traverse(staging)
-            #   c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
-
-            eid,exp,ds_desc = createhpcexperiment(request,user,dl)
-#           addfiles(request,eid,exp,ds_desc)
-            next = str(staging) + str(eid)  + '@' + str(eid)
+            eid,exp,folder_desc = createhpcexperiment(request,user,dl)
+            
+            next = str(staging) + str(eid) + '@' + str(eid) + '@' + str(folder_desc)
             return HttpResponse(next)
         else:
-            next = 'Unsuccessful' 
+            next = 'Invalid User name or Password' 
             return HttpResponse(next)
     else:
         return HttpResponse("No username password entered")    
@@ -156,17 +142,13 @@ def createhpcexperiment(request,user,dl):
         metadata[key] = value
     temp.close()
       
-#   f = open('Test.txt')
-#   for line in f: 
-#       key,value = line.split(':')
-#       metadata[key] = value
-#   f.close()
-    
-    # user    = metadata['Username']
     author  = metadata['Name']
     title   = metadata['Experiment']
     ds_desc = metadata['Facility']
     desc    = metadata['Description']
+    fname   = metadata['FolderName']
+    counter = metadata['Counter']
+    package = metadata['Package']
     
     exp = Experiment(title=title,
                      institution_name="RMIT University",
@@ -198,7 +180,9 @@ def createhpcexperiment(request,user,dl):
                         aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
     
-    return eid,exp,ds_desc
+    folder_desc = "%s.%s.%s.%s" % (ds_desc.strip(),package.strip(),fname.strip(),counter.strip()) 
+    logger.debug('folder_desc = %s' % folder_desc)
+    return eid,exp,folder_desc
 
 
 def addfiles(request):
@@ -207,9 +191,7 @@ def addfiles(request):
     from os.path import basename
     from os import path
     from tardis.tardis_portal.models import Dataset_File
-    
     import itertools
-
     from tardis.apps.hpctardis.metadata import process_all_experiments
     from tardis.apps.hpctardis.metadata import process_experimentX
     
@@ -221,54 +203,64 @@ def addfiles(request):
             authMethod=authMethod, request=request)
 
     if user:
-        eid  = request.POST['eid']
-        desc = request.POST['desc']
+        eid    = request.POST['eid']
+        desc   = request.POST['desc']
+        folder = request.POST['folder']
         eid  = int(eid)
-    #   TODO ask Ian about the error  
-    #   staging = get_full_staging_path(user)
-        staging = path.join(settings.STAGING_PATH,str(user),str(eid))
-        filelist = []
-        ds_desc  = {}
-        for root, dirs, files in os.walk(staging):
-            for named in dirs:
-                currentdir = str(named)
-        for root, dirs, files in os.walk(staging):       
-            for namef in files:                       
-                currentfile = path.join(currentdir,namef)
-                filelist.append(currentfile)
         
-        next = str(filelist)   
-        ds_desc[desc] = filelist
-    
 #   TODO Use the try and except
         auth_key = settings.DEFAULT_AUTH
         try:
             exp = Experiment.objects.get(pk=eid)
+            author = exp.created_by 
         except Experiment.DoesNotExist:
             logger.exception('Experiment for eid %i in addfiles does not exist' % eid)
+            return  HttpResponse("Experiment Not Found")
+
+        current_user = str(user) 
+        created_user = str(author)
         
-#      exp = Experiment.objects.get(pk=eid)
+        if current_user == created_user: 
+            staging = path.join(settings.STAGING_PATH,str(user),str(eid),str(folder))
+            filelist = []
+            ds_desc  = {} 
+ #          import pdb
+ #          pdb.set_trace()
+            for root, dirs, files in os.walk(staging):                       
+                for named in files:  
+                    filelist.append(named)
+                
+            next = str(filelist)   
+            ds_desc[desc] = filelist
+            
+#TODO If needed for security - Metadata from the folder can be extracted 
+#to check the folder name  
 
-
-        for d, df in ds_desc.items():
-            dataset = models.Dataset(description=d,
+            for d, df in ds_desc.items():
+                dataset = models.Dataset(description=d,
                                      experiment=exp)
-            dataset.save()
-        
-            for f in df:
-                filepath = path.join(staging,f)
-                size = path.getsize(filepath)
-                filename = path.basename(filepath)
+                dataset.save()
+                for f in df:
+                    logger.debug('f = %s' %f)
+                    filepath = path.join(staging,f)                    
+                    size = path.getsize(filepath)
+                    filename = path.basename(filepath)
     
-                datafile = Dataset_File(dataset=dataset, filename=filename,
-                                           url=filepath, size=size, protocol='staging')
-                datafile.save()
+                    datafile = Dataset_File(dataset=dataset, filename=filename,
+                                               url=filepath, size=size, protocol='staging')
+                    datafile.save()
                 
-        next = next + ' File path :' + staging 
-                
-        return  HttpResponse(next)
+            next = next + ' File path :' + staging 
+        
+            process_experimentX(exp) ;
+        
+            next = next + ' The Author is : ' + str(author) + ',' + str(user)         
+            return  HttpResponse(next)
+        else:
+            next = 'The author of the experiment can only add the files (From Tardis)'
+            return HttpResponse(next)
     else:
-        return  HttpResponse("UnSuccessful")
+        return  HttpResponse("UnSuccessful") 
 
 
 
@@ -392,15 +384,17 @@ def rif_cs(request):
 
     """
 
-    experiments = Experiment.objects.filter(public=True)
+    experiments = Experiment.objects.filter(public=True).order_by('id')
     
+    
+    logger.debug("exps=%s" % [ x.id for x in experiments])
     try:
-        parties = PartyRecord.objects.all()
+        parties = PartyRecord.objects.all().order_by('key')
     except PartyRecord.DoesNotExist:
         parties = PartyRecord.objects.none()
         
     try:
-        activities = ActivityRecord.objects.all()
+        activities = ActivityRecord.objects.all().order_by('key')
     except ActivityRecord.DoesNotExist:
         activities = ActivityRecord.objects.none()
    
@@ -408,9 +402,11 @@ def rif_cs(request):
             'experiments': experiments,
             'now': datetime.datetime.now(),
             'parties': parties,
-            'activities':activities
+            'collection_subjects': settings.COLLECTION_SUBJECTS,
+            'activities':activities,
+            'localgroup': settings.GROUP
+            
         })
-    
     
         
     return HttpResponse(render_response_index(request,\
