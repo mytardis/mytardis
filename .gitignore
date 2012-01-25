@@ -20,5 +20,5 @@ docs/Makefile
 .project
 .settings/
 .pydevproject
-static/
+/static/
 var/

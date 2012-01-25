@@ -1,15 +1,15 @@
-<script type="text/javascript" src="{{ uploadify_path }}swfobject.js"></script>
-<script type="text/javascript" src="{{ uploadify_path }}jquery.uploadify.js"></script>
+<script type="text/javascript" src="{{ uploadify_path }}/swfobject.js"></script>
+<script type="text/javascript" src="{{ uploadify_path }}/jquery.uploadify.js"></script>
 <div id="uploadify" class="multi-file-upload" data-dataset_id="{{dataset_id}}"><input id="fileInput" name="fileInput" type="file" /></div>
 <script type="text/javascript">// <![CDATA[
 $(document).ready(function() {
 
 $('#fileInput').uploadify({
-'uploader'  : '{{ uploadify_path }}uploadify.swf',
+'uploader'  : '{{ uploadify_path }}/uploadify.swf',
 'script'    : '{% url tardis.tardis_portal.views.upload dataset_id %}',
-'cancelImg' : '{{ uploadify_path }}cancel.png',
+'cancelImg' : '{{ uploadify_path }}/cancel.png',
 'auto'      : false,
-'folder'    : '{{ upload_path }}',
+'folder'    : '{{ upload_path }}/',
 'multi'     : true,
 'scriptData': {'session_id': '{{ session_id }}'},
 'onAllComplete' : allComplete
