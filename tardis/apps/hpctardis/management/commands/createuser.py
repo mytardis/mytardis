@@ -146,8 +146,10 @@ class Command(BaseCommand):
                         sys.stderr.write("Error: That username is already taken.\n")
                         username = None
 
-                first_name = raw_input('First Name: ')
-                last_name = raw_input('Last Name: ')
+                if not first_name:
+                    first_name = raw_input('First Name: ')
+                if not last_name:
+                    last_name = raw_input('Last Name: ')
 
                 # Get an email
                 while 1:
