@@ -4,6 +4,12 @@ import imghdr
 import struct
 import csv
 import StringIO
+
+#os.environ['HOME']="/home/rmmf/CoreTardis/db"
+os.environ['HOME'] = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../db')).replace('\\', '/')
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as pyplot    
 
 from django.template import Context
