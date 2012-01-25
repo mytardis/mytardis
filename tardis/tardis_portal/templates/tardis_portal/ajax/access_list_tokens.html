@@ -29,7 +29,7 @@
                     <a href="{{ token.url }}" class="token_url">{{ token.url }}</a>
                 </td>
                 <td>
-                    <a href="{% url tardis.tardis_portal.views.token_delete token.id %}" class="token_delete" data-toggle_selector="#token_toggle_{{token.experiment_id}}"><img src="/site_media/images/icon_deletelink.gif" alt="delete"></a>
+                    <a href="{% url tardis.tardis_portal.views.token_delete token.id %}" class="token_delete" data-toggle_selector="#token_toggle_{{token.experiment_id}}"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif" alt="delete"></a>
                 </td>
             </tr>
             {% endfor %}

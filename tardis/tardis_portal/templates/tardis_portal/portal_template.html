@@ -34,18 +34,18 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <link rel="shortcut icon" href="/site_media/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ STATIC_URL }}/favicon.ico" type="image/x-icon">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>MyTARDIS {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+    <title>MyTardis {% if subtitle %}- {{ subtitle }} {% endif %}</title>
     <meta name="keywords" content="">
     <meta name="description" content="">
 
-    {% include "tardis_portal/javascript_libraries.html" %} 
+    {% include "tardis_portal/javascript_libraries.html" %}
 
     {% block script %}
     {% endblock script %}
 
-    <link href="/site_media/css/default.css" rel="stylesheet" type="text/css" media="screen">
+    <link href="{{ STATIC_URL }}/css/default.css" rel="stylesheet" type="text/css" media="screen">
 
 
     <script type="text/javascript">
@@ -74,8 +74,8 @@ $(document).ready(function(){
 
 
 $("#id_q").autocomplete(users, { //users.split(" "), {
-    matchContains: true, 
-    multiple: true, 
+    matchContains: true,
+    multiple: true,
     multipleSeparator: " ",
     selectFirst: false,
     autoFill: false,
@@ -105,14 +105,14 @@ $("#id_q").autocomplete(users, { //users.split(" "), {
                     hash.w.fadeOut('2000',function(){ hash.o.remove()});
                     window.location.hash = "";
                 };
-            
+
             // $("#fuzz").css("height", $(document).height());
             $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
 
             //                 $(window).bind("resize", function() {
             // $("#fuzz").css("height", $(window).height());
             //                 });
-            
+
             {% if status %}
             $('#jqmAlertStatus').jqmShow();
             {% endif %}
@@ -126,11 +126,11 @@ $("#id_q").autocomplete(users, { //users.split(" "), {
                 else if(window.location.hash == '#saved')
                 {
                     $('#jqmStatusMessage').html('Experiment Saved');
-                    $("#jqmAlertStatus").jqmShow();                    
+                    $("#jqmAlertStatus").jqmShow();
                 }
-            }        
-        });        
-            
+            }
+        });
+
           </script>
 
 {# icons #}
@@ -150,14 +150,13 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 <body>
   <div id="header">
     <div id="logo">
-      <h1><img src="/site_media/images/mytardis_logo.png"></h1>
+      <h1><img src="{{ STATIC_URL }}/images/mytardis_logo.png"></h1>
     </div> <!-- logo -->
     <div id="menu">
       <ul>
     <li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
     <li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
     <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
-    <li><a href="{% url tardis.tardis_portal.views.partners %}">Partners</a></li>
     <li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
       </ul>
     </div> <!-- menu -->
@@ -191,11 +190,11 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
             </div> <!-- search-text-wrapper -->
             <div class="search-submit-wrapper">
               <input type="submit" id="search_btn" value="Search"/>
-            </div><!-- search-submit-wrapper -->       
-        
+            </div><!-- search-submit-wrapper -->
+
         </form>
-      </div> <!-- search-menu-wrapper --> 
-    </div> <!-- search-menu-bar --> 
+      </div> <!-- search-menu-wrapper -->
+    </div> <!-- search-menu-bar -->
     {% endif %}
   </div> <!-- headerbg -->
 
@@ -207,7 +206,7 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
                     {% if error %}
                     <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
                       <br/>{{status}}
-                    
+
                     </div> <!-- statusBoxError -->
                     {% else %}
                     <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
@@ -239,7 +238,7 @@ jQuery('.ui-state-default').live('mouseover mouseout', function(evt){
 
     <div id="bottombar" style="padding-bottom: 5px; padding-left: 0px;">
     <div style="padding-left: 17px">
-        Created by the <a target="_blank" style="text-decoration: underline" href="http://code.google.com/p/mytardis/">MyTARDIS Team</a> - Version 2.1
+        Created by the <a target="_blank" style="text-decoration: underline" href="http://mytardis.github.com/">MyTardis Team</a> - Version 2.1
         </div>
     </div> <!-- bottombar -->
   </div> <!-- page -->

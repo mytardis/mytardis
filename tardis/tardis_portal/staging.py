@@ -244,16 +244,18 @@ def duplicate_file_check_rename(copyto):
     return result
 
 
-def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
+def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
     """
     Writes file POST data to the dataset directory in the file store
 
-    :param dataset_id: dataset who's directory to be written to
+    :param dataset: dataset whose directory to be written to
     :type dataset: models.Model
+    :param uploaded_file_post: uploaded file (either UploadedFile or File)
+    :type uploaded_file_post: types.FileType
     :rtype: the path of the file written to
     """
 
-    filename = uploaded_file_post.name
+    filename = filename or uploaded_file_post.name
 
     experiment_path = path.join(settings.FILE_STORE_PATH,
                                 str(dataset.experiment.id))
@@ -269,8 +271,18 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
 
     uploaded_file = open(copyto, 'wb+')
 
-    for chunk in uploaded_file_post.chunks():
-        uploaded_file.write(chunk)
+    try:
+        # Check if we're using multiple chunks
+        if uploaded_file_post.multiple_chunks():
+            # We are, so let's write every chunk
+            for chunk in uploaded_file_post.chunks():
+                uploaded_file.write(chunk)
+        else:
+            # We're not, so just read and write
+            uploaded_file.write(uploaded_file_post.read())
+    except AttributeError:
+        # Handle ordinary files
+        uploaded_file.write(uploaded_file_post.read())
 
     uploaded_file.close()
 

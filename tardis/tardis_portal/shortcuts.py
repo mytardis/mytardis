@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext, Context
 from django.http import HttpResponseForbidden, HttpResponseNotFound, \
     HttpResponseServerError
@@ -18,7 +18,11 @@ def render_response_index(request, *args, **kwargs):
         is_superuser = False
         username = None
 
-    kwargs['context_instance'] = RequestContext(request)
+    if ('context_instance' in kwargs):
+        kwargs['context_instance'] = RequestContext(request,
+                                                    kwargs['context_instance'])
+    else:
+        kwargs['context_instance'] = RequestContext(request)
     kwargs['context_instance']['is_authenticated'] = is_authenticated
     kwargs['context_instance']['is_superuser'] = is_superuser
     kwargs['context_instance']['username'] = username
@@ -30,13 +34,7 @@ def render_response_index(request, *args, **kwargs):
     else:
         kwargs['context_instance']['has_staging_access'] = False
 
-
-    #if request.mobile:
-    #    template_path = args[0]
-    #    split = template_path.partition('/')
-    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
-
-    return render_to_response(*args, **kwargs)
+    return render(request, *args, **kwargs)
 
 
 def render_response_search(request, *args, **kwargs):
@@ -76,12 +74,7 @@ def render_response_search(request, *args, **kwargs):
     else:
         kwargs['context_instance']['has_staging_access'] = False
 
-    #if request.mobile:
-    #    template_path = args[0]
-    #    split = template_path.partition('/')
-    #    args = (split[0] + '/mobile/' + split[2], ) + args[1:]
-
-    return render_to_response(*args, **kwargs)
+    return render(request, *args, **kwargs)
 
 
 def return_response_not_found(request):
