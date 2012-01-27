@@ -1,49 +1,40 @@
 var activateSearchAutocomplete = function() {
-    var users = (function () {
-        var val = null;
-        var authMethod = "localdb";
-        var data = { authMethod: authMethod };
-        $.ajax({
-            // Ouch! This should be rewritten to handle async.
-            'async': false,
-            'global': false,
-            'data': data,
-            'url': '/ajax/parameter_field_list/',
-            'success': function (data) {
-                data = data.split("+");
-                var list = new Array();
-                $.each(data, function(i,l) {
-                    var name = l.split(":")[0];
-                    var type = l.split(":")[1];
-                    list[i] = [name, type];
-                });
-                val = list;
-            }
-         });
-        return val;
-    })();
-
-
-    $("#id_q").autocomplete(users, {
-        matchContains: true,
-        multiple: true,
-        multipleSeparator: " ",
-        selectFirst: false,
-        autoFill: false,
-        max: 10,
-        minChars: 1,
-        scroll: false,
-        formatResult: function(item, position, length) {
-            if (item[1] == 'search_field')
-            {
-                return item[0] + ":";
-            }
-            else
-            {
-                return item[0];
-            }
+    var authMethod = "localdb";
+    var data = { authMethod: authMethod };
+    $.ajax({
+        'global': false,
+        'data': data,
+        'url': '/ajax/parameter_field_list/',
+        'success': function (data) {
+            data = data.split("+");
+            var list = new Array();
+            $.each(data, function(i,l) {
+                var name = l.split(":")[0];
+                var type = l.split(":")[1];
+                list[i] = [name, type];
+            });
+            $("#id_q").autocomplete(list, {
+                matchContains: true,
+                multiple: true,
+                multipleSeparator: " ",
+                selectFirst: false,
+                autoFill: false,
+                max: 10,
+                minChars: 1,
+                scroll: false,
+                formatResult: function(item, position, length) {
+                    if (item[1] == 'search_field')
+                    {
+                        return item[0] + ":";
+                    }
+                    else
+                    {
+                        return item[0];
+                    }
+                }
+            });
         }
-    });
+     });
 };
 
 var activateAlertStatus = function() {

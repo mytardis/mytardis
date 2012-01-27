@@ -3,12 +3,17 @@ jasmine.getFixtures().fixturesPath = "/jasmine/fixtures/";
 describe("Main", function() {
 
 	describe("search box autocompletion", function() {
-	    it("should activate automcompletion for #id_q", function() {
+	    it("should activate autocompletion for #id_q", function() {
 	        loadFixtures("search_autocomplete.html");
 	        expect($('#id_q')).toExist();
 	        activateSearchAutocomplete();
-	        expect($('#id_q')).toHaveAttr('autocomplete');
-	        expect($('#id_q')).toHaveClass('ac_input');
+	        waitsFor(function() {
+	        	return $('#id_q[autocomplete]').size() > 0;
+	        }, "Should be activated by now.", 500);
+	        runs(function() {
+		        expect($('#id_q')).toHaveAttr('autocomplete');
+		        expect($('#id_q')).toHaveClass('ac_input');
+	        });
 	    });
 	});
 
