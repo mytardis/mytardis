@@ -1,6 +1,5 @@
 from os import path
 
-
 DEBUG = False
 
 TEMPLATE_DEBUG = DEBUG
@@ -168,7 +167,14 @@ INSTALLED_APPS = (
     'registration',
     'south',
     'haystack',
+    'django_jasmine',
     )
+
+JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
+                                                'tardis_portal',
+                                                'tests',
+                                                'jasmine'))
+
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )

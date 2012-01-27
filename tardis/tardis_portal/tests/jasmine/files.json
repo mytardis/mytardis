@@ -1,0 +1,12 @@
+{
+    "name": "Main Test Suite",
+    "js_files": [],
+    "static_files": [
+        "js/lib/jquery-1.7.min.js",
+        "js/lib/jquery.autocomplete.min.js",
+        "js/lib/jqmodal.js",
+        "js/main.js"
+    ],
+    "media_files": [
+    ]
+}

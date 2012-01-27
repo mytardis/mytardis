@@ -1,4 +1,4 @@
-$(document).ready(function(){
+var activateSearchAutocomplete = function() {
     var users = (function () {
         var val = null;
         var authMethod = "localdb";
@@ -44,33 +44,33 @@ $(document).ready(function(){
             }
         }
     });
+};
 
-
-    var myClose = function(hash) {
-            hash.w.fadeOut('2000',function(){ hash.o.remove()});
-            window.location.hash = "";
-        };
-
-    $("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
-
-    // Add status messages for create/save
-    if (window.location.hash) {
-        if(window.location.hash == '#created')
-        {
-            $('#jqmStatusMessage').html('Experiment Created');
-        }
-        else if(window.location.hash == '#saved')
-        {
-            $('#jqmStatusMessage').html('Experiment Saved');
-        }
-    }
-
+var activateAlertStatus = function() {
+	var myClose = function(hash) {
+        hash.w.fadeOut('2000',function(){ hash.o.remove(); });
+        window.location.hash = "";
+    };
+	$("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
+	// Add status messages for create/save
+	if (window.location.hash) {
+	    if(window.location.hash == '#created')
+	    {
+	        $('#jqmStatusMessage').html('Experiment Created');
+	    }
+	    else if(window.location.hash == '#saved')
+	    {
+	        $('#jqmStatusMessage').html('Experiment Saved');
+	    }
+	}
     // Show status message if there's one to show
     if ($('#jqmStatusMessage').text() != '') {
         $('#jqmAlertStatus').jqmShow();
     }
+};
 
-    // Hover events
+var activateHoverDetection = function() {
+	// Hover events
     $('.ui-state-default').live('mouseover mouseout', function(evt) {
         if (evt.type == 'mouseover') {
             $(this).addClass('ui-state-hover');
@@ -78,8 +78,10 @@ $(document).ready(function(){
             $(this).removeClass('ui-state-hover');
         }
     });
+};
 
+$(document).ready(function(){
+	activateSearchAutocomplete();
+	activateAlertStatus();
+	activateHoverDetection();
 });
-
-
-
