@@ -59,8 +59,8 @@ logger = logging.getLogger(__name__)
 number = "[+-]?((\d+)(\.\d*)?)|(\d+\.\d+)([eE][+-]?[0-9]+)?"
 rulesets = {
             ('http://tardis.edu.au/schemas/general/1','general 1.0'):
-            ( ('Project',("^.*[_0-9]*\.o(\d+)$",),
-                 "get_file_regex(context,'Project:\s+(?P<value>[^\s]+)\s(?P<unit>)',True)"), 
+            ( ('Project',("metadata\..*$",),
+                 "get_file_regex(context,'Project:\s+(?P<value>.+)(?P<unit>)',False)"), 
               ('Number Of CPUs',("^.*[_0-9]*\.o(\d+)$",),
                  "get_file_regex(context,'Number of cpus:\s+(?P<value>.+)(?P<unit>)',True)"),
                 ('Maximum virtual memory',("^.*[_0-9]*\.o(\d+)$",),
@@ -504,6 +504,12 @@ def get_file_regex_all(context,regex):
     
     
 def get_constant(context,val,unit):
+    """ Create a constant value unit pair
+    
+        :param val: value of the constant
+        :param unit: the unit of the constant
+        :returns: value unit tuple
+    """    
     return (val,unit)
 
 

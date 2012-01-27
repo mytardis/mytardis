@@ -364,6 +364,7 @@ class VASPMetadataTest(TestCase):
                                           'testing/dataset1/KPOINTS',
                                           'testing/dataset1/vasp.sub.o813344',
                                           'testing/dataset1/INCAR',
+                                          'testing/dataset1/metadata.vasp',
                                           'testing/dataset1/POSCAR' ],
                                ns="http://tardis.edu.au/schemas/vasp/1",
                                schname="vasp 1.0",
@@ -397,7 +398,7 @@ class VASPMetadataTest(TestCase):
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [ ("Project",ParameterName.STRING,"XXXXX"),
+                               fields= [ ("Project",ParameterName.STRING,"FOOBAR Project"),
                                           ("Walltime",ParameterName.STRING,"01:59:17"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"64.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"27047.0"),
@@ -413,6 +414,7 @@ class VASPMetadataTest(TestCase):
                                           'testing/dataset2/vasp.sub.o935843',
                                           'testing/dataset2/vasp.sub.o935800',
                                           'testing/dataset2/INCAR',
+                                          'testing/dataset2/metadata.vasp',
                                           'testing/dataset2/POSCAR',
                                           'testing/dataset2/OSZICAR' ],
                                ns="http://tardis.edu.au/schemas/vasp/1",
@@ -454,7 +456,7 @@ class VASPMetadataTest(TestCase):
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [   ("Project",ParameterName.STRING,"XXXX"),
+                               fields= [   ("Project",ParameterName.STRING,"FOOBAR Project"),
                                           ("Walltime",ParameterName.STRING,"04:27:18"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"56.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"57537.0"),
@@ -466,6 +468,7 @@ class VASPMetadataTest(TestCase):
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
+                                          'testing/dataset3/metadata.siesta',
                                           'testing/dataset3/siesta.sub.o923124'],
                                ns="http://tardis.edu.au/schemas/siesta/1",
                                schname="siesta 1.0",
@@ -486,7 +489,7 @@ class VASPMetadataTest(TestCase):
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [  ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                               fields= [  ("Project",ParameterName.STRING,"FOOBAR Project"), #Assume single work for project
                                    ("Walltime",ParameterName.STRING,"04:27:18"), 
                                      ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
                                      ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
@@ -500,6 +503,7 @@ class VASPMetadataTest(TestCase):
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
+                                          'testing/dataset3/metadata.siesta',
                                           'testing/dataset3/siesta.sub.o923124'],
                                ns="http://tardis.edu.au/schemas/siesta/1",
                                schname="siesta 1.0",
@@ -522,7 +526,7 @@ class VASPMetadataTest(TestCase):
                                name="general 1.0",
                                dataset=dataset,
                                fields= [
-                ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                ("Project",ParameterName.STRING,"FOOBAR Project"), #Assume single work for project
                 ("Walltime",ParameterName.STRING,"04:27:18"), 
                 ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
                 ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),

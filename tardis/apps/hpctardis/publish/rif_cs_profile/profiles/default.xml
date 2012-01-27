@@ -39,8 +39,9 @@
                 
                 {% for url in urls %}
                 {% if url %}
-                <relatedinfo type="{{url.0}}">
+                <relatedinfo type="website">
                 <identifier type="url">{{url.1}}</identifier>
+                <title>{{url.0}}</title>
                 <notes>{{url.2}}</notes>
                 </relatedinfo>
                 {% endif %}
