@@ -78,7 +78,7 @@
         <activity type="{{activity.type}}">
             <identifier type="uri">{{activity.ident}}</identifier>
             <name type="primary">
-                <namePart>{{activity.activityname}}</namePart>
+                <namePart type="full">{{activity.activityname}}</namePart>
             </name>
             
             {% for party in activity|partyforact:"" %}
@@ -87,10 +87,6 @@
                 <relation type="{{party.1}}"/> 
             </relatedObject> 
             {% endfor %}
-
-            {% if activity.subject %}
-            <subject type="anzsrc-for">{{activity.subject}}</subject>
-            {% endif %}
                                 
             {% for desc in activity|descsforactivity:"" %}
             <description type="{{desc.type}}">{{ desc.value}}</description>

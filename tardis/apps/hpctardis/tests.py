@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2011-2011, RMIT e-Research Office
+# Copyright (c) 2011-2012, RMIT e-Research Office
 #   (RMIT University, Australia)
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -252,7 +252,9 @@ class SimplePublishTest(TestCase):
         response = self.client.post("/rif_cs/")
         self.assertTrue(_grep("test exp1",str(response)))
         self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
-        self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
+        self.assertTrue(_grep("""<addressPart type="text">%s</addressPart>""" %
+                               settings.GROUP_ADDRESS
+                              ,str(response)))
         self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2/2</key>",str(response)))
         logger.debug("response=%s" % response)
         
@@ -364,6 +366,7 @@ class VASPMetadataTest(TestCase):
                                           'testing/dataset1/KPOINTS',
                                           'testing/dataset1/vasp.sub.o813344',
                                           'testing/dataset1/INCAR',
+                                          'testing/dataset1/metadata.vasp',
                                           'testing/dataset1/POSCAR' ],
                                ns="http://tardis.edu.au/schemas/vasp/1",
                                schname="vasp 1.0",
@@ -392,12 +395,12 @@ class VASPMetadataTest(TestCase):
                                            ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6863390000000003    0.0000000000000000\n'),
                                            ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6863390000000003\n'),
                                         
-                                        #  ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
+                                        #  ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
                                           ])
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [ ("Project",ParameterName.STRING,"XXXXX"),
+                               fields= [ ("Project",ParameterName.STRING,"FOOBAR Project"),
                                           ("Walltime",ParameterName.STRING,"01:59:17"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"64.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"27047.0"),
@@ -413,6 +416,7 @@ class VASPMetadataTest(TestCase):
                                           'testing/dataset2/vasp.sub.o935843',
                                           'testing/dataset2/vasp.sub.o935800',
                                           'testing/dataset2/INCAR',
+                                          'testing/dataset2/metadata.vasp',
                                           'testing/dataset2/POSCAR',
                                           'testing/dataset2/OSZICAR' ],
                                ns="http://tardis.edu.au/schemas/vasp/1",
@@ -443,7 +447,7 @@ class VASPMetadataTest(TestCase):
                                            ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6851970403940548    0.0000000000000000\n'),
                                            ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6851970403940548\n'),
                                            
-                                            #("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
+                                            #("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
                                       
                             
                                           ("TITEL",ParameterName.STRING,"PAW_PBE C 08Apr2002\n PAW_PBE N 08Apr2002"),
@@ -454,7 +458,7 @@ class VASPMetadataTest(TestCase):
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [   ("Project",ParameterName.STRING,"XXXX"),
+                               fields= [   ("Project",ParameterName.STRING,"FOOBAR Project"),
                                           ("Walltime",ParameterName.STRING,"04:27:18"),
                                           ("Number Of CPUs",ParameterName.NUMERIC,"56.0"),
                                           ("Maximum virtual memory",ParameterName.NUMERIC,"57537.0"),
@@ -466,15 +470,16 @@ class VASPMetadataTest(TestCase):
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
+                                          'testing/dataset3/metadata.siesta',
                                           'testing/dataset3/siesta.sub.o923124'],
                                ns="http://tardis.edu.au/schemas/siesta/1",
                                schname="siesta 1.0",
                                results= [("SystemName",ParameterName.STRING,"my System"),
                                         ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
                                           ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
-                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n0    1    0    0\n0    0    1    0\n'),
                                      
-                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n n=2  0  2  E  4.9054837  -0.5515252\n   5.6679504  1.8444465\n   1.000   1.000\n n=3  1  2  E  15.6700423  -0.8457466\n   6.6151626  3.9384685\n   1.000   1.000\n n=3  2  1  E  44.0436726  -0.4370817\n   4.5403665\n   1.000\nP  3 0.1963113\n n=3  0  2  E  40.2507184  -0.7320000\n   5.8661651  -0.6144891\n   1.000   1.000\n n=3  1  2  E  78.4504409  -0.8743580\n   6.8187128  -0.3120693\n   1.000   1.000\n n=3  2  1  E  32.5566663  -0.2998069\n   4.9053838\n   1.000\n'),
                                           ("MD.TypeOfRun",ParameterName.STRING,"cg"),
                                           ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
                                           ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),
@@ -486,13 +491,82 @@ class VASPMetadataTest(TestCase):
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
                                dataset=dataset,
-                               fields= [  ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                               fields= [  ("Project",ParameterName.STRING,"FOOBAR Project"), #Assume single work for project
                                    ("Walltime",ParameterName.STRING,"04:27:18"), 
                                      ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
                                      ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
                                       ("Max jobfs disk use",ParameterName.NUMERIC,"2.1")
                  ])
-   
+
+        
+        
+        
+    def test_metadata4(self):
+        """ Tests first set of GULP data"""
+        
+        dataset = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset4/optiexample.gin',
+                                          'testing/dataset4/optiexample.gout',
+                                          'testing/dataset4/mdexample.gin',
+                                          'testing/dataset4/mdexample.gout'],
+                               ns="http://tardis.edu.au/schemas/gulp/1",
+                               schname="gulp 1.0",
+                               results= [("Run Type",ParameterName.STRING,"opti"),
+                                        ("Run Keyword",ParameterName.STRING,"conp sm"),
+                                        ("Library",ParameterName.STRING,"foobar"),
+                                        ("CoordinateFile",ParameterName.STRING,"ss.xyz"),
+                                        ("Formula",ParameterName.STRING,"foobar"),
+                                        ("Total number atoms/shell",ParameterName.NUMERIC,"120.0")
+                                        
+                                        ])
+
+        self._test_metadata(schema="http://tardis.edu.au/schemas/gulp/2",
+                               name="gulp2 1.0",
+                               dataset=dataset,
+                               fields= [("Run Type",ParameterName.STRING,"md"),
+                                        ("Run Keyword",ParameterName.STRING,"conv"),
+                                        ("Formula",ParameterName.STRING,"foobar")
+                                        ])
+                
+    def test_metadata5(self):
+        """ Tests first set of CRYSTAL data"""
+        
+        dataset = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset5/INPUT',
+                                          'testing/dataset5/OUTPUT',
+                                          'testing/dataset5/crystaljob.o599843'],
+                               ns="http://tardis.edu.au/schemas/crystal/1",
+                               schname="crystal 1.0",
+                               results= [("Experiment name",ParameterName.STRING,"FOOBAR\n"),
+                                        ("Calculation type",ParameterName.STRING,"CRYSTAL\n"),                                    
+                                        ("Space/layer/rod/point group",ParameterName.NUMERIC,"14.0"),                              
+                                        ("Lattice parameter",ParameterName.STRING,"1 2 3 4\n"),
+                                        ("SLABCUT",ParameterName.STRING,"no"),                                    
+                                        ("OPTGEOM",ParameterName.STRING,"no"),                                                                        
+                                        ("TESTGEOM",ParameterName.STRING,"no"),                                                                        
+                                        ("UHF",ParameterName.STRING,"yes"),                                                                        
+                                        ("DFT",ParameterName.STRING,"yes"),                                                                                                                
+                                        ("MAXCYCLE",ParameterName.NUMERIC,"325.0"),                                                                                                                
+                                        ("SHRINK",ParameterName.STRING,"2 13"),
+                                        ("FMIXING",ParameterName.NUMERIC,"87.0"),                                                                                                                                                                                            
+                                        ("BROYDEN",ParameterName.STRING,"0.0032 10 20")                                                                                                                                                                                            
+                                        ])
+
+        dataset2 = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset5b/INPUT'],
+                               ns="http://tardis.edu.au/schemas/crystal/1",
+                               schname="crystal 1.0",
+                               results= [("Space/layer/rod/point group",ParameterName.NUMERIC,"42.0"),
+                                     ("Lattice parameter",ParameterName.STRING,"foobar2\n"),                                    
+                                        ("SLABCUT",ParameterName.STRING,"yes"),                                                                        
+                                        ("OPTGEOM",ParameterName.STRING,"yes"),                                                                        
+                                        ("TESTGEOM",ParameterName.STRING,"yes"),                                                                        
+                                        ("UHF",ParameterName.STRING,"no"),                                                                        
+                                        ("DFT",ParameterName.STRING,"no")                                                                        
+                                        ])
+
+        
+        
         
     def test_metadata_postsave(self):
         """ Tests use of postsave hook to trigger metadata extraction"""
@@ -500,15 +574,16 @@ class VASPMetadataTest(TestCase):
         dataset = self._metadata_extract(expname="testexp2",
                                  files = ['testing/dataset3/input.fdf',
                                           'testing/dataset3/output',
+                                          'testing/dataset3/metadata.siesta',
                                           'testing/dataset3/siesta.sub.o923124'],
                                ns="http://tardis.edu.au/schemas/siesta/1",
                                schname="siesta 1.0",
                                results= [("SystemName",ParameterName.STRING,"my System"),
                                         ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
                                           ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
-                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n0    1    0    0\n0    0    1    0\n'),
                                      
-                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n n=2  0  2  E  4.9054837  -0.5515252\n   5.6679504  1.8444465\n   1.000   1.000\n n=3  1  2  E  15.6700423  -0.8457466\n   6.6151626  3.9384685\n   1.000   1.000\n n=3  2  1  E  44.0436726  -0.4370817\n   4.5403665\n   1.000\nP  3 0.1963113\n n=3  0  2  E  40.2507184  -0.7320000\n   5.8661651  -0.6144891\n   1.000   1.000\n n=3  1  2  E  78.4504409  -0.8743580\n   6.8187128  -0.3120693\n   1.000   1.000\n n=3  2  1  E  32.5566663  -0.2998069\n   4.9053838\n   1.000\n'),
                                           ("MD.TypeOfRun",ParameterName.STRING,"cg"),
                                           ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
                                           ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),
@@ -522,7 +597,7 @@ class VASPMetadataTest(TestCase):
                                name="general 1.0",
                                dataset=dataset,
                                fields= [
-                ("Project",ParameterName.STRING,"XXXX"), #Assume single work for project
+                ("Project",ParameterName.STRING,"FOOBAR Project"), #Assume single work for project
                 ("Walltime",ParameterName.STRING,"04:27:18"), 
                 ("Number Of CPUs",ParameterName.NUMERIC,"6.0"),
                 ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),

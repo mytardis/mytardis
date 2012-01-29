@@ -204,6 +204,10 @@ INSTALLED_APPS = (TARDIS_APP_ROOT+".hpctardis",) + INSTALLED_APPS
 # The anzsrc codes for subject for all collections
 COLLECTION_SUBJECTS = None
 GROUP = "Acme University"
+GROUP_ADDRESS = "Acme University, Coimbatore, India"
+ACCESS_RIGHTS= "Contact the researchers/parties associated with this dataset"
+RIGHTS= "Terms and conditions applies as specified by the researchers"
+
 
 
 # HPCTardis Media
