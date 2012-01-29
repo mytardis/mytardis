@@ -138,7 +138,7 @@ def createhpcexperiment(request,user,dl):
     metadata = {}
 
     for line in temp:
-        key,value = line.split(':')
+        key,value = line.split('~')
         metadata[key] = value
     temp.close()
       
@@ -254,7 +254,7 @@ def addfiles(request):
         
             process_experimentX(exp) ;
         
-            next = next + ' The Author is : ' + str(author) + ',' + str(user)         
+            next = next + ' The Author is : ' + str(author) + ',' + ' The User is : ' + str(user)         
             return  HttpResponse(next)
         else:
             next = 'The author of the experiment can only add the files (From Tardis)'
