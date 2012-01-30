@@ -23,4 +23,9 @@ can be summarised as:
 Contributing
 ------------
 
-Send wishes, comments, patches, etc. to tardis-devel@googlegroups.com.
+Send wishes, comments, etc. to tardis-devel@googlegroups.com.
+
+New contributors are welcome, however all developers should review the 
+`pull-request checklist`_ before making pull requests.
+
+.. _`pull-request checklist`: https://github.com/mytardis/mytardis/wiki/Pull-Request-Checklist

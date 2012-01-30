@@ -1,6 +1,5 @@
 from os import path
 
-
 DEBUG = False
 
 TEMPLATE_DEBUG = DEBUG
@@ -168,7 +167,14 @@ INSTALLED_APPS = (
     'registration',
     'south',
     'haystack',
+    'django_jasmine',
     )
+
+JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
+                                                'tardis_portal',
+                                                'tests',
+                                                'jasmine'))
+
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
@@ -238,10 +244,10 @@ SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
 
 # Uploadify root folder path, relative to STATIC root
-UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/uploadify/')
+UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/lib/uploadify')
 
 # Upload path that files are sent to
-UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads/')
+UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance

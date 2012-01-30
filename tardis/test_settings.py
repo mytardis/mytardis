@@ -3,7 +3,7 @@ import logging
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
@@ -40,7 +40,7 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 MEDIA_ROOT = STATIC_DOC_ROOT
 
 MEDIA_URL = '/site_media'
-STATIC_URL = '/static'
+STATIC_URL = '/static/'
 
 def get_admin_media_path():
     import pkgutil
@@ -101,7 +101,13 @@ INSTALLED_APPS = get_all_tardis_apps() + [
         'registration',
         'django_nose',
         'haystack',
+        'django_jasmine',
 ]
+
+JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
+                                                'tardis_portal',
+                                                'tests',
+                                                'jasmine'))
 
 # LDAP configuration
 LDAP_USE_TLS = False

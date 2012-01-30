@@ -284,7 +284,7 @@ img.right {
     border-radius: 7px;
     -moz-border-radius: 7px;
     background: none;
-    float: right;    
+    float: right;
     border: none;
 }
 
@@ -360,10 +360,10 @@ input:-moz-placeholder {
 /* Single Search autocomplete drop down */
 
 .ac_odd {
-    background-color: #E8D7D7; 
+    background-color: #E8D7D7;
 }
 .ac_over {
-    background-color: #651219; 
+    background-color: #651219;
 }
 .ac_results li{
     font-size: 16px;
@@ -545,23 +545,23 @@ table.experiment-table th {
 	a.filelink {
 		color: #9b3430;
 	}
-	
+
 	.file
 	{
 	    font-weight: bold;
 	}
-	
+
 	.datafile
 	{
 	    line-height: 1.5em;
 	}
-	
+
 	.dataset
 	{
 	    list-style-type: none;
 		list-style-image: none;
 		list-style-position: inside;
-		
+
 	}
 
 	#statusBox {
@@ -621,7 +621,7 @@ table.experiment-table th {
 		margin-top: 10px;
 		padding: 5px 15px 5px 15px;
 	}
-	
+
 	.activity_summary
 	{
 	    padding: 5px;
@@ -633,20 +633,20 @@ table.experiment-table th {
 	{
 	    padding: 10px;
 	    border: 1px solid gray;
-	    margin-bottom: 15px;	    
+	    margin-bottom: 15px;
 	}
-	
+
 	.party_box li
 	{
 	    padding: 2px;
 	}
-		
+
 	.white_box
 	{
 		background-color: white;
 		margin-left: 10px;
 
-		padding: 3px 15px 5px 15px;	    
+		padding: 3px 15px 5px 15px;
 	}
 
 	.msg_list {
@@ -774,16 +774,16 @@ ul.errorlist {
 }
 
 /*Styles for fuzz overlay & message box*/
- #fuzz{ position:absolute; background: url('../images/gray_trans_back.png'); top:0; left:0; width:100%; z-index:100; 
+ #fuzz{ position:absolute; background: url('../images/gray_trans_back.png'); top:0; left:0; width:100%; z-index:100;
      display:none; text-align:left; }
-     
+
  .publishform h3
  {
      font-family: Tahoma, Arial, Helvetica, sans-serif;
      font-weight: bold;
      font-size: 12px;
- }     
- 
+ }
+
 .delete-row
 {
     font-size: 12px;
@@ -853,15 +853,6 @@ h2 {
 #custom_description {
     width: 95%;
     height: 80px;
-}
-
-#cc_js_license_example
-{
-    border: 1px solid black;
-    margin: 7px;
-    margin-top: 30px;
-    padding: 10px;
-    width: 80%;
 }
 
 .license_box
