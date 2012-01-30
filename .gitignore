@@ -10,6 +10,7 @@ eggs/
 parts/
 .installed.cfg
 bin/
+celerybeat-schedule
 *.egg-info/
 develop-eggs/
 docs/doctrees/
