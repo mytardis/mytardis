@@ -10,7 +10,7 @@ download.py
 import logging
 import subprocess
 import urllib
-from os import path
+from os import path, devnull
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
@@ -160,6 +160,7 @@ def download_experiment(request, experiment_id, comptype):
         response = HttpResponse(FileWrapper(subprocess.Popen(
                     cmd,
                     stdout=subprocess.PIPE,
+                    stderr=open(devnull, 'w'),
                     shell=True).stdout),
                                 mimetype='application/x-tar')
 
@@ -172,6 +173,7 @@ def download_experiment(request, experiment_id, comptype):
         response = HttpResponse(FileWrapper(subprocess.Popen(
                     cmd,
                     stdout=subprocess.PIPE,
+                    stderr=open(devnull, 'w'),
                     shell=True).stdout),
                                 mimetype='application/zip')
 
@@ -357,6 +359,7 @@ def download_datafiles(request):
                 HttpResponse(FileWrapper(subprocess.Popen(
                                                     cmd,
                                                     stdout=subprocess.PIPE,
+                                                    stderr=open(devnull, 'w'),
                                                     shell=True).stdout),
                              mimetype='application/x-tar')
             response['Content-Disposition'] = \
@@ -370,6 +373,7 @@ def download_datafiles(request):
                 HttpResponse(FileWrapper(subprocess.Popen(
                                                     cmd,
                                                     stdout=subprocess.PIPE,
+                                                    stderr=open(devnull, 'w'),
                                                     shell=True).stdout),
                              mimetype='application/zip')
             response['Content-Disposition'] = \
