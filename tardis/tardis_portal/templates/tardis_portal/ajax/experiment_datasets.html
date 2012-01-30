@@ -129,7 +129,7 @@
               {% if dataset.dataset_file_set.count|lt:"1000000" %}
                 {% if has_write_permissions %}
                   {% if not experiment.public %}
-                    {% if not immutable %}
+                    {% if not dataset.immutable %}
                         <a  data-dataset_id="{{dataset.id}}" class="upload_files_link fg-button small ui-state-default fg-button-icon-solo ui-corner-all" title="Upload Files">
                             <span class="ui-icon ui-icon-circle-arrow-n"></span>
                             Upload Files

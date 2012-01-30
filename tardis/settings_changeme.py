@@ -1,5 +1,5 @@
 from os import path
-
+import djcelery
 
 DEBUG = False
 
@@ -24,6 +24,9 @@ DATABASES = {
         'PORT': '',
     }
 }
+
+# Celery queue uses Django for persistence
+BROKER_TRANSPORT = 'django'
 
 # A dictionary containing the settings for all caches to be used with
 # Django. The CACHES setting must configure a default cache; any
@@ -168,7 +171,16 @@ INSTALLED_APPS = (
     'registration',
     'south',
     'haystack',
+    'django_jasmine',
+    'djcelery',
+    'djkombu',
     )
+
+JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
+                                                'tardis_portal',
+                                                'tests',
+                                                'jasmine'))
+
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
@@ -279,3 +291,5 @@ DOI_NAMESPACE = 'http://www.tardis.edu.au/schemas/doi/2011/12/07'
 DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
 DOI_RELATED_INFO_ENABLE = False
 DOI_BASE_URL='http://mytardis.example.com'
+
+djcelery.setup_loader()

@@ -1,7 +1,7 @@
 <ul>
   {% for parameterset in dataset.datasetparameterset_set.all %}
      {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datasetparameter_set.all %}
-     {% if has_write_permissions %}{% if not dataset.experiment.public %}{% if not immutable %}
+     {% if has_write_permissions %}{% if not dataset.experiment.public %}{% if not dataset.immutable %}
      <div class="edit_schema" style="display: inline;">
          <a href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}"
              class="jqModalDsEdit" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
