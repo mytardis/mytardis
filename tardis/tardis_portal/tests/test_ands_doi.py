@@ -49,6 +49,10 @@ class ANDSDOITestCase(TestCase):
         self.schema, _ = Schema.objects.get_or_create(namespace=settings.DOI_NAMESPACE)
         self.doi_name, _ = ParameterName.objects.get_or_create(schema=self.schema, full_name='DOI', name='doi')
         self.expt.save()
+        settings.DOI_ENABLE = True
+
+    def tearDown(self):
+        settings.DOI_ENABLE = False
 
     def test_init(self):
         doi_service = DOIService(self.expt)
