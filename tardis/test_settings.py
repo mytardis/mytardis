@@ -3,7 +3,7 @@ import logging
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
-DEBUG = False
+DEBUG = True
 
 DATABASES = {
     'default': {
