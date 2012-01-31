@@ -393,7 +393,7 @@ class VASPMetadataTest(TestCase):
                                            ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6863390000000003    0.0000000000000000\n'),
                                            ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6863390000000003\n'),
                                         
-                                        #  ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
+                                        #  ("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n    10.6863390000000003    0.0000000000000000    0.0000000000000000\n     0.0000000000000000   10.6863390000000003    0.0000000000000000\n     0.0000000000000000    0.0000000000000000   10.6863390000000003\n")
                                           ])
         self._test_metadata(schema="http://tardis.edu.au/schemas/general/1",
                                name="general 1.0",
@@ -445,7 +445,7 @@ class VASPMetadataTest(TestCase):
                                            ("Cell Parameter2",ParameterName.STRING,'     0.0000000000000000   10.6851970403940548    0.0000000000000000\n'),
                                            ("Cell Parameter3",ParameterName.STRING,'     0.0000000000000000    0.0000000000000000   10.6851970403940548\n'),
                                            
-                                            #("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n\n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
+                                            #("Cell Parameters",ParameterName.STRING,"   1.00000000000000     \n    10.6851970403940548    0.0000000000000000    0.0000000000000000\n     0.0000000000000000   10.6851970403940548    0.0000000000000000\n     0.0000000000000000    0.0000000000000000   10.6851970403940548\n"),
                                       
                             
                                           ("TITEL",ParameterName.STRING,"PAW_PBE C 08Apr2002\n PAW_PBE N 08Apr2002"),
@@ -475,9 +475,9 @@ class VASPMetadataTest(TestCase):
                                results= [("SystemName",ParameterName.STRING,"my System"),
                                         ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
                                           ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
-                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n0    1    0    0\n0    0    1    0\n'),
                                      
-                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n n=2  0  2  E  4.9054837  -0.5515252\n   5.6679504  1.8444465\n   1.000   1.000\n n=3  1  2  E  15.6700423  -0.8457466\n   6.6151626  3.9384685\n   1.000   1.000\n n=3  2  1  E  44.0436726  -0.4370817\n   4.5403665\n   1.000\nP  3 0.1963113\n n=3  0  2  E  40.2507184  -0.7320000\n   5.8661651  -0.6144891\n   1.000   1.000\n n=3  1  2  E  78.4504409  -0.8743580\n   6.8187128  -0.3120693\n   1.000   1.000\n n=3  2  1  E  32.5566663  -0.2998069\n   4.9053838\n   1.000\n'),
                                           ("MD.TypeOfRun",ParameterName.STRING,"cg"),
                                           ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
                                           ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),
@@ -510,9 +510,9 @@ class VASPMetadataTest(TestCase):
                                results= [("SystemName",ParameterName.STRING,"my System"),
                                         ("MeshCutoff",ParameterName.NUMERIC,"500.0"),
                                           ("ElectronicTemperature",ParameterName.NUMERIC,"100.0"),
-                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n\n0    1    0    0\n\n0    0    1    0\n'),
+                                          ("k-grid",ParameterName.STRING,'9    0    0    0\n0    1    0    0\n0    0    1    0\n'),
                                      
-                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n\n n=2  0  2  E  4.9054837  -0.5515252\n\n   5.6679504  1.8444465\n\n   1.000   1.000\n\n n=3  1  2  E  15.6700423  -0.8457466\n\n   6.6151626  3.9384685\n\n   1.000   1.000\n\n n=3  2  1  E  44.0436726  -0.4370817\n\n   4.5403665\n\n   1.000\n\nP  3 0.1963113\n\n n=3  0  2  E  40.2507184  -0.7320000\n\n   5.8661651  -0.6144891\n\n   1.000   1.000\n\n n=3  1  2  E  78.4504409  -0.8743580\n\n   6.8187128  -0.3120693\n\n   1.000   1.000\n\n n=3  2  1  E  32.5566663  -0.2998069\n\n   4.9053838\n\n   1.000\n'),
+                                          ("PAO.Basis",ParameterName.STRING,'Si  3 0.2658542\n n=2  0  2  E  4.9054837  -0.5515252\n   5.6679504  1.8444465\n   1.000   1.000\n n=3  1  2  E  15.6700423  -0.8457466\n   6.6151626  3.9384685\n   1.000   1.000\n n=3  2  1  E  44.0436726  -0.4370817\n   4.5403665\n   1.000\nP  3 0.1963113\n n=3  0  2  E  40.2507184  -0.7320000\n   5.8661651  -0.6144891\n   1.000   1.000\n n=3  1  2  E  78.4504409  -0.8743580\n   6.8187128  -0.3120693\n   1.000   1.000\n n=3  2  1  E  32.5566663  -0.2998069\n   4.9053838\n   1.000\n'),
                                           ("MD.TypeOfRun",ParameterName.STRING,"cg"),
                                           ("MD.NumCGsteps",ParameterName.NUMERIC,"100.0"),
                                           ("MD.MaxForceTol",ParameterName.NUMERIC,"0.001"),

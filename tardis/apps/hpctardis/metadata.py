@@ -366,7 +366,7 @@ def get_regex_lines(context, startregex,endregex):
                 if in_region:
                     res.append(line)
             fp.close() 
-        return ("\n".join(res),'')     
+        return ("".join(res),'')     
                 
                 
                 
