@@ -495,7 +495,39 @@ class VASPMetadataTest(TestCase):
                                      ("Maximum virtual memory",ParameterName.NUMERIC,"7537.0"),
                                       ("Max jobfs disk use",ParameterName.NUMERIC,"2.1")
                  ])
-   
+
+        
+        
+        
+    def test_metadata4(self):
+        """ Tests first set of GULP data"""
+        
+        dataset = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset4/optiexample.gin',
+                                          'testing/dataset4/optiexample.gout',
+                                          'testing/dataset4/mdexample.gin',
+                                          'testing/dataset4/mdexample.gout'],
+                               ns="http://tardis.edu.au/schemas/gulp/1",
+                               schname="gulp 1.0",
+                               results= [("Run Type",ParameterName.STRING,"opti"),
+                                        ("Run Keyword",ParameterName.STRING,"conp sm"),
+                                        ("Library",ParameterName.STRING,"foobar"),
+                                        ("CoordinateFile",ParameterName.STRING,"ss.xyz"),
+                                        ("Formula",ParameterName.STRING,"foobar"),
+                                        ("Total number atoms/shell",ParameterName.NUMERIC,"120.0")
+                                        
+                                        ])
+
+        self._test_metadata(schema="http://tardis.edu.au/schemas/gulp/2",
+                               name="gulp2 1.0",
+                               dataset=dataset,
+                               fields= [("Run Type",ParameterName.STRING,"md"),
+                                        ("Run Keyword",ParameterName.STRING,"conv"),
+                                        ("Formula",ParameterName.STRING,"foobar")
+                                        ])
+                
+      
+        
         
     def test_metadata_postsave(self):
         """ Tests use of postsave hook to trigger metadata extraction"""

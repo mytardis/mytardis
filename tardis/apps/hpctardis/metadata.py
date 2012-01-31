@@ -176,12 +176,42 @@ rulesets = {
                 
                 ('MD.MaxForceTol',('input[_0-9]*\.fdf',),
                  "get_file_regex(context,'(?<!\#)MD\.MaxForceTol\s+(?P<value>[^\s]+)\s+(?P<unit>.*)',False)")),
-                       
-                       ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
+
+                ('http://tardis.edu.au/schemas/gulp/1','gulp 1.0'):
+                (('Run Type',("optiexample[_0-9]*\.gin",),
+                   "(get_file_line(context,0)[0].split(' ')[0],'')"),
+                ('Run Keyword',("optiexample[_0-9]*\.gin",),
+                    "(' '.join(get_file_line(context,0)[0].split(' ')[1:]).rstrip(),'')"),
+                ('Library',("optiexample[_0-9]*\.gin",),
+                    "(get_file_regex(context,'(?<!\#)library\s+(?P<value>.*)(?P<unit>)',False)[0].rstrip(),'')"),
+               ('CoordinateFile',("optiexample[_0-9]*\.gin",),
+                   "('.'.join(get_file_regex(context,'(?<!\#)output\s+(?P<value>\S+)\s+(?P<unit>\S+)',False)[::-1]),'')"),
+                ('Formula',("optiexample[_0-9]*\.gout",),
+                   "(get_file_regex(context,'(?<!\#)\s*Formula\s+\=\s+(?P<value>.*)(?P<unit>)',False)[0].strip(),'')"),
+                ('Total number atoms/shell',("optiexample[_0-9]*\.gout",),
+                   "(get_file_regex(context,'(?<!\#)\s*Total number atoms\/shells\s+\=\s+(?P<value>.*)(?P<unit>)',False)[0].strip(),'')")),
+                
+               
+               
+               ('http://tardis.edu.au/schemas/gulp/2','gulp2 1.0'):
+                (('Run Type',("mdexample[_0-9]*\.gin",),
+                   "(get_file_regex(context,'(?<!#)(?P<value>\w+)\s+(?P<unit>\w+)',False)[0],'')"),
+                ('Run Keyword',("mdexample[_0-9]*\.gin",),
+                   "(' '.join(get_file_regex(context,'(?<!#)(?P<value>\w+)\s+(?P<unit>\w+)',False)[1:]).rstrip(),'')"),
+                ('Library',("mdexample[_0-9]*\.gin",),
+                    "(get_file_regex(context,'(?<!\#)library\s+(?P<value>.*)(?P<unit>)',False)[0].rstrip(),'')"),
+                ('Formula',("mdexample[_0-9]*\.gout",),
+                   "(get_file_regex(context,'(?<!\#)\s*Formula\s+\=\s+(?P<value>.*)(?P<unit>)',False)[0].strip(),'')")
+            
+                ),
+               
+               
+               
+                                                      
+                ('http://tardis.edu.au/schemas/test/1',''):(('Test',("R-2-2.tif",),
                   "get_constant(context,'99','foobars')"),
                  ('Test2',("R-2-2.tif","R-2-5.tif"),"get_constant(context,'hello','')"))
                  }
-
                 
                 
 def _get_file_handle(context, filename):
