@@ -5,12 +5,12 @@ import struct
 import csv
 import StringIO
 
-#os.environ['HOME']="/home/rmmf/CoreTardis/db"
-os.environ['HOME'] = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../db')).replace('\\', '/')
-import matplotlib
-matplotlib.use('Agg')
+##os.environ['HOME']="/home/rmmf/CoreTardis/db"
+#os.environ['HOME'] = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../db')).replace('\\', '/')
+#import matplotlib
+#matplotlib.use('Agg')
 
-import matplotlib.pyplot as pyplot    
+#import matplotlib.pyplot as pyplot    
 
 from django.template import Context
 from django.http import HttpResponse
@@ -214,50 +214,50 @@ def get_spectra_json(request, datafile_id):
     return response
 
 def get_spectra_png(request, size, datafile_id):
-    datafile = Dataset_File.objects.get(pk=datafile_id)
-    values = list( get_spectra(datafile) )
-    pyplot.plot([x * 0.01 for x in range(0, 4000)], values)
-    pyplot.xlabel("keV")
-    pyplot.ylabel("Counts")
-    pyplot.grid(True)
-    
-    # set size
-    ratio = 1.5
-    if size == "small":
-        ratio = 0.75
-    fig = pyplot.gcf()
-    default_size = fig.get_size_inches()
-    fig.set_size_inches(default_size[0] * ratio, default_size[1] * ratio)
-    
-    # label peak values
-    datafileparametersets = DatafileParameterSet.objects.filter(dataset_file__pk=datafile_id)
-    peaks = []
-    label = {}
-    for parameterset in datafileparametersets:
-        # get list of parameters
-        parameters = parameterset.datafileparameter_set.all()
-        for parameter in parameters:
-            if str(parameter.name.full_name).startswith("Peak ID Element"):
-                peaks.append(parameter.string_value)
-    for peak in peaks:
-        data = str(peak).split(', ')
-        atomic = data[0].split('=')[-1]
-        line = data[1].split('=')[-1]
-        energy = float(data[2].split('=')[-1])
-        height= int(data[3].split('=')[-1])
-        pyplot.annotate('%s%s' % (atomic, line), 
-                        xy=(energy, height), 
-                        xytext=(energy-0.5, height+50),
-                        )
-    
-    # Write PNG image
+#    datafile = Dataset_File.objects.get(pk=datafile_id)
+#    values = list( get_spectra(datafile) )
+#    pyplot.plot([x * 0.01 for x in range(0, 4000)], values)
+#    pyplot.xlabel("keV")
+#    pyplot.ylabel("Counts")
+#    pyplot.grid(True)
+#    
+#    # set size
+#    ratio = 1.5
+#    if size == "small":
+#        ratio = 0.75
+#    fig = pyplot.gcf()
+#    default_size = fig.get_size_inches()
+#    fig.set_size_inches(default_size[0] * ratio, default_size[1] * ratio)
+#    
+#    # label peak values
+#    datafileparametersets = DatafileParameterSet.objects.filter(dataset_file__pk=datafile_id)
+#    peaks = []
+#    label = {}
+#    for parameterset in datafileparametersets:
+#        # get list of parameters
+#        parameters = parameterset.datafileparameter_set.all()
+#        for parameter in parameters:
+#            if str(parameter.name.full_name).startswith("Peak ID Element"):
+#                peaks.append(parameter.string_value)
+#    for peak in peaks:
+#        data = str(peak).split(', ')
+#        atomic = data[0].split('=')[-1]
+#        line = data[1].split('=')[-1]
+#        energy = float(data[2].split('=')[-1])
+#        height= int(data[3].split('=')[-1])
+#        pyplot.annotate('%s%s' % (atomic, line), 
+#                        xy=(energy, height), 
+#                        xytext=(energy-0.5, height+50),
+#                        )
+#    
+#    # Write PNG image
     buffer = StringIO.StringIO()
-    canvas = pyplot.get_current_fig_manager().canvas
-    canvas.draw()
-    img = Image.fromstring('RGB', canvas.get_width_height(), canvas.tostring_rgb())
-    img.save(buffer, 'PNG')
-    pyplot.close()
-    # Django's HttpResponse reads the buffer and extracts the image
+#    canvas = pyplot.get_current_fig_manager().canvas
+#    canvas.draw()
+#    img = Image.fromstring('RGB', canvas.get_width_height(), canvas.tostring_rgb())
+#    img.save(buffer, 'PNG')
+#    pyplot.close()
+#    # Django's HttpResponse reads the buffer and extracts the image
     return HttpResponse(buffer.getvalue(), mimetype='image/png')
 
 
