@@ -386,6 +386,9 @@ def experiment_description(request, experiment_id):
             pass
     c['size'] = size
 
+    c['has_read_or_owner_ACL'] = \
+        authz.has_read_ACL(request, experiment_id)
+
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
