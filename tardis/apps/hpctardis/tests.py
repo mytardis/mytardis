@@ -526,7 +526,44 @@ class VASPMetadataTest(TestCase):
                                         ("Formula",ParameterName.STRING,"foobar")
                                         ])
                 
-      
+    def test_metadata5(self):
+        """ Tests first set of CRYSTAL data"""
+        
+        dataset = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset5/INPUT',
+                                          'testing/dataset5/OUTPUT',
+                                          'testing/dataset5/crystaljob.o599843'],
+                               ns="http://tardis.edu.au/schemas/crystal/1",
+                               schname="crystal 1.0",
+                               results= [("Experiment name",ParameterName.STRING,"FOOBAR\n"),
+                                        ("Calculation type",ParameterName.STRING,"CRYSTAL\n"),                                    
+                                        ("Space/layer/rod/point group",ParameterName.NUMERIC,"14.0"),                              
+                                        ("Lattice parameter",ParameterName.STRING,"1 2 3 4\n"),
+                                        ("SLABCUT",ParameterName.STRING,"no"),                                    
+                                        ("OPTGEOM",ParameterName.STRING,"no"),                                                                        
+                                        ("TESTGEOM",ParameterName.STRING,"no"),                                                                        
+                                        ("UHF",ParameterName.STRING,"yes"),                                                                        
+                                        ("DFT",ParameterName.STRING,"yes"),                                                                                                                
+                                        ("MAXCYCLE",ParameterName.NUMERIC,"325.0"),                                                                                                                
+                                        ("SHRINK",ParameterName.STRING,"2 13"),
+                                        ("FMIXING",ParameterName.NUMERIC,"87.0"),                                                                                                                                                                                            
+                                        ("BROYDEN",ParameterName.STRING,"0.0032 10 20")                                                                                                                                                                                            
+                                        ])
+
+        dataset2 = self._metadata_extract(expname="testexp2",
+                                 files = ['testing/dataset5b/INPUT'],
+                               ns="http://tardis.edu.au/schemas/crystal/1",
+                               schname="crystal 1.0",
+                               results= [("Space/layer/rod/point group",ParameterName.NUMERIC,"42.0"),
+                                     ("Lattice parameter",ParameterName.STRING,"foobar2\n"),                                    
+                                        ("SLABCUT",ParameterName.STRING,"yes"),                                                                        
+                                        ("OPTGEOM",ParameterName.STRING,"yes"),                                                                        
+                                        ("TESTGEOM",ParameterName.STRING,"yes"),                                                                        
+                                        ("UHF",ParameterName.STRING,"no"),                                                                        
+                                        ("DFT",ParameterName.STRING,"no")                                                                        
+                                        ])
+
+        
         
         
     def test_metadata_postsave(self):
