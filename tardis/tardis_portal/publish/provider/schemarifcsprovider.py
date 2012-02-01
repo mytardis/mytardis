@@ -50,10 +50,13 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         desc = phandler.custom_description()
         if not desc:
             desc = experiment.description
+        return self.format_desc(desc)
+    
+    def format_desc(self, desc):
+        formatted_desc = desc
         if self._is_html_formatted(desc):
-            desc = html2text(desc)
-        desc = desc.strip()
-        return desc
+            formatted_desc = html2text(desc)
+        return formatted_desc.strip()
         
     def get_authors(self, experiment):
         phandler = PublishHandler(experiment.id) 
