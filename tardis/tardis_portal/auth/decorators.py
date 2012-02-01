@@ -111,8 +111,19 @@ def has_datafile_access(request, dataset_file_id):
     else:
         return False
 
-def has_read_ACL(request, experiment_id):
-
+def has_read_or_owner_ACL(request, experiment_id):
+    """ 
+    Check whether the user has read access to the experiment - this means either
+    they have been granted read access, or that they are the owner. 
+    
+    NOTE:
+    This does not check whether the experiment is public or not, which means
+    even when the experiment is public, this method does not automatically 
+    returns true.
+    
+    As such, this method should NOT be used to check whether the user has 
+    general read permission.  
+    """
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
