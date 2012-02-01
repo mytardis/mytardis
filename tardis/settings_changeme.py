@@ -170,7 +170,6 @@ INSTALLED_APPS = (
     'tardis.tardis_portal.templatetags',
     'registration',
     'south',
-    'haystack',
     'django_jasmine',
     'djcelery',
     'djkombu',
@@ -261,7 +260,9 @@ SINGLE_SEARCH_ENABLED = False
 HAYSTACK_SITECONF = 'tardis.search_sites'
 HAYSTACK_SEARCH_ENGINE = 'solr'
 HAYSTACK_SOLR_URL = 'http://127.0.0.1:8080/solr'
-if not SINGLE_SEARCH_ENABLED:
+if SINGLE_SEARCH_ENABLED:
+    INSTALLED_APPS = INSTALLED_APPS + ('haystack',)
+else:
     HAYSTACK_ENABLE_REGISTRATIONS = False
 
 DEFAULT_INSTITUTION = "Monash University"
