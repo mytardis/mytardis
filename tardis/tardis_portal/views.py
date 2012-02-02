@@ -51,7 +51,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User, Group, AnonymousUser
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
@@ -86,7 +86,7 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    return_response_error_message, render_response_search
+    render_response_search
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.hacks import oracle_dbops_hack
@@ -711,8 +711,8 @@ def login(request):
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
                      'loginForm': LoginForm()})
-        return return_response_error_message(
-            request, 'tardis_portal/login.html', c)
+        return HttpResponseForbidden( \
+                render_response_index(request, 'tardis_portal/login.html', c))
 
     c = Context({'loginForm': LoginForm()})
 
