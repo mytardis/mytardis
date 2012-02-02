@@ -103,21 +103,15 @@
 
   <div id="page"> <!-- start page -->
     <div id="content-box">
-              <div class="jqmAlertStatus" id="jqmAlertStatus">
-                  <div class="jqmAlertWindowStatus">
-
-                    {% if error %}
-                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
-                      <br/>{{status}}
-
-                    </div> <!-- statusBoxError -->
-                    {% else %}
-                    <div class="jqmAlertContentStatus" id="jqmAlertContentStatus"><a href="#" class="jqmClose"></a>
-                      <br/><span id="jqmStatusMessage">{{status}}</span>
-                    </div> <!-- statusBox -->
-                    {% endif %}
-                   </div> <!-- window -->
-               </div> <!-- status -->
+      <div class="jqmAlertStatus" id="jqmAlertStatus">
+        <div class="jqmAlertWindowStatus">
+          <div class="jqmAlertContentStatus" id="jqmAlertContentStatus">
+            <a href="#" class="jqmClose"></a>
+            <br/>
+            <span id="jqmStatusMessage">{{status}}</span>
+          </div> <!-- statusBox -->
+        </div> <!-- window -->
+      </div> <!-- status -->
       {% block content %}
       {% endblock content %}
 
