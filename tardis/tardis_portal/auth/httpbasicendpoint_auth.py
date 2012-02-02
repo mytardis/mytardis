@@ -54,10 +54,12 @@ class HttpBasicEndpointAuth(AuthProvider):
         if self._openEndpointWithCredentials(username, password) == None:
             return None
         try:
-            User.objects.get(username=username)
+            user = User.objects.get(username=username)
         except User.DoesNotExist:
-            User.objects.create_user(username, '')
-        return {'id': username}
+            user = User.objects.create_user(username, '')
+            user.save()
+        # We don't want a localdb user created, so don't use a dict
+        return user
 
     def get_user(self, user_id):
         raise NotImplemented()

@@ -127,8 +127,7 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         # Stub out user object retrieval & creation
         mockUserDao = flexmock(User.objects)
         mockUserDao.should_receive('get').and_raise(User.DoesNotExist())
-        mockUserDao.should_receive('create_user').with_args(username, '')\
-            .and_return(lambda x: User(username=x))\
+        mockUserDao.should_call('create_user').with_args(username, '')\
             .at_least.once
         auth = HttpBasicEndpointAuth(mockOpener,endpoint=self.mock_endpoint)
         self._checkResult(auth.authenticate(request),username)
@@ -153,8 +152,7 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         # Stub out user object retrieval & creation
         mockUserDao = flexmock(User.objects)
         mockUserDao.should_receive('get').and_raise(User.DoesNotExist())
-        mockUserDao.should_receive('create_user').with_args(username, '')\
-            .and_return(lambda x: User(username=x))\
+        mockUserDao.should_call('create_user').with_args(username, '')\
             .at_least.once
         result = auth.authenticate(request)
         server.stop()
@@ -180,16 +178,16 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         # Stub out user object retrieval & creation
         mockUserDao = flexmock(User.objects)
         mockUserDao.should_receive('get')\
-            .and_return(lambda x: User(username=x))\
+            .and_return(User(username=username))\
             .at_least.once
-        mockUserDao.should_receive('create_user')\
-            .with_args(username, '').and_return(lambda x: User(username=x))\
+        mockUserDao.should_call('create_user')\
+            .with_args(username, '')\
             .never
         auth = HttpBasicEndpointAuth(mockOpener,endpoint=self.mock_endpoint)
         self._checkResult(auth.authenticate(request),username)
 
     def _checkResult(self, result, username):
-        assert isinstance(result, dict)
-        assert 'id' in result
-        eq_(result['id'], username)
+        assert not isinstance(result, dict)
+        assert isinstance(result, User)
+        eq_(result.username, username)
 
