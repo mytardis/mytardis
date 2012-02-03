@@ -72,7 +72,9 @@ var activateHoverDetection = function() {
 };
 
 $(document).ready(function(){
-	activateSearchAutocomplete();
+	if ($('#id_q').length > 0) {
+		activateSearchAutocomplete();
+	}
 	activateAlertStatus();
 	activateHoverDetection();
 });
