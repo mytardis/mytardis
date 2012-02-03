@@ -80,5 +80,9 @@ EMAIL_LINK_HOST = "http://gaia1.isis.rmit.edu.au:8890"
 # The anzsrc codes for subject for all collections
 COLLECTION_SUBJECTS = ['0307','0204']
 GROUP = "RMIT University"
+GROUP_ADDRESS = "Applied Science, RMIT University, Melbourne VIC 3000, Australia"
+ACCESS_RIGHTS= "Contact the researchers/parties associated with this dataset"
+RIGHTS= "Terms and conditions applies as specified by the researchers"
+
 
 PRIVATE_DATAFILES = True

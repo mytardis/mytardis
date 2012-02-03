@@ -252,7 +252,9 @@ class SimplePublishTest(TestCase):
         response = self.client.post("/rif_cs/")
         self.assertTrue(_grep("test exp1",str(response)))
         self.assertTrue(_grep("<key>http://www.rmit.edu.au/HPC/2/1</key>",str(response)))
-        self.assertTrue(_grep("""<addressPart type="text">rmit</addressPart>""",str(response)))
+        self.assertTrue(_grep("""<addressPart type="text">%s</addressPart>""" %
+                               settings.GROUP_ADDRESS
+                              ,str(response)))
         self.assertFalse(_grep("<key>http://www.rmit.edu.au/HPC/2/2</key>",str(response)))
         logger.debug("response=%s" % response)
         

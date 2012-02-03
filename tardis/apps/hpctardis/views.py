@@ -404,8 +404,10 @@ def rif_cs(request):
             'parties': parties,
             'collection_subjects': settings.COLLECTION_SUBJECTS,
             'activities':activities,
-            'localgroup': settings.GROUP
-            
+            'localgroup': settings.GROUP,
+            'localgroupaddress':settings.GROUP_ADDRESS.strip(),
+            'access_rights':settings.ACCESS_RIGHTS,
+            'rights':settings.RIGHTS            
         })
     
         
