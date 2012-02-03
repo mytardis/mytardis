@@ -87,10 +87,6 @@
                 <relation type="{{party.1}}"/> 
             </relatedObject> 
             {% endfor %}
-
-            {% if activity.subject %}
-            <subject type="anzsrc-for">{{activity.subject}}</subject>
-            {% endif %}
                                 
             {% for desc in activity|descsforactivity:"" %}
             <description type="{{desc.type}}">{{ desc.value}}</description>

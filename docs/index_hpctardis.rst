@@ -14,6 +14,10 @@ CoreTardis
    hpctardis_systemadminmanual
    hpctardis_usermanual   
    hpctardis_developmanual
+   hpctardis_migration
+   hpctardis.views
+   hpctardis.models
+   
 
 ==================
 Indices and tables
