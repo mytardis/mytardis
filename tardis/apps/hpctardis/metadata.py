@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2011-2011, RMIT e-Research Office
+# Copyright (c) 2011-2012, RMIT e-Research Office
 #   (RMIT University, Australia)
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -13,7 +13,7 @@
 #    *  Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
 #       documentation and/or other materials provided with the distribution.
-#    *  Neither the name of the VeRSI, the VeRSI Consortium members, nor the
+#    *  Neither the name of the RMIT, the RMIT members, nor the
 #       names of its contributors may be used to endorse or promote products
 #       derived from this software without specific prior written permission.
 #
@@ -34,7 +34,7 @@ metadata.py
 
 .. moduleauthor:: Ian Thomas <Ian.Edward.Thomas@rmit.edu.au>
 
-"""
+"""  
 from os import path
 import re
 import itertools
@@ -874,7 +874,11 @@ def _save_metadata(instance,schema,metadataset):
                             
           
 def process_datafile(datafile, ruleset):
-    """
+    """Extract metadata using given rules on a specific datafile
+    
+        :param datafile: the file to analyse
+        :param ruleset: the set of rules to use
+        :returns: the metadata extracted
     """
     from collections import defaultdict
     ready = defaultdict()
@@ -935,14 +939,24 @@ def process_datafile(datafile, ruleset):
        
 
 def process_experiment(metadatas, exp, ruleset):
-    """
+    """ process all datasets for a given experiement using the ruleset 
+        and return metadatas
+        
+        :param metadata: initial parameter value structure
+        :param exp: the experiment to analyse
+        :param ruleset: The specific ruleset to apply
+        :returns: updated paramter value structure     
     """
     metadatas = _process_datasets(metadatas,exp,ruleset)
     return metadatas    
  
  
 def process_experimentX(exp):
-    
+    """ Process all the datasets for the given experiment
+        
+        :param exp: the experiment to extract metadata for
+        
+    """
     for schemainfo in rulesets:
             metadataset = {}
             metadataset = process_experiment(metadataset, exp, 
@@ -957,6 +971,10 @@ def process_experimentX(exp):
                 _save_metadata(datafile,schema,metadataset[datafile])
          
 def process_all_experiments():
+    """ Perform metadata extraction on all experiments in the system.
+    
+        Warning: will override any local changes
+    """
     for schemainfo in rulesets:
         metadataset = _get_metadata(rulesets[schemainfo])
         logger.debug("metadatas=%s\n" % metadataset)

@@ -48,7 +48,7 @@
         <tr>
           <td>
         From <strong>{{experiment.institution_name}}</strong>,
-        deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+        updated <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
           </td>
         </tr>
         <tr>
@@ -99,7 +99,7 @@
       </tr>
       <tr>
         <td>From <strong>{{public_experiment.institution_name}}</strong>,
-          deposited <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong></td>
+          updated <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong></td>
       </tr>
     <tr>
       <td class="experiment-table-stats"><strong>{{ public_experiment.dataset_set.all.count }}</strong>
