@@ -66,7 +66,7 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.post(self.loginUrl, {'username': username,
             'password': password, 'authMethod': authMethod})
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 403)
 
         userAuth = UserAuthentication.objects.filter(
             username=username, authenticationMethod=authMethod)
@@ -79,7 +79,7 @@ class AuthenticationTestCase(TestCase):
 
         response = self.client.post(self.loginUrl, {'username': username,
             'password': password, 'authMethod': authMethod})
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 403)
         self.client.logout()
 
     def testManageAuthMethods(self):
