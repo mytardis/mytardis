@@ -37,26 +37,35 @@ models.py
 """
 
 from django.db import models
-from tardis.tardis_portal import Experiment
+from tardis.tardis_portal.models import Experiment
 
-CREATED = 1
-SYNCED = 2
+INGESTING = 1
+REQUESTED = 2
+IN_PROGRESS = 3
+FAIL_PERMANENT = 4
+COMPLETED = 5
+RECEIVED = 6
 
-_EXPERIMENT_SYNC_STATUS_CHOICES = (
-        (CREATED, 'Created'),
-        # Step 2: ????
-        (SYNCED, 'Synced'), # profit
+_EXPERIMENT_TRANSFER_STATUS_CHOICES = (
+        (INGESTING, 'Ingestion'),
+        (REQUESTED, 'Requested'),
+        (IN_PROGRESS, 'InProgress'),
+        (FAIL_PERMANENT, 'FailPermanent'),
+        (COMPLETED, 'Completed'),
+        (RECEIVED, 'Received'),
         )
 
 #
-# Maybe a common base class so we can turn anythin into 
+# Maybe a common base class so we can turn anything into 
 # a synced model?
 #
-
 
 class SyncedExperiment(Experiment):
     
     uid = models.IntegerField()
     digest = models.IntegerField() 
-    status = models.IntegerField(choices=_EXPERIMENT_SYNC_STATUS_CHOICES, DEFAULT=CREATED)
+    status = models.IntegerField(choices=_EXPERIMENT_TRANSFER_STATUS_CHOICES, default=INGESTING)
+
+    # Do we need to keep track of which provider this experiment came from?
+    # provider = models.StringField()
 
