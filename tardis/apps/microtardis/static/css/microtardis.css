@@ -286,3 +286,7 @@ div.statusbox {
 .statusbox_item_ok {
     color: green;
 }
+
+.post {
+   position: relative;
+}
