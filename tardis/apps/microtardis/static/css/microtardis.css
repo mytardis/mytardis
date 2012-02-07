@@ -182,7 +182,7 @@ a.filelink {
     font-size: 12px;
     line-height: 1.5em;
     color: #222222;
-    max-width: 300px;
+    width: 300px;
 }
 .parameter_table .even {
     background-color: #D0D3D6;
@@ -229,4 +229,60 @@ a.filelink {
 
 ul {
     padding: 10px;
+}
+
+.spectrum_preview {
+    float: left;
+}
+
+.image_preview {
+    float: left;
+}
+
+/* Status box on front page: it's an iframe which contains a page containing a div. The contents of the iframe
+ * links back to this stylesheet. */
+iframe {
+    right: 1em;
+    overflow: hidden;
+    width: 24em;
+    border: none;
+    margin-top: 2em;
+    position: absolute;
+    top: 100px;
+}
+
+iframe body { margin: 0; }
+
+div.statusbox {
+   border: 1px solid gray;
+   padding: 0;
+   overflow: hidden;
+   width: 20em;
+   font-size: 80%;
+   font-family: Tahoma,Arial,Helvetica;
+   box-shadow: 4px 5px 5px #888;
+   padding: 0.5em;
+   border-radius: 5px;
+}
+
+.statusbox ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.statusbox h3 {
+    margin: 0;
+}
+
+.statusbox_item_error, .statusbox_item_ok {
+    position: absolute;
+    left: 9em;
+}
+
+.statusbox_item_error {
+    color: red;
+}
+
+.statusbox_item_ok {
+    color: green;
 }

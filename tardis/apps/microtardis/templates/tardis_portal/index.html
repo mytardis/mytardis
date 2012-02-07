@@ -1,1 +1,41 @@
-{% extends "tardis_portal/portal_template.html" %}{% block content %}<div id="content">  <div class="post">    <h1 class="title">Welcome to MicroTARDIS!</h1>    <p><b>MicroTARDIS</b> is a repository for microscopy research data    at RMMF. When completed, it will automatically harvest data from    frequently used instruments, securely storing it for your later    retrieval. It will let you find data files by instrument settings,    or specimen type if you entered it.<br>    <br>    These instruments are currently being integrated:</p>    <p></p>    <ul>      <li>FEI Quanta 200: <code>.tif</code></li>        <ul>          <li>EDAX detector: <code>.spc</code></li>        </ul>      <li>FEI Nova NanoSEM: <code>.tif</code></li>      <ul>        <li>EDAX detector: <code>.spc</code><br>        </li>      </ul>    </ul>    <br>    <p></p>    <p>     For more information on the MicroTARDIS project please contact eResearch Director     <a href="http://www.cs.rmit.edu.au/research/People/supervisor.php?id=330">Heinz Schmidt</a>.     </p>  </div> <!-- post --> </div> <!-- content --> {% endblock content %}
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block content %}
+<div id="content">
+  <div class="post">
+    <h1 class="title">Welcome to the MicroTARDIS pilot!</h1>
+    <p><b>MicroTARDIS</b> is a repository for microscopy research data
+    at RMMF. It automatically harvests data every 5 minutes from support PCs at RMMF, securely storing it for your later
+    retrieval. When completed, it will let you find data files by instrument settings,
+    or sample type if you entered it.<br>
+    <br>
+    These instruments are currently supported:</p>
+    <p></p>
+    <ul>
+      <li>FEI Quanta 200: <code>.tif</code></li>
+        <ul>
+          <li>EDAX detector: <code>.spc</code></li>
+        </ul>
+      <li>FEI Nova NanoSEM: <code>.tif</code></li>
+      <ul>
+        <li>EDAX detector: <code>.spc</code><br>
+        </li>
+      </ul>
+      <li>Philips XL30: <code>.tif</code> <i>(in development)</i></li>
+    </ul>
+    <br>
+    <p></p>
+    <h2>How to get your data into MicroTardis</h2>
+    <ol>
+    	<li>Rename your user data folder on each support PC to your RMIT staff or student id (e12345 or s12345).</li>
+    	<li>Contact steve.bennett@versi.edu.au for an account.</li>
+    	<li>Login, then go to "Data" then "Create experiment".</li>
+    </ol>
+    <p> 
+    For more information on the MicroTARDIS project please contact eResearch Director 
+    <a href="http://www.cs.rmit.edu.au/research/People/supervisor.php?id=330">Heinz Schmidt</a>. 
+    <iframe src="http://131.170.253.125/status.html"></iframe>
+   </p>
+  </div> <!-- post --> 
+</div> <!-- content --> 
+{% endblock content %}
