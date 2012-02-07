@@ -112,7 +112,7 @@ class EXIFTagsFilter(object):
                               ['Scan', 'HorFieldsize', 'HorFieldSize', None, None],
                               ['Stage', 'WorkingDistance', 'WorkingDistance', 'mm', 1000],
                               ['Vacuum', 'UserMode', 'UserMode', None, None],
-                              ['Vacuum', 'ChPressure', 'ChPressure', None, None],
+                              ['Vacuum', 'ChPressure', 'CHPressure', None, None],
                               ['Detectors', 'Name', 'Name', None, None],
                               ['Detector_Name', 'Contrast', 'Contrast', None, None],
                               ['Detector_Name', 'Brightness', 'Brightness', None, None],

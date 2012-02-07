@@ -342,6 +342,11 @@ class SPCTagsFilter(object):
                 else: # extract numbers
                     value = round( struct.unpack(format, spc.read(byte_size))[0], rounded_digits)
                 
+                # change field names
+                if field == 'Preset':
+                    field = 'Time Constant'
+                
+                # get field and its value
                 ret[field] = [value, unit]
         except:
             print "Failed to extract spectral metadata from *.spc file."
