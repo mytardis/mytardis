@@ -144,7 +144,7 @@ class HPCprotocolTest(TestCase):
 
 
         temp = tempfile.TemporaryFile()
-        temp.write("Username:venki\nName:Venki Bala\nExperiment:Test Exp\nFacility:localhost\nDescription:Test desc\nFacility:localhost\nFolderName:myfolder\nCounter:7\nPackage:test_package")   
+        temp.write("Username~venki\nName~Venki Bala\nExperiment~Test Exp\nFacility~localhost\nDescription~Test desc\nFacility~localhost\nFolderName~myfolder\nCounter~7\nPackage~test_package")   
         temp.seek(0)
         
         response = self.client.post(url, {'username':self.user, 
