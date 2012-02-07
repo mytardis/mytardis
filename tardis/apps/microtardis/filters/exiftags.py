@@ -85,42 +85,54 @@ class EXIFTagsFilter(object):
         self.tagsToFind = tagsToFind
         self.tagsToExclude = tagsToExclude
         self.instruments = {
-            'Quanta200': (('Quanta200_EXIF', 
-                           'Quanta200_EXIF', 
-                           (['User', 'Usertext', None, None], 
-                            ['User', 'Date', None, None], 
-                            ['User', 'Time', None, None],
-                            ['Beam', 'HV', "kV", 0.001],
-                            ['Beam', 'Spot', None, None],
-                            ['Scan', 'PixelWidth', None, None],
-                            ['Scan', 'Horfieldsize', None, None],
-                            ['Stage', 'WorkingDistance', "mm", 1000],
-                            ['Vacuum', 'UserMode', None, None],
-                            ['Vacuum', 'CHPressure', None, None],
-                            ['Detectors', 'Name', None, None],
-                            ['Detector_Name', 'Contrast', None, None],
-                            ['Detector_Name', 'Brightness', None, None],
+            'Quanta200': (('Quanta200_EXIF', 'Quanta200_EXIF', 
+                           (['User', 'Usertext', 'UserText', None, None], 
+                            ['User', 'Date', 'Date', None, None], 
+                            ['User', 'Time', 'Time', None, None],
+                            ['Beam', 'HV', 'HV', 'kV', 0.001],
+                            ['Beam', 'Spot', 'Spot', None, None],
+                            ['Scan', 'PixelWidth', 'PixelWidth', None, None],
+                            ['Scan', 'Horfieldsize', 'HorFieldSize', None, None],
+                            ['Stage', 'WorkingDistance', 'WorkingDistance', 'mm', 1000],
+                            ['Vacuum', 'UserMode', 'UserMode', None, None],
+                            ['Vacuum', 'CHPressure', 'CHPressure', None, None],
+                            ['Detectors', 'Name', 'Name', None, None],
+                            ['Detector_Name', 'Contrast', 'Contrast', None, None],
+                            ['Detector_Name', 'Brightness', 'Brightness', None, None],
                             ),
                            ),
                           ),
-            'NovaNanoSEM': (('NovaNanoSEM_EXIF',
-                             'NovaNanoSEM_EXIF',
-                             (['User', 'UserText', None, None], 
-                              ['User', 'Date', None, None], 
-                              ['User', 'Time', None, None],
-                              ['Beam', 'HV', "kV", 0.001],
-                              ['Beam', 'Spot', None, None],
-                              ['Scan', 'PixelWidth', None, None],
-                              ['Scan', 'HorFieldsize', None, None],
-                              ['Stage', 'WorkingDistance', "mm", 1000],
-                              ['Vacuum', 'UserMode', None, None],
-                              ['Vacuum', 'ChPressure', None, None],
-                              ['Detectors', 'Name', None, None],
-                              ['Detector_Name', 'Contrast', None, None],
-                              ['Detector_Name', 'Brightness', None, None],
+            'NovaNanoSEM': (('NovaNanoSEM_EXIF', 'NovaNanoSEM_EXIF',
+                             (['User', 'UserText', 'UserText', None, None], 
+                              ['User', 'Date', 'Date', None, None], 
+                              ['User', 'Time', 'Time', None, None],
+                              ['Beam', 'HV', 'HV', 'kV', 0.001],
+                              ['Beam', 'Spot', 'Spot', None, None],
+                              ['Scan', 'PixelWidth', 'PixelWidth', None, None],
+                              ['Scan', 'HorFieldsize', 'HorFieldSize', None, None],
+                              ['Stage', 'WorkingDistance', 'WorkingDistance', 'mm', 1000],
+                              ['Vacuum', 'UserMode', 'UserMode', None, None],
+                              ['Vacuum', 'ChPressure', 'ChPressure', None, None],
+                              ['Detectors', 'Name', 'Name', None, None],
+                              ['Detector_Name', 'Contrast', 'Contrast', None, None],
+                              ['Detector_Name', 'Brightness', 'Brightness', None, None],
                               ),
                              ),
                             ),
+            'XL30': (('XL30_EXIF', 'XL30_EXIF',
+                      (['DatabarData', 'flAccV', 'AccVoltage', 'kV', 0.001], 
+                       ['DatabarData', 'flSpot', 'Spot', None, None], 
+                       ['DatabarData', 'lDetName', 'DetectorName', None, None],
+                       ['DatabarData', 'flWD', 'WorkingDistance', None, None],
+                       ['DatabarData', 'lScanSpeed', 'ScanSpeed', None, None],
+                       ['DatabarData', 'ImageName', 'ImageName', None, None],
+                       ['Vector', 'SpecimenTilt', 'SpecimenTilt', None, None],
+                       ['Vector', 'Magnification', 'Magnification', 'x', None],
+                       ['Vector', 'HighTension', 'HighTension', None, None],
+                       ['Vector', 'FWD', 'FreeWorkingDistance', None, None],
+                       ),
+                      ),
+                     ),
         }
         
         logger.debug('initialising EXIFTagsFilter')
@@ -175,7 +187,7 @@ class EXIFTagsFilter(object):
             
             for exifTag in exifs:
                 logger.debug("exifTag=%s" % exifTag)
-                if exifTag == 'Image Tag 0x877A':
+                if exifTag == 'Image Tag 0x877A' or exifTag == 'Image Tag 0x8778':
                     tmpfile = "/tmp/workfile_%s" % random.randint(1, 9999)
                     f = open(tmpfile, 'w')
                     f.write(exifs[exifTag])
@@ -190,34 +202,43 @@ class EXIFTagsFilter(object):
                         (schemaName,schemaSuffix,tagsToFind) = sch
                         logger.debug("schemaTuple %s  = %s %s %s" %(sch,schemaName,schemaSuffix,tagsToFind))
 
-                        # find property value in tag
+                        # find values in tags
                         metadata = {}
                         detector_name = ""
                         pixel_width = 0
                         for tag in tagsToFind:
-                            (section, option, unit, multiplier) = tag
+                            (section, option, fieldname, unit, multiplier) = tag
                             try:
+                                # get values in detector section
                                 if section == "Detector_Name" and detector_name != "":
                                     section = detector_name
                                 value = x877a_tags.get(section, option)
+                                # convert value with specified multiplier
                                 if multiplier:
                                     value = float(value) * multiplier
-                                    
+                                # round values
+                                if option in ["WorkingDistance", "Contrast", "Brightness"]:
+                                    value = round(float(value), 1)
+                                if option in ["Magnification"]:
+                                    value = int(round(float(value)))
+                                # get Chamber Pressure
                                 if section == "Vacuum" and option.lower() == "chpressure":
                                     value_in_torr = float(value) / 133.322368
                                     value_in_mbar = float(value) / 100
                                     value = "%.4G Torr (%.4G mbar)" % (value_in_torr, value_in_mbar)
-                                    
-                                metadata["[%s] %s" % (section, option)] = [value, unit]
+                                # get metadata
+                                metadata["[%s] %s" % (section, fieldname)] = [value, unit]
+                                # get Detector Name
                                 if section == "Detectors" and option == "Name":
                                     detector_name = value
+                                # get Pixel Width for calculating magnification
                                 if section == "Scan" and option == "PixelWidth":
                                     pixel_width = float(value)
                             except ConfigParser.NoSectionError:
                                 pass
                             
                         # Calculate Magnification
-                        if pixel_width:
+                        if pixel_width and instr_name in ["Quanta200", "NovaNanoSEM"]:
                             section = "Scan"
                             option = "Magnification"
                             
@@ -227,6 +248,7 @@ class EXIFTagsFilter(object):
                                 monitor_pixel_width = 0.000291456
                             value = round( monitor_pixel_width / pixel_width )
                             unit = "x"
+                            # get metadata
                             metadata["[%s] %s" % (section, option)] = [value, unit]
 
                         # only save exif data if we found some expected metadata
