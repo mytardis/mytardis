@@ -54,13 +54,13 @@
             
             <description type="rights">{{rights}}</description>
             <description type="accessRights">{{access_rights}}</description>
-            
-         </collection>
          {# no spatial or temporal coverage #}
          
          {# following values are hardcoded for this group #}
          {% for subject in collection_subjects %}  
          <subject type="anzsrc-for">{{ subject }}</subject>
          {% endfor %}
-      </registryObject>
+         
+         </collection>
+         </registryObject>
     <!--   -->

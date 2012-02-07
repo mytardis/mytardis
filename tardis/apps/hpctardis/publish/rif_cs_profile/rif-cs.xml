@@ -20,7 +20,7 @@
     {% for party in parties%}
     <registryObject group="{{ localgroup }}">
         <key>{{party.key}}</key>
-        <orginatingSource>http://www.rmit.edu.au</orginatingSource>
+        <originatingSource>http://www.rmit.edu.au</originatingSource>
         <party type="{{party.type}}">
             <identifier type="uri">{{party.key}}</identifier>
             <name type="primary">
@@ -46,9 +46,7 @@
                    {% endif %}
                    {% if party|locationforparty:"postaladdress" %}                                     
                    <physical type="postaladdress">
-                       <addressPart type="text">
-                           <value>{{party|locationforparty:"postaladdress"}}</value>                      
-                       </addressPart>
+                       <addressPart type="text">{{party|locationforparty:"postaladdress"}}</addressPart>
                    </physical>
                    {% endif %}
                    
@@ -74,7 +72,7 @@
     {% for activity in activities %}
     <registryObject group="{{activity.group}}">
         <key>{{activity.key}}</key>
-        <orginatingSource>http://www.rmit.edu.au</orginatingSource>
+        <originatingSource>http://www.rmit.edu.au</originatingSource>
         <activity type="{{activity.type}}">
             <identifier type="uri">{{activity.ident}}</identifier>
             <name type="primary">
