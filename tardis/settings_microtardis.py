@@ -55,3 +55,6 @@ TEMPLATE_LOADERS = (
 MT_STATIC_URL_ROOT = '/static'
 MT_STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                                'apps/microtardis/static').replace('\\', '/')
+                               
+MATPLOTLIB_HOME = path.abspath(path.join(path.dirname(__file__), 
+                                         '../../../db')).replace('\\', '/')
