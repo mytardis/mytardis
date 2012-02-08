@@ -4,6 +4,7 @@ import imghdr
 import struct
 import csv
 import StringIO
+import numpy
 
 from django.template import Context
 from django.http import HttpResponse
@@ -221,7 +222,24 @@ def get_spectra_png(request, size, datafile_id):
     if is_matplotlib_imported:
         datafile = Dataset_File.objects.get(pk=datafile_id)
         values = list( get_spectra(datafile) )
-        pyplot.plot([x * 0.01 for x in range(0, 4000)], values)
+        # truncate the values on x axis
+        nonzero_values = numpy.nonzero(values)
+        for i in range(0, len(nonzero_values[0])+1, 1):
+            if values[nonzero_values[0][i]] < 10:
+                continue
+            else:
+                left_end = nonzero_values[0][i]
+                break
+        for i in range(-1, 0-len(nonzero_values[0])+1, -1):
+            if values[nonzero_values[0][i]] < 10:
+                continue
+            else:
+                right_end = nonzero_values[0][i]
+                break
+        values = values[left_end:right_end+1]
+        pyplot.plot([x * 0.01 for x in range(left_end, right_end+1)], values)
+        
+        #pyplot.plot([x * 0.01 for x in range(0, 4000)], values)
         pyplot.xlabel("keV")
         pyplot.ylabel("Counts")
         pyplot.grid(True)
