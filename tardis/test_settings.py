@@ -221,4 +221,4 @@ ROOT_URLCONF = 'tardis.apps.hpctardis.urls'
 PRIVATE_DATAFILES = False
                      
 MATPLOTLIB_HOME = path.abspath(path.join(path.dirname(__file__), 
-                                         '../../../db')).replace('\\', '/')
+                                         '../')).replace('\\', '/')
