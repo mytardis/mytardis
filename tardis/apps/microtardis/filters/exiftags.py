@@ -127,7 +127,7 @@ class EXIFTagsFilter(object):
                        ['DatabarData', 'lScanSpeed', 'ScanSpeed', None, None],
                        ['DatabarData', 'ImageName', 'ImageName', None, None],
                        ['Vector', 'SpecimenTilt', 'SpecimenTilt', None, None],
-                       ['Vector', 'Magnification', 'Magnification', 'x', None],
+                       ['Vector', 'Magnification', 'Magnification', 'X', None],
                        ['Vector', 'HighTension', 'HighTension', None, None],
                        ['Vector', 'FWD', 'FreeWorkingDistance', None, None],
                        ),
@@ -240,14 +240,14 @@ class EXIFTagsFilter(object):
                         # Calculate Magnification
                         if pixel_width and instr_name in ["Quanta200", "NovaNanoSEM"]:
                             section = "Scan"
-                            option = "Magnification"
+                            option = "Original Magnification (Full Screen)"
                             
                             if instr_name == "Quanta200":
                                 monitor_pixel_width = 0.00025
                             if instr_name == "NovaNanoSEM":
-                                monitor_pixel_width = 0.000291456
+                                monitor_pixel_width = 0.0002914
                             value = round( monitor_pixel_width / pixel_width )
-                            unit = "x"
+                            unit = "X"
                             # get metadata
                             metadata["[%s] %s" % (section, option)] = [value, unit]
 
