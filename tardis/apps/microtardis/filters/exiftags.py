@@ -245,7 +245,7 @@ class EXIFTagsFilter(object):
                             if instr_name == "Quanta200":
                                 monitor_pixel_width = 0.00025
                             if instr_name == "NovaNanoSEM":
-                                monitor_pixel_width = 0.0002914
+                                monitor_pixel_width = 0.000291406
                             value = round( monitor_pixel_width / pixel_width )
                             unit = "X"
                             # get metadata
