@@ -37,35 +37,23 @@ models.py
 """
 
 from django.db import models
-from tardis.tardis_portal.models import Experiment
-
-INGESTING = 1
-REQUESTED = 2
-IN_PROGRESS = 3
-FAIL_PERMANENT = 4
-COMPLETED = 5
-RECEIVED = 6
-
-_EXPERIMENT_TRANSFER_STATUS_CHOICES = (
-        (INGESTING, 'Ingestion'),
-        (REQUESTED, 'Requested'),
-        (IN_PROGRESS, 'InProgress'),
-        (FAIL_PERMANENT, 'FailPermanent'),
-        (COMPLETED, 'Completed'),
-        (RECEIVED, 'Received'),
-        )
+from tardis.apps.sync.consumer_fsm import ConsumerFSMField
 
 #
 # Maybe a common base class so we can turn anything into 
 # a synced model?
 #
 
-class SyncedExperiment(Experiment):
-    
-    uid = models.IntegerField()
-    digest = models.IntegerField() 
-    status = models.IntegerField(choices=_EXPERIMENT_TRANSFER_STATUS_CHOICES, default=INGESTING)
-
+class SyncedModel(models.Model):
+    uid = models.IntegerField(default=0)
+    state = ConsumerFSMField(default='Ingesting') 
     # Do we need to keep track of which provider this experiment came from?
     # provider = models.StringField()
+    
+    def __init__(self, *args, **kwargs):
+        if 'state' in kwargs:
+            self.state = kwargs['state']
+
+        self.uid = 0
+        super(SyncedModel, self).__init__(*args, **kwargs) 
 
