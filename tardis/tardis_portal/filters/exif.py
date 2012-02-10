@@ -38,7 +38,7 @@ exif.py
 from fractions import Fraction
 
 try:
-    import tardis.apps.microtardis.filters.EXIF as EXIF
+    import EXIF  # Assumed to be in the same directory.
 except ImportError:
     raise ImportError("Can't import EXIF please ensure that the file exists in tardis.apps.microtardis.filters.")
 
