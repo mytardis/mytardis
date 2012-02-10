@@ -9,19 +9,21 @@ Prerequisites
 
 Redhat::
 
-   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python
+   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git
 
 Debian/Ubuntu::
 
-   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
+   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev git
 
 Download
 --------
 
-To get the current trunk::
+To get the current master branch::
 
-   svn co https://mytardis.googlecode.com/svn/trunk/ mytardis
+   git clone git://github.com/mytardis/mytardis.git
    cd mytardis
+
+This clones the repository as read-only.
 
 Quick configuration
 -------------------
