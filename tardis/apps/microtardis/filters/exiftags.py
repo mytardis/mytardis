@@ -55,7 +55,7 @@ from tardis.apps.microtardis.views import write_thumbnails
 from fractions import Fraction
 
 try:
-    import tardis.tardis_portal.filters.EXIF as EXIF
+    import tardis.apps.microtardis.filters.lib.sourceforge.exif_py.EXIF as EXIF
 except ImportError:
     import sys
     logger.debug("Error: Can't find the file 'EXIF.py' in the directory containing %r" % __file__)
