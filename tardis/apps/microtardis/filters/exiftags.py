@@ -54,14 +54,14 @@ from tardis.apps.microtardis.views import write_thumbnails
 
 from fractions import Fraction
 
+
+logger = logging.getLogger(__name__)
 try:
     import tardis.apps.microtardis.filters.lib.sourceforge.exif_py.EXIF as EXIF
 except ImportError:
     import sys
     logger.debug("Error: Can't find the file 'EXIF.py' in the directory containing %r" % __file__)
     sys.exit(1)
-
-logger = logging.getLogger(__name__)
 
 class EXIFTagsFilter(object):
     """This filter provides extraction of metadata extraction of images from the RMMF
