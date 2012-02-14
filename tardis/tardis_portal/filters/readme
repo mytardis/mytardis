@@ -1,9 +1,0 @@
-The exif.py filter is not used anywhere in mytardis apart from its unit tests in
-tardis_portal/tests/test_filters.py.
-
-This filter used to use pyexiv2.py to extract image metadata from image files. 
-The pyexiv2 was replaced by EXIF.py (http://exif-py.sourceforge.net/) because it
-can't be installed with buildout. 
-
-The filter is considered as deadcode on this stage because it hasn't been used 
-yet.
