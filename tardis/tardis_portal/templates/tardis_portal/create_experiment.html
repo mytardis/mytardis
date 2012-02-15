@@ -56,7 +56,11 @@
 	{% if directory_listing %}
         $("#demo1").jstree({
 	    core : { /* core options go here */ },
-	    plugins : [ "themes", "html_data", "checkbox" ]
+	    plugins : [ "themes", "html_data", "checkbox" ],
+		checkbox : { 
+		                two_state : true, 
+		                real_checkboxes : true 
+		        },
 	});
 
 	//Get checked
@@ -67,16 +71,32 @@
 		exists = false;
 		filename = $(this).attr('id');
 
-		file_list.find(".file").each(function(){
-		    if(filename == $(this).html()) {
-			exists = true;
-		    }
-		});
+        file_list.find(".file").each(function(){
+            if(filename == $(this).html()) {
+                exists = true;
+            }
+        });
 
 		if(!exists) {
 		    addDatafile(file_list, filename);
 		}
 	    });
+	
+	    $(".jstree-open.jstree-checked").each(function(){
+		exists = false;
+		filename = $(this).attr('id');	
+	
+        file_list.find(".file").each(function(){
+            if(filename == $(this).html()) {
+                exists = true;
+            }
+        });	
+	
+		if(!exists) {
+		    addDatafile(file_list, filename);
+		}
+	    });		
+	
 	    $("#demo1").jstree("uncheck_all");
 	});
 	{% endif %}
@@ -262,6 +282,7 @@
 		</div>
 	      </div>
         <form id="create_experiment_form" action="" method="POST">
+		<input type="hidden" name="username" value="{{username}}" id="username" />
           {{ form.non_field_errors }}
           <div class="msg_list">
             <p class="exp_head">Experiment Information</p>

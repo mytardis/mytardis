@@ -118,7 +118,7 @@ def logout(request):
 
 def index(request):
     status = ''
-
+    
     c = Context({'status': status})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/index.html', c))
@@ -603,6 +603,7 @@ def create_experiment(request,
 
     c['form'] = form
     c['default_institution'] = settings.DEFAULT_INSTITUTION
+    c['username'] = request.user.username
     return HttpResponse(render_response_index(request, template_name, c))
 
 
@@ -676,7 +677,7 @@ def edit_experiment(request, experiment_id,
         form = ExperimentForm(instance=experiment, extra=0)
 
     c['form'] = form
-
+    c['username'] = request.user.username
     return HttpResponse(render_response_index(request,
                         template, c))
 

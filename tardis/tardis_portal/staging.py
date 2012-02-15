@@ -90,16 +90,11 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     :rtype: string
     """
     if path.isdir(pathname):
-        li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
-                                    path.basename(pathname))
-    else:
-        li = '<li class="fileicon" id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
+        li = '<li id="%s/*"><a>%s</a>' % (path.relpath(pathname, dirname),
                                     path.basename(pathname))
 
     if pathname.rpartition('/')[2].startswith('.'):
         return ''
-    if path.isfile(pathname):
-        return li + '</li>'
     if path.isdir(pathname):
         ul = '<ul>'
         filelist = listdir(pathname)
@@ -128,6 +123,7 @@ class StagingHook():
         created
             A boolean; True if a new record was created.
         """
+
         instance = kwargs.get('instance')
         created = kwargs.get('created')
         if not created:

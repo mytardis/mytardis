@@ -38,6 +38,7 @@ forms module
 '''
 
 from os.path import basename
+from os import path, listdir
 from UserDict import UserDict
 
 from django import forms
@@ -60,11 +61,12 @@ from registration.models import RegistrationProfile
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span, TextInput
-from tardis.tardis_portal.models import UserProfile, UserAuthentication
+from tardis.tardis_portal.models import UserProfile, UserAuthentication, Dataset_File
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.staging import get_full_staging_path
 
 import logging
 logger = logging.getLogger(__name__)
@@ -385,6 +387,7 @@ class FullExperimentModel(UserDict):
 class DataFileFormSet(BaseInlineFormSet):
 
     def __init__(self, *args, **kwargs):
+
         if 'post_save_cb' in kwargs:
             self._post_save_cb = kwargs['post_save_cb']
             del kwargs['post_save_cb']
@@ -393,10 +396,13 @@ class DataFileFormSet(BaseInlineFormSet):
         super(DataFileFormSet, self).__init__(**kwargs)
 
     def save_new(self, form, commit=True):
+        
         #this is a local file so correct the missing details
         datafile = super(DataFileFormSet, self).save_new(form, commit=False)
-
+        
+        username = form.data['username']
         filepath = form.cleaned_data['filename']
+        
         datafile.filename = basename(filepath)
 
         if not 'url' in form.cleaned_data or not form.cleaned_data['url']:
@@ -584,6 +590,7 @@ class ExperimentForm(forms.ModelForm):
             ae.instance.experiment = ae.instance.experiment
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
+            
         for key, dataset in enumerate(self.datasets.forms):
             if dataset not in self.datasets.deleted_forms:
                 # XXX for some random reason the link between
@@ -599,8 +606,43 @@ class ExperimentForm(forms.ModelForm):
                         mutable = False
 
                 if self.dataset_files[key] and mutable:
+                    for df_form in self.dataset_files[key].forms:                  
+                                             
+                        filepath = df_form.instance.url                     
+                        
+                        # crazy logic to work out if file exists already or is wildcard entry
+                        # not sure if this breaks individual file loading (if we're bringing back)
+                        if filepath == '':
+                            loop_df = df_form.save(False) 
+                        
+                            filepath = loop_df.url
+                            self.dataset_files[key].forms.remove(df_form)                                               
+                        
+                        if filepath.endswith('/*'):
+
+                            staging = get_full_staging_path(self.dataset_files[key].data['username'])
+                            pathname = path.join(staging, filepath[:-2])
+
+                            filelist = listdir(pathname)
+
+                            filelist.sort()
+                        
+                            for filename in filelist:
+                                    
+                                full_path = path.join(pathname, filename)
+                                if not path.isdir(full_path):
+                                
+                                    df = Dataset_File(dataset=o_dataset,
+                                                        filename=basename(filename),
+                                                        url=filepath[:-2] + path.sep + filename,
+                                                        protocol='staging', size=path.getsize(full_path))  
+                        
+                                    # a wildcard entry (folder) save
+                                    dataset_files.append(df)
+
+                    # a 'normal' sze
                     o_df = self.dataset_files[key].save(commit)
-                    dataset_files += o_df
+                    dataset_files += o_df                     
 
         if hasattr(self.datasets, 'deleted_forms'):
             for ds in self.datasets.deleted_forms:
