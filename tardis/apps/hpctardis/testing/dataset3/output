@@ -1,7 +1,0 @@
-# Warning, this file is fake and should only be used for testing purposes
-
-siesta: iscf   Eharris(eV)      E_KS(eV)   FreeEng(eV)   dDmax  Ef(eV)
-siesta:   18   -34376.1097   -34376.0348   -34376.0689  0.0026 -3.1498
-siesta:   19   -34376.1097   -34376.0348   -34376.0689  0.0026 -3.1498
-
-siesta: E_KS(eV) =           -34376.0348
