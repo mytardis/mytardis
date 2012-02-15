@@ -169,7 +169,7 @@ def direct_to_thumbnail_html(request, datafile_id, datafile_type):
     return render_to_response("thumbnail.html", {"datafile_id": datafile_id,
                                                  "datafile_type": datafile_type,})
 
-def get_spectra(datafile):
+def get_spc_spectra(datafile):
     basepath = settings.FILE_STORE_PATH
     experiment_id = str(datafile.dataset.experiment.id)
     dataset_id = str(datafile.dataset.id)
@@ -189,25 +189,55 @@ def get_spectra(datafile):
     
     return values_tuple
 
+def get_spt_spectra(datafile):
+    basepath = settings.FILE_STORE_PATH
+    experiment_id = str(datafile.dataset.experiment.id)
+    dataset_id = str(datafile.dataset.id)
+    raw_path = datafile.url.partition('//')[2]
+    file_path = os.path.join(basepath,
+                            experiment_id,
+                            dataset_id,
+                            raw_path)
+    spc = open(file_path)
+    offset = 7
+    channel = 2048 # number of spectral channels
+    format = 'i' # long integer
+    byte_size = 4
+    
+    spc.seek(offset)
+    values_tuple = struct.unpack(format * channel, spc.read(byte_size * channel))
+    
+    return values_tuple
+
 def get_spectra_csv(request, datafile_id):
     datafile = Dataset_File.objects.get(pk=datafile_id)
     filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
+    extension = str(datafile.url)[-4:]
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
     writer = csv.writer(response)
-    values = get_spectra(datafile)
-    index = 0
-    for value in values:
-        index += 1
-        row = [index, value]
-        writer.writerow(row)
+    if extension == '.spc':
+        values = get_spc_spectra(datafile)
+        index = 0
+        for value in values:
+            index += 1
+            row = [index, value]
+            writer.writerow(row)
+    elif extension == '.spt':
+        values = get_spt_spectra(datafile)
+        index = 0
+        for value in values:
+            row = [index*10, value]
+            writer.writerow(row)
+            index += 1
 
     return response
 
+# this function is obsolete. It's no longer to be used by javascript codes.
 def get_spectra_json(request, datafile_id):
     datafile = Dataset_File.objects.get(pk=datafile_id)
     filename = str(datafile.url).split('/')[-1][:-4].replace(' ', '_')
-    values = get_spectra(datafile)
+    values = get_spc_spectra(datafile)
     index = 0
     data = []
     for value in values:
@@ -221,7 +251,7 @@ def get_spectra_json(request, datafile_id):
 def get_spectra_png(request, size, datafile_id):
     if is_matplotlib_imported:
         datafile = Dataset_File.objects.get(pk=datafile_id)
-        values = list( get_spectra(datafile) )
+        values = list( get_spc_spectra(datafile) )
         # truncate the values on x axis
         nonzero_values = numpy.nonzero(values)
         for i in range(0, len(nonzero_values[0])+1, 1):
