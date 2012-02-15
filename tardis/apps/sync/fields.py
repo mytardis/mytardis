@@ -10,8 +10,11 @@ class State(object):
     def __str__(self):
         return "%s" % (self.__class__.__name__)
 
-    def get_next_state():
+    def get_next_state(self):
         pass
+
+    def is_final_state(self):
+        return False
 
 class FSMField(models.Field):
                     
@@ -40,8 +43,9 @@ def transition_on_success(state, conditions=[]):
         def wrap_f(*args):
             try:
                 f(*args)
-            except:
-               return  args
+            except Exception, e:
+                # return the current state
+                return args[0]
             return state()
         return wrap_f
     return wrap
