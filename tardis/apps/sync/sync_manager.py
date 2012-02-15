@@ -35,6 +35,25 @@ sync_manager.py
 .. moduleauthor:: Shaun O'Keefe <shaun.okeefe.0@gmail.com>
 
 """
+import logging
+import os.path
+from suds.client import Client
+
+from django.conf import settings
+
+from tardis.apps.sync.site_parser import SiteParser
+from tardis.apps.sync.site_settings_parser import SiteSettingsParser
+
+from tardis.tardis_portal.models import Experiment, ExperimentParameter
+
+logger = logging.getLogger('tardis.mecat')
+
+
+class SyncManagerInvalidUIDError(Exception):
+    pass
+
+class SyncManagerTransferError(Exception):
+    pass
 
 #
 # For watching over things on the provider side of the 
@@ -43,8 +62,103 @@ sync_manager.py
 #
 
 class SyncManager():
+            
+    def __init__(self, institution='tardis'):
+        
+        self.institution = institution
+        url = settings.MYTARDIS_SITES_URL
+        logger.debug('fetching mytardis sites from %s' % url)
+        try:
+            sites_username = settings.MYTARDIS_SITES_USERNAME
+            sites_password = settings.MYTARDIS_SITES_PASSWORD
+        except AttributeError:
+            sites_username = ''
+            sites_password = ''
 
-    def generate_exp_uid(experiment):
-        pass
+        self.site_parser = SiteParser(url, sites_username, sites_password)
+
+
+    def generate_exp_uid(self, experiment):
+        uid_str = "%s.%s" % (self.institution, experiment.pk)
+        return uid_str 
+    
+    def exp_from_uid(self, uid):
+        try: 
+            [institution, pk] = uid.split('.')
+        except ValueError:
+            raise SyncManagerInvalidUIDError()
+        
+        if institution != 'tardis':
+            raise SyncManagerInvalidUIDError()
+        try:
+            exp = Experiment.objects.get(pk=int(pk))
+        except Experiment.DoesNotExist:
+            raise SyncManagerInvalidUIDError()
+        
+        return exp
+
+    def get_sites(self):
+        #TODO rewrite the parser to get tuples straight up
+        # TODO generator function
+        sites = []
+        try:
+            site_names = self.sp.getSiteNames()
+        except:
+            #TODO
+            return
+        
+        for name in site_names:
+            try:
+                url = self.sp.getSiteSettingsURL(name)
+                username = self.sp.getSiteSettingsUsername(name)
+                password = self.sp.getSiteSettingsPassword(name)
+            except:
+                #TODO
+                return
+
+            sites.append((name, url, username, password))
+
+        return sites
+
+    def start_file_transfer(self, exp, site_settings_url, site_username, site_password):
+       
+        # read remote MyTARDIS configV
+        self.ssp = SiteSettingsParser(site_settings_url, site_username, site_password)
+       
+        # get EPN (needed to kick-off vbl gridftp transfer)
+        epn = ExperimentParameter.objects.get(parameterset__experiment=exp,
+                                                        name__name='EPN').string_value
+        
+        client = Client(settings.VBLSTORAGEGATEWAY, cache=None)
+
+        x509 = self.self.ssp.getTransferSetting('password')
+        # build destination path
+        dirname = os.path.abspath(
+            os.path.join(self.ssp.getTransferSetting('serversite'), )
+            )
+        logger.debug('destination url:  %s' % site_settings_url)
+        logger.debug('destination path: %s' % dirname)
+
+        # contact VBL
+        key = client.service.VBLstartTransferGridFTP(
+            self.ssp.getTransferSetting('user'),
+            x509,
+            epn,
+            '/Frames\\r\\nTARDIS\\r\\n',
+            self.ssp.getTransferSetting('sl'),
+            dirname,
+            self.ssp.getTransferSetting('optionFast'),
+            self.ssp.getTransferSetting('optionPenable'),
+            self.ssp.getTransferSetting('optionP'),
+            self.ssp.getTransferSetting('optionBSenable'),
+            self.ssp.getTransferSetting('optionBS'),
+            self.ssp.getTransferSetting('optionTCPBenable'),
+            self.ssp.getTransferSetting('optionTCPBS'))
+
+        if key.startswith('Error:'):
+            logger.error('[vbl] %s: epn %s' % (key, epn))
+            raise SyncManagerTransferError()
+        else:
+            logger.info('[vbl] %s: pn %s' % (key, epn))
 
 

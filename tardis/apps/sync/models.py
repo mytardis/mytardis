@@ -37,6 +37,7 @@ models.py
 """
 
 from django.db import models
+from tardis.tardis_portal.models import Experiment
 from tardis.apps.sync.consumer_fsm import ConsumerFSMField
 
 #
@@ -44,7 +45,7 @@ from tardis.apps.sync.consumer_fsm import ConsumerFSMField
 # a synced model?
 #
 
-class SyncedModel(models.Model):
+class SyncedExperiment(Experiment):
     uid = models.IntegerField(default=0)
     state = ConsumerFSMField(default='Ingesting') 
     # Do we need to keep track of which provider this experiment came from?
@@ -55,5 +56,9 @@ class SyncedModel(models.Model):
             self.state = kwargs['state']
 
         self.uid = 0
-        super(SyncedModel, self).__init__(*args, **kwargs) 
+        super(SyncedExperiment, self).__init__(*args, **kwargs) 
+    
+    def is_complete(self):
+        return self.state.is_final_state() 
 
+        
