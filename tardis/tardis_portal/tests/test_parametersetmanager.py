@@ -36,7 +36,12 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Steve Androulakis <steve.androulakis@monash.edu>
 
 """
+
+from compare import expect
+from datetime import datetime
 from django.test import TestCase
+import iso8601
+import pytz
 from tardis.tardis_portal import models
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
@@ -87,6 +92,13 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.parametername2.save()
 
+        self.parametername3 = models.ParameterName(
+            schema=self.schema, name="parameter3",
+            full_name="Parameter 3",
+            data_type=models.ParameterName.DATETIME)
+
+        self.parametername3.save()
+
         self.datafileparameterset = models.DatafileParameterSet(
             schema=self.schema, dataset_file=self.datafile)
 
@@ -105,11 +117,11 @@ class ParameterSetManagerTestCase(TestCase):
         self.datafileparameter2.save()
 
     def tearDown(self):
-
         self.exp.delete()
         self.user.delete()
         self.parametername1.delete()
         self.parametername2.delete()
+        self.parametername3.delete()
         self.schema.delete()
 
     def test_existing_parameterset(self):
@@ -160,3 +172,28 @@ class ParameterSetManagerTestCase(TestCase):
         psm.delete_params("newparam1")
 
         self.assertTrue(len(psm.get_params("newparam1", True)) == 0)
+
+    def test_tz_naive_date_handling(self):
+        '''
+        Ensure that dates are handling in a timezone-aware way.
+        '''
+        psm = ParameterSetManager(parameterset=self.datafileparameterset)
+
+        psm.new_param("parameter3", datetime(1970,01,01,10,0,0))
+
+        expect(psm.get_param("parameter3", True))\
+            .to_equal(datetime(1970,01,01,0,0,0,tzinfo=pytz.utc))
+
+    def test_tz_aware_date_handling(self):
+        '''
+        Ensure that dates are handling in a timezone-aware way.
+        '''
+        psm = ParameterSetManager(parameterset=self.datafileparameterset)
+
+        psm.new_param("parameter3",
+                      iso8601.parse_date('1970-01-01T08:00:00+08:00'))
+
+        expect(psm.get_param("parameter3", True))\
+            .to_equal(datetime(1970,01,01,0,0,0,tzinfo=pytz.utc))
+
+
