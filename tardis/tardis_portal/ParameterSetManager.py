@@ -1,3 +1,6 @@
+import pytz
+
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from tardis.tardis_portal.models import DatasetParameterSet
@@ -131,6 +134,8 @@ class ParameterSetManager(object):
         if value:
             if par.name.isNumeric():
                 return par.numerical_value
+            elif par.name.isDateTime():
+                return self._get_local_time(par.datetime_value)
             else:
                 return par.string_value
         return par
@@ -159,6 +164,8 @@ class ParameterSetManager(object):
             #param.save()
         if param.name.isNumeric():
             param.numerical_value = float(value)
+        elif param.name.isDateTime():
+            param.datetime_value = self._get_local_time(value)
         else:
             param.string_value = unicode(value)
         param.save()
@@ -172,6 +179,8 @@ class ParameterSetManager(object):
         param.save()
         if param.name.isNumeric():
             param.numerical_value = float(value)
+        elif param.name.isDateTime():
+            param.datetime_value = self._get_local_time(value)
         else:
             param.string_value = unicode(value)
         param.save()
@@ -226,3 +235,17 @@ class ParameterSetManager(object):
             paramName.is_searchable = True
             paramName.save()
         return paramName
+
+    @staticmethod
+    def _get_local_time(dt):
+        '''
+        Ensure datetime is timezone-aware and in local time.
+
+        If the USE_TZ setting in the current dev version of Django comes in,
+        this *should* keep providing correct behaviour.
+        '''
+        tz = pytz.timezone(settings.TIME_ZONE)
+        # If datetime is already naive,
+        if (dt.tzinfo == None):
+            return dt.replace(tzinfo=tz)
+        return dt.astimezone(tz)
