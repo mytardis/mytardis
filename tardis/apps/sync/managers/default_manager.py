@@ -38,20 +38,17 @@ default_manager.py
 import logging
 import os.path
 import urllib2
-from suds.client import Client
 
 from django.conf import settings
 
 from tardis.apps.sync.site_parser import SiteParser
 from tardis.apps.sync.site_settings_parser import SiteSettingsParser
-from tardis.apps.sync.managers import SyncManagerTransferError, SyncManagerInvalidUIDError
-
-from tardis.tardis_portal.models import Experiment, ExperimentParameter
-
-# TODO surely this goes in 'forms', if not in our app?
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal import MultiPartForm
 
-logger = logging.getLogger('tardis.mecat')
+from ..transfer_service import TransferService
+
+logger = logging.getLogger(__file__)
 
 #
 # For watching over things on the provider side of the 
@@ -59,20 +56,9 @@ logger = logging.getLogger('tardis.mecat')
 # be done in the object manager of the SyncedExperiment model
 #
 
-class SyncManager():
-
-    TRANSFER_COMPLETE = 1
-    TRANSFER_IN_PROGRESS = 2
-    TRANSFER_FAILED = 3
-
-    statuses = (
-            (TRANSFER_COMPLETE, 'Transfer Complete'),
-            (TRANSFER_IN_PROGRESS, 'Transfer In Progress'),
-            (TRANSFER_FAILED, 'Transfer Failed'),
-            )
+class SyncManager(object):
 
     def __init__(self, institution='tardis'):
-        
         self.institution = institution
         url = settings.MYTARDIS_SITES_URL
         logger.debug('fetching mytardis sites from %s' % url)
@@ -88,45 +74,46 @@ class SyncManager():
 
     def generate_exp_uid(self, experiment):
         uid_str = "%s.%s" % (self.institution, experiment.pk)
-        return uid_str 
-    
-    def exp_from_uid(self, uid):
-        try: 
+        return uid_str
+
+
+    def _exp_from_uid(self, uid):
+        try:
             [institution, pk] = uid.split('.')
         except ValueError:
-            raise SyncManagerInvalidUIDError()
-        
+            raise TransferService.InvalidUIDError()
+
         if institution != self.institution:
-            raise SyncManagerInvalidUIDError()
+            raise TransferService.InvalidUIDError()
         try:
             exp = Experiment.objects.get(pk=int(pk))
         except Experiment.DoesNotExist:
-            raise SyncManagerInvalidUIDError()
-        
+            raise TransferService.InvalidUIDError()
+
         return exp
 
-    def get_sites(self):
+
+    def _get_sites(self):
         #TODO rewrite the parser to get tuples straight up
         # TODO generator function
         sites = []
         try:
             site_names = self.sp.getSiteNames()
         except:
-            #TODO
-            return
-        
+            return TransferService.SiteError('Error parsing site settings')
+
         for name in site_names:
             try:
                 url = self.sp.getSiteSettingsURL(name)
                 username = self.sp.getSiteSettingsUsername(name)
                 password = self.sp.getSiteSettingsPassword(name)
             except:
-                #TODO
-                return
+                return TransferService.SiteError('Error parsing site settings')
 
             sites.append((name, url, username, password))
 
         return sites
+
 
     # originally '_register_file_settings' in parser
     #
@@ -248,47 +235,24 @@ class SyncManager():
 
         return []
 
-    def start_file_transfer(self, exp, site_settings_url, site_username, site_password):
-       
-        # read remote MyTARDIS configV
-        self.ssp = SiteSettingsParser(site_settings_url, site_username, site_password)
-       
-        # get EPN (needed to kick-off vbl gridftp transfer)
-        epn = ExperimentParameter.objects.get(parameterset__experiment=exp,
-                                                        name__name='EPN').string_value
-        
-        client = Client(settings.VBLSTORAGEGATEWAY, cache=None)
 
-        x509 = self.self.ssp.getTransferSetting('password')
-        # build destination path
-        dirname = os.path.abspath(
-            os.path.join(self.ssp.getTransferSetting('serversite'), )
-            )
-        logger.debug('destination url:  %s' % site_settings_url)
-        logger.debug('destination path: %s' % dirname)
+    def _get_site_settings(self, site_settings_url):
+        # check if the requesting site is known (very basic
+        # security)
+        for name, url, u, p in self._get_sites():
+            if site_settings_url == url:
+                # read remote MyTARDIS config
+                return SiteSettingsParser(site_settings_url, site_username, site_password)
+        raise TransferService.SiteError('Unknown site')
 
-        # contact VBL
-        key = client.service.VBLstartTransferGridFTP(
-            self.ssp.getTransferSetting('user'),
-            x509,
-            epn,
-            '/Frames\\r\\nTARDIS\\r\\n',
-            self.ssp.getTransferSetting('sl'),
-            dirname,
-            self.ssp.getTransferSetting('optionFast'),
-            self.ssp.getTransferSetting('optionPenable'),
-            self.ssp.getTransferSetting('optionP'),
-            self.ssp.getTransferSetting('optionBSenable'),
-            self.ssp.getTransferSetting('optionBS'),
-            self.ssp.getTransferSetting('optionTCPBenable'),
-            self.ssp.getTransferSetting('optionTCPBS'))
 
-        if key.startswith('Error:'):
-            logger.error('[vbl] %s: epn %s' % (key, epn))
-            raise SyncManagerTransferError()
-        else:
-            logger.info('[vbl] %s: pn %s' % (key, epn))
+    def start_file_transfer(self, uid, site_settings_url):
+        exp = self._exp_from_uid(uid)
+        site_settings = self._get_site_settings(site_settings_url)
+        return self._start_file_transfer(exp, site_settings)
+
 
     def get_status(self, uid):
-        #TODO kiz magic
-        return SyncManager.TRANSFER_COMPLETE
+        exp = self._exp_from_uid(uid)
+        return self._get_status(exp)
+

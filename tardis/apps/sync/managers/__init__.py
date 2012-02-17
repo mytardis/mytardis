@@ -1,23 +1,16 @@
 from django.utils import importlib
 from django.conf import settings
-from django.core import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 import os
-
-class SyncManagerInvalidUIDError(Exception):
-    pass
-
-class SyncManagerTransferError(Exception):
-    pass
 
 def load_manager():
     
-    if not hasattr(settings, 'SYNC_MANAGER'):
-        manager_name = 'default_manager'
-    else:
-        manager_name = settings.SYNC_MANAGER
+    manager_class = getattr(settings, 'SYNC_MANAGER_CLASS',
+            'tardis.apps.sync.managers.default_manager.SyncManager')
+    (module, cls) = manager_class.rsplit('.', 1)
 
     try: 
-        return importlib.import_module('tardis.apps.sync.%s' % (manager_name))
+        return getattr(importlib.import_module(module), cls)
 
     except ImportError, e:
         manager_dir = os.path.join(__path__[0], 'managers')
