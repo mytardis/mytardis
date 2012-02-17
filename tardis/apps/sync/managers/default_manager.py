@@ -29,7 +29,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 """
-sync_manager.py
+default_manager.py
 
 .. moduleauthor:: Kieran Spear <kispear@gmail.com>
 .. moduleauthor:: Shaun O'Keefe <shaun.okeefe.0@gmail.com>
@@ -43,17 +43,10 @@ from django.conf import settings
 
 from tardis.apps.sync.site_parser import SiteParser
 from tardis.apps.sync.site_settings_parser import SiteSettingsParser
-
+from tardis.apps.sync.managers import SyncManagerTransferError, SyncManagerInvalidUIDError
 from tardis.tardis_portal.models import Experiment, ExperimentParameter
 
 logger = logging.getLogger('tardis.mecat')
-
-
-class SyncManagerInvalidUIDError(Exception):
-    pass
-
-class SyncManagerTransferError(Exception):
-    pass
 
 #
 # For watching over things on the provider side of the 
@@ -62,7 +55,17 @@ class SyncManagerTransferError(Exception):
 #
 
 class SyncManager():
-            
+
+    TRANSFER_COMPLETE = 1
+    TRANSFER_IN_PROGRESS = 2
+    TRANSFER_FAILED = 3
+
+    statuses = (
+            (TRANSFER_COMPLETE, 'Transfer Complete'),
+            (TRANSFER_IN_PROGRESS, 'Transfer In Progress'),
+            (TRANSFER_FAILED, 'Transfer Failed'),
+            )
+
     def __init__(self, institution='tardis'):
         
         self.institution = institution
@@ -88,7 +91,7 @@ class SyncManager():
         except ValueError:
             raise SyncManagerInvalidUIDError()
         
-        if institution != 'tardis':
+        if institution != self.institution:
             raise SyncManagerInvalidUIDError()
         try:
             exp = Experiment.objects.get(pk=int(pk))
@@ -161,4 +164,6 @@ class SyncManager():
         else:
             logger.info('[vbl] %s: pn %s' % (key, epn))
 
-
+    def get_status(self, uid):
+        #TODO kiz magic
+        return SyncManager.TRANSFER_COMPLETE
