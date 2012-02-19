@@ -42,20 +42,18 @@ from django.conf.urls.defaults import patterns, include
 # and query the provider about the status of transfers
 provider_urls = patterns(
             'tardis.apps.sync.views',
-            ('^get/(?P<uid>\d+)', 'get_experiment'),
-            ('^status/', 'transfer_status'),
+            (r'^get/(?P<uid>\d+)/$', 'get_experiment'),
+            (r'^status/(?P<uid>\d+)/$', 'transfer_status'),
         )
 
 # urls that present the API for the provider to inform the consumer
 # about new ingestions etc..
 consumer_urls = patterns(
             'tardis.apps.sync.views',
-            ('^notify_experiment/(?P<uid>\d+)'),
+            (r'^notify_experiment/(?P<uid>\d+)/$', 'notify_experiment'),
         )
 
-
-
 urlpatterns = patterns('',
-                       (r'provider/', include(provider_urls)),
-                       (r'consumer/', include(consumer_urls)),
+                       (r'^provider/', include(provider_urls)),
+                       (r'^consumer/', include(consumer_urls)),
                        )

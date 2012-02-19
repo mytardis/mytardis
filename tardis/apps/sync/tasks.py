@@ -9,16 +9,17 @@ def clock_tick():
     pending_exps = [exp for exp in exps if not exp.is_complete()] 
     completed_exps = [exp for exp in exps if exp.is_complete()] 
     
-    print "\nPending experiments:"
-    for exp in pending_exps:
-        print "ID: %d State:%s" % (exp.id, exp.state)
+    #print "\nPending experiments:"
+    #for exp in pending_exps:
+    #    print "ID: %d State:%s" % (exp.id, exp.state)
 
-    print "\nCompleted experiments:"
-    for exp in completed_exps:
-        print "ID: %d State:%s" % (exp.id, exp.state)
+    #print "\nCompleted experiments:"
+    #for exp in completed_exps:
+    #    print "ID: %d State:%s" % (exp.id, exp.state)
 
     for exp in pending_exps:
-        exp.state = exp.state.get_next_state(exp.experiment)
+        #print "progressing ID: %d State:%s" % (exp.id, exp.state)
+        exp.state = exp.state.get_next_state(exp)
         exp.save()
 
 

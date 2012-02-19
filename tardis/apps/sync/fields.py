@@ -11,10 +11,14 @@ class State(object):
         return "%s" % (self.__class__.__name__)
 
     def get_next_state(self):
-        pass
+        return self
 
     def is_final_state(self):
         return False
+
+class FinalState(State):
+    def is_final_state(self):
+        return True
 
 class FSMField(models.Field):
                     
@@ -29,7 +33,7 @@ class FSMField(models.Field):
     def to_python(self, value):
         if isinstance(value, State):
             return value
-        return FSMField.states.get(str(value))()
+        return self.__class__.states.get(str(value))()
     
     def get_prep_value(self, value):
         return str(value)
@@ -41,11 +45,18 @@ class FSMField(models.Field):
 def transition_on_success(state, conditions=[]):
     def wrap(f):
         def wrap_f(*args):
+            self = args[0]
+            #sys.stderr.write("starting: %s" % (state))
+            #sys.stderr.write("self: %s" % (self))
             try:
-                f(*args)
+                ret = f(*args)
+                if ret == False:
+                    #sys.stderr.write("retrun false")
+                    return self
             except Exception, e:
+                #sys.stderr.write("exception: %s" % (e))
                 # return the current state
-                return args[0]
+                return self
             return state()
         return wrap_f
     return wrap

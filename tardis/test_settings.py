@@ -193,3 +193,5 @@ OAIPMH_PROVIDERS = [
 
 
 djcelery.setup_loader()
+
+SYNC_MANAGER = 'managers.default_manager'

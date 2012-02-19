@@ -2,7 +2,7 @@ from tardis.apps.sync.fields import State, transition_on_success, FSMField
 
 class FailPermanent(State):
     
-    def get_next_state(self):
+    def get_next_state(self, experiment):
         return self
 
     def is_final_state(self):
@@ -71,7 +71,7 @@ class Ingesting(State):
 class ConsumerFSMField(FSMField):
 
     # TODO dynamically generate this list using metaclass
-    FSMField.states = {
+    states = {
     'Ingesting' : Ingesting, 
     'Requested' : Requested, 
     'InProgress' : InProgress, 
@@ -79,6 +79,4 @@ class ConsumerFSMField(FSMField):
     'CheckingIntegrity' : CheckingIntegrity, 
     'FailPermanent' : FailPermanent, 
     }
-
-    final_state=Complete
 
