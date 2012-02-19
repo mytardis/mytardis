@@ -51,6 +51,7 @@ from django.dispatch import receiver
 from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ExperimentManager, ParameterNameManager, SchemaManager
+from .signals import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -1112,3 +1113,4 @@ def _publish_public_expt_rifcs(experiment):
     from tardis.tardis_portal.publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
     pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+

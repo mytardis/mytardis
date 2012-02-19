@@ -37,17 +37,23 @@ views.py
 """
 import logging
 import json
+from urllib import urlencode
+from urllib2 import urlopen, HTTPError, URLError
 
 from django.http import HttpResponse
 from django.template import Context
 from django.shortcuts import render_to_response
+from django.conf import settings
 
 from tardis.apps.sync.managers import manager
 from tardis.apps.sync.models import SyncedExperiment
 from tardis.apps.sync.forms import FileTransferRequestForm
 from tardis.tardis_portal import models
+from django.core.urlresolvers import reverse
 
-logger = logging.getLogger(__file__)
+from transfer_service import TransferService
+
+logger = logging.getLogger('tardis.mecat')
 
 # provider api
 def get_experiment(request):
@@ -62,20 +68,9 @@ def get_experiment(request):
 
         form = FileTransferRequestForm(request.POST)
         if not form.is_valid():
-            return HttpResponse('ERROR', status=403)
+            return HttpResponse('ERROR', status=400)
 
-        site_settings_url = request.POST['site_settings_url']
-        # remote experiment id
-        uid = request.POST['eid']
-
-        ts = TransferService()
-        try:
-            ts.start_file_transfer(uid, site_settings_url)
-        except TransferService.TransferError as detail:
-            return HttpResponse('Transfer error: %s' % detail)
-        except TransferService.InvalidUIDError:
-            return HttpResponse('Transfer error: Experiment UID does not exist.', status=404)
-        return HttpResponse('OK', status=200)
+        return handle_file_transfer_request(form)
 
     else:
         form = FileTransferRequestForm()
@@ -83,6 +78,25 @@ def get_experiment(request):
     c = Context({'header': 'Register File Transfer Request',
                  'form': form})
     return render_to_response('tardis_portal/form_template.html', c)
+
+
+def handle_file_transfer_request(form):
+    site_settings_url = form.cleaned_data['site_settings_url']
+    # remote experiment id
+    uid = form.cleaned_data['uid']
+    # path to copy data to
+    dest_path = form.cleaned_data['dest_path']
+
+    logger.info('File transfer request received: %s -> %s at %s' % (uid, dest_path, site_settings_url))
+
+    ts = TransferService()
+    try:
+        ts.start_file_transfer(uid, site_settings_url, dest_path)
+    except TransferService.TransferError as detail:
+        return HttpResponse('Transfer error for experiment %s: %s' % (uid, detail))
+    except TransferService.InvalidUIDError:
+        return HttpResponse('Transfer error: Experiment UID does not exist.', status=404)
+    return HttpResponse('OK', status=200)
 
 
 def transfer_status(request, uid):
@@ -104,6 +118,11 @@ def transfer_status(request, uid):
 
 
 # consumer api
+
+# At the moment this code remains in the core tardis. A signal is used to
+# get notification that an experiment has been received from an upstream
+# tardis and ingested. At that point the Experiment already exists,
+# so we currently just create a SyncedExperiment row to track it.
 
 def notify_experiment(request, uid):
     

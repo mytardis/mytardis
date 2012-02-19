@@ -2,7 +2,6 @@ from celery.task import task
 from tardis.apps.sync.models import SyncedExperiment
 
 @task(name="tardis.apps.sync.tasks.clock_tick", ignore_result=True)
-
 def clock_tick():
 
     exps = SyncedExperiment.objects.all()

@@ -37,6 +37,9 @@ transfer_service.py
 """
 import logging
 import os.path
+import json
+import urllib
+import httplib2
 
 from django.conf import settings
 
@@ -76,8 +79,11 @@ class TransferService:
             self.manager = managers.manager()
 
 
-    def start_file_transfer(self, uid, site_settings_url):
-        return self.manager.start_file_transfer(uid, site_settings_url)
+    # Returns a transfer id, which at the moment is just the uid.
+    # In the future we may need a specific 'transfer id'
+    # if experiments are being pushed to multiple institutions.
+    def start_file_transfer(self, uid, site_settings_url, dest_path):
+        return self.manager.start_file_transfer(uid, site_settings_url, dest_path)
 
 
     def get_status(self, uid):
@@ -91,4 +97,54 @@ class TransferService:
             return None
         status['timestamp'] = timestamp
         return status
+
+
+    def push_experiment_to_institutions(self, experiment, owners):
+        self.manager.push_experiment_to_institutions(experiment, owners)
+
+
+
+class TransferClient(object):
+    def _request(self, url, method, headers, data):
+        body = urllib.urlencode(data)
+        headers = {'Content-type': 'application/json'}
+        h = httplib2.Http()
+        resp, content = h.request(url, method, headers=headers, body=body)
+        return (resp, content)
+
+
+    def _get(self, url, headers={}, data=None):
+        return self._request(url, 'GET', headers, data)
+
+
+    def _post(self, url, headers={}, data={}):
+        return self._request(url, 'POST', headers, data)
+
+
+    def request_file_transfer(self, synced_exp):
+        logger.debug('=== sending file request')
+        from_url = synced_exp.provider_url
+        # This could differ from institution to institution, so a better method
+        # of setting the right path is probably needed.
+        dest_file_path = str(synced_exp.experiment.id)
+        # This reverse assumes that the urlpatterns are the same at each end.
+        # It might be better if the from_url pointed directly to the file transfer
+        # view, so we don't need to guess.
+        url = from_url + reverse('sync-get-experiment')
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        data['uid'] = synced_exp.uid
+        data['dest_path'] = dest_file_path
+        data['site_settings_url'] = settings.MYTARDIS_SITE_URL \
+                + reverse('tardis-site-settings')
+        resp, content = self._post(url, headers=headers, data=data)
+        return resp.status == 200
+
+
+    def get_status(self, synced_exp):
+        url = synced_exp.provider_url \
+                + reverse('sync-transfer-status', { 'uid': synced_exp.uid })
+        resp, content = self._get(url)
+        if resp.status == 200:
+            return (True, json.loads(content))
+        return (False, { 'error': 'HTTP error' })
 

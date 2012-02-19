@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2010-2012, Monash e-Research Centre
+# Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
-# Copyright (c) 2010-2012, VeRSI Consortium
+# Copyright (c) 2010-2011, VeRSI Consortium
 #   (Victorian eResearch Strategic Initiative, Australia)
 # All rights reserved.
 # Redistribution and use in source and binary forms, with or without
@@ -28,50 +28,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-"""
-models.py
 
-.. moduleauthor:: Kieran Spear <kispear@gmail.com>
-.. moduleauthor:: Shaun O'Keefe <shaun.okeefe.0@gmail.com>
+from django.contrib import admin
+import models
 
-"""
-
-from django.db import models
-from django.dispatch import receiver
-from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.signals import received_remote
-from tardis.apps.sync.consumer_fsm import ConsumerFSMField
-
-import logging
-
-logger = logging.getLogger(__file__)
-#
-# Maybe a common base class so we can turn anything into 
-# a synced model?
-#
-
-class SyncedExperiment(models.Model):
-    experiment = models.ForeignKey(Experiment)
-    uid = models.TextField()
-    state = ConsumerFSMField(default='Ingesting') 
-    # Keep track of which provider this experiment came from.
-    # This might be better as another table if there's more to store.
-    provider_url = models.TextField()
-    
-#    def __init__(self, *args, **kwargs):
-#        self.uid = 0
-    
-    def is_complete(self):
-        return self.state.is_final_state() 
-
-
-@receiver(received_remote, sender=Experiment)
-def experiment_received(sender, **kwargs):
-    print 'experiment_received'
-    exp = kwargs['instance']
-    uid = kwargs['uid']
-    from_url = kwargs['from_url']
-    logger.info('Sync app saw experiment %s' % uid)
-    synced_exp = SyncedExperiment(experiment=exp, uid=uid, provider_url=from_url)
-    synced_exp.save()
-
+admin.site.register(models.SyncedExperiment)

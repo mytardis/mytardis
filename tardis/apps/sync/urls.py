@@ -35,15 +35,15 @@ urls.py
 .. moduleauthor:: Shaun O'Keefe <shaun.okeefe.0@gmail.com>
 
 """
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns, include, url
 
 
 # urls that present the API for the consumer to make requests to
 # and query the provider about the status of transfers
 provider_urls = patterns(
             'tardis.apps.sync.views',
-            (r'^get/(?P<uid>\d+)/$', 'get_experiment'),
-            (r'^status/(?P<uid>\d+)/$', 'transfer_status'),
+            url(r'^get/', 'get_experiment', name='sync-get-experiment'),
+            url(r'^status/(?P<uid>\d+)/', 'transfer_status', name='sync-transfer-status'),
         )
 
 # urls that present the API for the provider to inform the consumer

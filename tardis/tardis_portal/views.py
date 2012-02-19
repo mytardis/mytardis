@@ -836,7 +836,7 @@ def register_experiment_ws_xmldata(request):
 
             xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
-            originid = form.cleaned_data['originid']
+            origin_id = form.cleaned_data['originid']
             from_url = form.cleaned_data['from_url']
 
             user = auth_service.authenticate(request=request,
@@ -853,7 +853,7 @@ def register_experiment_ws_xmldata(request):
                 created_by=user,
                 )
             e.save()
-            eid = e.id
+            local_id = e.id
 
             filename = path.join(e.get_or_create_directory(),
                                  'mets_upload.xml')
@@ -867,35 +867,25 @@ def register_experiment_ws_xmldata(request):
             try:
                 _registerExperimentDocument(filename=filename,
                                             created_by=user,
-                                            expid=eid,
+                                            expid=local_id,
                                             owners=owners,
                                             username=username)
-                logger.info('=== processing experiment %s: DONE' % eid)
+                logger.info('=== processing experiment %s: DONE' % local_id)
             except:
-                logger.exception('=== processing experiment %s: FAILED!' % eid)
+                logger.exception('=== processing experiment %s: FAILED!' % local_id)
                 return return_response_error(request)
 
             if from_url:
-                logger.debug('=== sending file request')
-                try:
-                    file_transfer_url = from_url + '/file_transfer/'
-                    data = urlencode({
-                            'originid': str(originid),
-                            'eid': str(eid),
-                            'site_settings_url':
-                                request.build_absolute_uri(
-                                    '/site-settings.xml/'),
-                            })
-                    urlopen(file_transfer_url, data)
-                    logger.info('=== file-transfer request submitted to %s'
-                                % file_transfer_url)
-                except:
-                    logger.exception('=== file-transfer request to %s FAILED!'
-                                     % file_transfer_url)
+                logger.info('Sending received_remote signal')
+                from tardis.tardis_portal.signals import received_remote
+                received_remote.send(sender=Experiment,
+                        instance=e,
+                        uid=origin_id,
+                        from_url=from_url)
 
-            response = HttpResponse(str(eid), status=200)
+            response = HttpResponse(str(local_id), status=200)
             response['Location'] = request.build_absolute_uri(
-                '/experiment/view/' + str(eid))
+                '/experiment/view/' + str(local_id))
             return response
     else:
         form = RegisterExperimentForm()  # An unbound form

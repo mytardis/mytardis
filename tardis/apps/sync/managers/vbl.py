@@ -15,7 +15,7 @@ class VBLSyncManager(SyncManager):
         super(VBLSyncManager, self).__init__(self, institution='AS')
 
 
-    def _start_file_transfer(self, exp, ssp):
+    def _start_file_transfer(self, exp, ssp, dest_path):
         epn = _get_epn_from_exp(exp)
 
         client = Client(settings.VBLSTORAGEGATEWAY, cache=None)
@@ -24,7 +24,7 @@ class VBLSyncManager(SyncManager):
 
         # build destination path
         dirname = os.path.abspath(
-            os.path.join(ssp.getTransferSetting('serversite'),  'wheredoiputit')
+            os.path.join(ssp.getTransferSetting('serversite'),  dest_path)
             )
         logger.debug('destination url:  %s' % ssp.getTransferSetting('sl'))
         logger.debug('destination path: %s' % dirname)

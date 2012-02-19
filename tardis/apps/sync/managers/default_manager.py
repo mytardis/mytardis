@@ -38,6 +38,7 @@ default_manager.py
 import logging
 import os.path
 import urllib2
+import datetime
 
 from django.conf import settings
 
@@ -48,7 +49,7 @@ from tardis.tardis_portal import MultiPartForm
 
 from ..transfer_service import TransferService
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger('tardis.mecat')
 
 #
 # For watching over things on the provider side of the 
@@ -98,15 +99,15 @@ class SyncManager(object):
         # TODO generator function
         sites = []
         try:
-            site_names = self.sp.getSiteNames()
+            site_names = self.site_parser.getSiteNames()
         except:
             return TransferService.SiteError('Error parsing site settings')
 
         for name in site_names:
             try:
-                url = self.sp.getSiteSettingsURL(name)
-                username = self.sp.getSiteSettingsUsername(name)
-                password = self.sp.getSiteSettingsPassword(name)
+                url = self.site_parser.getSiteSettingsURL(name)
+                username = self.site_parser.getSiteSettingsUsername(name)
+                password = self.site_parser.getSiteSettingsPassword(name)
             except:
                 return TransferService.SiteError('Error parsing site settings')
 
@@ -144,29 +145,14 @@ class SyncManager(object):
             # get list of site from master tardis instance (Monash)
             # TODO: might be better to store these sites in Django's
             # sites table!
-            url = settings.MYTARDIS_SITES_URL
             logger.debug('fetching mytardis sites from %s' % url)
-            #try:
-            #    sites_username = settings.MYTARDIS_SITES_USERNAME
-            #    sites_password = settings.MYTARDIS_SITES_PASSWORD
-            #except AttributeError:
-            #    # maybe we get the site list from a file...
-            #    sites_username = ''
-            #    sites_password = ''
-
-            # username and password must be set if another site is contacted
-            #sp = SiteParser(url, sites_username, sites_password)
-            
 
             # loop over sites
-            for name in self.sp.getSiteNames():
-                url = self.sp.getSiteSettingsURL(name)
+            for (name, url, u, p) in self._get_sites():
                 # fetch a MyTARDIS site's config
                 logger.debug('fetching site config for %s from %s' % (name, url))
                 try:
-                    ssp = SiteSettingsParser(url,
-                                             self.sp.getSiteSettingsUsername(name),
-                                             self.sp.getSiteSettingsPassword(name))
+                    ssp = self.get_site_settings(url)
                 except:
                     logger.exception('fetching site config from %s FAILED' % url)
                     continue
@@ -183,12 +169,12 @@ class SyncManager(object):
                 # MyTARDIS instance
                 if siteOwners:
                     # Create the form with simple fields
-                    uid = self.sm.generate_exp_uid(experiment)
+                    uid = self.generate_exp_uid(experiment)
                     mpform = MultiPartForm()
                     mpform.add_field('username', ssp.getRegisterSetting('username'))
                     mpform.add_field('password', ssp.getRegisterSetting('password'))
                     mpform.add_field('from_url', request.build_absolute_uri())
-                    mpform.add_field('originid', uid)#str(expid))
+                    mpform.add_field('originid', uid)
 
                     for siteOwner in siteOwners:
                         mpform.add_field('experiment_owner', siteOwner)
@@ -224,6 +210,7 @@ class SyncManager(object):
                     requestmp.add_header('Content-type', mpform.get_content_type())
                     requestmp.add_header('Content-length', len(body))
 
+                    # This should be made into a background task.
                     # logger.debug('OUTGOING DATA: ' + body)
                     logger.debug('SERVER RESPONSE: ' + urllib2.urlopen(requestmp, body, 99999).read())
 
@@ -242,17 +229,26 @@ class SyncManager(object):
         for name, url, u, p in self._get_sites():
             if site_settings_url == url:
                 # read remote MyTARDIS config
-                return SiteSettingsParser(site_settings_url, site_username, site_password)
+                logger.info('Found site "%s", retrieving settings.' % name)
+                return SiteSettingsParser(site_settings_url, u, p)
         raise TransferService.SiteError('Unknown site')
 
 
-    def start_file_transfer(self, uid, site_settings_url):
+    def start_file_transfer(self, uid, site_settings_url, dest_path):
         exp = self._exp_from_uid(uid)
         site_settings = self._get_site_settings(site_settings_url)
-        return self._start_file_transfer(exp, site_settings)
+        return self._start_file_transfer(exp, site_settings, dest_path)
 
 
     def get_status(self, uid):
         exp = self._exp_from_uid(uid)
         return self._get_status(exp)
+
+
+    def _start_file_transfer(self, experiment, settings, path):
+        return True
+
+
+    def _get_status(self, experiment):
+        return (TransferService.TRANSFER_IN_PROGRESS, datetime.now(), {})
 
