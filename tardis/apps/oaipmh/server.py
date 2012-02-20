@@ -1,3 +1,9 @@
+from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
+
+from datetime import datetime
+
+from oaipmh.common import Identify
 from oaipmh.interfaces import IOAI
 from oaipmh.server import Server
 
@@ -26,7 +32,17 @@ class ServerImpl(IOAI):
 
         Returns an Identify object describing the repository.
         """
-        raise NotImplementedError
+        current_site = Site.objects.get_current().domain
+        return Identify(
+            "Repo Name",
+            'http://%s%s' % (current_site, reverse('oaipmh-endpoint')),
+            '2.0',
+            ['user@domain.com'], # TODO: Use a real value
+            datetime.fromtimestamp(0),
+            'no',
+            'YYYY-MM-DDThh:mm:ssZ',
+            []
+        )
 
     @staticmethod
     def listIdentifiers(metadataPrefix, set=None, from_=None, until=None):

@@ -8,13 +8,10 @@ class EndpointTestCase(TestCase):
     def setUp(self):
         self.client = Client()
 
-    def testEndpointExists(self):
-        try:
-            response = self.client.get('/apps/oaipmh/?verb=Identify')
-            self.assertEqual(response.status_code, 200)
-        except NotImplementedError:
-            # This is OK for the moment
-            pass
+    def testEndpointCanIdentify(self):
+        response = self.client.get('/apps/oaipmh/?verb=Identify')
+        self.assertEqual(response.status_code, 200)
+        # TODO: Should actually check that we're getting a good response
 
     def tearDown(self):
         pass
@@ -34,9 +31,8 @@ class ServerImplTestCase(TestCase):
     def testIdentify(self):
         try:
             self.server.identify()
-            self.fail("Not implemented yet.")
         except NotImplementedError:
-            pass
+            self.fail("Should be implemented.")
 
     def testListIdentifiers(self):
         try:

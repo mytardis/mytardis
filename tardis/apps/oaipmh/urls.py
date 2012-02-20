@@ -1,4 +1,5 @@
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('',
-                       (r'^$', 'tardis.apps.oaipmh.views.endpoint'),)
+    url(r'^$', 'tardis.apps.oaipmh.views.endpoint', name="oaipmh-endpoint"),
+)
