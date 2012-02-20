@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 
@@ -9,8 +11,7 @@ from oaipmh.server import Server
 
 class ServerImpl(IOAI):
 
-    @staticmethod
-    def getRecord(metadataPrefix, identifier):
+    def getRecord(self, metadataPrefix, identifier):
         """Get a record for a metadataPrefix and identifier.
 
         metadataPrefix - identifies metadata set to retrieve
@@ -26,26 +27,24 @@ class ServerImpl(IOAI):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def identify():
+    def identify(self):
         """Retrieve information about the repository.
 
         Returns an Identify object describing the repository.
         """
         current_site = Site.objects.get_current().domain
         return Identify(
-            "Repo Name",
+            "%s (MyTardis)" % (settings.DEFAULT_INSTITUTION,),
             'http://%s%s' % (current_site, reverse('oaipmh-endpoint')),
             '2.0',
-            ['user@domain.com'], # TODO: Use a real value
+            self._get_admin_emails(current_site),
             datetime.fromtimestamp(0),
             'no',
             'YYYY-MM-DDThh:mm:ssZ',
             []
         )
 
-    @staticmethod
-    def listIdentifiers(metadataPrefix, set=None, from_=None, until=None):
+    def listIdentifiers(self, metadataPrefix, set=None, from_=None, until=None):
         """Get a list of header information on records.
 
         metadataPrefix - identifies metadata set to retrieve
@@ -64,8 +63,7 @@ class ServerImpl(IOAI):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def listMetadataFormats(identifier=None):
+    def listMetadataFormats(self, identifier=None):
         """List metadata formats supported by repository or record.
 
         identifier - identify record for which we want to know all
@@ -84,8 +82,7 @@ class ServerImpl(IOAI):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def listRecords(metadataPrefix, set=None, from_=None, until=None):
+    def listRecords(self, metadataPrefix, set=None, from_=None, until=None):
         """Get a list of header, metadata and about information on records.
 
         metadataPrefix - identifies metadata set to retrieve
@@ -104,8 +101,7 @@ class ServerImpl(IOAI):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def listSets():
+    def listSets(self):
         """Get a list of sets in the repository.
 
         Should raise error.NoSetHierarchyError if the repository does not
@@ -114,6 +110,25 @@ class ServerImpl(IOAI):
         Returns an iterable of setSpec, setName tuples (strings).
         """
         raise NotImplementedError
+
+    def _get_admin_emails(self, current_site):
+        '''
+        Checks all the sources we might have for administrator email addresses
+        and returns first available.
+        '''
+        # Get admin users from user database
+        admin_users = User.objects.filter(is_superuser=True)
+        if admin_users:
+            # Use admin user email addresses if we have them
+            return map(lambda u: u.email, admin_users),
+        elif settings.ADMINS:
+            # Otherwise we should have a host email
+            return map(lambda t: t[1], list(settings.ADMINS))
+        elif settings.EMAIL_HOST_USER:
+            # Otherwise we should have a host email
+            return [settings.EMAIL_HOST_USER]
+        # We might as well advertise our ignorance
+        return ['noreply@'+current_site]
 
 
 def get_server():

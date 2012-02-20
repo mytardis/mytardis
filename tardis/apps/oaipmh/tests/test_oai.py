@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.test.client import Client
 
+from lxml import etree
+
 from ..server import ServerImpl
 
 class EndpointTestCase(TestCase):
@@ -11,7 +13,12 @@ class EndpointTestCase(TestCase):
     def testEndpointCanIdentify(self):
         response = self.client.get('/apps/oaipmh/?verb=Identify')
         self.assertEqual(response.status_code, 200)
-        # TODO: Should actually check that we're getting a good response
+        # Check the response content is good
+        xml = etree.fromstring(response.content)
+        namespaces = {'oai': 'http://www.openarchives.org/OAI/2.0/'}
+        assert xml.xpath('/oai:OAI-PMH', namespaces=namespaces)
+        assert not xml.xpath('oai:error', namespaces=namespaces)
+        assert xml.xpath('oai:Identify', namespaces=namespaces)
 
     def tearDown(self):
         pass
