@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+from .server import get_server
+
 
 def endpoint(request):
-    return HttpResponse('<nothing/>', mimetype="text/xml")
+    return get_server().handleRequest(request.REQUEST)
