@@ -42,6 +42,7 @@ import urllib
 import httplib2
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 
 from tardis.tardis_portal.models import Experiment
 
@@ -103,23 +104,30 @@ class TransferService:
         self.manager.push_experiment_to_institutions(experiment, owners)
 
 
-
-class TransferClient(object):
+class HttpClient(object):
     def _request(self, url, method, headers, data):
-        body = urllib.urlencode(data)
+        body = None
+        if data:
+            body = urllib.urlencode(data)
         headers = {'Content-type': 'application/json'}
         h = httplib2.Http()
         resp, content = h.request(url, method, headers=headers, body=body)
         return (resp, content)
 
 
-    def _get(self, url, headers={}, data=None):
+    def get(self, url, headers={}, data={}):
         return self._request(url, 'GET', headers, data)
 
 
-    def _post(self, url, headers={}, data={}):
+    def post(self, url, headers={}, data={}):
         return self._request(url, 'POST', headers, data)
 
+
+class TransferClient(object):
+    client = HttpClient
+
+    def __init__(self):
+        self.client = TransferClient.client()
 
     def request_file_transfer(self, synced_exp):
         logger.debug('=== sending file request')
@@ -136,14 +144,14 @@ class TransferClient(object):
         data['dest_path'] = dest_file_path
         data['site_settings_url'] = settings.MYTARDIS_SITE_URL \
                 + reverse('tardis-site-settings')
-        resp, content = self._post(url, headers=headers, data=data)
+        resp, content = self.client.post(url, headers=headers, data=data)
         return resp.status == 200
 
 
     def get_status(self, synced_exp):
         url = synced_exp.provider_url \
-                + reverse('sync-transfer-status', { 'uid': synced_exp.uid })
-        resp, content = self._get(url)
+                + reverse('sync-transfer-status', args=[synced_exp.uid])
+        resp, content = self.client.get(url)
         if resp.status == 200:
             return (True, json.loads(content))
         return (False, { 'error': 'HTTP error' })

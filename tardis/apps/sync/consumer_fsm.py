@@ -45,8 +45,7 @@ class Requested(State):
 
     def _check_transfer_started(self, experiment):
         status_dict = TransferClient().get_status(experiment)
-        
-        return False
+        return status_dict['status'] == TransferService.TRANSFER_IN_PROGRESS
 
     @transition_on_success(InProgress)
     def _wait(self, experiment):
