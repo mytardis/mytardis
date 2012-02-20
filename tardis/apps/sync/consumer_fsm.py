@@ -34,11 +34,17 @@ class InProgress(State):
 
     # TODO: The return true bit is misleading
     @transition_on_success(CheckingIntegrity)
-    def _complete(self, experiment):
+    def _wait(self, experiment):
         return True
 
+    def _complete(self, experiment):
+        status_dict = TransferClient().get_status(experiment)
+        return status_dict['status'] == TransferService.TRANSFER_COMPLETE
+
     def get_next_state(self, experiment):
-        return self._complete(experiment)
+        if self._complete(experiment):
+            return self._wait(experiment)
+        return self
 
 
 class Requested(State):
@@ -58,7 +64,7 @@ class Requested(State):
         return self
 
 
-class Ingesting(State):
+class Ingested(State):
 
     def _ingestion_complete(self, experiment):
         return True
@@ -77,7 +83,7 @@ class ConsumerFSMField(FSMField):
 
     # TODO dynamically generate this list using metaclass
     states = {
-    'Ingesting' : Ingesting, 
+    'Ingested' : Ingested, 
     'Requested' : Requested, 
     'InProgress' : InProgress, 
     'Complete' : Complete, 

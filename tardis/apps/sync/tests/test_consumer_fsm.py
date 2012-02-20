@@ -4,7 +4,7 @@ from django.test import TestCase
 from tardis.tardis_portal.models import Experiment
 
 from tardis.apps.sync.consumer_fsm import Complete, InProgress, FailPermanent, \
-        CheckingIntegrity, Requested
+        CheckingIntegrity, Requested, Ingested
 from tardis.apps.sync.tasks import clock_tick
 from tardis.apps.sync.models import SyncedExperiment
 from ..transfer_service import TransferClient, TransferService
@@ -58,49 +58,54 @@ class ClockTestCase(TestCase):
 
         mock = flexmock()
         flexmock(TransferClient).new_instances(mock)
-        mock.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_IN_PROGRESS })
+        self.mock = mock
 
+    def transitionCheck(self, initial_state, expected_state):
+        self.exp.id = 0
+        self.exp.save()
+        exp = SyncedExperiment(
+                experiment=self.exp, uid=self.uid, provider_url=self.url)
+        self.uid += 1
+        exp.state = initial_state()
+        exp.save()
+
+        clock_tick()
+
+        new = SyncedExperiment.objects.all()[0]
+        self.assertTrue(isinstance(new.state, expected_state))
+
+    # Positive transitions (everything is excellent all the time)
+
+    def testIngestedToRequested(self):
+        self.mock.should_receive('request_file_transfer').and_return(True)
+        self.transitionCheck(Ingested, Requested)
 
     def testGetsNewEntries(self):
-        self.exp.id = 0
-        self.exp.save()
-        self.in_progress = SyncedExperiment(
-                experiment=self.exp, uid=self.uid, provider_url=self.url)
-        self.uid += 1
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_IN_PROGRESS })
+        self.transitionCheck(Requested, InProgress)
 
-        self.in_progress.state = Requested()
-        self.in_progress.save()
-        clock_tick()
+    def testWaitsForTransferCompletion(self):
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_IN_PROGRESS })
+        self.transitionCheck(InProgress, InProgress)
 
-        new = SyncedExperiment.objects.all()[0]
-        self.assertTrue(isinstance(new.state, InProgress))
+    def testChecksIntegrityAfterTransferCompletion(self):
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_COMPLETE })
+        self.transitionCheck(InProgress, CheckingIntegrity)
+
+    def testCompleteAfterIntegrityCheckPasses(self):
+        self.mock.should_receive('get_status').never
+        # Integrity check here
+        self.transitionCheck(CheckingIntegrity, Complete)
 
     def testSkipsCompleteEntries(self):
-        self.exp.id = 0
-        self.exp.save()
-        self.finished = SyncedExperiment(
-                experiment=self.exp, uid=self.uid, provider_url=self.url)
-        self.uid += 1
-        self.finished.state = Complete()
-        self.finished.save()
-
-        clock_tick()
-
-        new = SyncedExperiment.objects.all()[0]
-        self.assertTrue(isinstance(new.state, Complete))
+        self.mock.should_receive('get_status').never
+        self.transitionCheck(Complete, Complete)
 
     def testSkipsFailedEntries(self):
-        self.exp.id = 0
-        self.exp.save()
-        self.failed = SyncedExperiment(
-                experiment=self.exp, uid=self.uid, provider_url=self.url)
-        self.uid += 1
-        self.failed.state = FailPermanent()
-        self.failed.save()
+        self.mock.should_receive('get_status').never
+        self.transitionCheck(FailPermanent, FailPermanent)
 
-        clock_tick()
-
-        new = SyncedExperiment.objects.all()[0]
-        self.assertTrue(isinstance(new.state, FailPermanent))
-
+    # Negative results

@@ -79,13 +79,11 @@ class TransferService:
             import managers
             self.manager = managers.manager()
 
-
     # Returns a transfer id, which at the moment is just the uid.
     # In the future we may need a specific 'transfer id'
     # if experiments are being pushed to multiple institutions.
     def start_file_transfer(self, uid, site_settings_url, dest_path):
         return self.manager.start_file_transfer(uid, site_settings_url, dest_path)
-
 
     def get_status(self, uid):
         # status_dict optionally contains 'message' and 'progress'
@@ -98,7 +96,6 @@ class TransferService:
             return None
         status['timestamp'] = timestamp
         return status
-
 
     def push_experiment_to_institutions(self, experiment, owners):
         self.manager.push_experiment_to_institutions(experiment, owners)
@@ -114,10 +111,8 @@ class HttpClient(object):
         resp, content = h.request(url, method, headers=headers, body=body)
         return (resp, content)
 
-
     def get(self, url, headers={}, data={}):
         return self._request(url, 'GET', headers, data)
-
 
     def post(self, url, headers={}, data={}):
         return self._request(url, 'POST', headers, data)
@@ -145,14 +140,20 @@ class TransferClient(object):
         data['site_settings_url'] = settings.MYTARDIS_SITE_URL \
                 + reverse('tardis-site-settings')
         resp, content = self.client.post(url, headers=headers, data=data)
-        return resp.status == 200
+        if resp.status != 200:
+            logger.error('File transfer request to %s failed: %s' % (url, resp.reason))
 
+        return resp.status == 200
 
     def get_status(self, synced_exp):
         url = synced_exp.provider_url \
                 + reverse('sync-transfer-status', args=[synced_exp.uid])
         resp, content = self.client.get(url)
         if resp.status == 200:
-            return (True, json.loads(content))
-        return (False, { 'error': 'HTTP error' })
+            return json.loads(content)
+        logger.warning('Status request to %s failed: %s' % (url, resp.reason))
+        return {
+            'status': TransferService.TRANSFER_FAILED,
+            'error': 'HTTP error: %s' % resp.reason
+            }
 

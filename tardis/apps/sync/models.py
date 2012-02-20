@@ -53,7 +53,7 @@ logger = logging.getLogger(__file__)
 class SyncedExperiment(models.Model):
     experiment = models.ForeignKey(Experiment)
     uid = models.TextField()
-    state = ConsumerFSMField(default='Ingesting') 
+    state = ConsumerFSMField(default='Ingested') 
     # Keep track of which provider this experiment came from.
     # This might be better as another table if there's more to store.
     provider_url = models.TextField()
