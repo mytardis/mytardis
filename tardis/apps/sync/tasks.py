@@ -18,6 +18,7 @@ def clock_tick():
 
     for exp in pending_exps:
         #print "progressing ID: %d State:%s" % (exp.id, exp.state)
+        #exp.prev_state = exp.state
         exp.state = exp.state.get_next_state(exp)
         exp.save()
 

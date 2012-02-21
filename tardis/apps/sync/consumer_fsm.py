@@ -1,5 +1,16 @@
-from tardis.apps.sync.fields import State, transition_on_success, FSMField
+from tardis.apps.sync.fields import State, transition_on_success
+from tardis.apps.sync.fields import FSMField, map_return_to_transition, true_false_transition
 from transfer_service import TransferService, TransferClient
+
+
+
+def _check_status(experiment):
+    status_dict = TransferClient().get_status(experiment)
+    code = status_dict['status']
+#    if code == TransferService.TRANSFER_FAILED:
+#        experiment.msg = '%s: %s' % (status_dict['readable_status'], status_dict['message'])
+#        experiment.save()
+    return code
 
 
 class FailPermanent(State):
@@ -22,54 +33,42 @@ class Complete(State):
 
 class CheckingIntegrity(State):
 
-    @transition_on_success(Complete)
-    def _wait(self, experiment):
+    @true_false_transition(Complete, FailPermanent)
+    def _do_integrity_check(self, experiment):
         return True
 
     def get_next_state(self, experiment):
-        return self._wait(experiment)
+        return self._do_integrity_check(experiment)
 
 
 class InProgress(State):
+    transitions = {
+        TransferService.TRANSFER_COMPLETE: 'CheckingIntegrity',
+        TransferService.TRANSFER_FAILED: 'FailPermanent'
+    }
 
-    # TODO: The return true bit is misleading
-    @transition_on_success(CheckingIntegrity)
-    def _wait(self, experiment):
-        return True
-
-    def _complete(self, experiment):
-        status_dict = TransferClient().get_status(experiment)
-        return status_dict['status'] == TransferService.TRANSFER_COMPLETE
-
+    @map_return_to_transition(transitions)
     def get_next_state(self, experiment):
-        if self._complete(experiment):
-            return self._wait(experiment)
-        return self
+        return _check_status(experiment)
 
 
 class Requested(State):
+    transitions = {
+        TransferService.TRANSFER_COMPLETE: 'CheckingIntegrity',
+        TransferService.TRANSFER_IN_PROGRESS: 'InProgress',
+        TransferService.TRANSFER_FAILED: 'FailPermanent'
+    }
 
-    def _check_transfer_started(self, experiment):
-        status_dict = TransferClient().get_status(experiment)
-        return status_dict['status'] == TransferService.TRANSFER_IN_PROGRESS
-
-    @transition_on_success(InProgress)
-    def _wait(self, experiment):
-        return True
-
+    @map_return_to_transition(transitions)
     def get_next_state(self, experiment):
-        started = self._check_transfer_started(experiment)
-        if started:
-           return self._wait(experiment)
-        return self
+        return _check_status(experiment)
 
 
 class Ingested(State):
-
     def _ingestion_complete(self, experiment):
         return True
 
-    @transition_on_success(Requested)
+    @true_false_transition('Requested', 'FailPermanent')
     def _request_files(self, exp):
         return TransferClient().request_file_transfer(exp)
 

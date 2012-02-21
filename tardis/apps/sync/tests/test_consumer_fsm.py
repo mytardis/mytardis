@@ -72,18 +72,26 @@ class ClockTestCase(TestCase):
         clock_tick()
 
         new = SyncedExperiment.objects.all()[0]
+        print 'Old state ->', initial_state()
+        print 'New state ->', new.state
+        print 'Expected  ->', expected_state(),
         self.assertTrue(isinstance(new.state, expected_state))
 
     # Positive transitions (everything is excellent all the time)
 
-    def testIngestedToRequested(self):
+    def testGetsNewEntries(self):
         self.mock.should_receive('request_file_transfer').and_return(True)
         self.transitionCheck(Ingested, Requested)
 
-    def testGetsNewEntries(self):
+    def testRequestedTransferNowInProgress(self):
         self.mock.should_receive('get_status').and_return(
                 { 'status': TransferService.TRANSFER_IN_PROGRESS })
         self.transitionCheck(Requested, InProgress)
+
+    def testRequestedTransferCompletesInstantly(self):
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_COMPLETE })
+        self.transitionCheck(Requested, CheckingIntegrity)
 
     def testWaitsForTransferCompletion(self):
         self.mock.should_receive('get_status').and_return(
@@ -108,4 +116,24 @@ class ClockTestCase(TestCase):
         self.mock.should_receive('get_status').never
         self.transitionCheck(FailPermanent, FailPermanent)
 
-    # Negative results
+    # Negative results (currently going start to FailPermanent)
+
+    def testTransferRequestFailed(self):
+        self.mock.should_receive('request_file_transfer').and_return(False)
+        self.transitionCheck(Ingested, FailPermanent)
+
+    def testTransferNotStarted(self):
+        # We may need a TRANSFER_REQUEST_RECEIVED or TRANSFER_STARTED
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_FAILED })
+        self.transitionCheck(Requested, FailPermanent)
+
+    def testInProgressTransferFailed(self):
+        self.mock.should_receive('get_status').and_return(
+                { 'status': TransferService.TRANSFER_FAILED })
+        self.transitionCheck(InProgress, FailPermanent)
+
+    def testIntegrityCheckFailed(self):
+        # Can't test this yet.
+        self.assertFalse("Can't test this yet")
+

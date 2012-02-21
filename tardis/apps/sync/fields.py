@@ -61,3 +61,49 @@ def transition_on_success(state, conditions=[]):
         return wrap_f
     return wrap
 
+
+def true_false_transition(true_state, false_state):
+    def wrap(f):
+        def wrap_f(*args):
+            self = args[0]
+            #sys.stderr.write("starting: %s" % (state))
+            #sys.stderr.write("self: %s" % (self))
+            try:
+                ret = f(*args)
+                new_state = true_state if ret else false_state
+            except Exception, e:
+                #sys.stderr.write("exception: %s" % (e))
+                # return the current state
+                new_state = false_state
+            if isinstance(new_state, str):
+                module = __import__(self.__class__.__module__,
+                        globals(), locals(), [new_state])
+                return getattr(module, new_state)()
+            return new_state()
+        return wrap_f
+    return wrap
+
+
+def map_return_to_transition(conditions):
+    def wrap(f):
+        def wrap_f(*args):
+            self = args[0]
+            #sys.stderr.write("starting: %s" % (state))
+            #sys.stderr.write("self: %s" % (self))
+            try:
+                ret = f(*args)
+                new_state = conditions.get(ret, None)
+                if new_state is None:
+                    return self
+            except Exception, e:
+                #sys.stderr.write("exception: %s" % (e))
+                # return the current state
+                return self
+            if isinstance(new_state, str):
+                module = __import__(self.__class__.__module__,
+                        globals(), locals(), [new_state])
+                return getattr(module, new_state)()
+            return new_state()
+        return wrap_f
+    return wrap
+
