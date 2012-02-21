@@ -1,24 +1,41 @@
 from django.core.management.base import BaseCommand, CommandError
-from tardis.apps.sync.transfer_serivce import TransferService, \
-        SyncManagerTransferError, SyncManagerInvalidUIDError
+from tardis.apps.sync.transfer_service import TransferService
+from django.contrib.auth.models import User
+
+from tardis.tardis_portal.models import Experiment, ExperimentACL
 
 class Command(BaseCommand):
-    args = '<uid>'
+    # TODO slightly more flexible command line options
+    args = '<epn>'
     help = 'Transfer an experiment to home institution(s)'
 
     def handle(self, *args, **options):
-        ts = TransferService()
         if len(args) != 1:
-            raise CommandError('Please provide a uid')
+            raise CommandError('Please provide an EPN')
         
-        uid = args[0]
-        site_settings_url = '' 
+        epn = args[0]
+
 
         try:
-            ts.start_file_transfer(uid, site_settings_url)
-        except SyncManagerInvalidUIDError:
-            raise CommandError('Invalid UID (%s) provided' % (uid))
-        except SyncManagerTransferError, e:
-            raise CommandError('Error transferring experiment: %s' % (e))
+            experiment = Experiment.objects.get(
+                    experimentparameterset__experimentparameter__name__name='EPN',
+                    experimentparameterset__experimentparameter__string_value=epn)
+        except Experiment.DoesNotExist:
+            raise CommandError('Invalid EPN (%s) provided' % (epn))
+        
+        try:
+            acls = ExperimentACL.objects.filter(experiment=experiment, isOwner=True)
+            owner_emails = [acl.get_related_object().email for acl in acls]
+                
+        except User.DoesNotExist:
+            raise CommandError("No users found for experiment EPN:%s" % (epn))
+        
+        return
+        
+        try:
+            ts = TransferService()
+            ts.push_experiment_to_institutions(experiment, owner_emails)
+        except TransferService.TransferError, e:
+            raise CommandError('Error transferring experiment(EPN:%s): %s' % (epn, e))
 
 

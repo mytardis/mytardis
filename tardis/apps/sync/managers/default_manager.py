@@ -126,99 +126,87 @@ class SyncManager(object):
         ingests meta-data and transfers data to experiment owner's
         mytardis instance at the home institute
 
-        :keyword request: Django request
-        :keyword cleaned_data: cleaned form data
-        :keyword expid: id of experiment to be transfered
+        :keyword experiment: cleaned form data
+        :keyword owners: id of experiment to be transfered
         """
 
-        # sites which will receive a copy of the data
-        sites = []
-
+        #
         # register at home institute
+        #
 
-        # owner list should be generated outside
-        #owners = re.compile(r'\s+').split(cleaned_data['experiment_owner'])
-        for owner in owners:
-        #    if owner == '':
-        #       continue
+        # loop over sites
+        for (name, url, u, p) in self._get_sites():
+            # fetch a MyTARDIS site's config
+            logger.debug('fetching site config for %s from %s' % (name, url))
+            try:
+                ssp = self.get_site_settings(url)
+            except:
+                logger.exception('fetching site config from %s FAILED' % url)
+                continue
 
-            # get list of site from master tardis instance (Monash)
-            # TODO: might be better to store these sites in Django's
-            # sites table!
-            logger.debug('fetching mytardis sites from %s' % url)
+            # is the email domain of the experiment's owner registered
+            # by any site?
+            siteOwners = []
+            for owner in owners:
+                for domain in ssp.getEmailEndswith():
+                    if owner.endswith(domain):
+                        siteOwners.append(owner)
+                        break
 
-            # loop over sites
-            for (name, url, u, p) in self._get_sites():
-                # fetch a MyTARDIS site's config
-                logger.debug('fetching site config for %s from %s' % (name, url))
-                try:
-                    ssp = self.get_site_settings(url)
-                except:
-                    logger.exception('fetching site config from %s FAILED' % url)
-                    continue
+            # register meta-data and file transfer request at another
+            # MyTARDIS instance
+            if siteOwners:
+                # Create the form with simple fields
+                uid = self.generate_exp_uid(experiment)
+                mpform = MultiPartForm()
+                mpform.add_field('username', ssp.getRegisterSetting('username'))
+                mpform.add_field('password', ssp.getRegisterSetting('password'))
+                mpform.add_field('from_url', request.build_absolute_uri())
+                mpform.add_field('originid', uid)
 
-                # is the email domain of the experiment's owner registered
-                # by any site?
-                siteOwners = []
-                for owner in owners:
-                    for domain in ssp.getEmailEndswith():
-                        if owner.endswith(domain):
-                            siteOwners.append(owner)
+                for siteOwner in siteOwners:
+                    mpform.add_field('experiment_owner', siteOwner)
 
-                # register meta-data and file transfer request at another
-                # MyTARDIS instance
-                if siteOwners:
-                    # Create the form with simple fields
-                    uid = self.generate_exp_uid(experiment)
-                    mpform = MultiPartForm()
-                    mpform.add_field('username', ssp.getRegisterSetting('username'))
-                    mpform.add_field('password', ssp.getRegisterSetting('password'))
-                    mpform.add_field('from_url', request.build_absolute_uri())
-                    mpform.add_field('originid', uid)
+                protocol = ssp.getRegisterSetting('fileProtocol')
 
-                    for siteOwner in siteOwners:
-                        mpform.add_field('experiment_owner', siteOwner)
+                # export METS file
+                filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
+                logger.debug('=== extracting mets file for experiment %i ' % uid)
+                from tardis.tardis_portal.metsexporter import MetsExporter
+                exporter = MetsExporter()
+                if protocol:
+                    # translate vbl:// into tardis:// url for datafiles
+                    metsfile = exporter.export(experimentId=experiment.id,
+                                               replace_protocols={'vbl': protocol},
+                                               filename=filename,
+                                               export_images=False)
+                else:
+                    metsfile = exporter.export(experimentId=experiment.id,
+                                               filename=filename,
+                                               export_images=False)
+                logger.debug('=== extraction done, filename = %s' % metsfile)
 
-                    protocol = ssp.getRegisterSetting('fileProtocol')
+                f = open(metsfile, "r")
+                mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
 
-                    # export METS file
-                    filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
-                    logger.debug('=== extracting mets file for experiment %i ' % uid)
-                    from tardis.tardis_portal.metsexporter import MetsExporter
-                    exporter = MetsExporter()
-                    if protocol:
-                        # translate vbl:// into tardis:// url for datafiles
-                        metsfile = exporter.export(experimentId=experiment.id,
-                                                   replace_protocols={'vbl': protocol},
-                                                   filename=filename,
-                                                   export_images=False)
-                    else:
-                        metsfile = exporter.export(experimentId=experiment.id,
-                                                   filename=filename,
-                                                   export_images=False)
-                    logger.debug('=== extraction done, filename = %s' % metsfile)
+                ws = ssp.getRegisterSetting('url')
+                logger.debug('about to send register request to site %s' % ws)
+                # build the request
+                requestmp = urllib2.Request(ws)
+                requestmp.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
+                body = str(mpform)
+                requestmp.add_header('Content-type', mpform.get_content_type())
+                requestmp.add_header('Content-length', len(body))
 
-                    f = open(metsfile, "r")
-                    mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
+                # This should be made into a background task.
+                # logger.debug('OUTGOING DATA: ' + body)
+                logger.debug('SERVER RESPONSE: ' + urllib2.urlopen(requestmp, body, 99999).read())
 
-                    ws = ssp.getRegisterSetting('url')
-                    logger.debug('about to send register request to site %s' % ws)
-                    # build the request
-                    requestmp = urllib2.Request(ws)
-                    requestmp.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-                    body = str(mpform)
-                    requestmp.add_header('Content-type', mpform.get_content_type())
-                    requestmp.add_header('Content-length', len(body))
+                f.close()
+                sites.append(url)
 
-                    # This should be made into a background task.
-                    # logger.debug('OUTGOING DATA: ' + body)
-                    logger.debug('SERVER RESPONSE: ' + urllib2.urlopen(requestmp, body, 99999).read())
-
-                    f.close()
-                    sites.append(url)
-
-            # return a list of registered sites
-            return sites
+        # return a list of registered sites
+        return sites
 
         return []
 
