@@ -16,10 +16,13 @@ import pytz
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
+import rifcs
+
 class ServerImpl(IOAI):
 
     def __init__(self):
         global_metadata_registry.registerWriter('oai_dc', oai_dc_writer)
+        global_metadata_registry.registerWriter('rif', rifcs.rifcs_writer)
 
     def getRecord(self, metadataPrefix, identifier):
         """Get a record for a metadataPrefix and identifier.
@@ -38,10 +41,7 @@ class ServerImpl(IOAI):
         id_ = self._get_experiment_id(identifier)
         experiment = Experiment.objects.get(id=id_)
         header = self._get_experiment_header(experiment)
-        metadata = Metadata({
-            'title': [experiment.title],
-            'description': [experiment.description]
-        })
+        metadata = self._get_experiment_metadata(experiment, metadataPrefix)
         about = None
         return (header, metadata, about)
 
@@ -172,6 +172,22 @@ class ServerImpl(IOAI):
         # Get UTC timestamp
         timestamp = get_utc_time(experiment.update_time).replace(tzinfo=None)
         return Header(id_, timestamp, [], None)
+
+    @staticmethod
+    def _get_experiment_metadata(experiment, metadataPrefix):
+        if (metadataPrefix == 'oai_dc'):
+            return Metadata({
+                'title': [experiment.title],
+                'description': [experiment.description]
+            })
+        elif (metadataPrefix == 'rif'):
+            return Metadata({
+                'title': experiment.title,
+                'description': experiment.description,
+                'group': getattr(settings, 'RIFCS_GROUP', ''),
+            })
+        else:
+            raise oaipmh.error.CannotDisseminateFormatError
 
     @staticmethod
     def _get_experiment_id(identifier):
