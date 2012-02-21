@@ -31,6 +31,12 @@ class ServerImpl(IOAI):
 
         Returns a header, metadata, about tuple describing the record.
         """
+        try:
+            type, id = identifier.split('/')
+            id = int(id)
+            assert type == "experiment"
+        except (AssertionError, ValueError):
+            raise oaipmh.error.IdDoesNotExistError
         raise NotImplementedError
 
     def identify(self):

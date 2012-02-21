@@ -37,41 +37,48 @@ class ServerImplTestCase(TestCase):
 
     def setUp(self):
         self.server = ServerImpl()
+        user = User(username='testuser')
+        user.save()
+        experiment = Experiment(title='Foo', created_by=user)
+        experiment.public = True
+        experiment.save()
+        self._experiment = experiment
+
 
     def testGetRecord(self):
         try:
-            self.server.getRecord('oai_dc', 'MyTardis-1')
+            self.server.getRecord('oai_dc', 'experiment/1')
             self.fail("Not implemented yet.")
         except NotImplementedError:
             pass
 
+    def testGetRecordHandlesInvalidIdentifiers(self):
+        for id_ in ['experiment-1', 'MyTardis/1']:
+            try:
+                self.server.getRecord('oai_dc', id_)
+                self.fail("Should raise exception.")
+            except oaipmh.error.IdDoesNotExistError:
+                pass
+
     def testIdentify(self):
-        try:
-            self.server.identify()
-        except NotImplementedError:
-            self.fail("Should be implemented.")
+        identify = self.server.identify()
+        expect(identify.protocolVersion()).to_equal('2.0')
 
     def testListIdentifiers(self):
-        try:
-            user = User(username='testuser')
-            user.save()
-            experiment = Experiment(title='Foo', created_by=user)
-            experiment.save()
-            headers = self.server.listIdentifiers('oai_dc')
-            # Not public, so should not appear
-            expect(len(headers)).to_equal(0)
-            experiment.public = True
-            experiment.save()
-            headers = self.server.listIdentifiers('oai_dc')
-            # Iterate through headers
-            for header in headers:
-                expect(header.identifier()).to_contain(str(experiment.id))
-                expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(experiment.update_time))
-            # There should only have been one
-            expect(len(headers)).to_equal(1)
-        except NotImplementedError:
-            self.fail("Should be implemented.")
+        headers = self.server.listIdentifiers('oai_dc')
+        # Iterate through headers
+        for header in headers:
+            expect(header.identifier()).to_contain(str(self._experiment.id))
+            expect(header.datestamp().replace(tzinfo=pytz.utc))\
+                .to_equal(get_local_time(self._experiment.update_time))
+        # There should only have been one
+        expect(len(headers)).to_equal(1)
+        # Remove public flag
+        self._experiment.public = False
+        self._experiment.save()
+        headers = self.server.listIdentifiers('oai_dc')
+        # Not public, so should not appear
+        expect(len(headers)).to_equal(0)
 
     def testListIdentifiersDoesNotHandleSets(self):
         try:
