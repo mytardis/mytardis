@@ -39,18 +39,25 @@ class ServerImplTestCase(TestCase):
         self.server = ServerImpl()
         user = User(username='testuser')
         user.save()
-        experiment = Experiment(title='Foo', created_by=user)
+        experiment = Experiment(title='Norwegian Blue',
+                                description='Parrot + 40kV',
+                                created_by=user)
         experiment.public = True
         experiment.save()
         self._experiment = experiment
 
 
     def testGetRecord(self):
-        try:
-            self.server.getRecord('oai_dc', 'experiment/1')
-            self.fail("Not implemented yet.")
-        except NotImplementedError:
-            pass
+        header, metadata, about = self.server.getRecord('oai_dc',
+                                                        'experiment/1')
+        expect(header.identifier()).to_contain(str(self._experiment.id))
+        expect(header.datestamp().replace(tzinfo=pytz.utc))\
+            .to_equal(get_local_time(self._experiment.update_time))
+        expect(metadata.getField('title'))\
+            .to_equal(str(self._experiment.title))
+        expect(metadata.getField('description'))\
+            .to_equal(str(self._experiment.description))
+        expect(about).to_equal(None)
 
     def testGetRecordHandlesInvalidIdentifiers(self):
         for id_ in ['experiment-1', 'MyTardis/1']:
@@ -90,11 +97,8 @@ class ServerImplTestCase(TestCase):
             self.fail("Should be implemented.")
 
     def testListMetadataFormats(self):
-        try:
-            self.server.listMetadataFormats()
-            self.fail("Not implemented yet.")
-        except NotImplementedError:
-            pass
+        formats = self.server.listMetadataFormats()
+        expect(map(lambda t: t[0], formats)).to_equal(['oai_dc'])
 
     def testListRecords(self):
         try:

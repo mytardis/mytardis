@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 
 from datetime import datetime
 
-from oaipmh.common import Identify, Header
+from oaipmh.common import Identify, Header, Metadata
 import oaipmh.error
 from oaipmh.interfaces import IOAI
 from oaipmh.server import Server
@@ -31,13 +31,15 @@ class ServerImpl(IOAI):
 
         Returns a header, metadata, about tuple describing the record.
         """
-        try:
-            type, id = identifier.split('/')
-            id = int(id)
-            assert type == "experiment"
-        except (AssertionError, ValueError):
-            raise oaipmh.error.IdDoesNotExistError
-        raise NotImplementedError
+        id_ = self._get_experiment_id(identifier)
+        experiment = Experiment.objects.get(id=id_)
+        header = self._get_experiment_header(experiment)
+        metadata = Metadata({
+            'title': experiment.title,
+            'description': experiment.description
+        })
+        about = None
+        return (header, metadata, about)
 
     def identify(self):
         """Retrieve information about the repository.
@@ -103,7 +105,14 @@ class ServerImpl(IOAI):
         Returns an iterable of metadataPrefix, schema, metadataNamespace
         tuples (each entry in the tuple is a string).
         """
-        raise NotImplementedError
+        if identifier:
+            assert self._get_experiment_id(identifier) > 0
+        return [
+            ('oai_dc',
+             'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
+             'http://www.openarchives.org/OAI/2.0/oai_dc/'),
+        ]
+
 
     def listRecords(self, metadataPrefix, set=None, from_=None, until=None):
         """Get a list of header, metadata and about information on records.
@@ -159,6 +168,15 @@ class ServerImpl(IOAI):
         # Get UTC timestamp
         timestamp = get_utc_time(experiment.update_time).replace(tzinfo=None)
         return Header(id_, timestamp, [], None)
+
+    @staticmethod
+    def _get_experiment_id(identifier):
+        try:
+            type_, id_ = identifier.split('/')
+            assert type_ == "experiment"
+            return int(id_)
+        except (AssertionError, ValueError):
+            raise oaipmh.error.IdDoesNotExistError
 
 
 def get_server():
