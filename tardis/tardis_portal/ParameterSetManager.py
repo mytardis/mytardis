@@ -1,6 +1,3 @@
-import pytz
-
-from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from tardis.tardis_portal.models import DatasetParameterSet
@@ -15,6 +12,7 @@ from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
 
+from tardis.tardis_portal.util import get_local_time
 
 class ParameterSetManager(object):
 
@@ -135,7 +133,7 @@ class ParameterSetManager(object):
             if par.name.isNumeric():
                 return par.numerical_value
             elif par.name.isDateTime():
-                return self._get_local_time(par.datetime_value)
+                return get_local_time(par.datetime_value)
             else:
                 return par.string_value
         return par
@@ -165,7 +163,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = self._get_local_time(value)
+            param.datetime_value = get_local_time(value)
         else:
             param.string_value = unicode(value)
         param.save()
@@ -180,7 +178,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = self._get_local_time(value)
+            param.datetime_value = get_local_time(value)
         else:
             param.string_value = unicode(value)
         param.save()
@@ -235,17 +233,3 @@ class ParameterSetManager(object):
             paramName.is_searchable = True
             paramName.save()
         return paramName
-
-    @staticmethod
-    def _get_local_time(dt):
-        '''
-        Ensure datetime is timezone-aware and in local time.
-
-        If the USE_TZ setting in the current dev version of Django comes in,
-        this *should* keep providing correct behaviour.
-        '''
-        tz = pytz.timezone(settings.TIME_ZONE)
-        # If datetime is already naive,
-        if (dt.tzinfo == None):
-            return dt.replace(tzinfo=tz)
-        return dt.astimezone(tz)

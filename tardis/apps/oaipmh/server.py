@@ -5,9 +5,15 @@ from django.core.urlresolvers import reverse
 
 from datetime import datetime
 
-from oaipmh.common import Identify
+from oaipmh.common import Identify, Header
+import oaipmh.error
 from oaipmh.interfaces import IOAI
 from oaipmh.server import Server
+
+import pytz
+
+from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 class ServerImpl(IOAI):
 
@@ -61,7 +67,18 @@ class ServerImpl(IOAI):
 
         Returns an iterable of headers.
         """
-        raise NotImplementedError
+        if set:
+            # Set hierarchies are currrently not implemented
+            raise oaipmh.error.NoSetHierarchyError
+        experiments = Experiment.objects.filter(public=True)
+        # Filter based on boundaries provided
+        if from_:
+            from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
+            experiments = experiments.filter(update_time__gte=from_)
+        if until:
+            until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
+            experiments = experiments.filter(update_time__lte=until)
+        return map(self._get_experiment_header, experiments)
 
     def listMetadataFormats(self, identifier=None):
         """List metadata formats supported by repository or record.
@@ -120,7 +137,7 @@ class ServerImpl(IOAI):
         admin_users = User.objects.filter(is_superuser=True)
         if admin_users:
             # Use admin user email addresses if we have them
-            return map(lambda u: u.email, admin_users),
+            return map(lambda u: u.email, admin_users)
         elif settings.ADMINS:
             # Otherwise we should have a host email
             return map(lambda t: t[1], list(settings.ADMINS))
@@ -129,6 +146,13 @@ class ServerImpl(IOAI):
             return [settings.EMAIL_HOST_USER]
         # We might as well advertise our ignorance
         return ['noreply@'+current_site]
+
+    @staticmethod
+    def _get_experiment_header(experiment):
+        id_ = 'experiment/%d' % experiment.id
+        # Get UTC timestamp
+        timestamp = get_utc_time(experiment.update_time).replace(tzinfo=None)
+        return Header(id_, timestamp, [], None)
 
 
 def get_server():
