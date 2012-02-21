@@ -8,7 +8,8 @@ from datetime import datetime
 from oaipmh.common import Identify, Header, Metadata
 import oaipmh.error
 from oaipmh.interfaces import IOAI
-from oaipmh.server import Server
+from oaipmh.metadata import global_metadata_registry
+from oaipmh.server import Server, oai_dc_writer
 
 import pytz
 
@@ -16,6 +17,9 @@ from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 class ServerImpl(IOAI):
+
+    def __init__(self):
+        global_metadata_registry.registerWriter('oai_dc', oai_dc_writer)
 
     def getRecord(self, metadataPrefix, identifier):
         """Get a record for a metadataPrefix and identifier.
@@ -35,8 +39,8 @@ class ServerImpl(IOAI):
         experiment = Experiment.objects.get(id=id_)
         header = self._get_experiment_header(experiment)
         metadata = Metadata({
-            'title': experiment.title,
-            'description': experiment.description
+            'title': [experiment.title],
+            'description': [experiment.description]
         })
         about = None
         return (header, metadata, about)

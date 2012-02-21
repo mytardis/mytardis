@@ -54,9 +54,9 @@ class ServerImplTestCase(TestCase):
         expect(header.datestamp().replace(tzinfo=pytz.utc))\
             .to_equal(get_local_time(self._experiment.update_time))
         expect(metadata.getField('title'))\
-            .to_equal(str(self._experiment.title))
+            .to_equal([str(self._experiment.title)])
         expect(metadata.getField('description'))\
-            .to_equal(str(self._experiment.description))
+            .to_equal([str(self._experiment.description)])
         expect(about).to_equal(None)
 
     def testGetRecordHandlesInvalidIdentifiers(self):
