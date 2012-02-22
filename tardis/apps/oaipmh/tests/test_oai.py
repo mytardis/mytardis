@@ -9,6 +9,7 @@ from lxml import etree
 import oaipmh.error
 import pytz
 
+from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_local_time
 
@@ -22,6 +23,12 @@ def _create_test_data():
                             created_by=user)
     experiment.public = True
     experiment.save()
+    cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
+    cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'
+    cch = CreativeCommonsHandler(experiment_id=experiment.id)
+    psm = cch.get_or_create_cc_parameterset()
+    psm.set_param("license_name", cc_name, "License Name")
+    psm.set_param("license_uri", cc_uri, "License URI")
     return experiment
 
 class EndpointTestCase(TestCase):
@@ -88,12 +95,26 @@ class EndpointTestCase(TestCase):
                                 namespaces=ns)[0]).to_equal('Parrot + 40kV')
         # <location>
         #     <address>
-        #         <electronic type="url">http://example.com/experiment/view/1/</electronic>
+        #         <electronic type="url">
+        #            http://example.com/experiment/view/1/
+        #         </electronic>
         #     </address>
         # </location>
         loc_xpath = 'r:location/r:address/r:electronic[@type="url"]/text()'
         expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
                 .to_equal('http://example.com/experiment/view/1/')
+        # <rights>
+        #     <license rightsUri="http://creativecommons.org/licenses/by-nd/2.5/au/">
+        #         Creative Commons Attribution-NoDerivs 2.5 Australia
+        #     </license>
+        # </location>
+        expect(collection.xpath('r:rights/r:license/@rightsUri',
+            namespaces=ns)) \
+            .to_equal(['http://creativecommons.org/licenses/by-nd/2.5/au/'])
+        expect(collection.xpath('r:rights/r:license/text()',
+            namespaces=ns)) \
+            .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
+
 
 
 

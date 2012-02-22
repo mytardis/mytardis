@@ -41,15 +41,12 @@ def rifcs_writer(element, metadata):
                             _nsrif('electronic'))
     electronic.set('type', 'url')
     electronic.text = _get_location(metadata)
+    # rights
+    rights = SubElement(collection, _nsrif('rights') )
+    license_ = SubElement(rights, _nsrif('license') )
+    license_.set('rightsUri', metadata.getMap().get('license_uri'))
+    license_.text = metadata.getMap().get('license_name')
 
-    #map = metadata.getMap()
-    #for name in [
-    #    'title', 'creator', 'subject', 'description', 'publisher',
-    #    'contributor', 'date', 'type', 'format', 'identifier',
-    #    'source', 'language', 'relation', 'coverage', 'rights']:
-    #    for value in map.get(name, []):
-    #        e = SubElement(e_dc, nsdc(name))
-    #        e.text = value
 
 def _nsrif(name):
     return '{%s}%s' % (RIFCS_NS, name)
@@ -66,7 +63,6 @@ def _get_originating_source(metadata):
     return "http://%s/" % Site.objects.get_current().domain
 
 def _get_location(metadata):
-    # TODO: Handle repository data from federated MyTardis instances
     return "http://%s%s" % \
         ( Site.objects.get_current().domain,
           reverse('experiment', args=[metadata.getMap().get('id')]) )

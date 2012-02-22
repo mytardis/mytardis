@@ -14,6 +14,7 @@ from oaipmh.server import Server, oai_dc_writer
 import pytz
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import Experiment, ExperimentParameterSet
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
@@ -184,10 +185,14 @@ class ServerImpl(IOAI):
                 'description': [experiment.description]
             })
         elif (metadataPrefix == 'rif'):
+            cch = CreativeCommonsHandler(experiment_id=experiment.id)
+            psm = cch.get_or_create_cc_parameterset(False)
             return Metadata({
                 'id': experiment.id,
                 'title': experiment.title,
                 'description': experiment.description,
+                'license_name': psm.get_param('license_name', True),
+                'license_uri': psm.get_param('license_uri', True),
             })
         else:
             raise oaipmh.error.CannotDisseminateFormatError
