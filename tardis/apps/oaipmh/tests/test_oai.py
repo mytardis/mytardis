@@ -116,10 +116,6 @@ class EndpointTestCase(TestCase):
             .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
 
 
-
-
-
-
     def tearDown(self):
         pass
 
@@ -141,6 +137,10 @@ class ServerImplTestCase(TestCase):
             .to_equal(str(self._experiment.title))
         expect(metadata.getField('description'))\
             .to_equal(str(self._experiment.description))
+        expect(metadata.getField('license_uri'))\
+            .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
+        expect(metadata.getField('license_name'))\
+            .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
         expect(about).to_equal(None)
 
     def testGetRecordOaiDc(self):
@@ -194,20 +194,33 @@ class ServerImplTestCase(TestCase):
 
     def testListMetadataFormats(self):
         formats = self.server.listMetadataFormats()
-        expect(map(lambda t: t[0], formats)).to_equal(['oai_dc'])
+        expect(map(lambda t: t[0], formats)).to_equal(['oai_dc', 'rif'])
 
     def testListRecords(self):
-        try:
-            self.server.listRecords('oai_dc')
-            self.fail("Not implemented yet.")
-        except NotImplementedError:
-            pass
+        results = self.server.listRecords('oai_dc')
+        # Iterate through headers
+        for header, metadata, _ in results:
+            expect(header.identifier()).to_contain(str(self._experiment.id))
+            expect(header.datestamp().replace(tzinfo=pytz.utc))\
+                .to_equal(get_local_time(self._experiment.update_time))
+            expect(metadata.getField('title'))\
+                .to_equal([str(self._experiment.title)])
+            expect(metadata.getField('description'))\
+                .to_equal([str(self._experiment.description)])
+        # There should only have been one
+        expect(len(results)).to_equal(1)
+        # Remove public flag
+        self._experiment.public = False
+        self._experiment.save()
+        headers = self.server.listRecords('oai_dc')
+        # Not public, so should not appear
+        expect(len(headers)).to_equal(0)
 
     def testListSets(self):
         try:
             self.server.listSets()
-            self.fail("Not implemented yet.")
-        except NotImplementedError:
+            self.fail("Should throw exception.")
+        except oaipmh.error.NoSetHierarchyError:
             pass
 
     def tearDown(self):

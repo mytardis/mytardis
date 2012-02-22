@@ -20,6 +20,7 @@ from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 import rifcs
 
+
 class ServerImpl(IOAI):
 
     NS_CC = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
@@ -86,14 +87,7 @@ class ServerImpl(IOAI):
         if set:
             # Set hierarchies are currrently not implemented
             raise oaipmh.error.NoSetHierarchyError
-        experiments = Experiment.objects.filter(public=True)
-        # Filter based on boundaries provided
-        if from_:
-            from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
-            experiments = experiments.filter(update_time__gte=from_)
-        if until:
-            until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
-            experiments = experiments.filter(update_time__lte=until)
+        experiments = self._get_experiments_in_range(from_, until)
         return map(self._get_experiment_header, experiments)
 
     def listMetadataFormats(self, identifier=None):
@@ -119,6 +113,7 @@ class ServerImpl(IOAI):
             ('oai_dc',
              'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
              'http://www.openarchives.org/OAI/2.0/oai_dc/'),
+            ('rif', rifcs.RIFCS_SCHEMA, rifcs.RIFCS_NS)
         ]
 
 
@@ -139,7 +134,15 @@ class ServerImpl(IOAI):
 
         Returns an iterable of header, metadata, about tuples.
         """
-        raise NotImplementedError
+        if set:
+            # Set hierarchies are currrently not implemented
+            raise oaipmh.error.NoSetHierarchyError
+        experiments = self._get_experiments_in_range(from_, until)
+        def get_tuple(experiment):
+            header = self._get_experiment_header(experiment)
+            metadata = self._get_experiment_metadata(experiment, metadataPrefix)
+            return (header, metadata, None)
+        return map(get_tuple, experiments)
 
     def listSets(self):
         """Get a list of sets in the repository.
@@ -149,7 +152,8 @@ class ServerImpl(IOAI):
 
         Returns an iterable of setSpec, setName tuples (strings).
         """
-        raise NotImplementedError
+        # Set hierarchies are currrently not implemented
+        raise oaipmh.error.NoSetHierarchyError
 
     def _get_admin_emails(self, current_site):
         '''
@@ -178,6 +182,18 @@ class ServerImpl(IOAI):
         return Header(id_, timestamp, [], None)
 
     @staticmethod
+    def _get_experiments_in_range(from_, until):
+        experiments = Experiment.objects.filter(public=True)
+        # Filter based on boundaries provided
+        if from_:
+            from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
+            experiments = experiments.filter(update_time__gte=from_)
+        if until:
+            until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
+            experiments = experiments.filter(update_time__lte=until)
+        return experiments
+
+    @staticmethod
     def _get_experiment_metadata(experiment, metadataPrefix):
         if (metadataPrefix == 'oai_dc'):
             return Metadata({
@@ -186,13 +202,13 @@ class ServerImpl(IOAI):
             })
         elif (metadataPrefix == 'rif'):
             cch = CreativeCommonsHandler(experiment_id=experiment.id)
-            psm = cch.get_or_create_cc_parameterset(False)
+            cch_psm = cch.get_or_create_cc_parameterset(False)
             return Metadata({
                 'id': experiment.id,
                 'title': experiment.title,
                 'description': experiment.description,
-                'license_name': psm.get_param('license_name', True),
-                'license_uri': psm.get_param('license_uri', True),
+                'license_name': cch_psm.get_param('license_name', True),
+                'license_uri': cch_psm.get_param('license_uri', True),
             })
         else:
             raise oaipmh.error.CannotDisseminateFormatError
