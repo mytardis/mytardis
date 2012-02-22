@@ -8,14 +8,12 @@
     {% endfor %}
   </p>
 
-  {% block experiment_abstract %}
   <p>
     <strong>Abstract: </strong>
     <div class="abstract">
       {{ experiment.description|safe }}
     </div>
   </p>
-  {% endblock experiment_abstract %}
 
   {% if experiment.handle %}
     <p>
@@ -93,9 +91,7 @@
 		<a href="{% url tardis.tardis_portal.views.choose_license experiment.id %}">Choose License</a>
 	</p>
 	{% if not experiment.public %}
-        {% block publish_link %}
 		<strong><a href="publish/">Publish Experiment</a></strong><br/>
-        {% endblock publish_link %}
 	{% endif %}
 	{% endif %}
   </div>
