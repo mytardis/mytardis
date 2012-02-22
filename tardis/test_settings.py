@@ -169,6 +169,7 @@ TOKEN_USERNAME = 'tokenuser'
 # RIF-CS Settings
 OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
 RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
+RIFCS_GROUP='MyTardis Test Group'
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
 
 DOI_ENABLE = False
