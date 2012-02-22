@@ -13,12 +13,15 @@ from oaipmh.server import Server, oai_dc_writer
 
 import pytz
 
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.models import Experiment, ExperimentParameterSet
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 import rifcs
 
 class ServerImpl(IOAI):
+
+    NS_CC = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
 
     def __init__(self):
         global_metadata_registry.registerWriter('oai_dc', oai_dc_writer)
@@ -182,9 +185,9 @@ class ServerImpl(IOAI):
             })
         elif (metadataPrefix == 'rif'):
             return Metadata({
+                'id': experiment.id,
                 'title': experiment.title,
                 'description': experiment.description,
-                'group': getattr(settings, 'RIFCS_GROUP', ''),
             })
         else:
             raise oaipmh.error.CannotDisseminateFormatError
@@ -197,6 +200,25 @@ class ServerImpl(IOAI):
             return int(id_)
         except (AssertionError, ValueError):
             raise oaipmh.error.IdDoesNotExistError
+
+    @classmethod
+    def _get_license_uri(cls, experiment):
+        return cls._get_param("license_uri", cls.NS_CC, experiment)
+
+    @classmethod
+    def _get_license_title(cls, experiment):
+        return cls._get_param("license_name", cls.NS_CC, experiment)
+
+    @classmethod
+    def _get_params(self, key, namespace, experiment):
+        parameterset = ExperimentParameterSet.objects.filter(
+                            schema__namespace=namespace,
+                            experiment__id=experiment.id)
+        if len(parameterset) > 0:
+            psm = ParameterSetManager(parameterset=parameterset[0])
+            return psm.get_params(key, True)
+        else:
+            return []
 
 
 def get_server():
