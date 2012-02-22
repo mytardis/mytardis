@@ -2,6 +2,8 @@ from tardis.apps.sync.fields import State, transition_on_success
 from tardis.apps.sync.fields import FSMField, map_return_to_transition, true_false_transition
 from transfer_service import TransferService, TransferClient
 
+from .integrity import IntegrityCheck
+
 
 
 def _check_status(experiment):
@@ -34,11 +36,8 @@ class Complete(State):
 class CheckingIntegrity(State):
 
     @true_false_transition(Complete, FailPermanent)
-    def _do_integrity_check(self, experiment):
-        return True
-
     def get_next_state(self, experiment):
-        return self._do_integrity_check(experiment)
+        return IntegrityCheck(experiment.experiment).all_files_complete()
 
 
 class InProgress(State):

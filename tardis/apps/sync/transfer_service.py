@@ -54,7 +54,7 @@ logger = logging.getLogger(__file__)
 # be done in the object manager of the SyncedExperiment model
 #
 
-class TransferService:
+class TransferService(object):
 
     TRANSFER_COMPLETE = 1
     TRANSFER_IN_PROGRESS = 2
