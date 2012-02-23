@@ -11,9 +11,6 @@ import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal.util import get_local_time
-
-from ..server import ServerImpl
 
 def _create_test_data():
     user = User(username='testuser')
@@ -35,6 +32,8 @@ class EndpointTestCase(TestCase):
 
     def setUp(self):
         self.client = Client()
+        self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
+                   'o': 'http://www.openarchives.org/OAI/2.0/'}
 
     def testIdentify(self):
         response = self.client.get('/apps/oaipmh/?verb=Identify')
@@ -46,22 +45,21 @@ class EndpointTestCase(TestCase):
         assert not xml.xpath('oai:error', namespaces=ns)
         assert xml.xpath('oai:Identify', namespaces=ns)
 
-
     def testGetRecord(self):
+        ns = self.ns
         experiment = _create_test_data()
         args = {
             'verb': 'GetRecord',
             'metadataPrefix': 'rif',
-            'identifier': 'experiment/1'
+            'identifier': 'experiment/%d' % experiment.id
         }
         response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join('%s=%s' % (k,v)
-                                            for k,v in args.items()))
+                                   '&'.join(['%s=%s' % (k,v)
+                                            for k,v in args.items()]))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
-        ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
-              'o': 'http://www.openarchives.org/OAI/2.0/'}
+        print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
         assert xml.xpath('/o:OAI-PMH/o:GetRecord/o:record', namespaces=ns)
@@ -72,11 +70,15 @@ class EndpointTestCase(TestCase):
         # <registryObject group="MyTARDIS Default Group">
         expect(metadata.xpath('r:registryObjects/r:registryObject/@group',
                               namespaces=ns)[0]).to_equal('MyTardis Test Group')
-        registryObject = metadata.xpath('r:registryObjects/r:registryObject',
-                                        namespaces=ns)[0]
+        self._check_reg_obj(experiment,
+                            metadata.xpath('r:registryObjects/r:registryObject',
+                                           namespaces=ns)[0])
+
+    def _check_reg_obj(self, experiment, registryObject):
+        ns = self.ns
         # <key>example.com/experiment/1</key>
         expect(registryObject.xpath('r:key/text()', namespaces=ns)[0])\
-            .to_equal('example.com/experiment/1')
+            .to_equal('example.com/experiment/%d' % experiment.id)
         # <originatingSource>http://example.com/</originatingSource>
         expect(registryObject.xpath('r:originatingSource/text()',
                                     namespaces=ns)[0]) \
@@ -89,10 +91,11 @@ class EndpointTestCase(TestCase):
         #     <namePart>Test</namePart>
         # </name>
         expect(collection.xpath('r:name[@type="primary"]/r:namePart/text()',
-                                namespaces=ns)[0]).to_equal('Norwegian Blue')
+                                namespaces=ns)[0]).to_equal(experiment.title)
         # <description type="brief">Test experiment description.</description>
         expect(collection.xpath('r:description[@type="brief"]/text()',
-                                namespaces=ns)[0]).to_equal('Parrot + 40kV')
+                                namespaces=ns)[0]) \
+                                .to_equal(experiment.description)
         # <location>
         #     <address>
         #         <electronic type="url">
@@ -102,7 +105,8 @@ class EndpointTestCase(TestCase):
         # </location>
         loc_xpath = 'r:location/r:address/r:electronic[@type="url"]/text()'
         expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
-                .to_equal('http://example.com/experiment/view/1/')
+                .to_equal('http://example.com/experiment/view/%d/' %
+                          experiment.id)
         # <rights>
         #     <license rightsUri="http://creativecommons.org/licenses/by-nd/2.5/au/">
         #         Creative Commons Attribution-NoDerivs 2.5 Australia
@@ -115,113 +119,100 @@ class EndpointTestCase(TestCase):
             namespaces=ns)) \
             .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
 
-
-    def tearDown(self):
-        pass
-
-
-class ServerImplTestCase(TestCase):
-
-    def setUp(self):
-        self.server = ServerImpl()
-        self._experiment = _create_test_data()
-
-    def testGetRecord(self):
-        header, metadata, about = self.server.getRecord('rif',
-                                                        'experiment/1')
-        expect(header.identifier()).to_contain(str(self._experiment.id))
-        expect(header.datestamp().replace(tzinfo=pytz.utc))\
-            .to_equal(get_local_time(self._experiment.update_time))
-        expect(metadata.getField('id')).to_equal(self._experiment.id)
-        expect(metadata.getField('title'))\
-            .to_equal(str(self._experiment.title))
-        expect(metadata.getField('description'))\
-            .to_equal(str(self._experiment.description))
-        expect(metadata.getField('license_uri'))\
-            .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
-        expect(metadata.getField('license_name'))\
-            .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
-        expect(about).to_equal(None)
-
-    def testGetRecordOaiDc(self):
-        header, metadata, about = self.server.getRecord('oai_dc',
-                                                        'experiment/1')
-        expect(header.identifier()).to_contain(str(self._experiment.id))
-        expect(header.datestamp().replace(tzinfo=pytz.utc))\
-            .to_equal(get_local_time(self._experiment.update_time))
-        expect(metadata.getField('title'))\
-            .to_equal([str(self._experiment.title)])
-        expect(metadata.getField('description'))\
-            .to_equal([str(self._experiment.description)])
-        expect(about).to_equal(None)
-
-    def testGetRecordHandlesInvalidIdentifiers(self):
-        for id_ in ['experiment-1', 'MyTardis/1']:
-            try:
-                self.server.getRecord('oai_dc', id_)
-                self.fail("Should raise exception.")
-            except oaipmh.error.IdDoesNotExistError:
-                pass
-
-    def testIdentify(self):
-        identify = self.server.identify()
-        expect(identify.protocolVersion()).to_equal('2.0')
-
     def testListIdentifiers(self):
-        headers = self.server.listIdentifiers('oai_dc')
-        # Iterate through headers
-        for header in headers:
-            expect(header.identifier()).to_contain(str(self._experiment.id))
-            expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                .to_equal(get_local_time(self._experiment.update_time))
-        # There should only have been one
-        expect(len(headers)).to_equal(1)
-        # Remove public flag
-        self._experiment.public = False
-        self._experiment.save()
-        headers = self.server.listIdentifiers('oai_dc')
-        # Not public, so should not appear
-        expect(len(headers)).to_equal(0)
-
-    def testListIdentifiersDoesNotHandleSets(self):
-        try:
-            self.server.listIdentifiers('oai_dc', set='foo')
-            self.fail("Should have raised an error.")
-        except oaipmh.error.NoSetHierarchyError:
-            pass
-        except NotImplementedError:
-            self.fail("Should be implemented.")
+        experiment = _create_test_data()
+        args = {
+            'verb': 'ListIdentifiers',
+            'metadataPrefix': 'rif'
+        }
+        response = self.client.get('/apps/oaipmh/?%s' %
+                                   '&'.join('%s=%s' % (k,v)
+                                            for k,v in args.items()))
+        self.assertEqual(response.status_code, 200)
+        # Check the response content is good
+        xml = etree.fromstring(response.content)
+        ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
+              'o': 'http://www.openarchives.org/OAI/2.0/'}
+        print response.content
+        assert xml.xpath('/o:OAI-PMH', namespaces=ns)
+        assert not xml.xpath('o:error', namespaces=ns)
+        idents = xml.xpath('/o:OAI-PMH/o:ListIdentifiers/o:header/o:identifier',
+                           namespaces=ns)
+        assert len(idents) == 1
+        assert idents[0].text == 'experiment/%d' % experiment.id
 
     def testListMetadataFormats(self):
-        formats = self.server.listMetadataFormats()
-        expect(map(lambda t: t[0], formats)).to_equal(['oai_dc', 'rif'])
+        ns = self.ns
+        # Without Identifier
+        experiment = _create_test_data()
+        args = {
+            'verb': 'ListMetadataFormats'
+        }
+        response = self.client.get('/apps/oaipmh/?%s' %
+                                   '&'.join('%s=%s' % (k,v)
+                                            for k,v in args.items()))
+        self.assertEqual(response.status_code, 200)
+        # Check the response content is good
+        xml = etree.fromstring(response.content)
+        print response.content
+        assert xml.xpath('/o:OAI-PMH', namespaces=ns)
+        assert not xml.xpath('o:error', namespaces=ns)
+        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats/o:metadataFormat/o:metadataPrefix',
+                            namespaces=ns)
+        assert len(formats) == 2
+        assert formats[0].text == 'oai_dc'
+        assert formats[1].text == 'rif'
+        # With Identifier
+        args = {
+            'verb': 'ListMetadataFormats',
+            'identifier': 'experiment/%d' % experiment.id
+        }
+        response = self.client.get('/apps/oaipmh/?%s' %
+                                   '&'.join('%s=%s' % (k,v)
+                                            for k,v in args.items()))
+        self.assertEqual(response.status_code, 200)
+        # Check the response content is good
+        xml = etree.fromstring(response.content)
+        print response.content
+        assert xml.xpath('/o:OAI-PMH', namespaces=ns)
+        assert not xml.xpath('o:error', namespaces=ns)
+        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats/o:metadataFormat/o:metadataPrefix',
+                            namespaces=ns)
+        assert len(formats) == 2
+        assert formats[0].text == 'oai_dc'
+        assert formats[1].text == 'rif'
+
 
     def testListRecords(self):
-        results = self.server.listRecords('oai_dc')
-        # Iterate through headers
-        for header, metadata, _ in results:
-            expect(header.identifier()).to_contain(str(self._experiment.id))
-            expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                .to_equal(get_local_time(self._experiment.update_time))
-            expect(metadata.getField('title'))\
-                .to_equal([str(self._experiment.title)])
-            expect(metadata.getField('description'))\
-                .to_equal([str(self._experiment.description)])
-        # There should only have been one
-        expect(len(results)).to_equal(1)
-        # Remove public flag
-        self._experiment.public = False
-        self._experiment.save()
-        headers = self.server.listRecords('oai_dc')
-        # Not public, so should not appear
-        expect(len(headers)).to_equal(0)
+        ns = self.ns
+        experiment = _create_test_data()
+        args = {
+            'verb': 'ListRecords',
+            'metadataPrefix': 'rif'
+        }
+        response = self.client.get('/apps/oaipmh/?%s' %
+                                   '&'.join('%s=%s' % (k,v)
+                                            for k,v in args.items()))
+        self.assertEqual(response.status_code, 200)
+        # Check the response content is good
+        xml = etree.fromstring(response.content)
+        print response.content
+        assert xml.xpath('/o:OAI-PMH', namespaces=ns)
+        assert not xml.xpath('o:error', namespaces=ns)
+        idents = xml.xpath('/o:OAI-PMH/o:ListRecords'+
+                           '/o:record/o:header/o:identifier',
+                           namespaces=ns)
+        assert len(idents) == 1
+        assert idents[0].text == 'experiment/%d' % experiment.id
+        metadata = xml.xpath('/o:OAI-PMH/o:ListRecords/o:record/o:metadata',
+                           namespaces=ns)
+        assert len(metadata) == 1
+        obj = metadata[0].getchildren()[0].getchildren()
+        assert len(obj) == 1
+        self._check_reg_obj(experiment, obj[0])
 
-    def testListSets(self):
-        try:
-            self.server.listSets()
-            self.fail("Should throw exception.")
-        except oaipmh.error.NoSetHierarchyError:
-            pass
+
 
     def tearDown(self):
         pass
+

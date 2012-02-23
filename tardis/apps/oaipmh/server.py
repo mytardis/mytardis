@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.utils.importlib import import_module
+from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
@@ -8,26 +10,71 @@ from datetime import datetime
 from oaipmh.common import Identify, Header, Metadata
 import oaipmh.error
 from oaipmh.interfaces import IOAI
-from oaipmh.metadata import global_metadata_registry
+from oaipmh.metadata import MetadataRegistry
 from oaipmh.server import Server, oai_dc_writer
 
+import itertools
+
 import pytz
+from sets import Set
 
-from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment, ExperimentParameterSet
-from tardis.tardis_portal.util import get_local_time, get_utc_time
+def _safe_import(path):
+    try:
+        dot = path.rindex('.')
+    except ValueError:
+        raise ImproperlyConfigured('%s isn\'t a middleware module' % path)
+    module_, classname_ = path[:dot], path[dot + 1:]
+    try:
+        mod = import_module(module_)
+    except ImportError, e:
+        raise ImproperlyConfigured('Error importing module %s: "%s"' %
+                                   (module_, e))
+    try:
+        auth_class = getattr(mod, classname_)
+    except AttributeError:
+        raise ImproperlyConfigured('Module "%s" does not define a "%s" class' %
+                                   (module_, classname_))
+    auth_instance = auth_class()
+    return auth_instance
 
-import rifcs
+
+class ProxyingMetadataRegistry(MetadataRegistry):
+    """
+    A registry that only writes, and does so by proxying to Providers.
+    """
+    def __init__(self, providers):
+        self._providers = providers
+
+    def registerReader(self, metadata_prefix, reader):
+        raise NotImplementedError
+
+    def registerWriter(self, metadata_prefix, writer):
+        raise NotImplementedError
+
+    def hasReader(self, metadata_prefix):
+        return False
+
+    def hasWriter(self, metadata_prefix):
+        formats = itertools.chain(*[p.listMetadataFormats() \
+                                    for p in self._providers])
+        return metadata_prefix in [f[0] for f in formats]
+
+    def readMetadata(self, metadata_prefix, element):
+        raise NotImplementedError
+
+    def writeMetadata(self, metadata_prefix, element, metadata):
+        """Write metadata as XML.
+
+        element - ElementTree element to write under
+        metadata - metadata object to write
+        """
+        metadata['_metadata_source'].writeMetadata(element, metadata)
 
 
-class ServerImpl(IOAI):
+class ProxyingServer(IOAI):
 
-    NS_CC = 'http://www.tardis.edu.au/schemas/creative_commons/2011/05/17'
-
-    def __init__(self):
-        global_metadata_registry.registerWriter('oai_dc', oai_dc_writer)
-        global_metadata_registry.registerWriter('rif', rifcs.rifcs_writer)
+    def __init__(self, providers):
+        self.providers = providers
 
     def getRecord(self, metadataPrefix, identifier):
         """Get a record for a metadataPrefix and identifier.
@@ -43,12 +90,20 @@ class ServerImpl(IOAI):
 
         Returns a header, metadata, about tuple describing the record.
         """
-        id_ = self._get_experiment_id(identifier)
-        experiment = Experiment.objects.get(id=id_)
-        header = self._get_experiment_header(experiment)
-        metadata = self._get_experiment_metadata(experiment, metadataPrefix)
-        about = None
-        return (header, metadata, about)
+        id_exists = False
+        # Try the providers until we succeed
+        for p in self.providers:
+            try:
+                result = p.getRecord(metadataPrefix, identifier)
+                return result
+            except oaipmh.error.CannotDisseminateFormatError:
+                id_exists = True
+            except oaipmh.error.IdDoesNotExistError:
+                pass
+        # If we fail, respond sensibly
+        if id_exists:
+            raise oaipmh.error.CannotDisseminateFormatError
+        raise oaipmh.error.IdDoesNotExistError
 
     def identify(self):
         """Retrieve information about the repository.
@@ -67,7 +122,7 @@ class ServerImpl(IOAI):
             []
         )
 
-    def listIdentifiers(self, metadataPrefix, set=None, from_=None, until=None):
+    def listIdentifiers(self, metadataPrefix, **kwargs):
         """Get a list of header information on records.
 
         metadataPrefix - identifies metadata set to retrieve
@@ -84,13 +139,16 @@ class ServerImpl(IOAI):
 
         Returns an iterable of headers.
         """
-        if set:
-            # Set hierarchies are currrently not implemented
+        if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
-        experiments = self._get_experiments_in_range(from_, until)
-        return map(self._get_experiment_header, experiments)
+        def appendIdents(list_, p):
+            try:
+                return list_ + p.listIdentifiers(metadataPrefix, **kwargs)
+            except oaipmh.error.CannotDisseminateFormatError:
+                return list_
+        return Set(reduce(appendIdents, self.providers, []))
 
-    def listMetadataFormats(self, identifier=None):
+    def listMetadataFormats(self, **kwargs):
         """List metadata formats supported by repository or record.
 
         identifier - identify record for which we want to know all
@@ -107,17 +165,25 @@ class ServerImpl(IOAI):
         Returns an iterable of metadataPrefix, schema, metadataNamespace
         tuples (each entry in the tuple is a string).
         """
-        if identifier:
-            assert self._get_experiment_id(identifier) > 0
-        return [
-            ('oai_dc',
-             'http://www.openarchives.org/OAI/2.0/oai_dc.xsd',
-             'http://www.openarchives.org/OAI/2.0/oai_dc/'),
-            ('rif', rifcs.RIFCS_SCHEMA, rifcs.RIFCS_NS)
-        ]
+        id_known = False
+        def appendFormats(list_, p):
+            try:
+                return list_ + p.listMetadataFormats(**kwargs)
+            except oaipmh.error.IdDoesNotExistError:
+                return list_
+            except oaipmh.error.NoMetadataFormatsError:
+                id_known = True
+                return list_
+        formats = Set(reduce(appendFormats, self.providers, []))
+        if kwargs.has_key('identifier'):
+            if len(formats) == 0:
+                if id_known:
+                    raise oaipmh.error.NoMetadataFormatsError
+                else:
+                    raise oaipmh.error.IdDoesNotExistError
+        return formats
 
-
-    def listRecords(self, metadataPrefix, set=None, from_=None, until=None):
+    def listRecords(self, metadataPrefix, **kwargs):
         """Get a list of header, metadata and about information on records.
 
         metadataPrefix - identifies metadata set to retrieve
@@ -134,15 +200,16 @@ class ServerImpl(IOAI):
 
         Returns an iterable of header, metadata, about tuples.
         """
-        if set:
-            # Set hierarchies are currrently not implemented
+        if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
-        experiments = self._get_experiments_in_range(from_, until)
-        def get_tuple(experiment):
-            header = self._get_experiment_header(experiment)
-            metadata = self._get_experiment_metadata(experiment, metadataPrefix)
-            return (header, metadata, None)
-        return map(get_tuple, experiments)
+        if metadataPrefix not in [f[0] for f in self.listMetadataFormats()]:
+            raise oaipmh.error.CannotDisseminateFormatError
+        def appendRecords(list_, p):
+            try:
+                return list_ + p.listRecords(metadataPrefix, **kwargs)
+            except oaipmh.error.CannotDisseminateFormatError:
+                return list_
+        return Set(reduce(appendRecords, self.providers, []))
 
     def listSets(self):
         """Get a list of sets in the repository.
@@ -174,74 +241,9 @@ class ServerImpl(IOAI):
         # We might as well advertise our ignorance
         return ['noreply@'+current_site]
 
-    @staticmethod
-    def _get_experiment_header(experiment):
-        id_ = 'experiment/%d' % experiment.id
-        # Get UTC timestamp
-        timestamp = get_utc_time(experiment.update_time).replace(tzinfo=None)
-        return Header(id_, timestamp, [], None)
-
-    @staticmethod
-    def _get_experiments_in_range(from_, until):
-        experiments = Experiment.objects.filter(public=True)
-        # Filter based on boundaries provided
-        if from_:
-            from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
-            experiments = experiments.filter(update_time__gte=from_)
-        if until:
-            until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
-            experiments = experiments.filter(update_time__lte=until)
-        return experiments
-
-    @staticmethod
-    def _get_experiment_metadata(experiment, metadataPrefix):
-        if (metadataPrefix == 'oai_dc'):
-            return Metadata({
-                'title': [experiment.title],
-                'description': [experiment.description]
-            })
-        elif (metadataPrefix == 'rif'):
-            cch = CreativeCommonsHandler(experiment_id=experiment.id)
-            cch_psm = cch.get_or_create_cc_parameterset(False)
-            return Metadata({
-                'id': experiment.id,
-                'title': experiment.title,
-                'description': experiment.description,
-                'license_name': cch_psm.get_param('license_name', True),
-                'license_uri': cch_psm.get_param('license_uri', True),
-            })
-        else:
-            raise oaipmh.error.CannotDisseminateFormatError
-
-    @staticmethod
-    def _get_experiment_id(identifier):
-        try:
-            type_, id_ = identifier.split('/')
-            assert type_ == "experiment"
-            return int(id_)
-        except (AssertionError, ValueError):
-            raise oaipmh.error.IdDoesNotExistError
-
-    @classmethod
-    def _get_license_uri(cls, experiment):
-        return cls._get_param("license_uri", cls.NS_CC, experiment)
-
-    @classmethod
-    def _get_license_title(cls, experiment):
-        return cls._get_param("license_name", cls.NS_CC, experiment)
-
-    @classmethod
-    def _get_params(self, key, namespace, experiment):
-        parameterset = ExperimentParameterSet.objects.filter(
-                            schema__namespace=namespace,
-                            experiment__id=experiment.id)
-        if len(parameterset) > 0:
-            psm = ParameterSetManager(parameterset=parameterset[0])
-            return psm.get_params(key, True)
-        else:
-            return []
-
 
 def get_server():
-    server = Server(ServerImpl())
+    providers = [_safe_import(p) for p in settings.OAIPMH_PROVIDERS]
+    server = Server(ProxyingServer(providers),
+                    metadata_registry=ProxyingMetadataRegistry(providers))
     return server

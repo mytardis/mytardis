@@ -293,4 +293,9 @@ DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
 DOI_RELATED_INFO_ENABLE = False
 DOI_BASE_URL='http://mytardis.example.com'
 
+OAIPMH_PROVIDERS = [
+    'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
+    'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider'
+]
+
 djcelery.setup_loader()
