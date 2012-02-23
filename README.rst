@@ -20,6 +20,13 @@ can be summarised as:
    the best ways of ensuring that this data is not lost (laboratory
    archives are typically volatile).
 
+Reporting Bugs
+--------------
+
+Bug reports and feature requests can be made via our `public issue tracker`_.
+
+.. _`public issue tracker`: http://mytardis.lighthouseapp.com/
+
 Contributing
 ------------
 
