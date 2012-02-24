@@ -1,5 +1,5 @@
-from tardis.apps.sync.fields import State, transition_on_success
-from tardis.apps.sync.fields import FSMField, map_return_to_transition, true_false_transition
+from tardis.apps.sync.fields import State, FSMField, \
+        map_return_to_transition, true_false_transition
 from transfer_service import TransferService, TransferClient
 
 from .integrity import IntegrityCheck
@@ -52,6 +52,7 @@ class InProgress(State):
 
 
 class Requested(State):
+    # TODO: Investigate workflows to retry request
     transitions = {
         TransferService.TRANSFER_COMPLETE: 'CheckingIntegrity',
         TransferService.TRANSFER_IN_PROGRESS: 'InProgress',
