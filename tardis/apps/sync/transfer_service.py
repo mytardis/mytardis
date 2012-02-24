@@ -36,15 +36,12 @@ transfer_service.py
 
 """
 import logging
-import os.path
 import json
 import urllib
 import httplib2
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-
-from tardis.tardis_portal.models import Experiment
 
 logger = logging.getLogger(__file__)
 
@@ -59,11 +56,13 @@ class TransferService(object):
     TRANSFER_COMPLETE = 1
     TRANSFER_IN_PROGRESS = 2
     TRANSFER_FAILED = 3
+    TRANSFER_BAD_REQUEST = 4
 
     statuses = (
             (TRANSFER_COMPLETE, 'Transfer Complete'),
             (TRANSFER_IN_PROGRESS, 'Transfer In Progress'),
             (TRANSFER_FAILED, 'Transfer Failed'),
+            (TRANSFER_BAD_REQUEST, 'Transfer Bad Request'),
             )
 
     # Exception classes
@@ -102,6 +101,7 @@ class TransferService(object):
 
 
 class HttpClient(object):
+    STATUS_OK = 200
     def _request(self, url, method, headers, data):
         body = None
         if data:
@@ -119,10 +119,11 @@ class HttpClient(object):
 
 
 class TransferClient(object):
-    client = HttpClient
+    
+    client_class = HttpClient
 
     def __init__(self):
-        self.client = TransferClient.client()
+        self.client = self.client_class()
 
     def request_file_transfer(self, synced_exp):
         logger.debug('=== sending file request')
@@ -135,21 +136,23 @@ class TransferClient(object):
         # view, so we don't need to guess.
         url = from_url + reverse('sync-get-experiment')
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        data = {}
         data['uid'] = synced_exp.uid
         data['dest_path'] = dest_file_path
         data['site_settings_url'] = settings.MYTARDIS_SITE_URL \
                 + reverse('tardis-site-settings')
         resp, content = self.client.post(url, headers=headers, data=data)
-        if resp.status != 200:
+        if resp.status != self.client_class.STATUS_OK:
             logger.error('File transfer request to %s failed: %s' % (url, resp.reason))
+            return False
 
-        return resp.status == 200
+        return resp.status == self.client_class.STATUS_OK
 
     def get_status(self, synced_exp):
         url = synced_exp.provider_url \
                 + reverse('sync-transfer-status', args=[synced_exp.uid])
         resp, content = self.client.get(url)
-        if resp.status == 200:
+        if resp.status == self.client_class.STATUS_OK:
             return json.loads(content)
         logger.warning('Status request to %s failed: %s' % (url, resp.reason))
         return {
