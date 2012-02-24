@@ -37,19 +37,13 @@ views.py
 """
 import logging
 import json
-from urllib import urlencode
-from urllib2 import urlopen, HTTPError, URLError
 
 from django.http import HttpResponse
 from django.template import Context
 from django.shortcuts import render_to_response
-from django.conf import settings
 
-from tardis.apps.sync.managers import manager
 from tardis.apps.sync.models import SyncedExperiment
 from tardis.apps.sync.forms import FileTransferRequestForm
-from tardis.tardis_portal import models
-from django.core.urlresolvers import reverse
 
 from transfer_service import TransferService
 
@@ -110,7 +104,7 @@ def transfer_status(request, uid):
     try:
         json_dict = ts.get_status(uid)
     except TransferService.InvalidUIDError:
-        json_dict = { 'error': 'invalid UID' }
+        json_dict = { 'status': TransferService.TRANSFER_BAD_REQUEST, 'error': 'invalid UID',}
     response = HttpResponse(json.dumps(json_dict), mimetype='application/json')
     response['Pragma'] = 'no-cache'
     response['Cache-Control'] = 'no-cache, must-revalidate'
