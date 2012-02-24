@@ -43,7 +43,7 @@ from django.conf.urls.defaults import patterns, include, url
 provider_urls = patterns(
             'tardis.apps.sync.views',
             url(r'^get/', 'get_experiment', name='sync-get-experiment'),
-            url(r'^status/(?P<uid>\d+)/', 'transfer_status', name='sync-transfer-status'),
+            url(r'^status/(?P<uid>\w+)/', 'transfer_status', name='sync-transfer-status'),
         )
 
 # urls that present the API for the provider to inform the consumer
