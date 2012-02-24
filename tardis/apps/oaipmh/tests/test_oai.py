@@ -13,7 +13,10 @@ from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import Experiment
 
 def _create_test_data():
-    user = User(username='testuser')
+    user = User(username='tom',
+                first_name='Thomas',
+                last_name='Atkins',
+                email='tommy@atkins.net')
     user.save()
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
@@ -26,7 +29,7 @@ def _create_test_data():
     psm = cch.get_or_create_cc_parameterset()
     psm.set_param("license_name", cc_name, "License Name")
     psm.set_param("license_uri", cc_uri, "License URI")
-    return experiment
+    return (user, experiment)
 
 class EndpointTestCase(TestCase):
 
@@ -47,7 +50,7 @@ class EndpointTestCase(TestCase):
 
     def testGetRecord(self):
         ns = self.ns
-        experiment = _create_test_data()
+        _, experiment = _create_test_data()
         args = {
             'verb': 'GetRecord',
             'metadataPrefix': 'rif',
@@ -118,9 +121,17 @@ class EndpointTestCase(TestCase):
         expect(collection.xpath('r:rights/r:license/text()',
             namespaces=ns)) \
             .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
+        # <relatedObject>
+        #     <key>user/1</key>
+        #     <relation type="hasCollector"/>
+        #     <relation type="isManagedBy"/>
+        # </relatedObjexperimentect>
+        expect(collection.xpath('r:relatedObject/r:key/text()',
+            namespaces=ns)) \
+            .to_equal(['example.com/user/1'])
 
     def testListIdentifiers(self):
-        experiment = _create_test_data()
+        user, experiment = _create_test_data()
         args = {
             'verb': 'ListIdentifiers',
             'metadataPrefix': 'rif'
@@ -138,13 +149,14 @@ class EndpointTestCase(TestCase):
         assert not xml.xpath('o:error', namespaces=ns)
         idents = xml.xpath('/o:OAI-PMH/o:ListIdentifiers/o:header/o:identifier',
                            namespaces=ns)
-        assert len(idents) == 1
-        assert idents[0].text == 'experiment/%d' % experiment.id
+        assert len(idents) == 2
+        assert 'experiment/%d' % experiment.id in [i.text for i in idents]
+        assert 'user/%d' % user.id in [i.text for i in idents]
 
     def testListMetadataFormats(self):
         ns = self.ns
         # Without Identifier
-        experiment = _create_test_data()
+        _, experiment = _create_test_data()
         args = {
             'verb': 'ListMetadataFormats'
         }
@@ -185,7 +197,7 @@ class EndpointTestCase(TestCase):
 
     def testListRecords(self):
         ns = self.ns
-        experiment = _create_test_data()
+        user, experiment = _create_test_data()
         args = {
             'verb': 'ListRecords',
             'metadataPrefix': 'rif'
@@ -202,14 +214,18 @@ class EndpointTestCase(TestCase):
         idents = xml.xpath('/o:OAI-PMH/o:ListRecords'+
                            '/o:record/o:header/o:identifier',
                            namespaces=ns)
-        assert len(idents) == 1
-        assert idents[0].text == 'experiment/%d' % experiment.id
-        metadata = xml.xpath('/o:OAI-PMH/o:ListRecords/o:record/o:metadata',
-                           namespaces=ns)
-        assert len(metadata) == 1
-        obj = metadata[0].getchildren()[0].getchildren()
-        assert len(obj) == 1
-        self._check_reg_obj(experiment, obj[0])
+        assert len(idents) == 2
+        assert 'experiment/%d' % experiment.id in [i.text for i in idents]
+        assert 'user/%d' % user.id in [i.text for i in idents]
+        metadata_xpath = '/o:OAI-PMH/o:ListRecords/o:record/o:metadata'
+        metadata = xml.xpath(metadata_xpath, namespaces=ns)
+        assert len(metadata) == 2
+        collectionObject = xml.xpath(metadata_xpath+
+                                     '/r:registryObjects/r:registryObject'+
+                                     '[r:collection]',
+                                     namespaces=ns)
+        assert len(collectionObject) == 1
+        self._check_reg_obj(experiment, collectionObject[0])
 
 
 
