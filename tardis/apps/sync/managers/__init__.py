@@ -1,7 +1,7 @@
 from django.utils import importlib
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-import os
+import os.path
 
 def load_manager():
     
@@ -13,10 +13,10 @@ def load_manager():
         return getattr(importlib.import_module(module), cls)
 
     except ImportError, e:
-        manager_dir = os.path.join(__path__[0], 'managers')
+        manager_dir = __path__[0]
 
         available_managers = [
-                os.path.splittext(f)[0].split("__backend")[0] for f in os.listdir(manager_dir)
+                __import__('tardis.apps.sync.managers.' + os.path.splitext(f)[0]) for f in os.listdir(manager_dir)
                 if not f.startswith('_')
                 and not f.startswith('.')
                 and not f.endswith('.pyc')

@@ -37,15 +37,14 @@ default_manager.py
 """
 import logging
 import os.path
-import urllib2
-import datetime
+from httplib2 import Http
+from datetime import datetime
 
 from django.conf import settings
 
-from tardis.apps.sync.site_parser import SiteParser
-from tardis.apps.sync.site_settings_parser import SiteSettingsParser
+from tardis.apps.sync.site_manager import SiteManager
 from tardis.tardis_portal.models import Experiment
-from tardis.tardis_portal import MultiPartForm
+from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
 from ..transfer_service import TransferService
 
@@ -61,60 +60,27 @@ class SyncManager(object):
 
     def __init__(self, institution='tardis'):
         self.institution = institution
-        url = settings.MYTARDIS_SITES_URL
-        logger.debug('fetching mytardis sites from %s' % url)
-        try:
-            sites_username = settings.MYTARDIS_SITES_USERNAME
-            sites_password = settings.MYTARDIS_SITES_PASSWORD
-        except AttributeError:
-            sites_username = ''
-            sites_password = ''
-
-        self.site_parser = SiteParser(url, sites_username, sites_password)
-
+        self.sites = None
+        self.site_manager = SiteManager()
 
     def generate_exp_uid(self, experiment):
         uid_str = "%s.%s" % (self.institution, experiment.pk)
         return uid_str
 
-
     def _exp_from_uid(self, uid):
         try:
             [institution, pk] = uid.split('.')
+            pk = int(pk)
         except ValueError:
-            raise TransferService.InvalidUIDError()
+            raise TransferService.InvalidUIDError('Invalid format')
 
         if institution != self.institution:
-            raise TransferService.InvalidUIDError()
+            raise TransferService.InvalidUIDError('Invalid institution')
         try:
-            exp = Experiment.objects.get(pk=int(pk))
+            exp = Experiment.objects.get(pk=pk)
         except Experiment.DoesNotExist:
-            raise TransferService.InvalidUIDError()
-
+            raise TransferService.InvalidUIDError('Experiment does not exist')
         return exp
-
-
-    def _get_sites(self):
-        #TODO rewrite the parser to get tuples straight up
-        # TODO generator function
-        sites = []
-        try:
-            site_names = self.site_parser.getSiteNames()
-        except:
-            return TransferService.SiteError('Error parsing site settings')
-
-        for name in site_names:
-            try:
-                url = self.site_parser.getSiteSettingsURL(name)
-                username = self.site_parser.getSiteSettingsUsername(name)
-                password = self.site_parser.getSiteSettingsPassword(name)
-            except:
-                return TransferService.SiteError('Error parsing site settings')
-
-            sites.append((name, url, username, password))
-
-        return sites
-
 
     # originally '_register_file_settings' in parser
     #
@@ -123,110 +89,99 @@ class SyncManager(object):
     #
     def push_experiment_to_institutions(self, experiment, owners):
         """
-        ingests meta-data and transfers data to experiment owner's
-        mytardis instance at the home institute
+        Transfers experiment metadata to experiment owner's
+        MyTardis instance at the home institute.
 
-        :keyword experiment: cleaned form data
-        :keyword owners: id of experiment to be transfered
+        :keyword experiment: Experiment object to transfer.
+        :keyword owners: Emails of owners of the experiment.
         """
-
-        #
-        # register at home institute
-        #
-
+        sites = []
         # loop over sites
-        for (name, url, u, p) in self._get_sites():
-            # fetch a MyTARDIS site's config
-            logger.debug('fetching site config for %s from %s' % (name, url))
-            try:
-                ssp = self.get_site_settings(url)
-            except:
-                logger.exception('fetching site config from %s FAILED' % url)
-                continue
-
+        for ss in self.site_manager.sites():
             # is the email domain of the experiment's owner registered
             # by any site?
             siteOwners = []
             for owner in owners:
-                for domain in ssp.getEmailEndswith():
+                for domain in ss['email-endswith']:
                     if owner.endswith(domain):
                         siteOwners.append(owner)
                         break
 
+            register_settings = ss['register']
+
             # register meta-data and file transfer request at another
             # MyTARDIS instance
             if siteOwners:
-                # Create the form with simple fields
-                uid = self.generate_exp_uid(experiment)
-                mpform = MultiPartForm()
-                mpform.add_field('username', ssp.getRegisterSetting('username'))
-                mpform.add_field('password', ssp.getRegisterSetting('password'))
-                mpform.add_field('from_url', request.build_absolute_uri())
-                mpform.add_field('originid', uid)
-
-                for siteOwner in siteOwners:
-                    mpform.add_field('experiment_owner', siteOwner)
-
-                protocol = ssp.getRegisterSetting('fileProtocol')
-
-                # export METS file
-                filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
-                logger.debug('=== extracting mets file for experiment %i ' % uid)
-                from tardis.tardis_portal.metsexporter import MetsExporter
-                exporter = MetsExporter()
-                if protocol:
-                    # translate vbl:// into tardis:// url for datafiles
-                    metsfile = exporter.export(experimentId=experiment.id,
-                                               replace_protocols={'vbl': protocol},
-                                               filename=filename,
-                                               export_images=False)
-                else:
-                    metsfile = exporter.export(experimentId=experiment.id,
-                                               filename=filename,
-                                               export_images=False)
-                logger.debug('=== extraction done, filename = %s' % metsfile)
-
-                f = open(metsfile, "r")
-                mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
-
-                ws = ssp.getRegisterSetting('url')
-                logger.debug('about to send register request to site %s' % ws)
-                # build the request
-                requestmp = urllib2.Request(ws)
-                requestmp.add_header('User-agent', 'PyMOTW (http://www.doughellmann.com/PyMOTW/)')
-                body = str(mpform)
-                requestmp.add_header('Content-type', mpform.get_content_type())
-                requestmp.add_header('Content-length', len(body))
-
-                # This should be made into a background task.
-                # logger.debug('OUTGOING DATA: ' + body)
-                logger.debug('SERVER RESPONSE: ' + urllib2.urlopen(requestmp, body, 99999).read())
-
-                f.close()
-                sites.append(url)
-
+                success = self._post_experiment(experiment, site_owners, register_settings)
+                sites.append((url, success))
         # return a list of registered sites
         return sites
 
-        return []
+    def _post_experiment(self, experiment, site_owners, site_settings):
+        uid = self.generate_exp_uid(experiment)
+        url = site_settings['url']
+        username = site_settings['username']
+        password = site_settings['password']
+        protocol = site_settings['fileProtocol']
 
+        # Create the form with simple fields
+        mpform = MultiPartForm()
+        mpform.add_field('username', username)
+        mpform.add_field('password', password)
+        mpform.add_field('from_url', settings.MYTARDIS_SITE_URL)
+        mpform.add_field('originid', uid)
 
-    def _get_site_settings(self, site_settings_url):
-        # check if the requesting site is known (very basic
-        # security)
-        for name, url, u, p in self._get_sites():
-            if site_settings_url == url:
-                # read remote MyTARDIS config
-                logger.info('Found site "%s", retrieving settings.' % name)
-                return SiteSettingsParser(site_settings_url, u, p)
-        raise TransferService.SiteError('Unknown site')
+        for owner in site_owners:
+            mpform.add_field('experiment_owner', owner)
 
+        # export METS file
+        filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
+        logger.debug('=== extracting mets file for experiment %s ' % uid)
+        from tardis.tardis_portal.metsexporter import MetsExporter
+        exporter = MetsExporter()
+        if protocol:
+            # translate vbl:// into tardis:// url for datafiles
+            metsfile = exporter.export(experimentId=experiment.id,
+                                       replace_protocols={'vbl': protocol},
+                                       filename=filename,
+                                       export_images=False)
+        else:
+            metsfile = exporter.export(experimentId=experiment.id,
+                                       filename=filename,
+                                       export_images=False)
+        logger.debug('=== extraction done, filename = %s' % metsfile)
+
+        f = open(metsfile, "r")
+        mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
+        body = str(mpform)
+
+        logger.debug('about to send register request to site %s' % url)
+
+        # build the request
+        headers = { 'User-agent': 'MyTardis',
+                    'Content-type': mpform.get_content_type(),
+                    'Content-length': len(body) }
+
+        # This should be made into a background task.
+        # Or rather- the processing on the other end should be.
+        h = Http(timeout=9999)
+        h.force_exception_to_status_code = True
+        resp, content = h.request(url, 'POST', headers=headers, body=body)
+        f.close()
+
+        if resp.status != 200:
+            logger.error('Posting experiment to %s failed:' % url)
+            logger.error('%s: %s' % (resp.status, resp.reason))
+            logger.debug('SERVER RESPONSE: ' + content)
+            return False
+        return True
 
     def start_file_transfer(self, uid, site_settings_url, dest_path):
         exp = self._exp_from_uid(uid)
-        site_settings = self._get_site_settings(site_settings_url)
-        return self._start_file_transfer(exp, site_settings, dest_path)
-
+        site_settings = self.site_manager.get_site_settings(site_settings_url)
+        if site_settings is None:
+            raise TransferService.SiteError('Error retrieving settings for site %s' % site_settings_url)
+        return self._start_file_transfer(exp, site_settings['transfer'], dest_path)
 
     def get_status(self, uid):
         exp = self._exp_from_uid(uid)
@@ -238,5 +193,5 @@ class SyncManager(object):
 
 
     def _get_status(self, experiment):
-        return (TransferService.TRANSFER_IN_PROGRESS, datetime.now(), {})
+        return (TransferService.TRANSFER_FAILED, datetime.now(), {})
 
