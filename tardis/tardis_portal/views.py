@@ -763,6 +763,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
     '''
 
+    
     f = open(filename)
     firstline = f.readline()
     f.close()
@@ -928,7 +929,7 @@ def retrieve_parameters(request, dataset_file_id):
 
 @never_cache
 @authz.dataset_access_required
-def retrieve_datafile_list(request, dataset_id):
+def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/ajax/datafile_list.html'):
 
     params = {}
 
@@ -1011,8 +1012,7 @@ def retrieve_datafile_list(request, dataset_id):
         'params' : params
 
         })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/datafile_list.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 @login_required()
@@ -1031,6 +1031,7 @@ def control_panel(request):
 
 @oracle_dbops_hack
 def search_experiment(request):
+    
     """Either show the search experiment form or the result of the search
     experiment query.
 
