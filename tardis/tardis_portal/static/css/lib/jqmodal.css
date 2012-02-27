@@ -91,7 +91,7 @@ div.jqmAlert .jqmClose {
   display:block;
   float:right;
   clear:right;
-  background:transparent url(../images/jqmodal/close_icon_double.png) 0 0 no-repeat;
+  background:transparent url(../../images/jqmodal/close_icon_double.png) 0 0 no-repeat;
 }
 
 div.jqmAlert a.jqmClose:hover,div.jqmAlert a.jqmCloseHover{ background-position: 0 -20px; }
@@ -104,7 +104,7 @@ div.jqmAlertContent{
   margin:5px;
   border:1px dotted #111;
   letter-spacing:0px;
-  background:#111 url(../images/jqmodal/darkgrid.png);
+  background:#111 url(../../images/jqmodal/darkgrid.png);
   overflow: auto;
   height: 420px;
 }
@@ -142,7 +142,7 @@ div.jqmAlertContentLoading{
   margin:5px;
   border:1px dotted #111;
   letter-spacing:0px;
-  background:#111 url(../images/jqmodal/darkgrid.png);
+  background:#111 url(../../images/jqmodal/darkgrid.png);
   overflow: auto;
   height: 110px;
 }
@@ -175,7 +175,7 @@ div.jqmAlertContentStatus{
   padding: 4px;
   border:1px dotted #111;
   letter-spacing:0px;
-  background:#111 url(../images/jqmodal/darkgrid.png);
+  background:#111 url(../../images/jqmodal/darkgrid.png);
   overflow: auto;
   height: 60px;
   text-align: center;
@@ -187,7 +187,7 @@ div.jqmAlertStatus .jqmClose {
   display:block;
   float:right;
   clear:right;
-  background:transparent url(../images/jqmodal/close_icon_double.png) 0 0 no-repeat;
+  background:transparent url(../../images/jqmodal/close_icon_double.png) 0 0 no-repeat;
 }
 
 
