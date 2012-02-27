@@ -9,9 +9,8 @@ from .integrity import IntegrityCheck
 def _check_status(experiment):
     status_dict = TransferClient().get_status(experiment)
     code = status_dict['status']
-#    if code == TransferService.TRANSFER_FAILED:
-#        experiment.msg = '%s: %s' % (status_dict['readable_status'], status_dict['message'])
-#        experiment.save()
+    experiment.msg = '%s: %s' % (status_dict['human_status'], status_dict['message'])
+    experiment.save()
     return code
 
 

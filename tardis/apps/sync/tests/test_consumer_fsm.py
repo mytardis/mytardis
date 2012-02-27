@@ -63,6 +63,11 @@ class ClockTestCase(TestCase):
         self.mock_integrity = flexmock()
         flexmock(IntegrityCheck).new_instances(self.mock_integrity)
 
+        self.status = {
+                'human_status': 'this is a readable status',
+                'message': 'this is a message'
+                }
+
     def transitionCheck(self, initial_state, expected_state):
         self.exp.id = 0
         self.exp.save()
@@ -80,6 +85,10 @@ class ClockTestCase(TestCase):
         print 'Expected  ->', expected_state(),
         self.assertIsInstance(new.state, expected_state)
 
+    def _mock_get_status(self, status):
+        self.status['status'] = status
+        self.mock_ts.should_receive('get_status').and_return(self.status)
+
     # Positive transitions (everything is excellent all the time)
 
     def testGetsNewEntries(self):
@@ -87,23 +96,19 @@ class ClockTestCase(TestCase):
         self.transitionCheck(Ingested, Requested)
 
     def testRequestedTransferNowInProgress(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_IN_PROGRESS })
+        self._mock_get_status(TransferService.TRANSFER_IN_PROGRESS)
         self.transitionCheck(Requested, InProgress)
 
     def testRequestedTransferCompletesInstantly(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_COMPLETE })
+        self._mock_get_status(TransferService.TRANSFER_COMPLETE)
         self.transitionCheck(Requested, CheckingIntegrity)
 
     def testWaitsForTransferCompletion(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_IN_PROGRESS })
+        self._mock_get_status(TransferService.TRANSFER_IN_PROGRESS)
         self.transitionCheck(InProgress, InProgress)
 
     def testChecksIntegrityAfterTransferCompletion(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_COMPLETE })
+        self._mock_get_status(TransferService.TRANSFER_COMPLETE)
         self.transitionCheck(InProgress, CheckingIntegrity)
 
     def testCompleteAfterIntegrityCheckPasses(self):
@@ -127,18 +132,15 @@ class ClockTestCase(TestCase):
 
     def testTransferNotStarted(self):
         # We may need a TRANSFER_REQUEST_RECEIVED or TRANSFER_STARTED
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_FAILED })
+        self._mock_get_status(TransferService.TRANSFER_FAILED)
         self.transitionCheck(Requested, FailPermanent)
 
     def testInProgressTransferFailed(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_FAILED })
+        self._mock_get_status(TransferService.TRANSFER_FAILED)
         self.transitionCheck(InProgress, FailPermanent)
 
     def testIntegrityCheckFailed(self):
-        self.mock_ts.should_receive('get_status').and_return(
-                { 'status': TransferService.TRANSFER_COMPLETE })
+        self._mock_get_status(TransferService.TRANSFER_COMPLETE)
         self.mock_integrity.should_receive('all_files_complete').and_return(False)
         self.transitionCheck(CheckingIntegrity, FailPermanent)
 

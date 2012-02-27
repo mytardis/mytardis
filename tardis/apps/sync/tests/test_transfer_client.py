@@ -101,6 +101,8 @@ class TCTransferTestCase(TestCase):
         self.assertTrue('dest_path' in data)
         self.assertTrue('site_settings_url' in data)
 
+        self.assertEqual(data['dest_path'], str(self.se.experiment.id))
+
 
 def get_json(json_dict):
     import json

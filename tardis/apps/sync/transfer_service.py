@@ -70,6 +70,12 @@ class TransferService(object):
     TransferError = type('TransferError', (Exception,), {})
     InvalidUIDError = type('InvalidUIDError', (Exception,), {})
 
+    @classmethod
+    def find_status(cls, code):
+        try:
+            return filter(lambda s: s[0] == code, cls.statuses)[0]
+        except IndexError:
+            return None
 
     def __init__(self, manager=None):
         if manager:
@@ -89,11 +95,14 @@ class TransferService(object):
         (code, timestamp, status_dict) = self.manager.get_status(uid)
 
         status = status_dict
-        try:
-            status['status'] = filter(lambda s: s[0] == code, statuses)[0]
-        except IndexError:
+        status_tuple = TransferService.find_status(code)
+        if status_tuple is None:
             return None
+        status['status'] = status_tuple[0]
+        status['human_status'] = status_tuple[1]
         status['timestamp'] = timestamp
+        status['message'] = status.get('message', '')
+        #status['progress'] = status.get('progress', '')
         return status
 
     def push_experiment_to_institutions(self, experiment, owners):

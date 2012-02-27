@@ -37,8 +37,8 @@ default_manager.py
 """
 import logging
 import os.path
+import time
 from httplib2 import Http
-from datetime import datetime
 
 from django.conf import settings
 
@@ -193,5 +193,5 @@ class SyncManager(object):
 
 
     def _get_status(self, experiment):
-        return (TransferService.TRANSFER_FAILED, datetime.now(), {})
+        return (TransferService.TRANSFER_FAILED, time.time(), {})
 

@@ -58,6 +58,7 @@ class SyncedExperiment(models.Model):
     # Keep track of which provider this experiment came from.
     # This might be better as another table if there's more to store.
     provider_url = models.TextField()
+    msg = models.TextField(default='')
     
 #    def __init__(self, *args, **kwargs):
 #        self.uid = 0
