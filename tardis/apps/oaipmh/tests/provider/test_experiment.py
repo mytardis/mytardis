@@ -68,7 +68,8 @@ class AbstractExperimentProviderTC():
                 pass
 
     def testListIdentifiers(self):
-        headers = self._getProvider().listIdentifiers(self._getProviderMetadataPrefix())
+        headers = self._getProvider() \
+                      .listIdentifiers(self._getProviderMetadataPrefix())
         # Iterate through headers
         for header in headers:
             expect(header.identifier()).to_contain(str(self._experiment.id))

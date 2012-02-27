@@ -221,7 +221,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         # name
         name = SubElement(collection, _nsrif('name') )
         name.set('type', 'primary')
-        SubElement(name, _nsrif('namePart')).text = metadata.getMap().get('title')
+        SubElement(name, _nsrif('namePart')).text = \
+                                                metadata.getMap().get('title')
         # description
         description = SubElement(collection, _nsrif('description') )
         description.set('type', 'brief')

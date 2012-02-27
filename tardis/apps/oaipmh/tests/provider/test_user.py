@@ -9,6 +9,8 @@ import oaipmh.interfaces
 
 import pytz
 
+from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_local_time
 
 from ...provider.user import RifCsUserProvider
@@ -19,7 +21,18 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
-    return user
+    experiment = Experiment(title='Norwegian Blue',
+                            description='Parrot + 40kV',
+                            created_by=user)
+    experiment.public = True
+    experiment.save()
+    cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
+    cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'
+    cch = CreativeCommonsHandler(experiment_id=experiment.id)
+    psm = cch.get_or_create_cc_parameterset()
+    psm.set_param("license_name", cc_name, "License Name")
+    psm.set_param("license_uri", cc_uri, "License URI")
+    return (user, experiment)
 
 class RifCsUserProviderTestCase(TestCase):
 
@@ -30,7 +43,7 @@ class RifCsUserProviderTestCase(TestCase):
         return RifCsUserProvider(RequestSite(FakeRequest()))
 
     def setUp(self):
-        self._user = _create_test_data()
+        self._user, self._experiment = _create_test_data()
 
     def testIdentify(self):
         '''
@@ -54,8 +67,14 @@ class RifCsUserProviderTestCase(TestCase):
             expect(header.identifier()).to_contain(str(self._user.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc))\
                 .to_equal(get_local_time(self._user.last_login))
-        # There should only have been one
+        # There should be two
         expect(len(headers)).to_equal(1)
+        # Now we check that users need a public experiment to turn up
+        self._experiment.public = False
+        self._experiment.save()
+        # No public experiment, so there should be zero
+        headers = self._getProvider().listIdentifiers('rif')
+        expect(len(headers)).to_equal(0)
 
     def testListIdentifiersDoesNotHandleSets(self):
         def call_with_set():
