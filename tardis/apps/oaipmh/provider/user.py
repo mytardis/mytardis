@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.sites.models import Site
 from lxml.etree import SubElement
 
 from oaipmh.common import Identify, Header, Metadata
@@ -133,21 +132,24 @@ class RifCsUserProvider(BaseProvider):
         return metadataPrefix == 'rif'
 
     @staticmethod
-    def get_rifcs_id(id_):
-        return "%s/user/%s" % (Site.objects.get_current().domain, id_)
+    def get_rifcs_id(id_, site_= None):
+        return "%s/user/%s" % (getattr(settings,
+                                       'RIFCS_KEY',
+                                       site_.domain),
+                               id_)
 
     def writeMetadata(self, element, metadata):
         from .experiment import RifCsExperimentProvider
         def _nsrif(name):
             return '{%s}%s' % (self.RIFCS_NS, name)
         def _get_id(metadata):
-            return self.get_rifcs_id(metadata.getMap().get('id'))
+            return self.get_rifcs_id(metadata.getMap().get('id'), self._site)
         def _get_group(metadata):
             return metadata.getMap().get('group', getattr(settings,
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % Site.objects.get_current().domain
+            return "http://%s/" % self._site.domain
         # registryObjects
         wrapper = SubElement(element, _nsrif('registryObjects'), \
                        nsmap={None: self.RIFCS_NS, 'xsi': NS_XSI} )
@@ -183,7 +185,7 @@ class RifCsUserProvider(BaseProvider):
         for experiment in metadata.getMap().get('owns'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsExperimentProvider.get_rifcs_id(experiment.id)
+                RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isCollectorOf')
 

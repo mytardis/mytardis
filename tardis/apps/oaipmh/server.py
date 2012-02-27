@@ -18,7 +18,7 @@ import itertools
 import pytz
 from sets import Set
 
-def _safe_import(path):
+def _safe_import_class(path):
     try:
         dot = path.rindex('.')
     except ValueError:
@@ -34,8 +34,7 @@ def _safe_import(path):
     except AttributeError:
         raise ImproperlyConfigured('Module "%s" does not define a "%s" class' %
                                    (module_, classname_))
-    auth_instance = auth_class()
-    return auth_instance
+    return auth_class
 
 
 class ProxyingMetadataRegistry(MetadataRegistry):
@@ -241,9 +240,19 @@ class ProxyingServer(IOAI):
         # We might as well advertise our ignorance
         return ['noreply@'+current_site]
 
+_servers = {}
 
-def get_server():
-    providers = [_safe_import(p) for p in settings.OAIPMH_PROVIDERS]
+def get_server(current_site):
+    # Lookup for existing server first
+    if _servers.has_key(current_site.domain):
+        return _servers[current_site.domain]
+    def create_provider(provider_name):
+        class_ = _safe_import_class(provider_name)
+        return class_(current_site)
+    # Create new objects with site argument
+    providers = [create_provider(p) for p in settings.OAIPMH_PROVIDERS]
     server = Server(ProxyingServer(providers),
                     metadata_registry=ProxyingMetadataRegistry(providers))
+    # Memoize
+    _servers[current_site.domain] = server
     return server

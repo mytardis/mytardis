@@ -1,5 +1,7 @@
 from compare import expect
+
 from django.contrib.auth.models import User
+from django.contrib.sites.models import RequestSite
 from django.test import TestCase
 
 import oaipmh.error
@@ -22,7 +24,10 @@ def _create_test_data():
 class RifCsUserProviderTestCase(TestCase):
 
     def _getProvider(self):
-        return RifCsUserProvider()
+        class FakeRequest():
+            def get_host(self):
+                return 'example.test'
+        return RifCsUserProvider(RequestSite(FakeRequest()))
 
     def setUp(self):
         self._user = _create_test_data()

@@ -1,4 +1,6 @@
 from compare import expect
+
+from django.contrib.sites.models import RequestSite
 from django.test import TestCase
 
 import oaipmh.error
@@ -9,7 +11,10 @@ from ...provider.base import BaseProvider
 class BaseProviderTestCase(TestCase):
 
     def setUp(self):
-        self.provider = BaseProvider()
+        class FakeRequest():
+            def get_host(self):
+                return 'example.test'
+        self.provider = BaseProvider(RequestSite(FakeRequest()))
 
     def testGetRecord(self):
         '''

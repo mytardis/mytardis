@@ -1,7 +1,9 @@
 from abc import ABCMeta, abstractmethod
 
 from compare import expect
+
 from django.contrib.auth.models import User
+from django.contrib.sites.models import RequestSite
 from django.test import TestCase
 
 import oaipmh.error
@@ -37,7 +39,10 @@ class AbstractExperimentProviderTC():
 
     @abstractmethod
     def _getProvider(self):
-        return AbstractExperimentProvider()
+        class FakeRequest():
+            def get_host(self):
+                return 'example.test'
+        return AbstractExperimentProvider(RequestSite(FakeRequest()))
 
     @abstractmethod
     def _getProviderMetadataPrefix(self):
@@ -104,7 +109,10 @@ class AbstractExperimentProviderTC():
 class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def _getProvider(self):
-        return DcExperimentProvider()
+        class FakeRequest():
+            def get_host(self):
+                return 'example.test'
+        return DcExperimentProvider(RequestSite(FakeRequest()))
 
     def _getProviderMetadataPrefix(self):
         return 'oai_dc'
@@ -145,7 +153,10 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
 
     def _getProvider(self):
-        return RifCsExperimentProvider()
+        class FakeRequest():
+            def get_host(self):
+                return 'example.test'
+        return RifCsExperimentProvider(RequestSite(FakeRequest()))
 
     def _getProviderMetadataPrefix(self):
         return 'rif'
@@ -161,9 +172,9 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             .to_equal(str(self._experiment.title))
         expect(metadata.getField('description'))\
             .to_equal(str(self._experiment.description))
-        expect(metadata.getField('license_uri'))\
+        expect(metadata.getField('licence_uri'))\
             .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
-        expect(metadata.getField('license_name'))\
+        expect(metadata.getField('licence_name'))\
             .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
         expect(about).to_equal(None)
 
@@ -178,9 +189,9 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                 .to_equal(str(self._experiment.title))
             expect(metadata.getField('description'))\
                 .to_equal(str(self._experiment.description))
-            expect(metadata.getField('license_uri'))\
+            expect(metadata.getField('licence_uri'))\
                 .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
-            expect(metadata.getField('license_name'))\
+            expect(metadata.getField('licence_name'))\
                 .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
         # There should only have been one
         expect(len(results)).to_equal(1)

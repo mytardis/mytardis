@@ -34,12 +34,12 @@ def _create_test_data():
 class EndpointTestCase(TestCase):
 
     def setUp(self):
-        self.client = Client()
+        self._client = Client()
         self.ns = {'r': 'http://ands.org.au/standards/rif-cs/registryObjects',
                    'o': 'http://www.openarchives.org/OAI/2.0/'}
 
     def testIdentify(self):
-        response = self.client.get('/apps/oaipmh/?verb=Identify')
+        response = self._client_get('/apps/oaipmh/?verb=Identify')
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -56,9 +56,9 @@ class EndpointTestCase(TestCase):
             'metadataPrefix': 'rif',
             'identifier': 'experiment/%d' % experiment.id
         }
-        response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join(['%s=%s' % (k,v)
-                                            for k,v in args.items()]))
+        response = self._client_get('/apps/oaipmh/?%s' %
+                                        '&'.join(['%s=%s' % (k,v)
+                                                  for k,v in args.items()]))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -79,10 +79,10 @@ class EndpointTestCase(TestCase):
 
     def _check_reg_obj(self, experiment, registryObject):
         ns = self.ns
-        # <key>example.com/experiment/1</key>
+        # <key>keydomain.test.example/experiment/1</key>
         expect(registryObject.xpath('r:key/text()', namespaces=ns)[0])\
-            .to_equal('example.com/experiment/%d' % experiment.id)
-        # <originatingSource>http://example.com/</originatingSource>
+            .to_equal('keydomain.test.example/experiment/%d' % experiment.id)
+        # <originatingSource>http://keydomain.test.example/</originatingSource>
         expect(registryObject.xpath('r:originatingSource/text()',
                                     namespaces=ns)[0]) \
                                     .to_equal('http://example.com/')
@@ -102,7 +102,7 @@ class EndpointTestCase(TestCase):
         # <location>
         #     <address>
         #         <electronic type="url">
-        #            http://example.com/experiment/view/1/
+        #            http://keydomain.test.example/experiment/view/1/
         #         </electronic>
         #     </address>
         # </location>
@@ -111,14 +111,14 @@ class EndpointTestCase(TestCase):
                 .to_equal('http://example.com/experiment/view/%d/' %
                           experiment.id)
         # <rights>
-        #     <license rightsUri="http://creativecommons.org/licenses/by-nd/2.5/au/">
+        #     <licence rightsUri="http://creativecommons.org/licenses/by-nd/2.5/au/">
         #         Creative Commons Attribution-NoDerivs 2.5 Australia
-        #     </license>
+        #     </licence>
         # </location>
-        expect(collection.xpath('r:rights/r:license/@rightsUri',
+        expect(collection.xpath('r:rights/r:licence/@rightsUri',
             namespaces=ns)) \
             .to_equal(['http://creativecommons.org/licenses/by-nd/2.5/au/'])
-        expect(collection.xpath('r:rights/r:license/text()',
+        expect(collection.xpath('r:rights/r:licence/text()',
             namespaces=ns)) \
             .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
         # <relatedObject>
@@ -128,7 +128,7 @@ class EndpointTestCase(TestCase):
         # </relatedObjexperimentect>
         expect(collection.xpath('r:relatedObject/r:key/text()',
             namespaces=ns)) \
-            .to_equal(['example.com/user/1'])
+            .to_equal(['keydomain.test.example/user/1'])
 
     def testListIdentifiers(self):
         user, experiment = _create_test_data()
@@ -136,9 +136,9 @@ class EndpointTestCase(TestCase):
             'verb': 'ListIdentifiers',
             'metadataPrefix': 'rif'
         }
-        response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join('%s=%s' % (k,v)
-                                            for k,v in args.items()))
+        response = self._client_get('/apps/oaipmh/?%s' %
+                                        '&'.join('%s=%s' % (k,v)
+                                                 for k,v in args.items()))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -160,9 +160,9 @@ class EndpointTestCase(TestCase):
         args = {
             'verb': 'ListMetadataFormats'
         }
-        response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join('%s=%s' % (k,v)
-                                            for k,v in args.items()))
+        response = self._client_get('/apps/oaipmh/?%s' %
+                                        '&'.join('%s=%s' % (k,v)
+                                                 for k,v in args.items()))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -179,9 +179,9 @@ class EndpointTestCase(TestCase):
             'verb': 'ListMetadataFormats',
             'identifier': 'experiment/%d' % experiment.id
         }
-        response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join('%s=%s' % (k,v)
-                                            for k,v in args.items()))
+        response = self._client_get('/apps/oaipmh/?%s' %
+                                        '&'.join('%s=%s' % (k,v)
+                                                 for k,v in args.items()))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -202,9 +202,9 @@ class EndpointTestCase(TestCase):
             'verb': 'ListRecords',
             'metadataPrefix': 'rif'
         }
-        response = self.client.get('/apps/oaipmh/?%s' %
-                                   '&'.join('%s=%s' % (k,v)
-                                            for k,v in args.items()))
+        response = self._client_get('/apps/oaipmh/?%s' %
+                                        '&'.join('%s=%s' % (k,v)
+                                                 for k,v in args.items()))
         self.assertEqual(response.status_code, 200)
         # Check the response content is good
         xml = etree.fromstring(response.content)
@@ -227,7 +227,8 @@ class EndpointTestCase(TestCase):
         assert len(collectionObject) == 1
         self._check_reg_obj(experiment, collectionObject[0])
 
-
+    def _client_get(self, url):
+        return self._client.get(url)
 
     def tearDown(self):
         pass

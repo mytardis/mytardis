@@ -1,7 +1,6 @@
 from abc import abstractmethod
 
 from django.conf import settings
-from django.contrib.sites.models import Site
 from django.core.urlresolvers import reverse
 from lxml.etree import SubElement
 
@@ -172,8 +171,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'id': experiment.id,
             'title': experiment.title,
             'description': experiment.description,
-            'license_name': cch_psm.get_param('license_name', True),
-            'license_uri': cch_psm.get_param('license_uri', True),
+            # Note: Property names are US-spelling, but RIF-CS is Australian
+            'licence_name': cch_psm.get_param('license_name', True),
+            'licence_uri': cch_psm.get_param('license_uri', True),
             'owner': experiment.created_by
         })
 
@@ -181,25 +181,26 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         return metadataPrefix == 'rif'
 
     @staticmethod
-    def get_rifcs_id(id_):
-        return "%s/experiment/%s" % (Site.objects.get_current().domain, id_)
+    def get_rifcs_id(id_, site_=None):
+        return "%s/experiment/%s" % (getattr(settings, 'RIFCS_KEY',
+                                             site_.domain),
+                                     id_)
 
     def writeMetadata(self, element, metadata):
         from .user import RifCsUserProvider
         def _nsrif(name):
             return '{%s}%s' % (self.RIFCS_NS, name)
         def _get_id(metadata):
-            return "%s/experiment/%s" % \
-                (Site.objects.get_current().domain, metadata.getMap().get('id'))
+            return self.get_rifcs_id(metadata.getMap().get('id'), self._site)
         def _get_group(metadata):
             return metadata.getMap().get('group', getattr(settings,
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % Site.objects.get_current().domain
+            return "http://%s/" % self._site.domain
         def _get_location(metadata):
             return "http://%s%s" % \
-                ( Site.objects.get_current().domain,
+                ( self._site.domain,
                   reverse('experiment', args=[metadata.getMap().get('id')]) )
         # registryObjects
         wrapper = SubElement(element, _nsrif('registryObjects'), \
@@ -234,13 +235,14 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic.text = _get_location(metadata)
         # rights
         rights = SubElement(collection, _nsrif('rights') )
-        license_ = SubElement(rights, _nsrif('license') )
-        license_.set('rightsUri', metadata.getMap().get('license_uri'))
-        license_.text = metadata.getMap().get('license_name')
+        licence_ = SubElement(rights, _nsrif('licence') )
+        licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
+        licence_.text = metadata.getMap().get('licence_name')
         # related object - owner
         relatedObject = SubElement(collection, _nsrif('relatedObject') )
         SubElement(relatedObject, _nsrif('key')).text = \
-            RifCsUserProvider.get_rifcs_id(metadata.getMap().get('owner').id)
+            RifCsUserProvider.get_rifcs_id(metadata.getMap().get('owner').id,
+                                           self._site)
         SubElement(relatedObject, _nsrif('relation')) \
             .set('type', 'hasCollector')
 

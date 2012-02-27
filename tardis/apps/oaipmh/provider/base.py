@@ -3,6 +3,9 @@ import oaipmh.interfaces
 
 class BaseProvider(oaipmh.interfaces.IOAI):
 
+    def __init__(self, site):
+        self._site = site
+
     def getRecord(self, metadataPrefix, identifier):
         """Get a record for a metadataPrefix and identifier.
 

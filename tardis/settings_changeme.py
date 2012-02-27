@@ -161,7 +161,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.staticfiles',
@@ -280,6 +279,7 @@ RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsPro
 RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__),
     'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
 RIFCS_GROUP = "MyTARDIS Default Group"
+RIFCS_KEY = "keydomain.example"
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
 RELATED_OTHER_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
 
