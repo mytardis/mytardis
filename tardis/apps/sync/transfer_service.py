@@ -106,9 +106,11 @@ class HttpClient(object):
         body = None
         if data:
             body = urllib.urlencode(data)
-        headers = {'Content-type': 'application/json'}
+        default_headers = {'Content-type': 'application/json'}
+        if headers:
+            default_headers.update(headers)
         h = httplib2.Http()
-        resp, content = h.request(url, method, headers=headers, body=body)
+        resp, content = h.request(url, method, headers=default_headers, body=body)
         return (resp, content)
 
     def get(self, url, headers={}, data={}):
@@ -124,18 +126,20 @@ class TransferClient(object):
 
     def __init__(self):
         self.client = self.client_class()
+        self.key = getattr(settings, 'SYNC_CLIENT_KEY', '')
 
     def request_file_transfer(self, synced_exp):
-        logger.debug('=== sending file request')
         from_url = synced_exp.provider_url
+        logger.debug('Sending file request to %s' % from_url)
         # This could differ from institution to institution, so a better method
         # of setting the right path is probably needed.
         dest_file_path = str(synced_exp.experiment.id)
         # This reverse assumes that the urlpatterns are the same at each end.
         # It might be better if the from_url pointed directly to the file transfer
         # view, so we don't need to guess.
+        # A proper restful discovery service would be a better way to solve this.
         url = from_url + reverse('sync-get-experiment')
-        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        headers = { 'X_MYTARDIS_KEY': self.key }
         data = {}
         data['uid'] = synced_exp.uid
         data['dest_path'] = dest_file_path
@@ -151,7 +155,8 @@ class TransferClient(object):
     def get_status(self, synced_exp):
         url = synced_exp.provider_url \
                 + reverse('sync-transfer-status', args=[synced_exp.uid])
-        resp, content = self.client.get(url)
+        headers = { 'X_MYTARDIS_KEY': self.key }
+        resp, content = self.client.get(url, headers=headers)
         if resp.status == self.client_class.STATUS_OK:
             return json.loads(content)
         logger.warning('Status request to %s failed: %s' % (url, resp.reason))

@@ -198,3 +198,10 @@ djcelery.setup_loader()
 MYTARDIS_SITES_URL = 'http://localhost:8080/mytardis-sites.xml/'
 MYTARDIS_SITE_URL = 'http://localhost:8080/'
 SYNC_MANAGER = 'managers.default_manager'
+
+SYNC_CLIENT_KEYS = (
+        ('127.0.0.1', 'valid_client_key'),
+        )
+
+SYNC_CLIENT_KEY = 'valid_client_key'
+
