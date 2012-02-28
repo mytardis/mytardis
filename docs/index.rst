@@ -52,6 +52,7 @@ Contents
 
    ref/auth_framework
    ref/filters
+   ref/app_oaipmh
 
    architecture
    data

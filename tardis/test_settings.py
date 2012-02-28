@@ -92,10 +92,12 @@ MIDDLEWARE_CLASSES = (
 TARDIS_APP_ROOT = 'tardis.apps'
 
 def get_all_tardis_apps():
-    tardis_app_dir = TARDIS_APP_ROOT.replace('.', path.sep)
-    names = filter(path.isdir, \
-                   map(lambda name: tardis_app_dir+'/'+name,
-                       listdir(tardis_app_dir)))
+    base_dir = path.join(path.dirname(__file__), '..')
+    tardis_app_dir = path.join(base_dir, *TARDIS_APP_ROOT.split('.'))
+    names = map(lambda name: path.relpath(name, base_dir),
+                filter(path.isdir, \
+                       map(lambda name: path.join(tardis_app_dir, name),
+                           listdir(tardis_app_dir))))
     return sorted(map(lambda name: name.replace(path.sep, '.') , names))
 
 INSTALLED_APPS = get_all_tardis_apps() + [

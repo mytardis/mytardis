@@ -22,7 +22,7 @@ setup_environ(settings)
 # If your extensions (or modules documented by autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath('..'))
 
 # General configuration
 # ---------------------
@@ -44,7 +44,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'MyTARDIS'
+project = u'MyTardis'
 copyright = u'2010, Steve Androulakis'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -166,7 +166,7 @@ htmlhelp_basename = 'tardis'
 # ------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_paper_size = 'a4'
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'
@@ -174,7 +174,7 @@ htmlhelp_basename = 'tardis'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'tardis.tex', ur'MyTARDIS Documentation',
+  ('index', 'tardis.tex', ur'MyTardis Documentation',
    ur'Steve Androulakis', 'manual'),
 ]
 

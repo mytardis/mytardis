@@ -76,18 +76,17 @@ class ProxyingServer(IOAI):
         self.providers = providers
 
     def getRecord(self, metadataPrefix, identifier):
-        """Get a record for a metadataPrefix and identifier.
+        """
+        Get a record for a metadataPrefix and identifier.
 
-        metadataPrefix - identifies metadata set to retrieve
-        identifier - repository-unique identifier of record
+        :raises oaipmh.error.CannotDisseminateFormatError: if no provider
+            returns a result, but at least one provider
+            responds with :py:exc:`oaipmh.error.CannotDisseminateFormatError`
+            (meaning the identifier exists)
+        :raises oaipmh.error.IdDoesNotExistError: if all providers fail with
+            :py:exc:`oaipmh.error.IdDoesNotExistError`
 
-        Should raise error.CannotDisseminateFormatError if
-        metadataPrefix is unknown or not supported by identifier.
-
-        Should raise error.IdDoesNotExistError if identifier is
-        unknown or illegal.
-
-        Returns a header, metadata, about tuple describing the record.
+        :returns: first successful provider response
         """
         id_exists = False
         # Try the providers until we succeed
@@ -105,9 +104,11 @@ class ProxyingServer(IOAI):
         raise oaipmh.error.IdDoesNotExistError
 
     def identify(self):
-        """Retrieve information about the repository.
+        """
+        Retrieve information about the repository.
 
-        Returns an Identify object describing the repository.
+        :returns: an :py:class:`oaipmh.common.Identify` object describing the
+            repository.
         """
         current_site = Site.objects.get_current().domain
         return Identify(
@@ -122,24 +123,21 @@ class ProxyingServer(IOAI):
         )
 
     def listIdentifiers(self, metadataPrefix, **kwargs):
-        """Get a list of header information on records.
+        """
+        Lists identifiers from all providers as a single set.
 
-        metadataPrefix - identifies metadata set to retrieve
-        set - set identifier; only return headers in set (optional)
-        from_ - only retrieve headers from from_ date forward (optional)
-        until - only retrieve headers with dates up to and including
-                until date (optional)
+        :raises error.CannotDisseminateFormatError: if ``metadataPrefix``
+            is not supported by the repository.
 
-        Should raise error.CannotDisseminateFormatError if metadataPrefix
-        is not supported by the repository.
+        :raises error.NoSetHierarchyError: if a set is provided, as the
+            repository does not support sets.
 
-        Should raise error.NoSetHierarchyError if the repository does not
-        support sets.
-
-        Returns an iterable of headers.
+        :returns: a :py:class:`set.Set` of headers.
         """
         if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
+        if metadataPrefix not in [f[0] for f in self.listMetadataFormats()]:
+            raise oaipmh.error.CannotDisseminateFormatError
         def appendIdents(list_, p):
             try:
                 return list_ + p.listIdentifiers(metadataPrefix, **kwargs)
@@ -148,21 +146,17 @@ class ProxyingServer(IOAI):
         return Set(reduce(appendIdents, self.providers, []))
 
     def listMetadataFormats(self, **kwargs):
-        """List metadata formats supported by repository or record.
+        """
+        List metadata formats from all providers in a single set.
 
-        identifier - identify record for which we want to know all
-                     supported metadata formats. if absent, list all metadata
-                     formats supported by repository. (optional)
+        :raises error.IdDoesNotExistError: if record with
+            identifier does not exist.
 
+        :raises error.NoMetadataFormatsError: if no formats are
+            available for the indicated record, but it does exist.
 
-        Should raise error.IdDoesNotExistError if record with
-        identifier does not exist.
-
-        Should raise error.NoMetadataFormatsError if no formats are
-        available for the indicated record.
-
-        Returns an iterable of metadataPrefix, schema, metadataNamespace
-        tuples (each entry in the tuple is a string).
+        :returns: a :py:class:`set.Set` of ``metadataPrefix``, ``schema``,
+            ``metadataNamespace`` tuples (each entry in the tuple is a string).
         """
         id_known = False
         def appendFormats(list_, p):
@@ -183,21 +177,17 @@ class ProxyingServer(IOAI):
         return formats
 
     def listRecords(self, metadataPrefix, **kwargs):
-        """Get a list of header, metadata and about information on records.
+        """
+        Lists records from all providers as a single set.
 
-        metadataPrefix - identifies metadata set to retrieve
-        set - set identifier; only return records in set (optional)
-        from_ - only retrieve records from from_ date forward (optional)
-        until - only retrieve records with dates up to and including
-                until date (optional)
+        :raises error.CannotDisseminateFormatError: if ``metadataPrefix``
+            is not supported by the repository.
 
-        Should raise error.CannotDisseminateFormatError if metadataPrefix
-        is not supported by the repository.
+        :raises error.NoSetHierarchyError: if a set is provided, as the
+            repository does not support sets.
 
-        Should raise error.NoSetHierarchyError if the repository does not
-        support sets.
-
-        Returns an iterable of header, metadata, about tuples.
+        :returns: a :py:class:`set.Set` of ``header``, ``metadata``, ``about``
+            tuples.
         """
         if kwargs.has_key('set') and kwargs['set']:
             raise oaipmh.error.NoSetHierarchyError
@@ -211,12 +201,11 @@ class ProxyingServer(IOAI):
         return Set(reduce(appendRecords, self.providers, []))
 
     def listSets(self):
-        """Get a list of sets in the repository.
+        """
+        List sets.
 
-        Should raise error.NoSetHierarchyError if the repository does not
-        support sets.
-
-        Returns an iterable of setSpec, setName tuples (strings).
+        :raises oaipmh.error.NoSetHierarchyError: because set hierarchies are
+            currrently not implemented
         """
         # Set hierarchies are currrently not implemented
         raise oaipmh.error.NoSetHierarchyError
