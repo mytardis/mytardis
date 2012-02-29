@@ -175,13 +175,13 @@ class RifCsUserProvider(BaseProvider):
         for k,v in namePartMap.items():
             namePart = SubElement(name, _nsrif('namePart'))
             namePart.set('type', k)
-            namePart.text = metadata.getMap().get(v)
+            namePart.text = v
         # location
         electronic = SubElement(SubElement(SubElement(collection,
                                                       _nsrif('location') ),
                                            _nsrif('address')),
                                 _nsrif('electronic'))
-        electronic.set('type', 'url')
+        electronic.set('type', 'email')
         electronic.text = metadata.getMap().get('email')
         for experiment in metadata.getMap().get('owns'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )

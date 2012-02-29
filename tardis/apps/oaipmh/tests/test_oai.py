@@ -73,11 +73,11 @@ class EndpointTestCase(TestCase):
         # <registryObject group="MyTARDIS Default Group">
         expect(metadata.xpath('r:registryObjects/r:registryObject/@group',
                               namespaces=ns)[0]).to_equal('MyTardis Test Group')
-        self._check_reg_obj(experiment,
+        self._check_experiment_regobj(experiment,
                             metadata.xpath('r:registryObjects/r:registryObject',
                                            namespaces=ns)[0])
 
-    def _check_reg_obj(self, experiment, registryObject):
+    def _check_experiment_regobj(self, experiment, registryObject):
         ns = self.ns
         # <key>keydomain.test.example/experiment/1</key>
         expect(registryObject.xpath('r:key/text()', namespaces=ns)[0])\
@@ -130,6 +130,46 @@ class EndpointTestCase(TestCase):
             namespaces=ns)) \
             .to_equal(['keydomain.test.example/user/1'])
 
+    def _check_user_regobj(self, user, registryObject):
+        ns = self.ns
+        # <key>keydomain.test.example/experiment/1</key>
+        expect(registryObject.xpath('r:key/text()', namespaces=ns)[0])\
+            .to_equal('keydomain.test.example/user/%d' % user.id)
+        # <originatingSource>http://keydomain.test.example/</originatingSource>
+        expect(registryObject.xpath('r:originatingSource/text()',
+                                    namespaces=ns)[0]) \
+                                    .to_equal('http://example.com/')
+        # <collection type="dataset">
+        expect(registryObject.xpath('r:party/@type',
+                                    namespaces=ns)[0]).to_equal('person')
+        collection = registryObject.xpath('r:party', namespaces=ns)[0]
+        # <name type="primary">
+        #     <namePart type="given">Thomas</namePart>
+        #     <namePart type="family">Atkins</namePart>
+        # </name>
+        expect(collection.xpath('r:name[@type="primary"]/'+
+                                'r:namePart[@type="given"]/text()',
+                                namespaces=ns)[0]).to_equal(user.first_name)
+        expect(collection.xpath('r:name[@type="primary"]/'+
+                                'r:namePart[@type="family"]/text()',
+                                namespaces=ns)[0]).to_equal(user.last_name)
+        # <location>
+        #     <address>
+        #         <electronic type="email">tommy@atkins.net</electronic>
+        #     </address>
+        # </location>
+        loc_xpath = 'r:location/r:address/r:electronic[@type="email"]/text()'
+        expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
+                .to_equal(user.email)
+        # <relatedObject>
+        #     <key>user/1</key>
+        #     <relation type="hasCollector"/>
+        #     <relation type="isManagedBy"/>
+        # </relatedObjexperimentect>
+        expect(collection.xpath('r:relatedObject/r:key/text()',
+            namespaces=ns)) \
+            .to_equal(['keydomain.test.example/experiment/1'])
+
     def testListIdentifiers(self):
         user, experiment = _create_test_data()
         args = {
@@ -169,7 +209,8 @@ class EndpointTestCase(TestCase):
         print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
-        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats/o:metadataFormat/o:metadataPrefix',
+        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
+                            '/o:metadataFormat/o:metadataPrefix',
                             namespaces=ns)
         assert len(formats) == 2
         assert formats[0].text == 'oai_dc'
@@ -188,7 +229,8 @@ class EndpointTestCase(TestCase):
         print response.content
         assert xml.xpath('/o:OAI-PMH', namespaces=ns)
         assert not xml.xpath('o:error', namespaces=ns)
-        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats/o:metadataFormat/o:metadataPrefix',
+        formats = xml.xpath('/o:OAI-PMH/o:ListMetadataFormats' +
+                            '/o:metadataFormat/o:metadataPrefix',
                             namespaces=ns)
         assert len(formats) == 2
         assert formats[0].text == 'oai_dc'
@@ -220,12 +262,18 @@ class EndpointTestCase(TestCase):
         metadata_xpath = '/o:OAI-PMH/o:ListRecords/o:record/o:metadata'
         metadata = xml.xpath(metadata_xpath, namespaces=ns)
         assert len(metadata) == 2
-        collectionObject = xml.xpath(metadata_xpath+
-                                     '/r:registryObjects/r:registryObject'+
+        collectionObject = xml.xpath(metadata_xpath +
+                                     '/r:registryObjects/r:registryObject' +
                                      '[r:collection]',
                                      namespaces=ns)
         assert len(collectionObject) == 1
-        self._check_reg_obj(experiment, collectionObject[0])
+        self._check_experiment_regobj(experiment, collectionObject[0])
+        partyObject = xml.xpath(metadata_xpath +
+                                '/r:registryObjects/r:registryObject' +
+                                '[r:party]',
+                                namespaces=ns)
+        assert len(partyObject) == 1
+        self._check_user_regobj(user, partyObject[0])
 
     def _client_get(self, url):
         return self._client.get(url)
