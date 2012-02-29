@@ -432,6 +432,9 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
+    def get_view_url(self):
+        return ''
+
     def get_download_url(self):
         view = ''
         kwargs = {'datafile_id': self.id}
