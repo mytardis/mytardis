@@ -597,7 +597,7 @@ class Schema(models.Model):
     subtype = models.CharField(blank=True, null=True, max_length=30)
     objects = SchemaManager()
     immutable = models.BooleanField(default=False)
-    
+
 
     def natural_key(self):
         return (self.namespace,)
@@ -994,13 +994,13 @@ class Token(models.Model):
         tomorrow = today + dt.timedelta(1)
         tomorrow_4am = dt.datetime(tomorrow.year, tomorrow.month, tomorrow.day, 4)
         return tomorrow_4am
-        
+
     def get_session_expiry(self):
         '''
             A token login should expire at the earlier of
             a) tomorrow at 4am
             b) the (end of) the token's expiry date
-            
+
             It is the responsibility of token_auth to set the session expiry
         '''
         if self.is_expired():
@@ -1081,13 +1081,13 @@ def post_save_experiment_parameter(sender, **kwargs):
     except ExperimentParameterSet.DoesNotExist:
         # If for some reason the experiment parameter set is missing,
         # then ignore update
-        pass    
+        pass
 
 @receiver(post_save, sender=Experiment)
 @receiver(post_delete, sender=Experiment)
 def post_save_experiment(sender, **kwargs):
     experiment = kwargs['instance']
-    _publish_public_expt_rifcs(experiment)    
+    _publish_public_expt_rifcs(experiment)
 
 @receiver(post_save, sender=Author_Experiment)
 @receiver(post_delete, sender=Author_Experiment)

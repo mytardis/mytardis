@@ -1,7 +1,7 @@
 from django.contrib import admin
 admin.autodiscover()
 from django.contrib.auth.views import logout
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -31,7 +31,7 @@ core_urls = patterns(
 
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
+    url(r'^view/(?P<experiment_id>\d+)/$', 'view_experiment', name='experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^view/$', 'experiment_index'),
     (r'^search/$', 'search_experiment'),
