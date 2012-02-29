@@ -42,6 +42,7 @@ from django.http import HttpResponse
 from django.template import Context
 from django.shortcuts import render_to_response
 from django.conf import settings
+from django.views.decorators.cache import never_cache
 
 from tardis.apps.sync.models import SyncedExperiment
 from tardis.apps.sync.forms import FileTransferRequestForm
@@ -59,6 +60,7 @@ def client_key_required(f):
         if not request.is_secure() and not getattr(settings, 'SYNC_INSECURE', False):
             return HttpResponse('Use HTTPS', mimetype='application/json', status=404)
         if not key or (addr, key) not in settings.SYNC_CLIENT_KEYS:
+            logger.warning("Sync: %s sent invalid key." % addr)
             return HttpResponse('', mimetype='application/json', status=403)
         return f(request, *args, **kwargs)
     wrap.__doc__ = f.__doc__
@@ -67,6 +69,7 @@ def client_key_required(f):
 
 # provider api
 @client_key_required
+@never_cache
 def get_experiment(request):
     """ Request that an experiment be transferred from the provider
         to the consumer
@@ -110,6 +113,7 @@ def handle_file_transfer_request(form):
 
 
 @client_key_required
+@never_cache
 def transfer_status(request, uid):
     """Request information about the status of the transfer of 
        an experiment.
@@ -120,11 +124,10 @@ def transfer_status(request, uid):
     ts = TransferService()
     try:
         json_dict = ts.get_status(uid)
-    except TransferService.InvalidUIDError:
-        json_dict = { 'status': TransferService.TRANSFER_BAD_REQUEST, 'error': 'invalid UID',}
+    except TransferService.InvalidUIDError as detail:
+        json_dict = { 'status': TransferService.TRANSFER_BAD_REQUEST,
+                      'error': 'invalid UID: %s' % detail, }
     response = HttpResponse(json.dumps(json_dict), mimetype='application/json')
-    response['Pragma'] = 'no-cache'
-    response['Cache-Control'] = 'no-cache, must-revalidate'
     return response
 
 
