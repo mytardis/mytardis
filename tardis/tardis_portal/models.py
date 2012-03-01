@@ -479,37 +479,27 @@ class Dataset_File(models.Model):
             except AttributeError:
                 return ''
 
-            from os.path import abspath, join
-            return abspath(join(FILE_STORE_PATH,
-                                str(self.dataset.experiment.id),
-                                str(self.dataset.id),
-                                self.url.partition('://')[2]))
+            raw_path = self.url.partition('://')[2]
+            # Standard location for local files
+            file_path = path.abspath(path.join(FILE_STORE_PATH,
+                                               str(self.dataset.experiment.id),
+                                               str(self.dataset.id),
+                                               raw_path))
+            if path.isfile(file_path):
+                return file_path
+            # Legacy location for local files
+            file_path = path.abspath(path.join(FILE_STORE_PATH,
+                                               str(self.dataset.experiment.id),
+                                               raw_path))
+            if path.isfile(file_path):
+                return file_path
+            return ''
         elif self.protocol == 'staging':
             return self.url
-
         # file should refer to an absolute location
         elif self.protocol == 'file':
             return self.url.partition('://')[2]
-
         # ok, it doesn't look like the file is stored locally
-        else:
-            return ''
-
-    def get_absolute_filepath_old(self):  # temp quickfix!
-        # check for empty protocol field (historical reason) or
-        # 'tardis' which indicates a location within the tardis file
-        # store
-        if self.protocol == '' or self.protocol == 'tardis':
-            from django.conf import settings
-            try:
-                FILE_STORE_PATH = settings.FILE_STORE_PATH
-            except AttributeError:
-                return ''
-
-            from os.path import abspath, join
-            return abspath(join(FILE_STORE_PATH,
-                                str(self.dataset.experiment.id),
-                                self.url.partition('://')[2]))
         else:
             return ''
 

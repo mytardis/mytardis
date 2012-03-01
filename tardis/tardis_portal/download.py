@@ -55,27 +55,9 @@ def _get_actual_url(datafile):
     if any(map(datafile.url.startswith, ['http://', 'https://', 'ftp://'])):
         return datafile.url
     # Otherwise, resolve actual file system path
-    if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
-        expid = datafile.dataset.experiment.id
-        # Extrapolate actual file path with Experiment and Dataset IDs
-        raw_path = datafile.url.partition('//')[2]
-        file_path = path.join(settings.FILE_STORE_PATH,
-                              str(expid),
-                              str(datafile.dataset.id),
-                              raw_path)
-        if path.isfile(file_path):
-            return 'file://'+file_path
-        # Try one level down with Experiment ID only
-        file_path = path.join(settings.FILE_STORE_PATH,
-                              str(expid),
-                              raw_path)
-        if path.isfile(file_path):
-            return 'file://'+file_path
-    # If a straight file path, just use that
-    if datafile.protocol in ['', 'file']:
-        file_path = datafile.url.partition('://')[2]
-        if path.isfile(file_path):
-            return 'file://'+file_path
+    file_path = datafile.get_absolute_filepath()
+    if path.isfile(file_path):
+        return 'file://'+file_path
     return None
 
 def _create_download_response(datafile, file_url):
@@ -88,47 +70,25 @@ def _create_download_response(datafile, file_url):
 
 
 def download_datafile_ws(request):
-    if 'url' in request.GET and len(request.GET['url']) > 0:
-        url = urllib.unquote(request.GET['url'])
-        raw_path = url.partition('//')[2]
-        experiment_id = request.GET['experiment_id']
-        datafile = Dataset_File.objects.filter(
-            url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
-
-        if has_datafile_access(request=request,
-                               dataset_file_id=datafile.id):
-
-            file_path = datafile.get_absolute_filepath()
-
-            try:
-                wrapper = FileWrapper(file(file_path))
-
-                response = HttpResponse(wrapper,
-                                        mimetype=datafile.get_mimetype())
-                response['Content-Disposition'] = \
-                    'attachment; filename="%s"' % datafile.filename
-
-                return response
-
-            except IOError:
-                try:
-                    file_path = datafile.get_absolute_filepath_old()
-                    wrapper = FileWrapper(file(file_path))
-
-                    response = HttpResponse(wrapper,
-                                            mimetype=datafile.get_mimetype())
-                    response['Content-Disposition'] = \
-                        'attachment; filename="%s"' % datafile.filename
-
-                    return response
-                except IOError:
-                    return return_response_not_found(request)
-
-        else:
-            return return_response_not_found(request)
-
-    else:
+    if 'url' not in request.GET or len(request.GET['url']) == 0:
         return return_response_error(request)
+    # Determine datafile from request
+    url = urllib.unquote(request.GET['url'])
+    raw_path = url.partition('//')[2]
+    experiment_id = request.GET['experiment_id']
+    datafile = Dataset_File.objects.filter(
+        url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
+    # Check users has access to datafile
+    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
+        return return_response_error(request)
+    # Send file directly (should work for both local and remote files)
+    file_url = _get_actual_url(datafile)
+    try:
+        if file_url:
+            return _create_download_response(datafile, file_url)
+    except IOError:
+        pass
+    return return_response_not_found(request)
 
 
 @experiment_access_required
