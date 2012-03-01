@@ -92,10 +92,12 @@ MIDDLEWARE_CLASSES = (
 TARDIS_APP_ROOT = 'tardis.apps'
 
 def get_all_tardis_apps():
-    tardis_app_dir = TARDIS_APP_ROOT.replace('.', path.sep)
-    names = filter(path.isdir, \
-                   map(lambda name: tardis_app_dir+'/'+name,
-                       listdir(tardis_app_dir)))
+    base_dir = path.join(path.dirname(__file__), '..')
+    tardis_app_dir = path.join(base_dir, *TARDIS_APP_ROOT.split('.'))
+    names = map(lambda name: path.relpath(name, base_dir),
+                filter(path.isdir, \
+                       map(lambda name: path.join(tardis_app_dir, name),
+                           listdir(tardis_app_dir))))
     return sorted(map(lambda name: name.replace(path.sep, '.') , names))
 
 INSTALLED_APPS = get_all_tardis_apps() + [
@@ -169,6 +171,8 @@ TOKEN_USERNAME = 'tokenuser'
 # RIF-CS Settings
 OAI_DOCS_PATH = 'tardis/tardis_portal/tests/rifcs/'
 RIFCS_TEMPLATE_DIR = 'tardis/tardis_portal/tests/rifcs/'
+RIFCS_GROUP='MyTardis Test Group'
+RIFCS_KEY = "keydomain.test.example"
 RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
 
 DOI_ENABLE = False
@@ -180,5 +184,12 @@ DOI_NAMESPACE = 'http://www.tardis.edu.au/schemas/doi/2011/12/07'
 DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
 DOI_RELATED_INFO_ENABLE = False
 DOI_BASE_URL='http://mytardis.example.com'
+
+OAIPMH_PROVIDERS = [
+    'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
+    'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
+    'tardis.apps.oaipmh.provider.user.RifCsUserProvider',
+]
+
 
 djcelery.setup_loader()
