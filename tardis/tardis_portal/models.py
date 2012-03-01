@@ -433,11 +433,17 @@ class Dataset_File(models.Model):
                 return 'application/octet-stream'
 
     def get_view_url(self):
+        from tardis.tardis_portal.download \
+            import IMAGEMAGICK_AVAILABLE, MIMETYPES_TO_VIEW_AS_PNG
         import re
         viewable_mimetype_patterns = ['image/.*', 'text/.*']
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
+        # We should avoid listing files that require conversion
+        if (not IMAGEMAGICK_AVAILABLE and
+            self.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG):
+            return ''
         kwargs = {'datafile_id': self.id}
         return reverse('view_datafile', kwargs=kwargs)
 

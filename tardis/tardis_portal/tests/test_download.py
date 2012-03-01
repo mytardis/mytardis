@@ -10,12 +10,19 @@ from django.test.client import Client
 from django.conf import settings
 from django.contrib.auth.models import User
 
+from nose.plugins.skip import SkipTest
+
 import filecmp
 
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
 
 from tempfile import NamedTemporaryFile
-from wand.image import Image
+
+try:
+    from wand.image import Image
+    IMAGEMAGICK_AVAILABLE = True
+except AttributeError:
+    IMAGEMAGICK_AVAILABLE = False
 
 class DownloadTestCase(TestCase):
 
@@ -66,9 +73,17 @@ class DownloadTestCase(TestCase):
         f.close()
 
         testfile2 = abspath(join(self.dest2, filename2))
-        with Image(filename='logo:') as img:
-            img.format = 'tiff'
-            img.save(filename=testfile2)
+        if IMAGEMAGICK_AVAILABLE:
+            with Image(filename='logo:') as img:
+                img.format = 'tiff'
+                img.save(filename=testfile2)
+        else:
+            # Apparently ImageMagick isn't installed...
+            # Write a "fake" TIFF file
+            f = open(testfile2, 'w')
+            f.write("II\x2a\x00")
+            f.close()
+
 
         self.dataset_file1 = Dataset_File(dataset=self.dataset1,
                                           filename=filename1,
@@ -111,15 +126,27 @@ class DownloadTestCase(TestCase):
         # check view of file2 again
         response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
         self.assertEqual(response.status_code, 200)
-        # file2 should have a ".png" filename
-        self.assertEqual(response['Content-Disposition'],
-                         'inline; filename="%s"'
-                         % (self.dataset_file2.filename+'.png'))
 
-        # file2 should be a PNG
-        self.assertEqual(response['Content-Type'], 'image/png')
-        png_signature = "\x89PNG\r\n\x1a\n"
-        self.assertEqual(response.content[0:8], png_signature)
+        # The following behaviour relies on ImageMagick
+        if IMAGEMAGICK_AVAILABLE:
+            # file2 should have a ".png" filename
+            self.assertEqual(response['Content-Disposition'],
+                             'inline; filename="%s"'
+                             % (self.dataset_file2.filename+'.png'))
+            # file2 should be a PNG
+            self.assertEqual(response['Content-Type'], 'image/png')
+            png_signature = "\x89PNG\r\n\x1a\n"
+            self.assertEqual(response.content[0:8], png_signature)
+        else:
+            # file2 should have a ".tiff" filename
+            self.assertEqual(response['Content-Disposition'],
+                             'inline; filename="%s"'
+                             % (self.dataset_file2.filename))
+            # file2 should be a TIFF
+            self.assertEqual(response['Content-Type'], 'image/tiff')
+            tiff_signature = "II\x2a\x00"
+            self.assertEqual(response.content[0:4], tiff_signature)
+
 
     def testDownload(self):
         client = Client()

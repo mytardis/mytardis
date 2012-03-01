@@ -23,8 +23,11 @@ from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error
 
-from wand.image import Image
-
+try:
+    from wand.image import Image
+    IMAGEMAGICK_AVAILABLE = True
+except AttributeError:
+    IMAGEMAGICK_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +44,8 @@ def view_datafile(request, datafile_id):
         return return_response_error(request)
     # Get actual url for datafile
     file_url = _get_actual_url(datafile)
-    if datafile.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG:
+    mimetype = datafile.get_mimetype()
+    if IMAGEMAGICK_AVAILABLE and mimetype in MIMETYPES_TO_VIEW_AS_PNG:
         with Image(file=urlopen(file_url)) as img:
             img.format = 'png'
             content = img.make_blob()
