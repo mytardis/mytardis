@@ -10,6 +10,7 @@ download.py
 import logging
 import subprocess
 import urllib
+from urllib2 import urlopen
 from os import path, devnull
 
 from django.core.servers.basehttp import FileWrapper
@@ -25,77 +26,65 @@ from tardis.tardis_portal.views import return_response_not_found, \
 
 logger = logging.getLogger(__name__)
 
-
 def download_datafile(request, datafile_id):
-
-    # todo handle missing file, general error
-    datafile = Dataset_File.objects.get(pk=datafile_id)
-    expid = datafile.dataset.experiment.id
-
-    if has_datafile_access(request=request,
-                           dataset_file_id=datafile.id):
-        url = datafile.url
-        if url.startswith('http://') or url.startswith('https://') \
-            or url.startswith('ftp://'):
-            return HttpResponseRedirect(datafile.url)
-
-        elif datafile.protocol == 'tardis' or \
-            datafile.url.startswith('tardis'):
-
-            raw_path = url.partition('//')[2]
-            file_path = path.join(settings.FILE_STORE_PATH,
-                                  str(expid),
-                                  str(datafile.dataset.id),
-                                  raw_path)
-            try:
-
-                wrapper = FileWrapper(file(file_path))
-                response = HttpResponse(wrapper,
-                                        mimetype=datafile.get_mimetype())
-                response['Content-Disposition'] = \
-                    'attachment; filename="%s"' % datafile.filename
-                return response
-
-            except IOError:
-                try:
-                    file_path = path.join(settings.FILE_STORE_PATH,
-                                          str(expid),
-                                          raw_path)
-                    print file_path
-                    wrapper = FileWrapper(file(file_path))
-                    response = HttpResponse(wrapper,
-                                            mimetype=datafile.get_mimetype())
-                    response['Content-Disposition'] = \
-                        'attachment; filename="%s"' % datafile.filename
-                    return response
-                except IOError:
-                    return return_response_not_found(request)
-
-        elif datafile.protocol in ['', 'file']:
-            file_path = datafile.url.partition('://')[2]
-            if not path.exists(file_path):
-
-                return return_response_not_found(request)
-
-        else:
-#            logger.error('exp %s: file protocol unknown: %s' % (expid,
-#                                                                datafile.url))
-            return return_response_not_found(request)
-
-    else:
-        return return_response_error(request)
-
+    # Get datafile (and return 404 if absent)
     try:
-        wrapper = FileWrapper(file(file_path))
-        response = HttpResponse(wrapper,
-                                mimetype=datafile.get_mimetype())
-        response['Content-Disposition'] = \
-            'attachment; filename="%s"' % datafile.filename
-        return response
-
-    except IOError:
-        logger.exception()
+        datafile = Dataset_File.objects.get(pk=datafile_id)
+    except Dataset_File.DoesNotExist:
         return return_response_not_found(request)
+    # Check users has access to datafile
+    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
+        return return_response_error(request)
+    # Get actual url for datafile
+    file_url = _get_actual_url(datafile)
+    if not file_url:
+        # If file path doesn't resolve, return not found
+        return return_response_not_found(request)
+    # Just redirect for remote files
+    if not file_url.startswith('file://'):
+        return HttpResponseRedirect(datafile.url)
+    # Send local file
+    try:
+        return _create_download_response(datafile, file_url)
+    except IOError:
+        # If we can't read the file, return not found
+        return return_response_not_found(request)
+
+def _get_actual_url(datafile):
+    # Remote files are easy
+    if any(map(datafile.url.startswith, ['http://', 'https://', 'ftp://'])):
+        return datafile.url
+    # Otherwise, resolve actual file system path
+    if datafile.protocol == 'tardis' or datafile.url.startswith('tardis'):
+        expid = datafile.dataset.experiment.id
+        # Extrapolate actual file path with Experiment and Dataset IDs
+        raw_path = datafile.url.partition('//')[2]
+        file_path = path.join(settings.FILE_STORE_PATH,
+                              str(expid),
+                              str(datafile.dataset.id),
+                              raw_path)
+        if path.isfile(file_path):
+            return 'file://'+file_path
+        # Try one level down with Experiment ID only
+        file_path = path.join(settings.FILE_STORE_PATH,
+                              str(expid),
+                              raw_path)
+        if path.isfile(file_path):
+            return 'file://'+file_path
+    # If a straight file path, just use that
+    if datafile.protocol in ['', 'file']:
+        file_path = datafile.url.partition('://')[2]
+        if path.isfile(file_path):
+            return 'file://'+file_path
+    return None
+
+def _create_download_response(datafile, file_url):
+    wrapper = FileWrapper(urlopen(file_url))
+    response = HttpResponse(wrapper,
+                            mimetype=datafile.get_mimetype())
+    response['Content-Disposition'] = \
+        'attachment; filename="%s"' % datafile.filename
+    return response
 
 
 def download_datafile_ws(request):
