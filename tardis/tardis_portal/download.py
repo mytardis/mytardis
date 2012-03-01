@@ -68,29 +68,6 @@ def _create_download_response(datafile, file_url):
         'attachment; filename="%s"' % datafile.filename
     return response
 
-
-def download_datafile_ws(request):
-    if 'url' not in request.GET or len(request.GET['url']) == 0:
-        return return_response_error(request)
-    # Determine datafile from request
-    url = urllib.unquote(request.GET['url'])
-    raw_path = url.partition('//')[2]
-    experiment_id = request.GET['experiment_id']
-    datafile = Dataset_File.objects.filter(
-        url__endswith=raw_path, dataset__experiment__id=experiment_id)[0]
-    # Check users has access to datafile
-    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
-        return return_response_error(request)
-    # Send file directly (should work for both local and remote files)
-    file_url = _get_actual_url(datafile)
-    try:
-        if file_url:
-            return _create_download_response(datafile, file_url)
-    except IOError:
-        pass
-    return return_response_not_found(request)
-
-
 @experiment_access_required
 def download_experiment(request, experiment_id, comptype):
     """

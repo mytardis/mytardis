@@ -123,7 +123,6 @@ download_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
      'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
-    (r'^datafile/ws/$', 'download_datafile_ws'),
     )
 
 group_urls = patterns(
