@@ -32,9 +32,9 @@ class URLParser(object):
 
             h = Http(timeout=10)
             h.force_exception_to_status_code = True
-            resp, content = h.request(url, 'GET', body=body)
+            resp, content = h.request(url, 'POST', body=body)
             if resp.status != 200:
-                logger.error('URLParser: GET for url %s failed: %s %s' % (url, resp.status, resp.reason))
+                logger.error('URLParser: POST for url %s failed: %s %s' % (url, resp.status, resp.reason))
                 return None
             f = StringIO(content)
         else:
