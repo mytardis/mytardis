@@ -10,8 +10,12 @@ from django.test.client import Client
 from django.conf import settings
 from django.contrib.auth.models import User
 
+import filecmp
+
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
 
+from tempfile import NamedTemporaryFile
+from wand.image import Image
 
 class DownloadTestCase(TestCase):
 
@@ -42,7 +46,8 @@ class DownloadTestCase(TestCase):
         self.dataset2.save()
 
         # absolute path first
-        filename = 'testfile.txt'
+        filename1 = 'testfile.txt'
+        filename2 = 'testfile.tiff'
         self.dest1 = abspath(join(settings.FILE_STORE_PATH, '%s/%s/'
                                   % (self.experiment1.id,
                                   self.dataset1.id)))
@@ -55,26 +60,26 @@ class DownloadTestCase(TestCase):
         if not exists(self.dest2):
             makedirs(self.dest2)
 
-        testfile1 = abspath(join(self.dest1, filename))
+        testfile1 = abspath(join(self.dest1, filename1))
         f = open(testfile1, 'w')
         f.write("Hello World!\n")
         f.close()
 
-        testfile2 = abspath(join(self.dest2, filename))
-        f = open(testfile2, 'w')
-        f.write("Hello World!\n")
-        f.close()
+        testfile2 = abspath(join(self.dest2, filename2))
+        with Image(filename='logo:') as img:
+            img.format = 'tiff'
+            img.save(filename=testfile2)
 
         self.dataset_file1 = Dataset_File(dataset=self.dataset1,
-                                          filename=filename,
+                                          filename=filename1,
                                           protocol='tardis',
-                                          url='tardis://%s' % filename)
+                                          url='tardis://%s' % filename1)
         self.dataset_file1.save()
 
         self.dataset_file2 = Dataset_File(dataset=self.dataset2,
-                                          filename=basename(filename),
+                                          filename=basename(filename2),
                                           protocol='tardis',
-                                          url='tardis://%s' % filename)
+                                          url='tardis://%s' % filename2)
         self.dataset_file2.save()
 
     def tearDown(self):
@@ -83,6 +88,38 @@ class DownloadTestCase(TestCase):
         self.experiment2.delete()
         rmtree(self.dest1)
         rmtree(self.dest2)
+
+    def testView(self):
+        client = Client()
+
+        # check view of file1
+        response = client.get('/datafile/view/%i/' % self.dataset_file1.id)
+
+        self.assertEqual(response['Content-Disposition'],
+                         'inline; filename="%s"'
+                         % self.dataset_file1.filename)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, 'Hello World!\n')
+
+        # check view of file2
+        response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
+        # Should be forbidden
+        self.assertEqual(response.status_code, 403)
+
+        self.experiment2.public=True
+        self.experiment2.save()
+        # check view of file2 again
+        response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
+        self.assertEqual(response.status_code, 200)
+        # file2 should have a ".png" filename
+        self.assertEqual(response['Content-Disposition'],
+                         'inline; filename="%s"'
+                         % (self.dataset_file2.filename+'.png'))
+
+        # file2 should be a PNG
+        self.assertEqual(response['Content-Type'], 'image/png')
+        png_signature = "\x89PNG\r\n\x1a\n"
+        self.assertEqual(response.content[0:8], png_signature)
 
     def testDownload(self):
         client = Client()
@@ -99,7 +136,7 @@ class DownloadTestCase(TestCase):
 
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s"'
-                         % self.dataset_file2.filename)
+                         % self.dataset_file1.filename)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'Hello World!\n')
 
@@ -127,6 +164,8 @@ class DownloadTestCase(TestCase):
                                 'dataset': [],
                                 'datafile': [self.dataset_file1.id]})
         self.assertEqual(response.status_code, 200)
+        # It should be a zip file (all of which start with "PK")
+        self.assertEqual(response.content[0:2], "PK")
 
         # check datafile2 download via POST
         response = client.post('/download/datafiles/',
@@ -134,6 +173,16 @@ class DownloadTestCase(TestCase):
                                 'dataset': [],
                                 'datafile': [self.dataset_file2.id]})
         self.assertEqual(response.status_code, 403)
+
+        # Check datafile2 download with second experiment to public
+        self.experiment2.public=True
+        self.experiment2.save()
+        response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
+        self.assertEqual(response.status_code, 200)
+        # This should be a TIFF (which often starts with "II\x2a\x00")
+        self.assertEqual(response['Content-Type'], 'image/tiff')
+        self.assertEqual(response.content[0:4], "II\x2a\x00")
+
 
     def testDatasetFile(self):
 

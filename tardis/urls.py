@@ -82,8 +82,11 @@ accounts_urls = patterns(
     )
 
 datafile_urls = patterns(
-    'tardis.tardis_portal.views',
-    (r'^search/$', 'search_datafile')
+    '',
+    (r'^search/$', 'tardis.tardis_portal.views.search_datafile'),
+    url(r'^view/(?P<datafile_id>\d+)/$',
+        'tardis.tardis_portal.download.view_datafile',
+        name="view_datafile")
 )
 
 ajax_urls = patterns(

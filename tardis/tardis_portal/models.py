@@ -433,7 +433,13 @@ class Dataset_File(models.Model):
                 return 'application/octet-stream'
 
     def get_view_url(self):
-        return ''
+        import re
+        viewable_mimetype_patterns = ['image/.*', 'text/.*']
+        if not any(re.match(p, self.get_mimetype())
+                   for p in viewable_mimetype_patterns):
+            return None
+        kwargs = {'datafile_id': self.id}
+        return reverse('view_datafile', kwargs=kwargs)
 
     def get_download_url(self):
         view = ''

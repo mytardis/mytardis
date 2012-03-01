@@ -23,8 +23,36 @@ from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error
 
+from wand.image import Image
+
 
 logger = logging.getLogger(__name__)
+
+MIMETYPES_TO_VIEW_AS_PNG = ['image/tiff']
+
+def view_datafile(request, datafile_id):
+    # Get datafile (and return 404 if absent)
+    try:
+        datafile = Dataset_File.objects.get(pk=datafile_id)
+    except Dataset_File.DoesNotExist:
+        return return_response_not_found(request)
+    # Check users has access to datafile
+    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
+        return return_response_error(request)
+    # Get actual url for datafile
+    file_url = _get_actual_url(datafile)
+    if datafile.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG:
+        with Image(file=urlopen(file_url)) as img:
+            img.format = 'png'
+            content = img.make_blob()
+        # Should show up as a PNG file
+        response = HttpResponse(content, mimetype='image/png')
+        response['Content-Disposition'] = \
+            'inline; filename="%s.png"' % datafile.filename
+    else:
+        response = _create_download_response(datafile, file_url,
+                                             disposition='inline')
+    return response
 
 def download_datafile(request, datafile_id):
     # Get datafile (and return 404 if absent)
@@ -60,12 +88,12 @@ def _get_actual_url(datafile):
         return 'file://'+file_path
     return None
 
-def _create_download_response(datafile, file_url):
+def _create_download_response(datafile, file_url, disposition='attachment'):
     wrapper = FileWrapper(urlopen(file_url))
     response = HttpResponse(wrapper,
                             mimetype=datafile.get_mimetype())
     response['Content-Disposition'] = \
-        'attachment; filename="%s"' % datafile.filename
+        '%s; filename="%s"' % (disposition, datafile.filename)
     return response
 
 @experiment_access_required
