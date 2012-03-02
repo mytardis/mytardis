@@ -48,7 +48,7 @@ class SiteParserTestCase(TestCase):
         sites_str = open(self.sites_filename).read()
         resp = httplib2.Response({'status': '200'})
         self.Http.should_receive('request').with_args(
-                url, 'GET', body=str).and_return((resp, sites_str))
+                url, 'POST', body=str).and_return((resp, sites_str))
 
         parser = SiteParser(url, username='', password='')
         l = parser.get()
@@ -59,7 +59,7 @@ class SiteParserTestCase(TestCase):
         url = 'http://localhost'
         resp = httplib2.Response({'status': '500'})
         self.Http.should_receive('request').with_args(
-                url, 'GET', body=str).and_return((resp, ''))
+                url, 'POST', body=str).and_return((resp, ''))
 
         parser = SiteParser(url, username='', password='')
         l = parser.get()
