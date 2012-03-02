@@ -205,3 +205,6 @@ SYNC_CLIENT_KEYS = (
 
 SYNC_CLIENT_KEY = 'valid_client_key'
 
+SYNC_ADMINS = ( 'syncadmin@localhost', )
+SERVER_EMAIL = 'transfers@localhost'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
