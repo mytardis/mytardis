@@ -69,7 +69,6 @@ class SyncedExperiment(models.Model):
 
 @receiver(received_remote, sender=Experiment)
 def experiment_received(sender, **kwargs):
-    print 'experiment_received'
     exp = kwargs['instance']
     uid = kwargs['uid']
     from_url = kwargs['from_url']
