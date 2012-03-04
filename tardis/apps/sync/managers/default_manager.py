@@ -158,9 +158,10 @@ class SyncManager(object):
         logger.debug('about to send register request to site %s' % url)
 
         # build the request
-        headers = { 'User-agent': 'MyTardis',
-                    'Content-type': mpform.get_content_type(),
-                    'Content-length': len(body) }
+        headers = {
+            'User-agent': 'MyTardis',
+            'Content-type': mpform.get_content_type(),
+        }
 
         # This should be made into a background task.
         # Or rather- the processing on the other end should be.
