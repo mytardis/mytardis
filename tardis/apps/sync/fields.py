@@ -3,22 +3,37 @@ from django.db import models
 
 
 class State(object):
-    
     def __unicode__(self):
         return "%s" % (self.__class__.__name__)
     
     def __str__(self):
         return "%s" % (self.__class__.__name__)
 
-    def get_next_state(self):
+    def get_next_state(self, *args, **kwargs):
+        next_state = self._get_next_state(*args, **kwargs)
+        if self.__class__.__name__ != next_state.__class__.__name__:
+            self._on_exit(*args, **kwargs)
+            next_state._on_entry(*args, **kwargs)
+            return next_state
         return self
 
     def is_final_state(self):
         return False
 
+    def _get_next_state(self):
+        raise NotImplementedError()
+
+    def _on_entry(self, *args, **kwargs):
+        pass
+
+    def _on_exit(self, *args, **kwargs):
+        pass
+
+
 class FinalState(State):
     def is_final_state(self):
         return True
+
 
 class FSMField(models.Field):
                     

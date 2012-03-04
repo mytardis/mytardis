@@ -44,18 +44,22 @@ from django.template import Context
 from django.template.loader import render_to_string
 from tardis.tardis_portal.models import Experiment
 
+from .signals import transfer_failed, transfer_completed
 from .models import SyncedExperiment
 
 
 logger = logging.getLogger(__name__)
 
 
-def transfer_failed(synced_exp):
-    email_admins(synced_exp, success=False)
+@receiver(transfer_failed)
+def failed(sender, instance, **kwargs):
+    email_admins(instance, success=False)
 
-def transfer_complete(synced_exp):
-    #email_users(synced_exp, success=True)
-    pass
+
+@receiver(transfer_completed)
+def completed(sender, instance, **kwargs):
+    email_admins(instance, success=True)
+
 
 def _get_email_text(synced_exp, success, template='sync/admin_email.txt'):
     result = 'SUCCEEDED' if success else 'FAILED'
@@ -80,8 +84,6 @@ def email_admins(synced_exp, success):
     if not admins:
         return
     from_email = settings.SERVER_EMAIL
-    print from_email
     (subject, message) = _get_email_text(synced_exp, success)
-    print subject, message, from_email, admins
     send_mail(subject, message, from_email, admins)
 

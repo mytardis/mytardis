@@ -1,5 +1,6 @@
 from flexmock import flexmock
 from django.test import TestCase
+from django.dispatch import receiver
 
 from tardis.tardis_portal.models import Experiment
 
@@ -9,6 +10,7 @@ from tardis.apps.sync.tasks import clock_tick
 from tardis.apps.sync.models import SyncedExperiment
 from ..transfer_service import TransferClient, TransferService
 from ..integrity import IntegrityCheck
+from ..signals import transfer_failed, transfer_completed
 
 from django.contrib.auth.models import User
 
@@ -87,12 +89,12 @@ class ClockTestCase(TestCase):
 
     def _mock_get_status(self, status):
         self.status['status'] = status
-        self.mock_ts.should_receive('get_status').and_return(self.status)
+        return self.mock_ts.should_receive('get_status').and_return(self.status).once
 
     # Positive transitions (everything is excellent all the time)
 
     def testGetsNewEntries(self):
-        self.mock_ts.should_receive('request_file_transfer').and_return(True)
+        self.mock_ts.should_receive('request_file_transfer').and_return(True).once
         self.transitionCheck(Ingested, Requested)
 
     def testRequestedTransferNowInProgress(self):
@@ -113,8 +115,16 @@ class ClockTestCase(TestCase):
 
     def testCompleteAfterIntegrityCheckPasses(self):
         self.mock_ts.should_receive('get_status').never
-        self.mock_integrity.should_receive('all_files_complete').and_return(True)
+        self.mock_integrity.should_receive('all_files_complete').and_return(True).once
         self.transitionCheck(CheckingIntegrity, Complete)
+
+    def testSendsSignalOnComplete(self):
+        @receiver(transfer_completed)
+        def transfer_complete(sender, **kwargs):
+            self.instance = kwargs['instance']
+        self.mock_integrity.should_receive('all_files_complete').and_return(True).once
+        self.transitionCheck(CheckingIntegrity, Complete)
+        self.assertIsInstance(self.instance, SyncedExperiment)
 
     def testSkipsCompleteEntries(self):
         self.mock_ts.should_receive('get_status').never
@@ -127,7 +137,7 @@ class ClockTestCase(TestCase):
     # Negative results (currently going start to FailPermanent)
 
     def testTransferRequestFailed(self):
-        self.mock_ts.should_receive('request_file_transfer').and_return(False)
+        self.mock_ts.should_receive('request_file_transfer').and_return(False).once
         self.transitionCheck(Ingested, FailPermanent)
 
     def testTransferNotStarted(self):
@@ -139,8 +149,15 @@ class ClockTestCase(TestCase):
         self._mock_get_status(TransferService.TRANSFER_FAILED)
         self.transitionCheck(InProgress, FailPermanent)
 
+    def testSendsSignalOnFailure(self):
+        @receiver(transfer_failed)
+        def transfer_fail(sender, **kwargs):
+            self.instance = kwargs['instance']
+        self._mock_get_status(TransferService.TRANSFER_FAILED)
+        self.transitionCheck(InProgress, FailPermanent)
+        self.assertIsInstance(self.instance, SyncedExperiment)
+
     def testIntegrityCheckFailed(self):
-        self._mock_get_status(TransferService.TRANSFER_COMPLETE)
-        self.mock_integrity.should_receive('all_files_complete').and_return(False)
+        self.mock_integrity.should_receive('all_files_complete').and_return(False).once
         self.transitionCheck(CheckingIntegrity, FailPermanent)
 

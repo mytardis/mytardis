@@ -59,12 +59,13 @@ class SyncedExperiment(models.Model):
     # This might be better as another table if there's more to store.
     provider_url = models.TextField()
     msg = models.TextField(default='')
-    
-#    def __init__(self, *args, **kwargs):
-#        self.uid = 0
-    
+
     def is_complete(self):
         return self.state.is_final_state() 
+
+    def progress(self):
+        self.state = self.state.get_next_state(self)
+        self.save()
 
 
 @receiver(received_remote, sender=Experiment)

@@ -1,8 +1,9 @@
-from tardis.apps.sync.fields import State, FSMField, \
+from tardis.apps.sync.fields import State, FinalState, FSMField, \
         map_return_to_transition, true_false_transition
 from transfer_service import TransferService, TransferClient
 
 from .integrity import IntegrityCheck
+from .signals import transfer_completed, transfer_failed
 
 
 
@@ -14,29 +15,21 @@ def _check_status(experiment):
     return code
 
 
-class FailPermanent(State):
-    
-    def get_next_state(self, experiment):
-        return self
-
-    def is_final_state(self):
-        return True
+class FailPermanent(FinalState):
+    def _on_entry(self, experiment):
+        transfer_failed.send_robust(sender=experiment.__class__, instance=experiment)
 
 
-class Complete(State):
-
-    def get_next_state(self, experiment):
-        return self
-
-    def is_final_state(self):
-        return True
+class Complete(FinalState):
+    def _on_entry(self, experiment):
+        transfer_completed.send_robust(sender=experiment.__class__, instance=experiment)
 
 
 class CheckingIntegrity(State):
-
     @true_false_transition(Complete, FailPermanent)
-    def get_next_state(self, experiment):
-        return IntegrityCheck(experiment.experiment).all_files_complete()
+    def _get_next_state(self, experiment):
+        complete = IntegrityCheck(experiment.experiment).all_files_complete()
+        return complete
 
 
 class InProgress(State):
@@ -46,7 +39,7 @@ class InProgress(State):
     }
 
     @map_return_to_transition(transitions)
-    def get_next_state(self, experiment):
+    def _get_next_state(self, experiment):
         return _check_status(experiment)
 
 
@@ -59,7 +52,7 @@ class Requested(State):
     }
 
     @map_return_to_transition(transitions)
-    def get_next_state(self, experiment):
+    def _get_next_state(self, experiment):
         return _check_status(experiment)
 
 
@@ -71,7 +64,7 @@ class Ingested(State):
     def _request_files(self, exp):
         return TransferClient().request_file_transfer(exp)
 
-    def get_next_state(self, experiment):
+    def _get_next_state(self, experiment):
         if self._ingestion_complete(experiment):
             return self._request_files(experiment)
         return self
