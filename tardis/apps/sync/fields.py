@@ -1,5 +1,8 @@
+import logging
 from django.db import models
 
+
+logger = logging.getLogger(__name__)
 
 
 class State(object):
@@ -65,12 +68,12 @@ def transition_on_success(state, conditions=[]):
             #sys.stderr.write("self: %s" % (self))
             try:
                 ret = f(*args)
-                if ret == False:
-                    #sys.stderr.write("retrun false")
-                    return self
             except Exception, e:
-                #sys.stderr.write("exception: %s" % (e))
+                logger.exception('transition_on_success:')
                 # return the current state
+                return self
+            if ret == False:
+                #sys.stderr.write("retrun false")
                 return self
             return state()
         return wrap_f
@@ -87,7 +90,7 @@ def true_false_transition(true_state, false_state):
                 ret = f(*args)
                 new_state = true_state if ret else false_state
             except Exception, e:
-                #sys.stderr.write("exception: %s" % (e))
+                logger.exception('true_false_transition:')
                 # return the current state
                 new_state = false_state
             if isinstance(new_state, str):
@@ -107,12 +110,12 @@ def map_return_to_transition(conditions):
             #sys.stderr.write("self: %s" % (self))
             try:
                 ret = f(*args)
-                new_state = conditions.get(ret, None)
-                if new_state is None:
-                    return self
             except Exception, e:
-                #sys.stderr.write("exception: %s" % (e))
+                logger.exception('map_return_to_transition:')
                 # return the current state
+                return self
+            new_state = conditions.get(ret, None)
+            if new_state is None:
                 return self
             if isinstance(new_state, str):
                 module = __import__(self.__class__.__module__,

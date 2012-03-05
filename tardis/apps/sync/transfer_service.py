@@ -57,12 +57,14 @@ class TransferService(object):
     TRANSFER_IN_PROGRESS = 2
     TRANSFER_FAILED = 3
     TRANSFER_BAD_REQUEST = 4
+    TRANSFER_SERVER_ERROR = 5
 
     statuses = (
             (TRANSFER_COMPLETE, 'Transfer Complete'),
             (TRANSFER_IN_PROGRESS, 'Transfer In Progress'),
             (TRANSFER_FAILED, 'Transfer Failed'),
             (TRANSFER_BAD_REQUEST, 'Transfer Bad Request'),
+            (TRANSFER_SERVER_ERROR, 'Transfer Server Error'),
             )
 
     # Exception classes
@@ -119,6 +121,7 @@ class HttpClient(object):
         if headers:
             default_headers.update(headers)
         h = httplib2.Http()
+        h.force_exception_to_status_code = True
         resp, content = h.request(url, method, headers=default_headers, body=body)
         return (resp, content)
 
@@ -130,7 +133,6 @@ class HttpClient(object):
 
 
 class TransferClient(object):
-    
     client_class = HttpClient
 
     def __init__(self):
@@ -166,11 +168,22 @@ class TransferClient(object):
                 + reverse('sync-transfer-status', args=[synced_exp.uid])
         headers = { 'X_MYTARDIS_KEY': self.key }
         resp, content = self.client.get(url, headers=headers)
+        dict_from_json = self._handle_status_result(resp, content)
+        synced_exp.msg = json.dumps(dict_from_json)
+        synced_exp.save()
+        return dict_from_json
+
+    def _handle_status_result(self, resp, content):
         if resp.status == self.client_class.STATUS_OK:
-            return json.loads(content)
-        logger.warning('Status request to %s failed: %s' % (url, resp.reason))
+            try:
+                return json.loads(content)
+            except ValueError:
+                error = 'Invalid JSON: %s' % content
+        else:
+            error = 'HTTP error %s: %s' % (resp.status, resp.reason)
+        logger.warning('Status request to %s failed: %s' % (resp['content-location'], error))
         return {
-            'status': TransferService.TRANSFER_FAILED,
-            'error': 'HTTP error: %s' % resp.reason
+            'status': TransferService.TRANSFER_SERVER_ERROR,
+            'message': error,
             }
 

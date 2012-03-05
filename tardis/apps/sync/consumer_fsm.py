@@ -1,18 +1,8 @@
 from tardis.apps.sync.fields import State, FinalState, FSMField, \
         map_return_to_transition, true_false_transition
-from transfer_service import TransferService, TransferClient
-
+from .transfer_service import TransferService, TransferClient
 from .integrity import IntegrityCheck
 from .signals import transfer_completed, transfer_failed
-
-
-
-def _check_status(experiment):
-    status_dict = TransferClient().get_status(experiment)
-    code = status_dict['status']
-    experiment.msg = '%s: %s' % (status_dict['human_status'], status_dict['message'])
-    experiment.save()
-    return code
 
 
 class FailPermanent(FinalState):
@@ -25,26 +15,7 @@ class Complete(FinalState):
         transfer_completed.send_robust(sender=experiment.__class__, instance=experiment)
 
 
-class CheckingIntegrity(State):
-    @true_false_transition(Complete, FailPermanent)
-    def _get_next_state(self, experiment):
-        complete = IntegrityCheck(experiment.experiment).all_files_complete()
-        return complete
-
-
-class InProgress(State):
-    transitions = {
-        TransferService.TRANSFER_COMPLETE: 'CheckingIntegrity',
-        TransferService.TRANSFER_FAILED: 'FailPermanent'
-    }
-
-    @map_return_to_transition(transitions)
-    def _get_next_state(self, experiment):
-        return _check_status(experiment)
-
-
-class Requested(State):
-    # TODO: Investigate workflows to retry request
+class StatusCheckState(State):
     transitions = {
         TransferService.TRANSFER_COMPLETE: 'CheckingIntegrity',
         TransferService.TRANSFER_IN_PROGRESS: 'InProgress',
@@ -52,8 +23,28 @@ class Requested(State):
     }
 
     @map_return_to_transition(transitions)
+    def _check_status(self, experiment):
+        status_dict = TransferClient().get_status(experiment)
+        code = status_dict['status']
+        return code
+
     def _get_next_state(self, experiment):
-        return _check_status(experiment)
+        return self._check_status(experiment)
+
+
+class CheckingIntegrity(State):
+    @true_false_transition(Complete, FailPermanent)
+    def _get_next_state(self, experiment):
+        complete = IntegrityCheck(experiment.experiment).all_files_complete()
+        return complete
+
+
+class InProgress(StatusCheckState):
+    pass
+
+
+class Requested(StatusCheckState):
+    pass
 
 
 class Ingested(State):

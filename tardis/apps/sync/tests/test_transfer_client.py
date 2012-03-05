@@ -37,7 +37,7 @@ class TCInitialisationTestCase(TestCase):
 
 def get_synced_exp(url, uid, exp_id):
     exp = flexmock(id=exp_id)
-    se = flexmock(provider_url=url, uid=uid, experiment=exp)
+    se = flexmock(provider_url=url, uid=uid, experiment=exp, save=lambda: None)
     return se
 
 class StubbedHttpClient(HttpClient):
@@ -132,7 +132,6 @@ class TransferClientStatusTestCase(TestCase):
 
         self.assertTrue('status' in status_dict)
         self.assertEqual(status_dict['status'], TransferService.TRANSFER_IN_PROGRESS)
-        self.assertFalse('error' in status_dict)
 
     def test_complete(self):
         def get(self, url, headers={}, data={}):
@@ -150,7 +149,6 @@ class TransferClientStatusTestCase(TestCase):
 
         self.assertTrue('status' in status_dict)
         self.assertEqual(status_dict['status'], TransferService.TRANSFER_COMPLETE)
-        self.assertFalse('error' in status_dict)
 
     def test_invalid(self):
         def get(self, url, headers={}, data={}):
@@ -158,7 +156,7 @@ class TransferClientStatusTestCase(TestCase):
             response  = flexmock(status=200)
             content = get_json({
                 'status':TransferService.TRANSFER_BAD_REQUEST,
-                'error':'error',
+                'message':'error',
                 })
             return (response, content)
 
@@ -169,7 +167,7 @@ class TransferClientStatusTestCase(TestCase):
 
         self.assertTrue('status' in status_dict)
         self.assertEqual(status_dict['status'], TransferService.TRANSFER_BAD_REQUEST)
-        self.assertTrue('error' in status_dict)
+        self.assertTrue('message' in status_dict)
 
     def test_extra_returns(self):
         def get(self, url, headers={}, data={}):
@@ -177,7 +175,7 @@ class TransferClientStatusTestCase(TestCase):
             response  = flexmock(status=200)
             content = get_json({
                 'status':TransferService.TRANSFER_BAD_REQUEST,
-                'error':'error',
+                'message':'error',
                 })
             return (response, content)
 
@@ -188,7 +186,7 @@ class TransferClientStatusTestCase(TestCase):
 
         self.assertTrue('status' in status_dict)
         self.assertEqual(status_dict['status'], TransferService.TRANSFER_BAD_REQUEST)
-        self.assertTrue('error' in status_dict)
+        self.assertTrue('message' in status_dict)
 
     def test_unknown_error(self):
         pass
