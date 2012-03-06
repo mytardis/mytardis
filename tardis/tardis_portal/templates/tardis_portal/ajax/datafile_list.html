@@ -44,12 +44,24 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
     <span style="float:left;">
 
     <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
-    <a class="filelink" href="{{ datafile.get_download_url }}" target="_blank">{{ datafile.filename }}</a> 
+    {% if datafile.get_view_url %}
+    <a  class="filelink"
+        href="{{ datafile.get_view_url }}"
+        title="View"
+        target="_blank">{{ datafile.filename }}</a>
+    {% else %}
+    {{ datafile.filename }}
+    {% endif %}
     </span>
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-     </span>
+    </span>
+    <a  class="downloadlink fg-button small ui-state-default fg-button-icon-solo ui-corner-all"
+        href="{{ datafile.get_download_url }}"
+        title="Download">
+        <span class="ui-icon ui-icon-arrowthickstop-1-s"></span>
+    </a>
     {% if has_write_permissions and not immutable %}
-    <a title="Add" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+    <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
      data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
      class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all jqModalDfAdd">
         <span class="ui-icon ui-icon-plusthick"></span>
@@ -57,7 +69,7 @@ Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_
      </a>
      {% endif %}
 
-    <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide" class="datafile_info_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/parameters/{{ datafile.id}}/">
+    <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata" class="datafile_info_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/parameters/{{ datafile.id}}/">
         <span class="ui-icon ui-icon-circle-triangle-e"></span>
         Show/Hide
     </a>

@@ -432,6 +432,21 @@ class Dataset_File(models.Model):
             except KeyError:
                 return 'application/octet-stream'
 
+    def get_view_url(self):
+        from tardis.tardis_portal.download \
+            import IMAGEMAGICK_AVAILABLE, MIMETYPES_TO_VIEW_AS_PNG
+        import re
+        viewable_mimetype_patterns = ['image/.*', 'text/.*']
+        if not any(re.match(p, self.get_mimetype())
+                   for p in viewable_mimetype_patterns):
+            return None
+        # We should avoid listing files that require conversion
+        if (not IMAGEMAGICK_AVAILABLE and
+            self.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG):
+            return ''
+        kwargs = {'datafile_id': self.id}
+        return reverse('view_datafile', kwargs=kwargs)
+
     def get_download_url(self):
         view = ''
         kwargs = {'datafile_id': self.id}
@@ -476,37 +491,27 @@ class Dataset_File(models.Model):
             except AttributeError:
                 return ''
 
-            from os.path import abspath, join
-            return abspath(join(FILE_STORE_PATH,
-                                str(self.dataset.experiment.id),
-                                str(self.dataset.id),
-                                self.url.partition('://')[2]))
+            raw_path = self.url.partition('://')[2]
+            # Standard location for local files
+            file_path = path.abspath(path.join(FILE_STORE_PATH,
+                                               str(self.dataset.experiment.id),
+                                               str(self.dataset.id),
+                                               raw_path))
+            if path.isfile(file_path):
+                return file_path
+            # Legacy location for local files
+            file_path = path.abspath(path.join(FILE_STORE_PATH,
+                                               str(self.dataset.experiment.id),
+                                               raw_path))
+            if path.isfile(file_path):
+                return file_path
+            return ''
         elif self.protocol == 'staging':
             return self.url
-
         # file should refer to an absolute location
         elif self.protocol == 'file':
             return self.url.partition('://')[2]
-
         # ok, it doesn't look like the file is stored locally
-        else:
-            return ''
-
-    def get_absolute_filepath_old(self):  # temp quickfix!
-        # check for empty protocol field (historical reason) or
-        # 'tardis' which indicates a location within the tardis file
-        # store
-        if self.protocol == '' or self.protocol == 'tardis':
-            from django.conf import settings
-            try:
-                FILE_STORE_PATH = settings.FILE_STORE_PATH
-            except AttributeError:
-                return ''
-
-            from os.path import abspath, join
-            return abspath(join(FILE_STORE_PATH,
-                                str(self.dataset.experiment.id),
-                                self.url.partition('://')[2]))
         else:
             return ''
 
