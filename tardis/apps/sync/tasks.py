@@ -1,5 +1,7 @@
 from celery.task import task
 from tardis.apps.sync.models import SyncedExperiment
+# Required to register signal handlers for email notifications.
+import notify
 
 @task(name="tardis.apps.sync.tasks.clock_tick", ignore_result=True)
 def clock_tick():

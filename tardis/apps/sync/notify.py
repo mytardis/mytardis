@@ -52,12 +52,16 @@ logger = logging.getLogger(__name__)
 
 
 @receiver(transfer_failed)
-def failed(sender, instance, **kwargs):
+def failed(sender, **kwargs):
+    logger.debug('Sending experiment failure emails')
+    instance = kwargs['instance']
     email_admins(instance, success=False)
 
 
 @receiver(transfer_completed)
-def completed(sender, instance, **kwargs):
+def completed(sender, **kwargs):
+    logger.debug('Sending experiment complete emails')
+    instance = kwargs['instance']
     email_admins(instance, success=True)
 
 
@@ -82,6 +86,8 @@ def email_users(synced_exp, success):
 def email_admins(synced_exp, success):
     admins = getattr(settings, 'SYNC_ADMINS', [])
     if not admins:
+        return
+    if success and not getattr(settings, 'SYNC_ADMINS_NOTIFY_ON_SUCCESS', True):
         return
     from_email = settings.SERVER_EMAIL
     (subject, message) = _get_email_text(synced_exp, success)
