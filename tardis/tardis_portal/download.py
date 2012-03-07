@@ -182,11 +182,7 @@ def download_datafiles(request):
                         absolute_filename = datafile.url.partition('//')[2]
                         if(datafile.url.partition('//')[0] == 'tardis:'):
                             #temp fix for old data
-                            filepath = '%s/%s/%s' %\
-                            (expid, str(datafile.dataset.id),
-                                absolute_filename)
-
-                            print filepath + "######"
+                            filepath = datafile.get_absolute_filepath()
 
                             try:
                                 wrapper = FileWrapper(file(
@@ -215,11 +211,7 @@ def download_datafiles(request):
                     absolute_filename = datafile.url.partition('//')[2]
                     if(datafile.url.partition('//')[0] == 'tardis:'):
                         #temp fix for old data
-                        filepath = '\"%s/%s/%s\" ' %\
-                        (expid, str(datafile.dataset.id),
-                            absolute_filename)
-
-                        print filepath + "######"
+                        filepath = datafile.get_absolute_filepath() + " "
 
                         try:
                             wrapper = FileWrapper(file(
@@ -307,6 +299,7 @@ def download_datafiles(request):
         # streamed on the fly, so going command-line-o
         if not fileString:
             return return_response_error(request)
+        logger.info('Files for archive command: ' + fileString)
 
         if comptype == "tar":
             cmd = 'tar -C %s -c %s' % (settings.FILE_STORE_PATH,
