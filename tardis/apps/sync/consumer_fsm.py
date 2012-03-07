@@ -1,17 +1,21 @@
+import logging
 from tardis.apps.sync.fields import State, FinalState, FSMField, \
         map_return_to_transition, true_false_transition
 from .transfer_service import TransferService, TransferClient
 from .integrity import IntegrityCheck
 from .signals import transfer_completed, transfer_failed
 
+logger = logging.getLogger(__name__)
 
 class FailPermanent(FinalState):
     def _on_entry(self, experiment):
+        logger.error('Transfer failed: %s' % experiment.uid)
         transfer_failed.send_robust(sender=experiment.__class__, instance=experiment)
 
 
 class Complete(FinalState):
     def _on_entry(self, experiment):
+        logger.info('Transfer complete: %s' % experiment.uid)
         transfer_completed.send_robust(sender=experiment.__class__, instance=experiment)
 
 
@@ -36,6 +40,10 @@ class CheckingIntegrity(State):
     @true_false_transition(Complete, FailPermanent)
     def _get_next_state(self, experiment):
         complete = IntegrityCheck(experiment.experiment).all_files_complete()
+        if not complete:
+            logger.error('Integrity check failed: %s' % experiment.uid)
+        else:
+            logger.info('Integrity check succeeded: %s' % experiment.uid)
         return complete
 
 
