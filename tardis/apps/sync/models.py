@@ -35,6 +35,7 @@ models.py
 .. moduleauthor:: Shaun O'Keefe <shaun.okeefe.0@gmail.com>
 
 """
+import json
 
 from django.db import models
 from django.dispatch import receiver
@@ -65,6 +66,16 @@ class SyncedExperiment(models.Model):
 
     def progress(self):
         self.state = self.state.get_next_state(self)
+        self.save()
+
+    def status(self):
+        try:
+            return json.loads(self.msg)
+        except ValueError:
+            return None
+
+    def save_status(self, status_dict):
+        self.msg = json.dumps(status_dict)
         self.save()
 
 

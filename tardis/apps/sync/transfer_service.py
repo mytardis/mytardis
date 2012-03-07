@@ -169,8 +169,7 @@ class TransferClient(object):
         headers = { 'X_MYTARDIS_KEY': self.key }
         resp, content = self.client.get(url, headers=headers)
         dict_from_json = self._handle_status_result(resp, content)
-        synced_exp.msg = json.dumps(dict_from_json)
-        synced_exp.save()
+        synced_exp.save_status(dict_from_json)
         return dict_from_json
 
     def _handle_status_result(self, resp, content):

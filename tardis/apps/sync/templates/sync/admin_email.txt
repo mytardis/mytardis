@@ -6,8 +6,8 @@ ID:    {{ experiment.id }}
 Title: {{ experiment.title }}
 URL:   {{ site_url }}{{ experiment.get_absolute_url }}
 
-{% if message %}Reason:
-{{ message }}{% endif %}
+{% if status.message %}Reason:
+{{ status.message }}{% endif %}
 {% if admin_url %}
 Follow this link for more details:
 {{ admin_url }}

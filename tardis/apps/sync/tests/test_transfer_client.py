@@ -37,7 +37,7 @@ class TCInitialisationTestCase(TestCase):
 
 def get_synced_exp(url, uid, exp_id):
     exp = flexmock(id=exp_id)
-    se = flexmock(provider_url=url, uid=uid, experiment=exp, save=lambda: None)
+    se = flexmock(provider_url=url, uid=uid, experiment=exp)
     return se
 
 class StubbedHttpClient(HttpClient):
@@ -126,6 +126,7 @@ class TransferClientStatusTestCase(TestCase):
             return (response, content)
 
         StubbedHttpClient.get = get
+        self.se.should_receive('save_status')
 
         tc = StubbedTransferClient()
         status_dict = tc.get_status(self.se)
@@ -143,6 +144,7 @@ class TransferClientStatusTestCase(TestCase):
             return (response, content)
 
         StubbedHttpClient.get = get
+        self.se.should_receive('save_status')
 
         tc = StubbedTransferClient()
         status_dict = tc.get_status(self.se)
@@ -161,6 +163,7 @@ class TransferClientStatusTestCase(TestCase):
             return (response, content)
 
         StubbedHttpClient.get = get
+        self.se.should_receive('save_status')
 
         tc = StubbedTransferClient()
         status_dict = tc.get_status(self.se)
@@ -180,6 +183,7 @@ class TransferClientStatusTestCase(TestCase):
             return (response, content)
 
         StubbedHttpClient.get = get
+        self.se.should_receive('save_status')
 
         tc = StubbedTransferClient()
         status_dict = tc.get_status(self.se)

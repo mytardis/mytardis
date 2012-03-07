@@ -67,7 +67,7 @@ def _get_email_text(synced_exp, success, template='sync/admin_email.txt'):
         'result': result,
         'experiment': synced_exp.experiment,
         'uid': synced_exp.uid,
-        'message': synced_exp.msg,
+        'status': synced_exp.status(),
         'site_url': settings.MYTARDIS_SITE_URL,
         'admin_url': '',
         }

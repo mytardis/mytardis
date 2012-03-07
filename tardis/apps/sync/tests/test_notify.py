@@ -25,7 +25,7 @@ class NotifyTestCase(TestCase):
         self.exp.save()
         self.synced_exp = SyncedExperiment(
                 uid='tardis.1', experiment=self.exp, provider_url='url')
-        self.synced_exp.msg = 'You broke everything!'
+        self.synced_exp.msg = '{"message": "You broke everything!"}'
         self.synced_exp.save()
 
     def testGetEmailTextFail(self):
