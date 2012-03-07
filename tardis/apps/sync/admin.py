@@ -36,13 +36,14 @@ class SyncedExperimentAdmin(admin.ModelAdmin):
     def experiment_(self, item):
         exp = item.experiment
         admin_link = '../../%s/%s/%d/' % (
-                exp._meta.app_label, exp._meta.module_name, item.id)
-        return '<a href="%s">%s</a> (<a href="%s">edit</a>)' % (
+                exp._meta.app_label, exp._meta.module_name, exp.id)
+        return '<a href="%s">%s</a> (<a href="%s">admin</a>)' % (
                 exp.get_absolute_url(), unicode(exp), admin_link)
     experiment_.allow_tags = True
 
     search_fields = [ 'uid', 'provider_url', 'experiment__id']
     list_display = [ 'state', 'uid', 'experiment_','provider_url' ]
     list_filter = [ 'state' ]
+    raw_id_fields = [ 'experiment' ]
 
 admin.site.register(models.SyncedExperiment, SyncedExperimentAdmin)
