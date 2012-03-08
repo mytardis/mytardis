@@ -1,0 +1,162 @@
+{% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+{# <script type="text/javascript"> #}
+{#     $(document).ready(function() { #}
+{#         $(".dataset_metadata_toggle").toggle( #}
+{#         function(){ #}
+{#             $(this).text("[Show]"); #}
+{#             var href= $(this).attr("href"); #}
+{#             $(href).hide(); #}
+{#         }, #}
+{#         function(){ #}
+{#             $(this).text("[Hide]"); #}
+{#             var href= $(this).attr("href"); #}
+{#             $(href).show(); #}
+{#         } #}
+{#         ); #}
+{#         $(".dataset_metadata_toggle").click(); #}
+{#     }); #}
+{# </script> #}
+{% endblock %}
+
+{% load experimentstats %}
+
+{% block content %}
+
+<div id="content">
+{% if user.is_authenticated %}
+  <h2 class="title">My Experiments</h2>
+
+	{% if experiments %}
+		<table class="experiment-table table">
+			<thead>
+				<tr>
+					<th>
+						<strong>{{ experiments.count }}</strong>
+						experiment{{ experiments.count|pluralize}}
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			  {% for experiment in experiments %}
+			  <tr>
+					<td>
+					  <h4>
+					   <a href="{{ experiment.get_absolute_url }}">
+					   {{ experiment.title }}
+					   </a>
+					   {% if experiment.public %}(public){% endif %}
+					  </h4>
+					  <p>
+							From <strong>{{experiment.institution_name}}</strong>, deposited
+							<strong>
+							{{experiment.update_time|date:"jS F Y" }}
+							</strong>
+					  </p>
+					  <p>
+					   <strong>{{ experiment.dataset_set.all.count }}</strong>
+					   dataset{{ experiment.dataset_set.all.count|pluralize }},
+					   containing
+					   <strong>{{ experiment.id|experiment_file_count }}</strong>
+					   file{{ experiment.id|experiment_file_count|pluralize }}
+					  </p>
+					</td>
+			  </tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+	  <p>You own no experiments at this time.</p>
+	{% endif %}
+
+  <h2 class="title">Experiments shared with me</h2>
+
+  {% if shared_experiments %}
+	<table class="experiment-table table">
+    <thead>
+	    <tr>
+	        <th>
+				      <strong>{{ shared_experiments.count }}</strong>
+				      experiment{{ shared_experiments.count|pluralize}}
+	        </th>
+	    </tr>
+    </thead>
+    <tbody>
+    {% for experiment in shared_experiments %}
+      <tr>
+        <td>
+	        <h4>
+	          <a href="{{ experiment.get_absolute_url }}">
+	          {{ experiment.title }}
+	          </a>
+	          {% if experiment.public %}(public){% endif %}
+	        </h4>
+	        <p>
+						From <strong>{{experiment.institution_name}}</strong>,
+						deposited
+						<strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+	        </p>
+	        <p>
+						<strong>{{ experiment.dataset_set.all.count }}</strong>
+						dataset{{ experiment.dataset_set.all.count|pluralize }},
+						containing
+						<strong>{{ experiment.id|experiment_file_count }}</strong>
+						file{{ experiment.id|experiment_file_count|pluralize }}
+					</p>
+				</td>
+      </tr>
+    </tbody>
+	  {% endfor %}
+	</table>
+	{% else %}
+	<p class="alert alert-info">There are no experiments shared with you.</p>
+	{% endif %}
+
+{% endif %}
+
+  <h2 class="title">Public Experiments</h2>
+
+{% if public_experiments %}
+	<table class="experiment-table table">
+	  <thead>
+	    <tr>
+	      <th>
+		      <strong>{{ public_experiments.count }}</strong>
+		      public experiment{{ public_experiments.count|pluralize }}
+		    </th>
+		  </tr>
+		</thead>
+	  <tbody>
+	  {% for public_experiment in public_experiments %}
+		  <tr>
+		    <td>
+		      <h4>
+			      <a href="{% url tardis.tardis_portal.views.view_experiment public_experiment.id %}">
+				    {{ public_experiment.title }}
+				    </a>
+				  </h4>
+			    <p>
+			      From <strong>{{public_experiment.institution_name}}</strong>,
+			      deposited
+			      <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong>
+			    </p>
+			    <p>
+				    <strong>{{ public_experiment.dataset_set.all.count }}</strong>
+				    dataset{{ public_experiment.dataset_set.all.count|pluralize }},
+				    containing
+				    <strong>{{ public_experiment.id|experiment_file_count }}</strong>
+				    file{{ public_experiment.id|experiment_file_count|pluralize }}
+			    </p>
+			  </td>
+		  </tr>
+	  {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="alert alert-info">No public experiments at the moment.</p>
+{% endif %}
+
+</div> <!-- content -->
+
+{% endblock %}
