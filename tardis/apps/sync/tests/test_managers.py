@@ -12,7 +12,6 @@ from tardis.apps.sync.models import SyncedExperiment
 
 from ..transfer_service import TransferService
 from ..managers.default_manager import SyncManager
-from ..managers.vbl import VBLSyncManager
 from ..site_manager import SiteManager
 
 from httplib2 import Http
@@ -121,31 +120,3 @@ class SyncManagerTestCase(ManagerTestCase):
         sm = SyncManager(institution='test')
         url = 'http://somewhere.com'
         exp, settings_, dest_path = sm.start_file_transfer('test.1', url, 'path_to_exp')
-
-
-class VBLManagerTestCase(ManagerTestCase):
-    def setUp(self):
-        super(VBLManagerTestCase, self).setUp()
-        schema = Schema(namespace='blah', name='', type=Schema.EXPERIMENT)
-        schema.save()
-
-        exp_parname = ParameterName(schema=schema,
-                                          name='EPN',
-                                          full_name='full_name',
-                                          data_type=ParameterName.STRING)
-        exp_parname.save()
-        exp_parset = ExperimentParameterSet(schema=schema,
-                                            experiment=self.exp)
-        exp_parset.save()
-        exp_parameter = ExperimentParameter(name=exp_parname,
-                                            parameterset=exp_parset,
-                                            string_value='EPN123')
-        exp_parameter.save()
-
-    def _dont_testGetStatus(self):
-        sm = VBLSyncManager(institution='test')
-        result = sm.get_status('test.1')
-        print result
-        self.fail()
-
-
