@@ -1,0 +1,35 @@
+{% extends "tardis_portal:tardis_portal/data_browsing_template.html" %}
+
+{% block sidebar %}
+<div class="well sidebar-nav">
+    <ul class="nav nav-list">
+      <li class="nav-header">Browse Experiments</li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Index</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.search_experiment %}">Search</a></li>
+    </ul>
+    {% if is_authenticated %}
+        {% if perms.tardis_portal.add_experiment or perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group  %}
+    <ul class="nav nav-list">
+        <li class="nav-header">Controls</li>
+        {% if perms.tardis_portal.add_experiment %}
+            <li><a href="{% url tardis.tardis_portal.views.create_experiment %}">Create Experiment</a></li>
+        {% endif %}
+        {% if perms.tardis_portal.change_experimentacl %}
+            <li><a href="{% url tardis.tardis_portal.views.control_panel %}">Experiment Access</a></li>
+        {% endif %}
+        {% if perms.tardis_portal.change_group %}
+        <li><a href="{% url tardis.tardis_portal.views.manage_groups %}">Group Management</a></li>
+        {% endif %}
+    </ul>
+        {% endif %}
+        {% if perms.tardis_portal.change_userauthentication %}
+    <ul class="nav nav-list">
+        <li class="nav-header">Account Management</li>
+        <li><a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">Authentication Panel</a></li>
+    </ul>
+        {% endif %}
+    {% endif %}
+      </li>
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,193 @@
+{# Copyright (c) 2012, UQ ITEE e-Research Group                               #}
+{# (The University of Queensland, Australia)                                  #}
+{# All rights reserved.                                                       #}
+{#                                                                            #}
+{# Redistribution and use in source and binary forms, with or without         #}
+{# modification, are permitted provided that the following conditions are     #}
+{# met:                                                                       #}
+{#     * Redistributions of source code must retain the above copyright       #}
+{#       notice, this list of conditions and the following disclaimer.        #}
+{#     * Redistributions in binary form must reproduce the above copyright    #}
+{#       notice, this list of conditions and the following disclaimer in the  #}
+{#       documentation and/or other materials provided with the distribution. #}
+{#     * Neither the name of the The University of Queensland nor the         #}
+{#       names of its contributors may be used to endorse or promote products #}
+{#       derived from this software without specific prior written            #}
+{#       permission.                                                          #}
+{#                                                                            #}
+{# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS    #}
+{# IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,  #}
+{# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR     #}
+{# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE UNIVERSITY OF QUEENSLAND BE  #}
+{# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR        #}
+{# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF       #}
+{# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS   #}
+{# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN    #}
+{# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)    #}
+{# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF     #}
+{# THE POSSIBILITY OF SUCH DAMAGE.                                            #}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	{% block title %}
+	<title>MyTardis {% if subtitle %}- {{ subtitle }} {% endif %}</title>
+	{% endblock title %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<meta name="keywords" content="">
+	{% include "tardis_portal/javascript_libraries.html" %}
+
+	{% block script %}
+	{% endblock script %}
+
+
+    <script type="text/javascript">
+    // Set active nav button
+    $(function() {
+        $('.nav a').each(function(i,v) {
+            if ($(v).attr('href') == window.location.pathname) {
+                  $(v).parent().addClass('active');
+            }
+        });
+    })
+    </script>
+
+    <!-- Le styles -->
+    <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="{{ STATIC_URL }}/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- fav and touch icons -->
+    {% block icon %}
+    <link rel="shortcut icon" href="{{ STATIC_URL }}/images/favicon.ico" type="image/x-icon">
+    {% endblock icon %}
+    <link rel="apple-touch-icon" href="{{ STATIC_URL }}/images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ STATIC_URL }}/images/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ STATIC_URL }}/images/apple-touch-icon-114x114.png">
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">MyTardis</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
+              <li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
+              <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
+              <li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
+            </ul>
+	        {% if search_form %}
+	        <form id="searchbox" method="get"
+	            class="navbar-search pull-left"
+	            action="{% url tardis.tardis_portal.views.single_search %}">
+	          <input id="id_q"
+	               type="text" class="search-query" placeholder="Search"
+	               {% if query %} value="{{ query }}" {% endif %}>
+	        </form>
+	        {% endif %}
+	          <p id="headerloginstatus" class="navbar-text pull-right">
+	            {% if is_authenticated %}
+	              Logged in as
+	              {% if is_superuser %}
+	              <a href="{% url admin:index %}">
+	                  <em>{{ username }}</em>
+	              </a>
+	              {% else %}
+	                  <em>{{ username }}</em>
+	              {% endif %} - <a href="{% url django.contrib.auth.views.logout %}"> Log Out</a>
+	            {%  else %}
+	                  <!-- <a href="{% url registration.views.register %}">
+	                  Register
+	                  </a>  -->
+	                  <a href="{% url tardis.tardis_portal.views.login %}">
+	                  Log In
+	                  </a>
+	            {% endif %}
+	          </p>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+
+
+
+	<div class="container-fluid">
+
+	   {% if subtitle %}
+	   <!-- Subtitle: {{ subtitle }} -->
+       {% endif %}
+
+		<div class="jqmAlertStatus" id="jqmAlertStatus">
+			<div class="jqmAlertWindowStatus">
+				{% if error %}
+				<div class="jqmAlertContentStatus" id="jqmAlertContentStatus">
+					<a href="#" class="jqmClose"></a> <br />{{status}}
+				</div>
+				<!-- statusBoxError -->
+				{% else %}
+				<div class="jqmAlertContentStatus" id="jqmAlertContentStatus">
+					<a href="#" class="jqmClose"></a> <br />
+					<span id="jqmStatusMessage">{{status}}</span>
+				</div>
+				<!-- statusBox -->
+				{% endif %}
+			</div>
+			<!-- window -->
+		</div>
+		<!-- status -->
+
+        <div class="row-fluid">
+	        <div class="span4">
+	            {% block sidebar %} {% endblock sidebar %}
+	        </div>
+
+	        <div class="span8">
+			{% block content %}{% endblock content %}
+	        </div>
+        </div>
+
+
+		<div id="bottom" style="clear: both; width: 700px;">
+		  {% block bottom %} {% endblock bottom %}
+		</div>
+
+		{% block fullpage %}{% endblock fullpage %}
+
+		{% block bottomicons %}{% endblock bottomicons %}
+
+		{% block bottombar %}{% endblock bottombar %}
+
+	</div>
+	<!-- /container -->
+
+	<!-- javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-transition.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-alert.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-tab.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-tooltip.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-button.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-collapse.js"></script>
+  </body>
+</html>
