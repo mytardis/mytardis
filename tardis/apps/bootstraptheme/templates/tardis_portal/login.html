@@ -1,0 +1,12 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load bootstrap %}
+
+{% block content %}
+<form action="" method="post" class="form-horizontal">
+  <legend>Please Log In</legend>
+  {{ loginForm|bootstrap }}
+  <div class="form-actions">
+  <button type="submit" class="btn btn-info">Login</button>
+  </div>
+</form>
+{% endblock content %}

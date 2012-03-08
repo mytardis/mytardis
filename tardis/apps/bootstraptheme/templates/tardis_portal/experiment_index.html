@@ -26,7 +26,7 @@
 
 <div id="content">
 {% if user.is_authenticated %}
-  <h2 class="title">My Experiments</h2>
+  <h2>My Experiments</h2>
 
 	{% if experiments %}
 		<table class="experiment-table table">
@@ -70,7 +70,7 @@
 	  <p>You own no experiments at this time.</p>
 	{% endif %}
 
-  <h2 class="title">Experiments shared with me</h2>
+  <h2>Experiments shared with me</h2>
 
   {% if shared_experiments %}
 	<table class="experiment-table table">
@@ -115,7 +115,7 @@
 
 {% endif %}
 
-  <h2 class="title">Public Experiments</h2>
+  <h2>Public Experiments</h2>
 
 {% if public_experiments %}
 	<table class="experiment-table table">

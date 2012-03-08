@@ -156,19 +156,28 @@
 		<!-- status -->
 
         <div class="row-fluid">
-	        <div class="span4">
-	            {% block sidebar %} {% endblock sidebar %}
-	        </div>
+          {% load capture %}
+          {% capture as sidebar %}
+            {% block sidebar %}{% endblock sidebar %}
+          {% endcapture %}
+          {% capture as content %}
+            {% block content %}{% endblock content %}
+          {% endcapture %}
 
-	        <div class="span8">
-			{% block content %}{% endblock content %}
-	        </div>
+          {% if sidebar %}
+	        <div class="span4">{{sidebar}}</div>
+          <div class="span8">{{content}}</div>
+          {% else %}
+          <div class="span12">{{content}}</div>
+          {% endif %}
         </div>
 
 
-		<div id="bottom" style="clear: both; width: 700px;">
-		  {% block bottom %} {% endblock bottom %}
-		</div>
+        <div class="row-fluid">
+          <div class="span12">
+          {% block bottom %}{% endblock bottom %}
+          </div>
+		  		</div>
 
 		{% block fullpage %}{% endblock fullpage %}
 
