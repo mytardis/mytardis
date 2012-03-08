@@ -48,6 +48,7 @@ from tardis.tardis_portal.MultiPartForm import MultiPartForm
 
 from ..transfer_service import TransferService
 
+import logging
 logger = logging.getLogger('tardis.mecat')
 
 #
@@ -88,6 +89,7 @@ class SyncManager(object):
     # rather than the parser.py files registration logic
     #
     def push_experiment_to_institutions(self, experiment, owners):
+   
         """
         Transfers experiment metadata to experiment owner's
         MyTardis instance at the home institute.
@@ -100,20 +102,20 @@ class SyncManager(object):
         for ss in self.site_manager.sites():
             # is the email domain of the experiment's owner registered
             # by any site?
-            siteOwners = []
+            site_owners = []
             for owner in owners:
                 for domain in ss['email-endswith']:
                     if owner.endswith(domain):
-                        siteOwners.append(owner)
+                        site_owners.append(owner)
                         break
 
             register_settings = ss['register']
 
             # register meta-data and file transfer request at another
             # MyTARDIS instance
-            if siteOwners:
+            if site_owners:
                 success = self._post_experiment(experiment, site_owners, register_settings)
-                sites.append((url, success))
+                sites.append((ss['register']['url'], success))
         # return a list of registered sites
         return sites
 
@@ -165,7 +167,7 @@ class SyncManager(object):
 
         # This should be made into a background task.
         # Or rather- the processing on the other end should be.
-        h = Http(timeout=9999)
+        h = Http(timeout=9999, disable_ssl_certificate_validation=True)
         h.force_exception_to_status_code = True
         resp, content = h.request(url, 'POST', headers=headers, body=body)
         f.close()

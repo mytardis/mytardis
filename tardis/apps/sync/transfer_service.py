@@ -108,7 +108,7 @@ class TransferService(object):
         return status
 
     def push_experiment_to_institutions(self, experiment, owners):
-        self.manager.push_experiment_to_institutions(experiment, owners)
+        return self.manager.push_experiment_to_institutions(experiment, owners)
 
 
 class HttpClient(object):

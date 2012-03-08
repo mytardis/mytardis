@@ -290,6 +290,17 @@ class ExperimentACL(models.Model):
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
         return None
+    
+    def get_related_users(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.filter(pk=self.entityId)
+        if self.pluginId == 'django_group':
+            return Group.objects.get(pk=self.entityId).user_set.all()
+        return User.object.none()
 
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)

@@ -30,7 +30,7 @@ class URLParser(object):
             # This should pull in and use HttpClient or at least httplib2.
             body = urllib.urlencode({'username': username, 'password': password})
 
-            h = Http(timeout=10)
+            h = Http(timeout=10, disable_ssl_certificate_validation=True)
             h.force_exception_to_status_code = True
             resp, content = h.request(url, 'POST', body=body)
             if resp.status != 200:

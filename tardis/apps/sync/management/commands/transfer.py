@@ -1,3 +1,4 @@
+
 from django.core.management.base import BaseCommand, CommandError
 from tardis.apps.sync.transfer_service import TransferService
 from django.contrib.auth.models import User
@@ -24,18 +25,20 @@ class Command(BaseCommand):
             raise CommandError('Invalid EPN (%s) provided' % (epn))
         
         try:
+            owner_emails = []
             acls = ExperimentACL.objects.filter(experiment=experiment, isOwner=True)
-            owner_emails = [acl.get_related_object().email for acl in acls]
+            for acl in acls:
+                if acl:
+                    owner_emails.extend([user.email for user in acl.get_related_users()])
                 
         except User.DoesNotExist:
             raise CommandError("No users found for experiment EPN:%s" % (epn))
         
-        return
-        
         try:
             ts = TransferService()
-            ts.push_experiment_to_institutions(experiment, owner_emails)
+            sites = ts.push_experiment_to_institutions(experiment, owner_emails)
+            for url, status in sites:
+                self.stdout.write('Pushed to url %s %s' % (url, 'succesfully' if status else 'unsuccessfully'))
+		
         except TransferService.TransferError, e:
             raise CommandError('Error transferring experiment(EPN:%s): %s' % (epn, e))
-
-
