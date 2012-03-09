@@ -53,11 +53,15 @@
     }
 
     $(document).ready(function() {
-	{% if directory_listing %}
+    {% if directory_listing %}
         $("#demo1").jstree({
-	    core : { /* core options go here */ },
-	    plugins : [ "themes", "html_data", "checkbox" ]
-	});
+        core : { "initially_open" : ['phtml_1'] },
+        plugins : [ "themes", "html_data", "checkbox" ],
+    	checkbox : { 
+    	                two_state : true, 
+    					checked_parent_open: true,
+    	        },
+    });
 
 	//Get checked
 	$('.add_files').live('click', function(){
@@ -262,52 +266,59 @@
 		</div>
 	      </div>
         <form id="create_experiment_form" action="" method="POST">
+        <input type="hidden" name="username" value="{{username}}" id="username" />
           {{ form.non_field_errors }}
           <div class="msg_list">
-            <p class="exp_head">Experiment Information</p>
+            <p class="exp_head">Experiment Information
+                *<small>required</small></p>
             <div class="exp_body">
               <div class="fieldWrapper">
                 {{ form.title.errors }}
                 <label for="id_title">Title:</label><br/>
-                {{ form.title }}
+                {{ form.title }}*
               </div>
 
               <div class="fieldWrapper">
                 {{ form.authors.errors }}
                 <label for="id_title">Authors (comma separate):</label><br/>
-                {{ form.authors }}
+                {{ form.authors }}*
               </div>
 
               <div class="fieldWrapper">
                 {{ form.institution_name.errors }}
                 <label for="id_institution">Institution Name:</label><br/>
-                {{ form.institution_name }}
+                {{ form.institution_name }}*
               </div>
 
               <div class="fieldWrapper">
                 {{ form.description.errors }}
                 <label for="id_description">Description:</label><br/>
-                {{ form.description }}
+                {{ form.description }}*
               </div>
             </div>
 	    {% if directory_listing %}
-              <p class="my_files">My Files</p>
+	    <div id="file_select_container" class="floating_file_staging">
+        <div class="my_files">My Files</div>
 	      <div class="msg_body">
 		<p><strong>Select Files To Be Added To A Dataset:</strong></p>
-		<div id="demo1" class="demo">
-		  {{directory_listing|safe}}
-		</div>
-		<p>
-		To add files to 'My Files', mount the following file store via your operating system:
-		</p>
-		<p id="mountpath">
-		<strong>{{staging_mount_prefix}}{{username}}</strong>
-		</p>
-		<p>
-		<a href="#">User Guide</a>
-		</p>
+    		<div id="demo1" class="demo">
+    		  {{directory_listing|safe}}
+    		</div>
+    	</div>
+        	<div id="transfer_instructions">		
+    		<p>
+                To add files and folders to the 'Transfer Data' window, mount the following file store via your operating system:
+            </p>
+
+    		<p id="mountpath">
+    		<strong>{{staging_mount_prefix}}{{username}}</strong>
+    		</p>
+                {# <p> #}
+                {# <a href="#">User Guide</a> #}
+                {# </p> #}
+    		</div>
 		<br/>
-	      </div>
+	    </div>
 	    {% endif %}
 
 	    <div class="datasets">
