@@ -3,12 +3,14 @@
 
 {% block content %}
 <form action="" method="post" class="form-horizontal">
-  <legend>Please Log In</legend>
-  {{ loginForm|bootstrap }}
-  <div class="form-actions">
-  <button type="submit" class="btn btn-info btn-large">
-    <i class="icon-signin"></i> Login
-  </button>
-  </div>
+  <fieldset>
+    <legend>Please Log In</legend>
+    {{ loginForm|bootstrap }}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-info btn-large">
+        <i class="icon-signin"></i> Login
+      </button>
+    </div>
+  </fieldset>
 </form>
 {% endblock content %}
