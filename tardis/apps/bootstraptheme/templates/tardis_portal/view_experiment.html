@@ -1,0 +1,387 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load basiccomparisonfilters %}
+{% load uploadify_tags %}
+{% load dynurl %}
+
+{% block script %}
+
+<script type="text/javascript">
+    var toggle_files = function(loadCallback) {
+        var $this = $(this);
+        var $datafile_info_container = $this.siblings('ul.datafile_list');
+
+        $this.toggleClass('files_shown files_hidden');
+
+        if ($this.hasClass('files_shown')) {
+            $datafile_info_container.show();
+            $datafile_info_container.html(loadingHTML);
+
+            var href = $this.attr("href");
+            $datafile_info_container.load(href, loadCallback);
+        } else {
+            $datafile_info_container.html('');
+        }
+    };
+
+    $("#uploadify").live("allUploadsComplete", function(e, data){
+        // refresh datafile list
+        var dataset_id = $(this).attr('data-dataset_id');
+        $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
+    });
+    $('.upload_files_link').live('click', function(evt){
+        var $this = $(this);
+        var $toggle = $this.siblings('.datafile_list_toggle');
+        var $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+        var dataset_id = $this.attr('data-dataset_id');
+
+        if ($upload_files_container.length > 0 && $upload_files_container.html() !== '') {
+            // don't do anything if this has been clicked before and the upload_files_container is showing
+            $upload_files_container.html('');
+            return;
+        } else {
+            // clear the other upload files containers
+            $('.upload_files_container').html('');
+        }
+
+        // finish up the load
+        if ($toggle.hasClass('files_hidden')) {
+            toggle_files.call($toggle[0], function() {
+                $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+                $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
+            });
+        } else {
+            $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
+        }
+    });
+
+    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
+
+    // file selectors
+    jQuery('.dataset_selector_all').live('click', function() {
+        $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+    });
+    jQuery('.dataset_selector_none').live('click', function() {
+        $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+    });
+
+    function get_new_parameter_name(name)
+    {
+        var new_name = name;
+
+        var i = 1;
+        while($("[name=" + new_name + "__" + i + "]").length == 1)
+        {
+            i++;
+        }
+        return new_name + "__" + i;
+    }
+
+    function get_form_input_html(label, name, use_textarea)
+    {
+        var widget;
+        if (use_textarea) {
+            widget = '<textarea ' + 'name="' + name + '" id="' + name + '"/>';
+        } else {
+            widget = '<input type="text" name="' + name + '" value="" id="' + name + '" />';
+        }
+        var label = '<label for="' + name + '">' + label + '</label>';
+        return '<div class="fieldWrapper">' + label + '<br/>' + widget + '</div>';
+    }
+
+    $('.dataset_checkbox').live('click', function( event ) {
+    if ($(this).is(':checked')) {
+        $(this).parents('.dataset').find('.datafile_checkbox').attr('disabled', true);
+        $(this).parents('.dataset').find('.filename_search').attr('disabled', true);
+    } else {
+        $(this).parents('.dataset').find('.datafile_checkbox').removeAttr('disabled');
+        $(this).parents('.dataset').find('.filename_search').removeAttr('disabled');
+    }
+    })
+
+$(document).ready(function() {
+    $("#tabs").tabs({
+       ajaxOptions: {dataType: "html"},
+       cookie: { expires: 30 },
+       load: function (e, ui) {
+             $(ui.panel).find(".tab-loading").remove();
+           },
+       select: function (e, ui) {
+         var $panel = $(ui.panel);
+
+
+         $panel.html("<div class='tab-loading'>Loading...<img src='{{ STATIC_URL }}/images/busy.gif'/></div>")
+
+        }
+
+    });
+});
+    $('#schemaselect').live('change', function(e) {
+        e.preventDefault();
+
+        var $this = $(this);
+        var $jqm_content_div = $this.closest('.jqmAlertContent');
+
+        var type = $this.attr('data-type');
+        var parent_object_id = $this.attr('data-parent_object_id');
+        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + $this.val();
+        $.get(href, function(data) {
+            $jqm_content_div.html(data);
+        });
+        return false;
+    });
+
+    $('#add_new_parameter').live('click', function(){
+        // assuming whenever add_new_parameter is clicked an option is selected
+        var $selected_option = $("#parameternameselect > option:selected");
+        var is_long = $selected_option.attr('data-longstring');
+        var new_element_name = get_new_parameter_name($selected_option.val());
+
+        if($selected_option.text())
+        {
+            $("#parameternameselect").before(get_form_input_html($selected_option.text(), new_element_name, is_long));
+            $("#" + new_element_name).focus();
+        }
+        else
+        {
+            alert('There are no parameters allowed to be added by users in this schema');
+        }
+    });
+    $('#add_metadata_form').live('submit', function(e) {
+        e.preventDefault();
+
+        var $form = $(this);
+        var form_data = $form.serialize();
+
+        var schema_id = $('#schemaselect').val();
+        var $jqm_content_div = $form.closest('.jqmAlertContent');
+        var type = $form.attr('data-type');
+        var parent_object_id = $form.attr('data-parent_object_id');
+        var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
+        $.post(href, form_data, function(data) {
+            $jqm_content_div.html(data);
+        });
+        return false;
+    });
+    $('#edit_metadata_form').live('submit', function(e) {
+        e.preventDefault();
+        var $form = $(this);
+
+        $.post($form.attr('action'), $form.serialize(), function(data) {
+            $('#jqmAlertExpEdit div.jqmAlertContent').html(data);
+        });
+        return false;
+    });
+
+    var refreshMetadataDisplay = function(hash){
+        var $trigger = $(hash.t);
+        var $toggle = $($trigger.attr('data-toggle_selector'));
+        if ($toggle.hasClass('metadata_shown')) {
+            $toggle.click(); // hide
+            $toggle.click(); // show
+            // outcome is a refresh
+        } else {
+            $toggle.click(); // show
+        }
+        hash.w.fadeOut();
+        hash.w.css('opacity', '100%'); // must be set otherwise popup will be displayed but not visible the second time
+        hash.o.remove();
+    }
+
+    $(document).ready(function() {
+        // Close Button Highlighting. IE doesn't support :hover. Surprise?
+        if($.browser.msie) {
+            $('div.jqmAlert .jqmClose').hover(
+                function(){ $(this).addClass('jqmCloseHover'); },
+                function(){ $(this).removeClass('jqmCloseHover');}
+            );
+        }
+
+        $('#jqmAlertExpAdd, #jqmAlertExpEdit').jqm({
+            ajax: '@href',
+            target: '.jqmAlertContent',
+            closeClass: 'jqmClose',
+            onHide: refreshMetadataDisplay
+        });
+    });
+
+    // metadata text / ajax toggle
+    // datafile list
+    $(".datafile_list_toggle").live('click', function(evt){
+        evt.preventDefault();
+        toggle_files.apply(this);
+    });
+
+    // datafile metadata
+    $('.datafile_list .datafile_info_toggle').live('click', function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var $datafile_metadata_container =
+        	$this.parents('.datafile').find('.datafile_info');
+
+        $this.toggleClass('metadata_shown metadata_hidden');
+        $datafile_metadata_container.toggle();
+
+        if ($this.hasClass('metadata_shown')) {
+            var href = $this.attr("href");
+            $datafile_metadata_container.html(loadingHTML);
+            $datafile_metadata_container.load(href);
+            $datafile_metadata_container.show();
+        } else {
+            $datafile_metadata_container.hide();
+        }
+    });
+    // dataset metadata
+    $(".dataset_metadata_toggle").live('click', function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var $dataset_metadata = $this.siblings('.dataset_metadata');
+        var $icon = $this.find('span');
+
+        $this.toggleClass('metadata_shown metadata_hidden');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        if($this.hasClass('metadata_shown')) {
+            var href= $this.attr("href");
+
+            $dataset_metadata.html(loadingHTML);
+            $dataset_metadata.load(href);
+            $dataset_metadata.show();
+        } else {
+            $dataset_metadata.hide();
+        }
+    });
+    $(".experiment_metadata_toggle").live('click', function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var $experiment_metadata = $('.experiment_metadata');
+        var $icon = $this.find('span');
+
+        $this.toggleClass('metadata_shown metadata_hidden');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        if($this.hasClass('metadata_shown')) {
+            var href= $this.attr("href");
+
+            $experiment_metadata.html(loadingHTML);
+            $experiment_metadata.load(href);
+            $experiment_metadata.show();
+        } else {
+            $experiment_metadata.hide();
+        }
+    });
+    $('#expAddTrigger').live('click', function(evt){
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpAdd').jqmShow(this);
+    });
+    $('.jqModalExpEdit').live('click', function(evt){
+        evt.preventDefault();
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpEdit').jqmShow(this);
+    });
+    $('.jqModalDsEdit').live('click', function(evt) {
+        evt.preventDefault();
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpEdit').jqmShow(this);
+    });
+    $('.jqModalDsAdd').live('click', function(evt) {
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpAdd').jqmShow(this);
+    });
+    $('.jqModalDfAdd').live('click', function(evt) {
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpAdd').jqmShow(this);
+    });
+    $('.jqModalDfEdit').live('click', function(evt) {
+        evt.preventDefault();
+
+        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
+        $('#jqmAlertExpEdit').jqmShow(this);
+    });
+
+    $('.pagelink').live('click', function( event ){
+        var href = $(this).attr("href");
+        var html = $(this).html();
+        $(this).html(html + " " + loadingHTML);
+        $(this).parents('.datafile_list').load(href, function(){
+            $(".dataset_selector_all").unbind('click');
+            $(".dataset_selector_none").unbind('click');
+            // file selectors
+            $(document).find('.dataset_selector_all').click(function() {
+                $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+
+            });
+
+            $(document).find('.dataset_selector_none').click(function() {
+                $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+
+            });
+        });
+        return false;
+    });
+</script>
+
+{% endblock %}
+
+{% block fullpage %}
+
+    <div class="jqmAlert" id="jqmAlertExpAdd">
+
+        <div class="jqmAlertWindow">
+            <div class="jqmAlertTitle clearfix">
+                <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+            </div>
+
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="jqmAlert" id="jqmAlertExpEdit">
+
+        <div class="jqmAlertWindow">
+            <div class="jqmAlertTitle clearfix">
+                <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
+            </div>
+
+            <div class="jqmAlertContent">
+                <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
+            </div>
+        </div>
+    </div>
+
+  <div id="fullpage">
+    <div class="post">
+      {% block experiment_title %}
+      <h1 class="title">{{ experiment.title }}</h1>
+      {% endblock experiment_title %}
+        {% if has_write_permissions %}{% if not experiment.public %}
+            <a href="{{ experiment.get_edit_url }}">
+          <img src="{{ STATIC_URL }}/images/icon_changelink.gif" >
+          </a>
+
+    {% endif %}{% endif %}
+      </h1>
+    </div>
+
+    <div class="tabcontainer">
+      <div id="tabs">
+    <ul>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
+      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+      {% for appurl, appname in apps %}
+        <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+      {% endfor %}
+    </ul>
+      </div><!-- End tab container -->
+
+    </div>
+  </div>
+
+{% endblock %}

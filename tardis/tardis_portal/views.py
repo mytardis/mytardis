@@ -521,7 +521,8 @@ def retrieve_dataset_metadata(request, dataset_id):
         authz.has_write_permissions(request, dataset.experiment.id)
 
     c = Context({'dataset': dataset, })
-    c['has_write_permissions'] = has_write_permissions
+    c['has_write_permissions'] = has_write_permissions and \
+                                 not dataset.experiment.public
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -534,7 +535,8 @@ def retrieve_experiment_metadata(request, experiment_id):
         authz.has_write_permissions(request, experiment_id)
 
     c = Context({'experiment': experiment, })
-    c['has_write_permissions'] = has_write_permissions
+    # If the experiment is public, we don't allow editing
+    c['has_write_permissions'] = has_write_permissions and not experiment.public
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -766,7 +768,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
 
     '''
 
-    
+
     f = open(filename)
     firstline = f.readline()
     f.close()
@@ -1024,7 +1026,7 @@ def control_panel(request):
 
 @oracle_dbops_hack
 def search_experiment(request):
-    
+
     """Either show the search experiment form or the result of the search
     experiment query.
 

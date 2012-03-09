@@ -5,6 +5,13 @@
   font-weight: normal;
   font-style: normal;
 }
+
+/* Prevent overlapping, poorly aligned icons with Bootstrap */
+[class^="icon-"], [class*=" icon-"] {
+  background-image: none;
+  vertical-align: baseline;
+}
+
 [class^="icon-"]:before, [class*=" icon-"]:before {
   font-family: FontAwesome;
   font-weight: normal;

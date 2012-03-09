@@ -1,0 +1,113 @@
+{% if dataset.paginator.num_pages > 1 %}
+  <div class="pagination">
+    <span class="step-links">
+      {% if dataset.has_previous %}
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
+      {% endif %}
+
+      {% for pagenum in dataset.paginator.page_range %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
+      {% endfor %}
+
+      {% if dataset.has_next %}
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
+      {% endif %}
+      <br/>
+      <span class="current">
+        Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+      </span>
+    </span>
+  </div>
+  <br/>
+{% endif %}
+
+<div>
+{# uploadify here #}
+
+{% if has_write_permissions %}
+  {% if not experiment.public %}
+    {% if not immutable %}
+      <div class="upload_files_container"></div>
+    {% endif %}
+  {% endif %}
+{% endif %}
+<input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filename filter to work #}
+
+File filter: <input title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
+    type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></div>
+<br/>
+Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
+
+<div class="container-fluid">
+{% for datafile in dataset.object_list %}
+<div style="margin-top: 10px; margin-bottom: 10px;"
+  class="row-fluid datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
+  <div class="span1">
+    <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
+  </div>
+  <div class="span4">
+    <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
+    {% if datafile.get_view_url %}
+    <a  class="filelink"
+        href="{{ datafile.get_view_url }}"
+        title="View"
+        target="_blank">{{ datafile.filename }}</a>
+    {% else %}
+    {{ datafile.filename }}
+    {% endif %}
+    </span>
+    {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
+  </div>
+  <div class="span3">
+    <div class="btn-group">
+      <a  class="btn btn-primary"
+          href="{{ datafile.get_download_url }}"
+          title="Download">
+          <i class="icon-download-alt icon-large"></i>
+      </a>
+      {% if has_write_permissions and not immutable %}
+      <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+       data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+       class="btn jqModalDfAdd">
+          <i class="icon-plus"></i>
+       </a>
+       {% endif %}
+
+      <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
+         class="datafile_info_toggle metadata_hidden btn" href="/ajax/parameters/{{ datafile.id}}/">
+          <i class="icon-list"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="span12">
+    <ul class="datafile_info" style="display:none;">
+    </ul>
+  </div>
+</div>
+{% endfor %}
+</div>
+
+
+{% if dataset.paginator.num_pages > 1 %}
+<br/>
+<div class="pagination">
+  <span class="step-links">
+  {% if dataset.has_previous %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
+  {% endif %}
+
+  {% for pagenum in dataset.paginator.page_range %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
+  {% endfor %}
+
+  {% if dataset.has_next %}
+    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
+  {% endif %}
+    <br/>
+    <span class="current">
+      Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
+    </span>
+  </span>
+</div>
+{% endif %}

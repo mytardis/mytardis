@@ -1,0 +1,157 @@
+{% load creativecommons %}
+<div id="experiment_description">
+
+  {% block authors %}
+  <p>
+    <strong>Authors: </strong><br/>
+    {% for author in authors %}
+      {{ author.author }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  </p>
+  {% endblock authors %}
+
+  {% block abstract %}
+  <p>
+    <strong>Abstract: </strong>
+    <div class="abstract">
+      {{ experiment.description|safe }}
+    </div>
+  </p>
+  {% endblock abstract %}
+
+  {% block handle %}
+  {% if experiment.handle %}
+  <p>
+      <strong>Persistent Handle:</strong>
+      <a href="http://hdl.handle.net/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>
+  </p>
+  {% endif %}
+  {% endblock handle %}
+
+  {% block institution %}
+  <p>
+    <strong>Institution:</strong>
+    {{experiment.institution_name}}<br/>
+  </p>
+  {% endblock institution %}
+
+  {% block start_end_time %}
+  {% if experiment.start_time and experiment.end_time %}
+    <p>
+      <strong>Date:</strong>
+      {{ experiment.start_time|date:"jS F Y H:i" }} - {{ experiment.end_time|date:"jS F Y H:i" }}<br/>
+    </p>
+  {% endif %}
+  {% endblock start_end_time %}
+
+  {% block experiment_metadata %}
+  <p>
+    <div class="experiment_md_container">
+        <strong style="float:left; margin-right: 5px">Experiment Metadata</strong>
+
+        {% if has_write_permissions %}{% if not experiment.public %}
+            <a title="Add" id="expAddTrigger" class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
+                    data-toggle_selector=".experiment_metadata_toggle">
+                Add
+            </a>
+        {% endif %}{% endif %}
+
+        <a title="Show/Hide" class="experiment_metadata_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/experiment_metadata/{{experiment.id}}/">
+            Show/Hide
+        </a>
+    </div>
+    <div style="clear:both;"></div>
+    <div class="experiment_metadata" style="display:none;"></div>
+  </p>
+  {% endblock experiment_metadata %}
+
+  {% block dataset_info %}
+  <p>
+    <strong>Dataset Information:</strong>
+    <div>
+      <div class="dataset_information">
+            <ul>
+              <li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
+              <li><strong>Files:</strong> {{datafiles.count}}</li>
+              <li><strong>Size:</strong> {{size|filesizeformat}}</li>
+            </ul>
+      </div>
+    </div>
+  </p>
+  {% endblock dataset_info %}
+
+  {% block updated %}
+  <p>
+    <strong>Experiment Last Updated:</strong>
+    {{ experiment.update_time|date:"jS F Y H:i" }}<br/>
+  </p>
+  {% endblock updated %}
+
+  {% block license %}
+  <p>
+    <strong>License: </strong>
+    <div class="license_box">{{experiment.id|show_cc_license|safe}}</div>
+  </p>
+  {% endblock license %}
+
+  {% block extra_info %}
+  {% endblock extra_info %}
+
+  <div class="download_entire_experiment">
+  {% block downloads %}
+    {% for p in protocol %}
+      <p>
+    {% if p.0 %}
+      <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
+    {% else %}
+      <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
+    {% endif %}
+      </p>
+    {% endfor %}
+  {% endblock downloads %}
+  </div>
+
+  {% block extra_content %}
+  {% endblock extra_content %}
+
+  {% block experiment_admin %}
+      {% block experiment_owners %}
+      {% if owners %}
+      <p>
+        <br/>
+        <strong>Experiment Administrators </strong><br/>
+        {% for owner in owners %}
+          {% if owner.email %}
+            <a href="mailto:{{owner.email}}">{{ owner.email}}</a>
+          {% endif %}
+          ({{ owner.username }})
+          {% if not forloop.last %}
+            <br/>
+          {% endif %}
+        {% endfor %}
+      </p>
+      {% endif %}
+      {% endblock experiment_owners %}
+
+      {% if experiment.public %}
+      <p>
+        <em>This experiment is public.</em>
+      </p>
+      {% endif %}
+
+      {% if is_owner %}
+      <p>
+        <a href="{% url tardis.tardis_portal.views.choose_license experiment.id %}">Choose License</a>
+      </p>
+      {% block publish_link %}
+      {% if not experiment.public %}
+      <p>
+        <strong><a href="publish/">Publish Experiment</a></strong><br/>
+      </p>
+      {% endif %}
+      {% endblock publish_link %}
+      {% endif %}
+  {% endblock experiment_admin %}
+
+</div>
+
