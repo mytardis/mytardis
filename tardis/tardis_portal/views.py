@@ -562,6 +562,7 @@ def create_experiment(request,
     if staging:
         c['directory_listing'] = staging_traverse(staging)
         c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
+        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
@@ -650,6 +651,7 @@ def edit_experiment(request, experiment_id,
     if staging:
         c['directory_listing'] = staging_traverse(staging)
         c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
+        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES,
