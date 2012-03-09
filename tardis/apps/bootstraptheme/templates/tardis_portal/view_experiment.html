@@ -328,7 +328,7 @@ $(document).ready(function() {
 
 {% endblock %}
 
-{% block fullpage %}
+{% block content %}
 
     <div class="jqmAlert" id="jqmAlertExpAdd">
 
@@ -356,19 +356,21 @@ $(document).ready(function() {
         </div>
     </div>
 
-  <div id="fullpage">
-    <div class="post">
-      {% block experiment_title %}
-      <h1 class="title">{{ experiment.title }}</h1>
-      {% endblock experiment_title %}
-        {% if has_write_permissions %}{% if not experiment.public %}
-            <a href="{{ experiment.get_edit_url }}">
-          <img src="{{ STATIC_URL }}/images/icon_changelink.gif" >
-          </a>
 
-    {% endif %}{% endif %}
+    <div class="page-header">
+      <h1>
+        {{ experiment.title }}
+        {% if has_write_permissions and not experiment.public %}
+        <small>
+          <a title="Edit Experiment"
+             href="{{ experiment.get_edit_url }}">
+            <i class="icon-pencil"></i>
+          </a>
+        </small>
+        {% endif %}
       </h1>
     </div>
+
 
     <div class="tabcontainer">
       <div id="tabs">
