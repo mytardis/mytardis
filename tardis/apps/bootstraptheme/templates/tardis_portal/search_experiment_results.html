@@ -1,0 +1,26 @@
+{% extends "tardis_portal/search_template.html" %}
+{% load experimentstats %}
+
+{% block searchPageBody %}
+  {% if experiments %}
+    <table class="experiment-table table">
+      <thead>
+        <tr>
+          <th>
+            <em>
+              <strong>{{ experiments|length }}</strong>
+              experiment{{ experiments|length|pluralize }} found.
+            </em>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for result in experiments %}
+        {% include "tardis_portal/experiment_search_result.html" %}
+      {% endfor%}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No Results found</p>
+  {% endif %}
+{% endblock %}
