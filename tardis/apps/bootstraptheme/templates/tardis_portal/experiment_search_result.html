@@ -1,8 +1,14 @@
 {% load experimentstats %}
 <tr>
   <td>
-    <h4{% if result.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-1">{{result.sr.title}}</a>
+    <h4>
+      <a class="experiment-link"
+         href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-1">
+         {{result.sr.title}}
+      </a>
+      {% if result.experiment_hit %}
+        <span class="label label-success">Match</span>
+      {% endif %}
     </h4>
     <p>
       From <strong>{{ result.sr.institution_name }} </strong>,
@@ -16,13 +22,16 @@
     </p>
 {% endif%}
     <p class="experiment-table_stats">
-      <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
+      <span>
         <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true#ui-tabs-2">
             <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-2">
         <strong> {{result.sr.dataset_set.all.count}} </strong>
         dataset{{result.sr.dataset_set.all.count|pluralize }}
         </a>
       </span>
+      {% if result.dataset_hit %}
+        <span class="label label-success">Match</span>
+      {% endif %}
     </p>
   </td>
 </tr>
