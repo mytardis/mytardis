@@ -1,0 +1,125 @@
+{% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+
+{% include "tardis_portal/javascript_libraries.html" %}
+
+<script type="text/javascript">
+//beginswith, endswith
+String.prototype.beginsWith = function(t, i) { if (i==false) { return
+(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+== this.substring(0, t.length).toLowerCase()); } }
+
+String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+== this.substring(this.length - t.length)); } else { return
+(t.toLowerCase() == this.substring(this.length -
+t.length).toLowerCase()); } }
+
+$("#user.form_submit").live('click', function(evt) {
+    evt.preventDefault();
+    var authMethod = $(this).siblings("#id_authMethod").val();
+    var usersuggest = $(this).siblings(".usersuggest").val();
+    var group_id = $(this).siblings(".group_id").val();
+    var users_div = $(this).parents('.access_list').children('.users');
+    var isAdmin = $(this).siblings(".isAdmin").is(':checked');
+    var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
+    $.ajax({
+        'async': false,
+        'global': true,
+        type: "GET",
+        url: action,
+        success: function(data) {
+           if (data.beginsWith("<div class=", true) == true) {
+                users_div.hide().append(data).fadeIn();
+           } else {
+               alert(data);
+           }
+        },
+        error: function(data) {
+           alert('Error adding user');
+        }
+    });
+});
+$(".remove_user").live('click', function(evt) {
+    evt.preventDefault();
+
+    var $access_list = $(this).parents('.access_list_user');
+
+    $.ajax({
+        'async': false,
+        'global': false,
+        'url': this.href,
+        'success': function (data) {
+            if(data === "OK") {
+                $access_list.fadeOut(500);
+            } else {
+               alert(data);
+            }
+        }
+    });
+});
+$(document).ready(function() {
+
+    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br/>";
+
+    $(".member_list_user_toggle").click(function(evt){
+        evt.preventDefault()
+
+        var $this = $(this);
+        var $icon = $this.find('.ui-icon');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        $this.toggleClass('members-shown members-hidden');
+
+        var $user_list = $this.next();
+        if ($this.hasClass('members-shown')){
+            $user_list.html(loadingHTML);
+            $user_list.load(this.href, function(){
+                var authMethod = $("#id_authMethod").val();
+                var data = { authMethod: authMethod };
+                $.ajax({
+                    'async': false,
+                    'global': false,
+                    'data': data,
+                    'url': '/ajax/user_list/',
+                    'success': function (data) {
+                        var users = data;
+                        $(".usersuggest").autocomplete(users.split(" "), {
+                            matchContains: true
+                        });
+                    }
+                });
+            }).show();
+        } else {
+            $user_list.hide();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <h1>Manage Group Members</h1>
+</div>
+{% if groups %}
+<table class="member-table">
+  {% for group in groups %}
+    <tr>
+      <td>
+        {{ group.name }}
+        <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div class="access_list" style="display:none;"></div>
+        </td>
+      </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>
+There are no groups under your control.
+</p>
+{% endif %}
+
+{% endblock %}
