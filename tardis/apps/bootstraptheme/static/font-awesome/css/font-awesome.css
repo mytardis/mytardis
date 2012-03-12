@@ -10,6 +10,8 @@
 [class^="icon-"], [class*=" icon-"] {
   background-image: none;
   vertical-align: baseline;
+  width: auto;
+  height: auto;
 }
 
 [class^="icon-"]:before, [class*=" icon-"]:before {

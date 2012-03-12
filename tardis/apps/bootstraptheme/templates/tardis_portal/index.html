@@ -5,21 +5,18 @@
 {% endblock script %}
 
 {% block content %}
-<div id="content">
-  <div class="post">
-    <h2>MyTardis Data Store</h2>
-
-    <p>Welcome!</p>
-
-    <p>
-    {% if is_authenticated %}
-         Please go to
-        <a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a>
-        to review your experiment data.
-    {% else %}
-        Please login to see your experiment data
-    {% endif %}
-    </p>
-  </div>
+<div class="page-header">
+  <h1>MyTardis Data Store</h1>
 </div>
+
+<p>
+{% if is_authenticated %}
+  Please go to
+  <a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a>
+  to review your experiment data.
+{% else %}
+  Please <a href="{% url tardis.tardis_portal.views.login %}">login</a>
+  to see your experiment data.
+{% endif %}
+</p>
 {% endblock content %}
