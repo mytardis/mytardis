@@ -390,6 +390,16 @@
 
 {% endblock script %}
 
+{% block style %}
+<style type="text/css">
+.experiment-row {
+  margin-top: 1ex;
+  margin-bottom: 2ex;
+}
+
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <h1>Experiment Access Controls</h1>
@@ -398,14 +408,10 @@
 <div class="container-fluid">
   {% for experiment in experiments %}
 
-  <div class="row-fluid">
+  <div class="row-fluid experiment-row">
     <div class="span12">
       <h4><a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a></h4>
-    </div>
-  </div>
 
-  <div class="row-fluid">
-    <div class="span12">
       <span style="float:left;">
           User Access
       </span>
@@ -414,10 +420,7 @@
       </a>
       <div style="clear:both;"></div>
       <div class="access_list1"></div>
-    </div>
-  </div>
-  <div class="row-fluid">
-    <div class="span12">
+
       <span style="float:left;">
           Group Access
       </span>
@@ -426,10 +429,7 @@
       </a>
       <div style="clear:both;"></div>
       <div class="access_list2"></div>
-    </div>
-  </div>
-  <div class="row-fluid">
-    <div class="span12">
+
       <span style="float:left;">
           External Access
       </span>
@@ -438,9 +438,7 @@
       </a>
       <div style="clear:both;"></div>
       <div class="access_list3"></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span12">
+
       <span style="float:left;">
           Token Access
       </span>

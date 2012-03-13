@@ -1,0 +1,28 @@
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block content %}
+
+{% if form.errors %}
+<p class="alert alert-error">
+  Please correct the error{{ form.errors|pluralize }} below.
+</p>
+{% endif %}
+<div class="page-header">
+  <h1 class="title">{{ header }}</h1>
+</div>
+<div class="row-fluid">
+  <div class="span12">
+  	<form enctype="multipart/form-data" action="" method="post"
+          class="form-horizontal">
+      {% load bootstrap %}
+      <fieldset>
+  		  {{ form|bootstrap }}
+      </fieldset>
+      <div class="form-actions">
+  	    <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+  	</form>
+  </div>
+</div>
+{% endblock %}
+
