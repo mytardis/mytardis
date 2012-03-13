@@ -1,0 +1,469 @@
+{% extends "tardis_portal/data_browsing_template.html" %}
+
+{% block script %}
+
+  <script type="text/javascript">
+
+    $('.canWrite').live('click', function(){
+       if($(this).is(':checked'))
+       {
+           var canReadBox = $(this).siblings(".canRead");
+           canReadBox.attr('disabled', true);
+           canReadBox.attr('checked','checked')
+
+       }
+       else
+       {
+           var canReadBox = $(this).siblings(".canRead");
+           canReadBox.attr('disabled', false);
+           canReadBox.removeAttr('checked')
+       }
+
+    });
+    var refreshFunctionFor = function($toggle) {
+        return function(data, textStatus, jqXHR) {
+            if (data.success) {
+                if ($toggle.hasClass('tokens_shown')) {
+                    $toggle.click();
+                    $toggle.click();
+                } else {
+                    $toggle.click();
+                }
+            } else {
+                alert('An error occurred.  Please try again later');
+            }
+        };
+    };
+    $('.token_delete').live('click', function(evt){
+        evt.preventDefault();
+        var $toggle = $($(this).attr('data-toggle_selector'));
+        $.post(this.href, {}, refreshFunctionFor($toggle));
+    });
+
+      $(document).ready(function() {
+          $('.create_token_link').click(function(evt){
+              evt.preventDefault();
+              var $toggle = $(this).siblings('.access_list_token_toggle');
+              $.post(this.href, {}, refreshFunctionFor($toggle));  // TODO error-handling
+          });
+
+    //beginswith, endswith
+    String.prototype.beginsWith = function(t, i) { if (i==false) { return
+    (t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+    == this.substring(0, t.length).toLowerCase()); } }
+
+    String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+    == this.substring(this.length - t.length)); } else { return
+    (t.toLowerCase() == this.substring(this.length -
+    t.length).toLowerCase()); } }
+
+    $('.access_list1').hide().end().find('.access_list_user_toggle').click(function() { $(this).siblings('.access_list1').toggle(); });
+    $('.access_list2').hide().end().find('.access_list_group_toggle').click(function() { $(this).siblings('.access_list2, .access_list3').toggle(); });
+    //$('.access_list3').hide().end().find('.access_list_external_toggle').click(function() { $(this).next().toggle(); });
+    $('.access_list3').hide();
+    $('.access_list_token_toggle').click(function(evt){
+        evt.preventDefault();
+        var $this = $(this);
+        var $access_list = $this.siblings('.access_list');
+        var $icon = $this.find('span')
+        $this.toggleClass('tokens_shown');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        if ($this.hasClass('tokens_shown')) {
+            $access_list.load(this.href);
+            $access_list.show();
+        } else {
+            $access_list.hide();
+        }
+    });
+    $('.token_url').live('click', function(evt) {
+        evt.preventDefault();
+    });
+    $('.token_url').live('mouseup', function(evt) {
+        if (evt.which == 1) { // left-click
+            if (confirm('Click OK to login as a token user.\nOr click cancel and right-click and "copy shortcut" or "copy link location" or similar')) {
+                window.location.href = this.href;
+            }
+        }
+    });
+
+    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/>";
+
+    // Format a row for display in the user autocomplete dropdown.
+    function formatRow(row) {
+      username = '';
+      for (var i = 0; i < row.auth_methods.length; i++) {
+          auth_method = row.auth_methods[i].split(':');
+          user = auth_method[0];
+          auth_method = auth_method[2];
+          username += '   "' + user + '" at ' + auth_method + '<br/>';
+      }
+      username = '<br/><small>Accounts:<br/>' + username + '</small>';
+      return displayName(row) + username;
+    }
+    // Get a sensible name to display in a text field based on a user object.
+    function displayName(row) {
+      if (row.first_name && row.last_name)
+        name = row.first_name + ' ' + row.last_name;
+      else if (row.first_name)
+        name = row.first_name;
+      else if (row.last_name)
+        name = row.last_name;
+      else if (row.email)
+        name = row.email;
+      else
+        name = row.username;
+      return name;
+    }
+
+    // Convert list of user dicts to data objects for JQuery autocomplete.
+    function parseUserList(data) {
+      var array = new Array();
+      for (var i=0;i<data.length;i++) {
+        array[array.length] = { data: data[i], value: data[i].toString(), result: displayName(data[i]) };
+      }
+      return array;
+    }
+
+    // user access list
+    $(".access_list_user_toggle").toggle(function(){
+      var href = $(this).attr("href");
+      var $target = $(this).siblings('.access_list1');
+      $target.html(loadingHTML + "</br>");
+
+      $target.load(href, function() {
+        $(document).ready(function() {
+          $("#id_entered_user").keypress(function() {
+              // Reset autocomplete user when typing in the user edit field.
+              $(this).siblings("#id_autocomp_user").val('');
+              $(this).siblings("#id_authMethod").attr('disabled', '');
+          });
+
+          $("#id_entered_user").autocomplete('/ajax/user_list/', {
+            matchContains: true,
+            timeout: 300,
+            max: 5,
+            dataType: 'json',
+            extraParams: {
+              authMethod: function() {
+                return $(".access_list1 #id_authMethod").val();
+              }
+            },
+            parse: parseUserList,
+            formatItem: formatRow
+          });
+        $("#id_entered_user").result(function(event, user, formatted) {
+          if (user)
+          {
+            // Use the first username/auth combination from the returned user
+            // when the form is submitted. Lock the auth method field.
+            $(this).siblings("#id_autocomp_user").val(user.auth_methods[0]);
+            $(this).siblings("#id_authMethod").val(user.auth_methods[0].split(':')[1]);
+            $(this).siblings("#id_authMethod").attr('disabled', 'disabled');
+          }
+        });
+
+        $("#user.form_submit").unbind('click');
+        $("#user.form_submit").click(function(event) {
+          event.preventDefault();
+          var entered_user = $(this).siblings("#id_entered_user").val();
+          var autocomp_user = $(this).siblings("#id_autocomp_user").val();
+          if (autocomp_user != "") {
+            // Use the details from the autocomplete.
+            autocomp_user = autocomp_user.split(":");
+            var username = autocomp_user[0];
+            var authMethod = autocomp_user[1];
+          } else {
+            // Autocomplete failed. Use the entered username as-is.
+            var username = entered_user;
+            var authMethod = $(this).siblings("#id_authMethod").val();
+          }
+          var experiment_id = $(this).siblings(".experiment_id").val();
+          var users_div = $(this).parents('.access_list1').children('.users');
+          var canRead = $(this).siblings(".canRead").is(':checked');
+          var canWrite = $(this).siblings(".canWrite").is(':checked');
+          var canDelete = $(this).siblings(".canDelete").is(':checked');
+          var permissions = '/?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete;
+          action = experiment_id + '/access_list/add/user/' + username + permissions;
+
+          $.ajax({
+            'async': false,
+            'global': true,
+            type: "GET",
+            url: action,
+            success: function(data) {
+              if (data.beginsWith("<div class=", true) == true) {
+                users_div.hide().append(data).fadeIn();
+                // todo this is a duplicate function..
+                $(".remove_user").unbind('click');
+                $(".remove_user").click(function() {
+                  var href = $(this).attr("href");
+                  remove_user = $(this);
+                  $.ajax({
+                    'async': false,
+                    'global': false,
+                    'url': href,
+                    'success': function (data) {
+                      val = data;
+                      if(val == "OK") {
+                        remove_user.fadeOut(300, function(){ remove_user.parents('.access_list_user').remove(); });
+                      }
+                      else { alert(val); }
+                    }
+                  }); // end ajax
+                  return false;
+                }); // end remove user
+              }
+              else {
+                val = data;
+                alert(val);
+              }
+            },
+            error: function(data) { alert('Error adding user'); }
+          });
+          return false;
+        });
+
+        $(".remove_user").unbind('click');
+        $(".remove_user").click(function() {
+
+          var href = $(this).attr("href");
+          remove_user = $(this);
+          $.ajax({
+            'async': false,
+            'global': false,
+            'url': href,
+            'success': function (data) {
+              val = data;
+              if(val == "OK") {
+                remove_user.fadeOut(300, function(){ remove_user.parents('.access_list_user').remove(); });
+              }
+              else { alert(val); }
+            }
+          }); // end ajax
+
+          return false;
+        }); // end remove user
+       });
+      });
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+      }, function(){
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+      });
+
+      // group access list
+      $(".access_list_group_toggle").toggle(function(){
+
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+
+        var href = $(this).attr("href");
+
+        var $target = $(this).siblings('.access_list2, .access_list3');
+        $target.html(loadingHTML + "</br>");
+
+        $target.load(href, function(){
+
+        $(document).ready(function(){
+
+            var users = null;
+
+        var groups = (function () {
+          var val = null;
+          $.ajax({
+            'async': false,
+            'global': false,
+            'url': '/ajax/group_list',
+            'success': function (data) { val = data; }
+          });
+          return val;
+        })();
+
+        $(".creategroup").live('click', function()
+        {
+            if($(this).is(':checked'))
+            {
+                $(this).parents('.access_list2').find('.newgroup').show();
+            }
+            else
+            {
+                $(this).parents('.access_list2').find('.newgroup').hide();
+            }
+        });
+
+        $(".groupsuggest").autocomplete(groups.split(" ~ "), {
+          matchContains: true
+          //minChars: 0
+        });
+
+        $("#group.form_submit").unbind('click');
+        $("#group.form_submit").click(function(event) {
+          event.preventDefault();
+
+          var experiment_id = $(this).parents('.access_list2').find(".experiment_id").val();
+          var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
+          var groupsuggest = $(this).parents('.access_list2').find(".groupsuggest").val();
+          var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
+          var groups_div = $(this).parents('.access_list2').children('.groups');
+          var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
+          var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
+          var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
+          var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
+          var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+          action = experiment_id + '/access_list/add/group/' + groupsuggest + permissions;
+
+          $.ajax({
+            'async': false,
+            'global': true,
+            type: "GET",
+            url: action,
+            success: function(data) {
+              if (data.beginsWith("<div class=", true) == true) {
+            groups_div.hide().append(data).fadeIn();
+
+            // todo this is a duplicate function..
+            $(".remove_group").unbind('click');
+            $(".remove_group").click(function() {
+              var href = $(this).attr("href");
+              remove_group = $(this);
+
+              $.ajax({
+                'async': false,
+                'global': false,
+                'url': href,
+                'success': function (data) {
+                  val = data;
+                  if(val == "OK") {
+                remove_group.fadeOut(300, function(){
+                  remove_group.parents('.access_list_group').remove();
+                });
+                  }
+                  else { alert(val); }
+                }
+              }); // end ajax
+              return false;
+            }); // end remove group
+              }
+              else {
+                val = data;
+                alert(val);
+              }
+            },
+            error: function(data) { alert('Error adding group!'); }
+          });
+          return false;
+        });
+
+        $(".remove_group").unbind('click');
+        $(".remove_group").click(function() {
+
+          var href = $(this).attr("href");
+
+          remove_group = $(this);
+
+          $.ajax({
+            'async': false,
+            'global': false,
+            'url': href,
+            'success': function (data) {
+              val = data;
+              if(val == "OK") {
+            remove_group.fadeOut(300, function(){
+              remove_group.parents('.access_list_group').remove();
+            });
+              }
+              else { alert(val); }
+            }
+          }); // end ajax
+          return false;
+        }); // end remove group
+          });
+        });
+         },function(){
+        var $icon = $(this).find('span');
+        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+              });
+      });
+
+  </script>
+
+{% endblock script %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Experiment Access Controls</h1>
+</div>
+{% if experiments %}
+<div class="container-fluid">
+  {% for experiment in experiments %}
+
+  <div class="row-fluid">
+    <div class="span12">
+      <h4><a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a></h4>
+    </div>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span12">
+      <span style="float:left;">
+          User Access
+      </span>
+      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+          <span class="ui-icon ui-icon-circle-triangle-e"></span>
+      </a>
+      <div style="clear:both;"></div>
+      <div class="access_list1"></div>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span12">
+      <span style="float:left;">
+          Group Access
+      </span>
+      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
+          <span class="ui-icon ui-icon-circle-triangle-e"></span>
+      </a>
+      <div style="clear:both;"></div>
+      <div class="access_list2"></div>
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div class="span12">
+      <span style="float:left;">
+          External Access
+      </span>
+      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
+          <span class="ui-icon ui-icon-circle-triangle-e"></span>
+      </a>
+      <div style="clear:both;"></div>
+      <div class="access_list3"></div>
+  </div>
+  <div class="row-fluid">
+    <div class="span12">
+      <span style="float:left;">
+          Token Access
+      </span>
+      <a title="show/hide" id="token_toggle_{{experiment.id}}"
+          href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}"
+          class="access_list_token_toggle fg-button small fg-button-icon-solo ui-corner-all"
+          style="float:left;">
+          <span class="ui-icon ui-icon-circle-triangle-e"></span>
+      </a>
+      <a title="Create Token"
+          href="{{ experiment.get_create_token_url }}"
+          class="create_token_link fg-button small fg-button-icon-solo ui-corner-all"
+          style="float:left;">
+          <span class="ui-icon ui-icon-plusthick"></span>
+      </a>
+      <div style="clear:both;"></div>
+      <div class="access_list" style="display:none;"></div>
+    </div>
+  </div>
+  {%endfor %}
+</div>
+{% else %}
+<p>There are no experiments under your control.</p>
+{% endif %}
+
+{% endblock %}
