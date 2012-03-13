@@ -5,15 +5,6 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-//beginswith, endswith
-String.prototype.beginsWith = function(t, i) { if (i==false) { return
-(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
-== this.substring(0, t.length).toLowerCase()); } }
-
-String.prototype.endsWith = function(t, i) { if (i==false) { return (t
-== this.substring(this.length - t.length)); } else { return
-(t.toLowerCase() == this.substring(this.length -
-t.length).toLowerCase()); } }
 
 $("#user.form_submit").live('click', function(evt) {
     evt.preventDefault();
@@ -29,7 +20,7 @@ $("#user.form_submit").live('click', function(evt) {
         type: "GET",
         url: action,
         success: function(data) {
-           if (data.beginsWith("<div class=", true) == true) {
+           if (_(data).startsWith("<div class=") == true) {
                 users_div.hide().append(data).fadeIn();
            } else {
                alert(data);
@@ -102,24 +93,20 @@ $(document).ready(function() {
 <div class="page-header">
   <h1>Manage Group Members</h1>
 </div>
-{% if groups %}
-<table class="member-table">
-  {% for group in groups %}
-    <tr>
-      <td>
-        {{ group.name }}
-        <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
-            <span class="ui-icon ui-icon-circle-triangle-e"></span>
-        </a>
-        <div class="access_list" style="display:none;"></div>
-        </td>
-      </tr>
-  {% endfor %}
-</table>
-{% else %}
+{% for group in groups %}
+<div class="row-fluid">
+  <h4>
+    {{ group.name }}
+  </h4>
+  <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+    <span class="ui-icon ui-icon-circle-triangle-e"></span>
+  </a>
+  <div class="access_list" style="display:none;"></div>
+</div>
+{% empty %}
 <p>
 There are no groups under your control.
 </p>
-{% endif %}
+{% endfor %}
 
 {% endblock %}

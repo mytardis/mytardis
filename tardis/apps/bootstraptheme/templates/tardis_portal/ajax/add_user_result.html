@@ -1,7 +1,7 @@
 <div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
   <div class="span5">
     <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>
-    <em>{% if user.email %} ({{ user.email }}){% endif %}</em>
+    {% if user.email %}<em>({{ user.email }})</em>{% endif %}
   </div>
   <div class="span3">
     {% if user_acl.canRead %}
