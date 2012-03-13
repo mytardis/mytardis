@@ -5,6 +5,13 @@
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/jquery.cookie.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/jqmodal.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/flash_detect_min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}/js/lib/underscore-min.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}/js/lib/underscore.string.min.js"></script>
+<script type="text/javascript">
+  // Mixin Underscore.String to Underscore.js
+  _.mixin(_.string.exports());
+</script>
+
 <link href="{{ STATIC_URL }}/css/lib/jqmodal.css" rel="stylesheet" type="text/css" media="screen">
 <link type="text/css" href="{{ STATIC_URL }}/css/lib/autocomplete/jquery.autocomplete.css" rel="stylesheet" />
 <link type="text/css" href="{{ STATIC_URL }}/css/lib/theme/ui.all.css" rel="Stylesheet" />
