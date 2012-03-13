@@ -412,50 +412,59 @@
     <div class="span12">
       <h4><a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a></h4>
 
-      <span style="float:left;">
-          User Access
-      </span>
-      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
-          <span class="ui-icon ui-icon-circle-triangle-e"></span>
-      </a>
-      <div style="clear:both;"></div>
-      <div class="access_list1"></div>
+      <div>
+        <span style="float:left;">
+            User Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list1"></div>
+      </div>
 
-      <span style="float:left;">
-          Group Access
-      </span>
-      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
-          <span class="ui-icon ui-icon-circle-triangle-e"></span>
-      </a>
-      <div style="clear:both;"></div>
-      <div class="access_list2"></div>
+      <div>
+        <span style="float:left;">
+            Group Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list2"></div>
+      </div>
 
-      <span style="float:left;">
-          External Access
-      </span>
-      <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
-          <span class="ui-icon ui-icon-circle-triangle-e"></span>
-      </a>
-      <div style="clear:both;"></div>
-      <div class="access_list3"></div>
+      <div>
+        <span style="float:left;">
+            External Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list3"></div>
+      </div>
 
-      <span style="float:left;">
-          Token Access
-      </span>
-      <a title="show/hide" id="token_toggle_{{experiment.id}}"
-          href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}"
-          class="access_list_token_toggle fg-button small fg-button-icon-solo ui-corner-all"
-          style="float:left;">
-          <span class="ui-icon ui-icon-circle-triangle-e"></span>
-      </a>
-      <a title="Create Token"
-          href="{{ experiment.get_create_token_url }}"
-          class="create_token_link fg-button small fg-button-icon-solo ui-corner-all"
-          style="float:left;">
-          <span class="ui-icon ui-icon-plusthick"></span>
-      </a>
-      <div style="clear:both;"></div>
-      <div class="access_list" style="display:none;"></div>
+      <div>
+        <span style="float:left;">
+            Token Access
+        </span>
+        <a title="show/hide" id="token_toggle_{{experiment.id}}"
+            href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}"
+            class="access_list_token_toggle fg-button small fg-button-icon-solo ui-corner-all"
+            style="float:left;">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <a title="Create Token"
+            href="{{ experiment.get_create_token_url }}"
+            class="create_token_link fg-button small fg-button-icon-solo ui-corner-all"
+            style="float:left;">
+            <span class="ui-icon ui-icon-plusthick"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list" style="display:none;"></div>
+      </div>
+
     </div>
   </div>
   {%endfor %}
