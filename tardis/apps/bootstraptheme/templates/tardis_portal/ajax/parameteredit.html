@@ -1,0 +1,37 @@
+{% load formfieldfilters %}
+
+{% if success %}
+	Parameters saved successfully.
+
+{% else %}
+	<p><strong>Schema: </strong>{{schema.name}}</strong></p>
+	<form id="edit_metadata_form" action='/ajax/edit_{{type}}_parameters/{{parameterset_id}}/' method='post'>
+		{{ form.non_field_errors }}
+	    {% for field in form %}
+        <div class="fieldWrapper">
+          {{ field.errors }}
+          {{ field.label_tag }}
+          {{ field }}
+        </div>
+	    {% endfor %}
+		<span/>
+
+		<select id="parameternameselect">
+		{% for pn in parameternames %}
+		    {% if not pn.immutable %}
+			<option value="{{pn.name|parametername_form}}" {% if pn.isLongString %} data-longstring="true"{% endif %}>{{pn.full_name}} {% if pn.units %}({{pn.units}}){% endif %}</option>
+	        {% endif %}
+		{% endfor %}
+		</select>
+
+		<a id="add_new_parameter" class="btn btn-primary">
+      <i class="icon-plus"></i>
+      Add Metadata Parameter
+    </a>
+
+		<p><em>Leave a parameter blank to remove</em></p>
+		{% if not valid %}
+			<p style="color: red"><em>There were errors in the parameter submission. Please fix and resubmit.</em></p>
+		{% endif %}
+	</form>
+{% endif %}

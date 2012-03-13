@@ -107,14 +107,20 @@
 
         <strong style="float:left; margin-right: 5px">Dataset Metadata </strong>
         {% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
-        <a title="Add" href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
-         class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all jqModalDsAdd" data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
-            Add
+        <a title="Add"
+           href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
+           class="jqModalDsAdd btn btn-primary btn-mini"
+           data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
+          <i class="icon-plus"></i>
+          Add
         </a>
         {% endif %}{% endif %}{% endif %}
 
-        <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide" class="dataset_metadata_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/dataset_metadata/{{dataset.id}}/">
-            Show/Hide
+        <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide"
+           href="/ajax/dataset_metadata/{{dataset.id}}/"
+           class="dataset_metadata_toggle metadata_hidden btn btn-primary btn-mini">
+          <i class="icon-folder-close"></i>
+          Show/Hide
         </a>
         <div style="clear:both;"></div>
         <div class="dataset_metadata">
@@ -128,13 +134,16 @@
                 {% if has_write_permissions %}
                   {% if not experiment.public %}
                     {% if not immutable %}
-                        <a  data-dataset_id="{{dataset.id}}" class="upload_files_link fg-button small ui-state-default fg-button-icon-solo ui-corner-all" title="Upload Files">
-                            Upload Files
+                        <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
+                          <i class="icon-upload-alt"></i>
+                          Upload Files
                         </a>
                     {% endif %}
                   {% endif %}
                 {% endif %}
-                <a class="datafile_list_toggle files_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
+                <a class="datafile_list_toggle files_hidden btn btn-primary btn-mini"
+                   href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
+                    <i class="icon-folder-close"></i>
                     Show/Hide
                 </a>
           {% else %}
@@ -155,7 +164,10 @@
   </div> <!-- dataset -->
       {% endfor %}
     </div> <!-- datasets -->
-    <input type="submit" value="Download Selected Files" />
+    <button type="submit" class="btn btn-primary">
+      <i class="icon-download-alt"></i>
+      Download Selected Files
+    </button>
   </form>
 
 </div> <!-- experiment_datasets -->

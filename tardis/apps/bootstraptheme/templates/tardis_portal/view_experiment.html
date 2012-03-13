@@ -119,7 +119,7 @@ $(document).ready(function() {
         e.preventDefault();
 
         var $this = $(this);
-        var $jqm_content_div = $this.closest('.jqmAlertContent');
+        var $jqm_content_div = $this.closest('.modal-body');
 
         var type = $this.attr('data-type');
         var parent_object_id = $this.attr('data-parent_object_id');
@@ -149,60 +149,43 @@ $(document).ready(function() {
     $('#add_metadata_form').live('submit', function(e) {
         e.preventDefault();
 
-        var $form = $(this);
-        var form_data = $form.serialize();
+        var form = $(this);
+        var contentContainer = form.closest('.modal-body')
 
         var schema_id = $('#schemaselect').val();
-        var $jqm_content_div = $form.closest('.jqmAlertContent');
-        var type = $form.attr('data-type');
-        var parent_object_id = $form.attr('data-parent_object_id');
+        var type = form.attr('data-type');
+        var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        $.post(href, form_data, function(data) {
-            $jqm_content_div.html(data);
+        $.post(href, form.serialize(), function(data) {
+            contentContainer.html(data);
+            if (contentContainer.find('form').length > 0) {
+              contentContainer.parents('.modal').find('.modal-footer').show();
+            }
         });
+        // Hide the form buttons
+        form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
         e.preventDefault();
-        var $form = $(this);
+        var form = $(this);
+        var contentContainer = form.closest('.modal-body')
 
-        $.post($form.attr('action'), $form.serialize(), function(data) {
-            $('#jqmAlertExpEdit div.jqmAlertContent').html(data);
+        $.post(form.attr('action'), form.serialize(), function(data) {
+        	contentContainer.html(data);
+          if (contentContainer.find('form').length > 0) {
+        	  contentContainer.parents('.modal').find('.modal-footer').show();
+          }
         });
+        // Hide the form buttons
+        form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
 
     var refreshMetadataDisplay = function(hash){
-        var $trigger = $(hash.t);
-        var $toggle = $($trigger.attr('data-toggle_selector'));
-        if ($toggle.hasClass('metadata_shown')) {
-            $toggle.click(); // hide
-            $toggle.click(); // show
-            // outcome is a refresh
-        } else {
-            $toggle.click(); // show
-        }
-        hash.w.fadeOut();
-        hash.w.css('opacity', '100%'); // must be set otherwise popup will be displayed but not visible the second time
-        hash.o.remove();
+    	// Hide, then show
+      $('.metadata_shown').click().click();
     }
-
-    $(document).ready(function() {
-        // Close Button Highlighting. IE doesn't support :hover. Surprise?
-        if($.browser.msie) {
-            $('div.jqmAlert .jqmClose').hover(
-                function(){ $(this).addClass('jqmCloseHover'); },
-                function(){ $(this).removeClass('jqmCloseHover');}
-            );
-        }
-
-        $('#jqmAlertExpAdd, #jqmAlertExpEdit').jqm({
-            ajax: '@href',
-            target: '.jqmAlertContent',
-            closeClass: 'jqmClose',
-            onHide: refreshMetadataDisplay
-        });
-    });
 
     // metadata text / ajax toggle
     // datafile list
@@ -254,10 +237,8 @@ $(document).ready(function() {
         evt.preventDefault();
         var $this = $(this);
         var $experiment_metadata = $('.experiment_metadata');
-        var $icon = $this.find('span');
 
         $this.toggleClass('metadata_shown metadata_hidden');
-        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
 
         if($this.hasClass('metadata_shown')) {
             var href= $this.attr("href");
@@ -269,39 +250,33 @@ $(document).ready(function() {
             $experiment_metadata.hide();
         }
     });
-    $('#expAddTrigger').live('click', function(evt){
-        evt.preventDefault();
 
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpAdd').jqmShow(this);
-    });
-    $('.jqModalExpEdit').live('click', function(evt){
-        evt.preventDefault();
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpEdit').jqmShow(this);
-    });
-    $('.jqModalDsEdit').live('click', function(evt) {
-        evt.preventDefault();
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpEdit').jqmShow(this);
-    });
-    $('.jqModalDsAdd').live('click', function(evt) {
-        evt.preventDefault();
+    var loadModalRemoteBody = function(trigger, modal) {
+    	// Hide save buttons
+    	$(modal).find('.modal-footer').hide();
+      // Fill with "loading" placeholder content
+    	$(modal).find('.modal-body').html(
+    	  $(modal).find('.loading-placeholder').html()
+    	);
+    	$(modal).modal('show');
+      $.ajax({
+        url: $(trigger).attr('href'),
+        success: function (data, textStatus, jqXHR) {
+        	$(modal).find('.modal-body').html(data);
+          $(modal).find('.modal-footer').show();
+        }
+      });
+    };
 
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpAdd').jqmShow(this);
-    });
-    $('.jqModalDfAdd').live('click', function(evt) {
+    $('#expAddTrigger, .jqModalDsAdd, .jqModalDfAdd').live('click', function(evt){
         evt.preventDefault();
-
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpAdd').jqmShow(this);
+        $('#modal-metadata .modal-header .title').text("Add Metadata");
+        loadModalRemoteBody(this, '#modal-metadata');
     });
-    $('.jqModalDfEdit').live('click', function(evt) {
+    $('.jqModalExpEdit, .jqModalDsEdit, .jqModalDfEdit').live('click', function(evt) {
         evt.preventDefault();
-
-        // r14 code example on jqmodal's site doesn't work - use old-fashioned "this" as an arg to jqmShow
-        $('#jqmAlertExpEdit').jqmShow(this);
+        $('#modal-metadata .modal-header .title').text("Edit Metadata");
+        loadModalRemoteBody(this, '#modal-metadata');
     });
 
     $('.pagelink').live('click', function( event ){
@@ -330,32 +305,31 @@ $(document).ready(function() {
 
 {% block content %}
 
-    <div class="jqmAlert" id="jqmAlertExpAdd">
+<div class="modal hide fade" id="modal-metadata">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Add Parameters</h1>
+  </div>
 
-        <div class="jqmAlertWindow">
-            <div class="jqmAlertTitle clearfix">
-                <h1>Add Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-            </div>
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
+  </div>
 
-            <div class="jqmAlertContent">
-                <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
-            </div>
-        </div>
-    </div>
+  <div class="modal-body"></div>
 
-    <div class="jqmAlert" id="jqmAlertExpEdit">
-
-        <div class="jqmAlertWindow">
-            <div class="jqmAlertTitle clearfix">
-                <h1>Edit Parameters</h1><a href="#" class="jqmClose"><em>Close</em></a>
-            </div>
-
-            <div class="jqmAlertContent">
-                <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
-            </div>
-        </div>
-    </div>
-
+  <div class="modal-footer">
+    <button class="submit-button btn btn-success">
+      <i class="icon-ok"></i>
+      Save
+    </button>
+  </div>
+</div>
+<script type="text/javascript">
+$('#modal-metadata .submit-button').click(function() {
+	$('#modal-metadata .modal-body form').submit();
+});
+$('#modal-metadata .close').click(refreshMetadataDisplay);
+</script>
 
     <div class="page-header">
       <h1>
