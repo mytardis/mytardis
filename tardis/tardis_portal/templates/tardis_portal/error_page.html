@@ -1,0 +1,34 @@
+{% extends "tardis_portal/portal_template.html" %}
+
+{% block script %}
+<script type="text/javascript">
+$(document).ready(function () {
+  // Hide the login nav bar, because it's likely to be wrong.
+  $('.login-nav').hide();
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<h1 class="msg alert alert-error" style="text-align: center; padding: 20px">
+  <span class="main" style="line-height: 100%">
+  {% block error_code %}
+  {% endblock %}</span>
+  <br/>
+  <small style="line-height: 100%">
+  {% block error_message %}
+  {% endblock %}</small>
+</h1>
+<script type="text/javascript">
+// Fit massive text to screen
+var resizeText = function(evt) {
+  var width = $('body').css('width');
+  var mainHeight = Math.floor(parseInt(width)/4);
+  var smallHeight = Math.floor(mainHeight/2);
+  $('h1.msg .main').css('font-size', mainHeight+'px');
+  $('h1.msg small').css('font-size', smallHeight+'px');
+};
+resizeText();
+$(window).resize(resizeText);
+</script>
+{% endblock %}
