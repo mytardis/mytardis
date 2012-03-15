@@ -72,9 +72,7 @@
     <![endif]-->
 
     <!-- fav and touch icons -->
-    {% block icon %}
-    <link rel="shortcut icon" href="{{ STATIC_URL }}/images/favicon.ico" type="image/x-icon">
-    {% endblock icon %}
+    <link rel="shortcut icon" href="{{ STATIC_URL }}/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="{{ STATIC_URL }}/images/apple-touch-icon.png">
     <link rel="apple-touch-icon" sizes="72x72" href="{{ STATIC_URL }}/images/apple-touch-icon-72x72.png">
     <link rel="apple-touch-icon" sizes="114x114" href="{{ STATIC_URL }}/images/apple-touch-icon-114x114.png">
@@ -107,28 +105,47 @@
                 action="{% url tardis.tardis_portal.views.single_search %}">
               <input id="id_q"
                    type="text" class="search-query" placeholder="Search"
-                   {% if query %} value="{{ query }}" {% endif %}>
+                   {% if query %} value="{{ query }}" {% endif %}/>
             </form>
             {% endif %}
-              <p id="headerloginstatus" class="navbar-text pull-right">
-                {% if is_authenticated %}
-                  Logged in as
-                  {% if is_superuser %}
-                  <a href="{% url admin:index %}">
-                      <em>{{ username }}</em>
-                  </a>
-                  {% else %}
-                      <em>{{ username }}</em>
-                  {% endif %} - <a href="{% url django.contrib.auth.views.logout %}"> Log Out</a>
-                {%  else %}
-                      <!-- <a href="{% url registration.views.register %}">
-                      Register
-                      </a>  -->
-                      <a href="{% url tardis.tardis_portal.views.login %}">
-                      Log In
-                      </a>
-                {% endif %}
-              </p>
+            <ul class="nav pull-right">
+            {% if is_authenticated %}
+              <li id="user-menu" class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#user-menu">
+                  {{ username }}
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    {% if is_superuser %}
+                    <a href="{% url admin:index %}">
+                      <i class="icon-key"></i>
+                        Admin Interface
+                    </a>
+                    {% endif %}
+                  </li>
+                  <li>
+                    <a href="{% url django.contrib.auth.views.logout %}">
+                      <i class="icon-signout"></i>
+                      Log Out
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            {% else %}
+              <li>
+                <a href="{% url registration.views.register %}">
+                  Register
+                </a>
+              </li>
+              <li>
+                <button class="btn btn-info" onclick="window.location.href={% url tardis.tardis_portal.views.login %}">
+                  <i class="icon-signin"></i>
+                  Log In
+                </button>
+              </li>
+            {% endif %}
+            </ul>
           </div><!--/.nav-collapse -->
         </div>
       </div>
@@ -199,5 +216,6 @@
     <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-tooltip.js"></script>
     <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-button.js"></script>
     <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-collapse.js"></script>
+    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-dropdown.js"></script>
   </body>
 </html>
