@@ -390,82 +390,87 @@
 
 {% endblock script %}
 
+{% block style %}
+<style type="text/css">
+.experiment-row {
+  margin-top: 1ex;
+  margin-bottom: 2ex;
+}
+
+</style>
+{% endblock %}
+
 {% block content %}
-  <div id="content">
-    <div class="post">
-      <h1 class="title"><a href="#">Experiment Access Controls</a></h1>
-      <div class="entry">
+<div class="page-header">
+  <h1>Experiment Access Controls</h1>
+</div>
+{% if experiments %}
+<div class="container-fluid">
+  {% for experiment in experiments %}
 
-      {% if experiments %}
-        <table class="experiment-table">
-          {% for experiment in experiments %}
-            <tr>
-          <th width="70%">
-            <a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a>
-            <br/>
-          </th>
-        </tr>
-            <tr>
-          <td>
-            <span style="float:left;">
-                User Access
-            </span>
-            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
-                <span class="ui-icon ui-icon-circle-triangle-e"></span>
-            </a>
-                <div style="clear:both;"></div>
-            <div class="access_list1"></div>
-          </td>
-        </tr>
-            <tr>
-          <td>
-            <span style="float:left;">
-                Group Access
-            </span>
-            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
-                <span class="ui-icon ui-icon-circle-triangle-e"></span>
-            </a>
-                <div style="clear:both;"></div>
-            <div class="access_list2"></div>
-          </td>
-        </tr>
-            <tr>
-          <td>
-            <span style="float:left;">
-                External Access
-            </span>
-            <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small ui-state-default  fg-buton-icon-solo ui-corner-all" title="show/hide">
-                <span class="ui-icon ui-icon-circle-triangle-e"></span>
-            </a>
-                <div style="clear:both;"></div>
-            <div class="access_list3"></div>
-          </td>
-        </tr>
-        <tr>
-            <td>
-                <span style="float:left;">
-                    Token Access
-                </span>
-                <a href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}" class="access_list_token_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all" title="show/hide"
-                    id="token_toggle_{{experiment.id}}">
-                    <span class="ui-icon ui-icon-circle-triangle-e"></span>
-                </a>
-                            <a title="Create Token" class="create_token_link fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{{ experiment.get_create_token_url }}">
-                                <span class="ui-icon ui-icon-plusthick"></span>
-                            </a>
-                <div style="clear:both;"></div>
-                <div class="access_list" style="display:none;"></div>
-            </td>
-        </tr>
-              {%endfor %}
-        </table>
-      {% else %}
-        There are no experiments under your control.
-      {% endif %}
-    </p>
+  <div class="row-fluid experiment-row">
+    <div class="span12">
+      <h4><a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a></h4>
 
-      </div> <!-- entry -->
-    </div> <!-- post -->
-  </div> <!-- content -->
+      <div>
+        <span style="float:left;">
+            User Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list1"></div>
+      </div>
+
+      <div>
+        <span style="float:left;">
+            Group Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list2"></div>
+      </div>
+
+      <div>
+        <span style="float:left;">
+            External Access
+        </span>
+        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list3"></div>
+      </div>
+
+      <div>
+        <span style="float:left;">
+            Token Access
+        </span>
+        <a title="show/hide" id="token_toggle_{{experiment.id}}"
+            href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}"
+            class="access_list_token_toggle fg-button small fg-button-icon-solo ui-corner-all"
+            style="float:left;">
+            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        </a>
+        <a title="Create Token"
+            href="{{ experiment.get_create_token_url }}"
+            class="create_token_link fg-button small fg-button-icon-solo ui-corner-all"
+            style="float:left;">
+            <span class="ui-icon ui-icon-plusthick"></span>
+        </a>
+        <div style="clear:both;"></div>
+        <div class="access_list" style="display:none;"></div>
+      </div>
+
+    </div>
+  </div>
+  {%endfor %}
+</div>
+{% else %}
+<p>There are no experiments under your control.</p>
+{% endif %}
 
 {% endblock %}

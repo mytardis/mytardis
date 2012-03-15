@@ -53,15 +53,11 @@
     }
 
     $(document).ready(function() {
-    {% if directory_listing %}
+	{% if directory_listing %}
         $("#demo1").jstree({
-        core : { "initially_open" : ['phtml_1'] },
-        plugins : [ "themes", "html_data", "checkbox" ],
-    	checkbox : { 
-    	                two_state : true, 
-    					checked_parent_open: true,
-    	        },
-    });
+	    core : { /* core options go here */ },
+	    plugins : [ "themes", "html_data", "checkbox" ]
+	});
 
 	//Get checked
 	$('.add_files').live('click', function(){
@@ -151,20 +147,14 @@
         });
 
 	$(document).ready(function() {
-	    $("#fuzz").css("height", $(document).height());
 	    $('#jqmAlertLoading').jqm({
 		ajax: '',
 		target: '',
 		overlay: 0
 	    });
 
-	    $(window).bind("resize", function() {
-		$("#fuzz").css("height", $(window).height());
-	    });
-
 	    $("#button").click(function() {
 		$('#jqmAlertLoading').jqmShow();
-		$("#fuzz").fadeIn();
 		$("#create_experiment_form").submit();
 	    });
 	});
@@ -228,21 +218,9 @@
 {% endblock %}
 
 {% block content %}
-<div id="fuzz"> <!-- for the fade-in -->
-</div>
-<div class="jqmAlertLoading" id="jqmAlertLoading">
-  <div class="jqmAlertWindowLoading">
-    <div class="jqmAlertTitle clearfix">
-      <h1>Please Wait...</h1>
+    <div class="page-header">
+      <h1 class="title">{{ subtitle }}</h1>
     </div>
-    <div align="center" class="jqmAlertContentLoading" id="jqmAlertContentLoading">
-      <img src="{{ STATIC_URL }}/images/ajax-loader-big.gif">
-      </div>
-    </div>
-  </div>
-  <div id="content">
-    <div class="post">
-      <h1 class="title"><a name="abouttardis">{{ subtitle }}</a></h1>
       <div class="entry">
 	      <div style="display:none;" class="fsTemplate">
 		<p class="msg_head">Dataset</p>
@@ -265,40 +243,20 @@
 		  </div>
 		</div>
 	      </div>
-        <form id="create_experiment_form" action="" method="POST">
-        <input type="hidden" name="username" value="{{username}}" id="username" />
           {{ form.non_field_errors }}
-          <div class="msg_list">
-            <p class="exp_head">Experiment Information
-                *<small>required</small></p>
-            <div class="exp_body">
-              <div class="fieldWrapper">
-                {{ form.title.errors }}
-                <label for="id_title">Title:</label><br/>
-                {{ form.title }}*
-              </div>
+        <form id="create_experiment_form" action="" method="POST"
+            class="form-horizontal">
+            {% load bootstrap %}
+            <fieldset>
+            <legend>Experiment Information</legend>
 
-              <div class="fieldWrapper">
-                {{ form.authors.errors }}
-                <label for="id_title">Authors (comma separate):</label><br/>
-                {{ form.authors }}*
-              </div>
+            {{ form.title|bootstrap }}
+            {{ form.authors|bootstrap }}
+            {{ form.institution_name|bootstrap }}
+            {{ form.description|bootstrap }}
 
-              <div class="fieldWrapper">
-                {{ form.institution_name.errors }}
-                <label for="id_institution">Institution Name:</label><br/>
-                {{ form.institution_name }}*
-              </div>
-
-              <div class="fieldWrapper">
-                {{ form.description.errors }}
-                <label for="id_description">Description:</label><br/>
-                {{ form.description }}*
-              </div>
-            </div>
 	    {% if directory_listing %}
-	    <div id="file_select_container" class="floating_file_staging">
-        <div class="my_files">My Files</div>
+              <p class="my_files">My Files</p>
 	      <div class="msg_body">
 		<p><strong>Select Files To Be Added To A Dataset:</strong></p>
 		<div id="demo1" class="demo">
@@ -308,14 +266,13 @@
 		To add files to 'My Files', mount the following file store via your operating system:
 		</p>
 		<p id="mountpath">
-		<strong>{{staging_mount_prefix}}{% if staging_mount_user_suffix_enable %}{{username}}{% endif %}</strong>
+		<strong>{{staging_mount_prefix}}{{username}}</strong>
 		</p>
 		<p>
 		<a href="#">User Guide</a>
 		</p>
-		</div>
 		<br/>
-	    </div>
+	      </div>
 	    {% endif %}
 
 	    <div class="datasets">
@@ -357,29 +314,27 @@
 		{% endfor %}
 		{{ form.datasets.management_form }}
 	      </div>
-	    <br/>
-	      <input id="button" type="button" value="Save"/>
-	      {% if experiment_id %}
-	      <a href="{% url tardis.tardis_portal.views.view_experiment experiment_id %}" >Cancel</a>
-	      {% else %}
-	      <a href="{% url tardis.tardis_portal.views.experiment_index %}" >Cancel</a>
-	      {% endif %}
-	    </div>
 
+      </fieldset>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">
+            <i class="icon-ok"></i> Save
+          </button>
+          {% if experiment_id %}
+          <a class="btn"
+             href="{% url tardis.tardis_portal.views.view_experiment experiment_id %}">
+             Cancel
+          </a>
+          {% else %}
+          <a class="btn"
+             href="{% url tardis.tardis_portal.views.experiment_index %}">
+             Cancel
+          </a>
+          {% endif %}
+        </div>
 	  </form>
 	</div>
-      </div>
-    </div>
-    <br/>
 {% endblock %}
 
 {% block sidebar %}
-  <ul>
-    <li>
-      <h2></h2>
-      <ul>
-      </ul>
-    </li>
-  </ul>
-  <p>
 {% endblock %}

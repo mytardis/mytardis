@@ -1,11 +1,20 @@
-<div class="access_list_user">
-  <p>
+<div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+  <div class="span6">
+    <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>
+    {% if user.email %}<em>({{ user.email }})</em>{% endif %}
+  </div>
+  <div class="span2">
     {% if user.groupadmin_set.count %}
-      <img src="{{ STATIC_URL }}/images/icon_adminstrator.jpg"/>
+      <span class="label label-success">Group Admin</span>
     {% else %}
-      <img src="{{ STATIC_URL }}/images/icon_user.jpg"/>
+      <span class="label label-info">Member</span>
     {% endif %}
-    <strong>{{ user.username }}</strong> ({{user.email}})
-    <a class="remove_user" href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif"/></a>
-  </p>
+  </div>
+  <div class="span2">
+    <a title="Remove Access" class="remove_user btn btn-danger btn-mini"
+       href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}">
+      <i class="icon-remove"></i>
+      Delete
+    </a>
+  </div>
 </div> <!-- access_list_user -->

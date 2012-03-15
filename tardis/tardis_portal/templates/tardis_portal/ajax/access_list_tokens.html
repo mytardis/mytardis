@@ -1,22 +1,24 @@
-<div class="tokens">
+<div class="tokens table table-condensed">
   <div class="access_list_tokens">
     {% if not tokens %}
       <p>No tokens defined </p>
     {% else %}
         <table>
+          <thead>
             <tr>
-                <th align="center">
+                <th>
                     Expiry Date
                 </th>
-                <th align="center">
+                <th>
                     Granted By
                 </th>
-                <th align="center">
-                    URL 
-                </th>
                 <th>
+                    URL
                 </th>
+
             </tr>
+          </thead>
+          <tbody>
             {% for token in tokens %}
             <tr>
                 <td align="center">
@@ -29,10 +31,17 @@
                     <a href="{{ token.url }}" class="token_url">{{ token.url }}</a>
                 </td>
                 <td>
-                    <a href="{% url tardis.tardis_portal.views.token_delete token.id %}" class="token_delete" data-toggle_selector="#token_toggle_{{token.experiment_id}}"><img src="{{ STATIC_URL }}/images/icon_deletelink.gif" alt="delete"></a>
+                  <a title="Delete Token"
+                    href="{% url tardis.tardis_portal.views.token_delete token.id %}"
+                    class="token_delete btn btn-danger btn-mini"
+                    data-toggle_selector="#token_toggle_{{token.experiment_id}}">
+                    <i class="icon-remove"></i>
+                    Delete
+                  </a>
                 </td>
             </tr>
             {% endfor %}
+          </tbody>
         </table>
     {% endif %}
   </div> <!-- access_list_tokens -->

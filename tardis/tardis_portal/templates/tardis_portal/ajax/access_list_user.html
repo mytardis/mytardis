@@ -1,5 +1,5 @@
-<div class="users" style="background-color: #eee; padding: 10px">
-<h3>Current user permissions</h2>
+<div class="users">
+<h3>Current User Permissions</h3>
 {% for user_acl in user_acls %}
   {% with user=user_acl.get_related_object %}
   {% include "tardis_portal/ajax/add_user_result.html" %}
@@ -7,9 +7,8 @@
 {% endfor %}
 </div> <!-- users -->
 <p>
-	<br/>
-  <strong><label>Add new user: </label></strong><br/>
-	<br/>
+	<h3>Add new user</h3>
+  <br/>
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
 	      {{ field.label }}: {{ field }}
@@ -17,11 +16,16 @@
 	  {% else %}
 		  {% if field.label == "User" %}
 			Username:
-		     {{ field }} <a class="form_submit" id="user" href="">Add</a>
+		     {{ field }}
+      <br/>
+      <a class="form_submit btn btn-primary" id="user" href="">
+        <i class="icon-plus"></i>
+        Add User
+      </a>
 		  {% else %}
 		     {{ field }} {{ field.label }}
 		  {% endif %}
-          {% endif %}
+    {% endif %}
 	  <br/>
   {% endfor %}
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">

@@ -3,19 +3,17 @@
   {% include "tardis_portal/ajax/add_user_to_group_result.html" %}
 {% endfor %}
 </div> <!-- users -->
-<p>
-  {% for field in manageGroupPermissionsForm %}
-      {% if field.label == "Authentication Method" %}
-          {{ field.label }} {{ field }}
-      {% else %}
-          {% if field.label == "User" %}
-          Add user: {{ field }}
-          {% else %}
-          {{ field }} {{ field.label }}
-          {% endif %}
-      {% endif %}
-  <br/>
-  {% endfor %}
-  <a class="form_submit" id="user" href="">Submit</a>
+<form class="add-user-form form-horizontal">
+  <fieldset>
+  <legend>Add User</legend>
+  {% load bootstrap %}
+  {{ manageGroupPermissionsForm|bootstrap }}
+  </fieldset>
   <input type="hidden" name="group_id" class="group_id" value="{{group_id}}"/>
-</p>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">
+      <i class="icon-plus"></i>
+      Add User to Group
+    </button>
+  </div>
+</form>

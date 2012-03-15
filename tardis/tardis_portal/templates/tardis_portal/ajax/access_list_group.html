@@ -1,10 +1,6 @@
 <div class="groups">
 {% for group in system_owned_groups %}
-  <div class="access_list_group">
-    <p>
-      <strong>{{ group.name }}</strong>
-    </p>
-  </div> <!-- access_list_group -->
+  {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
 {% endfor %}
 {% for group in user_owned_groups %}
   {% include "tardis_portal/ajax/add_group_result.html" %}
@@ -40,6 +36,9 @@
       {% endif %}
   {% endfor %}
 
-  <a class="form_submit" id="group" href="">Add Group</a>
+  <a class="form_submit btn btn-primary" id="group" href="">
+    <i class="icon-plus"></i>
+    Add Group
+  </a>
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>

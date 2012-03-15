@@ -1,38 +1,38 @@
 {% load experimentstats %}
-<table class="experiment-table">
-<tr>
-  <th>
-    <span{% if result.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-1">{{result.sr.title}}</a>
-    </span>
-  </th>
-</tr>
 <tr>
   <td>
-    From <strong>{{ result.sr.institution_name }} </strong>,
-    deposited <strong>{{ result.sr.created_time|date:"jS F Y" }} </strong>,
-    last modified <strong>{{ result.sr.update_time|date:"jS F Y" }} </strong>,
-  </td>
-</tr>    
+    <h4>
+      <a class="experiment-link"
+         href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-1">
+         {{result.sr.title}}
+      </a>
+      {% if result.experiment_hit %}
+        <span class="label label-success">Match</span>
+      {% endif %}
+    </h4>
+    <p>
+      From <strong>{{ result.sr.institution_name }} </strong>,
+      deposited <strong>{{ result.sr.created_time|date:"jS F Y" }} </strong>,
+      last modified <strong>{{ result.sr.update_time|date:"jS F Y" }} </strong>
+    </p>
 {% if result.sr.start_time and result.sr.end_time %}
-<tr>
-  <td>
-    <strong>{{ result.sr.start_time|date:"jS F Y H:i" }}</strong>
-    - <strong>{{ result.sr.end_time|date:"jS F Y H:i" }}</strong>
+    <p>
+      <strong>{{ result.sr.start_time|date:"jS F Y H:i" }}</strong>
+      - <strong>{{ result.sr.end_time|date:"jS F Y H:i" }}</strong>
+    </p>
+{% endif%}
+    <p class="experiment-table_stats">
+      <span>
+        <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true#ui-tabs-2">
+            <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-2">
+        <strong> {{result.sr.dataset_set.all.count}} </strong>
+        dataset{{result.sr.dataset_set.all.count|pluralize }}
+        </a>
+      </span>
+      {% if result.dataset_hit %}
+        <span class="label label-success">Match</span>
+      {% endif %}
+    </p>
   </td>
 </tr>
-{% endif%}
-<tr>
-  <td class="experiment-table_stats">
-    <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-      <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true#ui-tabs-2">
-          <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#ui-tabs-2">
-<strong> {{result.sr.dataset_set.all.count}} </strong>
-dataset{{result.sr.dataset_set.all.count|pluralize }}</strong>
-</a>
-      </span>
-      <br/>
-      <br/>
-    </td>
-  </tr>
-</table>
+
