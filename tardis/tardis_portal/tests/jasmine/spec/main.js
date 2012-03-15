@@ -17,55 +17,6 @@ describe("Main", function() {
 	    });
 	});
 
-
-	describe("alert status", function() {
-	    it("should show an alert box when status is set", function() {
-	        loadFixtures("status_message_populated.html");
-	        expect($('#jqmStatusMessage')).toHaveText('Test message');
-	        expect($('#jqmAlertStatus')).toBeVisible();
-	        activateAlertStatus();
-	        expect($('#jqmStatusMessage')).toHaveText('Test message');
-	        expect($("#jqmAlertStatus")).toBeVisible();
-	        $(".jqmClose").click();
-	        waitsFor(function() {
-	        	return $('#jqmAlertStatus').is(':hidden');
-	        }, "Alert should be hidden by now.", 3000);
-	    });
-
-	    it("should show an alert box when hash is #created", function() {
-	        loadFixtures("status_message_unpopulated.html");
-	        expect($('#jqmStatusMessage')).toHaveText('');
-	        expect($('#jqmAlertStatus')).toBeVisible();
-	        window.location.hash = '#created';
-	        activateAlertStatus();
-	        expect($('#jqmStatusMessage')).toHaveText('Experiment Created');
-	        expect($("#jqmAlertStatus")).toBeVisible();
-	        expect(window.location.hash).toEqual('#created');
-	        $(".jqmClose").click();
-	        waitsFor(function() {
-	        	return $('#jqmAlertStatus').is(':hidden');
-	        }, "Alert should be hidden by now.", 3000);
-	        expect(window.location.hash).toEqual('');
-	    });
-
-	    it("should show an alert box when hash is #saved", function() {
-	        loadFixtures("status_message_unpopulated.html");
-	        expect($('#jqmStatusMessage')).toHaveText('');
-	        expect($('#jqmAlertStatus')).toBeVisible();
-	        window.location.hash = '#saved';
-	        activateAlertStatus();
-	        expect($('#jqmStatusMessage')).toHaveText('Experiment Saved');
-	        expect($("#jqmAlertStatus")).toBeVisible();
-	        expect(window.location.hash).toEqual('#saved');
-	        $(".jqmClose").click();
-	        waitsFor(function() {
-	        	return $('#jqmAlertStatus').is(':hidden');
-	        }, "Alert should be hidden by now.", 3000);
-	        expect(window.location.hash).toEqual('');
-	    });
-	});
-
-
 	describe("hover detection", function() {
 	    it("should add/remove class on mouseover/mouseout", function() {
 	        setFixtures('<div id="hover_detect" class="ui-state-default"></div>');

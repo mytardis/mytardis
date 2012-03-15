@@ -37,29 +37,6 @@ var activateSearchAutocomplete = function() {
      });
 };
 
-var activateAlertStatus = function() {
-	var myClose = function(hash) {
-        hash.w.fadeOut('2000',function(){ hash.o.remove(); });
-        window.location.hash = "";
-    };
-	$("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
-	// Add status messages for create/save
-	if (window.location.hash) {
-	    if(window.location.hash == '#created')
-	    {
-	        $('#jqmStatusMessage').html('Experiment Created');
-	    }
-	    else if(window.location.hash == '#saved')
-	    {
-	        $('#jqmStatusMessage').html('Experiment Saved');
-	    }
-	}
-    // Show status message if there's one to show
-    if ($('#jqmStatusMessage').text() != '') {
-        $('#jqmAlertStatus').jqmShow();
-    }
-};
-
 var activateHoverDetection = function() {
 	// Hover events
     $('.ui-state-default').live('mouseover mouseout', function(evt) {
@@ -75,6 +52,5 @@ $(document).ready(function(){
 	if ($('#id_q').length > 0) {
 		activateSearchAutocomplete();
 	}
-	activateAlertStatus();
 	activateHoverDetection();
 });
