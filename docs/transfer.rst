@@ -36,7 +36,7 @@ Apply the settings from `Common Setup`.
 
 The consumer side of the app requires django-celery. This will periodically check all of your experiments to see if any action is needed, like requesting a file transfer or verifying data integrity.
 
-Add dependencies to the INSTALLED_APPS list in your MyTardis project's settings file.
+The default configuration of tardis already has django-celery configured in the settings file. Confirm that the dependencies are added to the INSTALLED_APPS list in your MyTardis project's settings file. You will also need to add a task to run the transfer apps clock_tick task as shown below.
 
 .. code-block:: python
 
