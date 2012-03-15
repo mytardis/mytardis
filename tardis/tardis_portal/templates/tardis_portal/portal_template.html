@@ -133,11 +133,13 @@
                 </ul>
               </li>
             {% else %}
+              {% if registration_enabled %}
               <li>
                 <a href="{% url registration.views.register %}">
                   Register
                 </a>
               </li>
+              {% endif %}
               <li>
                 <button class="btn btn-info" onclick="window.location.href={% url tardis.tardis_portal.views.login %}">
                   <i class="icon-signin"></i>
