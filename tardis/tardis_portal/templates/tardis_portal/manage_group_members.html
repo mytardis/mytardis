@@ -5,15 +5,42 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-//beginswith, endswith
-String.prototype.beginsWith = function(t, i) { if (i==false) { return
-(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
-== this.substring(0, t.length).toLowerCase()); } }
+// Black magic to use jQuery UI autocomplete
+// while obsolete autocomplete plugin is loaded.
+$(function() {
+  $.widget.bridge('ui_autocomplete', $.ui.autocomplete)
+});
 
-String.prototype.endsWith = function(t, i) { if (i==false) { return (t
-== this.substring(this.length - t.length)); } else { return
-(t.toLowerCase() == this.substring(this.length -
-t.length).toLowerCase()); } }
+var autocompleteCallback = function(query, callback) {
+  var authMethod = $("#id_authMethod").val()
+  var matches = _(this.users).chain()
+    // Filter out users which don't match auth method
+    .filter(function(user) {
+      // authMethods: ["testuser:localdb:Local DB"]
+      return _(user.auth_methods).any(function(v) {
+        return v.split(':')[1] == authMethod;
+      })
+    })
+    // Filter out those that don't have a matching field
+    .filter(function(user) {
+      var fields = ['username', 'email', 'first_name', 'last_name'];
+      // Select user if any of the fields above match
+      return _(fields).any(function(fieldName) {
+        var field = user[fieldName].toLowerCase();
+        return _.str.include(field, query.term.toLowerCase());
+      });
+    })
+    // Map to label/value objects
+    .map(function(user) {
+      var tmpl = "<%=first_name%> <%=last_name%> [<%=username%>] <<%=email%>>";
+      // Create label and trim empty email
+      var label = _.template(tmpl, user).replace(' <>','');
+      return { 'label': label, 'value': user.username };
+    }).value();
+  // Callback to autocomplete control
+  callback(matches);
+};
+
 
 $("#user.form_submit").live('click', function(evt) {
     evt.preventDefault();
@@ -24,38 +51,34 @@ $("#user.form_submit").live('click', function(evt) {
     var isAdmin = $(this).siblings(".isAdmin").is(':checked');
     var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
     $.ajax({
-        'async': false,
-        'global': true,
-        type: "GET",
-        url: action,
-        success: function(data) {
-           if (data.beginsWith("<div class=", true) == true) {
-                users_div.hide().append(data).fadeIn();
-           } else {
-               alert(data);
-           }
-        },
-        error: function(data) {
-           alert('Error adding user');
+      type: "GET",
+      url: action,
+      success: function(data) {
+        if (_(data).startsWith("<div class=", true) == true) {
+         users_div.hide().append(data).fadeIn();
+        } else {
+         alert(data);
         }
+      },
+      error: function(data) {
+         alert('Error adding user');
+      }
     });
 });
 $(".remove_user").live('click', function(evt) {
     evt.preventDefault();
 
-    var $access_list = $(this).parents('.access_list_user');
+    var access_list = $(this).parents('.access_list_user');
 
     $.ajax({
-        'async': false,
-        'global': false,
-        'url': this.href,
-        'success': function (data) {
-            if(data === "OK") {
-                $access_list.fadeOut(500);
-            } else {
-               alert(data);
-            }
+      'url': $(this).attr('href'),
+      'success': function (data) {
+        if (data === "OK") {
+          access_list.fadeOut(500);
+        } else {
+          alert(data);
         }
+      }
     });
 });
 $(document).ready(function() {
@@ -65,33 +88,31 @@ $(document).ready(function() {
     $(".member_list_user_toggle").click(function(evt){
         evt.preventDefault()
 
-        var $this = $(this);
-        var $icon = $this.find('.ui-icon');
-        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
-        $this.toggleClass('members-shown members-hidden');
+        var icon = $(this).find('.ui-icon');
+        icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        $(this).toggleClass('members-shown members-hidden');
 
-        var $user_list = $this.next();
-        if ($this.hasClass('members-shown')){
-            $user_list.html(loadingHTML);
-            $user_list.load(this.href, function(){
-                var authMethod = $("#id_authMethod").val();
-                var data = { authMethod: authMethod };
-                $.ajax({
-                    'async': false,
-                    'global': false,
-                    'data': data,
-                    'url': '/ajax/user_list/',
-                    'success': function (data) {
-                        var users = data;
-                        $(".usersuggest").autocomplete(users.split(" "), {
-                            matchContains: true
-                        });
-                    }
-                });
-            }).show();
-        } else {
-            $user_list.hide();
+        var user_list = $(this).parents('.group').find('.access_list');
+        // If not showing members, just hide user list
+        if (!$(this).hasClass('members-shown')) {
+          user_list.hide();
+          return;
         }
+
+        user_list.html(loadingHTML);
+        // Load (jQuery AJAX "load()") and show access list
+        user_list.load(this.href, function() {
+          // Load user list for
+          $.ajax({
+            'dataType': 'json',
+            'url': '/ajax/user_list/',
+            'success': function(users) {
+              $("#id_adduser").ui_autocomplete({
+            	  'source': _.bind(autocompleteCallback, { 'users': users })
+              });
+            }
+          });
+        }).show();
     });
 });
 </script>
@@ -109,11 +130,13 @@ $(document).ready(function() {
                         {% for group in groups %}
                             <tr>
                                 <td>
+                                  <div class="group">
                                     {{ group.name }}
                                     <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
                                         <span class="ui-icon ui-icon-circle-triangle-e"></span>
                                     </a>
                                     <div class="access_list" style="display:none;"></div>
+                                  </div>
                                 </td>
                             </tr>
                         {% endfor %}
