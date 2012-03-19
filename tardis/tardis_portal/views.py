@@ -269,6 +269,7 @@ def experiment_index(request):
         'next': '/experiment/view/',
         'data_pressed': True})
 
+    # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
                         'tardis_portal/experiment_index.html', c))
 
