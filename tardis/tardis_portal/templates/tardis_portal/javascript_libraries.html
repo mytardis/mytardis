@@ -1,3 +1,4 @@
+{% block js_libraries %}
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/jquery-1.7.1.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/jstree/jquery.jstree.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}/js/lib/jquery-ui-1.8.18.custom.min.js"></script>
@@ -10,7 +11,9 @@
   // Mixin Underscore.String to Underscore.js
   _.mixin(_.string.exports());
 </script>
+{% endblock %}
 
+{% block css_libraries %}
 <link type="text/css" href="{{ STATIC_URL }}/css/lib/autocomplete/jquery.autocomplete.css" rel="stylesheet" />
 <link type="text/css" href="{{ STATIC_URL }}/css/lib/smoothness/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
 <link href="{{ STATIC_URL }}/css/lib/cc-widget-style.css" rel="stylesheet" type="text/css" media="screen">
@@ -30,5 +33,12 @@ Font Awesome - http://fortawesome.github.com/Font-Awesome
 The Font Awesome webfont, CSS, and LESS files are licensed under CC BY 3.0.
 -->
 <link href="{{ STATIC_URL }}/font-awesome/css/font-awesome.css" rel="stylesheet">
+{% endblock %}
 
+{% block site_js %}
 <script type="text/javascript" src="{{ STATIC_URL }}/js/main.js"></script>
+{% endblock %}
+
+{% block site_css %}
+<link type="text/css" href="{{ STATIC_URL }}/css/default.css" rel="stylesheet" />
+{% endblock %}

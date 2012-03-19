@@ -1,0 +1,17 @@
+/* Inset brand in nav bar */
+.brand.brand-inverse {
+  color: rgba(0,0,0,0.4);
+  font-weight: bold;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
+}
+
+/* Centered title */
+.navbar .center-title {
+  position: absolute;
+  left: 50%;
+  width: 140px;
+  margin-left: -70px;
+  text-align: center;
+  padding-left: 0px;
+  padding-right: 0px;
+}
