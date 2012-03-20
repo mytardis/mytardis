@@ -13,7 +13,7 @@ The consumer also manages the state of each experiment, so success or failure of
 Common Setup
 ============
 
-Add the sync application and dependencies to the INSTALLED_APPS list in your MyTardis project's settings file.
+Add the sync application and dependencies to the INSTALLED_APPS list in your MyTardis project's settings file. The transfer app overrides a number of templates in the tardis_portal app, and so should be above it in the INSTALLED_APPS list.
 
 .. code-block:: python
 
