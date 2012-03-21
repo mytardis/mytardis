@@ -5,41 +5,6 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-$(function() {
-  $.widget.bridge('ui_autocomplete', $.ui.autocomplete)
-});
-
-var autocompleteCallback = function(query, callback) {
-  var authMethod = $("#id_authMethod").val()
-  var matches = _(this.users).chain()
-    // Filter out users which don't match auth method
-    .filter(function(user) {
-      // authMethods: ["testuser:localdb:Local DB"]
-      return _(user.auth_methods).any(function(v) {
-        return v.split(':')[1] == authMethod;
-      })
-    })
-    // Filter out those that don't have a matching field
-    .filter(function(user) {
-      var fields = ['username', 'email', 'first_name', 'last_name'];
-      // Select user if any of the fields above match
-      return _(fields).any(function(fieldName) {
-        var field = user[fieldName].toLowerCase();
-        return _.str.include(field, query.term.toLowerCase());
-      });
-    })
-    // Map to label/value objects
-    .map(function(user) {
-      var tmpl = "<%=first_name%> <%=last_name%> [<%=username%>] <<%=email%>>";
-      // Create label and trim empty email
-      var label = _.template(tmpl, user).replace(' <>','');
-      return { 'label': label, 'value': user.username };
-    }).value();
-  // Callback to autocomplete control
-  callback(matches);
-};
-
-
 $("form.add-user-form").live('submit', function(evt) {
     evt.preventDefault();
     var form = $(this);
@@ -101,13 +66,18 @@ $(document).ready(function() {
         user_list.html(loadingHTML);
         // Load (jQuery AJAX "load()") and show access list
         user_list.load(this.href, function() {
-          // Load user list for
+          // Load user list and activate field autocompletion
           $.ajax({
             'dataType': 'json',
             'url': '/ajax/user_list/',
             'success': function(users) {
-              $("#id_adduser").ui_autocomplete({
-                  'source': _.bind(autocompleteCallback, { 'users': users })
+              $("#id_adduser").autocomplete({
+                  'source': _.bind( function(query, callback) {
+                    var authMethod = $("#id_authMethod").val();
+                    callback(
+                        userAutocompleteHandler(
+                            query.term, this.users, authMethod));
+                  }, { 'users': users })
               });
             }
           });

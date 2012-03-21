@@ -2,10 +2,11 @@
     "name": "Main Test Suite",
     "js_files": [],
     "static_files": [
-        "js/lib/jquery-1.7.min.js",
-        "js/lib/jquery.autocomplete.min.js",
-        "js/lib/jqmodal.js",
-        "js/main.js"
+        "/js/lib/jquery-1.7.1.min.js",
+        "/js/lib/underscore-min.js",
+        "/js/lib/underscore.string.min.js",
+        "/bootstrap/js/bootstrap.min.js",
+        "/js/main.js"
     ],
     "media_files": [
     ]

@@ -137,30 +137,22 @@
               $(this).siblings("#id_autocomp_user").val('');
               $(this).siblings("#id_authMethod").attr('disabled', '');
           });
-
-          $("#id_entered_user").autocomplete('/ajax/user_list/', {
-            matchContains: true,
-            timeout: 300,
-            max: 5,
-            dataType: 'json',
-            extraParams: {
-              authMethod: function() {
-                return $(".access_list1 #id_authMethod").val();
-              }
-            },
-            parse: parseUserList,
-            formatItem: formatRow
+          // Load user list and activate field autocompletion
+          $.ajax({
+            'dataType': 'json',
+            'url': '/ajax/user_list/',
+            'success': function(users) {
+              $("#id_entered_user").autocomplete({
+                  'source': _.bind( function(query, callback) {
+                    var authMethod = $("#id_authMethod").val();
+                    callback(
+                        userAutocompleteHandler(
+                            query.term, this.users, authMethod));
+                  }, { 'users': users })
+              });
+            }
           });
-        $("#id_entered_user").result(function(event, user, formatted) {
-          if (user)
-          {
-            // Use the first username/auth combination from the returned user
-            // when the form is submitted. Lock the auth method field.
-            $(this).siblings("#id_autocomp_user").val(user.auth_methods[0]);
-            $(this).siblings("#id_authMethod").val(user.auth_methods[0].split(':')[1]);
-            $(this).siblings("#id_authMethod").attr('disabled', 'disabled');
-          }
-        });
+
 
         $("#user.form_submit").unbind('click');
         $("#user.form_submit").click(function(event) {
@@ -292,9 +284,9 @@
             }
         });
 
-        $(".groupsuggest").autocomplete(groups.split(" ~ "), {
-          matchContains: true
-          //minChars: 0
+        // TODO: Replace with Bootstrap typeahead
+        $(".groupsuggest").typeahead({
+          'source': groups.split(" ~ ")
         });
 
         $("#group.form_submit").unbind('click');
