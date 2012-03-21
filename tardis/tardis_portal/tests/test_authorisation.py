@@ -287,7 +287,7 @@ class ExperimentACLTestCase(TestCase):
                                        self.user3.username,
                                        localdb_auth_key))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '<div class="access_list_user">')
+        self.assertContains(response, '<div class="access_list_user')
 
         # give user3 read permissions for experiment1 effictive TOMORROW
         response = self.client1.post(url % (self.experiment1.id, self.user3.username),
