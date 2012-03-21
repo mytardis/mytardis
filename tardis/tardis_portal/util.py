@@ -13,9 +13,9 @@ def get_local_time(dt):
     '''
     # If datetime is already naive, simply set TZ
     if (dt.tzinfo == None):
-        return dt.replace(tzinfo=LOCAL_TZ)
+        return LOCAL_TZ.localize(dt)
     # Otherwise convert
-    return dt.astimezone(LOCAL_TZ)
+    return LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
 
 def get_utc_time(dt):
     '''
@@ -25,6 +25,7 @@ def get_utc_time(dt):
     this *should* keep providing correct behaviour.
     '''
     # If datetime is already naive, set TZ
+    
     if (dt.tzinfo == None):
         dt = dt.replace(tzinfo=LOCAL_TZ)
-    return dt.astimezone(pytz.utc)
+    return pytz.utc.normalize(dt.astimezone(pytz.utc))
