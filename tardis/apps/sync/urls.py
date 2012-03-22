@@ -55,7 +55,7 @@ consumer_urls = patterns(
 
 interface_urls = patterns(
             'tardis.apps.sync.views',
-            (r'^index/(?P<exp_id>\d+)/$', 'index'),
+            (r'^index/(?P<experiment_id>\d+)/$', 'index'),
 )
 
 urlpatterns = patterns('',
