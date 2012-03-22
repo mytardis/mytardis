@@ -160,8 +160,14 @@ def index(request, experiment_id):
         synced_exp = SyncedExperiment.objects.get(experiment__pk=experiment_id)
     except SyncedExperiment.DoesNotExist:
         pass
-
-    c = Context({'object': synced_exp})
+    message = {}
+    if synced_exp:
+        if synced_exp.msg:
+            try:
+                message = json.loads(synced_exp.msg)
+            except:
+                pass
+    c = Context({'object': synced_exp, 'message':message, 'admins':settings.SYNC_ADMINS})
     url = 'sync/syncedexperiment_detail.html'
     return HttpResponse(render_response_index(request, url, c))
 
