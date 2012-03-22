@@ -265,7 +265,7 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
     if not path.exists(dataset_path):
         makedirs(dataset_path)
 
-    copyto = path.join(dataset_path, filename)
+    copyto = path.join(dataset_path, path.basename(filename))
 
     copyto = duplicate_file_check_rename(copyto)
 
