@@ -362,7 +362,7 @@ $(document).ready(function() {
   <div id="fullpage">
     <div class="post">
       {% block experiment_title %}
-      <h1 class="title">{{ experiment.title }}</h1>
+      <h1 class="{% block link_classes %}title{% endblock %}">{{ experiment.title }}{% block experiment_title_extra_text %}{% endblock %}</h1>
       {% endblock experiment_title %}
         {% if has_write_permissions %}{% if not experiment.public %}
             <a href="{{ experiment.get_edit_url }}">
