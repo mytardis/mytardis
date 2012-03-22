@@ -254,7 +254,9 @@ exporting system scripts:
     # Start with Foreman
     foreman start
     # Export Upstart start-up scripts (running as user "django")
-    sudo foreman export upstart /etc/init -u django -p 3031
+    # (We use a patched template while we wait for
+    # https://github.com/ddollar/foreman/pull/137 to be merged.)
+    sudo foreman export upstart /etc/init -u <mytardis_user> -p 3031 -t ./foreman
 
 
 Nginx should then be configured to send requests to the server::
