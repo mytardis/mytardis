@@ -193,3 +193,18 @@ OAIPMH_PROVIDERS = [
 
 
 djcelery.setup_loader()
+
+# tardis.apps.sync
+MYTARDIS_SITES_URL = 'http://localhost:8080/mytardis-sites.xml/'
+MYTARDIS_SITE_URL = 'http://localhost:8080/'
+SYNC_MANAGER = 'managers.default_manager'
+
+SYNC_CLIENT_KEYS = (
+        ('127.0.0.1', 'valid_client_key'),
+        )
+
+SYNC_CLIENT_KEY = 'valid_client_key'
+
+SYNC_ADMINS = ( 'syncadmin@localhost', )
+SERVER_EMAIL = 'transfers@localhost'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

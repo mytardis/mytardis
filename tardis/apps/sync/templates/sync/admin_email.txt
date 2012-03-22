@@ -1,0 +1,17 @@
+[MyTardis] File transfer {{ result }}
+Transfer of the following experiment has {{ result }}:
+
+UID:   {{ uid }}
+ID:    {{ experiment.id }}
+Title: {{ experiment.title }}
+URL:   {{ site_url }}{{ experiment.get_absolute_url }}
+
+{% if status.message %}Reason:
+{{ status.message }}{% endif %}
+{% if admin_url %}
+Follow this link for more details:
+{{ admin_url }}
+{% endif %}
+Regards,
+The MyTardis Transfer Bot
+

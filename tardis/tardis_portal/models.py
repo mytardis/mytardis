@@ -51,6 +51,7 @@ from django.dispatch import receiver
 from tardis.tardis_portal.staging import StagingHook
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ExperimentManager, ParameterNameManager, SchemaManager
+from .signals import *
 
 import logging
 logger = logging.getLogger(__name__)
@@ -289,6 +290,17 @@ class ExperimentACL(models.Model):
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
         return None
+    
+    def get_related_users(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.filter(pk=self.entityId)
+        if self.pluginId == 'django_group':
+            return Group.objects.get(pk=self.entityId).user_set.all()
+        return User.object.none()
 
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)
@@ -1112,3 +1124,4 @@ def _publish_public_expt_rifcs(experiment):
     from tardis.tardis_portal.publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
     pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+

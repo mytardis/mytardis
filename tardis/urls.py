@@ -22,7 +22,7 @@ def getTardisApps():
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
-    (r'^site-settings.xml/$', 'site_settings'),
+    url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),

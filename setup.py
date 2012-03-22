@@ -29,5 +29,9 @@ setup(
         'pysolr',
         'beautifulsoup',
         'south',
+        'django-celery',
+        'django-kombu',
+        'pytz',
+        'httplib2',
         ],
 )
