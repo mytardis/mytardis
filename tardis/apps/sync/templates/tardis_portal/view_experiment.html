@@ -1,0 +1,16 @@
+{% extends "tardis_portal:tardis_portal/view_experiment.html" %}
+
+
+{% block link_classes %}
+{{block.super}}
+{% if experiment.syncedexperiment_set.count %}
+ transfer-external{% if not experiment.syncedexperiment_set.all.0.is_complete %} transfer-pending{% endif %}{% endif %}
+{% endblock %}
+
+{% block experiment_title_extra_text %}
+{{ block.super }}
+{% if experiment.syncedexperiment_set.count %}
+<span class="experiment-transfer-status">[External{% if not experiment.syncedexperiment_set.all.0.is_complete %} - pending{% endif %}]</span>
+{% endif %}
+{% endblock %}
+

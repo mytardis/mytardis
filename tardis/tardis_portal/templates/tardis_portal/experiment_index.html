@@ -1,23 +1,6 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
 
 {% block script %}
-{# <script type="text/javascript"> #}
-{#     $(document).ready(function() { #}
-{#         $(".dataset_metadata_toggle").toggle( #}
-{#         function(){ #}
-{#             $(this).text("[Show]"); #}
-{#             var href= $(this).attr("href"); #}
-{#             $(href).hide(); #}
-{#         }, #}
-{#         function(){ #}
-{#             $(this).text("[Hide]"); #}
-{#             var href= $(this).attr("href"); #}
-{#             $(href).show(); #}
-{#         } #}
-{#         ); #}
-{#         $(".dataset_metadata_toggle").click(); #}
-{#     }); #}
-{# </script> #}
 {% endblock %}
 
 {% load experimentstats %}
@@ -34,30 +17,12 @@
       {% endif %}
 	
       {% if experiments %}
-        <table class="experiment-table">
-	  {% for experiment in experiments %}
-	    <tr>
-	      <th>
-		<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a> {% if experiment.public %}(public){% endif %}
-	      </th>
-	    </tr>
-	    <tr>
-	      <td>
-		From <strong>{{experiment.institution_name}}</strong>,
-		deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
-	      </td>
-	    </tr>
-	    <tr>
-	      <td class="experiment-table-stats">
-		<strong>{{ experiment.dataset_set.all.count }}</strong>
-		dataset{{ experiment.dataset_set.all.count|pluralize }},
-		containing <strong>{{ experiment.id|experiment_file_count }}</strong>
-		file{{ experiment.id|experiment_file_count|pluralize }}
-                <br/>
-		<br/>
-	      </td>
-	    </tr>
-	    {% endfor %}
+      <table class="experiment-table">
+        {% block experiment_list %}   
+            {% for experiment in experiments %}
+              {% include "tardis_portal/experiment_result.html" %}
+            {% endfor %}
+          {% endblock %}
 	</table>
 
 	{% else %}
@@ -81,30 +46,10 @@
 
   {% if shared_experiments %}
     <table class="experiment-table">
-  {% for experiment in shared_experiments %}
-    <tr>
-      <th>
-	<a href="{{ experiment.get_absolute_url }}">{{ experiment.title }}</a> {% if experiment.public %}(public){% endif %}
-      </th>
-    </tr>
-    <tr>
-      <td>
-	From <strong>{{experiment.institution_name}}</strong>,
-	deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
-      </td>
-    </tr>
-    <tr>
-      <td class="experiment-table-stats">
-	<strong>{{ experiment.dataset_set.all.count }}</strong>
-	dataset{{ experiment.dataset_set.all.count|pluralize }},
-	containing <strong>{{ experiment.id|experiment_file_count }}</strong>
-	file{{ experiment.id|experiment_file_count|pluralize }}
-            <br/>
-	<br/>
-      </td>
-    </tr>
+    {% for experiment in shared_experiments %}
+      {% include "tardis_portal/experiment_result.html" %}
     {% endfor %}
-</table>
+    </table>
 
 {% else %}
   There are no experiments shared with you.
@@ -128,28 +73,10 @@
 
     {% if public_experiments %}
       <table class="experiment-table">
-	{% for public_experiment in public_experiments %}
-	  <tr>
-	    <th>
-	      <a href="{% url tardis.tardis_portal.views.view_experiment public_experiment.id %}">
-		{{ public_experiment.title }}</a>
-	    </th>
-	  </tr>
-	  <tr>
-	    <td>From <strong>{{public_experiment.institution_name}}</strong>,
-	      deposited <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong></td>
-	  </tr>
-	<tr>
-	  <td class="experiment-table-stats"><strong>{{ public_experiment.dataset_set.all.count }}</strong>
-	    dataset{{ public_experiment.dataset_set.all.count|pluralize }},
-	    containing <strong>{{ public_experiment.id|experiment_file_count }}</strong>
-	    file{{ public_experiment.id|experiment_file_count|pluralize }}
-	    <br/>
-	    <br/>
-	  </tr>
-	{% endfor %}
+	  {% for experiment in public_experiments %}
+        {% include "tardis_portal/experiment_result.html" %}
+	  {% endfor %}
       </table>
-
       {% else %}
         No public experiments at the moment.
       {% endif %}

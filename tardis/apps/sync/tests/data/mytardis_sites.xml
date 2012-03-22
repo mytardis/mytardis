@@ -1,0 +1,14 @@
+<sites>
+	<site>
+        	<name>School of Hard Knocks</name>
+        	<url>http://localhost:1111/site-settings.xml/</url>
+       		<username>username</username>
+        	<password>password</password>
+	</site>
+    <site>
+            <name>Localhost test</name>
+            <url>http://localhost:8000/site-settings.xml/</url>
+            <username>admin</username>
+            <password>admin</password>
+    </site>
+</sites>

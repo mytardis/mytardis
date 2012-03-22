@@ -1,0 +1,26 @@
+{% load experimentstats %}
+<tr>
+  <th>
+      <a href="{{ experiment.get_absolute_url }}{% block experiment_url_params %}{% endblock %}" class="{% block link_classes %}{% endblock %}" >{% block experiment_link_text %}{{ experiment.title }}{% endblock %}</a><span class=experiment-link-extra-text>{% block experiment_link_extra_text %}{% if experiment.public %}(public){% endif %}{% endblock %}</span>
+  </th>
+</tr>
+<tr>
+  {% block experiment_data%}
+  <td>
+From <strong>{{experiment.institution_name}}</strong>,
+deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+  </td>
+  {% endblock %}
+</tr>
+<tr>
+    <td class="experiment-table-stats">
+      {% block experiment_stats %}
+<strong>{{ experiment.dataset_set.all.count }}</strong>
+dataset{{ experiment.dataset_set.all.count|pluralize }},
+containing <strong>{{ experiment.id|experiment_file_count }}</strong>
+file{{ experiment.id|experiment_file_count|pluralize }}
+<br/>
+<br/>
+      {% endblock %}
+  </td>
+</tr>

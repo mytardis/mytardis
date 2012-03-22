@@ -1,0 +1,27 @@
+<site-settings>
+        <email-endswith>email1</email-endswith>
+        <email-endswith>email2</email-endswith>
+        <register>
+            <url>http://localhost:8000/experiment/register/</url>
+                <username>admin</username>
+                <password>admin</password>
+            <fileProtocol>file</fileProtocol>
+        </register>
+        <transfer>
+                <type>gridftp</type>
+                <user>tardis</user>
+                <password>-----BEGIN CERTIFICATE-----
+1234567890
+-----END CERTIFICATE-----
+</password>
+                <sl>gsiftp://localhost</sl>
+                <serversite>/tardis_experiment_path/</serversite>
+                <optionFast>true</optionFast>
+                <optionPenable>true</optionPenable>
+                <optionP>10</optionP>
+                <optionBSenable>false</optionBSenable>
+                <optionBS>0</optionBS>
+                <optionTCPBSenable>false</optionTCPBSenable>
+                <optionTCPBS>0</optionTCPBS>
+        </transfer>
+</site-settings>
