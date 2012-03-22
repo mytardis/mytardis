@@ -40,9 +40,11 @@ import json
 
 from django.http import HttpResponse
 from django.template import Context
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.conf import settings
 from django.views.decorators.cache import never_cache
+
+from tardis.tardis_portal.shortcuts import render_response_index
 
 from tardis.apps.sync.models import SyncedExperiment
 from tardis.apps.sync.forms import FileTransferRequestForm
@@ -148,4 +150,15 @@ def notify_experiment(request, uid):
     # TODO
     exp = SyncedExperiment(uid=uid)
     exp.save()
+
+def index(request, exp_id):
+    synced_exp = None
+    try:
+        synced_exp = SyncedExperiment.objects.get(experiment__pk=exp_id)
+    except SyncedExperiment.DoesNotExist:
+        pass
+
+    c = Context({'object': synced_exp})
+    url = 'sync/syncedexperiment_detail.html'
+    return HttpResponse(render_response_index(request, url, c))
 

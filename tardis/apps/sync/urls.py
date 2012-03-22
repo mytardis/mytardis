@@ -53,7 +53,13 @@ consumer_urls = patterns(
             (r'^notify_experiment/(?P<uid>\d+)/$', 'notify_experiment'),
         )
 
+interface_urls = patterns(
+            'tardis.apps.sync.views',
+            (r'^index/(?P<exp_id>\d+)/$', 'index'),
+)
+
 urlpatterns = patterns('',
                        (r'^provider/', include(provider_urls)),
                        (r'^consumer/', include(consumer_urls)),
+                       (r'^experiments/', include(interface_urls)),
                        )

@@ -1,0 +1,30 @@
+{% if object %}
+  <div class="post">
+    <h1 class="title"><a href="#">{{ object.key }}</a></h1>
+    <div class="entry">
+      <table>
+	<tr>
+	  <td>Unique ID:</td>
+	  <td>{{ object.uid}}</td>
+	</tr>
+	<tr>
+	  <td>Synced From:</td>
+	  <td>{{ object.provider_url}}</td>
+	</tr>
+	<tr>
+	  <td>Status:</td>
+	  <td>{{ object.state }}</td>
+    </tr>
+    {% if object.message %}
+	<tr>
+	  <td>Error message:</td>
+	  <td>{{ object.message }}</td>
+    </tr>
+    {% endif %}
+      </table>
+      <a href="{{ object.url }}">{{ object.url }}</a>
+    </div> <!-- entry -->
+  </div> <!-- post -->
+{% else %}
+<p>This experiment has been added locally and is not synced from another unstitution</p>
+{% endif %}
