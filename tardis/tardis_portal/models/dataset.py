@@ -1,11 +1,9 @@
 from os import path
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 
-from tardis.tardis_portal.managers import OracleSafeManager,\
-    ExperimentManager, ParameterNameManager, SchemaManager
+from tardis.tardis_portal.managers import OracleSafeManager
 
 from .experiment import Experiment
 

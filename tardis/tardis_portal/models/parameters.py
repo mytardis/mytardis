@@ -1,14 +1,12 @@
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save, post_save, post_delete
+from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.safestring import mark_safe
 
 from tardis.tardis_portal.managers import OracleSafeManager,\
-    ExperimentManager, ParameterNameManager, SchemaManager
-from tardis.tardis_portal.models.rifcs_publishing import \
-    publish_public_expt_rifcs
+    ParameterNameManager, SchemaManager
 
 from .experiment import Experiment
 from .dataset import Dataset
@@ -60,17 +58,17 @@ class Schema(models.Model):
             if schema.subtype])
 
     @classmethod
-    def getNamespaces(cls, type, subtype=None):
+    def getNamespaces(cls, type_, subtype=None):
         """Return the list of namespaces for equipment, sample, and experiment
         schemas.
 
         """
         if subtype:
             return [schema.namespace for schema in
-                    Schema.objects.filter(type=type, subtype=subtype)]
+                    Schema.objects.filter(type=type_, subtype=subtype)]
         else:
             return [schema.namespace for schema in
-                    Schema.objects.filter(type=type)]
+                    Schema.objects.filter(type=type_)]
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
@@ -365,6 +363,7 @@ class ExperimentParameter(models.Model):
     def save(self, *args, **kwargs):
         super(ExperimentParameter, self).save(*args, **kwargs)
         try:
+            from .hooks import publish_public_expt_rifcs
             publish_public_expt_rifcs(self.parameterset.experiment)
         except StandardError:
             logger.exception('')

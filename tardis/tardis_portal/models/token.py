@@ -35,7 +35,7 @@ class Token(models.Model):
     def _randomise_token(self):
         from random import choice
         self.token = ''.join(choice(self._TOKEN_CHARS)
-                                for x in range(settings.TOKEN_LENGTH))
+                                for _ in range(settings.TOKEN_LENGTH))
 
     def save_with_random_token(self):
         from django.db import IntegrityError
@@ -43,7 +43,7 @@ class Token(models.Model):
         if not self.user or not self.experiment:  # fail if success impossible
             self.save()
 
-        for i in range(30):  # 30 is an arbitrary number
+        for _ in range(30):  # 30 is an arbitrary number
             self._randomise_token()
             try:
                 logger.debug(self.token)

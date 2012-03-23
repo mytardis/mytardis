@@ -121,7 +121,6 @@ class Dataset_File(models.Model):
         # 'tardis' which indicates a location within the tardis file
         # store
         if self.protocol == '' or self.protocol == 'tardis':
-            from django.conf import settings
             try:
                 FILE_STORE_PATH = settings.FILE_STORE_PATH
             except AttributeError:
