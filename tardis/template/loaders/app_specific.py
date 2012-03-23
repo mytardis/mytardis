@@ -1,7 +1,7 @@
 """
 Adapted from: http://djangosnippets.org/snippets/1376/
 """
-from os.path import dirname, join, abspath, isdir
+from os import path
 
 from django.db.models import get_app
 from django.core.exceptions import ImproperlyConfigured
@@ -15,7 +15,10 @@ class Loader(BaseLoader):
     def _get_template_vars(self, template_name):
         app_name, template_name = template_name.split(":", 1)
         try:
-            template_dir = abspath(join(dirname(get_app(app_name).__file__), 'templates'))
+            app_dir = path.dirname(get_app(app_name).__file__)
+            if path.split(app_dir)[-1] == 'models':
+                app_dir, _ = path.split(app_dir)
+            template_dir = path.abspath(path.join(app_dir, 'templates'))
         except ImproperlyConfigured:
             raise TemplateDoesNotExist()
         return template_name, template_dir
@@ -29,6 +32,6 @@ class Loader(BaseLoader):
         if ":" not in template_name:
             raise TemplateDoesNotExist()
         template_name, template_dir = self._get_template_vars(template_name)
-        if not isdir(template_dir):
+        if not path.isdir(template_dir):
             raise TemplateDoesNotExist()
         return load_template_source(template_name, template_dirs=[template_dir])
