@@ -1,13 +1,8 @@
 {% extends "tardis_portal/search_template.html" %}
 
-{% block searchPageBody %}
 
-{% if searchForm.errors %}
-  <p style="color: red;">
-    Please correct the error{{ searchForm.errors|pluralize }} below.
-  </p>
-{% endif %}
 
+{% block style %}
 <style>
 .accordion_head {
     background-color: #eee;
@@ -31,20 +26,28 @@
     padding: 10px;
 }
 </style>
+{% endblock %}
+
+{% block searchPageBody %}
+
+{% if searchForm.errors %}
+  <p style="color: red;">
+    Please correct the error{{ searchForm.errors|pluralize }} below.
+  </p>
+{% endif %}
 
 <p>
     Click on the headers to expand and collapse search fields.
 </p>
-<form name="input" action="." method="get">
-
+<form name="input" action="." method="get" class="form-horizontal">
+  {% load bootstrap %}
     <div id="accordion">
         {% for fieldset in searchForm.fieldsets %}
-            {% if forloop.counter == 1 %}
+            {% if forloop.first %}
             <div class="accordion_wrap">
                 <div class="accordion_body">
                   {% for field in fieldset %}
-                        {{ field.label_tag }}<br>
-                        {{ field }} {{ field.errors }}<br><br>
+                        {{ field|bootstrap }}
                   {% endfor %}
                 </div>
             </div>
@@ -57,8 +60,7 @@
                   {% endif %}
 
                   {% for field in fieldset %}
-                        {{ field.label_tag }}<br>
-                        {{ field }} {{ field.errors }}<br><br>
+                        {{ field|bootstrap }}
                   {% endfor %}
                 </div>
             </div>
@@ -66,15 +68,21 @@
         {% endfor %}
     </div>
 
-      <td><input type="submit" value="Submit" /></td>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-info btn-large">
+      <i class="icon-search icon-large"></i> Search
+    </button>
+  </div>
 </form>
 
-<script>
+<script type="text/javascript">
     $(function() {
         jQuery('h3.accordion_head').click(function() {
             jQuery(this).next().slideToggle('fast');
         });
         jQuery('div.hideme').hide();
+        // Date selects appropriately
+        $('#id_date_month, #id_date_day, #id_date_year').addClass('span2');
     });
 </script>
 

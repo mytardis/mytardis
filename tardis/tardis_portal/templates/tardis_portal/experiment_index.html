@@ -1,87 +1,159 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
 
-{% block script %}
-{% endblock %}
-
 {% load experimentstats %}
 
 {% block content %}
 
 <div id="content">
-  {% if user.is_authenticated %}
-    <div class="post">
-      <h1 class="title">My Experiments</h1>
+{% if user.is_authenticated %}
+  <h2>My Experiments</h2>
 
-      {% if experiments %}
-        <strong>{{ experiments.count }}</strong> experiment{{ experiments.count|pluralize}}
-      {% endif %}
-	
-      {% if experiments %}
-      <table class="experiment-table">
-        {% block experiment_list %}   
-            {% for experiment in experiments %}
-              {% include "tardis_portal/experiment_result.html" %}
-            {% endfor %}
-          {% endblock %}
-	</table>
-
+	{% if experiments %}
+		<table class="experiment-table table">
+			<thead>
+				<tr>
+					<th>
+						<strong>{{ experiments.count }}</strong>
+						experiment{{ experiments.count|pluralize}}
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+			  {% for experiment in experiments %}
+			  <tr>
+					<td>
+					  <h4>
+					   <a class="experiment-link"
+					      href="{{ experiment.get_absolute_url }}">
+					   {{ experiment.title }}
+					   </a>
+					   {% if experiment.public %}(public){% endif %}
+					  </h4>
+					  <p>
+							From <strong>{{experiment.institution_name}}</strong>, deposited
+							<strong>
+							{{experiment.update_time|date:"jS F Y" }}
+							</strong>
+					  </p>
+					  <p>
+					   <strong>{{ experiment.dataset_set.all.count }}</strong>
+					   dataset{{ experiment.dataset_set.all.count|pluralize }},
+					   containing
+					   <strong>{{ experiment.id|experiment_file_count }}</strong>
+					   file{{ experiment.id|experiment_file_count|pluralize }}
+					  </p>
+					</td>
+			  </tr>
+			{% endfor %}
+			</tbody>
+		</table>
 	{% else %}
-	  You own no experiments at this time.
+	  <p>You own no experiments at this time.</p>
 	{% endif %}
 
-    </div> <!-- post -->
-
-    <br/>
-    <br/>
-    <br/>
-
-<div class="post">
-  <h1 class="title">
-<a href="#">Experiments shared with me</a>
-  </h1>
+  <h2>Experiments shared with me</h2>
 
   {% if shared_experiments %}
-    <strong>{{ shared_experiments.count }}</strong> experiment{{ shared_experiments.count|pluralize}}
-  {% endif %}
-
-  {% if shared_experiments %}
-    <table class="experiment-table">
+	<table class="experiment-table table">
+    <thead>
+	    <tr>
+	        <th>
+				      <strong>{{ shared_experiments.count }}</strong>
+				      experiment{{ shared_experiments.count|pluralize}}
+	        </th>
+	    </tr>
+    </thead>
+    <tbody>
     {% for experiment in shared_experiments %}
-      {% include "tardis_portal/experiment_result.html" %}
-    {% endfor %}
-    </table>
-
-{% else %}
-  There are no experiments shared with you.
-{% endif %}
-</div> <!-- post -->
-
-<br/>
-<br/>
-<br/>
-
-  {% endif %}
-
-  <div class="post">
-    <h1 class="title">Public Experiments</h1>
-
-    {% if experiments %}
-      <strong>{{ public_experiments.count }}</strong>
-      public experiment{{ public_experiments.count|pluralize }}
-    {% endif %}
-
-
-    {% if public_experiments %}
-      <table class="experiment-table">
-	  {% for experiment in public_experiments %}
-        {% include "tardis_portal/experiment_result.html" %}
+      <tr>
+        <td>
+	        <h4>
+	          <a class="experiment-link"
+	             href="{{ experiment.get_absolute_url }}">
+	          {{ experiment.title }}
+	          </a>
+	          {% if experiment.public %}(public){% endif %}
+	        </h4>
+	        <p>
+						From <strong>{{experiment.institution_name}}</strong>,
+						deposited
+						<strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+	        </p>
+	        <p>
+						<strong>{{ experiment.dataset_set.all.count }}</strong>
+						dataset{{ experiment.dataset_set.all.count|pluralize }},
+						containing
+						<strong>{{ experiment.id|experiment_file_count }}</strong>
+						file{{ experiment.id|experiment_file_count|pluralize }}
+					</p>
+				</td>
+      </tr>
+    </tbody>
 	  {% endfor %}
-      </table>
-      {% else %}
-        No public experiments at the moment.
-      {% endif %}
+	</table>
+	{% else %}
+	<p class="alert alert-info">There are no experiments shared with you.</p>
+	{% endif %}
 
-  </div> <!-- post -->
+{% endif %}
+
+  <h2>Public Experiments</h2>
+
+{% if public_experiments %}
+	<table class="experiment-table table">
+	  <thead>
+	    <tr>
+	      <th>
+		      <strong>{{ public_experiments.count }}</strong>
+		      public experiment{{ public_experiments.count|pluralize }}
+		    </th>
+		  </tr>
+		</thead>
+	  <tbody>
+	  {% for public_experiment in public_experiments %}
+		  <tr>
+		    <td>
+		      <h4>
+			      <a class="experiment-link"
+			         href="{% url tardis.tardis_portal.views.view_experiment public_experiment.id %}">
+				    {{ public_experiment.title }}
+				    </a>
+				  </h4>
+			    <p>
+			      From <strong>{{public_experiment.institution_name}}</strong>,
+			      deposited
+			      <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong>
+			    </p>
+			    <p>
+				    <strong>{{ public_experiment.dataset_set.all.count }}</strong>
+				    dataset{{ public_experiment.dataset_set.all.count|pluralize }},
+				    containing
+				    <strong>{{ public_experiment.id|experiment_file_count }}</strong>
+				    file{{ public_experiment.id|experiment_file_count|pluralize }}
+			    </p>
+			  </td>
+		  </tr>
+	  {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="alert alert-info">No public experiments at the moment.</p>
+{% endif %}
+
+<script type="text/javascript">
+// Set up tables cells as click links for touch devices
+$(function() {
+  $('.experiment-table a.experiment-link').click(function(evt) {
+    window.location.href = $(evt.delegateTarget).attr('href');
+  });
+	$('.experiment-table td').click(function(evt) {
+	  if (evt.target.tagName != 'A') {
+	    $(evt.delegateTarget).find('a.experiment-link').click();
+	  }
+	});
+});
+</script>
+
 </div> <!-- content -->
 
 {% endblock %}

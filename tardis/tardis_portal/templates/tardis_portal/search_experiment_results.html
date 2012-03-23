@@ -1,12 +1,43 @@
 {% extends "tardis_portal/search_template.html" %}
 {% load experimentstats %}
 
+{% block script %}
+{{ block.super }}
+<script type="text/javascript">
+// Set up tables cells as click links for touch devices
+$(function() {
+  $('.experiment-table a.experiment-link').click(function(evt) {
+    window.location.href = $(evt.delegateTarget).attr('href');
+  });
+  $('.experiment-table td').click(function(evt) {
+    if (evt.target.tagName != 'A') {
+      $(evt.delegateTarget).find('a.experiment-link').click();
+    }
+  });
+});
+</script>
+{% endblock script %}
+
 {% block searchPageBody %}
-{% if experiments %}
-<em>
-  <strong>{{ experiments|length }}</strong>
-  experiment{{ experiments|length|pluralize }} found.
-</em>
-{% endif %}
-{% include "search/search_result_list.html" %}
+  {% if experiments %}
+    <table class="experiment-table table">
+      <thead>
+        <tr>
+          <th>
+            <em>
+              <strong>{{ experiments|length }}</strong>
+              experiment{{ experiments|length|pluralize }} found.
+            </em>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for result in experiments %}
+        {% include "tardis_portal/experiment_search_result.html" %}
+      {% endfor%}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No Results found</p>
+  {% endif %}
 {% endblock %}

@@ -3,37 +3,26 @@
 {% block content %}
 
 {% if form.errors %}
-<p class="form-error" style="color: red;">
+<p class="alert alert-error">
   Please correct the error{{ form.errors|pluralize }} below.
 </p>
 {% endif %}
-
-  <div id="content">
-    <div class="post">
-      <h1 class="title"><a href="#">{{ header }}</a></h1>
-      <div class="entry">
-	<p>
-	<form enctype="multipart/form-data" action="" method="post">
-	  <table width="100%">
-	    <tr valign="top">
-	      <td>
-		{% for field in form %}
-		{{ field.label }}
-		<br>
-		{{ field }}
-		{{ field.errors }}
-		<br>
-		<br>
-		{% endfor %}
-	      </td>
-	    </tr>
-	  </table>
-	  <input type="submit" value="Submit">
-	</form>
-	</p>
+<div class="page-header">
+  <h1 class="title">{{ header }}</h1>
+</div>
+<div class="row-fluid">
+  <div class="span12">
+  	<form enctype="multipart/form-data" action="" method="post"
+          class="form-horizontal">
+      {% load bootstrap %}
+      <fieldset>
+  		  {{ form|bootstrap }}
+      </fieldset>
+      <div class="form-actions">
+  	    <button type="submit" class="btn btn-primary">Submit</button>
       </div>
-    </div>
+  	</form>
   </div>
-
+</div>
 {% endblock %}
 

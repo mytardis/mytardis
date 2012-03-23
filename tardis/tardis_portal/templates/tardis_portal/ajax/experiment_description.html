@@ -50,15 +50,18 @@
         <strong style="float:left; margin-right: 5px">Experiment Metadata</strong>
 
         {% if has_write_permissions %}{% if not experiment.public %}
-            <a title="Add" id="expAddTrigger" class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}" 
-                    data-toggle_selector=".experiment_metadata_toggle">
-                <span class="ui-icon ui-icon-plusthick"></span>
-                Add
+            <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
+               href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
+               data-toggle_selector=".experiment_metadata_toggle">
+              <i class="icon-plus"></i>
+              Add
             </a>
         {% endif %}{% endif %}
 
-        <a title="Show/Hide" class="experiment_metadata_toggle metadata_hidden fg-button small ui-state-default fg-button-icon-solo ui-corner-all" href="/ajax/experiment_metadata/{{experiment.id}}/">
-            <span class="ui-icon ui-icon-circle-triangle-e"></span>
+        <a title="Show/Hide"
+           class="experiment_metadata_toggle metadata_hidden btn btn-primary btn-mini"
+           href="/ajax/experiment_metadata/{{experiment.id}}/">
+            <i class="icon-folder-close"></i>
             Show/Hide
         </a>
     </div>

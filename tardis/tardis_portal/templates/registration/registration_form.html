@@ -30,25 +30,20 @@
 {% extends "tardis_portal/portal_template.html" %}
 
 {% block content %}
-<div id="content">
-  <div class="post">
-    <h1 class="title"><a href="#">User Registration</a> </h1>
-    <div class="entry">
-      <p>Users must register before creating new experiments in MyTardis.
-	<form action="." method="POST">
-	  <table width="100%">
-            <tr valign="top">
-              <td>
-		{% for field in form %}
-                {{ field.label }}<br>{{ field }} {{ field.errors }}<br><br>
-		{% endfor %}
-              </td>
-            </tr>
-          </table>
-	  <input type="submit" value="Submit" />
-	</form>
-      </p>
-    </div> <!-- entry -->
-  </div> <!-- post -->
-</div> <!-- title -->
+<div class="page-header">
+  <h1>User Registration</h1>
+</div>
+
+<p>Users must register before creating new experiments in MyTardis.</p>
+
+<form action="." method="post" class="form-horizontal">
+  {% load bootstrap %}
+  {{ form|bootstrap }}
+  <div class="form-actions">
+    <button type="submit" class="btn btn-warning">
+      <i class="icon-user"></i>
+      Create New Account
+    </button>
+  </div>
+</form>
 {% endblock %}

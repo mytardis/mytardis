@@ -5,50 +5,14 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-// Black magic to use jQuery UI autocomplete
-// while obsolete autocomplete plugin is loaded.
-$(function() {
-  $.widget.bridge('ui_autocomplete', $.ui.autocomplete)
-});
-
-var autocompleteCallback = function(query, callback) {
-  var authMethod = $("#id_authMethod").val()
-  var matches = _(this.users).chain()
-    // Filter out users which don't match auth method
-    .filter(function(user) {
-      // authMethods: ["testuser:localdb:Local DB"]
-      return _(user.auth_methods).any(function(v) {
-        return v.split(':')[1] == authMethod;
-      })
-    })
-    // Filter out those that don't have a matching field
-    .filter(function(user) {
-      var fields = ['username', 'email', 'first_name', 'last_name'];
-      // Select user if any of the fields above match
-      return _(fields).any(function(fieldName) {
-        var field = user[fieldName].toLowerCase();
-        return _.str.include(field, query.term.toLowerCase());
-      });
-    })
-    // Map to label/value objects
-    .map(function(user) {
-      var tmpl = "<%=first_name%> <%=last_name%> [<%=username%>] <<%=email%>>";
-      // Create label and trim empty email
-      var label = _.template(tmpl, user).replace(' <>','');
-      return { 'label': label, 'value': user.username };
-    }).value();
-  // Callback to autocomplete control
-  callback(matches);
-};
-
-
-$("#user.form_submit").live('click', function(evt) {
+$("form.add-user-form").live('submit', function(evt) {
     evt.preventDefault();
-    var authMethod = $(this).siblings("#id_authMethod").val();
-    var usersuggest = $(this).siblings(".usersuggest").val();
-    var group_id = $(this).siblings(".group_id").val();
-    var users_div = $(this).parents('.access_list').children('.users');
-    var isAdmin = $(this).siblings(".isAdmin").is(':checked');
+    var form = $(this);
+    var authMethod = form.find("[name=authMethod]").val();
+    var usersuggest = form.find("[name=adduser]").val();
+    var group_id = form.find("[name=group_id]").val();
+    var users_div = form.parents('.access_list').children('.users');
+    var isAdmin = form.find("[name=admin]").is(':checked');
     var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
     $.ajax({
       type: "GET",
@@ -83,13 +47,13 @@ $(".remove_user").live('click', function(evt) {
 });
 $(document).ready(function() {
 
-    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br/>";
+    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/>";
 
     $(".member_list_user_toggle").click(function(evt){
         evt.preventDefault()
 
-        var icon = $(this).find('.ui-icon');
-        icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
+        var icon = $(this).find('i');
+        icon.toggleClass('icon-folder-open icon-folder-close');
         $(this).toggleClass('members-shown members-hidden');
 
         var user_list = $(this).parents('.group').find('.access_list');
@@ -102,13 +66,18 @@ $(document).ready(function() {
         user_list.html(loadingHTML);
         // Load (jQuery AJAX "load()") and show access list
         user_list.load(this.href, function() {
-          // Load user list for
+          // Load user list and activate field autocompletion
           $.ajax({
             'dataType': 'json',
             'url': '/ajax/user_list/',
             'success': function(users) {
-              $("#id_adduser").ui_autocomplete({
-            	  'source': _.bind(autocompleteCallback, { 'users': users })
+              $("#id_adduser").autocomplete({
+                  'source': _.bind( function(query, callback) {
+                    var authMethod = $("#id_authMethod").val();
+                    callback(
+                        userAutocompleteHandler(
+                            query.term, this.users, authMethod));
+                  }, { 'users': users })
               });
             }
           });
@@ -119,33 +88,24 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block content %}
-    <div id="content">
-        <div class="post">
-            <h1 class="title"><a href="#">Manage Group Members</a></h1>
-            <div class="entry">
-                <br/>
-                <p>
-                {% if groups %}
-                    <table class="member-table">
-                        {% for group in groups %}
-                            <tr>
-                                <td>
-                                  <div class="group">
-                                    {{ group.name }}
-                                    <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
-                                        <span class="ui-icon ui-icon-circle-triangle-e"></span>
-                                    </a>
-                                    <div class="access_list" style="display:none;"></div>
-                                  </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                {% else %}
-                    There are no groups under your control.
-                {% endif %}
-              </p>
-            </div>
-        </div>
-    </div>
+
+<div class="page-header">
+  <h1>Manage Group Members</h1>
+</div>
+{% for group in groups %}
+<div class="row-fluid group">
+  <h2>
+    <a href="{% url tardis.tardis_portal.views.retrieve_group_userlist group.id %}" class="members-hidden member_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+      <i class="icon-folder-close"></i>
+      {{ group.name }}
+    </a>
+  </h2>
+  <div class="access_list" style="display:none;"></div>
+</div>
+{% empty %}
+<p>
+There are no groups under your control.
+</p>
+{% endfor %}
+
 {% endblock %}

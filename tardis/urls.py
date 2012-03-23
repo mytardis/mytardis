@@ -19,6 +19,8 @@ def getTardisApps():
                          lambda app: app.startswith(settings.TARDIS_APP_ROOT),
                          settings.INSTALLED_APPS))
 
+handler500 = 'tardis.views.error_handler'
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
