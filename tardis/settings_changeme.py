@@ -82,14 +82,16 @@ MIDDLEWARE_CLASSES = (
 
 ROOT_URLCONF = 'tardis.urls'
 
-TEMPLATE_CONTEXT_PROCESSORS = ('django.core.context_processors.request',
-                               'django.core.context_processors.static',
-                               'django.contrib.auth.context_processors.auth',
-                               'django.core.context_processors.debug',
-                               'django.core.context_processors.i18n',
-                                'tardis.tardis_portal.context_processors.single_search_processor',
-                                'tardis.tardis_portal.context_processors.tokenuser_processor',
-                                )
+TEMPLATE_CONTEXT_PROCESSORS = [
+    'django.core.context_processors.request',
+    'django.core.context_processors.static',
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'tardis.tardis_portal.context_processors.single_search_processor',
+    'tardis.tardis_portal.context_processors.tokenuser_processor',
+    'tardis.tardis_portal.context_processors.registration_processor',
+]
 
 TEMPLATE_LOADERS = (
     'tardis.template.loaders.app_specific.Loader',
@@ -175,6 +177,7 @@ INSTALLED_APPS = (
     'django_jasmine',
     'djcelery',
     'djkombu',
+    'bootstrapform',
     )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
@@ -255,6 +258,9 @@ UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/lib/uploadify')
 
 # Upload path that files are sent to
 UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
+
+# Disable registration (copy to your settings.py first!)
+# INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 
 # Settings for the single search box
 # Set HAYSTACK_SOLR_URL to the location of the SOLR server instance

@@ -1,52 +1,34 @@
 {% extends "tardis_portal/portal_template.html" %}
 
-        {%  block script %}
-          <script type="text/javascript">
+{%  block script %}
+<script type="text/javascript">
+$(document).ready(function() {
+  $('#cc_js_jurisdiction_choice_au').attr('selected', true);
+});
+</script>
+{%  endblock %}
 
-              $(document).ready(function() {
-                $('#cc_js_jurisdiction_choice_au').attr('selected', true);
-              });
-          </script>
-        {%  endblock %}
+{% block content %}
+<div class="page-header">
+	<h1>Choose License</h1>
+</div>
 
-		{% block content %}
-			<div id="content">
-				<div class="post">
-					<h1 class="title"><a name="abouttardis">Choose License</a></h1>
-					<div class="entry">
-							{% if not submit %}
-							<form action="." method="POST" class="licenseform">
-							<p>
-								<strong>Experiment Name:</strong> {{ experiment.title }}
-							</p>
-							
-							
-								{% include "tardis_portal/creative_commons.html" %}
+{% if not submit %}
+<p>
+  <strong>Experiment Name:</strong> {{ experiment.title }}
+</p>
+<form action="." method="post" class="licenseform">
+	{% include "tardis_portal/creative_commons.html" %}
 
-							<br/>
-							<input id="button" type="submit" value="Choose License"/>
-						
-							</form>	
-							{% else %}
-								<h2>License Chosen</h2>
-								<a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">Go back to your experiment.</a>
-							{% endif %}
-		    		</div>
-		    	</div>
-			</div>
-		    <br/>
-			
-			{% endblock %} {% block sidebar %}
-				
-				<ul>
-					<li>
-						<h2></h2>
-							
-							<ul>
-							
-							</ul>
-					</li>
-				</ul>
-		
-		<p>
-			{% endblock %}
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">
+      Choose License
+    </button>
+  </div>
+</form>
+{% else %}
+<h2>License Chosen</h2>
+<a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">Go back to your experiment.</a>
+{% endif %}
+{% endblock %}
+

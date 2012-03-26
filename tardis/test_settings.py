@@ -89,6 +89,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware'
 )
 
+TEMPLATE_LOADERS = (
+    'tardis.template.loaders.app_specific.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
+)
+
 TARDIS_APP_ROOT = 'tardis.apps'
 
 def get_all_tardis_apps():
@@ -101,20 +107,21 @@ def get_all_tardis_apps():
     return sorted(map(lambda name: name.replace(path.sep, '.') , names))
 
 INSTALLED_APPS = get_all_tardis_apps() + [
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.sessions',
-        'django.contrib.sites',
-        'django.contrib.admin',
-        'django.contrib.admindocs',
-        'django_extensions',
-        'tardis.tardis_portal',
-        'tardis.tardis_portal.templatetags',
-        'registration',
-        'django_nose',
-        'django_jasmine',
-        'djcelery',
-        'djkombu',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.sites',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+    'django_extensions',
+    'tardis.tardis_portal',
+    'tardis.tardis_portal.templatetags',
+    'registration',
+    'django_nose',
+    'django_jasmine',
+    'djcelery',
+    'djkombu',
+    'bootstrapform',
 ]
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),

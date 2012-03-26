@@ -1,14 +1,4 @@
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/error_page.html" %}
 
-{% block fullpage %}
-
-<div id="fullpage">
-	<div class="post">
-		<div id="statusBoxError">
-			Error: Forbidden
-		</div>
-	</div>
-</div>	
-
-{% endblock %}
-		</p>
+{% block error_code %}500{% endblock %}
+{% block error_message %}Server Error{% endblock %}

@@ -1,80 +1,71 @@
 var activateSearchAutocomplete = function() {
-    var authMethod = "localdb";
-    var data = { authMethod: authMethod };
-    $.ajax({
-        'global': false,
-        'data': data,
-        'url': '/ajax/parameter_field_list/',
-        'success': function (data) {
-            data = data.split("+");
-            var list = new Array();
-            $.each(data, function(i,l) {
-                var name = l.split(":")[0];
-                var type = l.split(":")[1];
-                list[i] = [name, type];
-            });
-            $("#id_q").autocomplete(list, {
-                matchContains: true,
-                multiple: true,
-                multipleSeparator: " ",
-                selectFirst: false,
-                autoFill: false,
-                max: 10,
-                minChars: 1,
-                scroll: false,
-                formatResult: function(item, position, length) {
-                    if (item[1] == 'search_field')
-                    {
-                        return item[0] + ":";
-                    }
-                    else
-                    {
-                        return item[0];
-                    }
-                }
-            });
-        }
-     });
-};
-
-var activateAlertStatus = function() {
-	var myClose = function(hash) {
-        hash.w.fadeOut('2000',function(){ hash.o.remove(); });
-        window.location.hash = "";
-    };
-	$("#jqmAlertStatus").jqm({modal: false, overlay: 1,onHide:myClose});
-	// Add status messages for create/save
-	if (window.location.hash) {
-	    if(window.location.hash == '#created')
-	    {
-	        $('#jqmStatusMessage').html('Experiment Created');
-	    }
-	    else if(window.location.hash == '#saved')
-	    {
-	        $('#jqmStatusMessage').html('Experiment Saved');
-	    }
-	}
-    // Show status message if there's one to show
-    if ($('#jqmStatusMessage').text() != '') {
-        $('#jqmAlertStatus').jqmShow();
+  var authMethod = "localdb";
+  var data = { authMethod: authMethod };
+  $.ajax({
+    'global': false,
+    'data': data,
+    'url': '/ajax/parameter_field_list/',
+    'success': function (data) {
+        data = data.split("+");
+        var list = _.map(data, function(line) {
+            var name = line.split(":")[0];
+            var type = line.split(":")[1];
+            if (type == 'search_field')
+                return name + ":";
+            else
+                return name;
+        });
+        $("#id_q").typeahead({
+          'source': list,
+          'items': 10
+        });
     }
+  });
 };
 
 var activateHoverDetection = function() {
-	// Hover events
-    $('.ui-state-default').live('mouseover mouseout', function(evt) {
-        if (evt.type == 'mouseover') {
-            $(this).addClass('ui-state-hover');
-        } else {
-            $(this).removeClass('ui-state-hover');
-        }
-    });
+  // Hover events
+  $('.ui-state-default').live('mouseover mouseout', function(evt) {
+    if (evt.type == 'mouseover') {
+      $(this).addClass('ui-state-hover');
+    } else {
+      $(this).removeClass('ui-state-hover');
+    }
+  });
+};
+
+var userAutocompleteHandler = function(term, users, authMethod) {
+  var matches = _(users).chain()
+    // Filter out users which don't match auth method
+    .filter(function(user) {
+      // authMethods: ["testuser:localdb:Local DB"]
+      return _(user.auth_methods).any(function(v) {
+        return v.split(':')[1] == authMethod;
+      })
+    })
+    // Filter out those that don't have a matching field
+    .filter(function(user) {
+      var fields = ['username', 'email', 'first_name', 'last_name'];
+      // Select user if any of the fields above match
+      return _(fields).any(function(fieldName) {
+        var field = user[fieldName].toLowerCase();
+        return _.str.include(field, term.toLowerCase());
+      });
+    })
+    // Map to label/value objects
+    .map(function(user) {
+      var tmpl = "<%=first_name%> <%=last_name%> [<%=username%>] <<%=email%>>";
+      // Create label and trim empty email
+      var label = _.template(tmpl, user).replace(' <>','').trim();
+      return { 'label': label, 'value': user.username };
+    }).value();
+  // Callback to autocomplete control
+  return matches;
 };
 
 $(document).ready(function(){
-	if ($('#id_q').length > 0) {
-		activateSearchAutocomplete();
-	}
-	activateAlertStatus();
-	activateHoverDetection();
+  if ($('#id_q').length > 0) {
+    activateSearchAutocomplete();
+  }
+  activateHoverDetection();
 });
