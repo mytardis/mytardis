@@ -39,9 +39,7 @@ from tardis.tardis_portal.shortcuts import return_response_error
 
 
 def get_accessible_experiments(request):
-
-    experiments = Experiment.safe.all(request)
-    return experiments
+    return Experiment.safe.all(request)
 
 
 def get_shared_experiments(request):
@@ -56,9 +54,7 @@ def get_shared_experiments(request):
 
 
 def get_owned_experiments(request):
-
-    experiments = Experiment.safe.owned(request)
-    return experiments
+    return Experiment.safe.owned(request)
 
 
 def get_accessible_datafiles_for_user(request):
@@ -77,16 +73,10 @@ def get_accessible_datafiles_for_user(request):
 
 
 def has_experiment_ownership(request, experiment_id):
-
-    experiment = Experiment.safe.owned(request).filter(
-        pk=experiment_id)
-    if experiment:
-        return True
-    return False
+    return Experiment.safe.owned(request).filter(pk=experiment_id).exists()
 
 
 def has_experiment_access(request, experiment_id):
-
     try:
         Experiment.safe.get(request, experiment_id)
         return True
@@ -95,21 +85,13 @@ def has_experiment_access(request, experiment_id):
 
 
 def has_dataset_access(request, dataset_id):
-
     experiment = Experiment.objects.get(dataset__pk=dataset_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
+    return has_experiment_access(request, experiment.id)
 
 
 def has_datafile_access(request, dataset_file_id):
-
     experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
+    return has_experiment_access(request, experiment.id)
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
@@ -165,7 +147,6 @@ def has_read_or_owner_ACL(request, experiment_id):
         return True
 
 def has_write_permissions(request, experiment_id):
-
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
@@ -203,14 +184,10 @@ def has_write_permissions(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ExperimentACL
     acl = ExperimentACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return acl.count() != 0
 
 
 def has_delete_permissions(request, experiment_id):
-
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
     experiment = Experiment.safe.get(request, experiment_id)
@@ -245,21 +222,13 @@ def has_delete_permissions(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ExperimentACL
     acl = ExperimentACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return acl.count() != 0
 
 
 @login_required
 def is_group_admin(request, group_id):
-
-    groupadmin = GroupAdmin.objects.filter(user=request.user,
-                                           group__id=group_id)
-    if groupadmin.count():
-        return True
-    else:
-        return False
+    return GroupAdmin.objects.filter(user=request.user,
+                                     group__id=group_id).exists()
 
 
 def group_ownership_required(f):
