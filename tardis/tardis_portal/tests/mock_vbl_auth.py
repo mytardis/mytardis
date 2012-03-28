@@ -45,7 +45,7 @@ class MockBackend():
             # if request.user is not null, then we can assume that we are only
             # calling this function to verify if the provided username and
             # password will authenticate with this backend
-            if type(request.user) is not AnonymousUser:
+            if request.user.is_authenticated():
                 user = request.user
 
             # else, create a new user with a random password

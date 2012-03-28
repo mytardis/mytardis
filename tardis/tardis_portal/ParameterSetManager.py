@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import DatafileParameterSet
@@ -12,7 +14,9 @@ from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
 
-from tardis.tardis_portal.util import get_local_time
+import pytz
+
+LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
 class ParameterSetManager(object):
 
@@ -133,7 +137,9 @@ class ParameterSetManager(object):
             if par.name.isNumeric():
                 return par.numerical_value
             elif par.name.isDateTime():
-                return get_local_time(par.datetime_value)
+                if is_aware(par.datetime_value):
+                    return par.datetime_value
+                return make_aware(par.datetime_value, LOCAL_TZ)
             else:
                 return par.string_value
         return par
@@ -163,7 +169,14 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = get_local_time(value)
+            if settings.USE_TZ:
+                if (is_naive(value)):
+                    value = make_aware(value, LOCAL_TZ)
+                param.datetime_value = value
+            else:
+                if (is_aware(value)):
+                    value = make_naive(value, LOCAL_TZ)
+                param.datetime_value = value
         else:
             param.string_value = unicode(value)
         param.save()
@@ -178,7 +191,14 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = get_local_time(value)
+            if settings.USE_TZ:
+                if (is_naive(value)):
+                    value = make_aware(value, LOCAL_TZ)
+                param.datetime_value = value
+            else:
+                if (is_aware(value)):
+                    value = make_naive(value, LOCAL_TZ)
+                param.datetime_value = value
         else:
             param.string_value = unicode(value)
         param.save()
