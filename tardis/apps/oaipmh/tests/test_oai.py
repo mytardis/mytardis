@@ -21,7 +21,7 @@ def _create_test_data():
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
                             created_by=user)
-    experiment.public = True
+    experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
     experiment.save()
     cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
     cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'

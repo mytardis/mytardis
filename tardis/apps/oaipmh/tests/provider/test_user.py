@@ -24,7 +24,7 @@ def _create_test_data():
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
                             created_by=user)
-    experiment.public = True
+    experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
     experiment.save()
     cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
     cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'
@@ -70,7 +70,7 @@ class RifCsUserProviderTestCase(TestCase):
         # There should be two
         expect(len(headers)).to_equal(1)
         # Now we check that users need a public experiment to turn up
-        self._experiment.public = False
+        self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         # No public experiment, so there should be zero
         headers = self._getProvider().listIdentifiers('rif')

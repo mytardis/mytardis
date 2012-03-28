@@ -64,7 +64,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.approved, False)
         self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)
-        self.assertEqual(exp.public, False)
+        self.assertEqual(exp.public_access, models.Experiment.PUBLIC_ACCESS_NONE)
         self.assertEqual(exp.get_absolute_url(), '/test/experiment/view/1/',
                          exp.get_absolute_url() + ' != /test/experiment/view/1/')
         self.assertEqual(exp.get_or_create_directory(),
@@ -117,7 +117,7 @@ class ModelTestCase(TestCase):
                                 institution_name='monash',
                                 approved=True,
                                 created_by=self.user,
-                                public=False,
+                                public_access=models.Experiment.PUBLIC_ACCESS_NONE,
                                 )
         exp.save()
 
@@ -173,7 +173,7 @@ class ModelTestCase(TestCase):
                                 institution_name='Australian Synchrotron',
                                 approved=True,
                                 created_by=self.user,
-                                public=True,
+                                public_access=models.Experiment.PUBLIC_ACCESS_NONE,
                                 )
         exp.save()
 

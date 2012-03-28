@@ -35,13 +35,13 @@ class DownloadTestCase(TestCase):
         # create a public experiment
         self.experiment1 = Experiment(title='Experiment 1',
                                       created_by=self.user,
-                                      public=True)
+                                      public_access=Experiment.PUBLIC_ACCESS_FULL)
         self.experiment1.save()
 
         # create a non-public experiment
         self.experiment2 = Experiment(title='Experiment 2',
                                       created_by=self.user,
-                                      public=False)
+                                      public_access=Experiment.PUBLIC_ACCESS_NONE)
         self.experiment2.save()
 
         # dataset1 belongs to experiment1
@@ -121,7 +121,7 @@ class DownloadTestCase(TestCase):
         # Should be forbidden
         self.assertEqual(response.status_code, 403)
 
-        self.experiment2.public=True
+        self.experiment2.public_access=Experiment.PUBLIC_ACCESS_FULL
         self.experiment2.save()
         # check view of file2 again
         response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
@@ -202,7 +202,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
         # Check datafile2 download with second experiment to public
-        self.experiment2.public=True
+        self.experiment2.public_access=Experiment.PUBLIC_ACCESS_FULL
         self.experiment2.save()
         response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
         self.assertEqual(response.status_code, 200)

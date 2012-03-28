@@ -255,7 +255,7 @@ def experiment_index(request):
         if shared_experiments:
             shared_experiments = shared_experiments.order_by('-update_time')
 
-    public_experiments = Experiment.objects.filter(public=True)
+    public_experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
     if public_experiments:
         public_experiments = public_experiments.order_by('-update_time')
 
@@ -522,7 +522,7 @@ def retrieve_dataset_metadata(request, dataset_id):
 
     c = Context({'dataset': dataset, })
     c['has_write_permissions'] = has_write_permissions and \
-                                 not dataset.experiment.public
+                                 dataset.experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -536,7 +536,8 @@ def retrieve_experiment_metadata(request, experiment_id):
 
     c = Context({'experiment': experiment, })
     # If the experiment is public, we don't allow editing
-    c['has_write_permissions'] = has_write_permissions and not experiment.public
+    c['has_write_permissions'] = has_write_permissions and \
+                                 experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -2528,7 +2529,7 @@ class ExperimentSearchView(SearchView):
         if self.request.user.is_authenticated():
             access_list.extend([e.pk for e in authz.get_accessible_experiments(self.request)])
 
-        access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
+        access_list.extend([e.pk for e in Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)])
 
         ids = list(set(experiment_ids) & set(access_list))
         experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
@@ -2633,7 +2634,7 @@ def publish_experiment(request, experiment_id):
             legal = False
 
         if legal and success:
-            experiment.public = True
+            experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
             experiment.save()
 
         # set dictionary to legal status and publish success result

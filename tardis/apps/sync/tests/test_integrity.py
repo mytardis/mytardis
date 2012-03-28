@@ -26,7 +26,7 @@ class IntegrityCheckTestCase(TestCase):
                 institution_name = 'institution1',
                 description = 'description1',
                 created_by = self.user,
-                public = True
+                public_access = Experiment.PUBLIC_ACCESS_FULL
                 )
         self.bad_exp.save()
         self.bad_dataset = self._make_dataset(self.bad_exp, [
@@ -42,7 +42,7 @@ class IntegrityCheckTestCase(TestCase):
                 institution_name = 'institution1',
                 description = 'description1',
                 created_by = self.user,
-                public = True
+                public_access = Experiment.PUBLIC_ACCESS_FULL
                 )
         self.good_exp.save()
         self.good_dataset = self._make_dataset(self.good_exp, [

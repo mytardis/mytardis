@@ -47,7 +47,7 @@ def get_accessible_experiments(request):
 def get_shared_experiments(request):
 
     experiments = Experiment.safe.all(request)
-    experiments = experiments.filter(public=False)
+    experiments = experiments.filter(public_access=Experiment.PUBLIC_ACCESS_NONE)
 
     #exclude owned experiments
     owned = get_owned_experiments(request)
@@ -112,17 +112,17 @@ def has_datafile_access(request, dataset_file_id):
         return False
 
 def has_read_or_owner_ACL(request, experiment_id):
-    """ 
+    """
     Check whether the user has read access to the experiment - this means either
-    they have been granted read access, or that they are the owner. 
-    
+    they have been granted read access, or that they are the owner.
+
     NOTE:
     This does not check whether the experiment is public or not, which means
-    even when the experiment is public, this method does not automatically 
+    even when the experiment is public, this method does not automatically
     returns true.
-    
-    As such, this method should NOT be used to check whether the user has 
-    general read permission.  
+
+    As such, this method should NOT be used to check whether the user has
+    general read permission.
     """
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -163,14 +163,14 @@ def has_read_or_owner_ACL(request, experiment_id):
         return False
     else:
         return True
-    
+
 def has_write_permissions(request, experiment_id):
 
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
     experiment = Experiment.safe.get(request, experiment_id)
-    if experiment.public:
+    if experiment.locked:
         return False
 
     # does the user own this experiment
@@ -350,7 +350,7 @@ def dataset_write_permissions_required(f):
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
     return wrap
-        
+
 
 def delete_permissions_required(f):
 
@@ -370,7 +370,7 @@ def upload_auth(f):
         session_id = request.POST['session_id']
         s = Session.objects.get(pk=session_id)
         if s.expire_date > datetime.now():
-            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id']) 
+            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id'])
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__

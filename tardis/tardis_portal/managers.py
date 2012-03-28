@@ -58,7 +58,7 @@ class ExperimentManager(OracleSafeManager):
         """
 
         # experiment is public?
-        query = Q(public=True)
+        query = ~Q(public_access=1) # Experiment.PUBLIC_ACCESS_NONE
 
         # if the user is not authenticated, they will see only public
         # experiments
@@ -103,7 +103,7 @@ class ExperimentManager(OracleSafeManager):
             super(ExperimentManager, self).get(pk=experiment_id)
 
         # if the experiment is public, return it right away
-        if experiment.public:
+        if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
             return experiment
 
         # if not, is the user logged in at all?

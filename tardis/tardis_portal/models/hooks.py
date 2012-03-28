@@ -55,7 +55,7 @@ def post_save_experiment(sender, **kwargs):
 @receiver(post_save, sender=Experiment)  # THIS MUST BE DEFINED BEFORE GENERATING RIF-CS
 def ensure_doi_exists(sender, **kwargs):
     experiment = kwargs['instance']
-    if settings.DOI_ENABLE and experiment.public:
+    if settings.DOI_ENABLE and experiment.public_access != Experiment.PUBLIC_ACCESS_NONE:
         doi_url = settings.DOI_BASE_URL + experiment.get_absolute_url()
         from tardis.tardis_portal.ands_doi import DOIService
         doi_service = DOIService(experiment)

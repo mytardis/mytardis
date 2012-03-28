@@ -121,7 +121,8 @@ class ExperimentFormTestCase(TestCase):
 <tr><th><label for="description">Description:</label></th><td><textarea id="description" rows="10" cols="40" name="description">desc.....</textarea></td></tr>
 <tr><th><label for="start_time">Start time:</label></th><td><input type="text" name="start_time" id="start_time" /></td></tr>
 <tr><th><label for="end_time">End time:</label></th><td><input type="text" name="end_time" id="end_time" /></td></tr>
-<tr><th><label for="public">Public:</label></th><td><input type="checkbox" name="public" id="public" /></td></tr>
+<tr><th><label for="public_access">Public Access:</label></th><td><input type="text" name="public_access" id="public_access" /></td></tr>
+<tr><th><label for="locked">Locked:</label></th><td><input type="checkbox" name="locked" id="locked" /></td></tr>
 <tr><th><label for="authors">Authors:</label></th><td><input type="text" name="authors" value="russell, steve" id="authors" /></td></tr>"""
         self.assertEqual(f.as_table(), as_table)
 

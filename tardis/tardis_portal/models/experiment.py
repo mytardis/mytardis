@@ -28,6 +28,17 @@ class Experiment(models.Model):
     :attribute safe: ACL aware model manager
 
     """
+
+    PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_METADATA = 50
+    PUBLIC_ACCESS_FULL = 100
+
+    PUBLIC_ACCESS_CHOICES = (
+        (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
+        (PUBLIC_ACCESS_METADATA,    'Metadata only'),
+        (PUBLIC_ACCESS_FULL,        'Everything'),
+    )
+
     url = models.URLField(verify_exists=False, max_length=255,
                           null=True, blank=True)
     approved = models.BooleanField()
@@ -41,7 +52,11 @@ class Experiment(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
-    public = models.BooleanField()
+    locked = models.BooleanField()
+    public_access = \
+        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
+                                         null=False,
+                                         default=PUBLIC_ACCESS_NONE)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
 

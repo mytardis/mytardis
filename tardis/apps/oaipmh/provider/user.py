@@ -104,7 +104,7 @@ class RifCsUserProvider(BaseProvider):
 
     @staticmethod
     def _get_in_range(from_, until):
-        users = User.objects.filter(experiment__public__exact=True)
+        users = User.objects.exclude(experiment__public_access=Experiment.PUBLIC_ACCESS_NONE)
         # Filter based on boundaries provided
         # Use of "last_login" is not ideal, but should work well enough for now.
         if from_:
@@ -118,8 +118,8 @@ class RifCsUserProvider(BaseProvider):
 
     def _get_metadata(self, user, metadataPrefix):
         # TODO: Is this the right definition of "ownership"?
-        owned_experiments = Experiment.objects.filter(public=True,
-                                                      created_by=user)
+        owned_experiments = Experiment.objects.filter(created_by=user) \
+                                              .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         return Metadata({
             '_metadata_source': self,
             'id': user.id,

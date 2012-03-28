@@ -45,7 +45,7 @@ class ExperimentACLTestCase(TestCase):
             title='Experiment1',
             institution_name='Australian Synchrotron',
             approved=True,
-            public=False,
+            public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user1,
             )
         self.experiment1.save()
@@ -55,17 +55,18 @@ class ExperimentACLTestCase(TestCase):
             title='Experiment2',
             institution_name='Australian Synchrotron',
             approved=True,
-            public=False,
+            public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user2,
             )
         self.experiment2.save()
 
-        # experiment3 is public
+        # experiment3 is public & locked
         self.experiment3 = Experiment(
             title='Experiment3',
             institution_name='Australian Synchrotron',
             approved=True,
-            public=True,
+            locked=True,
+            public_access=Experiment.PUBLIC_ACCESS_FULL,
             created_by=self.user3,
             )
         self.experiment3.save()
@@ -75,7 +76,7 @@ class ExperimentACLTestCase(TestCase):
             title='Experiment4',
             institution_name='Australian Synchrotron',
             approved=True,
-            public=False,
+            public_access=Experiment.PUBLIC_ACCESS_NONE,
             created_by=self.user1,
             )
         self.experiment4.save()
@@ -529,7 +530,7 @@ class ExperimentACLTestCase(TestCase):
         self.client2.logout()
         self.client3.logout()
 
-    def testCantEditPublicExperiment(self):
+    def testCantEditLockedExperiment(self):
         login = self.client3.login(username=self.user3.username, password='secret')
         self.assertTrue(login)
 

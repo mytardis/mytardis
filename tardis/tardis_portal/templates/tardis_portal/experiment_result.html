@@ -2,7 +2,7 @@
 {% load humanize %}
 <tr>
   <th>
-      <a href="{{ experiment.get_absolute_url }}{% block experiment_url_params %}{% endblock %}" class="{% block link_classes %}{% endblock %}" >{% block experiment_link_text %}{{ experiment.title }}{% endblock %}</a><span class=experiment-link-extra-text>{% block experiment_link_extra_text %}{% if experiment.public %}(public){% endif %}{% endblock %}</span>
+      <a href="{{ experiment.get_absolute_url }}{% block experiment_url_params %}{% endblock %}" class="{% block link_classes %}{% endblock %}" >{% block experiment_link_text %}{{ experiment.title }}{% endblock %}</a><span class=experiment-link-extra-text>{% block experiment_link_extra_text %}{% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}(public){% endif %}(public){% endif %}{% endblock %}</span>
   </th>
 </tr>
 <tr>

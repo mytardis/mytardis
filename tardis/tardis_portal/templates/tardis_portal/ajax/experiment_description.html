@@ -49,7 +49,7 @@
     <div class="experiment_md_container">
         <strong style="float:left; margin-right: 5px">Experiment Metadata</strong>
 
-        {% if has_write_permissions %}{% if not experiment.public %}
+        {% if has_write_permissions %}{% if not experiment.locked %}
             <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
                href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
                data-toggle_selector=".experiment_metadata_toggle">
@@ -138,7 +138,7 @@
       {% endif %}
       {% endblock experiment_owners %}
 
-      {% if experiment.public %}
+      {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}
       <p>
         <em>This experiment is public.</em>
       </p>
@@ -149,7 +149,7 @@
         <a href="{% url tardis.tardis_portal.views.choose_license experiment.id %}">Choose License</a>
       </p>
       {% block publish_link %}
-      {% if not experiment.public %}
+      {% if experiment.public_access == experiment.PUBLIC_ACCESS_NONE %}
       <p>
         <strong><a href="publish/">Publish Experiment</a></strong><br/>
       </p>

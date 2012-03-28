@@ -97,7 +97,7 @@ class AbstractExperimentProvider(BaseProvider):
 
     @staticmethod
     def _get_in_range(from_, until):
-        experiments = Experiment.objects.filter(public=True)
+        experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         # Filter based on boundaries provided
         if from_:
             from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
