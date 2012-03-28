@@ -26,12 +26,18 @@ setup(
         'django-extensions',
         'django-form-utils',
         'django-haystack',
+        'django-bootstrap-form',
+        'celery',           # Delayed tasks and queues
+        'django-celery',
+        'django-kombu',
         'pysolr',
         'beautifulsoup',
         'south',
-        'django-celery',
-        'django-kombu',
-        'pytz',
         'httplib2',
+        'python-magic', # File type detection
+        'pytz',         # Timezone library
+        'iso8601',      # ISO8601 time formatting
+        'pyoai',        # For OAI-PMH provider
+        'Wand',         # For image file conversion
         ],
 )
