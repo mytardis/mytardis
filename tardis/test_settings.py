@@ -23,6 +23,9 @@ DATABASES = {
 # http://twiki.org/cgi-bin/xtra/tzdate?tz=Etc/GMT-10
 TIME_ZONE = 'Etc/GMT-10'
 
+DATE_FORMAT = "c"
+DATETIME_FORMAT = "r"
+
 # Celery queue uses Django for persistence
 BROKER_TRANSPORT = 'django'
 # During testing it's always eager
@@ -113,6 +116,8 @@ INSTALLED_APPS = get_all_tardis_apps() + [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'django_extensions',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',

@@ -39,7 +39,7 @@
   {% if experiment.start_time and experiment.end_time %}
     <p>
       <strong>Date:</strong>
-      {{ experiment.start_time|date:"jS F Y H:i" }} - {{ experiment.end_time|date:"jS F Y H:i" }}<br/>
+      {{ experiment.start_time }} - {{ experiment.end_time }}<br/>
     </p>
   {% endif %}
   {% endblock start_end_time %}
@@ -88,7 +88,7 @@
   {% block updated %}
   <p>
     <strong>Experiment Last Updated:</strong>
-    {{ experiment.update_time|date:"jS F Y H:i" }}<br/>
+    {{ experiment.update_time }}<br/>
   </p>
   {% endblock updated %}
 

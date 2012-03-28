@@ -1,4 +1,5 @@
 {% load experimentstats %}
+{% load humanize %}
 <tr>
   <th>
       <a href="{{ experiment.get_absolute_url }}{% block experiment_url_params %}{% endblock %}" class="{% block link_classes %}{% endblock %}" >{% block experiment_link_text %}{{ experiment.title }}{% endblock %}</a><span class=experiment-link-extra-text>{% block experiment_link_extra_text %}{% if experiment.public %}(public){% endif %}{% endblock %}</span>
@@ -8,7 +9,7 @@
   {% block experiment_data%}
   <td>
 From <strong>{{experiment.institution_name}}</strong>,
-deposited <strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+deposited <strong>{{ experiment.update_time|naturalday }}</strong>
   </td>
   {% endblock %}
 </tr>
