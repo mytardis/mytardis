@@ -32,7 +32,7 @@ class Schema(models.Model):
                                 verify_exists=False,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
-    type = models.IntegerField(
+    type = models.IntegerField( #@ReservedAssignment
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
 
     # subtype will be used for categorising the type of experiment, dataset

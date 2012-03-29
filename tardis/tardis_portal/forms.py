@@ -60,7 +60,8 @@ from registration.models import RegistrationProfile
 from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span, TextInput
-from tardis.tardis_portal.models import UserProfile, UserAuthentication
+from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
+    Experiment
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
@@ -727,7 +728,7 @@ def createSearchExperimentForm():
     fields['date'] = forms.DateTimeField(label='Experiment Date',
             widget=SelectDateWidget(), required=False)
 
-    fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})] 
+    fieldsets = [('main fields', {'fields': ['title', 'description', 'institutionName', 'creator', 'date']})]
 
     schemaAndFieldLists = []
 
@@ -917,7 +918,7 @@ def create_parameterset_edit_form(
                                     max_length=255,
                                     required=False,
                                     initial=dfp.string_value)
-                
+
             else:
                 fields[form_id] = \
                     forms.CharField(label=dfp.name.full_name + units,
@@ -1045,7 +1046,7 @@ def save_datafile_add_form(schema, parentObject, request):
             psm.new_param(stripped_key, value)
 
 class RawSearchForm(SearchForm):
-    
+
     def search(self):
         query = self.cleaned_data['q']
         # NOTE: end_offset = 1 is just a quick hack way to stop haystack getting lots of search
@@ -1055,3 +1056,13 @@ class RawSearchForm(SearchForm):
             sqs = sqs.load_all()
 
         return sqs
+
+class RightsForm(ModelForm):
+    """
+    Form for changing public access and licence.
+
+    """
+    class Meta:
+        model = Experiment
+        fields = ('public_access', 'license')
+

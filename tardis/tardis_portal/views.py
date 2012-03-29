@@ -56,6 +56,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
@@ -67,7 +68,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form, MXDatafileSearchForm
+    save_datafile_add_form, MXDatafileSearchForm, RightsForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -77,7 +78,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
-    UserProfile, UserAuthentication, Token
+    License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2687,18 +2688,19 @@ def publish_experiment(request, experiment_id):
 
 
 @authz.experiment_ownership_required
-def choose_license(request, experiment_id):
+def choose_rights(request, experiment_id):
+    '''
+    Choose access rights and licence.
+    '''
     experiment = Experiment.objects.get(id=experiment_id)
-    context_dict = {'submit': False,
-        'experiment': experiment}
     if request.method == 'POST':
-        cch = CreativeCommonsHandler(experiment_id=experiment_id)
-        cch.save_license(request)
-        context_dict['submit'] = True
+        form = RightsForm(request.POST)
+    else:
+        form = RightsForm()
 
-    c = Context(context_dict)
+    c = Context({'form': form, 'experiment': experiment})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/choose_license.html', c))
+                        'tardis_portal/choose_rights.html', c))
 
 
 @require_POST
@@ -2766,4 +2768,10 @@ def view_rifcs(request, experiment_id):
     return HttpResponse(render_response_index(request,
                         template, context), mimetype="text/xml")
 
+
+def retrieve_licenses(request):
+    # Get licenses (Query set isn't JSON serializable, so we convert to list)
+    licenses = [model_to_dict(x) for x in License.objects.all()]
+
+    return HttpResponse(json.dumps(licenses))
 

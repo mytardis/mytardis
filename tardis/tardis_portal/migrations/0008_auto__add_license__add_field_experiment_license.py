@@ -8,26 +8,28 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        db.start_transaction()
-        # Renaming field 'Experiment.public' to 'Experiment.locked'
-        db.rename_column('tardis_portal_experiment', 'public', 'locked')
-        # Adding field 'Experiment.public_access'
-        db.add_column('tardis_portal_experiment', 'public_access',
-                      self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1),
+        # Adding model 'License'
+        db.create_table('tardis_portal_license', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(unique=True, max_length=400)),
+            ('url', self.gf('django.db.models.fields.URLField')(unique=True, max_length=2000)),
+            ('internal_description', self.gf('django.db.models.fields.TextField')()),
+            ('image_url', self.gf('django.db.models.fields.URLField')(max_length=2000, blank=True)),
+            ('allows_distribution', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal('tardis_portal', ['License'])
+
+        # Adding field 'Experiment.license'
+        db.add_column('tardis_portal_experiment', 'license',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.License'], null=True, blank=True),
                       keep_default=False)
-        # Allow full access to all previously public fields
-        db.execute("UPDATE tardis_portal_experiment SET public_access = 100 WHERE locked = 1");
-        # Index the column for searching
-        db.create_index('tardis_portal_experiment', ['public_access'])
-        db.commit_transaction()
 
     def backwards(self, orm):
-        db.start_transaction()
-        # Delete public access column
-        db.delete_column('tardis_portal_experiment', 'public_access')
-        # Renaming field 'Experiment.public' to 'Experiment.locked'
-        db.rename_column('tardis_portal_experiment', 'locked', 'public')
-        db.commit_transaction()
+        # Deleting model 'License'
+        db.delete_table('tardis_portal_license')
+
+        # Deleting field 'Experiment.license'
+        db.delete_column('tardis_portal_experiment', 'license_id')
 
     models = {
         'auth.group': {
@@ -133,6 +135,7 @@ class Migration(SchemaMigration):
             'handle': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'institution_name': ('django.db.models.fields.CharField', [], {'default': "'The University of Queensland'", 'max_length': '400'}),
+            'license': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.License']", 'null': 'True', 'blank': 'True'}),
             'locked': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'public_access': ('django.db.models.fields.PositiveSmallIntegerField', [], {'default': '1'}),
             'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
@@ -180,6 +183,15 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
         },
+        'tardis_portal.license': {
+            'Meta': {'object_name': 'License'},
+            'allows_distribution': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'image_url': ('django.db.models.fields.URLField', [], {'max_length': '2000', 'blank': 'True'}),
+            'internal_description': ('django.db.models.fields.TextField', [], {}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'}),
+            'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'})
+        },
         'tardis_portal.parametername': {
             'Meta': {'ordering': "('order', 'name')", 'unique_together': "(('schema', 'name'),)", 'object_name': 'ParameterName'},
             'choices': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
@@ -206,7 +218,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 4, 28, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 4, 29, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})

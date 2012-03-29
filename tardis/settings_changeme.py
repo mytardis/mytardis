@@ -84,6 +84,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
@@ -165,8 +166,6 @@ STATICFILES_DIRS = (
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
-    #TARDIS_APP_ROOT+'.equipment',
-    #TARDIS_APP_ROOT+'.sync',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',

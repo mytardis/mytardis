@@ -1,5 +1,6 @@
 from django.contrib import admin
 admin.autodiscover()
+
 from django.contrib.auth.views import logout
 from django.conf.urls.defaults import patterns, include, url
 from django.conf import settings
@@ -63,7 +64,7 @@ experiment_urls = patterns(
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
      'retrieve_access_list_tokens'),
     (r'^control_panel/$', 'control_panel'),
-    (r'^view/(?P<experiment_id>\d+)/license/$', 'choose_license'),
+    (r'^view/(?P<experiment_id>\d+)/rights/$', 'choose_rights'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
     )
@@ -120,6 +121,7 @@ ajax_urls = patterns(
     (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^view/(?P<experiment_id>\d+)/publish/$',
         'publish_experiment'),
+    (r'^license/list$', 'retrieve_licenses'),
     )
 
 download_urls = patterns(
@@ -171,7 +173,7 @@ urlpatterns = patterns(
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
 
-    # Experiment Views
+    # Datafile Views
     (r'^datafile/', include(datafile_urls)),
 
     # Download Views
