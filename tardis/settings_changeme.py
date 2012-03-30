@@ -56,6 +56,12 @@ TIME_ZONE = 'Australia/Melbourne'
 
 LANGUAGE_CODE = 'en-us'
 
+# Date format to use by default. ("jS F Y" => "8th March 2012")
+# https://docs.djangoproject.com/en/1.3/ref/templates/builtins/#std:templatefilter-date
+
+DATE_FORMAT = "jS F Y"
+DATETIME_FORMAT = "jS F Y H:i"
+
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
@@ -169,6 +175,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'tardis.template.loaders',
     'tardis.tardis_portal',
     'tardis.tardis_portal.templatetags',

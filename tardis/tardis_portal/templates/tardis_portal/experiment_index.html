@@ -1,6 +1,7 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
 
 {% load experimentstats %}
+{% load humanize %}
 
 {% block content %}
 
@@ -32,7 +33,7 @@
 					  <p>
 							From <strong>{{experiment.institution_name}}</strong>, deposited
 							<strong>
-							{{experiment.update_time|date:"jS F Y" }}
+							{{experiment.update_time|naturalday }}
 							</strong>
 					  </p>
 					  <p>
@@ -77,7 +78,7 @@
 	        <p>
 						From <strong>{{experiment.institution_name}}</strong>,
 						deposited
-						<strong>{{ experiment.update_time|date:"jS F Y" }}</strong>
+						<strong>{{ experiment.update_time|naturalday }}</strong>
 	        </p>
 	        <p>
 						<strong>{{ experiment.dataset_set.all.count }}</strong>
@@ -122,7 +123,7 @@
 			    <p>
 			      From <strong>{{public_experiment.institution_name}}</strong>,
 			      deposited
-			      <strong>{{ public_experiment.update_time|date:"jS F Y" }}</strong>
+			      <strong>{{ public_experiment.update_time|naturalday }}</strong>
 			    </p>
 			    <p>
 				    <strong>{{ public_experiment.dataset_set.all.count }}</strong>
