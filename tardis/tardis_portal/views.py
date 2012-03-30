@@ -690,7 +690,7 @@ def edit_experiment(request, experiment_id,
 def login(request):
     from tardis.tardis_portal.auth import login, auth_service
 
-    if type(request.user) is not AnonymousUser:
+    if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
         # login page
         return HttpResponseRedirect('/')

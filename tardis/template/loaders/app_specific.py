@@ -6,11 +6,12 @@ from os import path
 from django.db.models import get_app
 from django.core.exceptions import ImproperlyConfigured
 from django.template import TemplateDoesNotExist
-from django.template.loaders.filesystem import load_template_source
+from django.template.loaders.filesystem import Loader as FilesystemLoader
 from django.template.loader import BaseLoader
 
 class Loader(BaseLoader):
     is_usable = True
+    fs_loader = FilesystemLoader()
 
     def _get_template_vars(self, template_name):
         app_name, template_name = template_name.split(":", 1)
@@ -34,4 +35,6 @@ class Loader(BaseLoader):
         template_name, template_dir = self._get_template_vars(template_name)
         if not path.isdir(template_dir):
             raise TemplateDoesNotExist()
-        return load_template_source(template_name, template_dirs=[template_dir])
+
+        return self.fs_loader.load_template_source(template_name,
+                                                   template_dirs=[template_dir])
