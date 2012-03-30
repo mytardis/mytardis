@@ -19,6 +19,9 @@ DATABASES = {
     }
 }
 
+# We're leaving this off for now, as most sites will until they convert DBs
+USE_TZ = False
+
 # Test timezone is GMT+10:00
 # http://twiki.org/cgi-bin/xtra/tzdate?tz=Etc/GMT-10
 TIME_ZONE = 'Etc/GMT-10'
