@@ -39,5 +39,6 @@ setup(
         'iso8601',      # ISO8601 time formatting
         'pyoai',        # For OAI-PMH provider
         'Wand',         # For image file conversion
+        'django-mustachejs', # For client-side Mustache template helpers
         ],
 )

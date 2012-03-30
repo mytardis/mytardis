@@ -2,6 +2,8 @@
 
 {% block script %}
 {{block.super}}
+{% load mustachejs %}
+{% mustachejs "tardis_portal/license_selector" %}
 <script type="text/javascript">
 var populateLicenseOptions = function() {
   $.ajax({
@@ -10,7 +12,11 @@ var populateLicenseOptions = function() {
     success: function(licenses) {
       $('#license-options').empty();
       _(licenses).each(function (license) {
-        $('#license-options').append($('<pre/>').text(license.name));
+        $('#license-options').append(
+            Mustache.to_html(
+                Mustache.TEMPLATES['tardis_portal/license_selector'],
+                license, Mustache.TEMPLATES)
+        );
       });
     }
   });

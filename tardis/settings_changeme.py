@@ -184,6 +184,7 @@ INSTALLED_APPS = (
     'djcelery',
     'djkombu',
     'bootstrapform',
+    'mustachejs',
     )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
