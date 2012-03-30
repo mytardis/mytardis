@@ -125,7 +125,7 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 def get_admin_media_path():
     import pkgutil
     package = pkgutil.get_loader("django.contrib.admin")
-    return path.join(package.filename, 'media')
+    return path.join(package.filename, 'static', 'admin')
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
@@ -147,7 +147,7 @@ MEDIA_ROOT = STATIC_DOC_ROOT
 MEDIA_URL = '/site_media'
 
 # Static content location
-STATIC_URL = '/static'
+STATIC_URL = '/static/'
 
 # Used by "django collectstatic"
 STATIC_ROOT = path.abspath(path.join(path.dirname(__file__),'..','static'))
@@ -155,7 +155,7 @@ STATIC_ROOT = path.abspath(path.join(path.dirname(__file__),'..','static'))
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = STATIC_URL + '/admin/'
+# ADMIN_MEDIA_PREFIX = STATIC_URL + '/admin/'
 
 STATICFILES_DIRS = (
     ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT),
@@ -172,9 +172,9 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'django.contrib.staticfiles',
     'django.contrib.humanize',
     'tardis.template.loaders',
     'tardis.tardis_portal',
