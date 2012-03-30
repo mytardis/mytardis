@@ -45,6 +45,7 @@ from django.forms.util import ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.models import inlineformset_factory
 from django.forms.models import BaseInlineFormSet
+from django.forms.widgets import HiddenInput
 from django.forms import ModelForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
@@ -1065,4 +1066,7 @@ class RightsForm(ModelForm):
     class Meta:
         model = Experiment
         fields = ('public_access', 'license')
+        widgets = {
+            'license': HiddenInput()
+        }
 

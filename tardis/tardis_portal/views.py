@@ -2770,8 +2770,10 @@ def view_rifcs(request, experiment_id):
 
 
 def retrieve_licenses(request):
-    # Get licenses (Query set isn't JSON serializable, so we convert to list)
-    licenses = [model_to_dict(x) for x in License.objects.all()]
-
-    return HttpResponse(json.dumps(licenses))
+    try:
+        type_ = int(request.REQUEST['public_access'])
+        licenses = License.get_suitable_licenses(type_)
+    except KeyError:
+        licenses = License.get_suitable_licenses()
+    return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 

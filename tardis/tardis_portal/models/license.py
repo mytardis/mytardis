@@ -1,5 +1,6 @@
 from django.db import models
 
+from itertools import chain
 import logging
 logger = logging.getLogger(__name__)
 
@@ -32,4 +33,33 @@ class License(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @classmethod
+    def get_suitable_licenses(cls, public_access_method = None):
+        def with_none(seq):
+            return chain([cls.get_none_option_license()], seq)
+        # If no method specify, return all
+        if public_access_method == None:
+            return with_none(cls.objects.all())
+        # Otherwise, ask Experiment to put it in terms we understand
+        from .experiment import Experiment
+        if Experiment.public_access_implies_distribution(public_access_method):
+            # Only licences which allow distribution
+            return cls.objects.filter(allows_distribution=True)
+        else:
+            # Only licenses which don't allow distribution (including none)
+            return with_none(cls.objects.filter(allows_distribution=False))
+
+    @classmethod
+    def get_none_option_license(cls):
+        url = 'http://en.wikipedia.org/wiki/Copyright#Exclusive_rights'
+        desc = '''
+        No license is explicitly specified. You implicitly retain all rights
+        under copyright.
+        '''
+        return License(id='',
+                       name='Unspecified',
+                       internal_description=desc,
+                       url=url,
+                       allows_distribution=False)
 
