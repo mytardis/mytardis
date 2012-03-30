@@ -1,8 +1,7 @@
 /* Inset brand in nav bar */
 .brand.brand-inverse {
-  color: rgba(0,0,0,0.4);
+  color: white;
   font-weight: bold;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .1), 0 0 30px rgba(255, 255, 255, .125);
 }
 
 /* Centered title */
