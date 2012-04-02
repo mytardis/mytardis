@@ -36,8 +36,12 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
+from compare import ensure
 from django.test import TestCase
 from nose.plugins.skip import SkipTest
+
+from tardis.tardis_portal.forms import RightsForm
+from tardis.tardis_portal.models import Experiment, License
 
 
 class ExperimentFormTestCase(TestCase):
@@ -369,3 +373,49 @@ class ExperimentFormTestCase(TestCase):
                         str(f['dataset_description[1]']))
 
         self.assertTrue(value % "russell, steve" in str(f['authors']))
+
+
+class RightsFormTestCase(TestCase):
+
+    def setUp(self):
+        self.restrictiveLicense = License(name="Restrictive License",
+                                          url="http://example.test/rl",
+                                          internal_description="Description...",
+                                          allows_distribution=False)
+        self.restrictiveLicense.save()
+        self.permissiveLicense  = License(name="Permissive License",
+                                          url="http://example.test/pl",
+                                          internal_description="Description...",
+                                          allows_distribution=True)
+        self.permissiveLicense.save()
+
+    def test_ensures_suitable_license(self):
+        suitableCombinations = (
+            (Experiment.PUBLIC_ACCESS_NONE, ''),
+            (Experiment.PUBLIC_ACCESS_METADATA, ''),
+            (Experiment.PUBLIC_ACCESS_NONE, self.restrictiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_METADATA, self.restrictiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_FULL, self.permissiveLicense.id),
+        )
+        unsuitableCombinations = (
+            (Experiment.PUBLIC_ACCESS_NONE, self.permissiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_METADATA, self.permissiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_FULL, ''),
+            (Experiment.PUBLIC_ACCESS_FULL, self.restrictiveLicense.id),
+        )
+
+        # Check we accept valid input
+        for public_access, license_id in suitableCombinations:
+            print "Suitable combination: %d %s" % (public_access, license_id)
+            data = {'public_access': str(public_access),
+                    'license': license_id }
+            form = RightsForm(data)
+            ensure(form.is_valid(), True, form.errors);
+
+        # Check we reject invalid input
+        for public_access, license_id in unsuitableCombinations:
+            print "Unsuitable combination: %d %s" % (public_access, license_id)
+            data = {'public_access': str(public_access),
+                    'license': license_id }
+            form = RightsForm(data)
+            ensure(form.is_valid(), False);

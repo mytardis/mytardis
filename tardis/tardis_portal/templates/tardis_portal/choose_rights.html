@@ -5,9 +5,9 @@
 {% load mustachejs %}
 {% mustachejs "tardis_portal/license_selector" %}
 <script type="text/javascript">
-var populateLicenseOptions = function() {
+var populateLicenseOptions = function(public_access) {
   $.ajax({
-    url: '/ajax/license/list?public_access='+$(this).val(),
+    url: '/ajax/license/list?public_access='+public_access,
     dataType: 'json',
     success: function(licenses) {
       $('#license-options').empty();
@@ -17,6 +17,12 @@ var populateLicenseOptions = function() {
                 Mustache.TEMPLATES['tardis_portal/license_selector'],
                 license, Mustache.TEMPLATES)
         );
+        var selectedOption = $('.license-option input[value="'
+                                                      +$('form input[name="license"]').val()
+                                                      +'"]')
+                                                      .parents('.license-option');
+        selectedOption.find('.use-button').prop('disabled', true);
+        selectedOption.find('.use-button').text('Selected');
       });
     }
   });
@@ -36,16 +42,35 @@ var populateLicenseOptions = function() {
 <form action="." method="post" class="form-horizontal">
   {% load bootstrap %}
   {{ form|bootstrap }}
-  <div id="license-options">
 
-  </div>
+  <div id="license-options" class="container-fluid"></div>
+  <script type="text/javascript">
+  $(document).on('click', '#license-options .use-button', function(evt) {
+    // Prevent new page loading
+    evt.preventDefault();
+    // Get the selected ID from hidden input
+    var id = $(this).parents('.license-option').find('input.license-id').val();
+    // Set the licence ID for the form
+    $(this).parents('form').find('input[name="license"]').val(id);
+    // Enable all buttons, then disable the one we selected
+    $(this).parents('#license-options')
+           .find('.use-button')
+           .prop('disabled', false);
+    $(this).prop('disabled', true);
+    $(this).text('Selected');
+  });
+  </script>
+
   <div class="form-actions">
     <button type="submit" class="btn btn-primary">
       Save
     </button>
   </div>
   <script type="text/javascript">
-  $('select[name="public_access"]').change(populateLicenseOptions);
+  $('select[name="public_access"]').change(function() {
+    populateLicenseOptions($(this).val());
+  });
+  populateLicenseOptions($('select[name="public_access"]').val());
   </script>
 </form>
 {% else %}

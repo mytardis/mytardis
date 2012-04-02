@@ -1,6 +1,17 @@
-<pre>
-ID: {{ id }}
-Name: {{ name }}
-URL: {{ url }}
-Description: {{ internal_description }}
-</pre>
+<div class="license-option">
+  <input type="hidden" class="license-id" value="{{ id }}"/>
+  <div class="span2">
+    <button class="use-button btn btn-primary">
+      Use
+    </button>
+  </div>
+  <div class="span8">
+    <h4><a target="_blank" href="{{ url }}">{{ name }}</a></h4>
+    <p>{{ internal_description }}</p>
+  </div>
+  <div class="span2">
+    {{# image_url }}
+    <img src="{{ image_url }}"/>
+    {{/ image_url }}
+  </div>
+</div>

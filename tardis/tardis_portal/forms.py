@@ -62,7 +62,7 @@ from tardis.tardis_portal import models
 from tardis.tardis_portal.fields import MultiValueCommaSeparatedField
 from tardis.tardis_portal.widgets import CommaSeparatedInput, Span, TextInput
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    Experiment
+    Experiment, License
 from tardis.tardis_portal.auth.localdb_auth \
     import auth_key as locabdb_auth_key
 
@@ -1070,3 +1070,20 @@ class RightsForm(ModelForm):
             'license': HiddenInput()
         }
 
+    def clean(self):
+        cleaned_data = super(RightsForm, self).clean()
+        public_access = cleaned_data.get("public_access")
+        license_ = cleaned_data.get("license")
+
+        if license_ is None:
+            # Only data which is not distributed can have no explicit licence
+            suitable = not \
+                Experiment.public_access_implies_distribution(public_access)
+        else:
+            suitable = license_ in License.get_suitable_licenses(public_access)
+
+        if not suitable:
+            raise forms.ValidationError("Selected license it not suitable "+
+                                        "for public access level.");
+
+        return cleaned_data
