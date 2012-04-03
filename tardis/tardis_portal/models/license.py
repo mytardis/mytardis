@@ -62,7 +62,7 @@ class License(models.Model):
         under copyright.
         '''
         return License(id='',
-                       name='Unspecified',
+                       name='Unspecified License',
                        internal_description=desc,
                        url=url,
                        allows_distribution=False)

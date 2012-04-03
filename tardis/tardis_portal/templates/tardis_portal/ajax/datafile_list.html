@@ -21,7 +21,7 @@
   <br/>
 {% endif %}
 
-<div>
+<p>
 {# uploadify here #}
 
 {% if has_write_permissions %}
@@ -31,12 +31,16 @@
     {% endif %}
   {% endif %}
 {% endif %}
-<input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filename filter to work #}
+  <input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filename filter to work #}
+
 
 File filter: <input title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
-    type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}"></div>
-<br/>
-Select: <a class="dataset_selector_all clickable">[All]</a> / <a class="dataset_selector_none clickable">[None]</a>
+    type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}">
+
+</p>
+
+
+Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
 
 <div class="container-fluid">
 {% for datafile in dataset.object_list %}

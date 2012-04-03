@@ -603,7 +603,6 @@ def create_experiment(request,
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
-
     else:
         form = ExperimentForm(extra=1)
 

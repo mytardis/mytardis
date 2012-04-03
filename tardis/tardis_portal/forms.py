@@ -435,7 +435,8 @@ class ExperimentForm(forms.ModelForm):
 
     class Meta:
         model = models.Experiment
-        exclude = ('authors', 'handle', 'approved', 'created_by')
+        exclude = ('authors', 'handle', 'approved', 'created_by',
+                   'public_access')
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',

@@ -1,127 +1,134 @@
-{% load creativecommons %}
-<div id="experiment_description">
+<div id="experiment_description"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    class="dl-horizontal">
 
   {% block authors %}
-  <p>
-    <strong>Authors: </strong><br/>
+  <dl>
+    <dt>Author{{ authors|pluralize }}</dt>
     {% for author in authors %}
-      {{ author.author }}{% if not forloop.last %},{% endif %}
+      <dd property="dc:creator">{{ author.author }}</dd>
     {% endfor %}
-  </p>
+  </dl>
   {% endblock authors %}
 
   {% block abstract %}
-  <p>
-    <strong>Abstract: </strong>
-    <div class="abstract">
+  <dl>
+    <dt>Abstract</dt>
+    <dd property="dc:abstract">
       {{ experiment.description|safe }}
-    </div>
-  </p>
+    </dd>
+  </dl>
   {% endblock abstract %}
 
   {% block handle %}
   {% if experiment.handle %}
-  <p>
-      <strong>Persistent Handle:</strong>
-      <a href="http://hdl.handle.net/{{ experiment.handle }}">{{ experiment.handle }}</a><br/>
-  </p>
+  <dl>
+    <dt>Persistent Handle:</dt>
+    <dd>
+      <a href="http://hdl.handle.net/{{ experiment.handle }}">
+        {{ experiment.handle }}
+      </a>
+    </dd>
+  </dl>
   {% endif %}
   {% endblock handle %}
 
   {% block institution %}
-  <p>
-    <strong>Institution:</strong>
-    {{experiment.institution_name}}<br/>
-  </p>
+  <dl>
+    <dt>Institution</dt>
+    <dd>{{experiment.institution_name}}</dd>
+  </dl>
   {% endblock institution %}
 
   {% block start_end_time %}
   {% if experiment.start_time and experiment.end_time %}
-    <p>
-      <strong>Date:</strong>
-      {{ experiment.start_time }} - {{ experiment.end_time }}<br/>
-    </p>
+  <dl>
+    <dt>Date</dt>
+    <dd>{{ experiment.start_time }} - {{ experiment.end_time }}</dd>
+  </dl>
   {% endif %}
   {% endblock start_end_time %}
 
   {% block experiment_metadata %}
-  <p>
-    <div class="experiment_md_container">
-        <strong style="float:left; margin-right: 5px">Experiment Metadata</strong>
+  <dl>
+    <dt>Experiment Metadata</dt>
+    <dd>
+      <div class="experiment_md_container">
 
-        {% if has_write_permissions %}{% if not experiment.locked %}
-            <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
-               href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
-               data-toggle_selector=".experiment_metadata_toggle">
-              <i class="icon-plus"></i>
-              Add
-            </a>
-        {% endif %}{% endif %}
+          {% if has_write_permissions %}{% if not experiment.locked %}
+              <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
+                 href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
+                 data-toggle_selector=".experiment_metadata_toggle">
+                <i class="icon-plus"></i>
+                Add
+              </a>
+          {% endif %}{% endif %}
 
-        <a title="Show/Hide"
-           class="experiment_metadata_toggle metadata_hidden btn btn-primary btn-mini"
-           href="/ajax/experiment_metadata/{{experiment.id}}/">
-            <i class="icon-folder-close"></i>
-            Show/Hide
-        </a>
-    </div>
-    <div style="clear:both;"></div>
-    <div class="experiment_metadata" style="display:none;"></div>
-  </p>
+          <a title="Show/Hide"
+             class="experiment_metadata_toggle metadata_hidden btn btn-primary btn-mini"
+             href="/ajax/experiment_metadata/{{experiment.id}}/">
+              <i class="icon-folder-close"></i>
+              Show/Hide
+          </a>
+      </div>
+    </dd>
+    <dd>
+      <div class="experiment_metadata" style="display:none;"></div>
+    </dd>
+  </dl>
   {% endblock experiment_metadata %}
 
   {% block dataset_info %}
-  <p>
-    <strong>Dataset Information:</strong>
-    <div>
-      <div class="dataset_information">
-            <ul>
-              <li><strong>Datasets:</strong> {{experiment.dataset_set.all.count}}</li>
-              <li><strong>Files:</strong> {{datafiles.count}}</li>
-              <li><strong>Size:</strong> {{size|filesizeformat}}</li>
-            </ul>
-      </div>
-    </div>
-  </p>
+  <dl>
+    <dt>Datasets</dt>
+    <dd>{{experiment.dataset_set.all.count}}</dd>
+    <dt>Files</dt>
+    <dd>{{datafiles.count}}</dd>
+    <dt>Size</dt>
+    <dd>{{size|filesizeformat}}</dd>
+  </dl>
   {% endblock dataset_info %}
 
   {% block updated %}
-  <p>
-    <strong>Experiment Last Updated:</strong>
-    {{ experiment.update_time }}<br/>
-  </p>
+  <dl>
+    <dt>Last Updated</dt>
+    <dd>{{ experiment.update_time }}</dd>
+  </dl>
   {% endblock updated %}
 
   {% block public_access %}
-  <p>
-    <strong>Public Access: </strong>
-    <div class="license_box">{{ experiment.get_public_access_display }}</div>
-  </p>
+  <dl>
+    <dt>Public Access</dt>
+    <dd>{{ experiment.get_public_access_display }}</dd>
+  </dl>
   {% endblock public_access %}
 
   {% block license %}
-  <p>
-    <strong>License: </strong>
-    <div class="license_box">{{experiment.id|show_cc_license|safe}}</div>
-  </p>
+  <div>
+    <dt>Licensing</dt>
+    <dd>
+      {% if experiment.license_id %}
+        <div class="row-fluid">
+          <div class="span6">
+            This experiment data is licensed under
+            <a rel="license" href="{{ experiment.license.url }}">
+              {{ experiment.license.name }}</a>.
+          </div>
+          {% if experiment.license.image_url != None %}
+          <div class="span6">
+            <img src="{{ experiment.license.image_url }}"/>
+          </div>
+          {% endif %}
+        </div>
+      {% else %}
+        No license.
+      {% endif %}
+    </dd>
+  </dl>
   {% endblock license %}
 
   {% block extra_info %}
   {% endblock extra_info %}
-
-  <div class="download_entire_experiment">
-  {% block downloads %}
-    {% for p in protocol %}
-      <p>
-    {% if p.0 %}
-      <strong><a href="{{p.1}}">Download Entire Experiment ({{p.0|upper}})</a></strong><br/>
-    {% else %}
-      <strong><a href="{{p.1}}">Download Entire Experiment</a></strong><br/>
-    {% endif %}
-      </p>
-    {% endfor %}
-  {% endblock downloads %}
-  </div>
 
   {% block extra_content %}
   {% endblock extra_content %}
@@ -129,22 +136,40 @@
   {% block experiment_admin %}
       {% block experiment_owners %}
       {% if owners %}
-      <p>
-        <br/>
-        <strong>Experiment Administrators </strong><br/>
+      <dl>
+        <dt>Experiment Administrators</dt>
         {% for owner in owners %}
+          <dd>
           {% if owner.email %}
-            <a href="mailto:{{owner.email}}">{{ owner.email}}</a>
+              <a href="mailto:{{owner.email}}">{{ owner.email}}</a>
           {% endif %}
           ({{ owner.username }})
-          {% if not forloop.last %}
-            <br/>
-          {% endif %}
+          </dd>
         {% endfor %}
-      </p>
+      </dl>
       {% endif %}
       {% endblock experiment_owners %}
   {% endblock experiment_admin %}
+
+  <dl class="download_entire_experiment">
+  {% block downloads %}
+    {% for p in protocol %}
+      <dd>
+    {% if p.0 %}
+      <a class="btn" href="{{p.1}}">
+        <i class="icon-download-alt"></i>
+        Download Entire Experiment ({{p.0|upper}})
+      </a>
+    {% else %}
+      <a class="btn btn-primary" href="{{p.1}}">
+        <i class="icon-download-alt"></i>
+        Download Entire Experiment
+      </a>
+    {% endif %}
+      </dd>
+    {% endfor %}
+  {% endblock downloads %}
+  </dl>
 
 </div>
 

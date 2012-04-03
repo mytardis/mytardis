@@ -147,16 +147,9 @@
         });
 
 	$(document).ready(function() {
-	    $('#jqmAlertLoading').jqm({
-		ajax: '',
-		target: '',
-		overlay: 0
-	    });
-
-	    $("#button").click(function() {
-		$('#jqmAlertLoading').jqmShow();
-		$("#create_experiment_form").submit();
-	    });
+    $("#button").click(function() {
+      $("#create_experiment_form").submit();
+    });
 	});
   </script>
 
