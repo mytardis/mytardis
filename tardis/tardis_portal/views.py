@@ -2700,7 +2700,7 @@ def choose_rights(request, experiment_id):
 
     c = Context({'form': form, 'experiment': experiment})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/choose_rights.html', c))
+                        'tardis_portal/ajax/choose_rights.html', c))
 
 
 @require_POST

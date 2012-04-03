@@ -1,7 +1,6 @@
-{% extends "tardis_portal/portal_template.html" %}
+{% block content %}
 
-{% block script %}
-{{block.super}}
+<!-- Scripts -->
 {% load mustachejs %}
 {% mustachejs "tardis_portal/license_selector" %}
 <script type="text/javascript">
@@ -28,17 +27,8 @@ var populateLicenseOptions = function(public_access) {
   });
 };
 </script>
-{% endblock %}
 
-{% block content %}
-<div class="page-header">
-	<h1>Choose Public Access and Licensing</h1>
-</div>
-
-{% if not submit %}
-<p>
-  <strong>Experiment Name:</strong> {{ experiment.title }}
-</p>
+<!-- Selection form -->
 <form action="." method="post" class="form-horizontal">
   {% load bootstrap %}
   {{ form|bootstrap }}
@@ -68,9 +58,6 @@ var populateLicenseOptions = function(public_access) {
   populateLicenseOptions($('select[name="public_access"]').val());
   </script>
 </form>
-{% else %}
-<h2>License Chosen</h2>
-<a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">Go back to your experiment.</a>
-{% endif %}
+
 {% endblock %}
 

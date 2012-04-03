@@ -92,6 +92,13 @@
   </p>
   {% endblock updated %}
 
+  {% block public_access %}
+  <p>
+    <strong>Public Access: </strong>
+    <div class="license_box">{{ experiment.get_public_access_display }}</div>
+  </p>
+  {% endblock public_access %}
+
   {% block license %}
   <p>
     <strong>License: </strong>
@@ -137,29 +144,6 @@
       </p>
       {% endif %}
       {% endblock experiment_owners %}
-
-      {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}
-      <p>
-        <em>This experiment is public.</em>
-      </p>
-      {% endif %}
-
-      {% if is_owner %}
-      <p>
-        <a class="btn btn-primary"
-           href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">
-          <i class="icon-pencil"></i>
-          Change public access
-        </a>
-      </p>
-      {% block publish_link %}
-      {% if experiment.public_access == experiment.PUBLIC_ACCESS_NONE %}
-      <p>
-        <strong><a href="publish/">Publish Experiment</a></strong><br/>
-      </p>
-      {% endif %}
-      {% endblock publish_link %}
-      {% endif %}
   {% endblock experiment_admin %}
 
 </div>

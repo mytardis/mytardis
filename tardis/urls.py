@@ -64,7 +64,6 @@ experiment_urls = patterns(
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
      'retrieve_access_list_tokens'),
     (r'^control_panel/$', 'control_panel'),
-    (r'^view/(?P<experiment_id>\d+)/rights/$', 'choose_rights'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
     )
@@ -103,9 +102,9 @@ ajax_urls = patterns(
     (r'^group_list/$', 'retrieve_group_list'),
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
-    (r'^experiment_description/(?P<experiment_id>\d+)/$',
+    (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
-    (r'^experiment_datasets/(?P<experiment_id>\d+)/$', 'experiment_datasets'),
+    (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
     (r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
         'edit_datafile_par'),
     (r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',
@@ -121,6 +120,7 @@ ajax_urls = patterns(
     (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^view/(?P<experiment_id>\d+)/publish/$',
         'publish_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^license/list$', 'retrieve_licenses'),
     )
 
