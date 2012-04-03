@@ -4,7 +4,14 @@
 {% load mustachejs %}
 {% mustachejs "tardis_portal/license_selector" %}
 <script type="text/javascript">
-var populateLicenseOptions = function(public_access) {
+var selectLicenseOption = function(value) {
+  var selectedOption = $('.license-option input[value="'+value+'"]')
+                        .parents('.license-option');
+  selectedOption.find('.use-button').prop('disabled', true);
+  selectedOption.find('.use-button').text('Selected');
+};
+
+var populateLicenseOptions = function(public_access, markSameLicense) {
   $.ajax({
     url: '/ajax/license/list?public_access='+public_access,
     dataType: 'json',
@@ -16,12 +23,8 @@ var populateLicenseOptions = function(public_access) {
                 Mustache.TEMPLATES['tardis_portal/license_selector'],
                 license, Mustache.TEMPLATES)
         );
-        var selectedOption = $('.license-option input[value="'
-                                                      +$('form input[name="license"]').val()
-                                                      +'"]')
-                                                      .parents('.license-option');
-        selectedOption.find('.use-button').prop('disabled', true);
-        selectedOption.find('.use-button').text('Selected');
+        if (markSameLicense)
+          selectLicenseOption($('form input[name="license"]').val());
       });
     }
   });
@@ -120,10 +123,15 @@ $('#modal-legal .cancel-button').click(function() {
   </script>
 
   <script type="text/javascript">
-  $('select[name="public_access"]').change(function() {
-    populateLicenseOptions($(this).val());
+  var publicAccessSelector = $('select[name="public_access"]');
+  publicAccessSelector.prop('originalValue', publicAccessSelector.val());
+  publicAccessSelector.change(function() {
+    populateLicenseOptions(
+      $(this).val(),
+      $(this).prop('originalValue') == $(this).val()
+    );
   });
-  populateLicenseOptions($('select[name="public_access"]').val());
+  populateLicenseOptions(publicAccessSelector.val(), true);
   </script>
 </form>
 <script type="text/javascript">
