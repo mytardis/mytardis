@@ -98,23 +98,6 @@
     }
     })
 
-$(document).ready(function() {
-    $("#tabs").tabs({
-       ajaxOptions: {dataType: "html"},
-       cookie: { expires: 30 },
-       load: function (e, ui) {
-             $(ui.panel).find(".tab-loading").remove();
-           },
-       select: function (e, ui) {
-         var $panel = $(ui.panel);
-
-
-         $panel.html("<div class='tab-loading'>Loading...<img src='{{ STATIC_URL }}/images/busy.gif'/></div>")
-
-        }
-
-    });
-});
     $('#schemaselect').live('change', function(e) {
         e.preventDefault();
 
@@ -324,6 +307,7 @@ $(document).ready(function() {
     </button>
   </div>
 </div>
+
 <script type="text/javascript">
 $('#modal-metadata .submit-button').click(function() {
 	$('#modal-metadata .modal-body form').submit();
@@ -331,33 +315,64 @@ $('#modal-metadata .submit-button').click(function() {
 $('#modal-metadata .close').click(refreshMetadataDisplay);
 </script>
 
-    <div class="page-header">
-      <h1>
-        {{ experiment.title }}
-        {% if has_write_permissions and not experiment.public %}
-        <small>
-          <a title="Edit Experiment"
-             href="{{ experiment.get_edit_url }}">
-            <i class="icon-pencil"></i>
-          </a>
-        </small>
-        {% endif %}
-      </h1>
-    </div>
+<div class="page-header">
+  <h1>
+    {{ experiment.title }}
+    {% if has_write_permissions and not experiment.public %}
+    <small>
+      <a title="Edit Experiment"
+         href="{{ experiment.get_edit_url }}">
+        <i class="icon-pencil"></i>
+      </a>
+    </small>
+    {% endif %}
+  </h1>
+</div>
+
+<!-- Tab buttons -->
+<ul id="experiment-tabs" class="nav nav-tabs">
+  <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
+  <li><a data-toggle="tab" title="Datasets" href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+  {% for appurl, appname in apps %}
+    <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+  {% endfor %}
+</ul>
+
+<div class="tab-content"></div>
+
+<script type="text/javascript">
+  // Create new tab content panes programatically
+  // Note: We're doing this before the bottom of the document has loaded!
+  $('#experiment-tabs li a').each(function(i, v) {
+    // Generate an ID for each tab
+    var tabName = _.trim(_.dasherize($(v).attr('title') || i), '_-');
+    var tabId = 'experiment-tab-'+tabName;
+    // Grab the link HREF, then replace with the ID
+    var url = $(v).attr('href');
+    $(v).attr('href', '#'+tabId);
+
+    // Create and insert content pane
+    var tabContents = $('<div id="'+tabId+'" class="tab-pane"></div>');
+    tabContents.html(loadingHTML)
+    $('.tab-content').append(tabContents);
+
+    // Load content for the new pane, based on the link HREF
+    $.ajax({
+      url: url,
+      dataType: 'html',
+      success: function(data) {
+        $('#'+tabId).html(data);
+      }
+    });
+  });
+  // Once the document has finished loading, we can use Bootstrap Tab plugin
+  $(function() {
+    // Create tabs and show first
+    $('#experiment-tabs li a:last').tab();
+    $('#experiment-tabs li a:first').tab('show');
+  });
+</script>
 
 
-    <div class="tabcontainer">
-      <div id="tabs">
-    <ul>
-      <li><a href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-      <li><a href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
-      {% for appurl, appname in apps %}
-        <li><a href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
-      {% endfor %}
-    </ul>
-      </div><!-- End tab container -->
-
-    </div>
-  </div>
 
 {% endblock %}
