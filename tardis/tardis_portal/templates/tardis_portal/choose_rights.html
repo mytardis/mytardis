@@ -43,11 +43,9 @@ var populateLicenseOptions = function(public_access) {
   {% load bootstrap %}
   {{ form|bootstrap }}
 
-  <div id="license-options" class="container-fluid"></div>
+  <div id="license-options"></div>
   <script type="text/javascript">
   $(document).on('click', '#license-options .use-button', function(evt) {
-    // Prevent new page loading
-    evt.preventDefault();
     // Get the selected ID from hidden input
     var id = $(this).parents('.license-option').find('input.license-id').val();
     // Set the licence ID for the form
@@ -58,14 +56,11 @@ var populateLicenseOptions = function(public_access) {
            .prop('disabled', false);
     $(this).prop('disabled', true);
     $(this).text('Selected');
+    // Submit form
+    $(this).parents('form').submit();
   });
   </script>
 
-  <div class="form-actions">
-    <button type="submit" class="btn btn-primary">
-      Save
-    </button>
-  </div>
   <script type="text/javascript">
   $('select[name="public_access"]').change(function() {
     populateLicenseOptions($(this).val());

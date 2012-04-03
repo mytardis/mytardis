@@ -388,6 +388,12 @@ class RightsFormTestCase(TestCase):
                                           internal_description="Description...",
                                           allows_distribution=True)
         self.permissiveLicense.save()
+        self.inactiveLicense  = License(name="Inactive License",
+                                          url="http://example.test/ial",
+                                          internal_description="Description...",
+                                          allows_distribution=True,
+                                          is_active=False)
+        self.inactiveLicense.save()
 
     def test_ensures_suitable_license(self):
         suitableCombinations = (
@@ -400,6 +406,8 @@ class RightsFormTestCase(TestCase):
         unsuitableCombinations = (
             (Experiment.PUBLIC_ACCESS_NONE, self.permissiveLicense.id),
             (Experiment.PUBLIC_ACCESS_METADATA, self.permissiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_METADATA, self.inactiveLicense.id),
+            (Experiment.PUBLIC_ACCESS_FULL, self.inactiveLicense.id),
             (Experiment.PUBLIC_ACCESS_FULL, ''),
             (Experiment.PUBLIC_ACCESS_FULL, self.restrictiveLicense.id),
         )
@@ -419,3 +427,11 @@ class RightsFormTestCase(TestCase):
                     'license': license_id }
             form = RightsForm(data)
             ensure(form.is_valid(), False);
+
+    def test_needs_confirmation(self):
+        suitable_data = {'public_access': str(Experiment.PUBLIC_ACCESS_NONE),
+                         'license': ''}
+
+
+
+

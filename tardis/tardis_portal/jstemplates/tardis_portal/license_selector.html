@@ -1,17 +1,24 @@
-<div class="license-option">
-  <input type="hidden" class="license-id" value="{{ id }}"/>
-  <div class="span2">
-    <button class="use-button btn btn-primary">
+<div class="license-option control-group">
+  <div class="control-label">
+    <input type="hidden" class="license-id" value="{{ id }}"/>
+    <button type="submit" class="use-button btn btn-primary">
       Use
     </button>
   </div>
-  <div class="span8">
-    <h4><a target="_blank" href="{{ url }}">{{ name }}</a></h4>
-    <p>{{ internal_description }}</p>
-  </div>
-  <div class="span2">
-    {{# image_url }}
-    <img src="{{ image_url }}"/>
-    {{/ image_url }}
+  <div class="controls">
+    <div class="row-fluid">
+      <div class="span9">
+        <h4 style="display: inline-block">
+          <a target="_blank" href="{{ url }}">{{ name }}</a>
+        </h4>
+        <p>{{ internal_description }}</p>
+      </div>
+      <span class="span3">
+        {{# image_url }}
+        <img style="margin-left: auto; margin-right: auto"
+             src="{{ image_url }}"/>
+        {{/ image_url }}
+      </div>
+    </div>
   </div>
 </div>

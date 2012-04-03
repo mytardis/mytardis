@@ -16,6 +16,7 @@ class Migration(SchemaMigration):
             ('internal_description', self.gf('django.db.models.fields.TextField')()),
             ('image_url', self.gf('django.db.models.fields.URLField')(max_length=2000, blank=True)),
             ('allows_distribution', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal('tardis_portal', ['License'])
 
@@ -189,6 +190,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'image_url': ('django.db.models.fields.URLField', [], {'max_length': '2000', 'blank': 'True'}),
             'internal_description': ('django.db.models.fields.TextField', [], {}),
+            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'}),
             'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'})
         },
@@ -218,7 +220,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 4, 29, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 5, 3, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})

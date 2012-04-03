@@ -30,6 +30,9 @@ class License(models.Model):
     allows_distribution = models.BooleanField(
         default=False,
         help_text="Does this license provide distribution rights?")
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Can experiments continue to select this license?")
 
     def __unicode__(self):
         return self.name
@@ -40,15 +43,16 @@ class License(models.Model):
             return chain([cls.get_none_option_license()], seq)
         # If no method specify, return all
         if public_access_method == None:
-            return with_none(cls.objects.all())
+            return with_none(cls.objects.filter(is_active=True))
         # Otherwise, ask Experiment to put it in terms we understand
         from .experiment import Experiment
         if Experiment.public_access_implies_distribution(public_access_method):
             # Only licences which allow distribution
-            return cls.objects.filter(allows_distribution=True)
+            return cls.objects.filter(is_active=True, allows_distribution=True)
         else:
             # Only licenses which don't allow distribution (including none)
-            return with_none(cls.objects.filter(allows_distribution=False))
+            return with_none(cls.objects.filter(is_active=True,
+                                                allows_distribution=False))
 
     @classmethod
     def get_none_option_license(cls):
