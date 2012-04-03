@@ -28,8 +28,75 @@ var populateLicenseOptions = function(public_access) {
 };
 </script>
 
+<!-- Confirmation Dialog -->
+<div class="modal hide fade" id="modal-legal">
+  <div class="modal-header">
+    <h1 class="title">Legal</h1>
+  </div>
+
+  <div class="modal-body form-horizontal">
+    <pre id="publishing-legal-text"></pre>
+    <label class="checkbox">
+      <input id="publishing-consent" type="checkbox" value="Agree" />
+      I agree to the above terms
+    </label>
+  </div>
+  <div class="modal-footer">
+    <button class="submit-button btn btn-success">
+      <i class="icon-ok"></i>
+      Confirm
+    </button>
+    <button class="cancel-button btn">
+      <i class="icon-cancel"></i>
+      Cancel
+    </button>
+  </div>
+</div>
+<script type="text/javascript">
+var updateLegalSubmitButton = function() {
+  if ($('#publishing-consent:checked').val()) {
+    $('#modal-legal .submit-button').prop('disabled', false)
+  } else {
+    $('#modal-legal .submit-button').prop('disabled', true)
+  }
+};
+
+// Disable submit without consent
+updateLegalSubmitButton();
+$('#publishing-consent').change(updateLegalSubmitButton);
+// Disable consent until we've loaded the legal text
+$('#publishing-consent').prop('disabled', true)
+// Get legal text
+$.ajax({
+  url: '{{ STATIC_URL }}publishing_legal.txt',
+  dataType: 'html',
+  success: function(data) {
+    $('#publishing-legal-text').html(data);
+    $('#publishing-consent').prop('disabled', false);
+  }
+});
+
+$('#modal-legal .submit-button').click(function() {
+  // Submit form
+  $('form.experiment-rights').trigger('submit');
+  $('#modal-legal').modal('hide');
+});
+$('#modal-legal .cancel-button').click(function() {
+
+  $.ajax({
+    url: $('form.experiment-rights').attr('action'),
+    dataType: 'html',
+    success: function(data) {
+      $('#modal-legal').modal('hide');
+      $('#modal-legal').parents('.tab-pane').html(data);
+    }
+  })
+});
+</script>
+
 <!-- Selection form -->
-<form action="." method="post" class="form-horizontal">
+<form action="{% url tardis.tardis_portal.views.choose_rights experiment.id %}"
+      method="post" class="experiment-rights form-horizontal">
   {% load bootstrap %}
   {{ form|bootstrap }}
 
@@ -43,11 +110,12 @@ var populateLicenseOptions = function(public_access) {
     // Enable all buttons, then disable the one we selected
     $(this).parents('#license-options')
            .find('.use-button')
-           .prop('disabled', false);
+           .prop('disabled', false)
+           .text('Use');
     $(this).prop('disabled', true);
     $(this).text('Selected');
-    // Submit form
-    $(this).parents('form').submit();
+    // Show confirmation window
+    $('#modal-legal').modal('show');
   });
   </script>
 
@@ -58,6 +126,20 @@ var populateLicenseOptions = function(public_access) {
   populateLicenseOptions($('select[name="public_access"]').val());
   </script>
 </form>
+<script type="text/javascript">
+$('form.experiment-rights').submit(function(evt) {
+  evt.preventDefault();
+  var form = $(evt.target);
+  $.ajax({
+    type: form.attr('method'),
+    url:  form.attr('action'),
+    data: form.serialize(),
+    success: function(data) {
+      $(form).parents('.tab-pane').html(data);
+    }
+  });
+});
+</script>
 
 {% endblock %}
 

@@ -2695,8 +2695,13 @@ def choose_rights(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
     if request.method == 'POST':
         form = RightsForm(request.POST)
+        if form.is_valid():
+            experiment.public_access = form.cleaned_data['public_access']
+            experiment.license = form.cleaned_data['license']
+            experiment.save()
     else:
-        form = RightsForm()
+        form = RightsForm({ 'public_access': experiment.public_access,
+                            'license': experiment.license_id })
 
     c = Context({'form': form, 'experiment': experiment})
     return HttpResponse(render_response_index(request,
