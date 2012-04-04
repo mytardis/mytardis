@@ -37,15 +37,12 @@ from django.db.models import Q
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
 
-
 def get_accessible_experiments(request):
     return Experiment.safe.all(request)
 
 
 def get_shared_experiments(request):
-
-    experiments = Experiment.safe.all(request)
-    experiments = experiments.filter(public_access=Experiment.PUBLIC_ACCESS_NONE)
+    experiments = Experiment.safe.owned_and_shared(request)
 
     #exclude owned experiments
     owned = get_owned_experiments(request)
@@ -83,15 +80,30 @@ def has_experiment_access(request, experiment_id):
     except PermissionDenied:
         return False
 
+def has_experiment_download_access(request, experiment_id):
+    if Experiment.safe.owned_and_shared(request) \
+                      .filter(id=experiment_id) \
+                      .exists():
+        return True
+    else:
+        exp = Experiment.objects.get(id=experiment_id)
+        return Experiment.public_access_implies_distribution(exp.public_access)
 
 def has_dataset_access(request, dataset_id):
     experiment = Experiment.objects.get(dataset__pk=dataset_id)
     return has_experiment_access(request, experiment.id)
 
+def has_dataset_download_access(request, dataset_id):
+    experiment = Experiment.objects.get(dataset__pk=dataset_id)
+    return has_experiment_download_access(request, experiment.id)
 
 def has_datafile_access(request, dataset_file_id):
     experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
     return has_experiment_access(request, experiment.id)
+
+def has_datafile_download_access(request, dataset_file_id):
+    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
+    return has_experiment_download_access(request, experiment.id)
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
@@ -270,6 +282,16 @@ def experiment_access_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+def experiment_download_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not has_experiment_download_access(request, kwargs['experiment_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
 
 def dataset_access_required(f):
 

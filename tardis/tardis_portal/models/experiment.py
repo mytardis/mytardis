@@ -152,7 +152,6 @@ class Experiment(models.Model):
 
         return urls
 
-
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):
         '''

@@ -48,7 +48,7 @@ class ExperimentManager(OracleSafeManager):
 
     """
 
-    def all(self, request):
+    def all(self, request): #@ReservedAssignment
         """
         Returns all experiments a user - either authenticated or
         anonymous - is allowed to see and search
@@ -57,36 +57,46 @@ class ExperimentManager(OracleSafeManager):
         :type request: :py:class:`django.http.HttpRequest`
         """
 
-        # experiment is public?
-        query = ~Q(public_access=1) # Experiment.PUBLIC_ACCESS_NONE
-
-        # if the user is not authenticated, they will see only public
-        # experiments
-        if request.user.is_authenticated():
-            # for which experiments does the user have read access
-            # based on USER permissions?
-            query |= Q(experimentacl__pluginId=django_user,
-                       experimentacl__entityId=str(request.user.id),
-                       experimentacl__canRead=True)\
-                       & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                          | Q(experimentacl__effectiveDate__isnull=True))\
-                       & (Q(experimentacl__expiryDate__gte=datetime.today())
-                          | Q(experimentacl__expiryDate__isnull=True))
-
-            # for which does experiments does the user have read access
-            # based on GROUP permissions
-            for name, group in request.groups:
-                query |= Q(experimentacl__pluginId=name,
-                    experimentacl__entityId=str(group),
-                    experimentacl__canRead=True)\
-                    & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                    | Q(experimentacl__effectiveDate__isnull=True))\
-                    & (Q(experimentacl__expiryDate__gte=datetime.today())
-                    | Q(experimentacl__expiryDate__isnull=True))
+        query = self._query_all_public() | self._query_owned_and_shared(request)
 
         return super(ExperimentManager, self).get_query_set().filter(
             query).distinct()
 
+    def owned_and_shared(self, request):
+        return super(ExperimentManager, self).get_query_set().filter(
+            self._query_owned_and_shared(request)).distinct()
+
+    def _query_owned_and_shared(self, request):
+        # if the user is not authenticated, nothing should be returned
+        if not request.user.is_authenticated():
+            return Q(id=None)
+
+        # for which experiments does the user have read access
+        # based on USER permissions?
+        query = Q(experimentacl__pluginId=django_user,
+                  experimentacl__entityId=str(request.user.id),
+                  experimentacl__canRead=True)\
+                  & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                     | Q(experimentacl__effectiveDate__isnull=True))\
+                  & (Q(experimentacl__expiryDate__gte=datetime.today())
+                     | Q(experimentacl__expiryDate__isnull=True))
+
+        # for which does experiments does the user have read access
+        # based on GROUP permissions
+        for name, group in request.groups:
+            query |= Q(experimentacl__pluginId=name,
+                experimentacl__entityId=str(group),
+                experimentacl__canRead=True)\
+                & (Q(experimentacl__effectiveDate__lte=datetime.today())
+                | Q(experimentacl__effectiveDate__isnull=True))\
+                & (Q(experimentacl__expiryDate__gte=datetime.today())
+                | Q(experimentacl__expiryDate__isnull=True))
+        return query
+
+
+    def _query_all_public(self):
+        from tardis.tardis_portal.models import Experiment
+        return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
 
     def get(self, request, experiment_id):
         """

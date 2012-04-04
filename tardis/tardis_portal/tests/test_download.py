@@ -201,6 +201,13 @@ class DownloadTestCase(TestCase):
                                 'datafile': [self.dataset_file2.id]})
         self.assertEqual(response.status_code, 403)
 
+        # Check datafile2 download with second experiment to "metadata only"
+        self.experiment2.public_access=Experiment.PUBLIC_ACCESS_METADATA
+        self.experiment2.save()
+        response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
+        # Metadata-only means "no file access"!
+        self.assertEqual(response.status_code, 403)
+
         # Check datafile2 download with second experiment to public
         self.experiment2.public_access=Experiment.PUBLIC_ACCESS_FULL
         self.experiment2.save()
