@@ -10,7 +10,7 @@ import oaipmh.error
 import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, License
 
 def _create_test_data():
     user = User(username='tom',
@@ -18,17 +18,17 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
+    license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
+                       url='http://creativecommons.org/licenses/by-nd/2.5/au/',
+                       internal_description='CC BY 2.5 AU',
+                       allows_distribution=True)
+    license_.save()
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
                             created_by=user)
-    experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
+    experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
+    experiment.license = license_
     experiment.save()
-    cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
-    cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'
-    cch = CreativeCommonsHandler(experiment_id=experiment.id)
-    psm = cch.get_or_create_cc_parameterset()
-    psm.set_param("license_name", cc_name, "License Name")
-    psm.set_param("license_uri", cc_uri, "License URI")
     return (user, experiment)
 
 class EndpointTestCase(TestCase):

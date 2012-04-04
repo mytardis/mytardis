@@ -12,8 +12,7 @@ from oaipmh.server import Server, oai_dc_writer, NS_XSI
 
 import pytz
 
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, License
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
@@ -164,16 +163,15 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             return []
 
     def _get_metadata(self, experiment, metadataPrefix):
-        cch = CreativeCommonsHandler(experiment_id=experiment.id)
-        cch_psm = cch.get_or_create_cc_parameterset(False)
+        license_ = experiment.license or License.get_none_option_license()
         return Metadata({
             '_metadata_source': self,
             'id': experiment.id,
             'title': experiment.title,
             'description': experiment.description,
             # Note: Property names are US-spelling, but RIF-CS is Australian
-            'licence_name': cch_psm.get_param('license_name', True),
-            'licence_uri': cch_psm.get_param('license_uri', True),
+            'licence_name': license_.name,
+            'licence_uri': license_.url,
             'owner': experiment.created_by
         })
 
