@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 """
 views.py
 
@@ -391,6 +392,9 @@ def experiment_description(request, experiment_id):
     c['has_read_or_owner_ACL'] = \
         authz.has_read_or_owner_ACL(request, experiment_id)
 
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
+
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
@@ -497,6 +501,9 @@ def experiment_datasets(request, experiment_id):
 
     c['datasets'] = \
          Dataset.objects.filter(experiment=experiment_id)
+
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
 
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -982,6 +989,8 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         dataset = paginator.page(paginator.num_pages)
 
     is_owner = False
+    has_download_permissions = authz.has_dataset_download_access(request,
+                                                                 dataset_id)
     has_write_permissions = False
 
     if request.user.is_authenticated():
@@ -1003,6 +1012,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'filename_search': filename_search,
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
+        'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query' : query,
         'params' : params

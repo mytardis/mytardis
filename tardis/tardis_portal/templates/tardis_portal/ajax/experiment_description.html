@@ -151,8 +151,9 @@
       {% endblock experiment_owners %}
   {% endblock experiment_admin %}
 
-  <dl class="download_entire_experiment">
   {% block downloads %}
+  {% if has_download_permissions %}
+  <dl class="download_entire_experiment">
     {% for p in protocol %}
       <dd>
     {% if p.0 %}
@@ -168,8 +169,9 @@
     {% endif %}
       </dd>
     {% endfor %}
-  {% endblock downloads %}
   </dl>
+  {% endif %}
+  {% endblock downloads %}
 
 </div>
 
