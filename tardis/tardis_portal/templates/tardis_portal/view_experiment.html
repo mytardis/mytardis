@@ -358,15 +358,21 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     tabContents.html(loadingHTML)
     $('.tab-content').append(tabContents);
 
-    // Load content for the new pane, based on the link HREF
-    $.ajax({
-      url: url,
-      dataType: 'html',
-      success: function(data) {
-        $('#'+tabId).html(data);
-      }
+    // On experiment changes, we want to reload the data pane
+    $('#'+tabId).on('experiment-change', function() {
+      var tabPane = $(this);
+      // Load content for the pane, based on the link HREF
+      $.ajax({
+        url: url,
+        dataType: 'html',
+        success: function(data) {
+          tabPane.html(data);
+        }
+      });
     });
   });
+  // Trigger initial pane content loading
+  $('.tab-pane').trigger('experiment-change');
   // Once the document has finished loading, we can use Bootstrap Tab plugin
   $(function() {
     // Create tabs and show first

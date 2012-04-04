@@ -4,6 +4,15 @@
 {% load mustachejs %}
 {% mustachejs "tardis_portal/license_selector" %}
 <script type="text/javascript">
+// Memoized AJAX call (which should make things snappier) to get license JSON
+var loadLicenses = async.memoize(function(public_access, callback) {
+  $.ajax({
+    url: '/ajax/license/list?public_access='+public_access,
+    dataType: 'json',
+    success: callback
+  });
+});
+
 var selectLicenseOption = function(value) {
   var selectedOption = $('.license-option input[value="'+value+'"]')
                         .parents('.license-option');
@@ -12,21 +21,17 @@ var selectLicenseOption = function(value) {
 };
 
 var populateLicenseOptions = function(public_access, markSameLicense) {
-  $.ajax({
-    url: '/ajax/license/list?public_access='+public_access,
-    dataType: 'json',
-    success: function(licenses) {
-      $('#license-options').empty();
-      _(licenses).each(function (license) {
-        $('#license-options').append(
-            Mustache.to_html(
-                Mustache.TEMPLATES['tardis_portal/license_selector'],
-                license, Mustache.TEMPLATES)
-        );
-        if (markSameLicense)
-          selectLicenseOption($('form input[name="license"]').val());
-      });
-    }
+  loadLicenses(public_access, function(licenses) {
+    $('#license-options').empty();
+    _(licenses).each(function (license) {
+      $('#license-options').append(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/license_selector'],
+              license, Mustache.TEMPLATES)
+      );
+      if (markSameLicense)
+        selectLicenseOption($('form input[name="license"]').val());
+    });
   });
 };
 </script>
@@ -61,7 +66,7 @@ $('#publishing-consent').change(function() {
   $('#modal-legal .submit-button').prop('disabled', !$(this).prop('checked'))
 });
 // Disable submit button (as consent checkbox should start unchecked)
-$('#publishing-consent').change();
+$('#publishing-consent').trigger('change');
 // Disable consent until we've loaded the legal text
 $('#publishing-consent').prop('disabled', true)
 // Get legal text
@@ -80,15 +85,9 @@ $('#modal-legal .submit-button').click(function() {
   $('#modal-legal').modal('hide');
 });
 $('#modal-legal .cancel-button').click(function() {
-  // Just reload licence option pane to reset previous values
-  $.ajax({
-    url: $('form.experiment-rights').attr('action'),
-    dataType: 'html',
-    success: function(data) {
-      $('#modal-legal').modal('hide');
-      $('#modal-legal').parents('.tab-pane').html(data);
-    }
-  })
+  // Just refresh this tab pane to reset previous values
+  $('#modal-legal').parents('.tab-pane').trigger('experiment-change');
+  $('#modal-legal').modal('hide');
 });
 </script>
 
@@ -147,8 +146,11 @@ $('form.experiment-rights').submit(function(evt) {
     url:  form.attr('action'),
     data: form.serialize(),
     success: function(data) {
+      var thisTabPane = $(form).parents('.tab-pane');
       // Load new values into pane
-      $(form).parents('.tab-pane').html(data);
+      thisTabPane.html(data);
+      // Notify the *other* panes
+      $('.tab-pane').not(thisTabPane).trigger('experiment-change');
     }
   });
 });
