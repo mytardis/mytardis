@@ -1,50 +1,100 @@
 {% extends "tardis_portal/portal_template.html" %}
 
 {% block sidebar %}
+<div class="sidebar-toggle-open sidebar-toggle-open-hidden">
+  <button class="sidebar-toggle-button btn btn-inverse"
+          title="Open Navigation Menu">
+    <i class="icon-list"></i>
+  </button>
+</div>
+
 <div class="well sidebar-nav">
-    <ul class="nav nav-list">
-      <li class="nav-header">Experiments</li>
+  <div class="sidebar-toggle-close pull-right">
+    <a class="sidebar-toggle-button close"
+       title="Close Navigation Menu">&times;</a>
+  </div>
+  <ul class="nav nav-list">
+    <li class="nav-header">Experiments</li>
+    <li>
+      <a href="{% url tardis.tardis_portal.views.experiment_index %}">
+        <i class="icon-list-alt"></i>
+        Browse
+      </a>
+    </li>
+    <li>
+      <a href="{% url tardis.tardis_portal.views.search_experiment %}">
+        <i class="icon-search"></i>
+        Search
+      </a>
+    </li>
+    {% if perms.tardis_portal.add_experiment %}
+    <li>
+      <a href="{% url tardis.tardis_portal.views.create_experiment %}">
+        <i class="icon-plus"></i>
+        Create
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+  {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
+  <ul class="nav nav-list">
+      <li class="nav-header">Access Control</li>
+      {% if perms.tardis_portal.change_experimentacl %}
       <li>
-        <a href="{% url tardis.tardis_portal.views.experiment_index %}">
-          <i class="icon-list-alt"></i>
-          Browse
-        </a>
-      </li>
-      <li>
-        <a href="{% url tardis.tardis_portal.views.search_experiment %}">
-          <i class="icon-search"></i>
-          Search
-        </a>
-      </li>
-      {% if perms.tardis_portal.add_experiment %}
-      <li>
-        <a href="{% url tardis.tardis_portal.views.create_experiment %}">
-          <i class="icon-plus"></i>
-          Create
+        <a href="{% url tardis.tardis_portal.views.control_panel %}">
+          <i class="icon-user"></i>
+          Experiment Access
         </a>
       </li>
       {% endif %}
-    </ul>
-    {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
-    <ul class="nav nav-list">
-        <li class="nav-header">Access Control</li>
-        {% if perms.tardis_portal.change_experimentacl %}
-        <li>
-          <a href="{% url tardis.tardis_portal.views.control_panel %}">
-            <i class="icon-user"></i>
-            Experiment Access
-          </a>
-        </li>
-        {% endif %}
-        {% if perms.tardis_portal.change_group %}
-        <li>
-          <a href="{% url tardis.tardis_portal.views.manage_groups %}">
-            <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
-            Group Management
-          </a>
-        </li>
-        {% endif %}
-    </ul>
-    {% endif %}
+      {% if perms.tardis_portal.change_group %}
+      <li>
+        <a href="{% url tardis.tardis_portal.views.manage_groups %}">
+          <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
+          Group Management
+        </a>
+      </li>
+      {% endif %}
+  </ul>
+  {% endif %}
 </div>
+<span id="sidebar-canary" class="hidden-phone"></span>
+
+<script type="text/javascript">
+(function() {
+  //Sidebar open
+  var openSidebarHandler = function() {
+    // Reapply main content width restriction
+    $('#content-pane').addClass('span9');
+    // Fade in sidebar
+    $('.sidebar-nav').show('drop');
+    // Hide open toggle
+    $('.sidebar-toggle-open').addClass('sidebar-toggle-open-hidden', 'slow');
+  }
+
+  // Sidebar close
+  var closeSidebarHandler = function() {
+    // Fade out sidebar
+    $('.sidebar-nav').hide('drop', function() {
+      // Remove main content width restriction
+      $('#content-pane').removeClass('span9', 'slow');
+    });
+    // Show open toggle
+    $('.sidebar-toggle-open').removeClass('sidebar-toggle-open-hidden', 'slow');
+  };
+
+  // Attach click handlers
+  $('.sidebar-toggle-close .sidebar-toggle-button').click(closeSidebarHandler);
+  $('.sidebar-toggle-open  .sidebar-toggle-button').click(openSidebarHandler);
+
+  // Initial state
+  if ($('#sidebar-canary').filter(':visible').size() == 0) {
+    // Switch off FX to make this quick!
+    var origValue = jQuery.fx.off;
+    jQuery.fx.off = true;
+    closeSidebarHandler();
+    jQuery.fx.off = origValue;
+  }
+})();
+</script>
 {% endblock %}

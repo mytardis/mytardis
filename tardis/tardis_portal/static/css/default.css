@@ -15,3 +15,17 @@
   padding-left: 0px;
   padding-right: 0px;
 }
+
+/* Sidebar toggle */
+.sidebar-toggle-open {
+	position: absolute;
+	right: 0;
+	z-index: 10;
+	overflow: hidden;
+}
+.sidebar-toggle-open .sidebar-toggle-button {
+  margin-right: -5px;
+}
+.sidebar-toggle-open-hidden .sidebar-toggle-button {
+	margin-right: -50px;
+}

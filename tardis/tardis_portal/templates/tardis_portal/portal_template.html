@@ -164,8 +164,8 @@
         {% endcapture %}
 
         {% if sidebar %}
-          <div class="span3">{{sidebar}}</div>
-        <div class="span9">{{content}}</div>
+          <div id="sidebar-pane" class="span3">{{sidebar}}</div>
+          <div id="content-pane" class="span9">{{content}}</div>
         {% else %}
         <div class="span12">{{content}}</div>
         {% endif %}
