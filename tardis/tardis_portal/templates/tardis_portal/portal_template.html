@@ -75,14 +75,23 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
+                  {% if perms.tardis_portal.change_userauthentication %}
                   <li>
-                    {% if is_superuser %}
+                    <a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-tags"></i>
+                      Link Accounts
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if is_superuser %}
+                  <li>
                     <a href="{% url admin:index %}">
                       <i class="icon-key"></i>
                         Admin Interface
                     </a>
-                    {% endif %}
                   </li>
+                  {% endif %}
                   <li>
                     <a href="{% url django.contrib.auth.views.logout %}">
                       <i class="icon-signout"></i>
@@ -155,8 +164,8 @@
         {% endcapture %}
 
         {% if sidebar %}
-          <div class="span4">{{sidebar}}</div>
-        <div class="span8">{{content}}</div>
+          <div class="span3">{{sidebar}}</div>
+        <div class="span9">{{content}}</div>
         {% else %}
         <div class="span12">{{content}}</div>
         {% endif %}
