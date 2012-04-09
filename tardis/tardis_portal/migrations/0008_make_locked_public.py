@@ -1,31 +1,23 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        db.start_transaction()
-        # Renaming field 'Experiment.public' to 'Experiment.locked'
-        db.rename_column('tardis_portal_experiment', 'public', 'locked')
-        # Adding field 'Experiment.public_access'
-        db.add_column('tardis_portal_experiment', 'public_access',
-                      self.gf('django.db.models.fields.PositiveSmallIntegerField')(default=1),
-                      keep_default=False)
-        # Index the column for searching
-        db.create_index('tardis_portal_experiment', ['public_access'])
-        db.commit_transaction()
+        for experiment in orm.Experiment.objects.all():
+            if experiment.locked:
+                experiment.public_access = 100 # Experiment.PUBLIC_ACCESS_FULL
+                experiment.save()
+
 
     def backwards(self, orm):
-        db.start_transaction()
-        # Delete public access column
-        db.delete_column('tardis_portal_experiment', 'public_access')
-        # Renaming field 'Experiment.public' to 'Experiment.locked'
-        db.rename_column('tardis_portal_experiment', 'locked', 'public')
-        db.commit_transaction()
+        for experiment in orm.Experiment.objects.all():
+            experiment.public_access = 1 # Experiment.PUBLIC_ACCESS_NONE
+            experiment.save()
+
 
     models = {
         'auth.group': {
@@ -204,7 +196,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 4, 28, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 5, 10, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
@@ -225,3 +217,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['tardis_portal']
+    symmetrical = True
