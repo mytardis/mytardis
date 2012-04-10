@@ -1,25 +1,40 @@
+{% load capture %}
+{% capture as paginator_block %}
 {% if dataset.paginator.num_pages > 1 %}
   <div class="pagination">
-    <span class="step-links">
+    <ul>
       {% if dataset.has_previous %}
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
+      <li>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">&laquo;</a>
+      </li>
+      {% else %}
+      <li class="disabled"><a href="#">&laquo;</a></li>
       {% endif %}
 
       {% for pagenum in dataset.paginator.page_range %}
-    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
+      <li{% if dataset.number == pagenum %} class="active"{% endif %}>
+        <a class="pagelink"
+           href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">
+           {{pagenum}}
+        </a>
+      </li>
       {% endfor %}
 
       {% if dataset.has_next %}
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
+      <li>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">&raquo;</a>
+      </li>
+      {% else %}
+      <li class="disabled"><a href="#">&raquo;</a></li>
       {% endif %}
-      <br/>
-      <span class="current">
-        Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
-      </span>
-    </span>
+    </ul>
+    <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
   </div>
   <br/>
 {% endif %}
+{% endcapture %}
+
+{{ paginator_block }}
 
 <p>
 {# uploadify here #}
@@ -102,25 +117,4 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 </div>
 
 
-{% if dataset.paginator.num_pages > 1 %}
-<br/>
-<div class="pagination">
-  <span class="step-links">
-  {% if dataset.has_previous %}
-    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">Previous</a>
-  {% endif %}
-
-  {% for pagenum in dataset.paginator.page_range %}
-    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">{{pagenum}}</a>
-  {% endfor %}
-
-  {% if dataset.has_next %}
-    <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">Next</a>
-  {% endif %}
-    <br/>
-    <span class="current">
-      Page {{ dataset.number }} of {{ dataset.paginator.num_pages }}.
-    </span>
-  </span>
-</div>
-{% endif %}
+{{ paginator_block }}
