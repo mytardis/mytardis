@@ -29,3 +29,8 @@
 .sidebar-toggle-open-hidden .sidebar-toggle-button {
 	margin-right: -50px;
 }
+
+/* Clickable Experiment */
+.experiment-table td.experiment-clickable {
+	cursor: pointer;
+}

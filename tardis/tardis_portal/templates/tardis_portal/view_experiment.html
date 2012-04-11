@@ -343,23 +343,32 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 <div class="tab-content"></div>
 
 <script type="text/javascript">
+(function() {
+  var tabIdPrefix = 'experiment-tab-';
+  function getTabIdFromName(tabName) {
+    return tabIdPrefix+tabName;
+  }
+  function getTabNameFromId(tabId) {
+    return _.strRight(_.lstrip(tabId,'#'), tabIdPrefix);
+  }
+
   // Create new tab content panes programatically
   // Note: We're doing this before the bottom of the document has loaded!
   $('#experiment-tabs li a').each(function(i, v) {
     // Generate an ID for each tab
     var tabName = _.trim(_.dasherize($(v).attr('title') || i), '_-');
-    var tabId = 'experiment-tab-'+tabName;
     // Grab the link HREF, then replace with the ID
     var url = $(v).attr('href');
-    $(v).attr('href', '#'+tabId);
+    $(v).attr('href', '#'+getTabIdFromName(tabName));
 
     // Create and insert content pane
-    var tabContents = $('<div id="'+tabId+'" class="tab-pane"></div>');
+    var tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
+                                      .addClass('tab-pane');
     tabContents.html(loadingHTML)
     $('.tab-content').append(tabContents);
 
     // On experiment changes, we want to reload the data pane
-    $('#'+tabId).on('experiment-change', function() {
+    $(tabContents).on('experiment-change', function() {
       var tabPane = $(this);
       // Load content for the pane, based on the link HREF
       $.ajax({
@@ -370,15 +379,39 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
         }
       });
     });
+
+    // Selected tab name
+    $(v).click(function() {
+      window.location.hash = getTabNameFromId($(v).attr('href'));
+    });
   });
+
   // Trigger initial pane content loading
   $('.tab-pane').trigger('experiment-change');
+
+  var showTabForWindowLocation = function() {
+    // Get selected tab using window location
+    var tabHref = '#' + tabIdPrefix + _.ltrim(window.location.hash, '#');
+    var selected = $('#experiment-tabs li a[href="'+tabHref+'"]');
+    // Show selected tab if we have one, otherwise show the first tab
+    if (selected.size() == 1) {
+      selected.tab('show');
+    } else {
+      $('#experiment-tabs li a:first').tab('show');
+    }
+  };
+
   // Once the document has finished loading, we can use Bootstrap Tab plugin
   $(function() {
     // Create tabs and show first
     $('#experiment-tabs li a:last').tab();
-    $('#experiment-tabs li a:first').tab('show');
+    showTabForWindowLocation();
   });
+
+  // Handle back and forward buttons for tab locations
+  $(window).bind('hashchange', showTabForWindowLocation);
+
+})();
 </script>
 
 
