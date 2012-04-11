@@ -8,6 +8,9 @@ from .experiment import Experiment, Author_Experiment
 from .datafile import Dataset_File
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
+import logging
+logger = logging.getLogger(__name__)
+
 ### Staging hook ###
 
 staging_hook = StagingHook()
@@ -22,7 +25,11 @@ def publish_public_expt_rifcs(experiment):
         providers = None
     from tardis.tardis_portal.publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
-    pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+    try:
+        pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+    except:
+        logger.error('RIF-CS publish hook failed for experiment %d.'\
+                     % experiment.id)
 
 @receiver(post_save, sender=Author_Experiment)
 @receiver(post_delete, sender=Author_Experiment)
