@@ -120,7 +120,7 @@
             <form id="searchbox" method="get"
                 class="navbar-search pull-right"
                 action="{% url tardis.tardis_portal.views.single_search %}">
-              <input id="id_q"
+              <input id="id_q" autocomplete="off"
                    type="text" class="search-query" placeholder="Search"
                    {% if query %} value="{{ query }}" {% endif %}/>
             </form>
