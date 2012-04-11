@@ -70,6 +70,8 @@
     $('.sidebar-nav').show('drop');
     // Hide open toggle
     $('.sidebar-toggle-open').addClass('sidebar-toggle-open-hidden', 'slow');
+    // Delete session cookie to preserve on page reload
+    $.cookie('hide_sidebar', null, { path: '/' });
   }
 
   // Sidebar close
@@ -81,14 +83,18 @@
     });
     // Show open toggle
     $('.sidebar-toggle-open').removeClass('sidebar-toggle-open-hidden', 'slow');
+    // Set session cookie to preserve on page reload
+    $.cookie('hide_sidebar', '1', { path: '/' });
   };
 
   // Attach click handlers
   $('.sidebar-toggle-close .sidebar-toggle-button').click(closeSidebarHandler);
   $('.sidebar-toggle-open  .sidebar-toggle-button').click(openSidebarHandler);
 
+  var shouldHideInitially = $('#sidebar-canary').filter(':visible').size() == 0;
+
   // Initial state
-  if ($('#sidebar-canary').filter(':visible').size() == 0) {
+  if (shouldHideInitially || $.cookie('hide_sidebar')) {
     // Switch off FX to make this quick!
     var origValue = jQuery.fx.off;
     jQuery.fx.off = true;
