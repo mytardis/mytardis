@@ -162,6 +162,11 @@ class Experiment(models.Model):
         '''
         return public_access_level > cls.PUBLIC_ACCESS_METADATA
 
+    def get_owners(self):
+        acls = ExperimentACL.objects.filter(pluginId='django_user',
+                                            experiment=self,
+                                            isOwner=True)
+        return [acl.get_related_object() for acl in acls]
 
 
 class ExperimentACL(models.Model):

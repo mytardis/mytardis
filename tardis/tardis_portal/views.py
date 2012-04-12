@@ -366,19 +366,7 @@ def experiment_description(request, experiment_id):
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
-    acl = ExperimentACL.objects.filter(pluginId=django_user,
-                                       experiment=experiment,
-                                       isOwner=True)
-
-    # TODO: resolve usernames through UserProvider!
-    # Right now there are exceptions every time for ldap users..
-    c['owners'] = []
-    for a in acl:
-        try:
-            c['owners'].append(User.objects.get(pk=str(a.entityId)))
-        except User.DoesNotExist:
-            #logger.exception('user for acl %i does not exist' % a.id)
-            pass
+    c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
     size = 0
@@ -2702,6 +2690,17 @@ def choose_rights(request, experiment_id):
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
+    def is_valid_owner(owner):
+        return owner.get_profile().isValidPublicContact()
+
+    # Forbid access if no valid owner is available (and show error message)
+    if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
+        c = Context({'no_valid_owner': True, 'experiment': experiment})
+        return HttpResponseForbidden(\
+                    render_response_index(request, \
+                        'tardis_portal/ajax/unable_to_choose_rights.html', c))
+
+    # Process form or prepopulate it
     if request.method == 'POST':
         form = RightsForm(request.POST)
         if form.is_valid():

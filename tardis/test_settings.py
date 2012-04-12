@@ -65,6 +65,7 @@ def get_admin_media_path():
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
+AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
@@ -130,6 +131,7 @@ INSTALLED_APPS = get_all_tardis_apps() + [
     'djcelery',
     'djkombu',
     'bootstrapform',
+    'mustachejs',
 ]
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),

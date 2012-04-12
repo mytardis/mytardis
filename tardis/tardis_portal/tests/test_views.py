@@ -39,7 +39,10 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 import json
 
+from compare import expect
+
 from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.contrib.auth import authenticate
 from django.test import TestCase
 from django.test.client import Client
@@ -305,3 +308,49 @@ class TokenuserDeniedAccessTestCase(TestCase):
 
     def tearDown(self):
         self.client.logout()
+
+class RightsTestCase(TestCase):
+
+    def testRightsRequireValidOwner(self):
+        # Create test owner without enough details
+        username, email, password = ('testuser',
+                                     'testuser@example.test',
+                                     'password')
+        user = User.objects.create_user(username, email, password)
+        profile = UserProfile(user=user, isDjangoAccount=True)
+        profile.save()
+
+        # Create test experiment and make user the owner of it
+        experiment = Experiment(title='Text Experiment',
+                                institution_name='Test Uni',
+                                created_by=user)
+        experiment.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(user.id),
+            experiment=experiment,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+        # Create client and login as user
+        client = Client()
+        login = client.login(username=username, password=password)
+        self.assertTrue(login)
+
+        # Get "Choose Rights" page, and check that we're forbidden
+        rights_url = reverse('tardis.tardis_portal.views.choose_rights',
+                             args=[str(experiment.id)])
+        response = client.get(rights_url)
+        expect(response.status_code).to_equal(403)
+
+        # Fill in remaining details
+        user.first_name = "Test"
+        user.last_name = "User"
+        user.save()
+
+        # Get "Choose Rights" page, and check that we're now allowed access
+        response = client.get(rights_url)
+        expect(response.status_code).to_equal(200)

@@ -2,6 +2,8 @@
     xmlns:dc="http://purl.org/dc/elements/1.1/"
     class="dl-horizontal">
 
+  {% load capture %}
+
   {% block authors %}
   <dl>
     <dt>Author{{ authors|pluralize }}</dt>
@@ -140,10 +142,20 @@
         <dt>Experiment Administrators</dt>
         {% for owner in owners %}
           <dd>
+          {% capture as owner_text %}
+            {% if owner.first_name and owner.last_name %}
+              <span class="experiment-owner" title="{{ owner.username }}">
+                {{ owner.first_name }} {{ owner.last_name }}
+              </span>
+            {% else %}
+              {{ owner.username }}
+            {% endif %}
+          {% endcapture %}
           {% if owner.email %}
-              <a href="mailto:{{owner.email}}">{{ owner.email}}</a>
+            <a href="mailto:{{owner.email}}">{{owner_text}}</a>
+          {% else %}
+            {{owner_text}}
           {% endif %}
-          ({{ owner.username }})
           </dd>
         {% endfor %}
       </dl>
