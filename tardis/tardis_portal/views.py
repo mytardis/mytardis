@@ -2691,6 +2691,8 @@ def choose_rights(request, experiment_id):
     '''
     experiment = Experiment.objects.get(id=experiment_id)
     def is_valid_owner(owner):
+        if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
+            return True
         return owner.get_profile().isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)

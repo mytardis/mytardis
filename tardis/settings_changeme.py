@@ -289,6 +289,8 @@ TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
 
+REQUIRE_VALID_PUBLIC_CONTACTS = True
+
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
 RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
