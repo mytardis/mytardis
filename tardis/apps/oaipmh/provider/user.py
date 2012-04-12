@@ -113,7 +113,7 @@ class RifCsUserProvider(BaseProvider):
         if until:
             until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
             users = users.filter(last_login__lte=until)
-
+        users = users.exclude(first_name='').exclude(email='')
         return users
 
     def _get_metadata(self, user, metadataPrefix):
@@ -176,6 +176,8 @@ class RifCsUserProvider(BaseProvider):
         namePartMap = {'given': metadata.getMap().get('given_name'),
                        'family': metadata.getMap().get('family_name')}
         for k,v in namePartMap.items():
+            if v == '': # Exclude empty parts
+                continue
             namePart = SubElement(name, _nsrif('namePart'))
             namePart.set('type', k)
             namePart.text = v
