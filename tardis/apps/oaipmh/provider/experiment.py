@@ -164,6 +164,13 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
 
     def _get_metadata(self, experiment, metadataPrefix):
         license_ = experiment.license or License.get_none_option_license()
+        # Access Rights statement
+        if experiment.public_access == Experiment.PUBLIC_ACCESS_METADATA:
+            access = "Only metadata is publicly available online."+\
+                    " Requests for further access should be directed to a"+\
+                    " listed data manager."
+        else:
+            access = "All data is publicly available online."
         return Metadata({
             '_metadata_source': self,
             'id': experiment.id,
@@ -172,7 +179,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             # Note: Property names are US-spelling, but RIF-CS is Australian
             'licence_name': license_.name,
             'licence_uri': license_.url,
-            'owner': experiment.created_by
+            'access': access,
+            'collectors': [experiment.created_by],
+            'managers': experiment.get_owners()
         })
 
     def _handles_metadata_prefix(self, metadataPrefix):
@@ -234,16 +243,31 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic.text = _get_location(metadata)
         # rights
         rights = SubElement(collection, _nsrif('rights') )
+        access = SubElement(rights, _nsrif('accessRights') )
+        access.text = metadata.getMap().get('access')
         licence_ = SubElement(rights, _nsrif('licence') )
         licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
         licence_.text = metadata.getMap().get('licence_name')
-        # related object - owner
-        relatedObject = SubElement(collection, _nsrif('relatedObject') )
-        SubElement(relatedObject, _nsrif('key')).text = \
-            RifCsUserProvider.get_rifcs_id(metadata.getMap().get('owner').id,
-                                           self._site)
-        SubElement(relatedObject, _nsrif('relation')) \
-            .set('type', 'hasCollector')
+        # related object - collectors
+        for collector in metadata.getMap().get('collectors'):
+            if not collector.get_profile().isValidPublicContact():
+                continue
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsUserProvider.get_rifcs_id(collector.id,
+                                               self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'hasCollector')
+        # related object - managers
+        for manager in metadata.getMap().get('managers'):
+            if not manager.get_profile().isValidPublicContact():
+                continue
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsUserProvider.get_rifcs_id(manager.id,
+                                               self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'isManagedBy')
 
 
 

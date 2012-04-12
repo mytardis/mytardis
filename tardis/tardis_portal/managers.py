@@ -162,9 +162,19 @@ class ExperimentManager(OracleSafeManager):
         if not request.user.is_authenticated():
             return super(ExperimentManager, self).get_empty_query_set()
 
+        return self.owned_by_user_id(request.user.id)
+
+    def owned_by_user_id(self, userId):
+        """
+        Return all experiments which are owned by a particular user id
+
+        :param userId: a User ID
+        :type userId: integer
+
+        """
         # build the query to filter the ACL table
         query = Q(experimentacl__pluginId=django_user,
-                  experimentacl__entityId=str(request.user.id),
+                  experimentacl__entityId=str(userId),
                   experimentacl__isOwner=True)\
                   & (Q(experimentacl__effectiveDate__lte=datetime.today())
                      | Q(experimentacl__effectiveDate__isnull=True))\
@@ -172,6 +182,7 @@ class ExperimentManager(OracleSafeManager):
                      | Q(experimentacl__expiryDate__isnull=True))
 
         return super(ExperimentManager, self).get_query_set().filter(query)
+
 
     def user_acls(self, request, experiment_id):
         """

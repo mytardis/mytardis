@@ -10,7 +10,7 @@ import oaipmh.error
 import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment, License
+from tardis.tardis_portal.models import Experiment, License, UserProfile
 
 def _create_test_data():
     user = User(username='tom',
@@ -18,6 +18,7 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
+    UserProfile(user=user).save()
     license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
                        url='http://creativecommons.org/licenses/by-nd/2.5/au/',
                        internal_description='CC BY 2.5 AU',
@@ -111,10 +112,16 @@ class EndpointTestCase(TestCase):
                 .to_equal('http://example.com/experiment/view/%d/' %
                           experiment.id)
         # <rights>
+        #     <accessRights>
+        #         All data is publicly available online.
+        #     </accessRights>
         #     <licence rightsUri="http://creativecommons.org/licenses/by-nd/2.5/au/">
         #         Creative Commons Attribution-NoDerivs 2.5 Australia
         #     </licence>
         # </location>
+        expect(collection.xpath('r:rights/r:accessRights/text()',
+            namespaces=ns)) \
+            .to_equal(['All data is publicly available online.'])
         expect(collection.xpath('r:rights/r:licence/@rightsUri',
             namespaces=ns)) \
             .to_equal(['http://creativecommons.org/licenses/by-nd/2.5/au/'])
@@ -123,7 +130,6 @@ class EndpointTestCase(TestCase):
             .to_equal(['Creative Commons Attribution-NoDerivs 2.5 Australia'])
         # <relatedObject>
         #     <key>user/1</key>
-        #     <relation type="hasCollector"/>
         #     <relation type="isManagedBy"/>
         # </relatedObjexperimentect>
         expect(collection.xpath('r:relatedObject/r:key/text()',
@@ -163,7 +169,6 @@ class EndpointTestCase(TestCase):
                 .to_equal(user.email)
         # <relatedObject>
         #     <key>user/1</key>
-        #     <relation type="hasCollector"/>
         #     <relation type="isManagedBy"/>
         # </relatedObjexperimentect>
         expect(collection.xpath('r:relatedObject/r:key/text()',

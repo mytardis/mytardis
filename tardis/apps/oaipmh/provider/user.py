@@ -117,16 +117,19 @@ class RifCsUserProvider(BaseProvider):
         return users
 
     def _get_metadata(self, user, metadataPrefix):
-        # TODO: Is this the right definition of "ownership"?
-        owned_experiments = Experiment.objects.filter(created_by=user) \
-                                              .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
+        collected_experiments = \
+            Experiment.objects.filter(created_by=user) \
+                        .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
+        owns_experiments = Experiment.safe.owned_by_user_id(user.id)\
+                                          .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         return Metadata({
             '_metadata_source': self,
             'id': user.id,
             'email': user.email,
             'given_name': user.first_name,
             'family_name': user.last_name,
-            'owns': owned_experiments
+            'collected_experiments': collected_experiments,
+            'owns_experiments': owns_experiments,
         })
 
     def _handles_metadata_prefix(self, metadataPrefix):
@@ -183,12 +186,18 @@ class RifCsUserProvider(BaseProvider):
                                 _nsrif('electronic'))
         electronic.set('type', 'email')
         electronic.text = metadata.getMap().get('email')
-        for experiment in metadata.getMap().get('owns'):
+        for experiment in metadata.getMap().get('collected_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isCollectorOf')
+        for experiment in metadata.getMap().get('owns_experiments'):
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'isManagerOf')
 
 
 
