@@ -347,8 +347,7 @@ class RightsTestCase(TestCase):
         expect(response.status_code).to_equal(403)
 
         # Fill in remaining details
-        user.first_name = "Test"
-        user.last_name = "User"
+        user.first_name = "Voltaire" # Mononymous persons are just fine
         user.save()
 
         # Get "Choose Rights" page, and check that we're now allowed access
