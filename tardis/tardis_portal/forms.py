@@ -1088,3 +1088,13 @@ class RightsForm(ModelForm):
                                         "for public access level.");
 
         return cleaned_data
+
+class ManageAccountForm(ModelForm):
+    """
+    Form for changing account details.
+
+    """
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email')
+

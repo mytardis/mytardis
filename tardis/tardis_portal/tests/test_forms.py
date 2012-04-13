@@ -431,7 +431,3 @@ class RightsFormTestCase(TestCase):
     def test_needs_confirmation(self):
         suitable_data = {'public_access': str(Experiment.PUBLIC_ACCESS_NONE),
                          'license': ''}
-
-
-
-

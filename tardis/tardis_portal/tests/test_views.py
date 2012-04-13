@@ -353,3 +353,45 @@ class RightsTestCase(TestCase):
         # Get "Choose Rights" page, and check that we're now allowed access
         response = client.get(rights_url)
         expect(response.status_code).to_equal(200)
+
+class ManageAccountTestCase(TestCase):
+
+    def testManageAccount(self):
+        # Create test owner without enough details
+        username, email, password = ('testuser',
+                                     'testuser@example.test',
+                                     'password')
+        user = User.objects.create_user(username, email, password)
+        profile = UserProfile(user=user, isDjangoAccount=True)
+        profile.save()
+        expect(user.get_profile().isValidPublicContact()).to_be(False)
+
+        manage_url = reverse('tardis.tardis_portal.views.manage_user_account')
+
+        # Create client and go to account management URL
+        client = Client()
+        response = client.get(manage_url)
+        # Expect redirect to login
+        expect(response.status_code).to_equal(302)
+
+        # Login as user
+        login = client.login(username=username, password=password)
+        self.assertTrue(login)
+
+        response = client.get(manage_url)
+        # Expect 200 OK and a form
+        expect(response.status_code).to_equal(200)
+        response.content.index('name="first_name"')
+        response.content.index('name="last_name"')
+        response.content.index('name="email"')
+        response.content.index('value="testuser@example.test"')
+
+        # Update account details
+        response = client.post(manage_url,
+                               { 'first_name': 'Tommy',
+                                 'email': 'tommy@atkins.net'})
+        # Expect 200 OK on update
+        expect(response.status_code).to_equal(200)
+
+        user = User.objects.get(id=user.id)
+        expect(user.get_profile().isValidPublicContact()).to_be(True)

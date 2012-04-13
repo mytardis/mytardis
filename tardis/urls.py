@@ -77,6 +77,7 @@ token_urls = patterns(
 accounts_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^login/$', 'login'),
+    (r'^manage$', 'manage_user_account'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
     (r'^register/$', register,
      {'form_class': RegistrationForm,

@@ -75,6 +75,13 @@
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url tardis.tardis_portal.views.manage_user_account %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-user"></i>
+                      Manage Account
+                    </a>
+                  </li>
                   {% if perms.tardis_portal.change_userauthentication %}
                   <li>
                     <a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">

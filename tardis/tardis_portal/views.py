@@ -69,7 +69,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form, MXDatafileSearchForm, RightsForm
+    save_datafile_add_form, MXDatafileSearchForm, RightsForm, ManageAccountForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -2792,3 +2792,21 @@ def retrieve_licenses(request):
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 
+@login_required
+def manage_user_account(request):
+    user = request.user
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = ManageAccountForm(request.POST)
+        if form.is_valid():
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
+    else:
+        form = ManageAccountForm(instance=user)
+
+    c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_user_account.html', c))
