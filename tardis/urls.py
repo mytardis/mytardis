@@ -79,7 +79,8 @@ accounts_urls = patterns(
     (r'^login/$', 'login'),
     (r'^manage_auth_methods/$', 'manage_auth_methods'),
     (r'^register/$', register,
-     {'form_class': RegistrationForm}),
+     {'form_class': RegistrationForm,
+      'backend': 'registration.backends.default.DefaultBackend'}),
     (r'', include('registration.urls')),
     )
 
