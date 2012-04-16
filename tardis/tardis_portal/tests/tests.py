@@ -57,6 +57,10 @@ from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 class SearchTestCase(TestCase):
 
     def setUp(self):
+        # Load schemas for test
+        from django.core.management import call_command
+        call_command('loaddata', 'as_schemas')
+
         self.client = Client()
         self.experiments = []
 
@@ -252,13 +256,27 @@ class UserInterfaceTestCase(TestCase):
 
     def test_urls(self):
         c = Client()
-        urls = ['/login/', '/about/', '/stats/']
-        urls += ['/experiment/register/', '/experiment/view/']
-        urls += ['/experiment/search/', '/datafile/search/?type=saxs']
+        urls = [ '/login/', '/about/', '/stats/', \
+                 '/experiment/register/', '/experiment/view/', \
+                 '/experiment/search/' ]
 
         for u in urls:
             response = c.get(u)
             self.failUnlessEqual(response.status_code, 200)
+
+    def test_search_urls(self):
+        # Load schemas for test
+        from django.core.management import call_command
+        call_command('loaddata', 'as_schemas')
+
+        c = Client()
+        urls = ('/datafile/search/?type='+x for x in ['mx','ir','saxs'])
+
+        for u in urls:
+            response = c.get(u)
+            print str(response)
+            self.failUnlessEqual(response.status_code, 200)
+
 
     def test_login(self):
         from django.contrib.auth.models import User
@@ -338,6 +356,9 @@ class MetsExperimentStructCreatorTestCase(TestCase):
 class MetsMetadataInfoHandlerTestCase(TestCase):
 
     def setUp(self):
+        # Load schemas for test
+        from django.core.management import call_command
+        call_command('loaddata', 'as_schemas')
         self.experiment = None
 
         try:
