@@ -18,12 +18,17 @@ Debian/Ubuntu::
 Download
 --------
 
-To get the current master branch::
+To get the most recent stable release, 2.5::
 
-   git clone git://github.com/mytardis/mytardis.git
+   git clone -b 2.5 git://github.com/mytardis/mytardis.git
    cd mytardis
 
 This clones the repository as read-only.
+
+Or, to get the current master (development) branch::
+
+   git clone git://github.com/mytardis/mytardis.git
+   cd mytardis
 
 Quick configuration
 -------------------

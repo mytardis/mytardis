@@ -6,9 +6,9 @@ README = open(os.path.join(here, 'README.rst')).read()
 CHANGES = open(os.path.join(here, 'docs/changes.rst')).read()
 
 setup(
-    name="MyTARDIS",
-    version="1.99",
-    url='http://code.google.com/p/mytardis/',
+    name="MyTardis",
+    version="2.5",
+    url='http://github.com/mytardis/mytardis',
     license='BSD',
     description="Next iteration of the TARDIS framework. No digital " + \
         "repository required. Federated web stores + ftp access instead.",
@@ -22,6 +22,7 @@ setup(
         'lxml',
         'feedparser',
         'elementtree',
+        'django==1.4',
         'django-registration',
         'django-extensions',
         'django-form-utils',

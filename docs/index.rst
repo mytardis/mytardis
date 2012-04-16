@@ -29,7 +29,7 @@ important, which can be summarised as:
 Homepage
 --------
 
-You can get a copy of MyTARDIS from http://code.google.com/p/mytardis/
+You can get a copy of MyTardis from http://github.com/mytardis/mytardis
 
 For installation instructions see :doc:`install`.
 
