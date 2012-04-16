@@ -52,7 +52,8 @@ copyright = u'2010, Steve Androulakis'
 # built documents.
 #
 # The short X.Y version.
-version = '2.2'
+import pkg_resources  # part of setuptools
+version = pkg_resources.require("MyTardis")[0].version
 
 # The full version, including alpha/beta/rc tags.
 
