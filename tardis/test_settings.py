@@ -37,9 +37,9 @@ CELERY_ALWAYS_EAGER = True
 ROOT_URLCONF = 'tardis.urls'
 
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
-                                         '../var/store/'))
+                                         '../var/test/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
-                                      "../var/staging/"))
+                                      "../var/test/staging/"))
 
 STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
