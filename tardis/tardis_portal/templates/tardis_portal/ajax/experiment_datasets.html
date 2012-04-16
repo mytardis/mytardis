@@ -158,6 +158,9 @@
           </dl> <!-- dataset_datafiles -->
       </div> <!-- dataset_info -->
   </div> <!-- dataset -->
+      {% if not forloop.last %}
+      <hr />
+      {% endif %}
       {% endfor %}
     </div> <!-- datasets -->
 
@@ -168,6 +171,5 @@
       </button>
     {% endif %}
   </form>
-
 </div> <!-- experiment_datasets -->
 
