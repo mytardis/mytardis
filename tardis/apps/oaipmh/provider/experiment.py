@@ -146,19 +146,16 @@ class DcExperimentProvider(AbstractExperimentProvider):
 
 class RifCsExperimentProvider(AbstractExperimentProvider):
 
-    RIFCS_NS = 'http://ands.org.au/standards/rif-cs/registryObjects'
-    RIFCS_SCHEMA = \
-    'http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd'
-
     def listMetadataFormats(self, identifier=None):
         """
         Return metadata format if no identifier, or identifier
         is a valid experiment.
         """
+        from . import RIFCS_NS, RIFCS_SCHEMA
         try:
             if identifier != None:
                 self._get_id_from_identifier(identifier)
-            return [('rif', self.RIFCS_SCHEMA, self.RIFCS_NS)]
+            return [('rif', RIFCS_SCHEMA, RIFCS_NS)]
         except oaipmh.error.IdDoesNotExistError:
             return []
 
@@ -172,7 +169,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         else:
             access = "All data is publicly available online."
         return Metadata({
-            '_metadata_source': self,
+            '_writeMetadata': self._get_writer_func(),
             'id': experiment.id,
             'title': experiment.title,
             'description': experiment.description,
@@ -193,27 +190,33 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                              site_.domain),
                                      id_)
 
-    def writeMetadata(self, element, metadata):
+    def _get_writer_func(self):
+        from functools import partial
+        return partial(self.writeExperimentMetadata, site=self._site)
+
+    @staticmethod
+    def writeExperimentMetadata(element, metadata, site=None):
+        from . import RIFCS_NS, RIFCS_SCHEMA
         from .user import RifCsUserProvider
         def _nsrif(name):
-            return '{%s}%s' % (self.RIFCS_NS, name)
+            return '{%s}%s' % (RIFCS_NS, name)
         def _get_id(metadata):
-            return self.get_rifcs_id(metadata.getMap().get('id'), self._site)
+            return RifCsExperimentProvider.get_rifcs_id(metadata.getMap().get('id'), site)
         def _get_group(metadata):
             return metadata.getMap().get('group', getattr(settings,
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % self._site.domain
+            return "http://%s/" % site.domain
         def _get_location(metadata):
             return "http://%s%s" % \
-                ( self._site.domain,
+                ( site.domain,
                   reverse('experiment', args=[metadata.getMap().get('id')]) )
         # registryObjects
         wrapper = SubElement(element, _nsrif('registryObjects'), \
-                       nsmap={None: self.RIFCS_NS, 'xsi': NS_XSI} )
+                       nsmap={None: RIFCS_NS, 'xsi': NS_XSI} )
         wrapper.set('{%s}schemaLocation' % NS_XSI,
-                    '%s %s' % (self.RIFCS_NS, self.RIFCS_SCHEMA))
+                    '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
         # registryObject
         obj = SubElement(wrapper, _nsrif('registryObject') )
         obj.set('group', _get_group(metadata))
@@ -254,8 +257,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 continue
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsUserProvider.get_rifcs_id(collector.id,
-                                               self._site)
+                RifCsUserProvider.get_rifcs_id(collector.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'hasCollector')
         # related object - managers
@@ -264,8 +266,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 continue
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsUserProvider.get_rifcs_id(manager.id,
-                                               self._site)
+                RifCsUserProvider.get_rifcs_id(manager.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isManagedBy')
 

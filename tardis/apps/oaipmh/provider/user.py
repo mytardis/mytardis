@@ -16,10 +16,6 @@ from .base import BaseProvider
 
 class RifCsUserProvider(BaseProvider):
 
-    RIFCS_NS = 'http://ands.org.au/standards/rif-cs/registryObjects'
-    RIFCS_SCHEMA = \
-    'http://services.ands.org.au/documentation/rifcs/schema/registryObjects.xsd'
-
     def getRecord(self, metadataPrefix, identifier):
         """
         Return record if we handle it.
@@ -76,10 +72,11 @@ class RifCsUserProvider(BaseProvider):
         Return metadata format if no identifier, or identifier
         is a valid experiment.
         """
+        from . import RIFCS_NS, RIFCS_SCHEMA
         try:
             if identifier != None:
                 self._get_id_from_identifier(identifier)
-            return [('rif', self.RIFCS_SCHEMA, self.RIFCS_NS)]
+            return [('rif', RIFCS_SCHEMA, RIFCS_NS)]
         except oaipmh.error.IdDoesNotExistError:
             return []
 
@@ -123,7 +120,7 @@ class RifCsUserProvider(BaseProvider):
         owns_experiments = Experiment.safe.owned_by_user_id(user.id)\
                                           .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         return Metadata({
-            '_metadata_source': self,
+            '_writeMetadata': self._get_writer_func(),
             'id': user.id,
             'email': user.email,
             'given_name': user.first_name,
@@ -142,23 +139,29 @@ class RifCsUserProvider(BaseProvider):
                                        site_.domain),
                                id_)
 
-    def writeMetadata(self, element, metadata):
+    def _get_writer_func(self):
+        from functools import partial
+        return partial(self.writeUserMetadata, site=self._site)
+
+    @staticmethod
+    def writeUserMetadata(element, metadata, site=None):
+        from . import RIFCS_NS, RIFCS_SCHEMA
         from .experiment import RifCsExperimentProvider
         def _nsrif(name):
-            return '{%s}%s' % (self.RIFCS_NS, name)
+            return '{%s}%s' % (RIFCS_NS, name)
         def _get_id(metadata):
-            return self.get_rifcs_id(metadata.getMap().get('id'), self._site)
+            return RifCsUserProvider.get_rifcs_id(metadata.getMap().get('id'), site)
         def _get_group(metadata):
             return metadata.getMap().get('group', getattr(settings,
                                                           'RIFCS_GROUP', ''))
         def _get_originating_source(metadata):
             # TODO: Handle repository data from federated MyTardis instances
-            return "http://%s/" % self._site.domain
+            return "http://%s/" % site.domain
         # registryObjects
         wrapper = SubElement(element, _nsrif('registryObjects'), \
-                       nsmap={None: self.RIFCS_NS, 'xsi': NS_XSI} )
+                       nsmap={None: RIFCS_NS, 'xsi': NS_XSI} )
         wrapper.set('{%s}schemaLocation' % NS_XSI,
-                    '%s %s' % (self.RIFCS_NS, self.RIFCS_SCHEMA))
+                    '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
         # registryObject
         obj = SubElement(wrapper, _nsrif('registryObject') )
         obj.set('group', _get_group(metadata))
@@ -191,13 +194,13 @@ class RifCsUserProvider(BaseProvider):
         for experiment in metadata.getMap().get('collected_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
+                RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isCollectorOf')
         for experiment in metadata.getMap().get('owns_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
+                RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isManagerOf')
 
