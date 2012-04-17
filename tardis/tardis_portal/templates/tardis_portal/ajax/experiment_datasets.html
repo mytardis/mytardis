@@ -83,17 +83,15 @@
         <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
           <label class="checkbox">
             <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
-            <strong style="text-transform: uppercase;">Dataset {{ forloop.counter }}</strong>
+            <span style="text-transform: uppercase; font-weight: bold">
+              Dataset #{{ forloop.counter }}:
+            </span>
+            {{ dataset.description|safe }}
           </label>
         </span>
       </div> <!-- dataset title -->
 
       <div class="dataset_info">
-        <dl class="dataset_description">
-          <dt>Dataset Description</dt>
-          <dd>{{ dataset.description|safe }}</dd>
-        </dl> <!-- dataset_description -->
-
         <dl>
           <dt>Dataset Metadata</dt>
           <dd>

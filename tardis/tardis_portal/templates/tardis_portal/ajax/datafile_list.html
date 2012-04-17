@@ -58,20 +58,27 @@ File filter: <input title='Enter part or all of a filename, then press enter. e.
 </p>
 
 
-{% if has_download_permissions %}
-Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
-{% endif %}
 
-<div class="container-fluid">
+
+<table class="datafiles table table-condensed">
+{% if has_download_permissions %}
+<thead>
+<tr>
+<td colspan="3">
+Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
+</td>
+</tr>
+</thead>
+{% endif %}
+<tbody>
 {% for datafile in dataset.object_list %}
-<div style="margin-top: 10px; margin-bottom: 10px;"
-  class="row-fluid datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
-  <div class="span1">
+<tr class="datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
+  <td class="span1">
     {% if has_download_permissions %}
     <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
     {% endif %}
-  </div>
-  <div class="span4">
+  </td>
+  <td class="span8">
     <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
     {% if has_download_permissions and datafile.get_view_url %}
     <a  class="filelink"
@@ -83,9 +90,12 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
     {% endif %}
     </span>
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-  </div>
-  <div class="span3">
-    <div class="btn-group">
+
+    <ul class="datafile_info" style="display:none;">
+    </ul>
+  </td>
+  <td class="span3">
+    <div class="btn-group pull-right">
       {% if has_download_permissions %}
       <a  class="btn btn-primary"
           href="{{ datafile.get_download_url }}"
@@ -106,15 +116,21 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
           <i class="icon-list"></i>
       </a>
     </div>
-  </div>
-
-  <div class="span12">
-    <ul class="datafile_info" style="display:none;">
-    </ul>
-  </div>
-</div>
+  </td>
+</tr>
 {% endfor %}
-</div>
+</tbody>
+</table>
+<script type="text/javascript">
+(function() {
+  var btnGroups = $('tr.datafile .btn-group');
+  var addWidths = function(memo, v, k) {
+    return memo + $(v).outerWidth();
+  };
+  var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0);
+  btnGroups.css('width', calculatedWidth+"px");
+})();
+</script>
 
 
 {{ paginator_block }}

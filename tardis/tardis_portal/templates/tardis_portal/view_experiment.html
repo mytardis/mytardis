@@ -8,7 +8,6 @@
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
-        console.debug($this.parents('.dataset_datafiles'))
         var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
 
         $this.toggleClass('files_shown files_hidden');
@@ -59,10 +58,10 @@
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
-        $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+        $(this).parents('.datafiles').find('.datafile_checkbox').attr("checked", "checked");
     });
     jQuery('.dataset_selector_none').live('click', function() {
-        $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+        $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
     });
 
     function get_new_parameter_name(name)
