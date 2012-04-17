@@ -10,7 +10,8 @@ import oaipmh.error
 import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment, License, UserProfile
+from tardis.tardis_portal.models import \
+    Experiment, ExperimentACL, License, UserProfile
 
 def _create_test_data():
     user = User(username='tom',
@@ -18,7 +19,9 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
-    UserProfile(user=user).save()
+    user2 = User(username='otheradmin', email='otheradmin@example.test')
+    user2.save()
+    map(lambda u: UserProfile(user=u).save(), [user, user2])
     license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
                        url='http://creativecommons.org/licenses/by-nd/2.5/au/',
                        internal_description='CC BY 2.5 AU',
@@ -30,6 +33,15 @@ def _create_test_data():
     experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
     experiment.license = license_
     experiment.save()
+    acl = ExperimentACL(experiment=experiment,
+                    pluginId='django_user',
+                    entityId=str(user2.id),
+                    isOwner=True,
+                    canRead=True,
+                    canWrite=True,
+                    canDelete=True,
+                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
     return (user, experiment)
 
 class EndpointTestCase(TestCase):

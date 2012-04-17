@@ -18,7 +18,9 @@ from ...provider.experiment import AbstractExperimentProvider, \
     DcExperimentProvider, RifCsExperimentProvider
 
 def _create_test_data():
-    user = User(username='testuser')
+    user = User(username='testuser',
+                first_name="Voltaire",
+                email='voltaire@gmail.com')
     user.save()
     UserProfile(user=user).save()
     experiment = Experiment(title='Norwegian Blue',

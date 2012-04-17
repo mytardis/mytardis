@@ -122,7 +122,8 @@ class AbstractExperimentProvider(BaseProvider):
         from sets import Set
         experiments = Experiment.objects\
             .select_related('created_by')\
-            .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
+            .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
+            .exclude(description='')
         # Filter based on boundaries provided
         if from_:
             from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
@@ -131,7 +132,9 @@ class AbstractExperimentProvider(BaseProvider):
             until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
             experiments = experiments.filter(update_time__lte=until)
         def get_users_from_experiment(experiment):
-            return chain([experiment.created_by], experiment.get_owners())
+            return filter(lambda u: u.get_profile().isValidPublicContact(),
+                          chain([experiment.created_by],
+                                experiment.get_owners()))
         users = chain(map(get_users_from_experiment, experiments))
         return Set(chain(experiments, *users))
 
