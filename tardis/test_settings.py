@@ -207,7 +207,6 @@ DOI_BASE_URL='http://mytardis.example.com'
 OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
-    'tardis.apps.oaipmh.provider.user.RifCsUserProvider',
 ]
 
 
