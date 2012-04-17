@@ -9,6 +9,8 @@
     <dt>Author{{ authors|pluralize }}</dt>
     {% for author in authors %}
       <dd property="dc:creator">{{ author.author }}</dd>
+    {% empty %}
+      <dd><em>None listed</em></dd>
     {% endfor %}
   </dl>
   {% endblock authors %}
@@ -16,9 +18,13 @@
   {% block abstract %}
   <dl>
     <dt>Abstract</dt>
-    <dd property="dc:abstract">
-      {{ experiment.description|safe }}
-    </dd>
+    {% if experiment.description %}
+      <dd property="dc:abstract">
+        {{ experiment.description|safe }}
+      </dd>
+    {% else %}
+      <dd><em>None provided</em></dd>
+    {% endif %}
   </dl>
   {% endblock abstract %}
 
@@ -38,7 +44,7 @@
   {% block institution %}
   <dl>
     <dt>Institution</dt>
-    <dd>{{experiment.institution_name}}</dd>
+    <dd>{{experiment.institution_name|default:""}}</dd>
   </dl>
   {% endblock institution %}
 
