@@ -10,12 +10,20 @@ def get_local_time(dt):
 
     If the USE_TZ setting in the current dev version of Django comes in,
     this *should* keep providing correct behaviour.
+    (SteveB: that comment dates from a previous version of this function - I don't
+    know if it's still true.)
     '''
-    # If datetime is already naive, simply set TZ
+    # If datetime is already  naive, simply set TZ
     if (dt.tzinfo == None):
         return LOCAL_TZ.localize(dt)
     # Otherwise convert
     return LOCAL_TZ.normalize(dt.astimezone(LOCAL_TZ))
+
+def get_local_time_naive(dt):
+    '''
+    Ensure datetime is timezone-naive and in local time.
+    '''
+    return get_local_time(dt).replace(tzinfo=None)
 
 def get_utc_time(dt):
     '''
