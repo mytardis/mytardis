@@ -320,7 +320,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                                _nsrif('address')),
                                     _nsrif('electronic'))
             electronic.set('type', 'url')
-            electronic.text = _get_location(metadata)
+            electronic_value = SubElement(electronic, _nsrif('value'))
+            electronic_value.text = _get_location(metadata)
+
             # rights
             rights = SubElement(collection, _nsrif('rights') )
             access = SubElement(rights, _nsrif('accessRights') )
@@ -425,7 +427,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                                            _nsrif('address')),
                                 _nsrif('electronic'))
         electronic.set('type', 'email')
-        electronic.text = metadata.getMap().get('email')
+        electronic_value = SubElement(electronic, _nsrif('value'))
+        electronic_value.text = metadata.getMap().get('email')
 
         owns_experiments = list(metadata.getMap().get('owns_experiments'))
         for experiment in metadata.getMap().get('collected_experiments'):

@@ -113,13 +113,14 @@ class EndpointTestCase(TestCase):
                                 namespaces=ns)[0]) \
                                 .to_equal(experiment.description)
         # <location>
-        #     <address>
-        #         <electronic type="url">
-        #            http://keydomain.test.example/experiment/view/1/
-        #         </electronic>
-        #     </address>
+        #   <address>
+        #     <electronic type="url">
+        #       <value>http://keydomain.test.example/experiment/view/1/</value>
+        #     </electronic>
+        #   </address>
         # </location>
-        loc_xpath = 'r:location/r:address/r:electronic[@type="url"]/text()'
+        loc_xpath = 'r:location/r:address/r:electronic[@type="url"]'\
+                    +'/r:value/text()'
         expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
                 .to_equal('http://example.com/experiment/view/%d/' %
                           experiment.id)
@@ -176,7 +177,8 @@ class EndpointTestCase(TestCase):
         #         <electronic type="email">tommy@atkins.net</electronic>
         #     </address>
         # </location>
-        loc_xpath = 'r:location/r:address/r:electronic[@type="email"]/text()'
+        loc_xpath = 'r:location/r:address/r:electronic[@type="email"]'\
+                    +'/r:value/text()'
         expect(collection.xpath(loc_xpath, namespaces=ns)[0]) \
                 .to_equal(user.email)
         # <relatedObject>
