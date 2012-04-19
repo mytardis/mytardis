@@ -1,0 +1,85 @@
+[
+    {
+        "pk": null,
+        "model": "tardis_portal.schema",
+        "fields": {
+            "type": 1,
+            "namespace": "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo",
+            "name": "Related Info",
+            "subtype": "related-info-experiment",
+            "immutable": false
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "type",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "publication,website",
+            "comparison_type": 1,
+            "full_name": "Type",
+            "units": "",
+            "order": 10,
+            "immutable": false,
+            "schema": [
+                "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "identifier",
+            "data_type": 3,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Identifier",
+            "units": "",
+            "order": 30,
+            "immutable": false,
+            "schema": [
+                "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "title",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Title",
+            "units": "",
+            "order": 20,
+            "immutable": false,
+            "schema": [
+                "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "notes",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Notes",
+            "units": "",
+            "order": 40,
+            "immutable": false,
+            "schema": [
+                "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo"
+            ]
+        }
+    }
+]

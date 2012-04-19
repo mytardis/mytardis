@@ -31,7 +31,7 @@ setup(
         'django-celery',
         'django-kombu',
         'pysolr',
-        'beautifulsoup',
+        'beautifulsoup4',
         'south',
         'httplib2',
         'python-magic', # File type detection

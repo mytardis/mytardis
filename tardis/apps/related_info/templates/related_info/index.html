@@ -1,0 +1,13 @@
+<script type="text/javascript">
+$(function(){
+
+  var RelatedInfo = new Backbone.Collection();
+  RelatedInfo.url = '{% url tardis.apps.related_info.views.list_related_info experiment.id %}';
+
+  RelatedInfo.fetch({
+    'success': function(collection, response) {
+      console.debug(collection.models);
+    }
+  });
+});
+</script>

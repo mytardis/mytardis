@@ -16,9 +16,8 @@ import django_jasmine.urls
 
 def getTardisApps():
     return map(lambda app: app.split('.').pop(),
-                  filter(
-                         lambda app: app.startswith(settings.TARDIS_APP_ROOT),
-                         settings.INSTALLED_APPS))
+               filter(lambda app: app.startswith(settings.TARDIS_APP_ROOT),
+                      settings.INSTALLED_APPS))
 
 handler500 = 'tardis.views.error_handler'
 
@@ -165,7 +164,7 @@ display_urls = patterns(
 apppatterns = patterns('',)
 for app in getTardisApps():
     apppatterns += patterns('tardis.apps',
-                            (r'^%s/' % app,
+                            (r'^%s/' % app.replace('_','-'),
                              include('%s.%s.urls' %
                                      (settings.TARDIS_APP_ROOT, app))))
 urlpatterns = patterns(
