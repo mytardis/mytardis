@@ -69,7 +69,7 @@
         "model": "tardis_portal.parametername",
         "fields": {
             "name": "notes",
-            "data_type": 2,
+            "data_type": 7,
             "is_searchable": false,
             "choices": "",
             "comparison_type": 1,

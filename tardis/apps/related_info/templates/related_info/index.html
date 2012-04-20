@@ -1,13 +1,25 @@
+{% load mustachejs %}
+
+{% mustachejs "related_info/blank_form" %}
+
 <script type="text/javascript">
 $(function(){
 
   var RelatedInfo = new Backbone.Collection();
-  RelatedInfo.url = '{% url tardis.apps.related_info.views.list_related_info experiment.id %}';
+  RelatedInfo.url =
+    '{% url tardis.apps.related_info.views.list_or_create_related_info experiment.id %}';
 
   RelatedInfo.fetch({
     'success': function(collection, response) {
-      console.debug(collection.models);
+      // console.debug(collection.models);
+      // _.each(collection.models, function(v, k) {
+      //   $('#related-info-forms').append(Mustache.to_html(
+      //       Mustache.TEMPLATES['related_info/blank_form'],
+      //       v.attributes, Mustache.TEMPLATES));
+      // });
     }
   });
 });
 </script>
+
+<div id="related-info-forms"></div>
