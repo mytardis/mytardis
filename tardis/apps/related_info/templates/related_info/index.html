@@ -1,25 +1,190 @@
 {% load mustachejs %}
 
-{% mustachejs "related_info/blank_form" %}
+{% mustachejs "related_info/publication" %}
+{% mustachejs "related_info/website" %}
+
+<div class="modal" id="modal-add-related-info" style="display: none">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>Add/Edit Related Info</h3>
+  </div>
+  <div class="modal-body">
+    <form class="related-info form-horizontal">
+      <div class="control-group">
+        <div class="controls">
+          <input type="hidden" name="type" />
+          <div class="btn-group">
+            <button class="related-info-type btn">
+              <i class="icon-file"></i>
+              Publication
+            </button>
+            <button class="related-info-type btn">
+              <i class="icon-pushpin"></i>
+              Website
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">URL</div>
+        <div class="controls">
+          <input type="text" name="identifier" class="span3"
+                 placeholder="http://www.example.org/" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Title</div>
+        <div class="controls">
+          <input type="text" name="title" maxlength="100" class="span3"/>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="control-label">Notes</div>
+        <div class="controls">
+          <textarea rows="10" class="span3" name="notes"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="save-related-info btn btn-success">
+      Save changes
+    </button>
+  </div>
+</div>
+
+<button class="add-related-info btn btn-primary pull-right">
+  <i class="icon-plus"></i>
+  Add new
+</button>
+
+<div id="related-info-items"></div>
 
 <script type="text/javascript">
-$(function(){
+$(function() {
 
   var RelatedInfo = new Backbone.Collection();
   RelatedInfo.url =
     '{% url tardis.apps.related_info.views.list_or_create_related_info experiment.id %}';
+  RelatedInfo.model.prototype.validate = function(attrs) {
+    if (_.isNull(attrs.identifier) || attrs.identifier == '') {
+      return "URL may not be empty";
+    }
+  };
 
-  RelatedInfo.fetch({
-    'success': function(collection, response) {
-      // console.debug(collection.models);
-      // _.each(collection.models, function(v, k) {
-      //   $('#related-info-forms').append(Mustache.to_html(
-      //       Mustache.TEMPLATES['related_info/blank_form'],
-      //       v.attributes, Mustache.TEMPLATES));
-      // });
+  var refreshItemDisplay = function(msg) {
+    $('#related-info-items').empty();
+    RelatedInfo.each(function(v, k) {
+      var template = 'related_info/'+v.get('type');
+      var item = $('<div/>')
+        .addClass('related-info-item')
+        .prop('model', v)
+        .html(Mustache.to_html(
+            Mustache.TEMPLATES[template],
+            v.attributes, Mustache.TEMPLATES));
+      $('#related-info-items').append(item);
+    });
+  };
+
+  RelatedInfo.on('add', refreshItemDisplay);
+  RelatedInfo.on('change', refreshItemDisplay);
+  RelatedInfo.on('destroy', refreshItemDisplay);
+
+  RelatedInfo.fetch({ success: refreshItemDisplay });
+
+  var dialog = $('#modal-add-related-info')
+  dialog.modal({'show': false});
+  $('button.add-related-info').click(function() {
+    // Clear all data
+    $('form.related-info').find('input, textarea').val('').change();
+    $('form.related-info').prop('model', new RelatedInfo.model );
+    dialog.modal('show')
+  });
+
+  $('#related-info-items').on('click', '.edit-related-info', function(evt) {
+    evt.preventDefault();
+    var form = $('form.related-info');
+    var model = $(this).parents('.related-info-item').prop('model');
+    // Clear data
+    $('form.related-info').find('input, textarea').val('')
+    // Load data
+    _.each(form.find('input, textarea'), function(field) {
+      $(field).val(model.get($(field).prop('name'))).change();
+    });
+    $('form.related-info').prop('model', model);
+    dialog.modal('show')
+  });
+
+  $('#related-info-items').on('click', '.delete-related-info', function(evt) {
+    evt.preventDefault();
+    var model = $(this).parents('.related-info-item').prop('model');
+    model.destroy();
+  });
+
+  $('button.save-related-info').click(function() {
+    var form = $('form.related-info');
+    var model = form.prop('model');
+    _.each(form.find('input, textarea'), function(field) {
+      model.set($(field).prop('name'), $(field).val());
+    });
+    if (model.isValid()) {
+      if (model.isNew()) {
+        RelatedInfo.create(model, {'wait': true});
+      } else if (model.hasChanged()) {
+        model.save(model, {'wait': true});
+      }
+      dialog.modal('hide');
     }
   });
 });
-</script>
 
-<div id="related-info-forms"></div>
+// Button group selector for type
+(function() {
+  var buttons = $('form.related-info button.related-info-type');
+  // Set the button values based on their text
+  _.each(buttons, function(button) {
+    $(button).prop('value', _.underscored($(button).text()));
+  });
+  buttons.click(function(evt) {
+    evt.preventDefault();
+    var form = $('form.related-info');
+    // Set the form type
+    form.find('input[name="type"]').val($(this).prop('value'));
+    // Toggle the button display
+    buttons.removeClass('active');
+    $(this).addClass('active');
+    // Configure placeholders
+    var placeholders = {
+      'publication': {
+        'identifier': 'http://journal.com/the-publication',
+        'title': 'Publication title',
+        'notes': 'Provide citation information for the publication...'
+      },
+      'website': {
+        'identifier': 'http://my.website.url/the-specific-doc',
+        'title': 'Website document title',
+        'notes': 'Describe how this website is related...'
+      }
+    };
+    _.each(placeholders[$(this).prop('value')], function(v, k) {
+      form.find('*[name="'+k+'"]').prop('placeholder', v);
+    });
+  });
+  // On value change, simulate button click
+  $('form.related-info input[name="type"]').change(function() {
+    buttons.removeClass('active');
+    var value = $(this).val();
+    var selected = buttons.filter(function() {
+      return $(this).prop('value') == value;
+    });
+    if (selected.size() > 0) {
+      selected.click();
+    } else {
+      buttons.first().click();
+    }
+  });
+})();
+</script>
