@@ -345,21 +345,16 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
             licence_.text = metadata.getMap().get('licence_name')
             # related object - collectors
-            managers = list(metadata.getMap().get('managers'))
             for collector in metadata.getMap().get('collectors'):
-                relationships = ['hasCollector']
-                if collector in managers:
-                    relationships.append('isManagedBy')
-                    managers.remove(collector)
-                self.writeRelatedObject(collection, collector, relationships)
+                self.writeRelatedObject(collection, collector, 'hasCollector')
             # related object - managers
-            for manager in managers:
-                self.writeRelatedObject(collection, manager, ['isManagedBy'])
+            for manager in metadata.getMap().get('managers'):
+                self.writeRelatedObject(collection, manager, 'isManagedBy')
             # related info
             for ri in metadata.getMap().get('related_info'):
                 self.writeRelatedInfo(collection, ri)
 
-        def writeRegistryObjectsWrapper(self, ):
+        def writeRegistryObjectsWrapper(self):
             # <registryObjects
             #    xsi:schemaLocation="
             #        http://ands.org.au/standards/rif-cs/registryObjects
@@ -372,7 +367,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                         '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
             return wrapper
 
-        def writeRelatedObject(self, element, obj, relationsTypes):
+        def writeRelatedObject(self, element, obj, relation):
             # <relatedObject>
             #     <key>user/1</key>
             #     <relation type="isManagedBy"/>
@@ -387,9 +382,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             relatedObject = SubElement(element, self._nsrif('relatedObject') )
             SubElement(relatedObject, self._nsrif('key')).text = \
                 get_user_rifcs_id(obj.id, self.site)
-            for relation in relationsTypes:
-                SubElement(relatedObject, self._nsrif('relation')) \
-                    .set('type', relation)
+            SubElement(relatedObject, self._nsrif('relation')) \
+                .set('type', relation)
 
         def writeRelatedInfo(self, element, obj):
             # <relatedInfo type="website">
@@ -458,18 +452,13 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic_value = SubElement(electronic, _nsrif('value'))
         electronic_value.text = metadata.getMap().get('email')
 
-        owns_experiments = list(metadata.getMap().get('owns_experiments'))
         for experiment in metadata.getMap().get('collected_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isCollectorOf')
-            if experiment in owns_experiments:
-                SubElement(relatedObject, _nsrif('relation')) \
-                    .set('type', 'isManagerOf')
-                owns_experiments.remove(experiment)
-        for experiment in owns_experiments:
+        for experiment in metadata.getMap().get('owns_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
