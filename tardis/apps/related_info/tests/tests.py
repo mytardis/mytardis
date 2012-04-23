@@ -50,14 +50,14 @@ class TabTestCase(TestCase):
         self.client = client
         self.experiment = experiment
 
-    def testAccessWhenAnonymous(self):
+    def testAccessWithoutReadPerms(self):
         client = Client()
         response = client.get(\
                     reverse('tardis.apps.related_info.views.index',
                             args=[self.experiment.id]))
         expect(response.status_code).to_equal(403)
 
-    def testAccessWhenLoggedIn(self):
+    def testAccessWithReadPerms(self):
         response = self.client.get(\
                     reverse('tardis.apps.related_info.views.index',
                             args=[self.experiment.id]))
@@ -170,6 +170,7 @@ class GetTestCase(TestCase):
         acl.save()
         self.client = client
         self.experiment = experiment
+
 
     def testHandlesNotFound(self):
         response = self.client.get(\

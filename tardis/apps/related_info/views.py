@@ -44,9 +44,13 @@ def index(request, experiment_id):
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
-    c = Context({'experiment': experiment, 'form': RelatedInfoForm()})
-    return HttpResponse(render_response_index(request,
-                        'related_info/index.html', c))
+    c = Context({'experiment': experiment})
+
+    if authz.has_write_permissions(request, experiment_id):
+        template = 'related_info/index.html'
+    else:
+        template = 'related_info/index_ro.html'
+    return HttpResponse(render_response_index(request, template, c))
 
 
 def list_or_create_related_info(request, *args, **kwargs):

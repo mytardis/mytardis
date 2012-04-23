@@ -12,7 +12,15 @@
   // Mixin Underscore.String to Underscore.js
   _.mixin(_.string.exports());
 </script>
+<!-- Backbone.js -->
 <script type="text/javascript" src="{{ STATIC_URL }}js/lib/backbone-min.js"></script>
+<!-- Backbone Forms -->
+<link rel="stylesheet" type="text/css"
+        href="{{ STATIC_URL }}backbone-forms/backbone-forms.css"/>
+<script src="{{ STATIC_URL }}backbone-forms/backbone-forms.js"></script>
+<script src="{{ STATIC_URL }}backbone-forms/jquery-ui-editors.js"></script>
+<script src="{{ STATIC_URL }}backbone-forms/templates/bootstrap.js"></script>
+
 {# Supplied by django-mustachejs #}
 <script type="text/javascript" src="{{ STATIC_URL }}mustache/js/mustache-0.3.0.js"></script>
 {% endblock %}
