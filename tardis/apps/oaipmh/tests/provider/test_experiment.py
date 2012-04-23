@@ -10,7 +10,6 @@ import oaipmh.interfaces
 
 import pytz
 
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import Experiment, License, User, UserProfile
 from tardis.tardis_portal.util import get_local_time
 
@@ -172,6 +171,8 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             .to_equal(License.get_none_option_license().url)
         expect(metadata.getField('licence_name'))\
             .to_equal(License.get_none_option_license().name)
+        expect(metadata.getField('related_info'))\
+            .to_equal([])
         expect(about).to_equal(None)
 
     def testListRecords(self):

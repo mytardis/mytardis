@@ -12,7 +12,9 @@ from oaipmh.server import Server, oai_dc_writer, NS_XSI
 
 import pytz
 
-from tardis.tardis_portal.models import Experiment, License, User
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
+from tardis.tardis_portal.models import Experiment, ExperimentParameterSet, \
+    License, User
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
@@ -208,6 +210,17 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                     " listed data manager."
         else:
             access = "All data is publicly available online."
+
+        def get_related_info(ps):
+            psm = ParameterSetManager(ps)
+            parameter_names = ['type','identifier','title','notes']
+            return dict([('id', ps.id)]+ # Use set ID
+                    zip(parameter_names,
+                        (psm.get_param(k, True) for k in parameter_names)))
+        ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
+        related_info = map(get_related_info, ExperimentParameterSet.objects\
+                                                .filter(experiment=experiment,
+                                                        schema__namespace=ns))
         return Metadata({
             '_writeMetadata': self._get_experiment_writer_func(),
             'id': experiment.id,
@@ -218,7 +231,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'licence_uri': license_.url,
             'access': access,
             'collectors': [experiment.created_by],
-            'managers': experiment.get_owners()
+            'managers': experiment.get_owners(),
+            'related_info': related_info
         })
 
     def _get_user_metadata(self, user, metadataPrefix):
@@ -341,6 +355,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             # related object - managers
             for manager in managers:
                 self.writeRelatedObject(collection, manager, ['isManagedBy'])
+            # related info
+            for ri in metadata.getMap().get('related_info'):
+                self.writeRelatedInfo(collection, ri)
 
         def writeRegistryObjectsWrapper(self, ):
             # <registryObjects
@@ -373,6 +390,17 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             for relation in relationsTypes:
                 SubElement(relatedObject, self._nsrif('relation')) \
                     .set('type', relation)
+
+        def writeRelatedInfo(self, element, obj):
+            # <relatedInfo type="website">
+            #   <identifier>http://www.example.test/</identifier>
+            #   <title>Website title</title>
+            #   <notes>Some text...</notes>
+            # </relatedInfo>
+            relatedInfo = SubElement(element, self._nsrif('relatedInfo') )
+            relatedInfo.set('type', obj['type'])
+            for e in ['identifier', 'title', 'notes']:
+                SubElement(relatedInfo, self._nsrif(e)).text = obj[e]
 
     def _get_user_writer_func(self):
         from functools import partial
