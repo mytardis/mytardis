@@ -92,6 +92,7 @@ class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(models.Experiment, ExperimentAdmin)
+admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.Dataset_File, DatafileAdmin)
 admin.site.register(models.Schema, SchemaAdmin)

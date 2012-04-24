@@ -40,7 +40,8 @@ def view_datafile(request, datafile_id):
     except Dataset_File.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
-    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
+    if not has_datafile_download_access(request=request,
+                                        dataset_file_id=datafile.id):
         return return_response_error(request)
     # Get actual url for datafile
     file_url = _get_actual_url(datafile)
@@ -65,7 +66,7 @@ def download_datafile(request, datafile_id):
     except Dataset_File.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
-    if not has_datafile_access(request=request, dataset_file_id=datafile.id):
+    if not has_datafile_download_access(request=request, dataset_file_id=datafile.id):
         return return_response_error(request)
     # Get actual url for datafile
     file_url = _get_actual_url(datafile)
@@ -100,7 +101,7 @@ def _create_download_response(datafile, file_url, disposition='attachment'):
         '%s; filename="%s"' % (disposition, datafile.filename)
     return response
 
-@experiment_access_required
+@experiment_download_required
 def download_experiment(request, experiment_id, comptype):
     """
     takes string parameter "comptype" for compression method.
@@ -174,8 +175,8 @@ def download_datafiles(request):
 
             for dsid in datasets:
                 for datafile in Dataset_File.objects.filter(dataset=dsid):
-                    if has_datafile_access(request=request,
-                                            dataset_file_id=datafile.id):
+                    if has_datafile_download_access(request=request,
+                                                    dataset_file_id=datafile.id):
                         p = datafile.protocol
                         if not p in protocols:
                             protocols += [p]
@@ -203,8 +204,8 @@ def download_datafiles(request):
                 datafile = Dataset_File.objects.get(pk=dfid)
                 if datafile.dataset.id in datasets:
                     continue
-                if has_datafile_access(request=request,
-                        dataset_file_id=datafile.id):
+                if has_datafile_download_access(request=request,
+                                                dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]
@@ -239,8 +240,8 @@ def download_datafiles(request):
                 experiment_id = request.POST['expid']
                 datafile = Dataset_File.objects.filter(url__endswith=raw_path,
                     dataset__experiment__id=experiment_id)[0]
-                if has_datafile_access(request=request,
-                                       dataset_file_id=datafile.id):
+                if has_datafile_download_access(request=request,
+                                                dataset_file_id=datafile.id):
                     p = datafile.protocol
                     if not p in protocols:
                         protocols += [p]

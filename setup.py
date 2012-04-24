@@ -7,7 +7,7 @@ CHANGES = open(os.path.join(here, 'docs/changes.rst')).read()
 
 setup(
     name="MyTARDIS",
-    version="1.99",
+    version="3.0.0-alpha1",
     url='http://code.google.com/p/mytardis/',
     license='BSD',
     description="Next iteration of the TARDIS framework. No digital " + \
@@ -39,5 +39,6 @@ setup(
         'iso8601',      # ISO8601 time formatting
         'pyoai',        # For OAI-PMH provider
         'Wand',         # For image file conversion
+        'django-mustachejs', # For client-side Mustache template helpers
         ],
 )

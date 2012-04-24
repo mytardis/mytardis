@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 """
 views.py
 
@@ -56,6 +57,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.core.exceptions import PermissionDenied
+from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
@@ -67,7 +69,7 @@ from tardis.tardis_portal.forms import ExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form, MXDatafileSearchForm
+    save_datafile_add_form, MXDatafileSearchForm, RightsForm, ManageAccountForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import add_datafile_to_dataset,\
@@ -77,7 +79,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
-    UserProfile, UserAuthentication, Token
+    License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -255,7 +257,7 @@ def experiment_index(request):
         if shared_experiments:
             shared_experiments = shared_experiments.order_by('-update_time')
 
-    public_experiments = Experiment.objects.filter(public=True)
+    public_experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
     if public_experiments:
         public_experiments = public_experiments.order_by('-update_time')
 
@@ -364,19 +366,7 @@ def experiment_description(request, experiment_id):
     c['datafiles'] = \
         Dataset_File.objects.filter(dataset__experiment=experiment_id)
 
-    acl = ExperimentACL.objects.filter(pluginId=django_user,
-                                       experiment=experiment,
-                                       isOwner=True)
-
-    # TODO: resolve usernames through UserProvider!
-    # Right now there are exceptions every time for ldap users..
-    c['owners'] = []
-    for a in acl:
-        try:
-            c['owners'].append(User.objects.get(pk=str(a.entityId)))
-        except User.DoesNotExist:
-            #logger.exception('user for acl %i does not exist' % a.id)
-            pass
+    c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
     size = 0
@@ -389,6 +379,9 @@ def experiment_description(request, experiment_id):
 
     c['has_read_or_owner_ACL'] = \
         authz.has_read_or_owner_ACL(request, experiment_id)
+
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
 
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -497,6 +490,9 @@ def experiment_datasets(request, experiment_id):
     c['datasets'] = \
          Dataset.objects.filter(experiment=experiment_id)
 
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
+
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
@@ -522,7 +518,7 @@ def retrieve_dataset_metadata(request, dataset_id):
 
     c = Context({'dataset': dataset, })
     c['has_write_permissions'] = has_write_permissions and \
-                                 not dataset.experiment.public
+                                 dataset.experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -536,7 +532,8 @@ def retrieve_experiment_metadata(request, experiment_id):
 
     c = Context({'experiment': experiment, })
     # If the experiment is public, we don't allow editing
-    c['has_write_permissions'] = has_write_permissions and not experiment.public
+    c['has_write_permissions'] = has_write_permissions and \
+                                 experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -601,7 +598,6 @@ def create_experiment(request,
 
         c['status'] = "Errors exist in form."
         c["error"] = 'true'
-
     else:
         form = ExperimentForm(extra=1)
 
@@ -981,6 +977,8 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         dataset = paginator.page(paginator.num_pages)
 
     is_owner = False
+    has_download_permissions = authz.has_dataset_download_access(request,
+                                                                 dataset_id)
     has_write_permissions = False
 
     if request.user.is_authenticated():
@@ -1002,6 +1000,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'filename_search': filename_search,
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
+        'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query' : query,
         'params' : params
@@ -2528,7 +2527,7 @@ class ExperimentSearchView(SearchView):
         if self.request.user.is_authenticated():
             access_list.extend([e.pk for e in authz.get_accessible_experiments(self.request)])
 
-        access_list.extend([e.pk for e in Experiment.objects.filter(public=True)])
+        access_list.extend([e.pk for e in Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)])
 
         ids = list(set(experiment_ids) & set(access_list))
         experiments = Experiment.objects.filter(pk__in=ids).order_by('-update_time')
@@ -2633,7 +2632,7 @@ def publish_experiment(request, experiment_id):
             legal = False
 
         if legal and success:
-            experiment.public = True
+            experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
             experiment.save()
 
         # set dictionary to legal status and publish success result
@@ -2686,18 +2685,37 @@ def publish_experiment(request, experiment_id):
 
 
 @authz.experiment_ownership_required
-def choose_license(request, experiment_id):
+def choose_rights(request, experiment_id):
+    '''
+    Choose access rights and licence.
+    '''
     experiment = Experiment.objects.get(id=experiment_id)
-    context_dict = {'submit': False,
-        'experiment': experiment}
-    if request.method == 'POST':
-        cch = CreativeCommonsHandler(experiment_id=experiment_id)
-        cch.save_license(request)
-        context_dict['submit'] = True
+    def is_valid_owner(owner):
+        if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
+            return True
+        return owner.get_profile().isValidPublicContact()
 
-    c = Context(context_dict)
+    # Forbid access if no valid owner is available (and show error message)
+    if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
+        c = Context({'no_valid_owner': True, 'experiment': experiment})
+        return HttpResponseForbidden(\
+                    render_response_index(request, \
+                        'tardis_portal/ajax/unable_to_choose_rights.html', c))
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = RightsForm(request.POST)
+        if form.is_valid():
+            experiment.public_access = form.cleaned_data['public_access']
+            experiment.license = form.cleaned_data['license']
+            experiment.save()
+    else:
+        form = RightsForm({ 'public_access': experiment.public_access,
+                            'license': experiment.license_id })
+
+    c = Context({'form': form, 'experiment': experiment})
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/choose_license.html', c))
+                        'tardis_portal/ajax/choose_rights.html', c))
 
 
 @require_POST
@@ -2766,3 +2784,29 @@ def view_rifcs(request, experiment_id):
                         template, context), mimetype="text/xml")
 
 
+def retrieve_licenses(request):
+    try:
+        type_ = int(request.REQUEST['public_access'])
+        licenses = License.get_suitable_licenses(type_)
+    except KeyError:
+        licenses = License.get_suitable_licenses()
+    return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
+
+@login_required
+def manage_user_account(request):
+    user = request.user
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = ManageAccountForm(request.POST)
+        if form.is_valid():
+            user.first_name = form.cleaned_data['first_name']
+            user.last_name = form.cleaned_data['last_name']
+            user.email = form.cleaned_data['email']
+            user.save()
+    else:
+        form = ManageAccountForm(instance=user)
+
+    c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/manage_user_account.html', c))

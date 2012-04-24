@@ -1,0 +1,191 @@
+{% block content %}
+
+<!-- Scripts -->
+{% load mustachejs %}
+{% mustachejs "tardis_portal/license_selector" %}
+{% mustachejs "tardis_portal/rights_update_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
+<script type="text/javascript">
+// Memoized AJAX call (which should make things snappier) to get license JSON
+var loadLicenses = async.memoize(function(public_access, callback) {
+  $.ajax({
+    url: '/ajax/license/list?public_access='+public_access,
+    dataType: 'json',
+    success: callback
+  });
+});
+
+var selectLicenseOption = function(value) {
+  var selectedOption = $('.license-option input[value="'+value+'"]')
+                        .parents('.license-option');
+  selectedOption.find('.use-button').prop('disabled', true);
+  selectedOption.find('.use-button').text('Selected');
+};
+
+var populateLicenseOptions = function(public_access, markSameLicense) {
+  loadLicenses(public_access, function(licenses) {
+    $('#license-options').empty();
+    _(licenses).each(function (license) {
+      $('#license-options').append(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/license_selector'],
+              license, Mustache.TEMPLATES)
+      );
+      if (markSameLicense)
+        selectLicenseOption($('form input[name="license"]').val());
+    });
+  });
+};
+</script>
+
+<!-- Confirmation Dialog -->
+<div class="modal hide fade" id="modal-legal">
+  <div class="modal-header">
+    <h1 class="title">Legal</h1>
+  </div>
+
+  <div class="modal-body form-horizontal">
+    <pre id="publishing-legal-text"></pre>
+    <label class="checkbox">
+      <input id="publishing-consent" type="checkbox" value="Agree" />
+      I agree to the above terms
+    </label>
+  </div>
+  <div class="modal-footer">
+    <button class="submit-button btn btn-success">
+      <i class="icon-ok"></i>
+      Confirm
+    </button>
+    <button class="cancel-button btn">
+      <i class="icon-cancel"></i>
+      Cancel
+    </button>
+  </div>
+</div>
+<script type="text/javascript">
+$('#publishing-consent').change(function() {
+  // (submit disabled) <=> !(consent checked)
+  $('#modal-legal .submit-button').prop('disabled', !$(this).prop('checked'))
+});
+// Disable submit button (as consent checkbox should start unchecked)
+$('#publishing-consent').trigger('change');
+// Disable consent until we've loaded the legal text
+$('#publishing-consent').prop('disabled', true)
+// Get legal text
+$.ajax({
+  url: '{{ STATIC_URL }}publishing_legal.txt',
+  dataType: 'html',
+  success: function(data) {
+    $('#publishing-legal-text').html(data);
+    $('#publishing-consent').prop('disabled', false);
+  }
+});
+
+$('#modal-legal .submit-button').click(function() {
+  // Submit form
+  $('form.experiment-rights').trigger('submit');
+  $('#modal-legal').modal('hide');
+});
+$('#modal-legal .cancel-button').click(function() {
+  // Just refresh this tab pane to reset previous values
+  $('#modal-legal').parents('.tab-pane').trigger('experiment-change');
+  $('#modal-legal').modal('hide');
+});
+</script>
+
+<!-- Selection form -->
+<form action="{% url tardis.tardis_portal.views.choose_rights experiment.id %}"
+      method="post" class="experiment-rights form-horizontal">
+  {% load bootstrap %}
+  {{ form|bootstrap }}
+
+  <!-- Public Access selector logic -->
+  <script type="text/javascript">
+  var publicAccessSelector = $('select[name="public_access"]');
+  // Remember the original value
+  publicAccessSelector.prop('originalValue', publicAccessSelector.val());
+  // Change licence options when the public access changes.
+  publicAccessSelector.change(function() {
+    populateLicenseOptions(
+      $(this).val(),
+      // So we can change public access levels without necessarilly changing
+      // licences, mark the current licence as selected only if the public
+      // access level is still the original.
+      $(this).prop('originalValue') == $(this).val()
+    );
+  });
+  // Set default state
+  publicAccessSelector.change();
+  </script>
+
+  <div id="license-options"></div>
+  <script type="text/javascript">
+  $(document).on('click', '#license-options .use-button', function(evt) {
+    // Get the selected ID from hidden input
+    var id = $(this).parents('.license-option').find('input.license-id').val();
+    // Set the licence ID for the form
+    $(this).parents('form').find('input[name="license"]').val(id);
+    // Enable all buttons, then disable the one we selected
+    $(this).parents('#license-options')
+           .find('.use-button')
+           .prop('disabled', false)
+           .text('Use');
+    $(this).prop('disabled', true);
+    $(this).text('Selected');
+    // Hide any current messages
+    $(this).parents('.tab-pane').find('.alert .close').click();
+    // Show confirmation window
+    $('#modal-legal').modal('show');
+  });
+  </script>
+
+
+</form>
+<script type="text/javascript">
+$('form.experiment-rights').submit(function(evt) {
+  evt.preventDefault();
+  var form = $(evt.target);
+
+  // Get data for success message
+  var templateData = _.reduce(form.serializeArray(), function(obj, v) {
+    obj[v['name']] = v['value'];
+    return obj
+  }, {});
+  templateData['changed_access'] =
+    (templateData['public_access'] !=
+      $('select[name="public_access"]').prop('originalValue'));
+
+  // Submit form
+  $.ajax({
+    type: form.attr('method'),
+    url:  form.attr('action'),
+    data: form.serialize(),
+    success: function(data) {
+      var thisTabPane = $(form).parents('.tab-pane');
+      // Load new values into pane
+      thisTabPane.html(data);
+      // Notify the *other* panes
+      $('.tab-pane').not(thisTabPane).trigger('experiment-change');
+      // Show update message
+      $('form.experiment-rights').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/rights_update_message'],
+              templateData, Mustache.TEMPLATES)
+      );
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      var errorData = {'message': errorThrown};
+      errorData[textStatus] = true;
+      // Show error message
+      $('form.experiment-rights').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/ajax_error'],
+              errorData, Mustache.TEMPLATES)
+      );
+    }
+  });
+});
+</script>
+
+{% endblock %}
+

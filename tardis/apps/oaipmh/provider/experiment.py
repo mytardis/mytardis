@@ -12,8 +12,7 @@ from oaipmh.server import Server, oai_dc_writer, NS_XSI
 
 import pytz
 
-from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, License
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
@@ -97,7 +96,7 @@ class AbstractExperimentProvider(BaseProvider):
 
     @staticmethod
     def _get_in_range(from_, until):
-        experiments = Experiment.objects.filter(public=True)
+        experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         # Filter based on boundaries provided
         if from_:
             from_ = get_local_time(from_.replace(tzinfo=pytz.utc)) # UTC->local
@@ -164,17 +163,25 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             return []
 
     def _get_metadata(self, experiment, metadataPrefix):
-        cch = CreativeCommonsHandler(experiment_id=experiment.id)
-        cch_psm = cch.get_or_create_cc_parameterset(False)
+        license_ = experiment.license or License.get_none_option_license()
+        # Access Rights statement
+        if experiment.public_access == Experiment.PUBLIC_ACCESS_METADATA:
+            access = "Only metadata is publicly available online."+\
+                    " Requests for further access should be directed to a"+\
+                    " listed data manager."
+        else:
+            access = "All data is publicly available online."
         return Metadata({
             '_metadata_source': self,
             'id': experiment.id,
             'title': experiment.title,
             'description': experiment.description,
             # Note: Property names are US-spelling, but RIF-CS is Australian
-            'licence_name': cch_psm.get_param('license_name', True),
-            'licence_uri': cch_psm.get_param('license_uri', True),
-            'owner': experiment.created_by
+            'licence_name': license_.name,
+            'licence_uri': license_.url,
+            'access': access,
+            'collectors': [experiment.created_by],
+            'managers': experiment.get_owners()
         })
 
     def _handles_metadata_prefix(self, metadataPrefix):
@@ -236,16 +243,31 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic.text = _get_location(metadata)
         # rights
         rights = SubElement(collection, _nsrif('rights') )
+        access = SubElement(rights, _nsrif('accessRights') )
+        access.text = metadata.getMap().get('access')
         licence_ = SubElement(rights, _nsrif('licence') )
         licence_.set('rightsUri', metadata.getMap().get('licence_uri'))
         licence_.text = metadata.getMap().get('licence_name')
-        # related object - owner
-        relatedObject = SubElement(collection, _nsrif('relatedObject') )
-        SubElement(relatedObject, _nsrif('key')).text = \
-            RifCsUserProvider.get_rifcs_id(metadata.getMap().get('owner').id,
-                                           self._site)
-        SubElement(relatedObject, _nsrif('relation')) \
-            .set('type', 'hasCollector')
+        # related object - collectors
+        for collector in metadata.getMap().get('collectors'):
+            if not collector.get_profile().isValidPublicContact():
+                continue
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsUserProvider.get_rifcs_id(collector.id,
+                                               self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'hasCollector')
+        # related object - managers
+        for manager in metadata.getMap().get('managers'):
+            if not manager.get_profile().isValidPublicContact():
+                continue
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsUserProvider.get_rifcs_id(manager.id,
+                                               self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'isManagedBy')
 
 
 

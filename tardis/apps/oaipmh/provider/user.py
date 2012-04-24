@@ -104,7 +104,7 @@ class RifCsUserProvider(BaseProvider):
 
     @staticmethod
     def _get_in_range(from_, until):
-        users = User.objects.filter(experiment__public__exact=True)
+        users = User.objects.exclude(experiment__public_access=Experiment.PUBLIC_ACCESS_NONE)
         # Filter based on boundaries provided
         # Use of "last_login" is not ideal, but should work well enough for now.
         if from_:
@@ -113,20 +113,23 @@ class RifCsUserProvider(BaseProvider):
         if until:
             until = get_local_time(until.replace(tzinfo=pytz.utc)) # UTC->local
             users = users.filter(last_login__lte=until)
-
+        users = users.exclude(first_name='').exclude(email='')
         return users
 
     def _get_metadata(self, user, metadataPrefix):
-        # TODO: Is this the right definition of "ownership"?
-        owned_experiments = Experiment.objects.filter(public=True,
-                                                      created_by=user)
+        collected_experiments = \
+            Experiment.objects.filter(created_by=user) \
+                        .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
+        owns_experiments = Experiment.safe.owned_by_user_id(user.id)\
+                                          .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         return Metadata({
             '_metadata_source': self,
             'id': user.id,
             'email': user.email,
             'given_name': user.first_name,
             'family_name': user.last_name,
-            'owns': owned_experiments
+            'collected_experiments': collected_experiments,
+            'owns_experiments': owns_experiments,
         })
 
     def _handles_metadata_prefix(self, metadataPrefix):
@@ -173,6 +176,8 @@ class RifCsUserProvider(BaseProvider):
         namePartMap = {'given': metadata.getMap().get('given_name'),
                        'family': metadata.getMap().get('family_name')}
         for k,v in namePartMap.items():
+            if v == '': # Exclude empty parts
+                continue
             namePart = SubElement(name, _nsrif('namePart'))
             namePart.set('type', k)
             namePart.text = v
@@ -183,12 +188,18 @@ class RifCsUserProvider(BaseProvider):
                                 _nsrif('electronic'))
         electronic.set('type', 'email')
         electronic.text = metadata.getMap().get('email')
-        for experiment in metadata.getMap().get('owns'):
+        for experiment in metadata.getMap().get('collected_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isCollectorOf')
+        for experiment in metadata.getMap().get('owns_experiments'):
+            relatedObject = SubElement(collection, _nsrif('relatedObject') )
+            SubElement(relatedObject, _nsrif('key')).text = \
+                RifCsExperimentProvider.get_rifcs_id(experiment.id, self._site)
+            SubElement(relatedObject, _nsrif('relation')) \
+                .set('type', 'isManagerOf')
 
 
 

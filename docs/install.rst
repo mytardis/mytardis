@@ -155,6 +155,28 @@ Repository
    The path to the staging path. This is where new files to be
    included in datasets will be sourced.
 
+Access Rights & Licensing
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Licences
+^^^^^^^^
+
+By default, no licences are loaded. A user can make metadata public without assigning a licence, but they cannot allow public access to their data.
+
+Creative Commons licences (for Australia) are available in ``tardis/tardis_portal/fixtures/cc_licenses.json``. You can load them with ``django loaddata``.
+
+You can use the admin interface to add other licences. Please ensure ``allows_distribution`` is set to the correct value to ensure the licence appears in conjunction with suitable public access types.
+
+
+Legal Notice
+^^^^^^^^^^^^
+
+When changing the public access rights or licence for an experiment, a
+legal notice is displayed. You can override it by either:
+
+#. creating a new app (probably your site theme) and putting your legal text in ``tardis/apps/<app_name>/static/publishing_legal.txt``, or 
+#. directly making changes to ``tardis/tardis_portal/static/publishing_legal.txt``.
+
 Filters
 ~~~~~~~
 
@@ -224,7 +246,7 @@ To collect all the static files to a single directory::
 Serving with Apache HTTPD + mod_wsgi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-See `./apache` for example configurations.
+See ``./apache`` for example configurations.
 
 Serving with Nginx + uWSGI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

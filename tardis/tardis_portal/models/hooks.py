@@ -8,6 +8,9 @@ from .experiment import Experiment, Author_Experiment
 from .datafile import Dataset_File
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
+import logging
+logger = logging.getLogger(__name__)
+
 ### Staging hook ###
 
 staging_hook = StagingHook()
@@ -22,7 +25,11 @@ def publish_public_expt_rifcs(experiment):
         providers = None
     from tardis.tardis_portal.publish.publishservice import PublishService
     pservice = PublishService(providers, experiment)
-    pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+    try:
+        pservice.manage_rifcs(settings.OAI_DOCS_PATH)
+    except:
+        logger.error('RIF-CS publish hook failed for experiment %d.'\
+                     % experiment.id)
 
 @receiver(post_save, sender=Author_Experiment)
 @receiver(post_delete, sender=Author_Experiment)
@@ -55,7 +62,7 @@ def post_save_experiment(sender, **kwargs):
 @receiver(post_save, sender=Experiment)  # THIS MUST BE DEFINED BEFORE GENERATING RIF-CS
 def ensure_doi_exists(sender, **kwargs):
     experiment = kwargs['instance']
-    if settings.DOI_ENABLE and experiment.public:
+    if settings.DOI_ENABLE and experiment.public_access != Experiment.PUBLIC_ACCESS_NONE:
         doi_url = settings.DOI_BASE_URL + experiment.get_absolute_url()
         from tardis.tardis_portal.ands_doi import DOIService
         doi_service = DOIService(experiment)

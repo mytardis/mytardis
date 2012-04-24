@@ -28,7 +28,7 @@
 					      href="{{ experiment.get_absolute_url }}">
 					   {{ experiment.title }}
 					   </a>
-					   {% if experiment.public %}(public){% endif %}
+					   {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}(public){% endif %}
 					  </h4>
 					  <p>
 							From <strong>{{experiment.institution_name}}</strong>, deposited
@@ -73,7 +73,7 @@
 	             href="{{ experiment.get_absolute_url }}">
 	          {{ experiment.title }}
 	          </a>
-	          {% if experiment.public %}(public){% endif %}
+	          {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}(public){% endif %}
 	        </h4>
 	        <p>
 						From <strong>{{experiment.institution_name}}</strong>,
@@ -151,7 +151,7 @@ $(function() {
 	  if (evt.target.tagName != 'A') {
 	    $(evt.delegateTarget).find('a.experiment-link').click();
 	  }
-	});
+	}).addClass('experiment-clickable');
 });
 </script>
 
