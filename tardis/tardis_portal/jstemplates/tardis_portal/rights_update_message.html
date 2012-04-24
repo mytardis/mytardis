@@ -1,0 +1,15 @@
+<div class="alert alert-success">
+  <a class="close" data-dismiss="alert">×</a>
+  <strong>Success!</strong>
+  {{#changed_access}}
+    {{#license}}
+      Public Access altered and license specified.
+    {{/license}}
+    {{^license}}
+      Public Access altered and license left unspecified.
+    {{/license}}
+  {{/changed_access}}
+  {{^changed_access}}
+    Licensing changed.
+  {{/changed_access}}
+</div>

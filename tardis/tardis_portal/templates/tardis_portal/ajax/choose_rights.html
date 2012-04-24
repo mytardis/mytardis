@@ -3,6 +3,8 @@
 <!-- Scripts -->
 {% load mustachejs %}
 {% mustachejs "tardis_portal/license_selector" %}
+{% mustachejs "tardis_portal/rights_update_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
 <script type="text/javascript">
 // Memoized AJAX call (which should make things snappier) to get license JSON
 var loadLicenses = async.memoize(function(public_access, callback) {
@@ -130,6 +132,8 @@ $('#modal-legal .cancel-button').click(function() {
            .text('Use');
     $(this).prop('disabled', true);
     $(this).text('Selected');
+    // Hide any current messages
+    $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
     $('#modal-legal').modal('show');
   });
@@ -141,6 +145,17 @@ $('#modal-legal .cancel-button').click(function() {
 $('form.experiment-rights').submit(function(evt) {
   evt.preventDefault();
   var form = $(evt.target);
+
+  // Get data for success message
+  var templateData = _.reduce(form.serializeArray(), function(obj, v) {
+    obj[v['name']] = v['value'];
+    return obj
+  }, {});
+  templateData['changed_access'] =
+    (templateData['public_access'] !=
+      $('select[name="public_access"]').prop('originalValue'));
+
+  // Submit form
   $.ajax({
     type: form.attr('method'),
     url:  form.attr('action'),
@@ -151,6 +166,22 @@ $('form.experiment-rights').submit(function(evt) {
       thisTabPane.html(data);
       // Notify the *other* panes
       $('.tab-pane').not(thisTabPane).trigger('experiment-change');
+      // Show update message
+      $('form.experiment-rights').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/rights_update_message'],
+              templateData, Mustache.TEMPLATES)
+      );
+    },
+    error: function(jqXHR, textStatus, errorThrown) {
+      var errorData = {'message': errorThrown};
+      errorData[textStatus] = true;
+      // Show error message
+      $('form.experiment-rights').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/ajax_error'],
+              errorData, Mustache.TEMPLATES)
+      );
     }
   });
 });
