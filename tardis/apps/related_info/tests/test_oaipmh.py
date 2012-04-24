@@ -106,3 +106,5 @@ class RifCSTestCase(TestCase):
                 continue
             expect(relatedInfo.xpath('r:'+k+'/text()', namespaces=ns)) \
                 .to_equal([v])
+        expect(relatedInfo.xpath('r:identifier/@type', namespaces=ns)) \
+            .to_equal(['uri'])

@@ -394,7 +394,10 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             relatedInfo = SubElement(element, self._nsrif('relatedInfo') )
             relatedInfo.set('type', obj['type'])
             for e in ['identifier', 'title', 'notes']:
-                SubElement(relatedInfo, self._nsrif(e)).text = obj[e]
+                se = SubElement(relatedInfo, self._nsrif(e))
+                if e == 'identifier':
+                    se.set('type', 'uri')
+                se.text = obj[e]
 
     def _get_user_writer_func(self):
         from functools import partial
