@@ -37,7 +37,7 @@ class Experiment(models.Model):
 
     PUBLIC_ACCESS_CHOICES = (
         (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
-        (PUBLIC_ACCESS_METADATA,    'Metadata only'),
+        (PUBLIC_ACCESS_METADATA,    'Metadata only (no data file access)'),
         (PUBLIC_ACCESS_FULL,        'Everything'),
     )
 
