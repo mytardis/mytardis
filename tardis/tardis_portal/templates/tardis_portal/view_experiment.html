@@ -334,6 +334,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   {% if is_owner %}
     <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
   {% endif %}
+  <!-- {{ apps }} -->
   {% for appurl, appname in apps %}
     <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
   {% endfor %}

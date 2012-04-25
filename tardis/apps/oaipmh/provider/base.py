@@ -1,7 +1,7 @@
 import oaipmh.error
 import oaipmh.interfaces
 
-class BaseProvider(oaipmh.interfaces.IOAI):
+class BaseProvider(oaipmh.interfaces.IOAI, object):
     """
     A base provider which roughly implements the PyOAI interface for OAI-PMH
     servers.
