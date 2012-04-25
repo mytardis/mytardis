@@ -24,7 +24,7 @@ def registration_processor(request):
     def is_registration_enabled():
         try:
             if 'registration' in settings.INSTALLED_APPS:
-                return True
+                return getattr(settings, 'REGISTRATION_OPEN', True)
         except AttributeError:
             pass
         return False

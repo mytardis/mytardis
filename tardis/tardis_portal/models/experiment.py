@@ -8,6 +8,8 @@ from django.utils.safestring import SafeUnicode
 
 from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
 
+from .license import License
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -28,6 +30,17 @@ class Experiment(models.Model):
     :attribute safe: ACL aware model manager
 
     """
+
+    PUBLIC_ACCESS_NONE = 1
+    PUBLIC_ACCESS_METADATA = 50
+    PUBLIC_ACCESS_FULL = 100
+
+    PUBLIC_ACCESS_CHOICES = (
+        (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
+        (PUBLIC_ACCESS_METADATA,    'Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL,        'Everything'),
+    )
+
     url = models.URLField(verify_exists=False, max_length=255,
                           null=True, blank=True)
     approved = models.BooleanField()
@@ -41,7 +54,13 @@ class Experiment(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
     handle = models.TextField(null=True, blank=True)
-    public = models.BooleanField()
+    locked = models.BooleanField()
+    public_access = \
+        models.PositiveSmallIntegerField(choices=PUBLIC_ACCESS_CHOICES,
+                                         null=False,
+                                         default=PUBLIC_ACCESS_NONE)
+    license = models.ForeignKey(License, #@ReservedAssignment
+                                blank=True, null=True)
     objects = OracleSafeManager()
     safe = ExperimentManager()  # The acl-aware specific manager.
 
@@ -132,6 +151,22 @@ class Experiment(models.Model):
                     pass
 
         return urls
+
+    @classmethod
+    def public_access_implies_distribution(cls, public_access_level):
+        '''
+        Determines if a level of public access implies that distribution should
+        be allowed, or alternately if it should not be allowed. Used to
+        prevent free-distribution licences for essentially private data, and
+        overly-restrictive licences for public data.
+        '''
+        return public_access_level > cls.PUBLIC_ACCESS_METADATA
+
+    def get_owners(self):
+        acls = ExperimentACL.objects.filter(pluginId='django_user',
+                                            experiment=self,
+                                            isOwner=True)
+        return [acl.get_related_object() for acl in acls]
 
 
 class ExperimentACL(models.Model):

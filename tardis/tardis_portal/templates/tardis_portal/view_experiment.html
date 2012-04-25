@@ -1,4 +1,4 @@
-{% extends "tardis_portal/portal_template.html" %}
+{% extends "tardis_portal/data_browsing_template.html" %}
 {% load basiccomparisonfilters %}
 {% load uploadify_tags %}
 {% load dynurl %}
@@ -8,7 +8,7 @@
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
         var $this = $(this);
-        var $datafile_info_container = $this.siblings('ul.datafile_list');
+        var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
 
         $this.toggleClass('files_shown files_hidden');
 
@@ -31,7 +31,7 @@
     $('.upload_files_link').live('click', function(evt){
         var $this = $(this);
         var $toggle = $this.siblings('.datafile_list_toggle');
-        var $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+        var $upload_files_container = $this.parents('.dataset_datafiles').find('.datafile_list').find('.upload_files_container');
         var dataset_id = $this.attr('data-dataset_id');
 
         if ($upload_files_container.length > 0 && $upload_files_container.html() !== '') {
@@ -46,7 +46,7 @@
         // finish up the load
         if ($toggle.hasClass('files_hidden')) {
             toggle_files.call($toggle[0], function() {
-                $upload_files_container = $this.siblings('.datafile_list').find('.upload_files_container');
+                $upload_files_container = $this.parents('.dataset_datafiles').find('.datafile_list').find('.upload_files_container');
                 $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
             });
         } else {
@@ -58,10 +58,10 @@
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
-        $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
+        $(this).parents('.datafiles').find('.datafile_checkbox').attr("checked", "checked");
     });
     jQuery('.dataset_selector_none').live('click', function() {
-        $(this).parent().find('.datafile_checkbox').removeAttr("checked");
+        $(this).parents('.datafiles').find('.datafile_checkbox').removeAttr("checked");
     });
 
     function get_new_parameter_name(name)
@@ -200,11 +200,9 @@
     $(".dataset_metadata_toggle").live('click', function(evt){
         evt.preventDefault();
         var $this = $(this);
-        var $dataset_metadata = $this.siblings('.dataset_metadata');
-        var $icon = $this.find('span');
+        var $dataset_metadata = $this.parents('.dataset_info').find('.dataset_metadata');
 
         $this.toggleClass('metadata_shown metadata_hidden');
-        $icon.toggleClass('ui-icon-circle-triangle-e ui-icon-circle-triangle-s');
 
         if($this.hasClass('metadata_shown')) {
             var href= $this.attr("href");
@@ -333,6 +331,9 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 <ul id="experiment-tabs" class="nav nav-tabs">
   <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
   <li><a data-toggle="tab" title="Datasets" href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.dataset_set.count }})</a></li>
+  {% if is_owner %}
+    <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
+  {% endif %}
   {% for appurl, appname in apps %}
     <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
   {% endfor %}
@@ -341,36 +342,74 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 <div class="tab-content"></div>
 
 <script type="text/javascript">
+(function() {
+  var tabIdPrefix = 'experiment-tab-';
+  function getTabIdFromName(tabName) {
+    return tabIdPrefix+tabName;
+  }
+  function getTabNameFromId(tabId) {
+    return _.strRight(_.lstrip(tabId,'#'), tabIdPrefix);
+  }
+
   // Create new tab content panes programatically
   // Note: We're doing this before the bottom of the document has loaded!
   $('#experiment-tabs li a').each(function(i, v) {
     // Generate an ID for each tab
     var tabName = _.trim(_.dasherize($(v).attr('title') || i), '_-');
-    var tabId = 'experiment-tab-'+tabName;
     // Grab the link HREF, then replace with the ID
     var url = $(v).attr('href');
-    $(v).attr('href', '#'+tabId);
+    $(v).attr('href', '#'+getTabIdFromName(tabName));
 
     // Create and insert content pane
-    var tabContents = $('<div id="'+tabId+'" class="tab-pane"></div>');
+    var tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
+                                      .addClass('tab-pane');
     tabContents.html(loadingHTML)
     $('.tab-content').append(tabContents);
 
-    // Load content for the new pane, based on the link HREF
-    $.ajax({
-      url: url,
-      dataType: 'html',
-      success: function(data) {
-        $('#'+tabId).html(data);
-      }
+    // On experiment changes, we want to reload the data pane
+    $(tabContents).on('experiment-change', function() {
+      var tabPane = $(this);
+      // Load content for the pane, based on the link HREF
+      $.ajax({
+        url: url,
+        dataType: 'html'
+      }).complete(function(jqXHR) {
+        tabPane.html(jqXHR.responseText);
+      });
+    });
+
+    // Selected tab name
+    $(v).click(function() {
+      window.location.hash = getTabNameFromId($(v).attr('href'));
     });
   });
+
+  // Trigger initial pane content loading
+  $('.tab-pane').trigger('experiment-change');
+
+  var showTabForWindowLocation = function() {
+    // Get selected tab using window location
+    var tabHref = '#' + tabIdPrefix + _.ltrim(window.location.hash, '#');
+    var selected = $('#experiment-tabs li a[href="'+tabHref+'"]');
+    // Show selected tab if we have one, otherwise show the first tab
+    if (selected.size() == 1) {
+      selected.tab('show');
+    } else {
+      $('#experiment-tabs li a:first').tab('show');
+    }
+  };
+
   // Once the document has finished loading, we can use Bootstrap Tab plugin
   $(function() {
     // Create tabs and show first
     $('#experiment-tabs li a:last').tab();
-    $('#experiment-tabs li a:first').tab('show');
+    showTabForWindowLocation();
   });
+
+  // Handle back and forward buttons for tab locations
+  $(window).bind('hashchange', showTabForWindowLocation);
+
+})();
 </script>
 
 

@@ -84,6 +84,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
@@ -165,8 +166,6 @@ STATICFILES_DIRS = (
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
 INSTALLED_APPS = (
-    #TARDIS_APP_ROOT+'.equipment',
-    #TARDIS_APP_ROOT+'.sync',
     'django_extensions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -185,6 +184,7 @@ INSTALLED_APPS = (
     'djcelery',
     'djkombu',
     'bootstrapform',
+    'mustachejs',
     )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
@@ -288,6 +288,8 @@ IMMUTABLE_METS_DATASETS = True
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
+
+REQUIRE_VALID_PUBLIC_CONTACTS = True
 
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))

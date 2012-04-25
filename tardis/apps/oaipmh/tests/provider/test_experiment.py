@@ -12,7 +12,7 @@ import oaipmh.interfaces
 import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
-from tardis.tardis_portal.models import Experiment
+from tardis.tardis_portal.models import Experiment, License
 from tardis.tardis_portal.util import get_local_time
 
 from ...provider.experiment import AbstractExperimentProvider, \
@@ -24,14 +24,8 @@ def _create_test_data():
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
                             created_by=user)
-    experiment.public = True
+    experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
     experiment.save()
-    cc_uri = 'http://creativecommons.org/licenses/by-nd/2.5/au/'
-    cc_name = 'Creative Commons Attribution-NoDerivs 2.5 Australia'
-    cch = CreativeCommonsHandler(experiment_id=experiment.id)
-    psm = cch.get_or_create_cc_parameterset()
-    psm.set_param("license_name", cc_name, "License Name")
-    psm.set_param("license_uri", cc_uri, "License URI")
     return experiment
 
 class AbstractExperimentProviderTC():
@@ -78,7 +72,7 @@ class AbstractExperimentProviderTC():
         # There should only have been one
         expect(len(headers)).to_equal(1)
         # Remove public flag
-        self._experiment.public = False
+        self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider() \
             .listIdentifiers(self._getProviderMetadataPrefix())
@@ -144,7 +138,7 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         # There should only have been one
         expect(len(results)).to_equal(1)
         # Remove public flag
-        self._experiment.public = False
+        self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('oai_dc')
         # Not public, so should not appear
@@ -174,9 +168,9 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         expect(metadata.getField('description'))\
             .to_equal(str(self._experiment.description))
         expect(metadata.getField('licence_uri'))\
-            .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
+            .to_equal(License.get_none_option_license().url)
         expect(metadata.getField('licence_name'))\
-            .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
+            .to_equal(License.get_none_option_license().name)
         expect(about).to_equal(None)
 
     def testListRecords(self):
@@ -191,13 +185,13 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             expect(metadata.getField('description'))\
                 .to_equal(str(self._experiment.description))
             expect(metadata.getField('licence_uri'))\
-                .to_equal('http://creativecommons.org/licenses/by-nd/2.5/au/')
+                .to_equal(License.get_none_option_license().url)
             expect(metadata.getField('licence_name'))\
-                .to_equal('Creative Commons Attribution-NoDerivs 2.5 Australia')
+                .to_equal(License.get_none_option_license().name)
         # There should only have been one
         expect(len(results)).to_equal(1)
         # Remove public flag
-        self._experiment.public = False
+        self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('rif')
         # Not public, so should not appear

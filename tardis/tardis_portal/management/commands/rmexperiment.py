@@ -1,5 +1,5 @@
 """
-Management command to delete the specified experiment and its associated 
+Management command to delete the specified experiment and its associated
 datasets, datafiles and parameters.
 
 The operation is atomic, either the entire experiment is deleted, or nothing.
@@ -7,7 +7,7 @@ The operation is atomic, either the entire experiment is deleted, or nothing.
 rmexperiment was introduced due to the Oracle DISTINCT workaround causing
 sql delete cascading to fail.  The current implementation of rmexperiment still relies on
 some cascading.
-""" 
+"""
 
 import sys
 from optparse import make_option
@@ -29,7 +29,7 @@ class Command(BaseCommand):
                     default=False,
                     help="Only list the experiment to be deleted, don't actually delete"),
         )
-    
+
     def handle(self, *args, **options):
         if len(args) != 1:
             raise CommandError("Expected exactly 1 argument - Experiment ID")
@@ -43,14 +43,15 @@ class Command(BaseCommand):
         # Print basic experiment information
         self.stdout.write("Experiment\n    ID: {0}\n".format(exp.id))
         self.stdout.write("    Title: {0}\n".format(exp.title))
-        self.stdout.write("    Public: {0}\n".format(exp.public))
-        
+        self.stdout.write("    Locked: {0}\n".format(exp.locked))
+        self.stdout.write("    Public Access: {0}\n".format(exp.public_access))
+
         # List experiment authors
         authors = Author_Experiment.objects.filter(experiment=exp)
         self.stdout.write("    Authors:\n")
         for author in authors:
             self.stdout.write("        {0}\n".format(author.author))
-        
+
         # List experiment metadata
         epsets = ExperimentParameterSet.objects.filter(experiment=exp)
         for epset in epsets:
@@ -59,7 +60,7 @@ class Command(BaseCommand):
             params = ExperimentParameter.objects.filter(parameterset=epset)
             for param in params:
                 self.stdout.write("        {0} = {1}\n".format(param.name.full_name, param.get()))
-        
+
         # List experiment ACLs
         acls = ExperimentACL.objects.filter(experiment=exp)
         self.stdout.write("    ACLs:\n")
@@ -80,25 +81,25 @@ class Command(BaseCommand):
         datafiles = Dataset_File.objects.filter(dataset__experiment=exp)
         self.stdout.write("    {0} datset(s), containing {1} file(s)\n".format(
                     datasets.count(), datafiles.count()))
-        
-        
-        # If the user has only requested a listing finish now 
+
+
+        # If the user has only requested a listing finish now
         if options.get('list', False):
             return
-        
+
         # User must enter "yes" to proceed
         self.stdout.write("\n\nConfirm Deletion? (yes): ")
         ans = sys.stdin.readline().strip()
         if ans != "yes":
             self.stdout.write("'yes' not entered, aborting.\n")
             return
-        
+
         # Consider the entire experiment deletion atomic
         using = options.get('database', DEFAULT_DB_ALIAS)
         transaction.commit_unless_managed(using=using)
         transaction.enter_transaction_management(using=using)
         transaction.managed(True, using=using)
-        
+
         try:
             acls.delete()
             epsets.delete()
@@ -108,7 +109,7 @@ class Command(BaseCommand):
             datasets.delete()
             datafiles.delete()
             exp.delete()
-        
+
             transaction.commit(using=using)
             transaction.leave_transaction_management(using=using)
         except:

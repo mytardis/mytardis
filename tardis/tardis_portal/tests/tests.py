@@ -436,7 +436,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         expid = self.experiment.id
         response = client.get('/experiment/metsexport/%i/' % expid)
         self.assertEqual(response.status_code, 403)
-        self.experiment.public = True
+        self.experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
         self.experiment.save()
         response = client.get('/experiment/metsexport/%i/' % expid)
         self.assertEqual(response.status_code, 200)

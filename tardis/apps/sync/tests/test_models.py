@@ -18,7 +18,7 @@ class ModelsTestCase(TestCase):
                 institution_name = 'institution1',
                 description = 'description1',
                 created_by = self.user,
-                public = True
+                public_access = Experiment.PUBLIC_ACCESS_FULL
                 )
         self.exp.save()
         self.uid = 0

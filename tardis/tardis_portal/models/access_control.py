@@ -26,6 +26,17 @@ class UserProfile(models.Model):
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()
 
+    def isValidPublicContact(self):
+        '''
+        Checks if there's enough information on the user for it to be used as
+        a public contact.
+
+        Note: Last name can't be required, because people don't necessarilly
+        have a last (or family) name.
+        '''
+        required_fields = ['email', 'first_name']
+        return all(map(lambda f: bool(getattr(self.user,f)), required_fields))
+
     def __unicode__(self):
         return self.user.username
 

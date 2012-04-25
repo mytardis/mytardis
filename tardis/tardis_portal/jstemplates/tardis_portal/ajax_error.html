@@ -1,0 +1,15 @@
+<div class="alert alert-danger">
+  <a class="close" data-dismiss="alert">×</a>
+  <strong>Failed!</strong>
+  {{#timeout}}
+  The server timed out and most likely was unable to make your changes.
+  {{/timeout}}
+  {{#error}}
+    The server encountered an error.
+    {{#message}}
+    It returned following message: <code>{{message}}</code>
+    {{/message}}
+  {{/error}}
+  <br/>
+  <strong>Please reload the page and try again later.</strong>
+</div>

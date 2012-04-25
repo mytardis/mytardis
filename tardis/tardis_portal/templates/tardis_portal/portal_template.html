@@ -76,13 +76,29 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li>
-                    {% if is_superuser %}
+                    <a href="{% url tardis.tardis_portal.views.manage_user_account %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-user"></i>
+                      Manage Account
+                    </a>
+                  </li>
+                  {% if perms.tardis_portal.change_userauthentication %}
+                  <li>
+                    <a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-tags"></i>
+                      Link Accounts
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if is_superuser %}
+                  <li>
                     <a href="{% url admin:index %}">
                       <i class="icon-key"></i>
                         Admin Interface
                     </a>
-                    {% endif %}
                   </li>
+                  {% endif %}
                   <li>
                     <a href="{% url django.contrib.auth.views.logout %}">
                       <i class="icon-signout"></i>
@@ -111,7 +127,7 @@
             <form id="searchbox" method="get"
                 class="navbar-search pull-right"
                 action="{% url tardis.tardis_portal.views.single_search %}">
-              <input id="id_q"
+              <input id="id_q" autocomplete="off"
                    type="text" class="search-query" placeholder="Search"
                    {% if query %} value="{{ query }}" {% endif %}/>
             </form>
@@ -155,8 +171,8 @@
         {% endcapture %}
 
         {% if sidebar %}
-          <div class="span4">{{sidebar}}</div>
-        <div class="span8">{{content}}</div>
+          <div id="sidebar-pane" class="span3">{{sidebar}}</div>
+          <div id="content-pane" class="span9">{{content}}</div>
         {% else %}
         <div class="span12">{{content}}</div>
         {% endif %}
@@ -177,17 +193,6 @@
     <!-- javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-transition.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-alert.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-modal.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-dropdown.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-scrollspy.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-tab.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-tooltip.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-popover.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-button.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-collapse.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-carousel.js"></script>
-    <script src="{{ STATIC_URL }}/bootstrap/js/bootstrap-typeahead.js"></script>
+    <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
   </body>
 </html>

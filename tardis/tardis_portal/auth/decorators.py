@@ -37,17 +37,12 @@ from django.db.models import Q
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
 
-
 def get_accessible_experiments(request):
-
-    experiments = Experiment.safe.all(request)
-    return experiments
+    return Experiment.safe.all(request)
 
 
 def get_shared_experiments(request):
-
-    experiments = Experiment.safe.all(request)
-    experiments = experiments.filter(public=False)
+    experiments = Experiment.safe.owned_and_shared(request)
 
     #exclude owned experiments
     owned = get_owned_experiments(request)
@@ -56,9 +51,7 @@ def get_shared_experiments(request):
 
 
 def get_owned_experiments(request):
-
-    experiments = Experiment.safe.owned(request)
-    return experiments
+    return Experiment.safe.owned(request)
 
 
 def get_accessible_datafiles_for_user(request):
@@ -77,52 +70,53 @@ def get_accessible_datafiles_for_user(request):
 
 
 def has_experiment_ownership(request, experiment_id):
-
-    experiment = Experiment.safe.owned(request).filter(
-        pk=experiment_id)
-    if experiment:
-        return True
-    return False
+    return Experiment.safe.owned(request).filter(pk=experiment_id).exists()
 
 
 def has_experiment_access(request, experiment_id):
-
     try:
         Experiment.safe.get(request, experiment_id)
         return True
     except PermissionDenied:
         return False
 
+def has_experiment_download_access(request, experiment_id):
+    if Experiment.safe.owned_and_shared(request) \
+                      .filter(id=experiment_id) \
+                      .exists():
+        return True
+    else:
+        exp = Experiment.objects.get(id=experiment_id)
+        return Experiment.public_access_implies_distribution(exp.public_access)
 
 def has_dataset_access(request, dataset_id):
-
     experiment = Experiment.objects.get(dataset__pk=dataset_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
+    return has_experiment_access(request, experiment.id)
 
+def has_dataset_download_access(request, dataset_id):
+    experiment = Experiment.objects.get(dataset__pk=dataset_id)
+    return has_experiment_download_access(request, experiment.id)
 
 def has_datafile_access(request, dataset_file_id):
-
     experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
-    if has_experiment_access(request, experiment.id):
-        return True
-    else:
-        return False
+    return has_experiment_access(request, experiment.id)
+
+def has_datafile_download_access(request, dataset_file_id):
+    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
+    return has_experiment_download_access(request, experiment.id)
 
 def has_read_or_owner_ACL(request, experiment_id):
-    """ 
+    """
     Check whether the user has read access to the experiment - this means either
-    they have been granted read access, or that they are the owner. 
-    
+    they have been granted read access, or that they are the owner.
+
     NOTE:
     This does not check whether the experiment is public or not, which means
-    even when the experiment is public, this method does not automatically 
+    even when the experiment is public, this method does not automatically
     returns true.
-    
-    As such, this method should NOT be used to check whether the user has 
-    general read permission.  
+
+    As such, this method should NOT be used to check whether the user has
+    general read permission.
     """
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -163,14 +157,13 @@ def has_read_or_owner_ACL(request, experiment_id):
         return False
     else:
         return True
-    
-def has_write_permissions(request, experiment_id):
 
+def has_write_permissions(request, experiment_id):
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
     experiment = Experiment.safe.get(request, experiment_id)
-    if experiment.public:
+    if experiment.locked:
         return False
 
     # does the user own this experiment
@@ -203,14 +196,10 @@ def has_write_permissions(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ExperimentACL
     acl = ExperimentACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return acl.count() != 0
 
 
 def has_delete_permissions(request, experiment_id):
-
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
     experiment = Experiment.safe.get(request, experiment_id)
@@ -245,21 +234,13 @@ def has_delete_permissions(request, experiment_id):
     # is there at least one ACL rule which satisfies the rules?
     from tardis.tardis_portal.models import ExperimentACL
     acl = ExperimentACL.objects.filter(query)
-    if acl.count() == 0:
-        return False
-    else:
-        return True
+    return acl.count() != 0
 
 
 @login_required
 def is_group_admin(request, group_id):
-
-    groupadmin = GroupAdmin.objects.filter(user=request.user,
-                                           group__id=group_id)
-    if groupadmin.count():
-        return True
-    else:
-        return False
+    return GroupAdmin.objects.filter(user=request.user,
+                                     group__id=group_id).exists()
 
 
 def group_ownership_required(f):
@@ -301,6 +282,16 @@ def experiment_access_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+def experiment_download_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not has_experiment_download_access(request, kwargs['experiment_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
 
 def dataset_access_required(f):
 
@@ -350,7 +341,7 @@ def dataset_write_permissions_required(f):
     wrap.__doc__ = f.__doc__
     wrap.__name__ = f.__name__
     return wrap
-        
+
 
 def delete_permissions_required(f):
 
@@ -370,7 +361,7 @@ def upload_auth(f):
         session_id = request.POST['session_id']
         s = Session.objects.get(pk=session_id)
         if s.expire_date > datetime.now():
-            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id']) 
+            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id'])
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__

@@ -20,8 +20,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
         self.annotation_schema_ns = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
 
     def can_publish(self, experiment):
-        phandler = PublishHandler(experiment.id)
-        return experiment.public or (phandler.access_type() is not publishing.UNPUBLISHED)
+        return experiment.public_access != experiment.PUBLIC_ACCESS_NONE
 
     def is_schema_valid(self, experiment):
         eps = ExperimentParameter.objects.filter(
@@ -70,8 +69,7 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
     def get_url(self, experiment, server_url):
        """Only public experiments can show the direct link to the experiment
        in the rif-cs"""
-       phandler = PublishHandler(experiment.id)
-       if experiment.public or (phandler.access_type() == publishing.PUBLIC):
+       if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
            return "%s/experiment/view/%s/" % (server_url, experiment.id)
 
     def get_investigator_list(self, experiment):

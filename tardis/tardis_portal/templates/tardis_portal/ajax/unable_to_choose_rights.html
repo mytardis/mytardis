@@ -1,0 +1,13 @@
+<div class="alert alert-error">
+  <h4 class="alert-heading">
+    Public access rights and licensing cannot currently be changed!
+  </h4>
+  <br/>
+  {% if no_valid_owner %}
+  <p>
+    At least one experiment owner must have a valid first name, last name
+    and email address set.
+  </p>
+  {% endif %}
+</div>
+
