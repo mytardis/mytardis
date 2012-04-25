@@ -1,0 +1,46 @@
+{% load mustachejs %}
+
+{% mustachejs "related_info/publication" %}
+{% mustachejs "related_info/website" %}
+
+<div id="related-info-items"></div>
+
+<script type="text/javascript">
+$(function() {
+
+  // Remove buttons from templates
+  _.each(['publication', 'website'], function(v) {
+    var tmpl = $('<div/>').html(Mustache.TEMPLATES['related_info/'+v]);
+    tmpl.find('button').remove();
+    Mustache.TEMPLATES['related_info/'+v] = tmpl.html();
+  });
+
+  var RelatedInfoModel = Backbone.Model.extend({});
+
+  var RelatedInfo = Backbone.Collection.extend({
+    model: RelatedInfoModel,
+    url: '{% url tardis.apps.related_info.views.list_or_create_related_info experiment.id %}'
+  });
+  var relatedInfo = new RelatedInfo();
+
+  var refreshItemDisplay = function(msg) {
+    $('#related-info-items').empty();
+    relatedInfo.each(function(v, k) {
+      var template = 'related_info/'+v.get('type');
+      var item = $('<div/>')
+        .addClass('related-info-item')
+        .prop('model', v)
+        .html(Mustache.to_html(
+            Mustache.TEMPLATES[template],
+            v.attributes, Mustache.TEMPLATES));
+      $('#related-info-items').append(item);
+    });
+  };
+
+  relatedInfo.on('add', refreshItemDisplay);
+  relatedInfo.on('change', refreshItemDisplay);
+  relatedInfo.on('destroy', refreshItemDisplay);
+
+  relatedInfo.fetch({ success: refreshItemDisplay });
+});
+</script>

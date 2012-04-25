@@ -325,8 +325,10 @@ def view_experiment(request, experiment_id):
         try:
             appnames.append(sys.modules['%s.%s.settings'
                                         % (settings.TARDIS_APP_ROOT, app)].NAME)
-            appurls.append('%s.%s.views.index' % (settings.TARDIS_APP_ROOT, app))
+            appurls.append('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
+                                                  app))
         except:
+            logger.debug("No tab for %s" % app)
             pass
 
     c['apps'] = zip(appurls, appnames)

@@ -157,8 +157,8 @@ LDAP_GROUP_BASE = 'ou=Group, ' + LDAP_BASE
 SYSTEM_LOG_LEVEL = logging.DEBUG
 MODULE_LOG_LEVEL = logging.DEBUG
 
-SYSTEM_LOG_FILENAME = 'request.log'
-MODULE_LOG_FILENAME = 'tardis.log'
+SYSTEM_LOG_FILENAME = 'request-test.log'
+MODULE_LOG_FILENAME = 'tardis-test.log'
 
 SYSTEM_LOG_MAXBYTES = 0
 MODULE_LOG_MAXBYTES = 0
@@ -207,7 +207,6 @@ DOI_BASE_URL='http://mytardis.example.com'
 OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
-    'tardis.apps.oaipmh.provider.user.RifCsUserProvider',
 ]
 
 

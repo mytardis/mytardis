@@ -67,7 +67,7 @@ class ProxyingMetadataRegistry(MetadataRegistry):
         element - ElementTree element to write under
         metadata - metadata object to write
         """
-        metadata['_metadata_source'].writeMetadata(element, metadata)
+        metadata['_writeMetadata'](element, metadata)
 
 
 class ProxyingServer(IOAI):
