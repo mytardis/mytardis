@@ -262,8 +262,14 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
 
     dataset_path = path.join(experiment_path, str(dataset.id))
 
-    copyto = path.join(dataset_path, filename)
-
+    # Path on disk can contain subdirectories - but if the request gets tricky with "../" or "/var" or something
+    # we strip them out..
+    try:
+        from django.utils import _os
+        copyto = _os.safe_join(dataset_path, filename)
+    except ValueError:
+        copyto = path.join(dataset_path, path.basename(filename))
+    
     if not path.exists(path.dirname(copyto)):
         makedirs(path.dirname(copyto))
 
