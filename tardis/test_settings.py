@@ -30,6 +30,12 @@ CELERY_ALWAYS_EAGER = True
 
 ROOT_URLCONF = 'tardis.urls'
 
+TEMPLATE_LOADERS = (
+    'tardis.template.loaders.app_specific.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'django.template.loaders.filesystem.Loader',
+)
+
 FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
