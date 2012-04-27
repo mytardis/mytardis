@@ -30,6 +30,7 @@
 #
 
 from django.contrib import admin
+from django.core.urlresolvers import reverse
 import models
 
 class SyncedExperimentAdmin(admin.ModelAdmin):
@@ -37,8 +38,9 @@ class SyncedExperimentAdmin(admin.ModelAdmin):
         exp = item.experiment
         admin_link = '../../%s/%s/%d/' % (
                 exp._meta.app_label, exp._meta.module_name, exp.id)
-        return '<a href="%s">%s</a> (<a href="%s">admin</a>)' % (
-                exp.get_absolute_url(), unicode(exp), admin_link)
+        integrity_link = reverse('sync-integrity', kwargs={ 'experiment_id': exp.id })
+        return '<a href="%s">%s</a> (<a href="%s">admin</a>) (<a href="%s">integrity check</a>)' % (
+                exp.get_absolute_url(), unicode(exp), admin_link, integrity_link)
     experiment_.allow_tags = True
 
     search_fields = [ 'uid', 'provider_url', 'experiment__id']

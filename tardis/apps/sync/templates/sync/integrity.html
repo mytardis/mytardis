@@ -1,0 +1,62 @@
+{% extends 'tardis_portal/data_browsing_template.html' %}
+
+{% block script %}
+{{ block.super }}
+<style type="text/css">
+    table th {
+        background-color: #a0a0a0;
+        color: white;
+        font-size: 1.2em;
+    }
+    table tr.odd {
+        background-color: #d0d0d0;
+    }
+    table tr.even {
+        background-color: #e0e0e0;
+    }
+    td.filename {
+        font-weight: bold;
+    }
+    td {
+        padding: 5px 10px 5px 10px;
+        text-align: right;
+    }
+    th {
+        padding: 10px;
+    }
+</style>
+{% endblock script %}
+
+{% block content %}
+
+<h1>Integrity check report for experiment {{ experiment_id }}</h1>
+<h3>
+    <table>
+        <tr><th>Complete</th><th>Incomplete</th><th>Missing</th></tr>
+        <tr class="odd"><td>{{ files_ok }}</td><td>{{ files_incomplete }}</td><td>{{ files_missing }}</td></tr>
+    </table>
+</h3>
+
+<br/>
+
+<table>
+{% spaceless %}
+    <tr>
+        <th>URL<br/>Filename</th>
+        <th>Expected size</th>
+        <th>Actual size</th>
+    </tr>
+    {% for id, df in datafiles.items %}
+    {% if not df.complete %}
+    <tr class="{% cycle 'odd' 'even'%}">
+        <td class="filename"><pre>{{ df.url }}
+{{ df.filename }}</pre></td>
+        <td>{{ df.expected_size }}</td>
+        <td>{{ df.size }}</td>
+    </tr>
+    {% endif %}
+{% endfor %}
+{% endspaceless %}
+</table>
+
+{% endblock content %}
