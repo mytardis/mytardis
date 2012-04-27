@@ -12,7 +12,7 @@ from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
 
-from tardis.tardis_portal.util import get_local_time
+from tardis.tardis_portal.util import get_local_time, get_local_time_naive
 
 class ParameterSetManager(object):
 
@@ -163,7 +163,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = get_local_time(value)
+            param.datetime_value = get_local_time_naive(value)
         else:
             param.string_value = unicode(value)
         param.save()
@@ -178,7 +178,7 @@ class ParameterSetManager(object):
         if param.name.isNumeric():
             param.numerical_value = float(value)
         elif param.name.isDateTime():
-            param.datetime_value = get_local_time(value)
+            param.datetime_value = get_local_time_naive(value)
         else:
             param.string_value = unicode(value)
         param.save()
