@@ -15,19 +15,25 @@ class IntegrityCheck(object):
         Return status of each as a dictionary."""
 
         datafiles = Dataset_File.objects.filter(dataset__experiment__pk=self.experiment.id)
+        experiment_path = self.experiment.get_absolute_filepath()
 
         output = { 'files_ok': 0, 'files_missing': 0, 'files_incomplete': 0, 'datafiles': {} }
         for datafile in datafiles.iterator():
             filename = datafile.get_absolute_filepath()
+            if (filename == ''):
+                filename = path.join(experiment_path, datafile.url.partition('://')[2])
             exists = path.exists(filename)
             size = path.getsize(filename) if exists else -1
             complete = (size == int(datafile.size))
-            output['datafiles'][datafile.id] = {
-                                'url':   datafile.url,
-                                'found': exists,
-                                'size':  size,
-                                'complete': complete
-                                }
+            result = {
+                'filename': filename,
+                'url':   datafile.url,
+                'found': exists,
+                'size':  size,
+                'expected_size': datafile.size,
+                'complete': complete
+            }
+            output['datafiles'][datafile.id] = result
 
             if not exists:
                 output['files_missing'] += 1

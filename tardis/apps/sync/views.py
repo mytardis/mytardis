@@ -43,6 +43,7 @@ from django.template import Context
 from django.shortcuts import render_to_response
 from django.conf import settings
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import user_passes_test
 
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.auth import decorators as authz
@@ -170,4 +171,16 @@ def index(request, experiment_id):
     c = Context({'object': synced_exp, 'message':message, 'admins':settings.SYNC_ADMINS})
     url = 'sync/syncedexperiment_detail.html'
     return HttpResponse(render_response_index(request, url, c))
+
+
+@user_passes_test(lambda u: u.is_staff)
+def integrity(request, experiment_id):
+    from .integrity import IntegrityCheck
+    ic = IntegrityCheck(experiment_id)
+    if ic is not None:
+        dfi = ic.get_datafiles_integrity()
+        dfi['experiment_id'] = experiment_id
+        c = Context(dfi)
+        return HttpResponse(render_response_index(request, 'sync/integrity.html', c))
+    return return_response_not_found(request)
 
