@@ -26,7 +26,7 @@ from tardis.tardis_portal.views import return_response_not_found, \
 try:
     from wand.image import Image
     IMAGEMAGICK_AVAILABLE = True
-except ImportError:
+except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False
 
 logger = logging.getLogger(__name__)

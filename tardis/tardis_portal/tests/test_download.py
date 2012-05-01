@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile
 try:
     from wand.image import Image
     IMAGEMAGICK_AVAILABLE = True
-except ImportError:
+except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False
 
 class DownloadTestCase(TestCase):
