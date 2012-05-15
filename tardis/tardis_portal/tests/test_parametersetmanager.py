@@ -65,8 +65,9 @@ class ParameterSetManagerTestCase(TestCase):
                                 )
         self.exp.save()
 
-        self.dataset = models.Dataset(description="dataset description...",
-                                 experiment=self.exp)
+        self.dataset = models.Dataset(description="dataset description...")
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
         self.datafile = models.Dataset_File(dataset=self.dataset,\

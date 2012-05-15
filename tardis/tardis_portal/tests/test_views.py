@@ -84,12 +84,13 @@ class UploadTestCase(TestCase):
         acl.save()
 
         self.dataset = \
-            Dataset(description='dataset description...',
-                           experiment=self.exp)
+            Dataset(description='dataset description...')
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
         self.experiment_path = path.join(settings.FILE_STORE_PATH,
-                str(self.dataset.experiment.id))
+                str(self.dataset.get_first_experiment().id))
 
         self.dataset_path = path.join(self.experiment_path,
                                       str(self.dataset.id))

@@ -77,7 +77,7 @@
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
     <div id="datasets">
-      {% for dataset in datasets %} <!-- experiment.dataset_set.all %}-->
+      {% for dataset in datasets %}
     <div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
       <div class="dataset_title">
         <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>

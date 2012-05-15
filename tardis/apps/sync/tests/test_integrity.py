@@ -9,7 +9,9 @@ from ..integrity import IntegrityCheck
 
 class IntegrityCheckTestCase(TestCase):
     def _make_dataset(self, exp, filenames):
-        dataset = Dataset(experiment=exp)
+        dataset = Dataset()
+        dataset.save()
+        dataset.experiments.add(exp)
         dataset.save()
         for filename in filenames:
             df = Dataset_File(dataset=dataset, size=41, protocol='file')

@@ -35,6 +35,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
+from django.conf import settings
 from django.test import TestCase
 
 
@@ -121,8 +122,9 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        dataset = models.Dataset(description="dataset description...",
-                                 experiment=exp)
+        dataset = models.Dataset(description="dataset description...")
+        dataset.save()
+        dataset.experiments.add(exp)
         dataset.save()
 
         df_file = models.Dataset_File(dataset=dataset,
@@ -177,8 +179,9 @@ class ModelTestCase(TestCase):
                                 )
         exp.save()
 
-        dataset = models.Dataset(description="dataset description",
-                                 experiment=exp)
+        dataset = models.Dataset(description="dataset description")
+        dataset.save()
+        dataset.experiments.add(exp)
         dataset.save()
 
         df_file = models.Dataset_File(dataset=dataset,
@@ -261,6 +264,6 @@ class ModelTestCase(TestCase):
         self.assertEqual("<img src='/test/ExperimentImage/load/%i/' />" % exp_parameter.id,
                          exp_parameter.get())
 
-        remove(path.join(exp.get_or_create_directory(), df_parameter.string_value))
-        remove(path.join(exp.get_or_create_directory(), ds_parameter.string_value))
-        remove(path.join(exp.get_or_create_directory(), exp_parameter.string_value))
+        remove(path.join(settings.FILE_STORE_PATH, df_parameter.string_value))
+        remove(path.join(settings.FILE_STORE_PATH, ds_parameter.string_value))
+        remove(path.join(settings.FILE_STORE_PATH, exp_parameter.string_value))

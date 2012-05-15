@@ -46,8 +46,7 @@ def post_save_author_experiment(sender, **kwargs):
 def post_save_experiment_parameter(sender, **kwargs):
     experiment_param = kwargs['instance']
     try:
-        experiment = Experiment.objects.get(pk=experiment_param.getExpId())
-        publish_public_expt_rifcs(experiment)
+        publish_public_expt_rifcs(experiment_param.parameterset.experiment)
     except ExperimentParameterSet.DoesNotExist:
         # If for some reason the experiment parameter set is missing,
         # then ignore update

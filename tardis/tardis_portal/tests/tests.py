@@ -264,6 +264,52 @@ class UserInterfaceTestCase(TestCase):
             response = c.get(u)
             self.failUnlessEqual(response.status_code, 200)
 
+    def test_urls_with_some_content(self):
+        # Things that might tend to be in a real live system
+        user = 'testuser'
+        pwd = User.objects.make_random_password()
+        user = User.objects.create(username=user, email='testuser@example.test',
+                                   first_name="Test", last_name="User")
+        user.set_password(pwd)
+        user.save()
+        UserProfile(user=user).save()
+        experiment = Experiment.objects.create(title="Test Experiment",
+                                               created_by=user,
+                                               public_access= \
+                                                 Experiment.PUBLIC_ACCESS_FULL)
+        experiment.save()
+        acl = ExperimentACL(pluginId=django_user,
+                            entityId=str(user.id),
+                            experiment=experiment,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True)
+        acl.save()
+        dataset = Dataset(description="test dataset")
+        dataset.save()
+        dataset.experiments.add(experiment)
+        dataset.save()
+
+
+        # Test everything works
+        c = Client()
+        c.login(username=user, password=pwd)
+        urls = [ '/about/', '/stats/']
+        urls += [ '/experiment/%s/' % part \
+                    for part in ('register', 'view', 'search') ]
+        urls += [ '/experiment/view/%d/' % experiment.id ]
+        urls += [ '/ajax/experiment/%d/%s' % (experiment.id, tabpane) \
+                    for tabpane in ('description', 'datasets', 'rights') ]
+        urls += [ '/ajax/datafile_list/%d/' % dataset.id ]
+        urls += [ '/ajax/dataset_metadata/%d/' % dataset.id ]
+
+        for u in urls:
+            response = c.get(u)
+            self.failUnlessEqual(response.status_code, 200,
+                                 "%s should have returned 200 but returned %d"\
+                                 % (u, response.status_code))
+
     def test_search_urls(self):
         # Load schemas for test
         from django.core.management import call_command
@@ -404,8 +450,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
 
     def testIngestedDatasetFields(self):
         from tardis.tardis_portal import models
-        datasets = models.Dataset.objects.filter(
-            experiment=self.experiment)
+        datasets = self.experiment.datasets.all()
         self.assertTrue(len(datasets) == 1,
             'there should only be one dataset for the experiment')
         dataset = datasets[0]

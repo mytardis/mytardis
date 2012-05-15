@@ -366,7 +366,7 @@ def experiment_description(request, experiment_id):
     c['authors'] = experiment.author_experiment_set.all()
 
     c['datafiles'] = \
-        Dataset_File.objects.filter(dataset__experiment=experiment_id)
+        Dataset_File.objects.filter(dataset__experiments=experiment_id)
 
     c['owners'] = experiment.get_owners()
 
@@ -490,7 +490,7 @@ def experiment_datasets(request, experiment_id):
         c['file_matched_datasets'] = None
 
     c['datasets'] = \
-         Dataset.objects.filter(experiment=experiment_id)
+         Dataset.objects.filter(experiments=experiment_id)
 
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
@@ -515,12 +515,10 @@ def experiment_datasets(request, experiment_id):
 @authz.dataset_access_required
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
-    has_write_permissions = \
-        authz.has_write_permissions(request, dataset.experiment.id)
+    has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'dataset': dataset, })
-    c['has_write_permissions'] = has_write_permissions and \
-                                 dataset.experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
+    c['has_write_permissions'] = has_write_permissions
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -647,8 +645,7 @@ def edit_experiment(request, experiment_id,
                  'experiment_id': experiment_id,
               })
 
-    staging = get_full_staging_path(
-                                request.user.username)
+    staging = get_full_staging_path(request.user.username)
     if staging:
         c['directory_listing'] = staging_traverse(staging)
         c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
@@ -680,8 +677,7 @@ def edit_experiment(request, experiment_id,
 
     c['form'] = form
 
-    return HttpResponse(render_response_index(request,
-                        template, c))
+    return HttpResponse(render_response_index(request, template, c))
 
 
 # todo complete....
@@ -907,11 +903,8 @@ def retrieve_parameters(request, dataset_file_id):
     parametersets = DatafileParameterSet.objects.all()
     parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
 
-    experiment_id = Dataset_File.objects.get(id=dataset_file_id).\
-        dataset.experiment.id
-
-    has_write_permissions = \
-        authz.has_write_permissions(request, experiment_id)
+    dataset_id = Dataset_File.objects.get(id=dataset_file_id).dataset.id
+    has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'parametersets': parametersets,
                  'has_write_permissions': has_write_permissions})
@@ -984,11 +977,8 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     has_write_permissions = False
 
     if request.user.is_authenticated():
-        experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
-        is_owner = authz.has_experiment_ownership(request, experiment_id)
-
-        has_write_permissions = \
-            authz.has_write_permissions(request, experiment_id)
+        is_owner = authz.has_dataset_ownership(request, dataset_id)
+        has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
@@ -1562,7 +1552,7 @@ def search_datafile(request):
 
     # get experiments associated with datafiles
     if datafile_results:
-        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True)))
+        experiment_pks = list(set(datafile_results.values_list('dataset__experiments', flat=True)))
         experiments = Experiment.safe.in_bulk(experiment_pks)
     else:
         experiments = {}
@@ -2359,8 +2349,7 @@ def edit_experiment_par(request, parameterset_id):
 @login_required
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request,
-                                   parameterset.dataset.experiment.id):
+    if authz.has_dataset_write(request, parameterset.dataset.id):
         return edit_parameters(request, parameterset, otype="dataset")
     else:
         return return_response_error(request)
@@ -2369,8 +2358,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request,
-                            parameterset.dataset_file.dataset.experiment.id):
+    if authz.has_dataset_write(request, parameterset.dataset_file.dataset.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
@@ -2423,10 +2411,9 @@ def edit_parameters(request, parameterset, otype):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = Dataset_File.objects.get(id=datafile_id)
-    if authz.has_write_permissions(request,
-                                   parentObject.dataset.experiment.id):
-        return add_par(request, parentObject, otype="datafile",
-                stype=Schema.DATAFILE)
+    if authz.has_dataset_write(request, parentObject.dataset.id):
+        return add_par(request, parentObject,
+                       otype="datafile", stype=Schema.DATAFILE)
     else:
         return return_response_error(request)
 
@@ -2434,7 +2421,7 @@ def add_datafile_par(request, datafile_id):
 @login_required
 def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
-    if authz.has_write_permissions(request, parentObject.experiment.id):
+    if authz.has_dataset_write(request, parentObject.id):
         return add_par(request, parentObject, otype="dataset",
                 stype=Schema.DATASET)
     else:
@@ -2457,8 +2444,11 @@ def add_par(request, parentObject, otype, stype):
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
-    else:
+    elif all_schema.count() > 0:
         schema_id = all_schema[0].id
+    else:
+        return HttpResponse(render_response_index(
+            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {}))
 
     schema = Schema.objects.get(id=schema_id)
 

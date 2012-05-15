@@ -15,7 +15,7 @@ class Migration(DataMigration):
     def backwards(self, orm):
         # Take the first experiment relation at the one to preserve.
         for dataset in orm.Dataset.objects.all():
-            dataset.experiment = dataset.experiments[0]
+            dataset.experiment = dataset.experiments.order_by('created_time')[:1].get()
             dataset.save()
 
 

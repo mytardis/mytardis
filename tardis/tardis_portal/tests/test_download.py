@@ -45,11 +45,16 @@ class DownloadTestCase(TestCase):
         self.experiment2.save()
 
         # dataset1 belongs to experiment1
-        self.dataset1 = Dataset(experiment=self.experiment1)
+        self.dataset1 = Dataset()
+        self.dataset1.save()
+        self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
 
+
         # dataset2 belongs to experiment2
-        self.dataset2 = Dataset(experiment=self.experiment2)
+        self.dataset2 = Dataset()
+        self.dataset2.save()
+        self.dataset2.experiments.add(self.experiment2)
         self.dataset2.save()
 
         # absolute path first
