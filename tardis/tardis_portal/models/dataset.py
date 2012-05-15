@@ -18,7 +18,7 @@ class Dataset(models.Model):
     :attribute description: description of this dataset
     """
 
-    experiment = models.ForeignKey(Experiment)
+    experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     immutable = models.BooleanField(default=False)
     objects = OracleSafeManager()
