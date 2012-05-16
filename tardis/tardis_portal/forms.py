@@ -361,27 +361,6 @@ class FullExperimentModel(UserDict):
         for ae in self.data['author_experiments']:
             ae.experiment = ae.experiment
             ae.save()
-        for ds in self.data['datasets']:
-            if not ds.immutable:
-                ds.experiment = ds.experiment
-                ds.save()
-        for ds_f in self.data['dataset_files']:
-            if not ds.immutable:
-                ds_f.dataset = ds_f.dataset
-                ds_f.save()
-
-        # XXX because saving the form can be now done without
-        # commit=False this won't be called during the creation
-        # of new experiments.
-        if hasattr(self.data['datasets'], 'deleted_forms'):
-            for dataset in self.data['datasets'].deleted_forms:
-                if not dataset.instance.immutable:
-                    dataset.instance.delete()
-
-        if hasattr(self.data['dataset_files'], 'deleted_forms'):
-            for dataset in self.data['dataset_files'].deleted_forms:
-                if not dataset.instance.immutable:
-                    dataset.instance.delete()
 
 
 class DataFileFormSet(BaseInlineFormSet):
@@ -421,6 +400,13 @@ class DataFileFormSet(BaseInlineFormSet):
                                                               commit=commit)
         return datafile
 
+class DatasetForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Dataset
+        exclude = ('experiments', 'immutable')
+
+
 
 class ExperimentForm(forms.ModelForm):
     """
@@ -455,39 +441,9 @@ class ExperimentForm(forms.ModelForm):
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
 
-        def custom_field_cb(field):
-            #if field.name == 'filename':
-            #    return field.formfield(required=False)
-            if field.name == 'url':
-                return field.formfield(widget=Span, required=False)
-            else:
-                return field.formfield()
-
-        def custom_dataset_field_cb(field):
-            if field.name == 'description':
-                return field.formfield(
-                    widget=TextInput(attrs={'size': '80'}))
-            else:
-                return field.formfield()
-
         # initialise formsets
         if instance == None or instance.datasets.count() == 0:
             extra = 1
-
-        ## TODO: Properly handle this functionality
-        #
-        # dataset_formset = inlineformset_factory(
-        #     models.Experiment,
-        #     models.Dataset,
-        #     formfield_callback=custom_dataset_field_cb,
-        #     extra=extra, can_delete=True)
-        #
-        # datafile_formset = inlineformset_factory(
-        #     models.Dataset,
-        #     models.Dataset_File,
-        #     formset=DataFileFormSet,
-        #     formfield_callback=custom_field_cb,
-        #     extra=0, can_delete=True)
 
         # fix up experiment form
         post_authors = self._parse_authors(data)
@@ -501,23 +457,6 @@ class ExperimentForm(forms.ModelForm):
                 MultiValueCommaSeparatedField([author.fields['author'] for
                                             author in self.author_experiments],
                                             widget=CommaSeparatedInput())
-
-        ## TODO: Properly handle this functionality
-        ## Fill formsets
-        # self.datasets = dataset_formset(data=data,
-        #                                 instance=instance,
-        #                                 prefix="dataset")
-        # for i, df in enumerate(self.datasets.forms):
-        #     if 'immutable' in df.initial:
-        #         if df.initial['immutable']:
-        #             df.fields['description'].widget.attrs['readonly'] = True
-        #             df.fields['description'].editable = False
-        #             df.fields['immutable'].editable = False
-        #             df.fields['immutable'].widget.attrs['readonly'] = True
-        #
-        #     self.dataset_files[i] = datafile_formset(data=data,
-        #                                  instance=df.instance,
-        #                                  prefix="ds-%s-datafile" % i)
 
     def _parse_authors(self, data=None):
         """
@@ -553,31 +492,6 @@ class ExperimentForm(forms.ModelForm):
                                         author in self.author_experiments],
                                         widget=CommaSeparatedInput())
 
-    def get_dataset_files(self, number):
-        """
-        Return a list of datafiles from a dataset
-
-        :param number: the dataset number as identified in the form.
-        :type number: integer
-        :rtype: list of :class:`~tardis.tardis_portal.models.Dataset_File`
-        """
-        if number in self.dataset_files:
-            return self.dataset_files[number]
-        return []
-
-    def get_datasets(self):
-        """
-        Return a tuple of datasets and associated dataset files.
-
-        :rtype: tuple containing
-         a :class:`~tardis.tardis_portal.models.Dataset`and a
-         list of :class:`~tardis.tardis_portal.models.Dataset_File`
-        """
-        ## TODO: Properly handle
-        #for number, form in enumerate(self.datasets.forms):
-        #    yield (form, self.get_dataset_files(number))
-        return []
-
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data['authors']
@@ -593,23 +507,6 @@ class ExperimentForm(forms.ModelForm):
             ae.instance.experiment = ae.instance.experiment
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
-        # for key, dataset in enumerate(self.datasets.forms):
-        #     if dataset not in self.datasets.deleted_forms:
-        #         # XXX for some random reason the link between
-        #         # the instance needs
-        #         # to be reinitialised
-        #         dataset.instance.experiment = experiment
-        #         o_dataset = dataset.save(commit)
-        #         datasets.append(o_dataset)
-        #         # save any datafiles if the data set has any
-        #         mutable = True
-        #         if 'immutable' in dataset.initial:
-        #             if dataset.initial['immutable']:
-        #                 mutable = False
-        #
-        #         if self.dataset_files[key] and mutable:
-        #             o_df = self.dataset_files[key].save(commit)
-        #             dataset_files += o_df
 
         if hasattr(self.datasets, 'deleted_forms'):
             for ds in self.datasets.deleted_forms:

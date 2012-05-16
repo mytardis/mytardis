@@ -66,6 +66,14 @@
 
 {% endblock %}
 
+{% if has_write_permissions %}
+<a class="add-dataset btn btn-primary pull-right"
+   href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id %}">
+  <i class="icon-plus"></i>
+  Add new
+</a>
+{% endif %}
+
 <div id="experiment_datasets">
   {% if highlighted_datasets or file_matched_datasets %}
   <form name="search_select_form" id="search_form" method="post" action="">
@@ -87,6 +95,12 @@
               Dataset #{{ forloop.counter }}:
             </span>
             {{ dataset.description|safe }}
+            {% if has_write_permissions %}
+            <a title="Edit Dataset"
+               href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id dataset.id %}">
+              <i class="icon-pencil"></i>
+            </a>
+            {% endif %}
           </label>
         </span>
       </div> <!-- dataset title -->

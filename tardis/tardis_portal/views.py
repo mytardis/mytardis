@@ -28,7 +28,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
+    has_experiment_write, has_dataset_write
 """
 views.py
 
@@ -50,7 +51,7 @@ from django.template import Context
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required, permission_required
@@ -63,7 +64,7 @@ from django.views.decorators.cache import never_cache
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
-from tardis.tardis_portal.forms import ExperimentForm, \
+from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
@@ -2784,6 +2785,12 @@ def retrieve_licenses(request):
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 
+
+def _redirect_303(*args, **kwargs):
+    response = redirect(*args, **kwargs)
+    response.status_code = 303
+    return response
+
 @login_required
 def manage_user_account(request):
     user = request.user
@@ -2796,9 +2803,47 @@ def manage_user_account(request):
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
             user.save()
+            return _redirect_303('tardis.tardis_portal.views.index')
     else:
         form = ManageAccountForm(instance=user)
 
     c = Context({'form': form})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_user_account.html', c))
+
+@login_required
+def add_or_edit_dataset(request, experiment_id, dataset_id=None):
+    if dataset_id:
+        if not has_dataset_write(request, dataset_id):
+            return HttpResponseForbidden()
+        dataset = Dataset.objects.get(id=dataset_id)
+    else:
+        if not has_experiment_write(request, experiment_id):
+            return HttpResponseForbidden()
+        dataset = None
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = DatasetForm(request.POST)
+        if form.is_valid():
+            if not dataset:
+                dataset = Dataset()
+            dataset.description = form.cleaned_data['description']
+            dataset.save()
+            experiment = Experiment.objects.get(id=experiment_id)
+            dataset.experiments.add(experiment)
+            dataset.save()
+            return _redirect_303('tardis.tardis_portal.views.view_experiment', experiment_id)
+    else:
+        if dataset:
+            form = DatasetForm(instance=dataset)
+        else:
+            form = DatasetForm()
+
+    if dataset:
+        c = Context({'form': form, 'dataset': dataset})
+    else:
+        c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/add_or_edit_dataset.html', c))
+

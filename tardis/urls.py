@@ -65,6 +65,8 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
+    (r'^(?P<experiment_id>\d+)/dataset/add$', 'add_or_edit_dataset'),
+    (r'^(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)/edit$', 'add_or_edit_dataset'),
     )
 
 token_urls = patterns(

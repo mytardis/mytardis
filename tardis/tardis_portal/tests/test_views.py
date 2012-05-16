@@ -391,8 +391,8 @@ class ManageAccountTestCase(TestCase):
         response = client.post(manage_url,
                                { 'first_name': 'Tommy',
                                  'email': 'tommy@atkins.net'})
-        # Expect 200 OK on update
-        expect(response.status_code).to_equal(200)
+        # Expect 303 See Also redirect on update
+        expect(response.status_code).to_equal(303)
 
         user = User.objects.get(id=user.id)
         expect(user.get_profile().isValidPublicContact()).to_be(True)
