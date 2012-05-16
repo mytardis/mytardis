@@ -72,7 +72,8 @@ def get_or_update_or_delete_related_info(request, *args, **kwargs):
 def _list_related_info(request, experiment_id):
     if not authz.has_experiment_access(request, experiment_id):
         return return_response_error(request)
-    sets = ExperimentParameterSet.objects.filter(schema__namespace=SCHEMA_URI)
+    sets = ExperimentParameterSet.objects.filter(schema__namespace=SCHEMA_URI,
+                                                 experiment__pk=experiment_id)
     return HttpResponse(json.dumps([_get_dict_from_ps(ps)
                                     for ps in sets]),
                         content_type='application/json; charset=utf-8')
@@ -83,7 +84,8 @@ def _get_related_info(request, experiment_id, related_info_id):
         return return_response_error(request)
     try:
         ps = ExperimentParameterSet.objects.get(schema__namespace=SCHEMA_URI,
-                                            id=related_info_id)
+                                                experiment__pk=experiment_id,
+                                                id=related_info_id)
         return HttpResponse(json.dumps(_get_dict_from_ps(ps)),
                             content_type='application/json; charset=utf-8')
     except:
