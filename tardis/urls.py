@@ -90,13 +90,20 @@ dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
 )
+iiif_urls = patterns(
+    'tardis.tardis_portal.iiif',
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+)$', 'download_image'),
+    url(r'^(?P<datafile_id>\d+)/(?P<region>[^\/]+)/(?P<size>[^\/]+)/(?P<rotation>[\d\.]+)/(?P<quality>\w+).(?P<format>\w+)$', 'download_image'),
+    url(r'^(?P<datafile_id>\d+)/info.(?P<format>\w+)$', 'download_info'),
+    )
 
 datafile_urls = patterns(
     '',
     (r'^search/$', 'tardis.tardis_portal.views.search_datafile'),
     url(r'^view/(?P<datafile_id>\d+)/$',
         'tardis.tardis_portal.download.view_datafile',
-        name="view_datafile")
+        name="view_datafile"),
+    (r'^iiif/', include(iiif_urls)),
 )
 
 ajax_urls = patterns(

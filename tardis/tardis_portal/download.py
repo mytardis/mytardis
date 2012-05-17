@@ -83,7 +83,7 @@ def view_datafile(request, datafile_id):
                                         dataset_file_id=datafile.id):
         return return_response_error(request)
     # Get actual url for datafile
-    file_url = _get_actual_url(datafile)
+    file_url = datafile.get_actual_url()
     mimetype = datafile.get_mimetype()
     if IMAGEMAGICK_AVAILABLE and mimetype in MIMETYPES_TO_VIEW_AS_PNG:
         with Image(file=urlopen(file_url)) as img:
@@ -108,7 +108,7 @@ def download_datafile(request, datafile_id):
     if not has_datafile_download_access(request=request, dataset_file_id=datafile.id):
         return return_response_error(request)
     # Get actual url for datafile
-    file_url = _get_actual_url(datafile)
+    file_url = datafile.get_actual_url()
     if not file_url:
         # If file path doesn't resolve, return not found
         return return_response_not_found(request)
@@ -126,16 +126,6 @@ def download_datafile(request, datafile_id):
 def _get_filename(rootdir, df):
     return path.join(rootdir, str(df.dataset.id), df.filename)
 
-def _get_actual_url(datafile):
-    # Remote files are easy
-    if any(map(datafile.url.startswith, ['http://', 'https://', 'ftp://'])):
-        return datafile.url
-    # Otherwise, resolve actual file system path
-    file_path = datafile.get_absolute_filepath()
-    if path.isfile(file_path):
-        return 'file://'+file_path
-    return None
-
 def _create_download_response(datafile, file_url, disposition='attachment'):
     wrapper = FileWrapper(urlopen(file_url))
     response = HttpResponse(wrapper,
@@ -145,7 +135,7 @@ def _create_download_response(datafile, file_url, disposition='attachment'):
     return response
 
 def _get_datafile_details_for_archive(rootdir, datafiles):
-    return [(_get_actual_url(df), _get_filename(rootdir, df)) \
+    return [(df.get_actual_url(), _get_filename(rootdir, df)) \
              for df in datafiles]
 
 def _write_files_to_archive(write_func, files):
