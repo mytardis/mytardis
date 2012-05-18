@@ -558,8 +558,7 @@ def create_experiment(request,
         'user_id': request.user.id,
         })
 
-    staging = get_full_staging_path(
-                                request.user.username)
+    staging = get_full_staging_path(request.user.username)
     if staging:
         c['directory_listing'] = staging_traverse(staging)
         c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX

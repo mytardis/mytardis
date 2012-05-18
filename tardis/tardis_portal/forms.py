@@ -545,13 +545,6 @@ class ExperimentForm(forms.ModelForm):
                     continue
                 if ae.is_bound and bool(ae.errors[name]):
                     return False
-
-        for dataset, files in self.get_datasets():
-            for name, error in dataset.errors.items():
-                if isinstance(dataset.fields[name], ModelChoiceField):
-                    continue
-                if dataset.is_bound and bool(dataset.errors[name]):
-                    return False
         return True
 
 
