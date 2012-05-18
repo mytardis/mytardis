@@ -23,37 +23,6 @@
         }
     };
 
-    $("#uploadify").live("allUploadsComplete", function(e, data){
-        // refresh datafile list
-        var dataset_id = $(this).attr('data-dataset_id');
-        $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
-    });
-    $('.upload_files_link').live('click', function(evt){
-        var $this = $(this);
-        var $toggle = $this.siblings('.datafile_list_toggle');
-        var $upload_files_container = $this.parents('.dataset_datafiles').find('.datafile_list').find('.upload_files_container');
-        var dataset_id = $this.attr('data-dataset_id');
-
-        if ($upload_files_container.length > 0 && $upload_files_container.html() !== '') {
-            // don't do anything if this has been clicked before and the upload_files_container is showing
-            $upload_files_container.html('');
-            return;
-        } else {
-            // clear the other upload files containers
-            $('.upload_files_container').html('');
-        }
-
-        // finish up the load
-        if ($toggle.hasClass('files_hidden')) {
-            toggle_files.call($toggle[0], function() {
-                $upload_files_container = $this.parents('.dataset_datafiles').find('.datafile_list').find('.upload_files_container');
-                $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
-            });
-        } else {
-            $upload_files_container.load("/ajax/upload_files/" + dataset_id + "/");
-        }
-    });
-
     var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
 
     // file selectors
