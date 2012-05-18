@@ -169,6 +169,9 @@ class Dataset_File(models.Model):
         else:
             return ''
 
+    def is_image(self):
+        return self.get_mimetype().startswith('image/')
+
     def _set_size(self):
 
         from os.path import getsize

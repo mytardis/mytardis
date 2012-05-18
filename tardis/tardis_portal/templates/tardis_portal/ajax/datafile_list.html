@@ -81,15 +81,28 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
   <td class="span8">
     <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
     {% if has_download_permissions and datafile.get_view_url %}
-    <a  class="filelink"
-        href="{{ datafile.get_view_url }}"
-        title="View"
-        target="_blank">{{ datafile.filename }}</a>
+      <a  class="filelink"
+          href="{{ datafile.get_view_url }}"
+          title="View"
+          target="_blank">{{ datafile.filename }}</a>
     {% else %}
     {{ datafile.filename }}
     {% endif %}
     </span>
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
+
+    {% if has_download_permissions and datafile.get_view_url %}
+      {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
+      {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
+      {% if thumbnail and datafile.is_image %}
+      <a  class="filelink"
+        href="{{ image }}"
+        title="View"
+        target="_blank">
+          <img src="{{ thumbnail }}"/>
+      </a>
+      {% endif %}
+    {% endif %}
 
     <ul class="datafile_info" style="display:none;">
     </ul>
