@@ -1,0 +1,52 @@
+{% load experimentstats %}
+{% load humanize %}
+
+<p class="pull-right" style="text-align: right">
+  <span class="badge badge-inverse" title="{{ experiment.datasets.all.count }} dataset{{ experiment.datasets.all.count|pluralize }}">
+    <i class="icon-folder-close"></i>&nbsp;
+    {{ experiment.datasets.all.count }}
+  </span>
+  <br/>
+  <span class="badge badge-inverse" title="{{ experiment.id|experiment_file_count }} file{{ experiment.id|experiment_file_count|pluralize }}">
+    <i class="icon-file"></i>&nbsp;
+    {{ experiment.id|experiment_file_count }}
+  </span>
+  <br/>
+  <span class="badge badge-inverse" title="Deposited {{experiment.update_time|naturalday}}">
+    <i class="icon-time"></i>&nbsp;
+    {{experiment.update_time|naturalday }}
+  </span>
+  <br/>
+  {% if experiment.public_access == experiment.PUBLIC_ACCESS_NONE %}
+  <span class="badge" title="No public access">
+    <i class="icon-eye-close"></i>&nbsp;
+    Private
+  </span>
+  {% endif %}
+  {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
+  <span class="badge badge-success" title="Only descriptions are public, not data">
+    <i class="icon-eye-close"></i>&nbsp;
+    Metadata
+  </span>
+  {% endif %}
+  {% if experiment.public_access == experiment.PUBLIC_ACCESS_FULL %}
+  <span class="badge badge-success" title="All data is public">
+    <i class="icon-eye-open"></i>&nbsp;
+    Public
+  </span>
+  {% endif %}
+</p>
+<h4>
+ <a class="experiment-link"
+    href="{{ experiment.get_absolute_url }}">
+ {{ experiment.title }}
+ </a>
+</h4>
+{% if show_images and experiment.get_images.count > 0 %}
+  <div class="image-preview pull-left">
+  {% for datafile in experiment.get_images|slice:":10" %}
+    {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
+    <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
+  {% endfor %}
+  </div>
+{% endif %}
