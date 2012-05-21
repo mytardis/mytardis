@@ -88,6 +88,21 @@
               })
             });
   });
+
+  $('.import_staging_files_link').live('click', function(evt) {
+      var dataset_id = $(this).attr('data-dataset_id');
+      var modal = $('#modal-upload-files');
+
+      // clear the upload files container
+      modal.find('.modal-body').html('');
+      modal.find('.loading-placeholder').show();
+      modal.modal('show');
+
+      modal.find('.modal-body')
+           .load("/ajax/import_staging_files/" + dataset_id + "/", function() {
+              modal.find('.loading-placeholder').hide();
+            });
+  });
 </script>
 
 {% endblock %}
@@ -184,6 +199,12 @@
                   <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
                     <i class="icon-upload-alt"></i>
                     Upload Files
+                  </a>
+              {% endif %}
+              {% if has_write_permissions and has_staging_access %}
+                  <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
+                    <i class="icon-arrow-right"></i>
+                    Import Staging Files
                   </a>
               {% endif %}
               <a class="datafile_list_toggle files_hidden btn btn-primary btn-mini"

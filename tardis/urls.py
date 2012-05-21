@@ -86,6 +86,11 @@ accounts_urls = patterns(
     (r'', include('registration.urls')),
     )
 
+dataset_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
+)
+
 datafile_urls = patterns(
     '',
     (r'^search/$', 'tardis.tardis_portal.views.search_datafile'),
@@ -105,6 +110,7 @@ ajax_urls = patterns(
     (r'^group_list/$', 'retrieve_group_list'),
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
+    (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
@@ -175,6 +181,9 @@ urlpatterns = patterns(
     (r'', include(core_urls)),
     # Experiment Views
     (r'^experiment/', include(experiment_urls)),
+
+    # Dataset Views
+    (r'^dataset/', include(dataset_urls)),
 
     # Datafile Views
     (r'^datafile/', include(datafile_urls)),

@@ -53,7 +53,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.models import User, Group, AnonymousUser
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
@@ -499,6 +499,9 @@ def experiment_datasets(request, experiment_id):
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
 
+    c['has_staging_access'] = \
+        bool(get_full_staging_path(request.user.username))
+
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
     for key, value in download_urls.iteritems():
@@ -558,12 +561,6 @@ def create_experiment(request,
         'user_id': request.user.id,
         })
 
-    staging = get_full_staging_path(request.user.username)
-    if staging:
-        c['directory_listing'] = staging_traverse(staging)
-        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
-        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -573,12 +570,6 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
-            for df in full_experiment['dataset_files']:
-                if not df.url.startswith(path.sep):
-                    df.url = path.join(get_full_staging_path(
-                                        request.user.username),
-                                        df.url)
-            full_experiment.save_m2m()
 
             # add defaul ACL
             acl = ExperimentACL(experiment=experiment,
@@ -644,12 +635,6 @@ def edit_experiment(request, experiment_id,
                  'user_id': request.user.id,
                  'experiment_id': experiment_id,
               })
-
-    staging = get_full_staging_path(request.user.username)
-    if staging:
-        c['directory_listing'] = staging_traverse(staging)
-        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
-        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
 
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES,
@@ -2309,6 +2294,25 @@ def upload(request, dataset_id):
     return HttpResponse('True')
 
 @authz.dataset_write_permissions_required
+def import_staging_files(request, dataset_id):
+    """
+    Creates an jstree view of the staging area of the user, and provides
+    a selection mechanism importing files.
+    """
+
+    staging = get_full_staging_path(request.user.username)
+    if not staging:
+        return HttpResponseNotFound()
+
+    c = Context({
+        'dataset_id': dataset_id,
+        'directory_listing': staging_traverse(staging),
+        'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
+        'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
+     })
+    return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+
+@authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
                  template_name='tardis_portal/ajax/upload_files.html'):
     """
@@ -2845,4 +2849,55 @@ def add_or_edit_dataset(request, experiment_id, dataset_id=None):
         c = Context({'form': form})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
+
+@login_required
+def stage_files_to_dataset(request, dataset_id):
+    """
+    Takes a JSON list of filenames to import from the staging area to this
+    dataset.
+
+    Returns a JSON list of created paths for the files.
+    """
+    if not has_dataset_write(request, dataset_id):
+        return HttpResponseForbidden()
+
+    if request.method != 'POST':
+        # This method only accepts POSTS, so send 405 Method Not Allowed
+        response = HttpResponse(status=405)
+        response['Allow'] = 'POST'
+        return response
+
+    user = request.user
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    # Incoming data MUST be JSON
+    if not request.META['CONTENT_TYPE'].startswith('application/json'):
+        return HttpResponse(status=400)
+
+    try:
+        files = json.loads(request.body)
+    except:
+        return HttpResponse(status=400)
+
+    def make_staging_url(filepath):
+        from django.utils import _os
+        return _os.safe_join(get_full_staging_path(request.user.username),
+                              filepath)
+
+    def create_staging_datafile(filepath):
+        datafile = Dataset_File(dataset=dataset,
+                                protocol='staging',
+                                url=make_staging_url(filepath),
+                                filename=path.basename(filepath))
+        datafile.save()
+        return datafile
+
+    datafiles = [create_staging_datafile(f) for f in files]
+
+    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
+                        status=201)
+
+
+
+
 
