@@ -76,5 +76,10 @@ class Dataset(models.Model):
         return path.join(self.get_first_experiment().get_absolute_filepath(),
                          str(self.id))
 
+    def get_images(self):
+        images = self.dataset_file_set.order_by('-modification_time',
+                                               '-created_time')\
+                                      .filter(mimetype__startswith='image/')
+        return images
 
 

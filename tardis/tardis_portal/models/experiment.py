@@ -154,7 +154,8 @@ class Experiment(models.Model):
 
     def get_images(self):
         from .datafile import Dataset_File
-        images = Dataset_File.objects.order_by('modification_time')\
+        images = Dataset_File.objects.order_by('-modification_time',
+                                               '-created_time')\
                                      .filter(dataset__experiments=self,
                                              mimetype__startswith='image/')
         return images

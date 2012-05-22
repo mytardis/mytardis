@@ -1,4 +1,5 @@
 {% load basiccomparisonfilters %}
+{% load capture %}
 {% load uploadify_tags %}
 
 {% block script %}
@@ -107,6 +108,28 @@
 
 {% endblock %}
 
+{% capture as action_bar %}
+  {% if has_download_permissions or has_write_permissions %}
+  <div>
+    {% if has_write_permissions %}
+    <a class="add-dataset btn btn-primary pull-right"
+       href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id %}">
+      <i class="icon-plus"></i>
+      Add new
+    </a>
+    {% endif %}
+
+    {% if has_download_permissions %}
+      <button type="submit" class="btn btn-primary">
+        <i class="icon-download-alt"></i>
+        Download Selected Files
+      </button>
+    {% endif %}
+  </div>
+  <br />
+  {% endif %}
+{% endcapture %}
+
 <div class="modal hide fade" id="modal-upload-files">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
@@ -121,14 +144,6 @@
 
 </div>
 
-{% if has_write_permissions %}
-<a class="add-dataset btn btn-primary pull-right"
-   href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id %}">
-  <i class="icon-plus"></i>
-  Add new
-</a>
-{% endif %}
-
 <div id="experiment_datasets">
   {% if highlighted_datasets or file_matched_datasets %}
   <form name="search_select_form" id="search_form" method="post" action="">
@@ -140,8 +155,22 @@
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
     <div id="datasets">
+    {{ action_bar }}
       {% for dataset in datasets %}
     <div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
+
+      {% if has_download_permissions %}
+      <div class="pull-right">
+        {% for datafile in dataset.get_images|slice:":1" %}
+          {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',100' rotation=0 quality='native' format='jpg' as thumbnail %}
+          {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
+          <a href="{{ image }}">
+            <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
+          </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
       <div class="dataset_title">
         <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
           <label class="checkbox">
@@ -186,6 +215,7 @@
             </div> <!-- dataset metadata -->
           </dd>
         </dl>
+
 
           <dl class="dataset_datafiles">
             <dt>
@@ -233,14 +263,11 @@
       <hr />
       {% endif %}
       {% endfor %}
-    </div> <!-- datasets -->
 
-    {% if has_download_permissions %}
-      <button type="submit" class="btn btn-primary">
-        <i class="icon-download-alt"></i>
-        Download Selected Files
-      </button>
+    {% if datasets.count|gt:4 %}
+    {{ action_bar }}
     {% endif %}
+    </div>
   </form>
 </div> <!-- experiment_datasets -->
 

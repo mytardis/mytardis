@@ -99,7 +99,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
         href="{{ image }}"
         title="View"
         target="_blank">
-          <img src="{{ thumbnail }}"/>
+          <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
       </a>
       {% endif %}
     {% endif %}
