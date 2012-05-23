@@ -107,6 +107,10 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
                 img.crop(x, y, width=w, height=h)
             # Handle size
             if size != 'full':
+                # Check the image isn't empty
+                if 0 in (img.height, img.width):
+                    return _bad_request('size', 'Cannot resize empty image')
+                # Attempt resize
                 if not _do_resize(img, size):
                     return _bad_request('size',
                                         'Invalid size argument: %s' % size)
