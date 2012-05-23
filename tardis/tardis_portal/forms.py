@@ -508,16 +508,6 @@ class ExperimentForm(forms.ModelForm):
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
 
-        if hasattr(self.datasets, 'deleted_forms'):
-            for ds in self.datasets.deleted_forms:
-                if not ds.instance.immutable:
-                    ds.instance.delete()
-
-        if hasattr(self.dataset_files, 'deleted_forms'):
-            for df in self.dataset_files.deleted_forms:
-                if not ds.instance.immutable:
-                    df.instance.delete()
-
         return FullExperimentModel({'experiment': experiment,
                                     'author_experiments': author_experiments,
                                     'authors': authors,

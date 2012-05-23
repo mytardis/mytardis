@@ -104,6 +104,14 @@ from django.contrib.auth import logout as django_logout
 logger = logging.getLogger(__name__)
 
 
+class HttpResponseSeeAlso(HttpResponseRedirect):
+    status_code=303
+
+def _redirect_303(*args, **kwargs):
+    response = redirect(*args, **kwargs)
+    response.status_code = 303
+    return response
+
 
 def getNewSearchDatafileSelectionForm(initial=None):
     DatafileSelectionForm = createSearchDatafileSelectionForm(initial)
@@ -570,6 +578,7 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
+            full_experiment.save_m2m()
 
             # add defaul ACL
             acl = ExperimentACL(experiment=experiment,
@@ -583,7 +592,7 @@ def create_experiment(request,
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
-            return HttpResponseRedirect(reverse(
+            return HttpResponseSeeAlso(reverse(
                 'tardis.tardis_portal.views.view_experiment',
                 args=[str(experiment.id)]) + "#created")
 
@@ -643,15 +652,10 @@ def edit_experiment(request, experiment_id,
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
-            for df in full_experiment['dataset_files']:
-                if df.protocol == "staging":
-                    df.url = path.join(
-                    get_full_staging_path(request.user.username),
-                    df.url)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
-            return HttpResponseRedirect(reverse(
+            return HttpResponseSeeAlso(reverse(
                 'tardis.tardis_portal.views.view_experiment',
                 args=[str(experiment.id)]) + "#saved")
 
@@ -2788,11 +2792,6 @@ def retrieve_licenses(request):
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 
-
-def _redirect_303(*args, **kwargs):
-    response = redirect(*args, **kwargs)
-    response.status_code = 303
-    return response
 
 @login_required
 def manage_user_account(request):

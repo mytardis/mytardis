@@ -39,15 +39,16 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 import json
+from urlparse import urlparse
 
 from compare import expect, ensure
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth import authenticate
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -533,6 +534,109 @@ class StageFilesTestCase(TestCase):
             expect(datafile.filename).to_equal(basename(f.name))
             expect(datafile.url.startswith('tardis://')).to_be_truthy()
 
+class ExperimentTestCase(TestCase):
+
+    def setUp(self):
+        # Create test owner without enough details
+        username, email, password = ('testuser',
+                                     'testuser@example.test',
+                                     'password')
+        user = User.objects.create_user(username, email, password)
+        for perm in ('add_experiment', 'change_experiment'):
+            user.user_permissions.add(Permission.objects.get(codename=perm))
+        user.save()
+        # Data used in tests
+        self.user, self.username, self.password = (user, username, password)
+
+    def testCreateAndEdit(self):
+
+        # Login as user
+        client = Client()
+        login = client.login(username=self.username, password=self.password)
+        self.assertTrue(login)
+
+        ##########
+        # Create #
+        ##########
+
+        create_url = reverse('tardis.tardis_portal.views.create_experiment')
+
+        # Check the form is accessible
+        response = client.get(create_url)
+        expect(response.status_code).to_equal(200)
+
+        # Create client and go to account management URL
+        data = {'title': 'The Elements',
+                'authors': 'Tom Lehrer, Arthur Sullivan',
+                'institution_name': 'The University of California',
+                'description':
+                    "There's antimony, arsenic, aluminum, selenium," +
+                    "And hydrogen and oxygen and nitrogen and rhenium..."
+                }
+        response = client.post(create_url, data=data)
+        # Expect redirect to created experiment
+        expect(response.status_code).to_equal(303)
+        created_url = response['Location']
+
+        # Check that it redirects to a valid location
+        response = client.get(created_url)
+        expect(response.status_code).to_equal(200)
+
+        experiment_id = resolve(urlparse(created_url).path)\
+                            .kwargs['experiment_id']
+        experiment = Experiment.objects.get(id=experiment_id)
+        for attr in ('title', 'description', 'institution_name'):
+            expect(getattr(experiment, attr)).to_equal(data[attr])
+
+        # Check authors were created properly
+        expect([a.author for a in experiment.author_experiment_set.all()])\
+            .to_equal(data['authors'].split(', '))
+
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId='django_user',
+                                        entityId=self.user.id)
+        expect(acl.canRead).to_be_truthy()
+        expect(acl.canWrite).to_be_truthy()
+        expect(acl.isOwner).to_be_truthy()
+
+        ########
+        # Edit #
+        ########
+
+        edit_url = reverse('tardis.tardis_portal.views.edit_experiment',
+                           kwargs={'experiment_id': str(experiment_id)})
+
+        # Check the form is accessible
+        response = client.get(edit_url)
+        print response
+        expect(response.status_code).to_equal(200)
+
+        # Create client and go to account management URL
+        data = {'title': 'I Am the Very Model of a Modern Major-General',
+                'authors': 'W. S. Gilbert, Arthur Sullivan',
+                'institution_name': 'Savoy Theatre',
+                'description':
+                    "I am the very model of a modern Major-General,"+
+                    "I've information vegetable, animal, and mineral,"
+                }
+        response = client.post(edit_url, data=data)
+        # Expect redirect to created experiment
+        expect(response.status_code).to_equal(303)
+        edit_url = response['Location']
+
+        # Check that it redirects to a valid location
+        response = client.get(created_url)
+        expect(response.status_code).to_equal(200)
+
+        experiment_id = resolve(urlparse(created_url).path)\
+                            .kwargs['experiment_id']
+        experiment = Experiment.objects.get(id=experiment_id)
+        for attr in ('title', 'description', 'institution_name'):
+            expect(getattr(experiment, attr)).to_equal(data[attr])
+
+        # Check authors were created properly
+        expect([a.author for a in experiment.author_experiment_set.all()])\
+            .to_equal(data['authors'].split(', '))
 
 
 
