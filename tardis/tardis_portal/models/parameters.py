@@ -42,6 +42,7 @@ class Schema(models.Model):
     subtype = models.CharField(blank=True, null=True, max_length=30)
     objects = SchemaManager()
     immutable = models.BooleanField(default=False)
+    hidden = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
