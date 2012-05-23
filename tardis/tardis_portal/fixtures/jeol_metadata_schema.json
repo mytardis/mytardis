@@ -14,6 +14,24 @@
         "pk": null,
         "model": "tardis_portal.parametername",
         "fields": {
+            "name": "metadata-filename",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Metadata Filename",
+            "units": "",
+            "order": 1,
+            "immutable": true,
+            "schema": [
+                "http://www.jeol.com/#jeol-sem-schema"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
             "name": "instrument",
             "data_type": 2,
             "is_searchable": false,
@@ -21,7 +39,7 @@
             "comparison_type": 1,
             "full_name": "Instrument",
             "units": "",
-            "order": 1,
+            "order": 2,
             "immutable": true,
             "schema": [
                 "http://www.jeol.com/#jeol-sem-schema"
@@ -39,7 +57,7 @@
             "comparison_type": 1,
             "full_name": "Acceleration Voltage",
             "units": "kV",
-            "order": 2,
+            "order": 3,
             "immutable": true,
             "schema": [
                 "http://www.jeol.com/#jeol-sem-schema"
@@ -57,7 +75,7 @@
             "comparison_type": 1,
             "full_name": "Micron Bar Length",
             "units": "pixels",
-            "order": 3,
+            "order": 4,
             "immutable": true,
             "schema": [
                 "http://www.jeol.com/#jeol-sem-schema"
@@ -75,7 +93,7 @@
             "comparison_type": 1,
             "full_name": "Micron Bar Actual Size",
             "units": "um",
-            "order": 4,
+            "order": 5,
             "immutable": true,
             "schema": [
                 "http://www.jeol.com/#jeol-sem-schema"

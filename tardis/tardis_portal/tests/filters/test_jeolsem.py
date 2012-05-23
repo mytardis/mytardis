@@ -59,26 +59,45 @@ class JEOLSEMFilterTestCase(TestCase):
 
 
     def testJEOLSimple(self):
-        JEOLSEMFilter()(None, instance=self.datafiles[0], created=True)
+        JEOLSEMFilter()(None, instance=self.datafiles[0])
 
+        # Check a parameter set was created
         dataset = Dataset.objects.get(id=self.dataset.id)
         expect(dataset.getParameterSets().count()).to_equal(1)
 
+        # Check all the expected parameters are there
         psm = ParameterSetManager(dataset.getParameterSets()[0])
+        expect(psm.get_param('metadata-filename', True))\
+            .to_equal(self.datafiles[0].filename)
         expect(psm.get_param('instrument', True)).to_equal('JCM-5000')
         expect(psm.get_param('accel_volt', True)).to_equal(10.0)
         expect(psm.get_param('micron_bar', True)).to_equal(175.0)
         expect(psm.get_param('micron_marker', True)).to_equal(200)
 
-    def testJEOLComplex(self):
-        JEOLSEMFilter()(None, instance=self.datafiles[1], created=True)
-
+        # Check we won't create a duplicate dataset
+        JEOLSEMFilter()(None, instance=self.datafiles[0])
         dataset = Dataset.objects.get(id=self.dataset.id)
         expect(dataset.getParameterSets().count()).to_equal(1)
 
+
+    def testJEOLComplex(self):
+        JEOLSEMFilter()(None, instance=self.datafiles[1])
+
+        # Check a parameter set was created
+        dataset = Dataset.objects.get(id=self.dataset.id)
+        expect(dataset.getParameterSets().count()).to_equal(1)
+
+        # Check all the expected parameters are there
         psm = ParameterSetManager(dataset.getParameterSets()[0])
+        expect(psm.get_param('metadata-filename', True))\
+            .to_equal(self.datafiles[1].filename)
         expect(psm.get_param('instrument', True)).to_equal('7001F_TTL')
         expect(psm.get_param('accel_volt', True)).to_equal(15.0)
         expect(psm.get_param('micron_bar', True)).to_equal(213)
         expect(psm.get_param('micron_marker', True)).to_equal(100)
+
+        # Check we won't create a duplicate dataset
+        JEOLSEMFilter()(None, instance=self.datafiles[1])
+        dataset = Dataset.objects.get(id=self.dataset.id)
+        expect(dataset.getParameterSets().count()).to_equal(1)
 

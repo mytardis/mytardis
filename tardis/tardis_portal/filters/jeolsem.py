@@ -5,7 +5,7 @@ from StringIO import StringIO
 from urllib2 import urlopen
 
 from tardis.tardis_portal.models import Schema, DatafileParameterSet,\
-    ParameterName, DatafileParameter
+    ParameterName, DatasetParameter
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.models.parameters import DatasetParameter
 
@@ -37,22 +37,24 @@ class JEOLSEMFilter(object):
         :type created: bool
         """
         datafile = kwargs.get('instance')
-        created = kwargs.get('created')
-        if not created:
-            # Don't extract on edit
-            return
-        schema = self._get_schema()
 
         try:
+            logger.debug('Checking if file is JEOL metadata')
             if self.is_text_file(datafile):
+                # Don't check further if it's already processed
+                if self.is_already_processed(datafile):
+                    logger.debug('JEOL metadata file was already processed.')
+                    return
+                # Get file contents (remotely if required)
                 contents = self.get_file_contents(datafile)
                 if self.is_jeol_sem_metadata(contents):
+                    schema = self._get_schema()
                     logger.debug('Parsing JEOL metadata file')
                     self.save_metadata(datafile, schema,
                                        self.get_metadata(schema, contents))
         except Exception, e:
             logger.debug(e)
-            return None
+            return
 
 
     def _get_schema(self):
@@ -64,6 +66,20 @@ class JEOLSEMFilter(object):
             from django.core.management import call_command
             call_command('loaddata', 'jeol_metadata_schema')
             return self._get_schema()
+
+    def is_already_processed(self, datafile):
+        def get_filename(ps):
+            try:
+                return ParameterSetManager(ps)\
+                        .get_param('metadata-filename', True)
+            except DatasetParameter.DoesNotExist:
+                return None
+
+        def processed_files(dataset):
+            return [get_filename(ps)
+                    for ps in datafile.dataset.getParameterSets()]
+
+        return datafile.filename in processed_files(datafile.dataset)
 
 
     def is_text_file(self, datafile):
@@ -111,6 +127,7 @@ class JEOLSEMFilter(object):
     def save_metadata(self, datafile, schema, metadata):
         psm = ParameterSetManager(parentObject=datafile.dataset,
                                   schema=schema.namespace)
+        psm.set_param('metadata-filename', datafile.filename)
         for key, value in metadata:
             try:
                 psm.set_param(key, value)
