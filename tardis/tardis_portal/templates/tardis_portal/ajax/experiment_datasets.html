@@ -195,17 +195,19 @@
             </dt>
             <dd>
             {% if dataset.dataset_file_set.count|lt:"1000000" %}
-              {% if has_write_permissions %}
-                  <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
-                    <i class="icon-upload-alt"></i>
-                    Upload Files
-                  </a>
-              {% endif %}
-              {% if has_write_permissions and has_staging_access %}
-                  <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
-                    <i class="icon-arrow-right"></i>
-                    Import Staging Files
-                  </a>
+              {% if not dataset.immutable %}
+                {% if has_write_permissions %}
+                    <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
+                      <i class="icon-upload-alt"></i>
+                      Upload Files
+                    </a>
+                {% endif %}
+                {% if has_write_permissions and has_staging_access %}
+                    <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
+                      <i class="icon-arrow-right"></i>
+                      Import Staging Files
+                    </a>
+                {% endif %}
               {% endif %}
               <a class="datafile_list_toggle files_hidden btn btn-primary btn-mini"
                  href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
