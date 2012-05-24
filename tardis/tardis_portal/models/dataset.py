@@ -38,34 +38,6 @@ class Dataset(models.Model):
         else:
             raise Schema.UnsupportedType
 
-    def addDatafile(self, filepath,
-                    protocol='', url='',
-                    size=None, commit=True):
-        """Add Datafile helper function
-
-        :param filepath: the file path within the repository
-        :type filepath: string
-        """
-        from .datafile import Dataset_File
-        full_file_path = path.join(settings.FILE_STORE_PATH,
-                                   str(self.experiment.id),
-                                   filepath)
-
-        datafile = Dataset_File(dataset=self)
-        datafile.filename = path.basename(filepath)
-        if protocol:
-            datafile.protocol = protocol
-
-        if url:
-            datafile.url = url
-        else:
-            datafile.url = 'file://' + filepath
-
-        if size:
-            datafile.size = size
-        elif path.exists(full_file_path):
-            datafile.size = path.getsize(full_file_path)
-
     def __unicode__(self):
         return self.description
 

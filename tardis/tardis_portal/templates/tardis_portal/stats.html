@@ -6,8 +6,9 @@
 </div>
 
 <p style="font-size: 12pt; line-height: 20pt;">
-	<strong>Experiments stored:</strong> {{public_experiments}}<br/>
-	<!-- <strong>Files stored:</strong> {{public_datafiles}}<br/> -->
-	<strong>Data stored:</strong> {{public_datafile_size|filesizeformat}} (file size stats temporarily disabled)<br/>
+	<strong>Experiments stored:</strong> {{experiment_count}}<br/>
+  <strong>Datasets stored:</strong> {{dataset_count}}<br/>
+	<strong>Files stored:</strong> {{datafile_count}}<br/>
+	<strong>Data stored (at least):</strong> {{datafile_size|filesizeformat}}<br/>
 </p>
 {% endblock %}
