@@ -13,7 +13,7 @@
     deposited <strong>{{ result.sr.created_time|date:"jS F Y" }} </strong>,
     last modified <strong>{{ result.sr.update_time|date:"jS F Y" }} </strong>,
   </td>
-</tr>    
+</tr>
 {% if result.sr.start_time and result.sr.end_time %}
 <tr>
     <td>
@@ -26,8 +26,8 @@
   <td class="experiment-table_stats">
       <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
     <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
-<strong> {{result.sr.dataset_set.all.count}} </strong>
-dataset{{result.sr.dataset_set.all.count|pluralize }}</strong>
+<strong> {{result.sr.datasets.all.count}} </strong>
+dataset{{result.sr.datasets.all.count|pluralize }}</strong>
 </a>
     </span>
     <br/>

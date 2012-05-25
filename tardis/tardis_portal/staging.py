@@ -257,8 +257,8 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
 
     filename = filename or uploaded_file_post.name
 
-    experiment_path = path.join(settings.FILE_STORE_PATH,
-                                str(dataset.experiment.id))
+    experiment = dataset.get_first_experiment()
+    experiment_path = path.join(settings.FILE_STORE_PATH, str(experiment.id))
 
     dataset_path = path.join(experiment_path, str(dataset.id))
 
@@ -269,7 +269,7 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
         copyto = _os.safe_join(dataset_path, filename)
     except ValueError:
         copyto = path.join(dataset_path, path.basename(filename))
-    
+
     if not path.exists(path.dirname(copyto)):
         makedirs(path.dirname(copyto))
 
@@ -311,7 +311,7 @@ def add_datafile_to_dataset(dataset, filepath, size):
     from tardis.tardis_portal.models import Dataset_File
 
     experiment_path = path.join(settings.FILE_STORE_PATH,
-                                str(dataset.experiment.id))
+                                str(dataset.get_first_experiment().id))
 
     dataset_path = path.join(experiment_path, str(dataset.id))
     urlpath = 'tardis:/' + filepath[len(dataset_path):]

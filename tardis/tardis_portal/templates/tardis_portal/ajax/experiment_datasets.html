@@ -62,9 +62,72 @@
               $(".dataset").show();
             }
           });
+
+
+  $("#uploadify").live("allUploadsComplete", function(e, data){
+      // refresh datafile list
+      var dataset_id = $(this).attr('data-dataset_id');
+      $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
+  });
+
+  $('.upload_files_link').live('click', function(evt) {
+      var dataset_id = $(this).attr('data-dataset_id');
+      var modal = $('#modal-upload-files');
+
+
+      // clear the upload files container
+      modal.find('.modal-body').html('');
+      modal.find('.loading-placeholder').show();
+      modal.modal('show');
+
+      modal.find('.modal-body')
+           .load("/ajax/upload_files/" + dataset_id + "/", function() {
+              modal.find('.loading-placeholder').hide();
+              modal.find('#uploadify').on('allUploadsComplete', function(data) {
+                modal.modal('hide');
+              })
+            });
+  });
+
+  $('.import_staging_files_link').live('click', function(evt) {
+      var dataset_id = $(this).attr('data-dataset_id');
+      var modal = $('#modal-upload-files');
+
+      // clear the upload files container
+      modal.find('.modal-body').html('');
+      modal.find('.loading-placeholder').show();
+      modal.modal('show');
+
+      modal.find('.modal-body')
+           .load("/ajax/import_staging_files/" + dataset_id + "/", function() {
+              modal.find('.loading-placeholder').hide();
+            });
+  });
 </script>
 
 {% endblock %}
+
+<div class="modal hide fade" id="modal-upload-files">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Upload Files</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+</div>
+
+{% if has_write_permissions %}
+<a class="add-dataset btn btn-primary pull-right"
+   href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id %}">
+  <i class="icon-plus"></i>
+  Add new
+</a>
+{% endif %}
 
 <div id="experiment_datasets">
   {% if highlighted_datasets or file_matched_datasets %}
@@ -77,7 +140,7 @@
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
     <div id="datasets">
-      {% for dataset in datasets %} <!-- experiment.dataset_set.all %}-->
+      {% for dataset in datasets %}
     <div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
       <div class="dataset_title">
         <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
@@ -87,6 +150,12 @@
               Dataset #{{ forloop.counter }}:
             </span>
             {{ dataset.description|safe }}
+            {% if has_write_permissions %}
+            <a title="Edit Dataset"
+               href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id dataset.id %}">
+              <i class="icon-pencil"></i>
+            </a>
+            {% endif %}
           </label>
         </span>
       </div> <!-- dataset title -->
@@ -126,14 +195,18 @@
             </dt>
             <dd>
             {% if dataset.dataset_file_set.count|lt:"1000000" %}
-              {% if has_write_permissions %}
-                {% if not experiment.public %}
-                  {% if not immutable %}
-                      <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
-                        <i class="icon-upload-alt"></i>
-                        Upload Files
-                      </a>
-                  {% endif %}
+              {% if not dataset.immutable %}
+                {% if has_write_permissions %}
+                    <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
+                      <i class="icon-upload-alt"></i>
+                      Upload Files
+                    </a>
+                {% endif %}
+                {% if has_write_permissions and has_staging_access %}
+                    <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
+                      <i class="icon-arrow-right"></i>
+                      Import Staging Files
+                    </a>
                 {% endif %}
               {% endif %}
               <a class="datafile_list_toggle files_hidden btn btn-primary btn-mini"

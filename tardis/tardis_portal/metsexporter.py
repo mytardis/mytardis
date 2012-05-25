@@ -72,7 +72,7 @@ class MetsExporter():
 
         _structMap = structMapType(TYPE="logical", div=experimentDiv)
 
-        datasets = Dataset.objects.filter(experiment=experiment)
+        datasets = Dataset.objects.filter(experiments=experiment)
 
         _fileGrp = fileGrpType(USE='original')
         _fileSec = fileSec()

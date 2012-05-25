@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from tardis.tardis_portal.staging import get_full_staging_path
 
 """
 test_views.py
@@ -38,20 +39,21 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 import json
+from urlparse import urlparse
 
-from compare import expect
+from compare import expect, ensure
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth import authenticate
 from django.test import TestCase
 from django.test.client import Client
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, Permission
 
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import UserProfile, ExperimentACL,\
-    Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
+    ExperimentACL, Experiment, Dataset, Dataset_File
 
 
 class UploadTestCase(TestCase):
@@ -84,12 +86,13 @@ class UploadTestCase(TestCase):
         acl.save()
 
         self.dataset = \
-            Dataset(description='dataset description...',
-                           experiment=self.exp)
+            Dataset(description='dataset description...')
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
         self.experiment_path = path.join(settings.FILE_STORE_PATH,
-                str(self.dataset.experiment.id))
+                str(self.dataset.get_first_experiment().id))
 
         self.dataset_path = path.join(self.experiment_path,
                                       str(self.dataset.id))
@@ -390,8 +393,256 @@ class ManageAccountTestCase(TestCase):
         response = client.post(manage_url,
                                { 'first_name': 'Tommy',
                                  'email': 'tommy@atkins.net'})
-        # Expect 200 OK on update
-        expect(response.status_code).to_equal(200)
+        # Expect 303 See Also redirect on update
+        expect(response.status_code).to_equal(303)
 
         user = User.objects.get(id=user.id)
         expect(user.get_profile().isValidPublicContact()).to_be(True)
+
+class StageFilesTestCase(TestCase):
+
+    def setUp(self):
+        # Create test owner without enough details
+        username, email, password = ('testuser',
+                                     'testuser@example.test',
+                                     'password')
+        user = User.objects.create_user(username, email, password)
+        profile = UserProfile(user=user, isDjangoAccount=True)
+        profile.save()
+        # Need UserAuthentication
+        UserAuthentication(userProfile=profile,
+                           username=username,
+                           authenticationMethod='localdb').save()
+        # Create staging dir
+        from os import path, makedirs
+        staging_dir = path.join(settings.STAGING_PATH, username)
+        if not path.exists(staging_dir):
+            makedirs(staging_dir)
+        # Ensure that staging dir is set up properly
+        expect(get_full_staging_path(username)).to_be_truthy()
+
+        # Create test experiment and make user the owner of it
+        experiment = Experiment(title='Text Experiment',
+                                institution_name='Test Uni',
+                                created_by=user)
+        experiment.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(user.id),
+            experiment=experiment,\
+
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+        self.dataset = \
+            Dataset(description='dataset description...')
+        self.dataset.save()
+        self.dataset.experiments.add(experiment)
+        self.dataset.save()
+
+        self.username, self.password = (username, password)
+
+    def _get_authenticated_client(self):
+        client = Client()
+        # Login as user
+        login = client.login(username=self.username, password=self.password)
+        self.assertTrue(login)
+        # Return authenticated client
+        return client
+
+
+    def _get_staging_url(self):
+        return reverse('tardis.tardis_portal.views.stage_files_to_dataset',
+                       args=[str(self.dataset.id)])
+
+    def testForbiddenWithoutLogin(self):
+        client = Client()
+        response = client.get(self._get_staging_url())
+        # Expect a redirect to login
+        expect(response.status_code).to_equal(302)
+        login_url = reverse('tardis.tardis_portal.views.login')
+        ensure(login_url in response['Location'], True,
+               "Redirect URL was not to login.")
+
+    def testPostOnlyMethodAllowed(self):
+        client = self._get_authenticated_client()
+
+        for method in (x.lower() for x in ['GET', 'HEAD', 'PUT', 'OPTIONS']):
+            response = getattr(client, method)(self._get_staging_url())
+            # Expect a 405 Method Not Allowed
+            expect(response.status_code).to_equal(405)
+            # Expect valid "Allow" header
+            response['Allow'] = 'POST'
+
+        response = client.post(self._get_staging_url())
+        # Expect something other than a 405
+        self.assertFalse(response.status_code == 405)
+
+    def testRequiresJSON(self):
+        client = Client()
+
+        # Login as user
+        login = client.login(username=self.username, password=self.password)
+        self.assertTrue(login)
+
+        response = client.post(self._get_staging_url())
+        # Expect 400 Bad Request because we didn't have a payload
+        expect(response.status_code).to_equal(400)
+
+        response = client.post(self._get_staging_url(),
+                               data={'files': ['foo', 'bar']})
+        # Expect 400 Bad Request because we didn't have a JSON payload
+        expect(response.status_code).to_equal(400)
+
+        response = client.post(self._get_staging_url(),
+                               data=json.dumps({'files': ['foo', 'bar']}),
+                               content_type='application/octet-stream')
+        # Expect 400 Bad Request because we didn't have a JSON Content-Type
+        expect(response.status_code).to_equal(400)
+
+    def testStageFile(self):
+        client = self._get_authenticated_client()
+
+        staging_dir = get_full_staging_path(self.username)
+
+        from os.path import basename
+        from tempfile import NamedTemporaryFile
+        with NamedTemporaryFile('w', dir=staging_dir) as f:
+            # Write some content
+            f.write('This is just some content')
+            f.flush()
+
+            data = [ f.name ]
+            content_type = 'application/json; charset=utf-8'
+            response = client.post(self._get_staging_url(),
+                                   data=json.dumps(data),
+                                   content_type=content_type)
+
+            # Expect 201 Created
+            expect(response.status_code).to_equal(201)
+            # Expect to get a list of URLs back
+            urls = json.loads(response.content)
+            expect(len(urls)).to_equal(1)
+
+            # Should have single staging file
+            dataset = Dataset.objects.get(id=self.dataset.id)
+            expect(dataset.dataset_file_set.count()).to_equal(1)
+            datafile = dataset.dataset_file_set.all()[0]
+            expect(datafile.filename).to_equal(basename(f.name))
+            expect(datafile.url.startswith('tardis://')).to_be_truthy()
+
+class ExperimentTestCase(TestCase):
+
+    def setUp(self):
+        # Create test owner without enough details
+        username, email, password = ('testuser',
+                                     'testuser@example.test',
+                                     'password')
+        user = User.objects.create_user(username, email, password)
+        for perm in ('add_experiment', 'change_experiment'):
+            user.user_permissions.add(Permission.objects.get(codename=perm))
+        user.save()
+        # Data used in tests
+        self.user, self.username, self.password = (user, username, password)
+
+    def testCreateAndEdit(self):
+
+        # Login as user
+        client = Client()
+        login = client.login(username=self.username, password=self.password)
+        self.assertTrue(login)
+
+        ##########
+        # Create #
+        ##########
+
+        create_url = reverse('tardis.tardis_portal.views.create_experiment')
+
+        # Check the form is accessible
+        response = client.get(create_url)
+        expect(response.status_code).to_equal(200)
+
+        # Create client and go to account management URL
+        data = {'title': 'The Elements',
+                'authors': 'Tom Lehrer, Arthur Sullivan',
+                'institution_name': 'The University of California',
+                'description':
+                    "There's antimony, arsenic, aluminum, selenium," +
+                    "And hydrogen and oxygen and nitrogen and rhenium..."
+                }
+        response = client.post(create_url, data=data)
+        # Expect redirect to created experiment
+        expect(response.status_code).to_equal(303)
+        created_url = response['Location']
+
+        # Check that it redirects to a valid location
+        response = client.get(created_url)
+        expect(response.status_code).to_equal(200)
+
+        experiment_id = resolve(urlparse(created_url).path)\
+                            .kwargs['experiment_id']
+        experiment = Experiment.objects.get(id=experiment_id)
+        for attr in ('title', 'description', 'institution_name'):
+            expect(getattr(experiment, attr)).to_equal(data[attr])
+
+        # Check authors were created properly
+        expect([a.author for a in experiment.author_experiment_set.all()])\
+            .to_equal(data['authors'].split(', '))
+
+        acl = ExperimentACL.objects.get(experiment=experiment,
+                                        pluginId='django_user',
+                                        entityId=self.user.id)
+        expect(acl.canRead).to_be_truthy()
+        expect(acl.canWrite).to_be_truthy()
+        expect(acl.isOwner).to_be_truthy()
+
+        ########
+        # Edit #
+        ########
+
+        edit_url = reverse('tardis.tardis_portal.views.edit_experiment',
+                           kwargs={'experiment_id': str(experiment_id)})
+
+        # Check the form is accessible
+        response = client.get(edit_url)
+        print response
+        expect(response.status_code).to_equal(200)
+
+        # Create client and go to account management URL
+        data = {'title': 'I Am the Very Model of a Modern Major-General',
+                'authors': 'W. S. Gilbert, Arthur Sullivan',
+                'institution_name': 'Savoy Theatre',
+                'description':
+                    "I am the very model of a modern Major-General,"+
+                    "I've information vegetable, animal, and mineral,"
+                }
+        response = client.post(edit_url, data=data)
+        # Expect redirect to created experiment
+        expect(response.status_code).to_equal(303)
+        edit_url = response['Location']
+
+        # Check that it redirects to a valid location
+        response = client.get(created_url)
+        expect(response.status_code).to_equal(200)
+
+        experiment_id = resolve(urlparse(created_url).path)\
+                            .kwargs['experiment_id']
+        experiment = Experiment.objects.get(id=experiment_id)
+        for attr in ('title', 'description', 'institution_name'):
+            expect(getattr(experiment, attr)).to_equal(data[attr])
+
+        # Check authors were created properly
+        expect([a.author for a in experiment.author_experiment_set.all()])\
+            .to_equal(data['authors'].split(', '))
+
+
+
+
+
+
+
+
+

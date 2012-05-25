@@ -1,0 +1,74 @@
+<script type="text/javascript">
+$("#staging-file-tree").jstree({
+    core : { /* core options go here */ },
+    plugins : [ "themes", "html_data", "checkbox" ]
+});
+
+//Get checked
+$('.add_files').live('click', function(){
+    file_list = $(this).parents(".dataset_container").find(".datafiles");
+
+    $(".jstree-leaf.jstree-checked").each(function(){
+        exists = false;
+        filename = $(this).attr('id');
+
+        file_list.find(".file").each(function(){
+            if(filename == $(this).html()) {
+                exists = true;
+            }
+        });
+
+        if(!exists) {
+            addDatafile(file_list, filename);
+        }
+    });
+    $("#staging-file-tree").jstree("uncheck_all");
+});
+</script>
+
+<p>To add files to 'My Files', mount the following file store via
+  your operating system:</p>
+<p id="mountpath">
+  <strong>{{staging_mount_prefix}}{{username}}</strong>
+</p>
+<p>
+  <strong>Select Files To Be Added To A Dataset:</strong>
+</p>
+<div id="staging-file-tree">{{directory_listing|safe}}</div>
+
+<button id="staging-import-button" class="btn btn-primary">
+  <i class="icon-arrow-right"></i>
+  Import from Staging Area
+</button>
+
+<script type="text/javascript">
+$('#staging-import-button').click(function() {
+  // Get files
+  var files = _.map(
+      $('#staging-file-tree').jstree('get_checked', -1, true)
+                             .filter('.jstree-leaf'),
+      function(v) {
+        return $(v).attr('id')
+      }
+  );
+
+  // Hide content
+  var modal = $('#staging-import-button').parents('.modal');
+  modal.find('.modal-body').hide();
+  modal.find('.loading-placeholder').show();
+
+  // Send data
+  $.ajax({
+    type: 'POST',
+    url: '{% url tardis.tardis_portal.views.stage_files_to_dataset dataset_id %}',
+    data: JSON.stringify(files),
+    contentType: "application/json; charset=utf-8",
+    dataType: 'json',
+    complete: function() {
+      $('.tab-pane').trigger('experiment-change');
+      modal.modal('hide');
+    }
+  });
+});
+</script>
+

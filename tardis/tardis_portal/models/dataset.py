@@ -18,7 +18,7 @@ class Dataset(models.Model):
     :attribute description: description of this dataset
     """
 
-    experiment = models.ForeignKey(Experiment)
+    experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     immutable = models.BooleanField(default=False)
     objects = OracleSafeManager()
@@ -69,8 +69,12 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.description
 
+    def get_first_experiment(self):
+        return self.experiments.order_by('created_time')[:1].get()
+
     def get_absolute_filepath(self):
-        return path.join(self.experiment.get_absolute_filepath(), str(self.id))
+        return path.join(self.get_first_experiment().get_absolute_filepath(),
+                         str(self.id))
 
 
 

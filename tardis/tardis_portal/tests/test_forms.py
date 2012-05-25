@@ -352,7 +352,7 @@ class ExperimentFormTestCase(TestCase):
         from django.forms.models import model_to_dict
         exp = self._create_experiment()
         initial = model_to_dict(exp)
-        for i, ds in enumerate(exp.dataset_set.all()):
+        for i, ds in enumerate(exp.datasets.all()):
             initial['dataset_description[' + str(i) + ']'] = ds.description
 
         f = forms.ExperimentForm(initial=initial)

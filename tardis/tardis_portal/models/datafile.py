@@ -127,19 +127,28 @@ class Dataset_File(models.Model):
                 return ''
 
             raw_path = self.url.partition('://')[2]
-            # Standard location for local files
-            file_path = path.abspath(path.join(FILE_STORE_PATH,
-                                               str(self.dataset.experiment.id),
-                                               str(self.dataset.id),
-                                               raw_path))
-            if path.isfile(file_path):
-                return file_path
-            # Legacy location for local files
-            file_path = path.abspath(path.join(FILE_STORE_PATH,
-                                               str(self.dataset.experiment.id),
-                                               raw_path))
-            if path.isfile(file_path):
-                return file_path
+
+            def file_path_func(dataset, experiment, raw_path):
+                # Standard location for local files
+                return path.abspath(path.join(FILE_STORE_PATH,
+                                              str(experiment.id),
+                                              str(self.dataset.id),
+                                              raw_path))
+
+            def legacy_file_path_func(dataset, experiment, raw_path):
+                # Legacy location for local files
+                return path.abspath(path.join(FILE_STORE_PATH,
+                                              str(experiment.id),
+                                              raw_path))
+
+            # Loop through experiments (because we can't be 100% sure which
+            # experiment was the first one)
+            for func in (file_path_func, legacy_file_path_func):
+                for experiment in self.dataset.experiments.all():
+                    file_path = func(self.dataset, experiment, raw_path)
+                    if path.isfile(file_path):
+                        return file_path
+
             return ''
         elif self.protocol == 'staging':
             return self.url

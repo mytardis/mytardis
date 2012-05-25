@@ -28,7 +28,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
+    has_experiment_write, has_dataset_write
 """
 views.py
 
@@ -50,9 +51,9 @@ from django.template import Context
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.models import User, Group, AnonymousUser
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
@@ -63,7 +64,7 @@ from django.views.decorators.cache import never_cache
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
-from tardis.tardis_portal.forms import ExperimentForm, \
+from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
@@ -102,6 +103,14 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
+
+class HttpResponseSeeAlso(HttpResponseRedirect):
+    status_code=303
+
+def _redirect_303(*args, **kwargs):
+    response = redirect(*args, **kwargs)
+    response.status_code = 303
+    return response
 
 
 def getNewSearchDatafileSelectionForm(initial=None):
@@ -366,7 +375,7 @@ def experiment_description(request, experiment_id):
     c['authors'] = experiment.author_experiment_set.all()
 
     c['datafiles'] = \
-        Dataset_File.objects.filter(dataset__experiment=experiment_id)
+        Dataset_File.objects.filter(dataset__experiments=experiment_id)
 
     c['owners'] = experiment.get_owners()
 
@@ -490,13 +499,16 @@ def experiment_datasets(request, experiment_id):
         c['file_matched_datasets'] = None
 
     c['datasets'] = \
-         Dataset.objects.filter(experiment=experiment_id)
+         Dataset.objects.filter(experiments=experiment_id)
 
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
 
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+
+    c['has_staging_access'] = \
+        bool(get_full_staging_path(request.user.username))
 
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
@@ -515,12 +527,10 @@ def experiment_datasets(request, experiment_id):
 @authz.dataset_access_required
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
-    has_write_permissions = \
-        authz.has_write_permissions(request, dataset.experiment.id)
+    has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'dataset': dataset, })
-    c['has_write_permissions'] = has_write_permissions and \
-                                 dataset.experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
+    c['has_write_permissions'] = has_write_permissions
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -559,13 +569,6 @@ def create_experiment(request,
         'user_id': request.user.id,
         })
 
-    staging = get_full_staging_path(
-                                request.user.username)
-    if staging:
-        c['directory_listing'] = staging_traverse(staging)
-        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
-        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -575,11 +578,6 @@ def create_experiment(request,
 
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
-            for df in full_experiment['dataset_files']:
-                if not df.url.startswith(path.sep):
-                    df.url = path.join(get_full_staging_path(
-                                        request.user.username),
-                                        df.url)
             full_experiment.save_m2m()
 
             # add defaul ACL
@@ -594,7 +592,7 @@ def create_experiment(request,
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
-            return HttpResponseRedirect(reverse(
+            return HttpResponseSeeAlso(reverse(
                 'tardis.tardis_portal.views.view_experiment',
                 args=[str(experiment.id)]) + "#created")
 
@@ -647,13 +645,6 @@ def edit_experiment(request, experiment_id,
                  'experiment_id': experiment_id,
               })
 
-    staging = get_full_staging_path(
-                                request.user.username)
-    if staging:
-        c['directory_listing'] = staging_traverse(staging)
-        c['staging_mount_prefix'] = settings.STAGING_MOUNT_PREFIX
-        c['staging_mount_user_suffix_enable'] = settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-
     if request.method == 'POST':
         form = ExperimentForm(request.POST, request.FILES,
                               instance=experiment, extra=0)
@@ -661,15 +652,10 @@ def edit_experiment(request, experiment_id,
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
             experiment.created_by = request.user
-            for df in full_experiment['dataset_files']:
-                if df.protocol == "staging":
-                    df.url = path.join(
-                    get_full_staging_path(request.user.username),
-                    df.url)
             full_experiment.save_m2m()
 
             request.POST = {'status': "Experiment Saved."}
-            return HttpResponseRedirect(reverse(
+            return HttpResponseSeeAlso(reverse(
                 'tardis.tardis_portal.views.view_experiment',
                 args=[str(experiment.id)]) + "#saved")
 
@@ -680,8 +666,7 @@ def edit_experiment(request, experiment_id,
 
     c['form'] = form
 
-    return HttpResponse(render_response_index(request,
-                        template, c))
+    return HttpResponse(render_response_index(request, template, c))
 
 
 # todo complete....
@@ -907,11 +892,8 @@ def retrieve_parameters(request, dataset_file_id):
     parametersets = DatafileParameterSet.objects.all()
     parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
 
-    experiment_id = Dataset_File.objects.get(id=dataset_file_id).\
-        dataset.experiment.id
-
-    has_write_permissions = \
-        authz.has_write_permissions(request, experiment_id)
+    dataset_id = Dataset_File.objects.get(id=dataset_file_id).dataset.id
+    has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'parametersets': parametersets,
                  'has_write_permissions': has_write_permissions})
@@ -984,11 +966,8 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     has_write_permissions = False
 
     if request.user.is_authenticated():
-        experiment_id = Experiment.objects.get(dataset__id=dataset_id).id
-        is_owner = authz.has_experiment_ownership(request, experiment_id)
-
-        has_write_permissions = \
-            authz.has_write_permissions(request, experiment_id)
+        is_owner = authz.has_dataset_ownership(request, dataset_id)
+        has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     immutable = Dataset.objects.get(id=dataset_id).immutable
 
@@ -1562,7 +1541,7 @@ def search_datafile(request):
 
     # get experiments associated with datafiles
     if datafile_results:
-        experiment_pks = list(set(datafile_results.values_list('dataset__experiment', flat=True)))
+        experiment_pks = list(set(datafile_results.values_list('dataset__experiments', flat=True)))
         experiments = Experiment.safe.in_bulk(experiment_pks)
     else:
         experiments = {}
@@ -2319,6 +2298,25 @@ def upload(request, dataset_id):
     return HttpResponse('True')
 
 @authz.dataset_write_permissions_required
+def import_staging_files(request, dataset_id):
+    """
+    Creates an jstree view of the staging area of the user, and provides
+    a selection mechanism importing files.
+    """
+
+    staging = get_full_staging_path(request.user.username)
+    if not staging:
+        return HttpResponseNotFound()
+
+    c = Context({
+        'dataset_id': dataset_id,
+        'directory_listing': staging_traverse(staging),
+        'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
+        'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
+     })
+    return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+
+@authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
                  template_name='tardis_portal/ajax/upload_files.html'):
     """
@@ -2359,8 +2357,7 @@ def edit_experiment_par(request, parameterset_id):
 @login_required
 def edit_dataset_par(request, parameterset_id):
     parameterset = DatasetParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request,
-                                   parameterset.dataset.experiment.id):
+    if authz.has_dataset_write(request, parameterset.dataset.id):
         return edit_parameters(request, parameterset, otype="dataset")
     else:
         return return_response_error(request)
@@ -2369,8 +2366,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_write_permissions(request,
-                            parameterset.dataset_file.dataset.experiment.id):
+    if authz.has_dataset_write(request, parameterset.dataset_file.dataset.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
@@ -2423,10 +2419,9 @@ def edit_parameters(request, parameterset, otype):
 @login_required
 def add_datafile_par(request, datafile_id):
     parentObject = Dataset_File.objects.get(id=datafile_id)
-    if authz.has_write_permissions(request,
-                                   parentObject.dataset.experiment.id):
-        return add_par(request, parentObject, otype="datafile",
-                stype=Schema.DATAFILE)
+    if authz.has_dataset_write(request, parentObject.dataset.id):
+        return add_par(request, parentObject,
+                       otype="datafile", stype=Schema.DATAFILE)
     else:
         return return_response_error(request)
 
@@ -2434,7 +2429,7 @@ def add_datafile_par(request, datafile_id):
 @login_required
 def add_dataset_par(request, dataset_id):
     parentObject = Dataset.objects.get(id=dataset_id)
-    if authz.has_write_permissions(request, parentObject.experiment.id):
+    if authz.has_dataset_write(request, parentObject.id):
         return add_par(request, parentObject, otype="dataset",
                 stype=Schema.DATASET)
     else:
@@ -2457,8 +2452,11 @@ def add_par(request, parentObject, otype, stype):
 
     if 'schema_id' in request.GET:
         schema_id = request.GET['schema_id']
-    else:
+    elif all_schema.count() > 0:
         schema_id = all_schema[0].id
+    else:
+        return HttpResponse(render_response_index(
+            request, 'tardis_portal/ajax/parameter_set_unavailable.html', {}))
 
     schema = Schema.objects.get(id=schema_id)
 
@@ -2794,6 +2792,7 @@ def retrieve_licenses(request):
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 
+
 @login_required
 def manage_user_account(request):
     user = request.user
@@ -2806,9 +2805,98 @@ def manage_user_account(request):
             user.last_name = form.cleaned_data['last_name']
             user.email = form.cleaned_data['email']
             user.save()
+            return _redirect_303('tardis.tardis_portal.views.index')
     else:
         form = ManageAccountForm(instance=user)
 
     c = Context({'form': form})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_user_account.html', c))
+
+@login_required
+def add_or_edit_dataset(request, experiment_id, dataset_id=None):
+    if dataset_id:
+        if not has_dataset_write(request, dataset_id):
+            return HttpResponseForbidden()
+        dataset = Dataset.objects.get(id=dataset_id)
+    else:
+        if not has_experiment_write(request, experiment_id):
+            return HttpResponseForbidden()
+        dataset = None
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = DatasetForm(request.POST)
+        if form.is_valid():
+            if not dataset:
+                dataset = Dataset()
+            dataset.description = form.cleaned_data['description']
+            dataset.save()
+            experiment = Experiment.objects.get(id=experiment_id)
+            dataset.experiments.add(experiment)
+            dataset.save()
+            return _redirect_303('tardis.tardis_portal.views.view_experiment', experiment_id)
+    else:
+        if dataset:
+            form = DatasetForm(instance=dataset)
+        else:
+            form = DatasetForm()
+
+    if dataset:
+        c = Context({'form': form, 'dataset': dataset})
+    else:
+        c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/add_or_edit_dataset.html', c))
+
+@login_required
+def stage_files_to_dataset(request, dataset_id):
+    """
+    Takes a JSON list of filenames to import from the staging area to this
+    dataset.
+
+    Returns a JSON list of created paths for the files.
+    """
+    if not has_dataset_write(request, dataset_id):
+        return HttpResponseForbidden()
+
+    if request.method != 'POST':
+        # This method only accepts POSTS, so send 405 Method Not Allowed
+        response = HttpResponse(status=405)
+        response['Allow'] = 'POST'
+        return response
+
+    user = request.user
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    # Incoming data MUST be JSON
+    if not request.META['CONTENT_TYPE'].startswith('application/json'):
+        return HttpResponse(status=400)
+
+    try:
+        files = json.loads(request.body)
+    except:
+        return HttpResponse(status=400)
+
+    def make_staging_url(filepath):
+        from django.utils import _os
+        return _os.safe_join(get_full_staging_path(request.user.username),
+                              filepath)
+
+    def create_staging_datafile(filepath):
+        datafile = Dataset_File(dataset=dataset,
+                                protocol='staging',
+                                url=make_staging_url(filepath),
+                                filename=path.basename(filepath))
+        datafile.save()
+        return datafile
+
+    datafiles = [create_staging_datafile(f) for f in files]
+
+    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
+                        status=201)
+
+
+
+
+

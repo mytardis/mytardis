@@ -37,8 +37,8 @@
 							</strong>
 					  </p>
 					  <p>
-					   <strong>{{ experiment.dataset_set.all.count }}</strong>
-					   dataset{{ experiment.dataset_set.all.count|pluralize }},
+					   <strong>{{ experiment.datasets.all.count }}</strong>
+					   dataset{{ experiment.datasets.all.count|pluralize }},
 					   containing
 					   <strong>{{ experiment.id|experiment_file_count }}</strong>
 					   file{{ experiment.id|experiment_file_count|pluralize }}
@@ -81,8 +81,8 @@
 						<strong>{{ experiment.update_time|naturalday }}</strong>
 	        </p>
 	        <p>
-						<strong>{{ experiment.dataset_set.all.count }}</strong>
-						dataset{{ experiment.dataset_set.all.count|pluralize }},
+						<strong>{{ experiment.datasets.all.count }}</strong>
+						dataset{{ experiment.datasets.all.count|pluralize }},
 						containing
 						<strong>{{ experiment.id|experiment_file_count }}</strong>
 						file{{ experiment.id|experiment_file_count|pluralize }}
@@ -126,8 +126,8 @@
 			      <strong>{{ public_experiment.update_time|naturalday }}</strong>
 			    </p>
 			    <p>
-				    <strong>{{ public_experiment.dataset_set.all.count }}</strong>
-				    dataset{{ public_experiment.dataset_set.all.count|pluralize }},
+				    <strong>{{ public_experiment.datasets.all.count }}</strong>
+				    dataset{{ public_experiment.datasets.all.count|pluralize }},
 				    containing
 				    <strong>{{ public_experiment.id|experiment_file_count }}</strong>
 				    file{{ public_experiment.id|experiment_file_count|pluralize }}

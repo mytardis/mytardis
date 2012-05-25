@@ -14,7 +14,7 @@ class IntegrityCheck(object):
         """Check whether all datafiles belonging to this experiment actually exist on disk.
         Return status of each as a dictionary."""
 
-        datafiles = Dataset_File.objects.filter(dataset__experiment__pk=self.experiment.id)
+        datafiles = Dataset_File.objects.filter(dataset__experiments=self.experiment)
 
         output = { 'files_ok': 0, 'files_missing': 0, 'files_incomplete': 0, 'datafiles': {} }
         for datafile in datafiles.iterator():

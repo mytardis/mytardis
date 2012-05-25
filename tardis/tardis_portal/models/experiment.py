@@ -133,7 +133,7 @@ class Experiment(models.Model):
         urls = {}
         kwargs = {'experiment_id': self.id,
                   'comptype': comptype}
-        distinct = Dataset_File.objects.filter(dataset__experiment=self.id)\
+        distinct = Dataset_File.objects.filter(dataset__experiments=self.id)\
             .values('protocol').distinct()
         for key_value in distinct:
             protocol = key_value['protocol']
