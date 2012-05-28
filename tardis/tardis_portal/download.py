@@ -170,9 +170,10 @@ def _write_tar_func(rootdir, datafiles):
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile
-        with TarFile(filename, 'w') as tf:
-            logger.debug('Writing tar archive to %s' % filename)
-            _write_files_to_archive(tf.add, files)
+        tf = TarFile(filename, 'w')
+        logger.debug('Writing tar archive to %s' % filename)
+        _write_files_to_archive(tf.add, files)
+        tf.close()
     # Returns the function to do the actual writing
     return write_tar
 
@@ -184,9 +185,10 @@ def _write_zip_func(rootdir, datafiles):
     # Define the function
     def write_zip(filename):
         from zipfile import ZipFile
-        with ZipFile(filename, 'w', allowZip64=True) as zf:
-            logger.debug('Writing zip archive to %s' % filename)
-            _write_files_to_archive(zf.write, files)
+        zf = ZipFile(filename, 'w', allowZip64=True)
+        logger.debug('Writing zip archive to %s' % filename)
+        _write_files_to_archive(zf.write, files)
+        zf.close()
     # Returns the function to do the actual writing
     return write_zip
 
