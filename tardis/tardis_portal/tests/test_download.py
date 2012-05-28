@@ -208,11 +208,12 @@ class DownloadTestCase(TestCase):
                 # It should be a zip file (all of which start with "PK")
                 expect(zipread.read(2)).to_equal('PK')
             expect(is_zipfile(tempfile.name)).to_be_truthy()
-            with ZipFile(tempfile.name, 'r') as zf:
-                expect(len(zf.namelist())).to_equal(len(datafiles))
-                for df in datafiles:
-                    filename = join(rootdir, str(df.dataset.id), df.filename)
-                    expect(filename in zf.namelist()).to_be_truthy()
+            zf = ZipFile(tempfile.name, 'r')
+            expect(len(zf.namelist())).to_equal(len(datafiles))
+            for df in datafiles:
+                filename = join(rootdir, str(df.dataset.id), df.filename)
+                expect(filename in zf.namelist()).to_be_truthy()
+            zf.close()
 
 
     def testDownload(self):
