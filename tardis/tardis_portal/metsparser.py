@@ -495,9 +495,10 @@ class MetsMetadataInfoHandler(ContentHandler):
             elif self.processDatasetStruct:
                 # let's save the dataset in the DB
                 self.modelDataset = models.Dataset(
-                    experiment=self.modelExperiment,
                     description=self.metsObject.title,
                     immutable=settings.IMMUTABLE_METS_DATASETS)
+                self.modelDataset.save()
+                self.modelDataset.experiments.add(self.modelExperiment)
                 self.modelDataset.save()
 
                 # let's also save the modelDataset in a dictionary so that we

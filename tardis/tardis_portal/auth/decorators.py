@@ -60,7 +60,7 @@ def get_accessible_datafiles_for_user(request):
     if experiments.count() == 0:
         return []
 
-    queries = [Q(dataset__experiment__id=e.id) for e in experiments]
+    queries = [Q(dataset__experiments__id=e.id) for e in experiments]
 
     query = queries.pop()
     for item in queries:
@@ -80,6 +80,9 @@ def has_experiment_access(request, experiment_id):
     except PermissionDenied:
         return False
 
+def has_experiment_write(request, experiment_id):
+    return has_write_permissions(request, experiment_id)
+
 def has_experiment_download_access(request, experiment_id):
     if Experiment.safe.owned_and_shared(request) \
                       .filter(id=experiment_id) \
@@ -89,21 +92,35 @@ def has_experiment_download_access(request, experiment_id):
         exp = Experiment.objects.get(id=experiment_id)
         return Experiment.public_access_implies_distribution(exp.public_access)
 
+def has_dataset_ownership(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    return any(has_experiment_ownership(request, experiment.id)
+               for experiment in dataset.experiments.all())
+
 def has_dataset_access(request, dataset_id):
-    experiment = Experiment.objects.get(dataset__pk=dataset_id)
-    return has_experiment_access(request, experiment.id)
+    dataset = Dataset.objects.get(id=dataset_id)
+    return any(has_experiment_access(request, experiment.id)
+               for experiment in dataset.experiments.all())
+
+def has_dataset_write(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    if dataset.immutable:
+        return False
+    return any(has_experiment_write(request, experiment.id)
+               for experiment in dataset.experiments.all())
 
 def has_dataset_download_access(request, dataset_id):
-    experiment = Experiment.objects.get(dataset__pk=dataset_id)
-    return has_experiment_download_access(request, experiment.id)
+    dataset = Dataset.objects.get(id=dataset_id)
+    return any(has_experiment_download_access(request, experiment.id)
+               for experiment in dataset.experiments.all())
 
 def has_datafile_access(request, dataset_file_id):
-    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
-    return has_experiment_access(request, experiment.id)
+    dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    return has_dataset_access(request, dataset.id)
 
 def has_datafile_download_access(request, dataset_file_id):
-    experiment = Experiment.objects.get(dataset__dataset_file=dataset_file_id)
-    return has_experiment_download_access(request, experiment.id)
+    dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    return has_dataset_download_access(request, dataset.id)
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
@@ -333,8 +350,7 @@ def write_permissions_required(f):
 def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs['dataset_id']
-        experiment_id = Dataset.objects.get(pk=dataset_id).experiment_id
-        if not has_write_permissions(request, experiment_id):
+        if not has_dataset_write(request, dataset_id):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 

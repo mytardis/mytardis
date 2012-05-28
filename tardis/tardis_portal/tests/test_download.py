@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from compare import expect
 from os import makedirs
 from os.path import abspath, basename, dirname, join, exists
 from shutil import rmtree
+from tempfile import mkstemp
+from zipfile import is_zipfile, ZipFile
 
 from django.test import TestCase
 from django.test.client import Client
@@ -14,6 +17,7 @@ from nose.plugins.skip import SkipTest
 
 import filecmp
 
+from tardis.tardis_portal.download import StreamingFile
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
 
 from tempfile import NamedTemporaryFile
@@ -23,6 +27,34 @@ try:
     IMAGEMAGICK_AVAILABLE = True
 except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False
+
+class StreamingFileTestCase(TestCase):
+
+    def testDirectCopy(self):
+
+        def writeTestData(filename):
+            with open(filename, 'w') as f:
+                from time import sleep
+                for i in range(1,10):
+                    print i
+                    sleep(0.1)
+                    f.write("%d\n" % i)
+
+        # Create
+        reader = StreamingFile(writeTestData)
+        expect(reader.thread.is_alive()).to_be_truthy()
+        expect(exists(reader.name)).to_be_truthy()
+        contents = reader.read(10)
+        expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
+        contents = reader.read(1024)
+        expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
+        contents = reader.read(1024)
+        expect(contents).to_equal('')
+        expect(exists(reader.name)).to_be_truthy()
+        reader.close()
+        expect(exists(reader.name)).to_be_falsy()
+
+
 
 class DownloadTestCase(TestCase):
 
@@ -45,11 +77,16 @@ class DownloadTestCase(TestCase):
         self.experiment2.save()
 
         # dataset1 belongs to experiment1
-        self.dataset1 = Dataset(experiment=self.experiment1)
+        self.dataset1 = Dataset()
+        self.dataset1.save()
+        self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
 
+
         # dataset2 belongs to experiment2
-        self.dataset2 = Dataset(experiment=self.experiment2)
+        self.dataset2 = Dataset()
+        self.dataset2.save()
+        self.dataset2.experiments.add(self.experiment2)
         self.dataset2.save()
 
         # absolute path first
@@ -147,6 +184,36 @@ class DownloadTestCase(TestCase):
             tiff_signature = "II\x2a\x00"
             self.assertEqual(response.content[0:4], tiff_signature)
 
+    def _check_tar_file(self, content, rootdir, datafiles):
+        # It should be a zip file
+        with NamedTemporaryFile('w') as tempfile:
+            tempfile.write(content)
+            tempfile.flush()
+            with open(tempfile.name, 'r') as zipread:
+                # It should be a zip file (all of which start with "PK")
+                expect(zipread.read(2)).to_equal('PK')
+            expect(is_zipfile(tempfile.name)).to_be_truthy()
+            with ZipFile(tempfile.name, 'r') as zf:
+                expect(len(zf.namelist())).to_equal(len(datafiles))
+                for df in datafiles:
+                    filename = join(rootdir, str(df.dataset.id), df.filename)
+                    expect(filename in zf.namelist()).to_be_truthy()
+
+    def _check_zip_file(self, content, rootdir, datafiles):
+        # It should be a zip file
+        with NamedTemporaryFile('w') as tempfile:
+            tempfile.write(content)
+            tempfile.flush()
+            with open(tempfile.name, 'r') as zipread:
+                # It should be a zip file (all of which start with "PK")
+                expect(zipread.read(2)).to_equal('PK')
+            expect(is_zipfile(tempfile.name)).to_be_truthy()
+            with ZipFile(tempfile.name, 'r') as zf:
+                expect(len(zf.namelist())).to_equal(len(datafiles))
+                for df in datafiles:
+                    filename = join(rootdir, str(df.dataset.id), df.filename)
+                    expect(filename in zf.namelist()).to_be_truthy()
+
 
     def testDownload(self):
         client = Client()
@@ -157,6 +224,10 @@ class DownloadTestCase(TestCase):
                          'attachment; filename="experiment%s-complete.zip"'
                          % self.experiment1.id)
         self.assertEqual(response.status_code, 200)
+        self._check_zip_file(response.content, str(self.experiment1.id),
+                             reduce(lambda x, y: x + y,
+                                    [ds.dataset_file_set.all() \
+                                     for ds in self.experiment1.datasets.all()]))
 
         # check download of file1
         response = client.get('/download/datafile/%i/' % self.dataset_file1.id)
@@ -177,6 +248,8 @@ class DownloadTestCase(TestCase):
                                 'dataset': [self.dataset1.id],
                                 'datafile': []})
         self.assertEqual(response.status_code, 200)
+        self._check_zip_file(response.content, 'datasets',
+                             self.dataset1.dataset_file_set.all())
 
         # check dataset2 download
         response = client.post('/download/datafiles/',
@@ -191,8 +264,7 @@ class DownloadTestCase(TestCase):
                                 'dataset': [],
                                 'datafile': [self.dataset_file1.id]})
         self.assertEqual(response.status_code, 200)
-        # It should be a zip file (all of which start with "PK")
-        self.assertEqual(response.content[0:2], "PK")
+        self._check_zip_file(response.content, 'datasets', [self.dataset_file1])
 
         # check datafile2 download via POST
         response = client.post('/download/datafiles/',

@@ -16,8 +16,8 @@ deposited <strong>{{ experiment.update_time|naturalday }}</strong>
 <tr>
     <td class="experiment-table-stats">
       {% block experiment_stats %}
-<strong>{{ experiment.dataset_set.all.count }}</strong>
-dataset{{ experiment.dataset_set.all.count|pluralize }},
+<strong>{{ experiment.datasets.all.count }}</strong>
+dataset{{ experiment.datasets.all.count|pluralize }},
 containing <strong>{{ experiment.id|experiment_file_count }}</strong>
 file{{ experiment.id|experiment_file_count|pluralize }}
 <br/>

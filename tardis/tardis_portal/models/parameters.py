@@ -319,9 +319,6 @@ class DatafileParameter(models.Model):
     def get(self):
         return _getParameter(self)
 
-    def getExpId(self):
-        return self.parameterset.dataset_file.dataset.experiment.id
-
     def __unicode__(self):
         return 'Datafile Param: %s=%s' % (self.name.name, self.get())
 
@@ -341,9 +338,6 @@ class DatasetParameter(models.Model):
 
     def get(self):
         return _getParameter(self)
-
-    def getExpId(self):
-        return self.parameterset.dataset.experiment.id
 
     def __unicode__(self):
         return 'Dataset Param: %s=%s' % (self.name.name, self.get())
@@ -370,9 +364,6 @@ class ExperimentParameter(models.Model):
 
     def get(self):
         return _getParameter(self)
-
-    def getExpId(self):
-        return self.parameterset.experiment.id
 
     def __unicode__(self):
         return 'Experiment Param: %s=%s' % (self.name.name, self.get())
@@ -408,9 +399,7 @@ def pre_save_parameter(sender, **kwargs):
             from os.path import exists, join
             from uuid import uuid4 as uuid
 
-            exp_id = parameter.getExpId()
-
-            dirname = join(settings.FILE_STORE_PATH, str(exp_id))
+            dirname = settings.FILE_STORE_PATH
             filename = str(uuid())
             filepath = join(dirname, filename)
 

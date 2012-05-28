@@ -76,14 +76,16 @@ class StagingFiles(TestCase):
                                 created_by=self.user,
                                 )
         exp.save()
-        dataset = models.Dataset(description="dataset description...",
-                                 experiment=exp)
+        dataset = models.Dataset(description="dataset description...")
         dataset.save()
+        dataset.experiments.add(exp)
+        dataset.save()
+
         from tardis.tardis_portal.staging import add_datafile_to_dataset
         from django.conf import settings
         from os import path
         experiment_path = path.join(settings.FILE_STORE_PATH,
-                                    str(dataset.experiment.id))
+                                    str(dataset.get_first_experiment().id))
         df = add_datafile_to_dataset(dataset,
                                      path.join(experiment_path,
                                                str(dataset.id), 'file'),
@@ -200,8 +202,9 @@ class TestStagingFiles(TestCase):
         exp.save()
 
         # make dataset
-        dataset = models.Dataset(description="dataset description...",
-                                 experiment=exp)
+        dataset = models.Dataset(description="dataset description...")
+        dataset.save()
+        dataset.experiments.add(exp)
         dataset.save()
 
         # create datasetfile

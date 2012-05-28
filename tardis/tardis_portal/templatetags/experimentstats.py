@@ -9,7 +9,7 @@ register = template.Library()
 
 @register.filter
 def experiment_file_count(value):
-    return Dataset_File.objects.filter(dataset__experiment__pk=value).count()
+    return Dataset_File.objects.filter(dataset__experiments__pk=value).count()
 
 # @register.filter
 # def experiment_file_size(value):....

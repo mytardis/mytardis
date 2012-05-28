@@ -25,8 +25,8 @@
       <span>
         <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true#datasets">
             <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true{% if search_query %}&query={{ search_query.url_safe_query }}{% endif %}#datasets">
-        <strong> {{result.sr.dataset_set.all.count}} </strong>
-        dataset{{result.sr.dataset_set.all.count|pluralize }}
+        <strong> {{result.sr.datasets.all.count}} </strong>
+        dataset{{result.sr.datasets.all.count|pluralize }}
         </a>
       </span>
       {% if result.dataset_hit %}

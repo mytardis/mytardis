@@ -171,7 +171,7 @@ class ProcessExperiment:
                         author_experiment.save()
                         x = x + 1
 
-                    experiment.dataset_set.all().delete()
+                    experiment.datasets.all().delete()
 
                     if 'metadata' in exp:
                         for md in exp['metadata']:
@@ -240,8 +240,9 @@ class ProcessExperiment:
             elif line.startswith('<file>'):
 
                 if current == 'dataset':
-                    d = Dataset(experiment=experiment,
-                            description=dataset['description'])
+                    d = Dataset(description=dataset['description'])
+                    d.save()
+                    d.experiments.add(experiment)
                     d.save()
 
                     if 'metadata' in dataset:
