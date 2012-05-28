@@ -1,4 +1,5 @@
 {% block content %}
+{% load url from future %}
 
 <!-- Scripts -->
 {% load mustachejs %}
@@ -94,7 +95,7 @@ $('#modal-legal .cancel-button').click(function() {
 </script>
 
 <!-- Selection form -->
-<form action="{% url tardis.tardis_portal.views.choose_rights experiment.id %}"
+<form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
       method="post" class="experiment-rights form-horizontal">
   {% load bootstrap %}
   {{ form|bootstrap }}
