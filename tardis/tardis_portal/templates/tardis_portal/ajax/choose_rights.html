@@ -1,5 +1,6 @@
-{% block content %}
+{% load static from staticfiles %}
 {% load url from future %}
+{% block content %}
 
 <!-- Scripts -->
 {% load mustachejs %}
@@ -74,7 +75,7 @@ $('#publishing-consent').trigger('change');
 $('#publishing-consent').prop('disabled', true)
 // Get legal text
 $.ajax({
-  url: '{{ STATIC_URL }}publishing_legal.txt',
+  url: "{% static 'publishing_legal.txt' %}",
   dataType: 'html',
   success: function(data) {
     $('#publishing-legal-text').html(data);

@@ -1,4 +1,5 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
+{% load static from staticfiles %}
 {% load url from future %}
 
 {% block script %}
@@ -48,7 +49,7 @@ $(".remove_user").live('click', function(evt) {
 });
 $(document).ready(function() {
 
-    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/>";
+    var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/>;
 
     $(".member_list_user_toggle").click(function(evt){
         evt.preventDefault()

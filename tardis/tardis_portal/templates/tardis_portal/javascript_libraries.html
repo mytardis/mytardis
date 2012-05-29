@@ -1,54 +1,55 @@
+{% load static from staticfiles %}
 {% block js_libraries %}
 {# See js/lib/README.rst for more info #}
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery-1.7.1.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jstree/jquery.jstree.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery-ui-1.8.18.custom.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/jquery.cookie.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/flash_detect_min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/async.min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/underscore-min.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/underscore.string.min.js"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-1.7.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.8.18.custom.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/flash_detect_min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/underscore-min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/underscore.string.min.js' %}"></script>
 <script type="text/javascript">
   // Mixin Underscore.String to Underscore.js
   _.mixin(_.string.exports());
 </script>
 <!-- Backbone.js -->
-<script type="text/javascript" src="{{ STATIC_URL }}js/lib/backbone-min.js"></script>
+<script type="text/javascript" src="{% static 'js/lib/backbone-min.js' %}"></script>
 <!-- Backbone Forms -->
 <link rel="stylesheet" type="text/css"
-        href="{{ STATIC_URL }}backbone-forms/backbone-forms.css"/>
-<script src="{{ STATIC_URL }}backbone-forms/backbone-forms.js"></script>
-<script src="{{ STATIC_URL }}backbone-forms/jquery-ui-editors.js"></script>
-<script src="{{ STATIC_URL }}backbone-forms/templates/bootstrap.js"></script>
+        href="{% static 'backbone-forms/backbone-forms.css' %}"/>
+<script src="{% static 'backbone-forms/backbone-forms.js' %}"></script>
+<script src="{% static 'backbone-forms/jquery-ui-editors.js' %}"></script>
+<script src="{% static 'backbone-forms/templates/bootstrap.js' %}"></script>
 
 {# Supplied by django-mustachejs #}
-<script type="text/javascript" src="{{ STATIC_URL }}mustache/js/mustache-0.3.0.js"></script>
+<script type="text/javascript" src="{% static 'mustache/js/mustache-0.3.0.js' %}"></script>
 {% endblock %}
 
 {% block css_libraries %}
-<link type="text/css" href="{{ STATIC_URL }}css/lib/smoothness/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+<link type="text/css" href="{% static 'css/lib/smoothness/jquery-ui-1.8.18.custom.css' %}" rel="stylesheet" />
 
 <!-- Twitter Bootstrap: http://twitter.github.com/bootstrap/ -->
-<link href="{{ STATIC_URL }}bootstrap/css/bootstrap.css" rel="stylesheet">
+<link href="{% static 'bootstrap/css/bootstrap.css' %}" rel="stylesheet">
 <style>
   body {
     /* 60px to make the container go all the way to the bottom of the topbar */
     padding-top: 60px;
   }
 </style>
-<link href="{{ STATIC_URL }}bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="{% static 'bootstrap/css/bootstrap-responsive.css' %}" rel="stylesheet">
 
 <!--
 Font Awesome - http://fortawesome.github.com/Font-Awesome
 The Font Awesome webfont, CSS, and LESS files are licensed under CC BY 3.0.
 -->
-<link href="{{ STATIC_URL }}font-awesome/css/font-awesome.css" rel="stylesheet">
+<link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">
 {% endblock %}
 
 {% block site_js %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/main.js"></script>
+<script type="text/javascript" src="{% static 'js/main.js' %}"></script>
 {% endblock %}
 
 {% block site_css %}
-<link type="text/css" href="{{ STATIC_URL }}css/default.css" rel="stylesheet" />
+<link type="text/css" href="{% static 'css/default.css' %}" rel="stylesheet" />
 {% endblock %}
