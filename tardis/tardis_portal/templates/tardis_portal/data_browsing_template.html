@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load url from future %}
 
 {% block sidebar %}
 <div class="sidebar-toggle-open sidebar-toggle-open-hidden">
@@ -16,20 +17,20 @@
   <ul class="nav nav-list">
     <li class="nav-header">Experiments</li>
     <li>
-      <a href="{% url tardis.tardis_portal.views.experiment_index %}">
+      <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">
         <i class="icon-list-alt"></i>
         Browse
       </a>
     </li>
     <li>
-      <a href="{% url tardis.tardis_portal.views.search_experiment %}">
+      <a href="{% url 'tardis.tardis_portal.views.search_experiment' %}">
         <i class="icon-search"></i>
         Search
       </a>
     </li>
     {% if perms.tardis_portal.add_experiment %}
     <li>
-      <a href="{% url tardis.tardis_portal.views.create_experiment %}">
+      <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
         <i class="icon-plus"></i>
         Create
       </a>
@@ -41,7 +42,7 @@
       <li class="nav-header">Access Control</li>
       {% if perms.tardis_portal.change_experimentacl %}
       <li>
-        <a href="{% url tardis.tardis_portal.views.control_panel %}">
+        <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
           <i class="icon-user"></i>
           Experiment Access
         </a>
@@ -49,7 +50,7 @@
       {% endif %}
       {% if perms.tardis_portal.change_group %}
       <li>
-        <a href="{% url tardis.tardis_portal.views.manage_groups %}">
+        <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
           <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
           Group Management
         </a>

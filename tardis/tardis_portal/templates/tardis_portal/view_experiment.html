@@ -1,5 +1,6 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
 {% load basiccomparisonfilters %}
+{% load static from staticfiles %}
 {% load uploadify_tags %}
 {% load dynurl %}
 
@@ -23,7 +24,7 @@
         }
     };
 
-    var loadingHTML = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
+    var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -262,7 +263,7 @@
   </div>
 
   <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif' %}" alt="loading" /></p>
   </div>
 
   <div class="modal-body"></div>

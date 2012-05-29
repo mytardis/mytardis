@@ -48,6 +48,9 @@ GET_FULL_STAGING_PATH_TEST = path.join(STAGING_PATH, "test_user")
 
 SITE_ID = '1'
 
+# We get a warning if we don't define a secret
+SECRET_KEY = 'this_is_a_secret_you_really_should_not_copy'
+
 TEMPLATE_DIRS = ['.']
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
@@ -55,7 +58,7 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 MEDIA_ROOT = STATIC_DOC_ROOT
 
-MEDIA_URL = '/site_media'
+MEDIA_URL = '/site_media/'
 STATIC_URL = '/static/'
 
 def get_admin_media_path():

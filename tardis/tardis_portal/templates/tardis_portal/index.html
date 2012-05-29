@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load url from future %}
 
 {% block script %}
 
@@ -12,10 +13,10 @@
 <p>
 {% if is_authenticated %}
   Please go to
-  <a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a>
+  <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">Data</a>
   to review your experiment data.
 {% else %}
-  Please <a href="{% url tardis.tardis_portal.views.login %}">login</a>
+  Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
   to see your experiment data.
 {% endif %}
 </p>

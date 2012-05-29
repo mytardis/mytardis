@@ -1,4 +1,5 @@
 {% load mustachejs %}
+{% load url from future %}
 
 {% mustachejs "related_info/publication" %}
 {% mustachejs "related_info/website" %}
@@ -19,7 +20,7 @@ $(function() {
 
   var RelatedInfo = Backbone.Collection.extend({
     model: RelatedInfoModel,
-    url: '{% url tardis.apps.related_info.views.list_or_create_related_info experiment.id %}'
+    url: "{% url 'tardis.apps.related_info.views.list_or_create_related_info' experiment.id %}"
   });
   var relatedInfo = new RelatedInfo();
 
