@@ -253,36 +253,52 @@ def about(request):
 
 
 def experiment_index(request):
-
-    experiments = None
-    shared_experiments = None
-
     if request.user.is_authenticated():
-        experiments = authz.get_owned_experiments(request)
-        if experiments:
-            experiments = experiments.order_by('-update_time')
+        return redirect('tardis.tardis_portal.views.experiment_list_mine')
+    else:
+        return redirect('tardis.tardis_portal.views.experiment_list_public')
 
-        shared_experiments = authz.get_shared_experiments(request)
-        if shared_experiments:
-            shared_experiments = shared_experiments.order_by('-update_time')
-
-    public_experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
-    if public_experiments:
-        public_experiments = public_experiments.order_by('-update_time')
+@login_required
+def experiment_list_mine(request):
 
     c = Context({
-        'experiments': experiments,
-        'shared_experiments': shared_experiments,
-        'public_experiments': public_experiments,
-        'subtitle': 'Experiment Index',
-        'bodyclass': 'list',
-        'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
-        'next': '/experiment/view/',
-        'data_pressed': True})
+        'subtitle': 'My Experiments',
+        'can_see_private': True,
+        'experiments': authz.get_owned_experiments(request)\
+                            .order_by('-update_time'),
+    })
 
     # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
-                        'tardis_portal/experiment_index.html', c))
+                        'tardis_portal/experiment/list_mine.html', c))
+
+@login_required
+def experiment_list_shared(request):
+
+    c = Context({
+        'subtitle': 'Shared Experiments',
+        'can_see_private': True,
+        'experiments': authz.get_shared_experiments(request) \
+                            .order_by('-update_time'),
+    })
+
+    # TODO actually change loaders to load this based on stuff
+    return HttpResponse(render_response_search(request,
+                        'tardis_portal/experiment/list_shared.html', c))
+
+def experiment_list_public(request):
+
+    private_filter = Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
+
+    c = Context({
+        'subtitle': 'Public Experiments',
+        'can_see_private': False,
+        'experiments': Experiment.objects.exclude(private_filter) \
+                                         .order_by('-update_time'),
+    })
+
+    return HttpResponse(render_response_search(request,
+                        'tardis_portal/experiment/list_public.html', c))
 
 
 @authz.experiment_access_required
