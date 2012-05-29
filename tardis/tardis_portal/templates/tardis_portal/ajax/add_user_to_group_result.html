@@ -1,3 +1,4 @@
+{% load url from future %}
 <div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
   <div class="span6">
     <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>
@@ -12,7 +13,7 @@
   </div>
   <div class="span2">
     <a title="Remove Access" class="remove_user btn btn-danger btn-mini"
-       href="{% url tardis.tardis_portal.views.remove_user_from_group group_id user.username %}">
+       href="{% url 'tardis.tardis_portal.views.remove_user_from_group' group_id user.username %}">
       <i class="icon-remove"></i>
       Delete
     </a>

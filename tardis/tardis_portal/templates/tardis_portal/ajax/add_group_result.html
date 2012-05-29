@@ -1,3 +1,4 @@
+{% load url from future %}
 <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
   <div class="span4">
     <strong>{{ group.name }}</strong>
@@ -7,11 +8,11 @@
     <em>(System Group)</em>
     {% else %}
     <a class="change_group btn btn-mini btn-warning"
-       href="{% url tardis.tardis_portal.views.change_group_permissions experiment_id group.id %}">
+       href="{% url 'tardis.tardis_portal.views.change_group_permissions' experiment_id group.id %}">
       <i class="icon-pencil"></i> Edit
     </a>
     <a class="remove_group btn btn-mini btn-danger"
-       href="{% url tardis.tardis_portal.views.remove_experiment_access_group experiment_id group.id %}">
+       href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
       <i class="icon-remove"></i> Delete
     </a>
     {% endif %}

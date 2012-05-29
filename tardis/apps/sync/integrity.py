@@ -4,6 +4,10 @@ from tardis.tardis_portal.models import Experiment, Dataset_File
 
 
 class IntegrityCheck(object):
+
+    def __new__(cls, *args, **kwargs):
+        return super(IntegrityCheck, cls).__new__(cls)
+
     def __init__(self, experiment_or_id):
         self.experiment = experiment_or_id
         if not isinstance(self.experiment, Experiment):

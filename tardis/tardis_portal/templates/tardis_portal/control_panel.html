@@ -1,4 +1,5 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
+{% load url from future %}
 
 {% block script %}
 
@@ -402,13 +403,13 @@
 
   <div class="row-fluid experiment-row">
     <div class="span12">
-      <h4><a href="{% url tardis.tardis_portal.views.view_experiment experiment.id %}">{{ experiment.title }}</a></h4>
+      <h4><a href="{% url 'tardis.tardis_portal.views.view_experiment' experiment.id %}">{{ experiment.title }}</a></h4>
 
       <div>
         <span style="float:left;">
             User Access
         </span>
-        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_user experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+        <a href="{% url 'tardis.tardis_portal.views.retrieve_access_list_user' experiment.id %}" class="access_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
         </a>
         <div style="clear:both;"></div>
@@ -419,7 +420,7 @@
         <span style="float:left;">
             Group Access
         </span>
-        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_group experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
+        <a href="{% url 'tardis.tardis_portal.views.retrieve_access_list_group' experiment.id %}" class="access_list_group_toggle fg-button small fg-button-icon-solo ui-corner-all">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
         </a>
         <div style="clear:both;"></div>
@@ -430,7 +431,7 @@
         <span style="float:left;">
             External Access
         </span>
-        <a href="{% url tardis.tardis_portal.views.retrieve_access_list_external experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
+        <a href="{% url 'tardis.tardis_portal.views.retrieve_access_list_external' experiment.id %}" class="access_list_group_toggle fg-button small fg-buton-icon-solo ui-corner-all" title="show/hide">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
         </a>
         <div style="clear:both;"></div>
@@ -442,7 +443,7 @@
             Token Access
         </span>
         <a title="show/hide" id="token_toggle_{{experiment.id}}"
-            href="{% url tardis.tardis_portal.views.retrieve_access_list_tokens experiment.id %}"
+            href="{% url 'tardis.tardis_portal.views.retrieve_access_list_tokens' experiment.id %}"
             class="access_list_token_toggle fg-button small fg-button-icon-solo ui-corner-all"
             style="float:left;">
             <span class="ui-icon ui-icon-circle-triangle-e"></span>
