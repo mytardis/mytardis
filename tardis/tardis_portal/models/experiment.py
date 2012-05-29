@@ -128,27 +128,31 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.create_token', (),
                 {'experiment_id': self.id})
 
-    def get_download_urls(self, comptype="zip"):
+    def get_download_urls(self):
         from .datafile import Dataset_File
         urls = {}
-        kwargs = {'experiment_id': self.id,
-                  'comptype': comptype}
-        distinct = Dataset_File.objects.filter(dataset__experiments=self.id)\
-            .values('protocol').distinct()
-        for key_value in distinct:
-            protocol = key_value['protocol']
-            if protocol in ['', 'tardis', 'file', 'http', 'https']:
-                view = 'tardis.tardis_portal.download.download_experiment'
-                if not '' in urls:
-                    urls[''] = reverse(view, kwargs=kwargs)
-            else:
-                try:
-                    for module in settings.DOWNLOAD_PROVIDERS:
-                        if module[0] == protocol:
-                            view = '%s.download_experiment' % module[1]
-                            urls[protocol] = reverse(view, kwargs=kwargs)
-                except AttributeError:
-                    pass
+        params = (('experiment_id', self.id),)
+        protocols = frozenset(Dataset_File.objects
+                                        .filter(dataset__experiments=self.id)\
+                                        .values_list('protocol', flat=True)\
+                                        .distinct())
+        # Get built-in download links
+        local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
+        if any(p in protocols for p in local_protocols):
+            view = 'tardis.tardis_portal.download.download_experiment'
+            for comptype in ['tar', 'zip']:
+                kwargs = dict(params+(('comptype', comptype),))
+                urls[comptype] = reverse(view, kwargs=kwargs)
+
+        # Get links from download providers
+        for protocol in protocols - local_protocols:
+            try:
+                for module in settings.DOWNLOAD_PROVIDERS:
+                    if module[0] == protocol:
+                        view = '%s.download_experiment' % module[1]
+                        urls[protocol] = reverse(view, kwargs=dict(params))
+            except AttributeError:
+                pass
 
         return urls
 

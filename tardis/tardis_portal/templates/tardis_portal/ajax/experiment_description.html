@@ -174,21 +174,15 @@
   {% block downloads %}
   {% if has_download_permissions %}
   <dl class="download_entire_experiment">
+    <dt>Download Entire Experiment</dt>
+    <dd>
     {% for p in protocol %}
-      <dd>
-    {% if p.0 %}
       <a class="btn" href="{{p.1}}">
         <i class="icon-download-alt"></i>
-        Download Entire Experiment ({{p.0|upper}})
+        {{p.0|upper}}
       </a>
-    {% else %}
-      <a class="btn btn-primary" href="{{p.1}}">
-        <i class="icon-download-alt"></i>
-        Download Entire Experiment
-      </a>
-    {% endif %}
-      </dd>
     {% endfor %}
+      </dd>
   </dl>
   {% endif %}
   {% endblock downloads %}
