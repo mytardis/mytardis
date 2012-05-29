@@ -4,35 +4,31 @@
     <div class="page-header">
       <h1 class="title">{{ subtitle }}</h1>
     </div>
-          {{ form.non_field_errors }}
-        <form id="create_experiment_form" action="" method="POST"
-            class="form-horizontal">
-            {% load bootstrap %}
-            <fieldset>
-            <legend>Experiment Information</legend>
-
-            {{ form.title|bootstrap }}
-            {{ form.authors|bootstrap }}
-            {{ form.institution_name|bootstrap }}
-            {{ form.description|bootstrap }}
-
+    {{ form.non_field_errors }}
+  <form id="create_experiment_form" action="" method="POST"
+        class="form-horizontal">
+      {% load bootstrap %}
+      <fieldset>
+        {{ form.title|bootstrap }}
+        {{ form.authors|bootstrap }}
+        {{ form.institution_name|bootstrap }}
+        {{ form.description|bootstrap }}
       </fieldset>
-        <div class="form-actions">
-          <button type="submit" class="btn btn-primary">
-            <i class="icon-ok"></i> Save
-          </button>
-          {% if experiment_id %}
-          <a class="btn"
-             href="{% url tardis.tardis_portal.views.view_experiment experiment_id %}">
-             Cancel
-          </a>
-          {% else %}
-          <a class="btn"
-             href="{% url tardis.tardis_portal.views.experiment_index %}">
-             Cancel
-          </a>
-          {% endif %}
-        </div>
-	  </form>
-	</div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <i class="icon-ok"></i> Save
+        </button>
+        {% if experiment_id %}
+        <a class="btn"
+           href="{% url tardis.tardis_portal.views.view_experiment experiment_id %}">
+           Cancel
+        </a>
+        {% else %}
+        <a class="btn"
+           href="{% url tardis.tardis_portal.views.experiment_index %}">
+           Cancel
+        </a>
+        {% endif %}
+      </div>
+  </form>
 {% endblock %}

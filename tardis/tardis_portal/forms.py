@@ -421,15 +421,12 @@ class ExperimentForm(forms.ModelForm):
 
     class Meta:
         model = models.Experiment
-        exclude = ('authors', 'handle', 'approved', 'created_by',
-                   'public_access')
+        fields = ('title', 'institution_name', 'description')
 
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=0):
         self.author_experiments = []
-        self.datasets = {}
-        self.dataset_files = {}
 
         super(ExperimentForm, self).__init__(data=data,
                                              files=files,
@@ -440,10 +437,6 @@ class ExperimentForm(forms.ModelForm):
                                              error_class=error_class,
                                              label_suffix=label_suffix,
                                              empty_permitted=False)
-
-        # initialise formsets
-        if instance == None or instance.datasets.count() == 0:
-            extra = 1
 
         # fix up experiment form
         post_authors = self._parse_authors(data)
@@ -500,8 +493,6 @@ class ExperimentForm(forms.ModelForm):
 
         authors = []
         author_experiments = []
-        datasets = []
-        dataset_files = []
 
         for ae in self.author_experiments:
             ae.instance.experiment = ae.instance.experiment
@@ -510,9 +501,7 @@ class ExperimentForm(forms.ModelForm):
 
         return FullExperimentModel({'experiment': experiment,
                                     'author_experiments': author_experiments,
-                                    'authors': authors,
-                                    'datasets': datasets,
-                                    'dataset_files': dataset_files})
+                                    'authors': authors})
 
     def is_valid(self):
         """
