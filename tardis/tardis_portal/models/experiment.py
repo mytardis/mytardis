@@ -128,14 +128,17 @@ class Experiment(models.Model):
         return ('tardis.tardis_portal.views.create_token', (),
                 {'experiment_id': self.id})
 
+    def get_datafiles(self):
+        from .datafile import Dataset_File
+        return Dataset_File.objects.filter(dataset__experiments=self)
+
     def get_download_urls(self):
         from .datafile import Dataset_File
         urls = {}
         params = (('experiment_id', self.id),)
-        protocols = frozenset(Dataset_File.objects
-                                        .filter(dataset__experiments=self.id)\
-                                        .values_list('protocol', flat=True)\
-                                        .distinct())
+        protocols = frozenset(self.get_datafiles()\
+                                  .values_list('protocol', flat=True)\
+                                  .distinct())
         # Get built-in download links
         local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
         if any(p in protocols for p in local_protocols):
@@ -157,12 +160,13 @@ class Experiment(models.Model):
         return urls
 
     def get_images(self):
+        return self.get_datafiles().filter(mimetype__startswith='image/')\
+                                    .order_by('-modification_time',
+                                              '-created_time')
+
+    def get_size(self):
         from .datafile import Dataset_File
-        images = Dataset_File.objects.order_by('-modification_time',
-                                               '-created_time')\
-                                     .filter(dataset__experiments=self,
-                                             mimetype__startswith='image/')
-        return images
+        return Dataset_File.sum_sizes(self.get_datafiles())
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):

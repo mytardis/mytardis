@@ -1,40 +1,18 @@
+{% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
 
 <p class="pull-right" style="text-align: right">
-  <span class="badge badge-inverse" title="{{ experiment.datasets.all.count }} dataset{{ experiment.datasets.all.count|pluralize }}">
-    <i class="icon-folder-close"></i>&nbsp;
-    {{ experiment.datasets.all.count }}
-  </span>
+  {{ experiment|experiment_datasets_badge }}
   <br/>
-  <span class="badge badge-inverse" title="{{ experiment.id|experiment_file_count }} file{{ experiment.id|experiment_file_count|pluralize }}">
-    <i class="icon-file"></i>&nbsp;
-    {{ experiment.id|experiment_file_count }}
-  </span>
+  {{ experiment|experiment_datafiles_badge }}
   <br/>
   <span class="badge badge-inverse" title="Deposited {{experiment.update_time|naturalday}}">
     <i class="icon-time"></i>&nbsp;
     {{experiment.update_time|naturalday }}
   </span>
   <br/>
-  {% if experiment.public_access == experiment.PUBLIC_ACCESS_NONE %}
-  <span class="badge" title="No public access">
-    <i class="icon-eye-close"></i>&nbsp;
-    Private
-  </span>
-  {% endif %}
-  {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
-  <span class="badge badge-success" title="Only descriptions are public, not data">
-    <i class="icon-eye-close"></i>&nbsp;
-    Metadata
-  </span>
-  {% endif %}
-  {% if experiment.public_access == experiment.PUBLIC_ACCESS_FULL %}
-  <span class="badge badge-success" title="All data is public">
-    <i class="icon-eye-open"></i>&nbsp;
-    Public
-  </span>
-  {% endif %}
+  {{ experiment|experiment_public_access_badge }}
 </p>
 <h4>
  <a class="experiment-link"

@@ -1,0 +1,10 @@
+<span class="badge {{^private}}badge-success{{/private}}" title="{{ title }}">
+  {{#public}}
+  <i class="icon-eye-open"></i>
+  {{/public}}
+  {{^public}}
+  <i class="icon-eye-close"></i>
+  {{/public}}
+  &nbsp;
+  {{ label }}
+</span>

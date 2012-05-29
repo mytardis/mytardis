@@ -254,9 +254,9 @@ def about(request):
 
 def experiment_index(request):
     if request.user.is_authenticated():
-        return redirect('tardis.tardis_portal.views.experiment_list_mine')
+        return redirect('tardis_portal.experiment_list_mine')
     else:
-        return redirect('tardis.tardis_portal.views.experiment_list_public')
+        return redirect('tardis_portal.experiment_list_public')
 
 @login_required
 def experiment_list_mine(request):
