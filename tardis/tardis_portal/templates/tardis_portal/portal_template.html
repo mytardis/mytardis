@@ -101,6 +101,26 @@
                     </a>
                   </li>
                   {% endif %}
+                  {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
+                  <li class="divider"></li>
+                  {% if perms.tardis_portal.change_experimentacl %}
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
+                      <i class="icon-user"></i>
+                      Experiment Access
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if perms.tardis_portal.change_group %}
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
+                      <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
+                      Group Management
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li class="divider"></li>
+                  {% endif %}
                   <li>
                     <a href="{% url 'django.contrib.auth.views.logout' %}">
                       <i class="icon-signout"></i>

@@ -78,9 +78,7 @@ def render_response_search(request, *args, **kwargs):
 
 
 def return_response_not_found(request):
-    c = Context({'status': 'ERROR: Not Found', 'error': True})
-    return HttpResponseNotFound(render_response_index(request,
-                                'tardis_portal/blank_status.html', c))
+    return HttpResponseNotFound(render_response_index(request, '404.html', {}))
 
 
 def return_response_error_message(request, redirect_path, context):
@@ -89,9 +87,8 @@ def return_response_error_message(request, redirect_path, context):
 
 
 def return_response_error(request):
-    c = Context({'status': 'ERROR: Forbidden', 'error': True})
-    return HttpResponseForbidden(render_response_index(request,
-                                 'tardis_portal/blank_status.html', c))
+    return HttpResponseForbidden(render_response_index(request, '403.html', {}))
+
 
 def render_to_file(template, filename, context):
     string_for_output = render_to_string(template, context)

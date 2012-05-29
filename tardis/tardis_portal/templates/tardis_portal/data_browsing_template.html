@@ -14,50 +14,7 @@
     <a class="sidebar-toggle-button close"
        title="Close Navigation Menu">&times;</a>
   </div>
-  <ul class="nav nav-list">
-    <li class="nav-header">Experiments</li>
-    <li>
-      <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">
-        <i class="icon-list-alt"></i>
-        Browse
-      </a>
-    </li>
-    <li>
-      <a href="{% url 'tardis.tardis_portal.views.search_experiment' %}">
-        <i class="icon-search"></i>
-        Search
-      </a>
-    </li>
-    {% if perms.tardis_portal.add_experiment %}
-    <li>
-      <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
-        <i class="icon-plus"></i>
-        Create
-      </a>
-    </li>
-    {% endif %}
-  </ul>
-  {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
-  <ul class="nav nav-list">
-      <li class="nav-header">Access Control</li>
-      {% if perms.tardis_portal.change_experimentacl %}
-      <li>
-        <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
-          <i class="icon-user"></i>
-          Experiment Access
-        </a>
-      </li>
-      {% endif %}
-      {% if perms.tardis_portal.change_group %}
-      <li>
-        <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
-          <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
-          Group Management
-        </a>
-      </li>
-      {% endif %}
-  </ul>
-  {% endif %}
+
 </div>
 <span id="sidebar-canary" class="hidden-phone"></span>
 

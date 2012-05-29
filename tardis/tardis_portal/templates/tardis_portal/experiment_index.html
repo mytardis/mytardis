@@ -1,5 +1,5 @@
-{% extends "tardis_portal/data_browsing_template.html" %}
-
+{% extends "tardis_portal/portal_template.html" %}
+{% load url from future %}
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
@@ -7,7 +7,21 @@
 {% block content %}
 
 <div id="content">
-{% if user.is_authenticated %}
+  <div class="pull-right">
+    {% if perms.tardis_portal.add_experiment %}
+    <a class="btn btn-warning"
+       href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
+      <i class="icon-plus"></i>
+      Create
+    </a>
+    {% endif %}
+    <a class="btn btn-primary"
+       href="{% url 'tardis.tardis_portal.views.search_experiment' %}">
+      <i class="icon-search"></i>
+       Search
+    </a>
+  </div>
+  {% if user.is_authenticated %}
   <h2>My Experiments</h2>
 
 	{% if experiments %}
