@@ -1,3 +1,4 @@
+{% load url from future %}
 <div class="tokens table table-condensed">
   <div class="access_list_tokens">
     {% if not tokens %}
@@ -32,7 +33,7 @@
                 </td>
                 <td>
                   <a title="Delete Token"
-                    href="{% url tardis.tardis_portal.views.token_delete token.id %}"
+                    href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
                     class="token_delete btn btn-danger btn-mini"
                     data-toggle_selector="#token_toggle_{{token.experiment_id}}">
                     <i class="icon-remove"></i>

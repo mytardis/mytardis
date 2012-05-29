@@ -4,6 +4,10 @@ from .site_parser import SiteParser, SiteSettingsParser
 
 
 class SiteManager(object):
+
+    def __new__(cls, *args, **kwargs):
+        return super(SiteManager, cls).__new__(cls)
+
     def __init__(self, url=settings.MYTARDIS_SITES_URL):
         self.url = url
         try:

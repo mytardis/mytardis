@@ -121,7 +121,6 @@ class AbstractExperimentProvider(BaseProvider):
 
     def _get_in_range(self, from_, until):
         from itertools import chain
-        from sets import Set
         experiments = Experiment.objects\
             .select_related('created_by')\
             .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
@@ -138,7 +137,7 @@ class AbstractExperimentProvider(BaseProvider):
                           chain([experiment.created_by],
                                 experiment.get_owners()))
         users = chain(map(get_users_from_experiment, experiments))
-        return Set(chain(experiments, *users))
+        return frozenset(chain(experiments, *users))
 
     @abstractmethod
     def _handles_metadata_prefix(self):

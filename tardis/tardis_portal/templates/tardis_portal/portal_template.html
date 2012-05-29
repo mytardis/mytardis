@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+{% load static from staticfiles %}
+{% load url from future %}
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -33,10 +35,10 @@
     <![endif]-->
 
     <!-- fav and touch icons -->
-    <link rel="shortcut icon" href="{{ STATIC_URL }}/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{ STATIC_URL }}/images/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{ STATIC_URL }}/images/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{ STATIC_URL }}/images/apple-touch-icon-114x114.png">
+    <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{% static 'images/apple-touch-icon-72x72.png' %}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{% static 'images/apple-touch-icon-114x114.png' %}">
 
 
     {% block style %}
@@ -62,10 +64,10 @@
           {% endblock %}
           <div class="nav-collapse">
             <ul class="nav">
-              <li><a href="{% url tardis.tardis_portal.views.index %}">Home</a></li>
-              <li><a href="{% url tardis.tardis_portal.views.about %}">About</a></li>
-              <li><a href="{% url tardis.tardis_portal.views.experiment_index %}">Data</a></li>
-              <li><a href="{% url tardis.tardis_portal.views.stats %}">Stats</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.index' %}">Home</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.about' %}">About</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">Data</a></li>
+              <li><a href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a></li>
             </ul>
             <ul class="login-nav nav pull-right">
             {% if is_authenticated %}
@@ -76,7 +78,7 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li>
-                    <a href="{% url tardis.tardis_portal.views.manage_user_account %}">
+                    <a href="{% url 'tardis.tardis_portal.views.manage_user_account' %}">
                       <!-- Font Awesome needs a "link" icon! -->
                       <i class="icon-user"></i>
                       Manage Account
@@ -84,7 +86,7 @@
                   </li>
                   {% if perms.tardis_portal.change_userauthentication %}
                   <li>
-                    <a href="{% url tardis.tardis_portal.views.manage_auth_methods %}">
+                    <a href="{% url 'tardis.tardis_portal.views.manage_auth_methods' %}">
                       <!-- Font Awesome needs a "link" icon! -->
                       <i class="icon-tags"></i>
                       Link Accounts
@@ -93,14 +95,14 @@
                   {% endif %}
                   {% if is_superuser %}
                   <li>
-                    <a href="{% url admin:index %}">
+                    <a href="{% url 'admin:index' %}">
                       <i class="icon-key"></i>
                         Admin Interface
                     </a>
                   </li>
                   {% endif %}
                   <li>
-                    <a href="{% url django.contrib.auth.views.logout %}">
+                    <a href="{% url 'django.contrib.auth.views.logout' %}">
                       <i class="icon-signout"></i>
                       Log Out
                     </a>
@@ -110,13 +112,13 @@
             {% else %}
               {% if registration_enabled %}
               <li>
-                <a href="{% url registration.views.register %}">
+                <a href="{% url 'registration.views.register' %}">
                   Register
                 </a>
               </li>
               {% endif %}
               <li>
-                <button class="btn btn-info" onclick="window.location.href={% url tardis.tardis_portal.views.login %}">
+                <button class="btn btn-info" onclick="window.location.href={% url 'tardis.tardis_portal.views.login' %}">
                   <i class="icon-signin"></i>
                   Log In
                 </button>
@@ -126,7 +128,7 @@
             {% if search_form %}
             <form id="searchbox" method="get"
                 class="navbar-search pull-right"
-                action="{% url tardis.tardis_portal.views.single_search %}">
+                action="{% url 'tardis.tardis_portal.views.single_search' %}">
               <input id="id_q" autocomplete="off"
                    type="text" class="search-query" placeholder="Search"
                    {% if query %} value="{{ query }}" {% endif %}/>
@@ -193,6 +195,6 @@
     <!-- javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{ STATIC_URL }}bootstrap/js/bootstrap.min.js"></script>
+    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
   </body>
 </html>

@@ -37,6 +37,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 
 """
+
+from compare import ensure
 from os import path
 import unittest
 import datetime
@@ -252,7 +254,7 @@ class SearchTestCase(TestCase):
 class UserInterfaceTestCase(TestCase):
 
     def test_root(self):
-        self.failUnlessEqual(Client().get('/').status_code, 200)
+        ensure(Client().get('/').status_code, 200)
 
     def test_urls(self):
         c = Client()
@@ -262,7 +264,7 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            self.failUnlessEqual(response.status_code, 200)
+            ensure(response.status_code, 200)
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -306,9 +308,9 @@ class UserInterfaceTestCase(TestCase):
 
         for u in urls:
             response = c.get(u)
-            self.failUnlessEqual(response.status_code, 200,
-                                 "%s should have returned 200 but returned %d"\
-                                 % (u, response.status_code))
+            ensure(response.status_code, 200,
+                   "%s should have returned 200 but returned %d"\
+                   % (u, response.status_code))
 
     def test_search_urls(self):
         # Load schemas for test
@@ -321,7 +323,7 @@ class UserInterfaceTestCase(TestCase):
         for u in urls:
             response = c.get(u)
             print str(response)
-            self.failUnlessEqual(response.status_code, 200)
+            ensure(response.status_code, 200)
 
 
     def test_login(self):
@@ -331,8 +333,7 @@ class UserInterfaceTestCase(TestCase):
         email = ''
         User.objects.create_user(user, email, pwd)
 
-        self.failUnlessEqual(self.client.login(username=user,
-                             password=pwd), True)
+        ensure(self.client.login(username=user, password=pwd), True)
 
 
 class MetsExperimentStructCreatorTestCase(TestCase):

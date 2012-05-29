@@ -1,4 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load url from future %}
 
 {% block content %}
 <div id="content">
@@ -12,7 +13,7 @@
 	<table calss "equipment-table">
           {% for eq in object_list %}
 	  <tr>
-	    <td align="left"><a href="{% url tardis.apps.equipment.views.view_id eq.id %}">{{ eq.key }}</a></td>
+	    <td align="left"><a href="{% url 'tardis.apps.equipment.views.view_id' eq.id %}">{{ eq.key }}</a></td>
 	    <td align="left">{{ eq.type }}</td>
 	    <td align="left">{{ eq.make }}</td>
 	    <td align="left">{{ eq.model }}</td>

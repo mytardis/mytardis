@@ -12,6 +12,10 @@ logger = logging.getLogger('tardis.mecat')
 
 
 class URLParser(object):
+
+    def __new__(cls, *args, **kwargs):
+        return super(URLParser, cls).__new__(cls)
+
     def __init__(self, url, **creds):
         self.url = url
         self.creds = creds
@@ -50,6 +54,10 @@ class URLParser(object):
 
 
 class SiteParser(URLParser):
+
+    def __new__(cls, *args, **kwargs):
+        return super(URLParser, cls).__new__(cls)
+
     def _parse_file(self, f):
         """Build a list of dictionaries from the sites file."""
         tree = etree.iterparse(f, events=('start', 'end'))
@@ -69,6 +77,10 @@ class SiteParser(URLParser):
 
 
 class SiteSettingsParser(URLParser):
+
+    def __new__(cls, *args, **kwargs):
+        return super(URLParser, cls).__new__(cls)
+
     def _parse_file(self, f):
         """Build nested dicts to mirror the XML format of the settings file."""
         tree = etree.iterparse(f, events=('start', 'end'))
