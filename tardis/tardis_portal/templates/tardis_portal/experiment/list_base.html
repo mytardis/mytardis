@@ -83,6 +83,8 @@ $(function() {
       $(evt.delegateTarget).find('a.experiment-link').click();
     }
   }).addClass('experiment-clickable');
+  // Activate tooltips
+  $('.experiment-table span.badge').tooltip({'placement': 'left'});
 });
 </script>
 
