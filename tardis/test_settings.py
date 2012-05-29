@@ -58,7 +58,7 @@ STATIC_DOC_ROOT = path.join(path.dirname(__file__),
 
 MEDIA_ROOT = STATIC_DOC_ROOT
 
-MEDIA_URL = '/site_media'
+MEDIA_URL = '/site_media/'
 STATIC_URL = '/static/'
 
 def get_admin_media_path():

@@ -16,7 +16,6 @@ from oaipmh.server import Server, oai_dc_writer
 import itertools
 
 import pytz
-from sets import Set
 
 def _safe_import_class(path):
     try:
@@ -143,7 +142,7 @@ class ProxyingServer(IOAI):
                 return list_ + p.listIdentifiers(metadataPrefix, **kwargs)
             except oaipmh.error.CannotDisseminateFormatError:
                 return list_
-        return Set(reduce(appendIdents, self.providers, []))
+        return frozenset(reduce(appendIdents, self.providers, []))
 
     def listMetadataFormats(self, **kwargs):
         """
@@ -155,7 +154,7 @@ class ProxyingServer(IOAI):
         :raises error.NoMetadataFormatsError: if no formats are
             available for the indicated record, but it does exist.
 
-        :returns: a :py:class:`set.Set` of ``metadataPrefix``, ``schema``,
+        :returns: a `frozenset` of ``metadataPrefix``, ``schema``,
             ``metadataNamespace`` tuples (each entry in the tuple is a string).
         """
         id_known = False
@@ -167,7 +166,7 @@ class ProxyingServer(IOAI):
             except oaipmh.error.NoMetadataFormatsError:
                 id_known = True
                 return list_
-        formats = Set(reduce(appendFormats, self.providers, []))
+        formats = frozenset(reduce(appendFormats, self.providers, []))
         if kwargs.has_key('identifier'):
             if len(formats) == 0:
                 if id_known:
@@ -198,7 +197,7 @@ class ProxyingServer(IOAI):
                 return list_ + p.listRecords(metadataPrefix, **kwargs)
             except oaipmh.error.CannotDisseminateFormatError:
                 return list_
-        return Set(reduce(appendRecords, self.providers, []))
+        return frozenset(reduce(appendRecords, self.providers, []))
 
     def listSets(self):
         """
