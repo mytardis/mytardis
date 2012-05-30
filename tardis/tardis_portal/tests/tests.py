@@ -38,7 +38,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 
 """
 
-from compare import ensure
+from compare import expect, ensure
 from os import path
 import unittest
 import datetime
@@ -259,12 +259,19 @@ class UserInterfaceTestCase(TestCase):
     def test_urls(self):
         c = Client()
         urls = [ '/login/', '/about/', '/stats/', \
-                 '/experiment/register/', '/experiment/view/', \
+                 '/experiment/register/', '/experiment/list/public', \
                  '/experiment/search/' ]
 
         for u in urls:
             response = c.get(u)
-            ensure(response.status_code, 200)
+            expect(response.status_code).to_equal(200)
+
+        redirect_urls = [ '/experiment/list', '/experiment/view/' ]
+
+        for u in redirect_urls:
+            response = c.get(u)
+            expect(response.status_code).to_equal(302)
+
 
     def test_urls_with_some_content(self):
         # Things that might tend to be in a real live system
@@ -298,8 +305,10 @@ class UserInterfaceTestCase(TestCase):
         c = Client()
         c.login(username=user, password=pwd)
         urls = [ '/about/', '/stats/']
+        urls += [ '/experiment/list/%s' % part
+                    for part in ('mine', 'shared', 'public')]
         urls += [ '/experiment/%s/' % part \
-                    for part in ('register', 'view', 'search') ]
+                    for part in ('register', 'search') ]
         urls += [ '/experiment/view/%d/' % experiment.id ]
         urls += [ '/ajax/experiment/%d/%s' % (experiment.id, tabpane) \
                     for tabpane in ('description', 'datasets', 'rights') ]
@@ -311,6 +320,12 @@ class UserInterfaceTestCase(TestCase):
             ensure(response.status_code, 200,
                    "%s should have returned 200 but returned %d"\
                    % (u, response.status_code))
+
+        redirect_urls = [ '/experiment/list', '/experiment/view/' ]
+
+        for u in redirect_urls:
+            response = c.get(u)
+            expect(response.status_code).to_equal(302)
 
     def test_search_urls(self):
         # Load schemas for test

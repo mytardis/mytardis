@@ -31,14 +31,23 @@ core_urls = patterns(
     (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))
 )
 
+experiment_lists = patterns(
+    'tardis.tardis_portal.views',
+    url(r'^$', 'experiment_index'),
+    url(r'^/mine$', 'experiment_list_mine',
+        name="tardis_portal.experiment_list_mine"),
+    url(r'^/public$', 'experiment_list_public',
+        name="tardis_portal.experiment_list_public"),
+    url(r'^/shared$', 'experiment_list_shared',
+        name="tardis_portal.experiment_list_shared"),
+    )
+
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
     url(r'^view/(?P<experiment_id>\d+)/$', 'view_experiment', name='experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
-    (r'^view/$', 'experiment_index'),
-    (r'^public$', 'experiment_list_public'),
-    (r'^shared$', 'experiment_list_shared'),
-    (r'^mine$', 'experiment_list_mine'),
+    (r'^list', include(experiment_lists)),
+    (r'^view/$', 'experiment_index'), # Legacy URL
     (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
