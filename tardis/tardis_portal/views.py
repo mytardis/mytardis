@@ -50,7 +50,7 @@ from operator import itemgetter
 from django.template import Context
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
@@ -2156,24 +2156,25 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
 def stats(request):
 
-    # stats
-    public_datafiles = 0
-    #public_datafiles = Dataset_File.objects.filter()
-    public_experiments = Experiment.objects.filter()
+    def sum_str(*args):
+        def coerce_to_int(x):
+            try:
+                return int(x)
+            except ValueError:
+                return 0
+        return sum(map(coerce_to_int, args))
 
-    size = 0
-#    for df in public_datafiles:
-#        try:
-#            size = size + long(df.size)
-#        except:
-#            pass
-
-    public_datafile_size = size
 
     # using count() is more efficient than using len() on a query set
-    c = Context({'public_datafiles': public_datafiles,
-                'public_experiments': public_experiments.count(),
-                'public_datafile_size': public_datafile_size})
+    c = Context({
+        'experiment_count': Experiment.objects.all().count(),
+        'dataset_count': Dataset.objects.all().count(),
+        'datafile_count': Dataset_File.objects.all().count(),
+        'datafile_size': reduce(sum_str,
+                                Dataset_File.objects\
+                                    .exclude(size='')
+                                    .values_list('size', flat=True), 0),
+    })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
 
