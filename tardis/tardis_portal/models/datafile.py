@@ -83,6 +83,16 @@ class Dataset_File(models.Model):
         kwargs = {'datafile_id': self.id}
         return reverse('view_datafile', kwargs=kwargs)
 
+    def get_actual_url(self):
+        # Remote files are easy
+        if any(map(self.url.startswith, ['http://', 'https://', 'ftp://'])):
+            return self.url
+        # Otherwise, resolve actual file system path
+        file_path = self.get_absolute_filepath()
+        if path.isfile(file_path):
+            return 'file://'+file_path
+        return None
+
     def get_download_url(self):
         view = ''
         kwargs = {'datafile_id': self.id}
@@ -158,6 +168,9 @@ class Dataset_File(models.Model):
         # ok, it doesn't look like the file is stored locally
         else:
             return ''
+
+    def is_image(self):
+        return self.get_mimetype().startswith('image/')
 
     def _set_size(self):
 

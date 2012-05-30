@@ -152,6 +152,14 @@ class Experiment(models.Model):
 
         return urls
 
+    def get_images(self):
+        from .datafile import Dataset_File
+        images = Dataset_File.objects.order_by('-modification_time',
+                                               '-created_time')\
+                                     .filter(dataset__experiments=self,
+                                             mimetype__startswith='image/')
+        return images
+
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):
         '''
