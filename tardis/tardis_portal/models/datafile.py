@@ -43,6 +43,22 @@ class Dataset_File(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+    @classmethod
+    def sum_sizes(cls, datafiles):
+        """
+        Takes a query set of datafiles and returns their total size.
+        """
+        def sum_str(*args):
+            def coerce_to_long(x):
+                try:
+                    return long(x)
+                except ValueError:
+                    return 0
+            return sum(map(coerce_to_long, args))
+        # Filter empty sizes, get array of sizes, then reduce
+        return reduce(sum_str, datafiles.exclude(size='')
+                                        .values_list('size', flat=True), 0)
+
     def getParameterSets(self, schemaType=None):
         """Return datafile parametersets associated with this experiment.
 

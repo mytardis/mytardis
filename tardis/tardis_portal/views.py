@@ -396,13 +396,7 @@ def experiment_description(request, experiment_id):
     c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
-    size = 0
-    for df in c['datafiles']:
-        try:
-            size = size + long(df.size)
-        except:
-            pass
-    c['size'] = size
+    c['size'] = Dataset_File.sum_sizes(c['datafiles'])
 
     c['has_read_or_owner_ACL'] = \
         authz.has_read_or_owner_ACL(request, experiment_id)
@@ -2173,27 +2167,13 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
     return HttpResponse('')
 
-
 def stats(request):
-
-    def sum_str(*args):
-        def coerce_to_int(x):
-            try:
-                return int(x)
-            except ValueError:
-                return 0
-        return sum(map(coerce_to_int, args))
-
-
     # using count() is more efficient than using len() on a query set
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
         'datafile_count': Dataset_File.objects.all().count(),
-        'datafile_size': reduce(sum_str,
-                                Dataset_File.objects\
-                                    .exclude(size='')
-                                    .values_list('size', flat=True), 0),
+        'datafile_size': Dataset_File.sum_sizes(Dataset_File.objects.all()),
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
