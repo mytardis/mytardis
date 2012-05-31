@@ -295,33 +295,51 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   </div>
   {% endif %}
   <h1>
-    {{ experiment.title }}
+    <span property="dc:title">{{ experiment.title }}</span>
     <br/>
     <small>
     {% for author in experiment.author_experiment_set.all %}
       {% if not forloop.first %}
       ,
       {% endif %}
-      <span property="dc:creator">{{ author.author }}</span>
+      <span property="dc:creator" style="white-space: nowrap;">
+        {{ author.author }}
+      </span>
     {% endfor %}
     </small>
   </h1>
+  <p style="text-align: right">
+    {{ experiment|experiment_datasets_badge}}&nbsp;
+    {{ experiment|experiment_datafiles_badge }}&nbsp;
+    {{ experiment|experiment_size_badge }}&nbsp;
+    {{ experiment|experiment_last_updated_badge }}&nbsp;
+    {{ experiment|experiment_public_access_badge }}&nbsp;
+  </p>
 </div>
 
-<!-- Tab buttons -->
-<ul id="experiment-tabs" class="nav nav-tabs">
-  <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-  <li><a data-toggle="tab" title="Datasets" href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.datasets.count }})</a></li>
-  {% if is_owner %}
-    <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
-  {% endif %}
-  <!-- {{ apps }} -->
-  {% for appurl, appname in apps %}
-    <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
-  {% endfor %}
-</ul>
+<p class="abstract well" property="dc:abstract">
+  {{ experiment.description|safe }}
+</p>
+<div class="row-fluid" >
+  <div class="span6">
+    <!-- Tab buttons -->
+    <ul id="experiment-tabs" class="nav nav-pills">
+      <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
+      {% if is_owner %}
+        <li><a data-toggle=
+        "tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
+      {% endif %}
+      <!-- {{ apps }} -->
+      {% for appurl, appname in apps %}
+        <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+      {% endfor %}
+    </ul>
+    <div class="tab-content"></div>
+  </div>
+  <div id="datasets-pane" class="span6">
+  </div>
+</div>
 
-<div class="tab-content"></div>
 
 <script type="text/javascript">
 (function() {
@@ -391,11 +409,22 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   // Handle back and forward buttons for tab locations
   $(window).bind('hashchange', showTabForWindowLocation);
 
+  $('#datasets-pane').load('{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}')
+
+
 })();
 
 $(document).ready(function() {
   // Activate tooltips
   $('span.badge').tooltip({'placement': 'top'});
+  // Abbreviate abstract
+  $('.abstract').each(function(i, v) {
+    var span = $('<span/>').addClass('truncated-text').text($(v).text());
+    $(v).empty().append(span);
+    $(v).addClass('abstract-clickable');
+    $(v).tooltip({'title': 'Click to toggle full text'});
+    $(v).click(function(evt) { span.toggleClass('truncated-text'); });
+  });
 });
 </script>
 

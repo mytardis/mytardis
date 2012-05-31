@@ -1,30 +1,37 @@
 {% load experiment_tags %}
 {% load experimentstats %}
-{% load humanize %}
 
-<p class="pull-right" style="text-align: right">
-  {{ experiment|experiment_datasets_badge }}
-  <br/>
-  {{ experiment|experiment_datafiles_badge }}
-  <br/>
-  <span class="badge badge-inverse" title="Deposited {{experiment.update_time|naturalday}}">
-    <i class="icon-time"></i>&nbsp;
-    {{experiment.update_time|naturalday }}
-  </span>
-  <br/>
+<div class="pull-right">
   {{ experiment|experiment_public_access_badge }}
-</p>
+</div>
 <h4>
- <a class="experiment-link"
-    href="{{ experiment.get_absolute_url }}">
- {{ experiment.title }}
- </a>
+  <a class="experiment-link"
+     href="{{ experiment.get_absolute_url }}">
+  {{ experiment.title }}
+  </a>
+  <br />
+  <small>
+  {% for author in experiment.author_experiment_set.all %}
+    {% if not forloop.first %}
+    ,
+    {% endif %}
+    <span>{{ author.author }}</span>
+  {% endfor %}
+  </small>
 </h4>
 {% if show_images and experiment.get_images.count > 0 %}
-  <div class="image-preview pull-left">
+  <div class="image-preview">
+    <span style="height: 28px"></span>
   {% for datafile in experiment.get_images|slice:":10" %}
     {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
     <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
   {% endfor %}
   </div>
 {% endif %}
+<div class="pull-right">
+  {{ experiment|experiment_datasets_badge }}
+  &nbsp;
+  {{ experiment|experiment_datafiles_badge }}
+  &nbsp;
+  {{ experiment|experiment_last_updated_badge }}
+</div>

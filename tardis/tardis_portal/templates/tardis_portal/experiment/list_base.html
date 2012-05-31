@@ -61,7 +61,7 @@
       <tbody>
         {% for experiment in experiments %}
         <tr>
-          <td>
+          <td style="position: relative">
             {% experiment_browse_item experiment can_download=can_see_private %}
           </td>
         </tr>
@@ -84,7 +84,7 @@ $(function() {
     }
   }).addClass('experiment-clickable');
   // Activate tooltips
-  $('.experiment-table span.badge').tooltip({'placement': 'left'});
+  $('.experiment-table span.badge').tooltip({'placement': 'bottom'});
 });
 </script>
 

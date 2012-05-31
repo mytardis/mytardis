@@ -34,3 +34,17 @@
 .experiment-table td.experiment-clickable {
 	cursor: pointer;
 }
+
+.abstract {
+  text-overflow: ellipsis;
+}
+
+.abstract-clickable {
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.truncated-text {
+	white-space: nowrap;
+}

@@ -1,6 +1,7 @@
 from django import template
 from django.conf import settings
 from django.template.defaultfilters import pluralize, filesizeformat
+from django.contrib.humanize.templatetags.humanize import naturalday
 import pystache
 
 register = template.Library()
@@ -13,6 +14,7 @@ def _load_template(template_file):
 def _mustache_render(tmpl, data):
     from django.utils.safestring import mark_safe
     return mark_safe(pystache.render(tmpl, data))
+
 
 # -----------------------------------------------------------------------------
 #   multi_file_upload
@@ -34,8 +36,8 @@ def experiment_datasets_badge(experiment):
     """
     Displays an badge with the number of datasets for this experiment
     """
-    template = _load_template('tardis_portal/badges/dataset_count')
     count = experiment.datasets.all().count()
+    template = _load_template('tardis_portal/badges/dataset_count')
     return _mustache_render(template, {
         'title': "%d dataset%s" % (count, pluralize(count)),
         'count': count,
@@ -51,6 +53,14 @@ def experiment_datafiles_badge(experiment):
     return _mustache_render(template, {
         'title': "%d datafile%s" % (count, pluralize(count)),
         'count': count,
+    })
+
+@register.filter
+def experiment_last_updated_badge(experiment):
+    template = _load_template('tardis_portal/badges/last_updated_badge')
+    return _mustache_render(template, {
+        'actual_time': experiment.update_time.strftime('%a %d %b %Y %H:%M'),
+        'natural_time': naturalday(experiment.update_time),
     })
 
 @register.filter

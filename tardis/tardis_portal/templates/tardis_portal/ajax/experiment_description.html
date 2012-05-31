@@ -1,11 +1,10 @@
 <div id="experiment_description"
-    xmlns:dc="http://purl.org/dc/elements/1.1/"
     class="dl-horizontal">
 
   {% load capture %}
 
   {% block authors %}
-  <dl>
+  <dl style="display: none">
     <dt>Author{{ authors|pluralize }}</dt>
     {% for author in authors %}
       <dd property="dc:creator">{{ author.author }}</dd>
@@ -16,7 +15,7 @@
   {% endblock authors %}
 
   {% block abstract %}
-  <dl>
+  <dl style="display: none">
     <dt>Abstract</dt>
     {% if experiment.description %}
       <dd property="dc:abstract">
@@ -87,7 +86,7 @@
   {% endblock experiment_metadata %}
 
   {% block dataset_info %}
-  <dl>
+  <dl style="display: none">
     <dt>Datasets</dt>
     <dd>{{experiment.datasets.all.count}}</dd>
     <dt>Files</dt>
@@ -105,7 +104,7 @@
   {% endblock updated %}
 
   {% block public_access %}
-  <dl>
+  <dl style="display: none">
     <dt>Public Access</dt>
     <dd>{{ experiment.get_public_access_display }}</dd>
   </dl>
@@ -174,10 +173,10 @@
   {% block downloads %}
   {% if has_download_permissions %}
   <dl class="download_entire_experiment">
-    <dt>Download Entire Experiment</dt>
     <dd>
     {% for p in protocol %}
-      <a class="btn" href="{{p.1}}">
+      <a class="btn" href="{{p.1}}"
+         title="Download Entire Experiment as {{p.0|upper}}">
         <i class="icon-download-alt"></i>
         {{p.0|upper}}
       </a>
