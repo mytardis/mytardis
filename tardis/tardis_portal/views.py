@@ -448,6 +448,21 @@ class SearchQueryString():
     def query_string(self):
         return self.__unicode__()
 
+@authz.dataset_access_required
+def view_dataset(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    c = Context({
+        'dataset': dataset,
+        'parametersets': dataset.getParameterSets()
+                                .exclude(schema__hidden=True),
+        'has_download_permissions':
+            authz.has_dataset_download_access(request, dataset_id),
+        'has_write_permissions':
+            authz.has_dataset_write(request, dataset_id),
+    })
+    return HttpResponse(render_response_index(request,
+                    'tardis_portal/view_dataset.html', c))
+
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):

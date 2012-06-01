@@ -2,7 +2,7 @@
 {% capture as paginator_block %}
 {% if dataset.paginator.num_pages > 1 %}
   <div class="pagination">
-    <ul>
+    <ul style="margin-left: auto; margin-right: auto; display: table;">
       {% if dataset.has_previous %}
       <li>
         <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">&laquo;</a>
@@ -30,7 +30,6 @@
     </ul>
     <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
   </div>
-  <br/>
 {% endif %}
 {% endcapture %}
 

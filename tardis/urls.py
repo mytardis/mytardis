@@ -44,7 +44,7 @@ experiment_lists = patterns(
 
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    url(r'^view/(?P<experiment_id>\d+)/$', 'view_experiment', name='experiment'),
+    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'), # Legacy URL
@@ -101,6 +101,7 @@ accounts_urls = patterns(
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
+    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',

@@ -54,4 +54,6 @@ class Dataset(models.Model):
                                       .filter(mimetype__startswith='image/')
         return images
 
-
+    def get_size(self):
+        from .datafile import Dataset_File
+        return Dataset_File.sum_sizes(self.dataset_file_set)
