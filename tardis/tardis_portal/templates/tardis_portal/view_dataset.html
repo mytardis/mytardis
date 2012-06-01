@@ -1,5 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
-
+{% load url from future %}
 {% load capture %}
 {% load dataset_tags %}
 {% load uploadify_tags %}
@@ -355,8 +355,8 @@
   </div>
   {% endif %}
   <h1>
-    {% if dataset.title %}
-      <span property="dc:title">{{ dataset.title }}</span>
+    {% if dataset.description %}
+      <span property="dc:title">{{ dataset.description }}</span>
     {% else %}
       <span>Untitled Dataset</span>
     {% endif %}
@@ -377,8 +377,8 @@
         <div class="carousel-inner" style="background-color: black;">
           {% for datafile in dataset.get_images %}
             <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
-              {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
-              {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
+              {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
+              {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
               <a href="{{ image }}">
                 <img src="{{ thumbnail }}"
                      style="display: block; margin-left: auto; margin-right: auto;"
@@ -404,7 +404,7 @@
       {% if has_write_permissions and not dataset.immutable %}
       <div class="pull-right">
         <a title="Add"
-           href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
+           href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
            class="add-metadata btn btn-primary btn-mini"
            data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
           <i class="icon-plus"></i>
@@ -417,7 +417,7 @@
         {% capture as edit_control %}
          {% if has_write_permissions %}{% if not dataset.experiment.public %}{% if not immutable %}
          <div class="edit-metadata pull-right">
-             <a class="btn btn-mini btn-warning" href="{% url tardis.tardis_portal.views.edit_dataset_par parameterset.id %}">
+             <a class="btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
                 <i class="icon-pencil"></i>
                 Edit
              </a>
@@ -460,7 +460,7 @@
     </div>
   </section>
   <div class="span6">
-    <form method="POST" action="{% url tardis.tardis_portal.download.download_datafiles %}" target="_blank">
+    <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
       <div class="row-fluid">
         <div class="pull-left">
           {% if has_download_permissions %}
@@ -495,7 +495,7 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $('#datafiles-pane').load('{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}')
+  $('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}')
   $('.carousel').carousel({
     'interval': 2000
   });

@@ -77,8 +77,7 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
-    (r'^(?P<experiment_id>\d+)/dataset/add$', 'add_or_edit_dataset'),
-    (r'^(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)/edit$', 'add_or_edit_dataset'),
+    (r'^(?P<experiment_id>\d+)/add-dataset$', 'add_dataset'),
     )
 
 token_urls = patterns(
@@ -102,6 +101,7 @@ dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
     (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',

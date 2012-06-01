@@ -48,6 +48,19 @@ class Dataset(models.Model):
         return path.join(self.get_first_experiment().get_absolute_filepath(),
                          str(self.id))
 
+    @models.permalink
+    def get_absolute_url(self):
+        """Return the absolute url to the current ``Dataset``"""
+        return ('tardis.tardis_portal.views.view_dataset', (),
+                {'dataset_id': self.id})
+
+    @models.permalink
+    def get_edit_url(self):
+        """Return the absolute url to the edit view of the current
+        ``Dataset``
+        """
+        return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
+
     def get_images(self):
         images = self.dataset_file_set.order_by('-modification_time',
                                                '-created_time')\

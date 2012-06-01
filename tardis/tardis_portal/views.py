@@ -2830,38 +2830,47 @@ def manage_user_account(request):
                         'tardis_portal/manage_user_account.html', c))
 
 @login_required
-def add_or_edit_dataset(request, experiment_id, dataset_id=None):
-    if dataset_id:
-        if not has_dataset_write(request, dataset_id):
-            return HttpResponseForbidden()
-        dataset = Dataset.objects.get(id=dataset_id)
-    else:
-        if not has_experiment_write(request, experiment_id):
-            return HttpResponseForbidden()
-        dataset = None
+def add_dataset(request, experiment_id):
+    if not has_experiment_write(request, experiment_id):
+        return HttpResponseForbidden()
 
     # Process form or prepopulate it
     if request.method == 'POST':
         form = DatasetForm(request.POST)
         if form.is_valid():
-            if not dataset:
-                dataset = Dataset()
+            dataset = Dataset()
             dataset.description = form.cleaned_data['description']
             dataset.save()
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
             dataset.save()
-            return _redirect_303('tardis.tardis_portal.views.view_experiment', experiment_id)
+            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+                                 dataset.id)
     else:
-        if dataset:
-            form = DatasetForm(instance=dataset)
-        else:
-            form = DatasetForm()
+        form = DatasetForm()
 
-    if dataset:
-        c = Context({'form': form, 'dataset': dataset})
+    c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/add_or_edit_dataset.html', c))
+
+@login_required
+def edit_dataset(request, dataset_id):
+    if not has_dataset_write(request, dataset_id):
+        return HttpResponseForbidden()
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = DatasetForm(request.POST)
+        if form.is_valid():
+            dataset.description = form.cleaned_data['description']
+            dataset.save()
+            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+                                 dataset.id)
     else:
-        c = Context({'form': form})
+        form = DatasetForm(instance=dataset)
+
+    c = Context({'form': form, 'dataset': dataset})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 
