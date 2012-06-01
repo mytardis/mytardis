@@ -43,8 +43,6 @@ setup(
         'django-mustachejs', # For client-side Mustache template helpers
         ],
     dependency_links = [
-        # Until https://github.com/StyleShare/wand/pull/16 is accepted, we
-        # need this to handle strangely-formatted TIFF files.
-        'https://github.com/tjdett/wand/tarball/warning-bugfix#egg=Wand-0.1.10'
+        'https://github.com/dahlia/wand/tarball/warning-bugfix#egg=Wand-0.1.10'
     ]
 )

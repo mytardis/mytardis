@@ -1,6 +1,6 @@
+{% load capture %}
 <div class="datafile_parameters" class="container-fluid">
 {% for parameterset in parametersets %}
-  {% load capture %}
   {% capture as edit_control %}
     {% if has_write_permissions %}{% if not parameterset.dataset_file.dataset.experiment.public %}
       <div class="edit_schema" style="display: inline;">
