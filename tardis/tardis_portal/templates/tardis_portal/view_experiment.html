@@ -148,25 +148,6 @@
         toggle_files.apply(this);
     });
 
-    // datafile metadata
-    $('.datafile_list .datafile_info_toggle').live('click', function(evt){
-        evt.preventDefault();
-        var $this = $(this);
-        var $datafile_metadata_container =
-        	$this.parents('.datafile').find('.datafile_info');
-
-        $this.toggleClass('metadata_shown metadata_hidden');
-        $datafile_metadata_container.toggle();
-
-        if ($this.hasClass('metadata_shown')) {
-            var href = $this.attr("href");
-            $datafile_metadata_container.html(loadingHTML);
-            $datafile_metadata_container.load(href);
-            $datafile_metadata_container.show();
-        } else {
-            $datafile_metadata_container.hide();
-        }
-    });
     // dataset metadata
     $(".dataset_metadata_toggle").live('click', function(evt){
         evt.preventDefault();

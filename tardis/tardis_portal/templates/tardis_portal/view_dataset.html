@@ -129,19 +129,12 @@
       $('.metadata_shown').click().click();
     }
 
-    // metadata text / ajax toggle
-    // datafile list
-    $(".datafile_list_toggle").live('click', function(evt){
-        evt.preventDefault();
-        toggle_files.apply(this);
-    });
-
     // datafile metadata
-    $('.datafile_list .datafile_info_toggle').live('click', function(evt){
+    $('#datafiles-pane .datafile-info-toggle').live('click', function(evt){
         evt.preventDefault();
         var $this = $(this);
         var $datafile_metadata_container =
-          $this.parents('.datafile').find('.datafile_info');
+          $this.parents('.datafile').find('.datafile-info');
 
         $this.toggleClass('metadata_shown metadata_hidden');
         $datafile_metadata_container.toggle();
@@ -224,7 +217,7 @@
         if (e.keyCode == 13) {
           var dataset_id = $(this).siblings('.dataset_id').val();
 
-          $(this).parents('.datafile_list').load(
+          $('#datafiles-pane').load(
               "/ajax/datafile_list/" + dataset_id + "/?filename="
                   + $(this).val());
         }
@@ -235,15 +228,15 @@
           'click',
           function() {
             var show_search = $(this).val();
-            $('.datafile_list')
+            $('.datafile-pane')
                 .each(
                     function() {
                       var dataset_id = $(this).find('.dataset_id').val();
                       var params = [];
-                      var toggle = $(this).siblings('.datafile_list_toggle');
+                      var toggle = $(this).siblings('.datafile-list-toggle');
                       var loadHtml = "<img src='{{ STATIC_URL }}/images/ajax-loader.gif'/><br />";
 
-                      html = $(this).siblings('.datafile_list_toggle').attr(
+                      html = $(this).siblings('.datafile-list-toggle').attr(
                           'href')
                       if (show_search == "matches") {
                         html = html + '&limit=true'

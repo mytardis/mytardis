@@ -103,7 +103,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% endif %}
     {% endif %}
 
-    <ul class="datafile_info" style="display:none;">
+    <ul class="datafile-info" style="display:none;">
     </ul>
   </td>
   <td class="span3">
@@ -118,13 +118,13 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% if has_write_permissions and not immutable %}
       <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
        data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-       class="btn jqModalDfAdd">
+       class="btn add-metadata">
           <i class="icon-plus"></i>
        </a>
        {% endif %}
 
       <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-         class="datafile_info_toggle metadata_hidden btn" href="/ajax/parameters/{{ datafile.id}}/">
+         class="datafile-info-toggle metadata_hidden btn" href="/ajax/parameters/{{ datafile.id}}/">
           <i class="icon-list"></i>
       </a>
     </div>
