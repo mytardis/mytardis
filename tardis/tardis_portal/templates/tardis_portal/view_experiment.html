@@ -307,15 +307,18 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     <ul id="experiment-tabs" class="nav nav-pills">
       <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
       {% if is_owner %}
-        <li><a data-toggle=
-        "tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
+        <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
       {% endif %}
       <!-- {{ apps }} -->
       {% for appurl, appname in apps %}
         <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
       {% endfor %}
     </ul>
-    <div class="tab-content"></div>
+    <div class="tab-content">
+      <div id="experiment-tab-description">
+        {% include "tardis_portal/ajax/experiment_description.html" %}
+      </div>
+    </div>
   </div>
   <div id="datasets-pane" class="span6">
   </div>
@@ -341,15 +344,28 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     var url = $(v).attr('href');
     $(v).attr('href', '#'+getTabIdFromName(tabName));
 
-    // Create and insert content pane
-    var tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
-                                      .addClass('tab-pane');
-    tabContents.html(loadingHTML)
-    $('.tab-content').append(tabContents);
+    // Create and insert content pane (if not preloaded)
+    var tabContents;
+    if ($('#'+getTabIdFromName(tabName)).size() == 0) {
+      tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
+                                    .addClass('tab-pane');
+      tabContents.html(loadingHTML)
+      $('.tab-content').append(tabContents);
+    } else {
+      tabContents = $('#'+getTabIdFromName(tabName)).addClass('tab-pane')
+                                                    .addClass('preloaded');
+    }
 
     // On experiment changes, we want to reload the data pane
-    $(tabContents).on('experiment-change', function() {
+    $('#'+getTabIdFromName(tabName)).on('experiment-change', function() {
       var tabPane = $(this);
+
+      // Skip loading if already loaded
+      if (tabPane.hasClass('preloaded')) {
+        tabPane.removeClass('preloaded');
+        return;
+      }
+
       // Load content for the pane, based on the link HREF
       $.ajax({
         url: url,

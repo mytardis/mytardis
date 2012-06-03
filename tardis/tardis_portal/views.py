@@ -325,6 +325,8 @@ def view_experiment(request, experiment_id):
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
     c['subtitle'] = experiment.title
@@ -342,6 +344,12 @@ def view_experiment(request, experiment_id):
         c['search'] = request.GET['search']
     if  'load' in request.GET:
         c['load'] = request.GET['load']
+
+    # Download protocols
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
 
     import sys
     appnames = []

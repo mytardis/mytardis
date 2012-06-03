@@ -3,30 +3,6 @@
 
   {% load capture %}
 
-  {% block authors %}
-  <dl style="display: none">
-    <dt>Author{{ authors|pluralize }}</dt>
-    {% for author in authors %}
-      <dd property="dc:creator">{{ author.author }}</dd>
-    {% empty %}
-      <dd><em>None listed</em></dd>
-    {% endfor %}
-  </dl>
-  {% endblock authors %}
-
-  {% block abstract %}
-  <dl style="display: none">
-    <dt>Abstract</dt>
-    {% if experiment.description %}
-      <dd property="dc:abstract">
-        {{ experiment.description|safe }}
-      </dd>
-    {% else %}
-      <dd><em>None provided</em></dd>
-    {% endif %}
-  </dl>
-  {% endblock abstract %}
-
   {% block handle %}
   {% if experiment.handle %}
   <dl>
@@ -85,33 +61,8 @@
   </dl>
   {% endblock experiment_metadata %}
 
-  {% block dataset_info %}
-  <dl style="display: none">
-    <dt>Datasets</dt>
-    <dd>{{experiment.datasets.all.count}}</dd>
-    <dt>Files</dt>
-    <dd>{{datafiles.count}}</dd>
-    <dt>Size</dt>
-    <dd>{{size|filesizeformat}}</dd>
-  </dl>
-  {% endblock dataset_info %}
-
-  {% block updated %}
-  <dl>
-    <dt>Last Updated</dt>
-    <dd>{{ experiment.update_time }}</dd>
-  </dl>
-  {% endblock updated %}
-
-  {% block public_access %}
-  <dl style="display: none">
-    <dt>Public Access</dt>
-    <dd>{{ experiment.get_public_access_display }}</dd>
-  </dl>
-  {% endblock public_access %}
-
   {% block license %}
-  <div>
+  <dl>
     <dt>Licensing</dt>
     <dd>
       {% if experiment.license_id %}
@@ -144,10 +95,10 @@
 
   {% block experiment_admin %}
       {% block experiment_owners %}
-      {% if owners %}
+      {% if experiment.get_owners %}
       <dl>
         <dt>Experiment Administrators</dt>
-        {% for owner in owners %}
+        {% for owner in experiment.get_owners %}
           <dd>
           {% capture as owner_text %}
             {% if owner.first_name and owner.last_name %}
