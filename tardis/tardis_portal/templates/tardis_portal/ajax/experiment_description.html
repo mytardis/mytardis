@@ -36,35 +36,6 @@
   {% endif %}
   {% endblock start_end_time %}
 
-  {% block experiment_metadata %}
-  <dl>
-    <dt>Experiment Metadata</dt>
-    <dd>
-      <div class="experiment_md_container">
-
-          {% if has_write_permissions %}{% if not experiment.locked %}
-              <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
-                 href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
-                 data-toggle_selector=".experiment_metadata_toggle">
-                <i class="icon-plus"></i>
-                Add
-              </a>
-          {% endif %}{% endif %}
-
-          <a title="Show/Hide"
-             class="experiment_metadata_toggle metadata_hidden btn btn-primary btn-mini"
-             href="/ajax/experiment_metadata/{{experiment.id}}/">
-              <i class="icon-folder-close"></i>
-              Show/Hide
-          </a>
-      </div>
-    </dd>
-    <dd>
-      <div class="experiment_metadata" style="display:none;"></div>
-    </dd>
-  </dl>
-  {% endblock experiment_metadata %}
-
   {% block license %}
   <dl>
     <dt>Licensing</dt>

@@ -15,9 +15,9 @@
 <h3>Metadata</h3>
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
-   {% if has_write_permissions and not immutable %}
-   <div class="edit-metadata pull-right">
-       <a class="btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
+   {% if has_write_permissions and not parameterset.schema.immutable %}
+   <div class="pull-right">
+       <a class="edit-metadata btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
           <i class="icon-pencil"></i>
           Edit
        </a>
