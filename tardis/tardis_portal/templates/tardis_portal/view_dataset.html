@@ -395,62 +395,7 @@
     {% endif %}
     </div>
     <div id="metadata-pane" class="row-fluid">
-      {% if has_write_permissions and not dataset.immutable %}
-      <div class="pull-right">
-        <a title="Add"
-           href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
-           class="add-metadata btn btn-primary btn-mini"
-           data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
-          <i class="icon-plus"></i>
-          Add
-        </a>
-      </div>
-      {% endif %}
-      <h3>Metadata</h3>
-      {% for parameterset in parametersets %}
-        {% capture as edit_control %}
-         {% if has_write_permissions %}{% if not dataset.experiment.public %}{% if not immutable %}
-         <div class="edit-metadata pull-right">
-             <a class="btn btn-mini btn-warning" href="{% url 'tardis.tardis_portal.views.edit_dataset_par' parameterset.id %}">
-                <i class="icon-pencil"></i>
-                Edit
-             </a>
-         </div>
-         {% endif %}{% endif %}{% endif %}
-        {% endcapture %}
-        <div style="margin-top: 10px">
-          {% with parameters=parameterset.datasetparameter_set.all %}
-          <table class="parameter_table table table-bordered {{ parameterset.schema.name|slugify }}">
-            <tr>
-              <th class="schema_name" title="{{ parameterset.schema.namespace }} {{ parameterset.schema.immutable|yesno:'(immutable),' }}" colspan="2">
-              {% if parameterset.schema.name %}
-                {{ parameterset.schema.name }}
-              {% endif %}
-              {% if edit_control %}
-                  {{ edit_control }}
-              {% endif %}
-              </th>
-            </tr>
-            {% for parameter in parameters %}
-            <tr>
-                <td class="parameter_name">{{ parameter.name.full_name }}</td>
-                <td class="parameter_value">
-                    {% if parameter.name.isLongString %}
-                        {{ parameter.get|linebreaks }}
-                    {% else %}
-                        {{ parameter.get }}
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-          </table>
-          {% endwith %}
-        </div>
-      {% empty %}
-        <div class="alert alert-info">
-          There is no metadata for this dataset.
-        </div>
-      {% endfor %}
+      {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
   </div>
   <div class="span6">
@@ -489,10 +434,34 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
-  $('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}')
+
+  // Create a reload event handler
+  $('#metadata-pane').on('reload', function() {
+    $(this).load('{% url 'tardis.tardis_portal.views.retrieve_dataset_metadata' dataset.id %}');
+  });
+  // Reload metadata when we close the metadata modal
+  $('#modal-metadata').on('hide', function() {
+    $('#metadata-pane').trigger('reload');
+  })
+
+  // Create a reload event handler
+  $('#datafiles-pane').on('reload', function() {
+    $(this).load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
+  });
+  // Reload data file list when we close the upload modal
+  $('#modal-upload-files').on('hide', function() {
+    $('#datafiles-pane').trigger('reload');
+    // Also reload metadata (as it may have been created by the upload)
+    $('#metadata-pane').trigger('reload');
+  })
+  // Load initial display
+  $('#datafiles-pane').trigger('reload');
+
+  // Set up carousel
   $('.carousel').carousel({
     'interval': 2000
   });
+  // Set carousel size
   $('#preview, #preview .carousel-inner').css('width', '320')
                                          .css('height', '240');
 });

@@ -66,46 +66,6 @@
             }
           });
 
-
-  $("#uploadify").live("allUploadsComplete", function(e, data){
-      // refresh datafile list
-      var dataset_id = $(this).attr('data-dataset_id');
-      $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
-  });
-
-  $('.upload_files_link').live('click', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/upload_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-              modal.find('#uploadify').on('allUploadsComplete', function(data) {
-                modal.modal('hide');
-              })
-            });
-  });
-
-  $('.import_staging_files_link').live('click', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/import_staging_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-            });
-  });
 </script>
 
 {% endblock %}

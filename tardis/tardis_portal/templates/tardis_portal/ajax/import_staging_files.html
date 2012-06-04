@@ -54,7 +54,7 @@ $('#staging-import-button').click(function() {
 
   // Hide content
   var modal = $('#staging-import-button').parents('.modal');
-  modal.find('.modal-body').hide();
+  modal.find('.modal-body').html('');
   modal.find('.loading-placeholder').show();
 
   // Send data
@@ -65,7 +65,6 @@ $('#staging-import-button').click(function() {
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
     complete: function() {
-      $('.tab-pane').trigger('experiment-change');
       modal.modal('hide');
     }
   });
