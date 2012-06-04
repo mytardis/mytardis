@@ -17,10 +17,14 @@
   {% endblock handle %}
 
   {% block institution %}
+  {% if experiment.institution_name %}
   <dl>
     <dt>Institution</dt>
-    <dd>{{experiment.institution_name|default:""}}</dd>
+    <dd property="dc:publisher">
+      {{experiment.institution_name}}
+    </dd>
   </dl>
+  {% endif %}
   {% endblock institution %}
 
   {% block start_end_time %}
@@ -69,7 +73,9 @@
         <div class="row-fluid">
           <div class="span6">
             This experiment data is licensed under
-            <a rel="license" href="{{ experiment.license.url }}">
+            <a rel="license"
+               property="dc:license"
+               href="{{ experiment.license.url }}">
               {{ experiment.license.name }}</a>.
           </div>
           {% if experiment.license.image_url != None %}
