@@ -1,12 +1,9 @@
-<span class="badge badge-info" title="Last updated: {{ actual_time }}"
-      onclick="$(this).children('.iso-time, .natural-time').toggle(); event.stopPropagation();">
+<span class="badge badge-info" title="Last updated: {{ actual_time }}">
   <i class="icon-time"></i>&nbsp;
   <span property="dc:modified"
-        class="modified iso-time"
-        style="display: none">
-    {{ iso_time }}
-  </span>
-  <span class="natural-time">
+        class="modified"
+        content="{{ iso_time }}"
+        datatype="xsd:dataType">
     {{ natural_time }}
   </span>
 </span>
