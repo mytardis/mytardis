@@ -51,7 +51,6 @@ experiment_urls = patterns(
     (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
-    (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -147,8 +146,6 @@ ajax_urls = patterns(
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
     (r'^parameter_field_list/$', 'retrieve_field_list'),
-    (r'^view/(?P<experiment_id>\d+)/publish/$',
-        'publish_experiment'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^license/list$', 'retrieve_licenses'),
     )

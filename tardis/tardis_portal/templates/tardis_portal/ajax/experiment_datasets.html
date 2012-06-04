@@ -129,14 +129,16 @@
           {% if has_download_permissions %}
             {% for datafile in dataset.get_images|slice:":1" %}
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='100,' rotation=0 quality='native' format='jpg' as thumbnail %}
-                <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
+                <img alt="Thumbnail for Dataset #{{ dataset.id }}"
+                     src="{{ thumbnail }}"
+                     onerror="$(this).hide()"/>
             {% empty %}
                 <canvas style="width: 100px"></canvas>
             {% endfor %}
           {% endif %}
           </div>
           <p>
-            <a href="{{ dataset_url }}">
+            <a class="dataset-link" href="{{ dataset_url }}">
             {% if dataset.description %}
               {{ dataset.description|safe }}
             {% else %}

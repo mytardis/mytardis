@@ -30,8 +30,8 @@
 	margin-right: -50px;
 }
 
-/* Clickable Experiment */
-.experiment-table td.experiment-clickable {
+/* Clickable Experiments & Datasets */
+.clickable-tile {
 	cursor: pointer;
 }
 
