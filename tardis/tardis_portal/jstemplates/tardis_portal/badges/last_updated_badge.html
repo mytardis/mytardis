@@ -1,4 +1,12 @@
-<span class="badge badge-info" title="Last updated: {{ actual_time }}">
+<span class="badge badge-info" title="Last updated: {{ actual_time }}"
+      onclick="$(this).children('.iso-time, .natural-time').toggle(); event.stopPropagation();">
   <i class="icon-time"></i>&nbsp;
-  {{ natural_time }}
+  <span property="dc:modified"
+        class="modified iso-time"
+        style="display: none">
+    {{ iso_time }}
+  </span>
+  <span class="natural-time">
+    {{ natural_time }}
+  </span>
 </span>

@@ -373,7 +373,8 @@
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
               <a href="{{ image }}">
-                <img src="{{ thumbnail }}"
+                <img alt="Preview image for Datafile #{{ datafile.id }}"
+                     src="{{ thumbnail }}"
                      style="display: block; margin-left: auto; margin-right: auto;"
                      onerror="$(this).parents('.item').remove()"/>
               </a>
@@ -393,7 +394,7 @@
       <div class="alert">No previews available</div>
     {% endif %}
     </div>
-    <section id="metadata-pane" class="row-fluid">
+    <div id="metadata-pane" class="row-fluid">
       {% if has_write_permissions and not dataset.immutable %}
       <div class="pull-right">
         <a title="Add"
@@ -451,7 +452,7 @@
         </div>
       {% endfor %}
     </div>
-  </section>
+  </div>
   <div class="span6">
     <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
       <div class="row-fluid">
