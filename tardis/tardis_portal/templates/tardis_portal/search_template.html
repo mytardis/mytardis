@@ -17,27 +17,22 @@
 
 
 {% block content %}
-    <div id="content">
-      <div class="post">
-	<h1 class="title"><a href="#">Search</a></h1>
-	<div class="searchmenu" style="padding-left: 10px">Search <a href="{% url 'tardis.tardis_portal.views.search_experiment' %}">Experiment</a>
-	  | <form action="{% url 'tardis.tardis_portal.views.search_datafile' %}" method="GET" style="display: inline">
-	    {{ searchDatafileSelectionForm.type }}
-	    <noscript><input type="submit" value="Submit"></noscript>
-	  </form>
-	  {% for key,value in links.items %}
-	    | <a href="{{ value }}">{{ key|capfirst }}</a>
-          {% endfor %}
-	  <span style="display: inline">
-	</div> <!-- searchmenu -->
-	<br/>
-	<div class="entry">
-	  <p>
-	    {% block searchPageBody %}{% endblock %}
-	  </p>
-	</div> <!-- entry -->
-      </div> <!-- post -->
-    </div> <!-- content -->
+<div class="page-header">
+	<h1 class="title">Search</h1>
+</div>
+<div class="searchmenu" style="padding-left: 10px">Search <a href="{% url 'tardis.tardis_portal.views.search_experiment' %}">Experiment</a>
+  | <form action="{% url 'tardis.tardis_portal.views.search_datafile' %}" method="GET" style="display: inline">
+    {{ searchDatafileSelectionForm.type }}
+    <noscript><input type="submit" value="Submit"></noscript>
+  </form>
+  {% for key,value in links.items %}
+  | <a href="{{ value }}">{{ key|capfirst }}</a>
+  {% endfor %}
+</div> <!-- searchmenu -->
+<br/>
+<div>
+  {% block searchPageBody %}{% endblock %}
+</div> <!-- entry -->
 {% endblock content%}
 
 
