@@ -3,12 +3,16 @@ from os import path
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Q
 from django.db.models.signals import pre_save
 
 from .dataset import Dataset
 
 import logging
 logger = logging.getLogger(__name__)
+
+IMAGE_FILTER = Q(mimetype__startswith='image/') & \
+              ~Q(mimetype='image/x-icon')
 
 class Dataset_File(models.Model):
     """Class to store meta-data about a physical file
@@ -189,12 +193,10 @@ class Dataset_File(models.Model):
         return self.get_mimetype().startswith('image/')
 
     def _set_size(self):
-
         from os.path import getsize
         self.size = str(getsize(self.get_absolute_filepath()))
 
     def _set_mimetype(self):
-
         try:
             from magic import Magic
         except:
@@ -204,7 +206,6 @@ class Dataset_File(models.Model):
             self.get_absolute_filepath())
 
     def _set_md5sum(self):
-
         f = open(self.get_absolute_filepath(), 'rb')
         import hashlib
         md5 = hashlib.new('md5')

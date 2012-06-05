@@ -62,10 +62,19 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.edit_dataset', (self.id,))
 
     def get_images(self):
+        from .datafile import IMAGE_FILTER
         images = self.dataset_file_set.order_by('-modification_time',
                                                '-created_time')\
-                                      .filter(mimetype__startswith='image/')
+                                      .filter(IMAGE_FILTER)
         return images
+
+    def _get_image(self):
+        try:
+            return self.get_images()[0]
+        except IndexError:
+            return None
+
+    image = property(_get_image)
 
     def get_size(self):
         from .datafile import Dataset_File

@@ -160,9 +160,10 @@ class Experiment(models.Model):
         return urls
 
     def get_images(self):
-        return self.get_datafiles().filter(mimetype__startswith='image/')\
-                                    .order_by('-modification_time',
-                                              '-created_time')
+        from .datafile import IMAGE_FILTER
+        return self.get_datafiles().order_by('-modification_time',
+                                              '-created_time') \
+                                   .filter(IMAGE_FILTER)
 
     def get_size(self):
         from .datafile import Dataset_File

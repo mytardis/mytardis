@@ -127,14 +127,16 @@
           </div>
           <div class="pull-left" style="margin-right: 10px">
           {% if has_download_permissions %}
-            {% for datafile in dataset.get_images|slice:":1" %}
-              {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='100,' rotation=0 quality='native' format='jpg' as thumbnail %}
+            {% with dataset.image as datafile %}
+              {% if datafile %}
+                {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='100,' rotation=0 quality='native' format='jpg' as thumbnail %}
                 <img alt="Thumbnail for Dataset #{{ dataset.id }}"
                      src="{{ thumbnail }}"
                      onerror="$(this).hide()"/>
-            {% empty %}
+              {% else %}
                 <canvas style="width: 100px"></canvas>
-            {% endfor %}
+              {% endif %}
+            {% endwith %}
           {% endif %}
           </div>
           <p>
