@@ -133,6 +133,7 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
+    (r'^experiment/(?P<experiment_id>\d+)/datasets.json$', 'experiment_datasets_json'),
     (r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
         'edit_datafile_par'),
     (r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',

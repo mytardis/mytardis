@@ -6,6 +6,10 @@
 {% load uploadify_tags %}
 {% load dynurl %}
 
+
+{% load mustachejs %}
+{% mustachejs "tardis_portal/dataset_tile" %}
+
 {% block script %}
 
 <script type="text/javascript">
@@ -347,7 +351,6 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 
   $('#datasets-pane').load('{% url 'tardis.tardis_portal.views.experiment_datasets' experiment.id %}')
 
-
 })();
 
 $(document).ready(function() {
@@ -362,8 +365,26 @@ $(document).ready(function() {
     $(v).click(function(evt) { span.toggleClass('truncated-text'); });
   });
 });
-</script>
 
+</script>
+<script type="text/javascript">
+$(function() {
+  var datasets = new MyTardis.Datasets();
+  datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
+
+  var refreshItemDisplay = function(msg) {
+    datasets.each(function(v, k) {
+      //console.debug(v);
+    });
+  };
+
+  datasets.on('add', refreshItemDisplay);
+  datasets.on('change', refreshItemDisplay);
+  datasets.on('destroy', refreshItemDisplay);
+
+  datasets.fetch({ success: refreshItemDisplay });
+});
+</script>
 
 
 {% endblock %}

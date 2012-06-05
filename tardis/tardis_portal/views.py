@@ -103,6 +103,24 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
+def get_dataset_info(dataset, include_thumbnail=False):
+    def get_thumbnail_url(datafile):
+        return reverse('tardis.tardis_portal.iiif.download_image',
+                       kwargs={'datafile_id': datafile.id,
+                               'region': 'full',
+                               'size': '100,',
+                               'rotation': 0,
+                               'quality': 'native',
+                               'format': 'jpg'})
+    obj = model_to_dict(dataset)
+    obj['url'] = dataset.get_absolute_url()
+    if include_thumbnail:
+        try:
+            obj['thumbnail'] = get_thumbnail_url(dataset.image)
+        except AttributeError:
+            pass
+    return obj
+
 
 class HttpResponseSeeAlso(HttpResponseRedirect):
     status_code=303
@@ -555,6 +573,22 @@ def experiment_datasets(request, experiment_id):
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_datasets.html', c))
+
+@never_cache
+@authz.experiment_access_required
+def experiment_datasets_json(request, experiment_id):
+    try:
+        experiment = Experiment.safe.get(request, experiment_id)
+    except Experiment.DoesNotExist:
+        return return_response_not_found(request)
+
+    has_download_permissions = \
+        authz.has_experiment_download_access(request, experiment_id)
+
+    objects = [ get_dataset_info(ds, has_download_permissions) \
+                for ds in experiment.datasets.all() ]
+
+    return HttpResponse(json.dumps(objects))
 
 
 @authz.dataset_access_required

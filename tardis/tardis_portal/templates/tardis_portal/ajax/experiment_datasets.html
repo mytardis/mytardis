@@ -3,6 +3,7 @@
 {% load capture %}
 {% load uploadify_tags %}
 {% load static from staticfiles %}
+{% load dataset_tags %}
 
 {% block script %}
 
@@ -93,70 +94,16 @@
 {% endcapture %}
 
 <div id="experiment_datasets">
-  {% if highlighted_datasets or file_matched_datasets %}
-  <form name="search_select_form" id="search_form" method="post" action="">
-    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>
-    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>
-  </form>
-  {% endif %}
   <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
 
     {{ action_bar }}
-    <ul id="datasets" class="thumbnails">
-      {% for dataset in datasets %}
-      <li class="dataset span6">
-        {% url 'tardis.tardis_portal.views.view_dataset' dataset.id as dataset_url %}
-        <div class="dataset-tile thumbnail">
-          <div class="pull-left" style="margin-right: 10px">
-            <div style="text-align: center; font-size: 32px">
-              <i class="icon-folder-open"></i>
-            </div>
-            <br/>
-            <label class="badge badge-info "
-                   style="display: block; margin-left: auto; margin-right: auto"
-                   for="dataset-checkbox-{{dataset.id}}">
-              <i class="icon-download-alt"></i>
-              <input id="dataset-checkbox-{{dataset.id}}"
-                     name="dataset"
-                     type="checkbox"
-                     class="dataset_checkbox"
-                     style="display: inline"
-                     value="{{dataset.id}}" />
-            </label>
-          </div>
-          <div class="pull-left" style="margin-right: 10px">
-          {% if has_download_permissions %}
-            {% with dataset.image as datafile %}
-              {% if datafile %}
-                {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='100,' rotation=0 quality='native' format='jpg' as thumbnail %}
-                <img alt="Thumbnail for Dataset #{{ dataset.id }}"
-                     src="{{ thumbnail }}"
-                     onerror="$(this).hide()"/>
-              {% else %}
-                <canvas style="width: 100px"></canvas>
-              {% endif %}
-            {% endwith %}
-          {% endif %}
-          </div>
-          <p>
-            <a class="dataset-link" href="{{ dataset_url }}">
-            {% if dataset.description %}
-              {{ dataset.description|safe }}
-            {% else %}
-              <em>Dataset #{{dataset.id}}</em>
-            {% endif %}
-            </a>
-          </p>
-          <div style="clear: both"></div>
-        </div>
-      </li>
-      {% endfor %}
+
+    {{ datasets|dataset_tiles:has_download_permissions }}
 
     {% if datasets.count|gt:4 %}
     {{ action_bar }}
     {% endif %}
-    </ul>
   </form>
 </div> <!-- experiment_datasets -->
 
