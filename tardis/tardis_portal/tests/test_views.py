@@ -689,6 +689,9 @@ class ExperimentTestCase(TestCase):
             expect(frozenset(item['experiments']))\
                 .to_equal(frozenset(dataset.experiments\
                                         .values_list('id', flat=True)))
+            # Check there's a series of individual resources under it
+            response = client.get(json_url+str(item['id']))
+            expect(response.status_code).to_equal(200)
 
 
 

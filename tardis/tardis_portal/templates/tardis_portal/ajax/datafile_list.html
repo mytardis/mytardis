@@ -49,7 +49,7 @@
   <div></div>
 {% endif %}
 
-<p id="filename-search" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET">
+<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET">
   <label for="filename-search-text" style="display: inline">File filter:</label>
   <input id="filename-search-text"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
@@ -67,7 +67,7 @@
 <table class="datafiles table table-condensed">
 {% if has_download_permissions %}
 <thead>
-<tr id="datafile-selectors">
+<tr id="datafile-selectors" class="js-required">
 <td colspan="3">
 Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
 </td>

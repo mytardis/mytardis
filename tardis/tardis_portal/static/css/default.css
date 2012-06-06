@@ -50,7 +50,7 @@
 }
 
 /* Elements that just don't work without JS */
-.no-js #filename-search, .no-js #datafile-selectors {
+.no-js .js-required {
 	display: none;
 }
 

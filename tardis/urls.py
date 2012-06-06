@@ -118,6 +118,13 @@ datafile_urls = patterns(
     (r'^iiif/', include(iiif_urls)),
 )
 
+json_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
+    (r'^experiment/(?P<experiment_id>\d+)/dataset/$', 'experiment_datasets_json'),
+    (r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
+)
+
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
@@ -133,7 +140,6 @@ ajax_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
-    (r'^experiment/(?P<experiment_id>\d+)/datasets.json$', 'experiment_datasets_json'),
     (r'^edit_datafile_parameters/(?P<parameterset_id>\d+)/$',
         'edit_datafile_par'),
     (r'^edit_dataset_parameters/(?P<parameterset_id>\d+)/$',
@@ -149,7 +155,8 @@ ajax_urls = patterns(
     (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^license/list$', 'retrieve_licenses'),
-    )
+    (r'^json/', include(json_urls))
+)
 
 download_urls = patterns(
     'tardis.tardis_portal.download',

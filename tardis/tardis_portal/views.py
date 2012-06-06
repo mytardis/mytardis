@@ -518,6 +518,17 @@ def experiment_datasets(request, experiment_id):
                            template_name='tardis_portal/ajax/experiment_datasets.html')
 
 @never_cache
+@authz.dataset_access_required
+def dataset_json(request, experiment_id=None, dataset_id=None):
+    # Experiment ID is optional (but dataset_id is not)!
+    dataset = Dataset.objects.get(id=dataset_id)
+    has_download_permissions = \
+        authz.has_dataset_download_access(request, dataset_id)
+
+    return HttpResponse(json.dumps(get_dataset_info(dataset,
+                                                    has_download_permissions)))
+
+@never_cache
 @authz.experiment_access_required
 def experiment_datasets_json(request, experiment_id):
     try:
