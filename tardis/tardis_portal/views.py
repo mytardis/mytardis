@@ -320,7 +320,8 @@ def experiment_list_public(request):
 
 
 @authz.experiment_access_required
-def view_experiment(request, experiment_id):
+def view_experiment(request, experiment_id,
+                    template_name='tardis_portal/view_experiment.html'):
 
     """View an existing experiment.
 
@@ -384,8 +385,7 @@ def view_experiment(request, experiment_id):
 
     c['apps'] = zip(appurls, appnames)
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/view_experiment.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 @authz.experiment_access_required
@@ -477,8 +477,30 @@ class SearchQueryString():
 @authz.dataset_access_required
 def view_dataset(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
+
+    def get_datafiles_page():
+        # pagination was removed by someone in the interface but not here.
+        # need to fix.
+        pgresults = 100
+
+        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+
+        # If page request (9999) is out of range, deliver last page of results.
+
+        try:
+            return paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            return paginator.page(paginator.num_pages)
+
+
     c = Context({
         'dataset': dataset,
+        'datafiles': get_datafiles_page(),
         'parametersets': dataset.getParameterSets()
                                 .exclude(schema__hidden=True),
         'has_download_permissions':
@@ -492,87 +514,8 @@ def view_dataset(request, dataset_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
-
-    """View a listing of dataset of an existing experiment as ajax loaded tab.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment to be edited
-    :type experiment_id: string
-    :param template_name: the path of the template to render
-    :type template_name: string
-    :rtype: :class:`django.http.HttpResponse`
-
-    """
-    c = Context({'upload_complete_url':
-                     reverse('tardis.tardis_portal.views.upload_complete'),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm(),
-                 })
-
-    try:
-        experiment = Experiment.safe.get(request, experiment_id)
-    except PermissionDenied:
-        return return_response_error(request)
-    except Experiment.DoesNotExist:
-        return return_response_not_found(request)
-
-    c['experiment'] = experiment
-    if 'query' in request.GET:
-
-        # We've been passed a query to get back highlighted results.
-        # Only pass back matching datafiles
-        #
-        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-        sqs = SearchQuerySet(query=search_query)
-        query = SearchQueryString(request.GET['query'])
-        facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
-        if facet_counts:
-            dataset_id_facets = facet_counts['fields']['dataset_id_stored']
-        else:
-            dataset_id_facets = []
-
-        c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
-        c['file_matched_datasets'] = []
-        c['search_query'] = query
-
-        # replace '+'s with spaces
-    elif 'datafileResults' in request.session and 'search' in request.GET:
-        c['highlighted_datasets'] = None
-        c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
-        c['file_matched_datasets'] = \
-            list(set(r.dataset.pk for r in request.session['datafileResults']))
-        c['search'] = True
-
-    else:
-        c['highlighted_datasets'] = None
-        c['highlighted_dataset_files'] = None
-        c['file_matched_datasets'] = None
-
-    c['datasets'] = \
-         Dataset.objects.filter(experiments=experiment_id)
-
-    c['has_download_permissions'] = \
-        authz.has_experiment_download_access(request, experiment_id)
-
-    c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
-
-    c['has_staging_access'] = \
-        bool(get_full_staging_path(request.user.username))
-
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
-
-    if 'status' in request.GET:
-        c['status'] = request.GET['status']
-    if 'error' in request.GET:
-        c['error'] = request.GET['error']
-
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_datasets.html', c))
+    return view_experiment(request, experiment_id=experiment_id,
+                           template_name='tardis_portal/ajax/experiment_datasets.html')
 
 @never_cache
 @authz.experiment_access_required
@@ -1045,10 +988,10 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     params = urlencode(params)
 
     c = Context({
-        'dataset': dataset,
+        'datafiles': dataset,
         'paginator': paginator,
         'immutable': immutable,
-        'dataset_id': dataset_id,
+        'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,

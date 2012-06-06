@@ -7,7 +7,7 @@
 
 {% block script %}
 <script type="text/javascript">
-    var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
+    var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -159,7 +159,7 @@
     $('.pagelink').live('click', function( event ){
         var href = $(this).attr("href");
         var html = $(this).html();
-        $(this).html(html + " " + loadingHTML);
+        $(this).html(loadingHTML);
         $('#datafiles-pane').load(href, function(){
             $(".dataset_selector_all").unbind('click');
             $(".dataset_selector_none").unbind('click');
@@ -176,31 +176,25 @@
         });
         return false;
     });
-</script>
 
-<script type="text/javascript">
-  function disableEnterKey(e) {
-    var key;
-    if (window.event) {
-      key = window.event.keyCode; //IE
-    } else {
-      key = e.which; //firefox
-    }
-    return (key != 13);
+  function filename_search_handler(e) {
+    // Only care about "Enter" key
+    if (e.keyCode != 13) return;
+    // Disable form submit - we'll do that ourselves
+    e.preventDefault();
+    // Build form submission, and reload pane with results
+    var form = $('#filename-search');
+    $.ajax({
+      'url': form.attr('data-action'),
+      'type': form.attr('data-method'),
+      'data': form.children('input').serialize(),
+      'success': function(data) {
+        $('#datafiles-pane').html(data);
+      }
+    });
+    // Show loading indicator
+    $('#datafiles-pane').html(loadingHTML);
   }
-
-  $('.filename_search').live(
-      'keyup',
-      function(e) {
-        e.preventDefault();
-        if (e.keyCode == 13) {
-          var dataset_id = $(this).siblings('.dataset_id').val();
-
-          $('#datafiles-pane').load(
-              "/ajax/datafile_list/" + dataset_id + "/?filename="
-                  + $(this).val());
-        }
-      });
 
   $("input[name$='show_search']")
       .live(
@@ -413,6 +407,7 @@ $('#modal-metadata .submit-button').click(function() {
         </div>
       </div>
       <div id="datafiles-pane">
+        {% include 'tardis_portal/ajax/datafile_list.html' %}
       </div>
     </form>
   </div>
@@ -440,8 +435,6 @@ $(document).ready(function(){
     // Also reload metadata (as it may have been created by the upload)
     $('#metadata-pane').trigger('reload');
   })
-  // Load initial display
-  $('#datafiles-pane').trigger('reload');
 
   // Set up carousel
   $('.carousel').carousel({

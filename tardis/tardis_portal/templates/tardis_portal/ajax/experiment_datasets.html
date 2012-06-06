@@ -5,72 +5,6 @@
 {% load static from staticfiles %}
 {% load dataset_tags %}
 
-{% block script %}
-
-<script type="text/javascript">
-  function disableEnterKey(e) {
-    var key;
-    if (window.event) {
-      key = window.event.keyCode; //IE
-    } else {
-      key = e.which; //firefox
-    }
-    return (key != 13);
-  }
-
-  $('.filename_search').live(
-      'keyup',
-      function(e) {
-        e.preventDefault();
-        if (e.keyCode == 13) {
-          var dataset_id = $(this).siblings('.dataset_id').val();
-
-          $(this).parents('.datafile_list').load(
-              "/ajax/datafile_list/" + dataset_id + "/?filename="
-                  + $(this).val());
-        }
-      });
-
-  $("input[name$='show_search']")
-      .live(
-          'click',
-          function() {
-            var show_search = $(this).val();
-            $('.datafile_list')
-                .each(
-                    function() {
-                      var dataset_id = $(this).find('.dataset_id').val();
-                      var params = [];
-                      var toggle = $(this).siblings('.datafile_list_toggle');
-                      var loadHtml = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
-
-                      html = $(this).siblings('.datafile_list_toggle').attr(
-                          'href')
-                      if (show_search == "matches") {
-                        html = html + '&limit=true'
-                      } else {
-                        html = html.replace('&limit=true', '')
-                      }
-                      toggle.attr('href', html);
-
-                      if (toggle.hasClass('files_shown')) {
-                        $(this).html(loadHtml);
-                        $(this).load(html);
-                      }
-                    });
-            if ($(this).val() == "matches") {
-              $(".dataset").hide();
-              $(".search_match").show();
-              $(".datafile_match").show();
-            } else {
-              $(".dataset").show();
-            }
-          });
-
-</script>
-
-{% endblock %}
-
 {% capture as action_bar %}
   {% if has_download_permissions or has_write_permissions %}
   <div>
@@ -96,10 +30,9 @@
 <div id="experiment_datasets">
   <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
-
     {{ action_bar }}
 
-    {{ datasets|dataset_tiles:has_download_permissions }}
+    {{ experiment.datasets.all|dataset_tiles:has_download_permissions }}
 
     {% if datasets.count|gt:4 %}
     {{ action_bar }}
