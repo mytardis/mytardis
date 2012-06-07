@@ -190,7 +190,8 @@ class Dataset_File(models.Model):
             return ''
 
     def is_image(self):
-        return self.get_mimetype().startswith('image/')
+        return self.get_mimetype().startswith('image/') \
+            and not self.get_mimetype() == 'image/x-icon'
 
     def _set_size(self):
         from os.path import getsize

@@ -11,6 +11,8 @@
 
 {% mustachejs "tardis_portal/dataset_tiles" %}
 {% mustachejs "tardis_portal/dataset_tile" %}
+{% mustachejs "tardis_portal/badges/experiment_count" %}
+{% mustachejs "tardis_portal/badges/datafile_count" %}
 
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
@@ -257,6 +259,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
       <li><a data-toggle="tab" title="Metadata" href="{% url 'tardis.tardis_portal.views.retrieve_experiment_metadata' experiment.id %}">Metadata</a></li>
       {% if is_owner %}
         <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}">Public Access / Licensing</a></li>
+        <li><a data-toggle="tab" title="Transfer Datasets" href="{% url 'tardis.tardis_portal.views.experiment_dataset_transfer' experiment.id %}">Transfer Datasets</a></li>
       {% endif %}
       <!-- {{ apps }} -->
       {% for appurl, appname in apps %}
@@ -361,7 +364,10 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 
 $(document).ready(function() {
   // Activate tooltips
-  $('span.badge').tooltip({'placement': 'top'});
+  $('body').tooltip({
+    'placement': 'top',
+    'selector': 'span.badge'
+  });
   // Abbreviate abstract
   $('.abstract').each(function(i, v) {
     var span = $('<span/>').addClass('truncated-text').text($(v).text());
@@ -378,6 +384,7 @@ $(document).ready(function() {
 var datasetTiles = (function() {
 
   var datasets = new MyTardis.Datasets();
+  datasets.experimentId = {{ experiment.id }};
   datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
   var datasetTiles = new MyTardis.DatasetTiles({

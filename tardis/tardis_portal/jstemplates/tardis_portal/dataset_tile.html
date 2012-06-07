@@ -3,9 +3,9 @@
     <i class="icon-folder-open"></i>
   </div>
   <br/>
-  <label class="badge badge-info "
-         style="display: block; margin-left: auto; margin-right: auto"
-         for="dataset-checkbox-{{id}}">
+  <label class="dataset-download-box badge badge-info"
+         for="dataset-checkbox-{{id}}"
+         title="Mark dataset for download">
     <i class="icon-download-alt"></i>
     <input id="dataset-checkbox-{{id}}"
            name="dataset"
@@ -14,6 +14,21 @@
            style="display: inline"
            value="{{id}}" />
   </label>
+</div>
+<div class="pull-left" style="margin-right: 10px">
+</div>
+<div class="pull-right" style="text-align: right">
+  <p class="js-required">
+    <button class="close" style="float: none;" onclick="return false;">
+      &times;
+    </button>
+  </p>
+  <p>
+  {{{ experiment_badge }}}
+  </p>
+  <p>
+  {{{ datafile_badge }}}
+  </p>
 </div>
 <div class="pull-left" style="margin-right: 10px">
   {{#thumbnail}}

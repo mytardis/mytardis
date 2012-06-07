@@ -77,6 +77,7 @@ SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
 # 'django.middleware.cache.UpdateCacheMiddleware' and
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 MIDDLEWARE_CLASSES = (
+    'django.middleware.gzip.GZipMiddleware',
     #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.middleware.cache.FetchFromCacheMiddleware',
