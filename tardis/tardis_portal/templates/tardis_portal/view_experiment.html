@@ -1,10 +1,16 @@
-{% extends "tardis_portal/data_browsing_template.html" %}
+{% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
+{% load url from future %}
 {% load static from staticfiles %}
+{% load experiment_tags %}
 {% load uploadify_tags %}
 {% load dynurl %}
+{% load mustachejs %}
 
 {% block script %}
+
+{% mustachejs "tardis_portal/dataset_tiles" %}
+{% mustachejs "tardis_portal/dataset_tile" %}
 
 <script type="text/javascript">
     var toggle_files = function(loadCallback) {
@@ -23,6 +29,13 @@
             $datafile_info_container.html('');
         }
     };
+
+    var filterDescription = function(str) {
+      lStr = str.toLowerCase();
+      return function(model) {
+        return _.string.include(model.get('description').toLowerCase(), lStr);
+      };
+    }
 
     var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
 
@@ -135,72 +148,9 @@
         return false;
     });
 
-    var refreshMetadataDisplay = function(hash){
-    	// Hide, then show
-      $('.metadata_shown').click().click();
-    }
-
-    // metadata text / ajax toggle
-    // datafile list
-    $(".datafile_list_toggle").live('click', function(evt){
-        evt.preventDefault();
-        toggle_files.apply(this);
-    });
-
-    // datafile metadata
-    $('.datafile_list .datafile_info_toggle').live('click', function(evt){
-        evt.preventDefault();
-        var $this = $(this);
-        var $datafile_metadata_container =
-        	$this.parents('.datafile').find('.datafile_info');
-
-        $this.toggleClass('metadata_shown metadata_hidden');
-        $datafile_metadata_container.toggle();
-
-        if ($this.hasClass('metadata_shown')) {
-            var href = $this.attr("href");
-            $datafile_metadata_container.html(loadingHTML);
-            $datafile_metadata_container.load(href);
-            $datafile_metadata_container.show();
-        } else {
-            $datafile_metadata_container.hide();
-        }
-    });
-    // dataset metadata
-    $(".dataset_metadata_toggle").live('click', function(evt){
-        evt.preventDefault();
-        var $this = $(this);
-        var $dataset_metadata = $this.parents('.dataset_info').find('.dataset_metadata');
-
-        $this.toggleClass('metadata_shown metadata_hidden');
-
-        if($this.hasClass('metadata_shown')) {
-            var href= $this.attr("href");
-
-            $dataset_metadata.html(loadingHTML);
-            $dataset_metadata.load(href);
-            $dataset_metadata.show();
-        } else {
-            $dataset_metadata.hide();
-        }
-    });
-    $(".experiment_metadata_toggle").live('click', function(evt){
-        evt.preventDefault();
-        var $this = $(this);
-        var $experiment_metadata = $('.experiment_metadata');
-
-        $this.toggleClass('metadata_shown metadata_hidden');
-
-        if($this.hasClass('metadata_shown')) {
-            var href= $this.attr("href");
-
-            $experiment_metadata.html(loadingHTML);
-            $experiment_metadata.load(href);
-            $experiment_metadata.show();
-        } else {
-            $experiment_metadata.hide();
-        }
-    });
+    var refreshMetadataDisplay = function(hash) {
+    	$('#experiment-tab-metadata').trigger('experiment-change');
+    };
 
     var loadModalRemoteBody = function(trigger, modal) {
     	// Hide save buttons
@@ -219,37 +169,17 @@
       });
     };
 
-    $('#expAddTrigger, .jqModalDsAdd, .jqModalDfAdd').live('click', function(evt){
+    $('.add-metadata').live('click', function(evt){
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Add Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
     });
-    $('.jqModalExpEdit, .jqModalDsEdit, .jqModalDfEdit').live('click', function(evt) {
+    $('.edit-metadata').live('click', function(evt) {
         evt.preventDefault();
         $('#modal-metadata .modal-header .title').text("Edit Metadata");
         loadModalRemoteBody(this, '#modal-metadata');
     });
 
-    $('.pagelink').live('click', function( event ){
-        var href = $(this).attr("href");
-        var html = $(this).html();
-        $(this).html(html + " " + loadingHTML);
-        $(this).parents('.datafile_list').load(href, function(){
-            $(".dataset_selector_all").unbind('click');
-            $(".dataset_selector_none").unbind('click');
-            // file selectors
-            $(document).find('.dataset_selector_all').click(function() {
-                $(this).parent().find('.datafile_checkbox').attr("checked", "checked");
-
-            });
-
-            $(document).find('.dataset_selector_none').click(function() {
-                $(this).parent().find('.datafile_checkbox').removeAttr("checked");
-
-            });
-        });
-        return false;
-    });
 </script>
 
 {% endblock %}
@@ -263,7 +193,7 @@
   </div>
 
   <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif' %}" alt="loading" /></p>
+    <p>Please wait... <img src="{{ STATIC_URL }}/images/ajax-loader.gif" alt="loading" /></p>
   </div>
 
   <div class="modal-body"></div>
@@ -284,33 +214,67 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 </script>
 
 <div class="page-header">
+  {% if has_write_permissions and not experiment.public %}
+  <div class="pull-right">
+    <a class="btn btn-warning" title="Edit Experiment"
+       href="{{ experiment.get_edit_url }}">
+      <i class="icon-pencil"></i>
+      Edit
+    </a>
+  </div>
+  {% endif %}
   <h1>
-    {{ experiment.title }}
-    {% if has_write_permissions and not experiment.public %}
+    <span property="dc:title">{{ experiment.title }}</span>
+    <br/>
     <small>
-      <a title="Edit Experiment"
-         href="{{ experiment.get_edit_url }}">
-        <i class="icon-pencil"></i>
-      </a>
+    {% for author in experiment.author_experiment_set.all %}
+      {% if not forloop.first %}
+      ,
+      {% endif %}
+      <span property="dc:creator" style="white-space: nowrap;">
+        {{ author.author }}
+      </span>
+    {% endfor %}
     </small>
-    {% endif %}
   </h1>
+  <p style="text-align: right">
+    {{ experiment|experiment_datasets_badge}}&nbsp;
+    {{ experiment|experiment_datafiles_badge }}&nbsp;
+    {{ experiment|experiment_size_badge }}&nbsp;
+    {{ experiment|experiment_last_updated_badge }}&nbsp;
+    {{ experiment|experiment_public_access_badge }}&nbsp;
+  </p>
 </div>
 
-<!-- Tab buttons -->
-<ul id="experiment-tabs" class="nav nav-tabs">
-  <li><a data-toggle="tab" title="Description" href="{% url tardis.tardis_portal.views.experiment_description experiment.id %}">Description</a></li>
-  <li><a data-toggle="tab" title="Datasets" href="{% url tardis.tardis_portal.views.experiment_datasets experiment.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search %}&{% endif %}{% endif %}{% if search %}search=true{% endif %}">Datasets ({{ experiment.datasets.count }})</a></li>
-  {% if is_owner %}
-    <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url tardis.tardis_portal.views.choose_rights experiment.id %}">Public Access / Licensing</a></li>
-  {% endif %}
-  <!-- {{ apps }} -->
-  {% for appurl, appname in apps %}
-    <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
-  {% endfor %}
-</ul>
+<p class="abstract well" property="dc:abstract">
+  {{ experiment.description|safe }}
+</p>
+<div class="row-fluid" >
+  <div class="span6">
+    <!-- Tab buttons -->
+    <ul id="experiment-tabs" class="nav nav-pills">
+      <li><a data-toggle="tab" title="Description" href="{% url 'tardis.tardis_portal.views.experiment_description' experiment.id %}">Description</a></li>
+      <li><a data-toggle="tab" title="Metadata" href="{% url 'tardis.tardis_portal.views.retrieve_experiment_metadata' experiment.id %}">Metadata</a></li>
+      {% if is_owner %}
+        <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}">Public Access / Licensing</a></li>
+      {% endif %}
+      <!-- {{ apps }} -->
+      {% for appurl, appname in apps %}
+        <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
+      {% endfor %}
+    </ul>
+    <div class="tab-content">
+      <div id="experiment-tab-description">
+        {% include "tardis_portal/ajax/experiment_description.html" %}
+      </div>
+    </div>
+  </div>
+  <hr class="visible-phone"/>
+  <div id="datasets-pane" class="span6">
+    {% include "tardis_portal/ajax/experiment_datasets.html" %}
+  </div>
+</div>
 
-<div class="tab-content"></div>
 
 <script type="text/javascript">
 (function() {
@@ -331,15 +295,28 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     var url = $(v).attr('href');
     $(v).attr('href', '#'+getTabIdFromName(tabName));
 
-    // Create and insert content pane
-    var tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
-                                      .addClass('tab-pane');
-    tabContents.html(loadingHTML)
-    $('.tab-content').append(tabContents);
+    // Create and insert content pane (if not preloaded)
+    var tabContents;
+    if ($('#'+getTabIdFromName(tabName)).size() == 0) {
+      tabContents = $('<div></div>').attr('id', getTabIdFromName(tabName))
+                                    .addClass('tab-pane');
+      tabContents.html(loadingHTML)
+      $('.tab-content').append(tabContents);
+    } else {
+      tabContents = $('#'+getTabIdFromName(tabName)).addClass('tab-pane')
+                                                    .addClass('preloaded');
+    }
 
-    // On experiment changes, we want to reload the data pane
-    $(tabContents).on('experiment-change', function() {
+    // Set up reload for the tab pane
+    $('#'+getTabIdFromName(tabName)).on('experiment-change', function() {
       var tabPane = $(this);
+
+      // Skip loading if already loaded
+      if (tabPane.hasClass('preloaded')) {
+        tabPane.removeClass('preloaded');
+        return;
+      }
+
       // Load content for the pane, based on the link HREF
       $.ajax({
         url: url,
@@ -381,8 +358,38 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   $(window).bind('hashchange', showTabForWindowLocation);
 
 })();
+
+$(document).ready(function() {
+  // Activate tooltips
+  $('span.badge').tooltip({'placement': 'top'});
+  // Abbreviate abstract
+  $('.abstract').each(function(i, v) {
+    var span = $('<span/>').addClass('truncated-text').text($(v).text());
+    $(v).empty().append(span);
+    $(v).addClass('abstract-clickable');
+    $(v).tooltip({'title': 'Click to toggle full text'});
+    $(v).click(function(evt) { span.toggleClass('truncated-text'); });
+  });
+});
+
 </script>
 
+<script type="text/javascript">
+var datasetTiles = (function() {
+
+  var datasets = new MyTardis.Datasets();
+  datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
+
+  var datasetTiles = new MyTardis.DatasetTiles({
+    'collection': datasets,
+    'el': $('#datasets').get(0)
+  });
+
+  datasets.fetch({});
+
+  return datasetTiles;
+})();
+</script>
 
 
 {% endblock %}

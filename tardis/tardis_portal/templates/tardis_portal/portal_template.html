@@ -1,7 +1,21 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
 {% load url from future %}
-<html lang="en">
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      prefix="xsd: http://www.w3.org/2001/XMLSchema#
+              dc: http://purl.org/dc/elements/1.1/"
+      class="no-js">
+  <!--
+    RDFa Core 1.1 uses the "prefix" element for namespace declarations.
+
+    For more information, see:
+    http://www.w3.org/TR/rdfa-core/#scoping-of-prefix-mappings
+   -->
+  <!--
+  The "no-js" class is removed by Modernizer when it runs, which allows CSS
+  theming for JS-less environments.
+  -->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -100,6 +114,26 @@
                         Admin Interface
                     </a>
                   </li>
+                  {% endif %}
+                  {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
+                  <li class="divider"></li>
+                  {% if perms.tardis_portal.change_experimentacl %}
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
+                      <i class="icon-user"></i>
+                      Experiment Access
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if perms.tardis_portal.change_group %}
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
+                      <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
+                      Group Management
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li class="divider"></li>
                   {% endif %}
                   <li>
                     <a href="{% url 'django.contrib.auth.views.logout' %}">

@@ -1,24 +1,59 @@
-<div class="experiment_metadata container-fluid">
-{% for parameterset in experiment.experimentparameterset_set.all %}
-  {% load capture %}
-  {% capture as edit_control %}
-  {% if has_write_permissions %}{% if not parameterset.schema.immutable %}
-    <div class="edit_schema" style="display: inline;">
-      <a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
-          title="Edit"
-          class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle">
-        <i class="icon-pencil"></i>
-      </a>
-    </div>
-  {% endif %}{% endif %}
-  {% endcapture %}
+{% load capture %}
 
-  <div class="row-fluid" style="margin-top: 10px; margin-bottom: 10px;">
-    <div class="span12">
-    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all %}
-    </div>
+
+<div class="pull-right">
+    {% if has_write_permissions and not experiment.locked %}
+        <a title="Add" class="add-metadata btn btn-primary btn-mini"
+           href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}">
+          <i class="icon-plus"></i>
+          Add
+        </a>
+    {% endif %}
+</div>
+
+<br />
+{% for parameterset in parametersets %}
+  {% capture as edit_control %}
+   {% if has_write_permissions and not parameterset.schema.immutable %}
+   <div class="pull-right">
+       <a class="edit-metadata btn btn-mini btn-warning"
+          href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}">
+          <i class="icon-pencil"></i>
+          Edit
+       </a>
+   </div>
+   {% endif %}
+  {% endcapture %}
+  <div style="margin-top: 10px">
+    {% with parameters=parameterset.experimentparameter_set.all %}
+    <table class="parameter_table table table-bordered {{ parameterset.schema.name|slugify }}">
+      <tr>
+        <th class="schema_name" title="{{ parameterset.schema.namespace }} {{ parameterset.schema.immutable|yesno:'(immutable),' }}" colspan="2">
+        {% if parameterset.schema.name %}
+          {{ parameterset.schema.name }}
+        {% endif %}
+        {% if edit_control %}
+            {{ edit_control }}
+        {% endif %}
+        </th>
+      </tr>
+      {% for parameter in parameters %}
+      <tr>
+          <td class="parameter_name">{{ parameter.name.full_name }}</td>
+          <td class="parameter_value">
+              {% if parameter.name.isLongString %}
+                  {{ parameter.get|linebreaks }}
+              {% else %}
+                  {{ parameter.get }}
+              {% endif %}
+          </td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endwith %}
   </div>
 {% empty %}
-    There is no metadata for this experiment.
+  <div class="alert alert-info">
+    There is no metadata for this dataset.
+  </div>
 {% endfor %}
-</div>

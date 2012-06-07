@@ -1,5 +1,6 @@
 from django.conf import settings
 
+import pystache
 import pytz
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
@@ -28,3 +29,15 @@ def get_utc_time(dt):
     if (dt.tzinfo == None):
         dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt.astimezone(pytz.utc)
+
+def _load_template(template_name):
+    from mustachejs.loading import find
+    with open(find(template_name), 'r') as f:
+        return f.read()
+
+def _mustache_render(tmpl, data):
+    from django.utils.safestring import mark_safe
+    return mark_safe(pystache.render(tmpl, data))
+
+def render_mustache(template_name, data):
+    return _mustache_render(_load_template(template_name), data)

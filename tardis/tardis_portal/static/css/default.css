@@ -30,7 +30,28 @@
 	margin-right: -50px;
 }
 
-/* Clickable Experiment */
-.experiment-table td.experiment-clickable {
+/* Clickable Experiments & Datasets */
+.clickable-tile {
 	cursor: pointer;
 }
+
+.abstract {
+  text-overflow: ellipsis;
+}
+
+.abstract-clickable {
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.truncated-text {
+	white-space: nowrap;
+}
+
+/* Elements that just don't work without JS */
+.no-js .js-required {
+	display: none;
+}
+
+

@@ -1,0 +1,93 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load url from future %}
+{% load experiment_tags %}
+{% load experimentstats %}
+{% load humanize %}
+
+{% block content %}
+
+<div id="content">
+
+  <div class="row-fluid">
+    <div class="span12">
+      <h2 class="visible-phone">Experiments</h2>
+      <div class="pull-left">
+        <ul class="nav nav-pills">
+          <li>
+            <a href="{% url 'tardis.tardis_portal.views.experiment_list_mine' %}">
+              Mine
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'tardis.tardis_portal.views.experiment_list_shared' %}">
+              Shared
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'tardis.tardis_portal.views.experiment_list_public' %}">
+              Public
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div class="pull-right">
+        {% if perms.tardis_portal.add_experiment %}
+        <a class="btn btn-warning"
+           href="{% url 'tardis.tardis_portal.views.create_experiment' %}">
+          <i class="icon-plus"></i>
+          Create
+        </a>
+        {% endif %}
+        <a class="btn btn-primary"
+           href="{% url 'tardis.tardis_portal.views.search_experiment' %}">
+          <i class="icon-search"></i>
+           Search
+        </a>
+      </div>
+      <h2 class="hidden-phone" style="text-align: center">Experiments</h2>
+    </div>
+  </div>
+
+  {% if experiments %}
+    <table class="experiment-table table">
+      <thead>
+        <tr>
+          <th>
+            <strong>{{ experiments.count }}</strong>
+            experiment{{ experiments.count|pluralize}}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for experiment in experiments %}
+        <tr>
+          <td style="position: relative">
+            {% experiment_browse_item experiment can_download=can_see_private %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="alert alert-info">{% block absent_message %}{% endblock %}</p>
+  {% endif %}
+
+<script type="text/javascript">
+// Set up tables cells as click links for touch devices
+$(function() {
+  $('.experiment-table a.experiment-link').click(function(evt) {
+    window.location.href = $(evt.delegateTarget).attr('href');
+  });
+  $('.experiment-table td').click(function(evt) {
+    if (evt.target.tagName != 'A') {
+      $(evt.delegateTarget).find('a.experiment-link').click();
+    }
+  }).addClass('clickable-tile');
+  // Activate tooltips
+  $('.experiment-table span.badge').tooltip({'placement': 'bottom'});
+});
+</script>
+
+</div> <!-- content -->
+
+{% endblock %}
