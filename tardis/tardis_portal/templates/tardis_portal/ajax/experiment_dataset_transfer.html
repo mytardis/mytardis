@@ -27,6 +27,7 @@ var otherDatasetTiles;
     var datasetTiles = this;
     $(datasetTiles.el).find('.datasets').sortable({
       'connectWith': '.datasets',
+      'dropOnEmpty': true,
       'helper': 'clone',
       'placeholder': 'thumbnail span6',
       'receive': _.bind(function(event, ui) {
@@ -44,14 +45,14 @@ var otherDatasetTiles;
       var height = _.max(_.map($('.datasets'), function(v) {
         return $(v).height();
       }));
-      // Set min-height to ensure that all columns are that high
-      $('.datasets').css('min-height', height+"px");
+      // Set min-height to ensure that all columns are that high (min 100px)
+      $('.datasets').css('min-height', Math.max(height, 100)+"px");
     };
     datasetTiles.on('tiles:rendered', ensureSimilarHeight);
     ensureSimilarHeight();
   };
   // Enable dragging for main tiles
-  datasetTiles.on('tiles:rendered', enableDragDrop);
+  _.bind(enableDragDrop, datasetTiles)();
 
   function getDatasetsForExperiment(experimentId) {
     var datasets = new MyTardis.Datasets();
