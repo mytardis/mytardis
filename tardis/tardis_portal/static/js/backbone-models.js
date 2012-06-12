@@ -229,6 +229,8 @@ var MyTardis = (function(){
       return this;
     },
     canRemove: function() {
+      if (_.isUndefined(isLoggedIn) || !isLoggedIn())
+        return false;
       return this.model.attributes.experiments.length > 1
     },
     remove: function() {
