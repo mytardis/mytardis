@@ -54,7 +54,6 @@ var MyTardis = (function(){
 
   module.DatasetTiles = Backbone.View.extend({
     tagName: "div",
-    id: "datasets",
     _lastFilterFunc: function() { return true; },
     initialize : function(options) {
       // Allow the functions to be used by themselves
@@ -72,6 +71,8 @@ var MyTardis = (function(){
       this.collection.bind('change', refresh);
       this.collection.bind('remove', refresh);
       this.collection.bind('reset', refresh);
+      // Enable drag-and-drop
+      this.on('tiles:rendered', _.bind(this._enableDragDrop, this));
     },
 
     addTile: function(tile) {
@@ -80,6 +81,35 @@ var MyTardis = (function(){
       newModel.save().done(function() {
         tile.trigger('tile:copy', tile, this);
       });
+    },
+
+    _enableDragDrop: function() {
+      // Context should be a MyTardis.DatasetTiles instance
+      $(this.el).find('.datasets').sortable({
+        'connectWith': '.datasets',
+        'dropOnEmpty': true,
+        'helper': 'clone',
+        'placeholder': 'thumbnail span6',
+        'receive': _.bind(function(event, ui) {
+          var datasetTile = ui.item.find('.dataset-tile').prop('view');
+          this.addTile(datasetTile);
+          ui.item.detach();
+        }, this)
+      }).disableSelection();
+      // We need the dataset columns to be roughly the same height, or else
+      // there's no way to drag datasets across
+      var ensureSimilarHeight = function() {
+        // Remove min-height to get real height
+        $('.datasets').css('min-height', '');
+        // Select the maximum height
+        var height = _.max(_.map($('.datasets'), function(v) {
+          return $(v).height();
+        }));
+        // Set min-height to ensure that all columns are that high (min 100px)
+        $('.datasets').css('min-height', Math.max(height, 100)+"px");
+      };
+      this.on('tiles:rendered', ensureSimilarHeight);
+      ensureSimilarHeight();
     },
 
     _buildTile: function(tiles, model) {

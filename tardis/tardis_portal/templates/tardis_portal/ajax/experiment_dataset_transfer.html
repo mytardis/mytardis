@@ -22,37 +22,6 @@
 <script type="text/javascript">
 var otherDatasetTiles;
 (function() {
-  var enableDragDrop = function() {
-    // Context should be a MyTardis.DatasetTiles instance
-    var datasetTiles = this;
-    $(datasetTiles.el).find('.datasets').sortable({
-      'connectWith': '.datasets',
-      'dropOnEmpty': true,
-      'helper': 'clone',
-      'placeholder': 'thumbnail span6',
-      'receive': _.bind(function(event, ui) {
-        var datasetTile = ui.item.find('.dataset-tile').prop('view');
-        this.addTile(datasetTile);
-        ui.item.detach();
-      }, datasetTiles)
-    }).disableSelection();
-    // We need the dataset columns to be roughly the same height, or else
-    // there's no way to drag datasets across
-    var ensureSimilarHeight = function() {
-      // Remove min-height to get real height
-      $('.datasets').css('min-height', '');
-      // Select the maximum height
-      var height = _.max(_.map($('.datasets'), function(v) {
-        return $(v).height();
-      }));
-      // Set min-height to ensure that all columns are that high (min 100px)
-      $('.datasets').css('min-height', Math.max(height, 100)+"px");
-    };
-    datasetTiles.on('tiles:rendered', ensureSimilarHeight);
-    ensureSimilarHeight();
-  };
-  // Enable dragging for main tiles
-  _.bind(enableDragDrop, datasetTiles)();
 
   function getDatasetsForExperiment(experimentId) {
     var datasets = new MyTardis.Datasets();
@@ -69,9 +38,6 @@ var otherDatasetTiles;
     });
 
     datasets.fetch({});
-
-    // Enable dragging for other tiles
-    datasetTiles.on('tiles:rendered', enableDragDrop);
 
     return datasetTiles;
   }

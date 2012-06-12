@@ -388,6 +388,7 @@ var datasetTiles = (function() {
   datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
   var datasetTiles = new MyTardis.DatasetTiles({
+    'id': "datasets",
     'collection': datasets,
     'el': $('#datasets').get(0)
   });
