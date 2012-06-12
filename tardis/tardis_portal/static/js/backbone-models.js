@@ -52,6 +52,35 @@ var MyTardis = (function(){
     }
   });
 
+  // Internal subview
+  var DatasetFilter = Backbone.View.extend({
+    tagName: "p",
+    events:  {
+      "keyup input": "doFilter"
+    },
+    initialize: function(options) {
+      this._datasetTiles = options['datasetTiles'];
+    },
+    _filterDescription: function(str) {
+      lStr = str.toLowerCase();
+      return function(model) {
+        return _.string.include(model.get('description').toLowerCase(), lStr);
+      };
+    },
+    render: function() {
+      $(this.el).html(Mustache.to_html(
+        Mustache.TEMPLATES['tardis_portal/dataset_filter'],
+        this._datasetTiles,
+        Mustache.TEMPLATES
+      ));
+      return this;
+    },
+    doFilter: function() {
+      var searchTerm = $(this.el).find('input').val();
+      this._datasetTiles.filter(this._filterDescription(searchTerm));
+    }
+  });
+
   module.DatasetTiles = Backbone.View.extend({
     tagName: "div",
     _lastFilterFunc: function() { return true; },
@@ -59,6 +88,10 @@ var MyTardis = (function(){
       // Allow the functions to be used by themselves
       this.filter = _.bind(this.filter, this);
       this.render = _.bind(this.render, this);
+      // Create filter control
+      this._datasetFilter = new DatasetFilter({
+        'datasetTiles': this
+      }).render();
       // Build initial tiles
       this.buildTiles();
       this.visibleTiles = _.keys(this.tiles);
@@ -109,6 +142,7 @@ var MyTardis = (function(){
         $('.datasets').css('min-height', Math.max(height, 100)+"px");
       };
       this.on('tiles:rendered', ensureSimilarHeight);
+      $(window).on('resize', ensureSimilarHeight);
       ensureSimilarHeight();
     },
 
@@ -142,6 +176,8 @@ var MyTardis = (function(){
     },
 
     render: function() {
+      // Detach existing tiles
+      _(this.tiles).each(function(tile) { $(tile.el).detach(); });
       // Render container with placeholders
       var newContents = $(Mustache.to_html(
         Mustache.TEMPLATES['tardis_portal/dataset_tiles'],
@@ -157,7 +193,12 @@ var MyTardis = (function(){
         var view = this.tiles[parseInt($(v).attr('data-dsid'))];
         $(v).parent().replaceWith(view.el);
       }, this);
-      $(this.el).html(newContents);
+      // Add filter control if necessary
+      if ($(this._datasetFilter.el).parent().size() == 0)
+        $(this.el).prepend(this._datasetFilter.el);
+      // Remove all contents except the filter and add new contents
+      $(this.el).children().not(this._datasetFilter.el).remove();
+      $(this.el).append(newContents);
       // Give a path back to the view from the DOM
       $(this.el).prop('view', this);
       // Trigger an event we can tie other functionality to
@@ -170,7 +211,7 @@ var MyTardis = (function(){
     tagName: "div",
     className: "dataset-tile thumbnail",
     events:  {
-      "click button.close": "remove"
+      "click a.close": "remove"
     },
     initialize: function(options) {
       // Render on change
@@ -217,7 +258,7 @@ var MyTardis = (function(){
       // Hide "remove" button if think removing will be rejected
       if (!this.canRemove()) {
         // Keep the height, hide the button
-        $(this.el).find('button.close')
+        $(this.el).find('a.close')
           .css('opacity', 0)
           .mouseover(function(evt) { // If somehow we do mouseover, replace
             $(evt.delegateTarget).replaceWith(

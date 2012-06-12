@@ -9,6 +9,7 @@
 
 {% block script %}
 
+{% mustachejs "tardis_portal/dataset_filter" %}
 {% mustachejs "tardis_portal/dataset_tiles" %}
 {% mustachejs "tardis_portal/dataset_tile" %}
 {% mustachejs "tardis_portal/badges/experiment_count" %}
@@ -31,13 +32,6 @@
             $datafile_info_container.html('');
         }
     };
-
-    var filterDescription = function(str) {
-      lStr = str.toLowerCase();
-      return function(model) {
-        return _.string.include(model.get('description').toLowerCase(), lStr);
-      };
-    }
 
     var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
 
