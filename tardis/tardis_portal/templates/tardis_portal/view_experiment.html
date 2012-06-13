@@ -1,5 +1,6 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load basiccomparisonfilters %}
+{% load capture %}
 {% load url from future %}
 {% load static from staticfiles %}
 {% load experiment_tags %}
@@ -224,12 +225,18 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     <br/>
     <small>
     {% for author in experiment.author_experiment_set.all %}
+      {% capture as creator_span %}
+        <span property="dc:creator"
+              style="white-space: nowrap;">{{ author.author }}</span>
+      {% endcapture %}
       {% if not forloop.first %}
       ,
       {% endif %}
-      <span property="dc:creator" style="white-space: nowrap;">
-        {{ author.author }}
-      </span>
+      {% if author.url %}
+        <a href="{{ author.url }}">{{ creator_span }}</a>
+      {% else %}
+        {{ creator_span }}
+      {% endif %}
     {% endfor %}
     </small>
   </h1>

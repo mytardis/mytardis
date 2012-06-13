@@ -679,7 +679,7 @@ def create_experiment(request,
         })
 
     if request.method == 'POST':
-        form = ExperimentForm(request.POST, request.FILES)
+        form = ExperimentForm(request.POST)
         if form.is_valid():
             full_experiment = form.save(commit=False)
 
@@ -750,13 +750,11 @@ def edit_experiment(request, experiment_id,
     experiment = Experiment.objects.get(id=experiment_id)
 
     c = Context({'subtitle': 'Edit Experiment',
-                 'user_id': request.user.id,
                  'experiment_id': experiment_id,
               })
 
     if request.method == 'POST':
-        form = ExperimentForm(request.POST, request.FILES,
-                              instance=experiment, extra=0)
+        form = ExperimentForm(data=request.POST, instance=experiment, extra=0)
         if form.is_valid():
             full_experiment = form.save(commit=False)
             experiment = full_experiment['experiment']
