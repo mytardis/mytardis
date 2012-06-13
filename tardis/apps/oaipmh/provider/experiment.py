@@ -13,8 +13,8 @@ from oaipmh.server import Server, oai_dc_writer, NS_XSI
 import pytz
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.models import Experiment, ExperimentParameterSet, \
-    License, User
+from tardis.tardis_portal.models import Author_Experiment, Experiment,\
+    ExperimentParameterSet, License, User
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
@@ -134,8 +134,7 @@ class AbstractExperimentProvider(BaseProvider):
             experiments = experiments.filter(update_time__lte=until)
         def get_users_from_experiment(experiment):
             return filter(lambda u: u.get_profile().isValidPublicContact(),
-                          chain([experiment.created_by],
-                                experiment.get_owners()))
+                          experiment.get_owners())
         users = chain(map(get_users_from_experiment, experiments))
         return frozenset(chain(experiments, *users))
 
@@ -220,6 +219,10 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         related_info = map(get_related_info, ExperimentParameterSet.objects\
                                                 .filter(experiment=experiment,
                                                         schema__namespace=ns))
+        collectors = \
+            Author_Experiment.objects\
+              .exclude(experiment__public_access=Experiment.PUBLIC_ACCESS_NONE)\
+              .exclude(url='')
         return Metadata({
             '_writeMetadata': self._get_experiment_writer_func(),
             'id': experiment.id,
@@ -229,15 +232,12 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'licence_name': license_.name,
             'licence_uri': license_.url,
             'access': access,
-            'collectors': [experiment.created_by],
+            'collectors': collectors,
             'managers': experiment.get_owners(),
             'related_info': related_info
         })
 
     def _get_user_metadata(self, user, metadataPrefix):
-        collected_experiments = \
-            Experiment.objects.filter(created_by=user) \
-                        .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         owns_experiments = Experiment.safe.owned_by_user_id(user.id)\
                                           .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
         return Metadata({
@@ -246,7 +246,6 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'email': user.email,
             'given_name': user.first_name,
             'family_name': user.last_name,
-            'collected_experiments': collected_experiments,
             'owns_experiments': owns_experiments,
         })
 
@@ -346,10 +345,10 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             licence_.text = metadata.getMap().get('licence_name')
             # related object - collectors
             for collector in metadata.getMap().get('collectors'):
-                self.writeRelatedObject(collection, collector, 'hasCollector')
+                self.writeRelatedAuthor(collection, collector, 'hasCollector')
             # related object - managers
             for manager in metadata.getMap().get('managers'):
-                self.writeRelatedObject(collection, manager, 'isManagedBy')
+                self.writeRelatedUser(collection, manager, 'isManagedBy')
             # related info
             for ri in metadata.getMap().get('related_info'):
                 self.writeRelatedInfo(collection, ri)
@@ -367,7 +366,19 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                         '%s %s' % (RIFCS_NS, RIFCS_SCHEMA))
             return wrapper
 
-        def writeRelatedObject(self, element, obj, relation):
+        def writeRelatedAuthor(self, element, obj, relation):
+            # <relatedObject>
+            #     <key>http://nla.gov.au/nla.party-0000001</key>
+            #     <relation type="hasCollector"/>
+            # </relatedObjexperimentect>
+            if not obj.url:
+                return
+            relatedObject = SubElement(element, self._nsrif('relatedObject') )
+            SubElement(relatedObject, self._nsrif('key')).text = obj.url
+            SubElement(relatedObject, self._nsrif('relation')) \
+                .set('type', relation)
+
+        def writeRelatedUser(self, element, obj, relation):
             # <relatedObject>
             #     <key>user/1</key>
             #     <relation type="isManagedBy"/>
@@ -455,12 +466,6 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         electronic_value = SubElement(electronic, _nsrif('value'))
         electronic_value.text = metadata.getMap().get('email')
 
-        for experiment in metadata.getMap().get('collected_experiments'):
-            relatedObject = SubElement(collection, _nsrif('relatedObject') )
-            SubElement(relatedObject, _nsrif('key')).text = \
-                RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
-            SubElement(relatedObject, _nsrif('relation')) \
-                .set('type', 'isCollectorOf')
         for experiment in metadata.getMap().get('owns_experiments'):
             relatedObject = SubElement(collection, _nsrif('relatedObject') )
             SubElement(relatedObject, _nsrif('key')).text = \
