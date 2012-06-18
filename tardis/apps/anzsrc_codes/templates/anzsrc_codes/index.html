@@ -1,0 +1,95 @@
+{% load mustachejs %}
+{% load url from future %}
+{% load static %}
+
+{% mustachejs "anzsrc_codes/for_code" %}
+
+<div class="form-horizontal">
+  <div class="control-group">
+    <label class="control-label"
+           for="field-of-research-search">Field of Research</label>
+    <div class="controls">
+      <input id="field-of-research-search"
+             class="span4" type="text"
+             placeholder="Start typing to select a Field of Research"/>
+    </div>
+  </div>
+</div>
+
+<div id="fields-of-research">
+</div>
+
+
+<script type="text/javascript">
+var fieldOfResearchView;
+
+var pageScript = function() {
+  var fieldsOfResearch = new AnzsrcCodes.FieldsOfResearch();
+  fieldsOfResearch.reset({{ for_code_json|safe }});
+
+  var associatedFieldsOfResearch = new AnzsrcCodes.FieldsOfResearch();
+  associatedFieldsOfResearch.url = "{% url 'tardis.apps.anzsrc_codes.views.list_or_create_for_code' experiment.id %}";
+  associatedFieldsOfResearch.on('add', function(model) {
+    model.save();
+  });
+  associatedFieldsOfResearch.fetch({});
+
+  // One of a kind view for search field
+  var fieldOfResearchSearch = new (Backbone.View.extend({
+    'events': {
+      'change': 'changeHandler'
+    },
+    'el': $('#field-of-research-search').get(0),
+    'initialize': function() {
+      $(this.el).typeahead({
+        'source': fieldsOfResearch.invoke('label')
+      });
+      this.updateCurrentValue();
+    },
+    'updateCurrentValue': function() {
+      this._currentValue = $(this.el).val();
+    },
+    'isSelectEvent': function(evt) {
+      var lengthChange = Math.abs(
+          this._currentValue.length - $(this.el).val().length);
+      return lengthChange > 4;
+    },
+    // Handler has short wait to avoid duplicate events
+    'changeHandler': function(evt) {
+      if (this.isSelectEvent(evt) && !_($(this.el).val()).isBlank()) {
+        var selectedModels = fieldsOfResearch.filter(function(model) {
+          return _.str.include(model.label(),
+              $('#field-of-research-search').val());
+        });
+        // Add to this experiment's collection
+        associatedFieldsOfResearch.add(
+            _(selectedModels).chain()
+                             .reject(function(model) {
+                               return associatedFieldsOfResearch.where({
+                                   'uri': model.get('uri')
+                                 }).length > 0;
+                             })
+                             .pluck('attributes')
+                             .value(),
+            {'wait': true}
+        );
+        // Reset field value
+        $(this.el).val('');
+      }
+      this.updateCurrentValue();
+    }
+  }));
+
+  fieldOfResearchView = new AnzsrcCodes.FieldOfResearchView({
+    'collection': associatedFieldsOfResearch,
+    'el': $('#fields-of-research').get(0)
+  });
+};
+
+$.ajax({
+  'url': '{% static "js/backbone-models-anzsrc-codes.js" %}',
+  'cache': true,
+  'dataType': 'script',
+  'success': pageScript
+});
+</script>

@@ -111,6 +111,8 @@ class RestfulExperimentParameterSet:
     '''
     Helper class which enables a Backbone.sync-compatible interface to be
     created for a ExperimentParameterSet just by specifying a schema and a form.
+
+    For UI consistency, it's best to make sure the schema has hidden == true.
     '''
 
     def __init__(self, schema, form_cls):
@@ -164,14 +166,14 @@ class RestfulExperimentParameterSet:
                             content_type='application/json; charset=utf-8')
 
 
-    def _get(self, request, experiment_id, related_info_id):
+    def _get(self, request, experiment_id, ps_id):
         from tardis.tardis_portal.auth.decorators import has_experiment_access
         if not has_experiment_access(request, experiment_id):
             return return_response_error(request)
         try:
             ps = ExperimentParameterSet.objects.get(schema=self.schema,
                                                     experiment__pk=experiment_id,
-                                                    id=related_info_id)
+                                                    id=ps_id)
             return HttpResponse(json.dumps(self._get_dict_from_ps(ps)),
                                 content_type='application/json; charset=utf-8')
         except:
@@ -194,7 +196,7 @@ class RestfulExperimentParameterSet:
                             status=201)
 
 
-    def _update(self, request, experiment_id, related_info_id):
+    def _update(self, request, experiment_id, ps_id):
         from tardis.tardis_portal.auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
@@ -205,7 +207,7 @@ class RestfulExperimentParameterSet:
 
         try:
             ps = ExperimentParameterSet.objects.get(experiment_id=experiment_id,
-                                                    id=related_info_id)
+                                                    id=ps_id)
         except ExperimentParameterSet.DoesNotExist:
             return HttpResponse('', status=404)
 
@@ -215,14 +217,14 @@ class RestfulExperimentParameterSet:
                             status=201)
 
 
-    def _delete(self, request, experiment_id, related_info_id):
+    def _delete(self, request, experiment_id, ps_id):
         from tardis.tardis_portal.auth.decorators import has_experiment_write
         if not has_experiment_write(request, experiment_id):
             return return_response_error(request)
 
         try:
             ps = ExperimentParameterSet.objects.get(experiment_id=experiment_id,
-                                                    id=related_info_id)
+                                                    id=ps_id)
         except ExperimentParameterSet.DoesNotExist:
             return HttpResponse('', status=404)
         obj = self._get_dict_from_ps(ps)
