@@ -58,8 +58,7 @@ var pageScript = function() {
     'changeHandler': function(evt) {
       if (this.isSelectEvent(evt) && !_($(this.el).val()).isBlank()) {
         var selectedModels = fieldsOfResearch.filter(function(model) {
-          return _.str.include(model.label(),
-              $('#field-of-research-search').val());
+          return model.label() == $('#field-of-research-search').val();
         });
         // Add to this experiment's collection
         associatedFieldsOfResearch.add(
