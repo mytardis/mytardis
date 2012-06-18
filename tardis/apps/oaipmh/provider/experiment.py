@@ -219,6 +219,17 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         related_info = map(get_related_info, ExperimentParameterSet.objects\
                                                 .filter(experiment=experiment,
                                                         schema__namespace=ns))
+
+        def get_subject(ps, type_):
+            psm = ParameterSetManager(ps)
+            return { 'text': psm.get_param('code', True),
+                     'type': type_ }
+
+        ns = 'http://purl.org/asc/1297.0/2008/for/'
+        subjects = [get_subject(ps, 'anzsrc-for')
+                    for ps in ExperimentParameterSet.objects\
+                                                .filter(experiment=experiment,
+                                                        schema__namespace=ns)]
         collectors = \
             Author_Experiment.objects\
               .exclude(experiment__public_access=Experiment.PUBLIC_ACCESS_NONE)\
@@ -234,7 +245,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             'access': access,
             'collectors': collectors,
             'managers': experiment.get_owners(),
-            'related_info': related_info
+            'related_info': related_info,
+            'subjects': subjects
         })
 
     def _get_user_metadata(self, user, metadataPrefix):
@@ -352,6 +364,9 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             # related info
             for ri in metadata.getMap().get('related_info'):
                 self.writeRelatedInfo(collection, ri)
+            # subject
+            for subject in metadata.getMap().get('subjects'):
+                self.writeSubject(collection, subject)
 
         def writeRegistryObjectsWrapper(self):
             # <registryObjects
@@ -409,6 +424,12 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 if e == 'identifier':
                     se.set('type', 'uri')
                 se.text = obj[e]
+
+        def writeSubject(self, element, obj):
+            # <subject type="anzsrc-for">0101</subject>
+            subject = SubElement(element, self._nsrif('subject') )
+            subject.set('type', obj['type'])
+            subject.text = obj['text']
 
     def _get_user_writer_func(self):
         from functools import partial
