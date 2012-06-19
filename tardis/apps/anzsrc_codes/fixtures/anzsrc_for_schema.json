@@ -7,7 +7,8 @@
             "namespace": "http://purl.org/asc/1297.0/2008/for/",
             "name": "ANZSRC Field of Research",
             "subtype": "anzsrc-for-experiment",
-            "immutable": false
+            "immutable": false,
+            "hidden": true
         }
     },
     {

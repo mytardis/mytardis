@@ -14,13 +14,15 @@ from .forms import RelatedInfoForm
 SCHEMA_URI = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
 PARAMETER_NAMES = RelatedInfoForm().fields.keys()
 
-def _get_schema(schema_uri):
-    try:
-        return Schema.objects.get(namespace=schema_uri)
-    except Schema.DoesNotExist:
-        from django.core.management import call_command
-        call_command('loaddata', 'related_info_schema')
-        return _get_schema(schema_uri)
+def _get_schema_func(schema_uri):
+    def get_schema():
+        try:
+            return Schema.objects.get(namespace=schema_uri)
+        except Schema.DoesNotExist:
+            from django.core.management import call_command
+            call_command('loaddata', 'related_info_schema')
+            return get_schema()
+    return get_schema
 
 @authz.experiment_access_required
 def index(request, experiment_id):
@@ -41,7 +43,7 @@ def index(request, experiment_id):
 
 
 # Create an object which handles our requests
-handlerObj = RestfulExperimentParameterSet(_get_schema(SCHEMA_URI),
+handlerObj = RestfulExperimentParameterSet(_get_schema_func(SCHEMA_URI),
                                            RelatedInfoForm)
 # Bind the handlers it provides to scope
 list_or_create_related_info = \

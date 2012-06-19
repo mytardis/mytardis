@@ -26,13 +26,15 @@ plugin.register('application/octet-stream', Parser,
 for_graph = Graph()
 for_graph.parse(SCHEMA_URI)
 
-def _get_schema(schema_uri):
-    try:
-        return Schema.objects.get(namespace=schema_uri)
-    except Schema.DoesNotExist:
-        from django.core.management import call_command
-        call_command('loaddata', 'anzsrc_for_schema')
-        return _get_schema(schema_uri)
+def _get_schema_func(schema_uri):
+    def get_schema():
+        try:
+            return Schema.objects.get(namespace=schema_uri)
+        except Schema.DoesNotExist:
+            from django.core.management import call_command
+            call_command('loaddata', 'anzsrc_for_schema')
+            return get_schema()
+    return get_schema
 
 def _get_for_codes():
     codeTerm = URIRef("http://purl.org/asc/1297.0/code")
@@ -54,7 +56,7 @@ def _get_for_codes():
                   key=lambda d: d['code'])
 
 # Create an object which handles our requests
-handlerObj = RestfulExperimentParameterSet(_get_schema(SCHEMA_URI),
+handlerObj = RestfulExperimentParameterSet(_get_schema_func(SCHEMA_URI),
                                            FoRCodeForm)
 # Bind the handlers it provides to scope
 list_or_create_for_code = \

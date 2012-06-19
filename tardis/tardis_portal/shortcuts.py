@@ -110,18 +110,32 @@ def render_to_file(template, filename, context):
 class RestfulExperimentParameterSet:
     '''
     Helper class which enables a Backbone.sync-compatible interface to be
-    created for a ExperimentParameterSet just by specifying a schema and a form.
+    created for a ExperimentParameterSet just by specifying a function which
+    provides the schema and a form.
+
+    (A function for the schema is required rather than the actual schema, as
+    to run unit tests effectively the object needs to be able to create the
+    schema after instantiation.)
 
     For UI consistency, it's best to make sure the schema has hidden == true.
     '''
 
-    def __init__(self, schema, form_cls):
+    def __init__(self, schema_func, form_cls):
         '''
         Takes a schema URI and a Form class.
         '''
-        self.schema = schema
+        self.schema_func = schema_func
         self.form_cls = form_cls
         self.parameter_names = form_cls().fields.keys()
+
+    def _get_schema(self):
+        ''' Use schema function to get the schema. '''
+        return self.schema_func()
+    schema = property(_get_schema)
+
+    def __str__(self):
+        return "%s for %s into %s" % \
+            (self.__class__, self.form_cls, self.schema.namespace)
 
     def _get_dict_from_ps(self, ps):
         '''
@@ -135,6 +149,7 @@ class RestfulExperimentParameterSet:
 
     def _get_view_functions(self):
         context = self
+
         # Collection resource
         def list_or_create(request, *args, **kwargs):
             if request.method == 'POST':
@@ -227,6 +242,7 @@ class RestfulExperimentParameterSet:
                                                     id=ps_id)
         except ExperimentParameterSet.DoesNotExist:
             return HttpResponse('', status=404)
+        print (ps.schema_id, self.schema.id, str(self))
         obj = self._get_dict_from_ps(ps)
         ps.delete()
         return HttpResponse(json.dumps(obj),
