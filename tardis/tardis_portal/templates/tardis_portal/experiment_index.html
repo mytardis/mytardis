@@ -1,5 +1,6 @@
 {% extends "tardis_portal/data_browsing_template.html" %}
 
+{% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
 
@@ -21,28 +22,9 @@
 			</thead>
 			<tbody>
 			  {% for experiment in experiments %}
-			  <tr>
+        <tr>
 					<td>
-					  <h4>
-					   <a class="experiment-link"
-					      href="{{ experiment.get_absolute_url }}">
-					   {{ experiment.title }}
-					   </a>
-					   {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}(public){% endif %}
-					  </h4>
-					  <p>
-							From <strong>{{experiment.institution_name}}</strong>, deposited
-							<strong>
-							{{experiment.update_time|naturalday }}
-							</strong>
-					  </p>
-					  <p>
-					   <strong>{{ experiment.datasets.all.count }}</strong>
-					   dataset{{ experiment.datasets.all.count|pluralize }},
-					   containing
-					   <strong>{{ experiment.id|experiment_file_count }}</strong>
-					   file{{ experiment.id|experiment_file_count|pluralize }}
-					  </p>
+            {% experiment_browse_item experiment can_download=1 %}
 					</td>
 			  </tr>
 			{% endfor %}
@@ -68,25 +50,7 @@
     {% for experiment in shared_experiments %}
       <tr>
         <td>
-	        <h4>
-	          <a class="experiment-link"
-	             href="{{ experiment.get_absolute_url }}">
-	          {{ experiment.title }}
-	          </a>
-	          {% if experiment.public_access != experiment.PUBLIC_ACCESS_NONE %}(public){% endif %}
-	        </h4>
-	        <p>
-						From <strong>{{experiment.institution_name}}</strong>,
-						deposited
-						<strong>{{ experiment.update_time|naturalday }}</strong>
-	        </p>
-	        <p>
-						<strong>{{ experiment.datasets.all.count }}</strong>
-						dataset{{ experiment.datasets.all.count|pluralize }},
-						containing
-						<strong>{{ experiment.id|experiment_file_count }}</strong>
-						file{{ experiment.id|experiment_file_count|pluralize }}
-					</p>
+          {% experiment_browse_item experiment can_download=1 %}
 				</td>
       </tr>
     </tbody>
@@ -114,25 +78,8 @@
 	  {% for public_experiment in public_experiments %}
 		  <tr>
 		    <td>
-		      <h4>
-			      <a class="experiment-link"
-			         href="{% url tardis.tardis_portal.views.view_experiment public_experiment.id %}">
-				    {{ public_experiment.title }}
-				    </a>
-				  </h4>
-			    <p>
-			      From <strong>{{public_experiment.institution_name}}</strong>,
-			      deposited
-			      <strong>{{ public_experiment.update_time|naturalday }}</strong>
-			    </p>
-			    <p>
-				    <strong>{{ public_experiment.datasets.all.count }}</strong>
-				    dataset{{ public_experiment.datasets.all.count|pluralize }},
-				    containing
-				    <strong>{{ public_experiment.id|experiment_file_count }}</strong>
-				    file{{ public_experiment.id|experiment_file_count|pluralize }}
-			    </p>
-			  </td>
+		      {% experiment_browse_item public_experiment %}
+        </td>
 		  </tr>
 	  {% endfor %}
     </tbody>
