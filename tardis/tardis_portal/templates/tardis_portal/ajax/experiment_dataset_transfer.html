@@ -1,0 +1,63 @@
+{% if experiments %}
+<form id="other-experiment-selection" class="form-horizontal">
+  <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="input01">Experiment</label>
+      <div class="controls">
+        <select name="experiment_id">
+          {% for experiment in experiments %}
+          <option value="{{experiment.id}}">{{experiment.title}}</option>
+          {% endfor %}
+        </select>
+        <p class="help-text">
+          Select an experiment, then drag and drop the datasets
+        </p>
+      </div>
+    </div>
+  </fieldset>
+</form>
+
+<div id="other-experiment-datasets"></div>
+
+<script type="text/javascript">
+var otherDatasetTiles;
+(function() {
+
+  function getDatasetsForExperiment(experimentId) {
+    var datasets = new MyTardis.Datasets();
+    datasets.experimentId = parseInt(experimentId),
+    {# Careful! Remember Django replaces this first! #}
+    // Substitute experiment ID to get collection
+    datasets.url = Mustache.to_html("{{ url_pattern }}",
+        { 'experiment_id': experimentId });
+
+    var datasetTiles = new MyTardis.DatasetTiles({
+      'id': "other-experiment-datasets",
+      'collection': datasets,
+      'el': $('#other-experiment-datasets').get(0)
+    });
+
+    datasets.fetch({});
+
+    return datasetTiles;
+  }
+
+  $('form#other-experiment-selection').submit(function(evt) {
+    evt.preventDefault();
+    var experimentId = $(this).find('[name="experiment_id"]').val();
+    otherDatasetTiles = getDatasetsForExperiment(experimentId);
+  });
+  $('form#other-experiment-selection select').change(function(evt) {
+    $(this).parents('form').submit();
+  });
+
+  // Load initial data
+  $('form#other-experiment-selection').submit();
+})();
+</script>
+
+{% else %}
+<div class="alert">
+  <p>You do not currently own any other experiments.</p>
+</div>
+{% endif %}
