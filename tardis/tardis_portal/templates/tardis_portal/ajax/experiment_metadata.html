@@ -1,23 +1,23 @@
+{% load capture %}
 <div class="experiment_metadata container-fluid">
-{% for parameterset in experiment.experimentparameterset_set.all %}
-  {% load capture %}
-  {% capture as edit_control %}
-  {% if has_write_permissions %}{% if not parameterset.schema.immutable %}
-    <div class="edit_schema" style="display: inline;">
-      <a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
-          title="Edit"
-          class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle">
-        <i class="icon-pencil"></i>
-      </a>
-    </div>
-  {% endif %}{% endif %}
-  {% endcapture %}
+{% for parameterset in parametersets %}
+    {% capture as edit_control %}
+    {% if has_write_permissions %}{% if not parameterset.schema.immutable %}
+      <div class="edit_schema" style="display: inline;">
+        <a href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}"
+            title="Edit"
+            class="jqModalExpEdit" data-toggle_selector=".experiment_metadata_toggle">
+          <i class="icon-pencil"></i>
+        </a>
+      </div>
+    {% endif %}{% endif %}
+    {% endcapture %}
 
-  <div class="row-fluid" style="margin-top: 10px; margin-bottom: 10px;">
-    <div class="span12">
-    {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all %}
+    <div class="row-fluid" style="margin-top: 10px; margin-bottom: 10px;">
+      <div class="span12">
+      {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.experimentparameter_set.all %}
+      </div>
     </div>
-  </div>
 {% empty %}
     There is no metadata for this experiment.
 {% endfor %}
