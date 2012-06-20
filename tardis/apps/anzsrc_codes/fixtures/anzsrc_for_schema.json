@@ -1,0 +1,68 @@
+[
+    {
+        "pk": null,
+        "model": "tardis_portal.schema",
+        "fields": {
+            "type": 1,
+            "namespace": "http://purl.org/asc/1297.0/2008/for/",
+            "name": "ANZSRC Field of Research",
+            "subtype": "anzsrc-for-experiment",
+            "immutable": false,
+            "hidden": true
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "name",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Name",
+            "units": "",
+            "order": 10,
+            "immutable": false,
+            "schema": [
+                "http://purl.org/asc/1297.0/2008/for/"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "code",
+            "data_type": 2,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "Code",
+            "units": "",
+            "order": 20,
+            "immutable": false,
+            "schema": [
+                "http://purl.org/asc/1297.0/2008/for/"
+            ]
+        }
+    },
+    {
+        "pk": null,
+        "model": "tardis_portal.parametername",
+        "fields": {
+            "name": "uri",
+            "data_type": 3,
+            "is_searchable": false,
+            "choices": "",
+            "comparison_type": 1,
+            "full_name": "URI",
+            "units": "",
+            "order": 30,
+            "immutable": false,
+            "schema": [
+                "http://purl.org/asc/1297.0/2008/for/"
+            ]
+        }
+    }
+]

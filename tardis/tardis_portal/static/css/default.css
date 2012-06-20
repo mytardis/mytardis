@@ -16,20 +16,6 @@
   padding-right: 0px;
 }
 
-/* Sidebar toggle */
-.sidebar-toggle-open {
-	position: absolute;
-	right: 0;
-	z-index: 10;
-	overflow: hidden;
-}
-.sidebar-toggle-open .sidebar-toggle-button {
-  margin-right: -5px;
-}
-.sidebar-toggle-open-hidden .sidebar-toggle-button {
-	margin-right: -50px;
-}
-
 /* Clickable Experiments & Datasets */
 .clickable-tile {
 	cursor: pointer;
@@ -52,6 +38,17 @@
 /* Elements that just don't work without JS */
 .no-js .js-required {
 	display: none;
+}
+
+/* Download checkboxes for datasets */
+.dataset-download-box {
+	display: none;
+}
+
+form .dataset-download-box {
+	display: block;
+	margin-left: auto;
+	margin-right: auto
 }
 
 

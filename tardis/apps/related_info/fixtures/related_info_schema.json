@@ -7,7 +7,8 @@
             "namespace": "http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo",
             "name": "Related Info",
             "subtype": "related-info-experiment",
-            "immutable": false
+            "immutable": false,
+            "hidden": true
         }
     },
     {

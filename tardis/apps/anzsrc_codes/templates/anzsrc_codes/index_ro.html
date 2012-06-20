@@ -1,0 +1,29 @@
+{% load mustachejs %}
+{% load url from future %}
+{% load static %}
+
+{% mustachejs "anzsrc_codes/for_code" %}
+
+<div id="fields-of-research">
+</div>
+
+
+<script type="text/javascript">
+var fieldOfResearchView;
+$.ajax({
+  'url': '{% static "js/backbone-models-anzsrc-codes.js" %}',
+  'cache': true,
+  'dataType': 'script',
+  'success': function() {
+    var associatedFieldsOfResearch = new AnzsrcCodes.FieldsOfResearch();
+    associatedFieldsOfResearch.url = "{% url 'tardis.apps.anzsrc_codes.views.list_or_create_for_code' experiment.id %}";
+
+    fieldOfResearchView = new AnzsrcCodes.FieldOfResearchView({
+      'collection': associatedFieldsOfResearch,
+      'el': $('#fields-of-research').get(0)
+    });
+
+    associatedFieldsOfResearch.fetch({});
+  }
+});
+</script>
