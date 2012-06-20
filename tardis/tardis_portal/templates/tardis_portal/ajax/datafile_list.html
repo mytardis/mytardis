@@ -1,28 +1,28 @@
 {% load capture %}
 {% capture as paginator_block %}
-{% if dataset.paginator.num_pages > 1 %}
+{% if datafiles.paginator.num_pages > 1 %}
   <div class="pagination">
-    <ul>
-      {% if dataset.has_previous %}
+    <ul style="margin-left: auto; margin-right: auto; display: table;">
+      {% if datafiles.has_previous %}
       <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.previous_page_number }}&{{params}}">&laquo;</a>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.previous_page_number }}&{{params}}">&laquo;</a>
       </li>
       {% else %}
       <li class="disabled"><a href="#">&laquo;</a></li>
       {% endif %}
 
-      {% for pagenum in dataset.paginator.page_range %}
-      <li{% if dataset.number == pagenum %} class="active"{% endif %}>
+      {% for pagenum in datafiles.paginator.page_range %}
+      <li{% if datafiles.number == pagenum %} class="active"{% endif %}>
         <a class="pagelink"
-           href="/ajax/datafile_list/{{dataset_id}}/?page={{pagenum}}&{{params}}">
+           href="/ajax/datafile_list/{{dataset.id}}/?page={{pagenum}}&{{params}}">
            {{pagenum}}
         </a>
       </li>
       {% endfor %}
 
-      {% if dataset.has_next %}
+      {% if datafiles.has_next %}
       <li>
-        <a class="pagelink" href="/ajax/datafile_list/{{dataset_id}}/?page={{ dataset.next_page_number }}&{{params}}">&raquo;</a>
+        <a class="pagelink" href="/ajax/datafile_list/{{dataset.id}}/?page={{ datafiles.next_page_number }}&{{params}}">&raquo;</a>
       </li>
       {% else %}
       <li class="disabled"><a href="#">&raquo;</a></li>
@@ -30,7 +30,6 @@
     </ul>
     <!-- Page {{ dataset.number }} of {{ dataset.paginator.num_pages }} -->
   </div>
-  <br/>
 {% endif %}
 {% endcapture %}
 
@@ -49,12 +48,17 @@
   {# Spacing to keep display the same #}
   <div></div>
 {% endif %}
-  <input class="dataset_id" type="hidden" value="{{dataset_id}}"> {# required for filename filter to work #}
 
-
-File filter: <input title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
-    type="text" onKeyPress="return disableEnterKey(event)" class="filename_search" name="filename" value="{% if filename_search %}{{filename_search}}{% endif %}">
-
+<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET">
+  <label for="filename-search-text" style="display: inline">File filter:</label>
+  <input id="filename-search-text"
+      title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
+      placeholder='Enter part or all of a filename, then press enter.'
+      type="text"
+      class="span5"
+      name="filename"
+      onkeypress="javascript:filename_search_handler(event)"
+      value="{{filename_search|default:''}}" />
 </p>
 
 
@@ -63,7 +67,7 @@ File filter: <input title='Enter part or all of a filename, then press enter. e.
 <table class="datafiles table table-condensed">
 {% if has_download_permissions %}
 <thead>
-<tr>
+<tr id="datafile-selectors" class="js-required">
 <td colspan="3">
 Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
 </td>
@@ -71,15 +75,14 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 </thead>
 {% endif %}
 <tbody>
-{% for datafile in dataset.object_list %}
-<tr class="datafile{% if datafile.pk in highlighted_dataset_files %} search_match_file{% endif %}">
+{% for datafile in datafiles.object_list %}
+<tr class="datafile search_match_file">
   <td class="span1">
     {% if has_download_permissions %}
     <input type="checkbox" style="" class="datafile_checkbox" name="datafile" value="{{datafile.id}}" />
     {% endif %}
   </td>
   <td class="span8">
-    <span{% if datafile.pk in highlighted_dataset_files %} style="background-color: #FFFF00"{% endif %}>
     {% if has_download_permissions and datafile.get_view_url %}
       <a  class="filelink"
           href="{{ datafile.get_view_url }}"
@@ -88,7 +91,6 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
     {% else %}
     {{ datafile.filename }}
     {% endif %}
-    </span>
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
 
     {% if has_download_permissions and datafile.get_view_url %}
@@ -104,8 +106,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% endif %}
     {% endif %}
 
-    <ul class="datafile_info" style="display:none;">
-    </ul>
+    <div class="datafile-info" style="display:none;"></div>
   </td>
   <td class="span3">
     <div class="btn-group pull-right">
@@ -119,13 +120,13 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% if has_write_permissions and not immutable %}
       <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
        data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
-       class="btn jqModalDfAdd">
+       class="btn add-metadata">
           <i class="icon-plus"></i>
        </a>
        {% endif %}
 
       <a id="datafile_metadata_toggle_{{datafile.id}}" title="Show/Hide Metadata"
-         class="datafile_info_toggle metadata_hidden btn" href="/ajax/parameters/{{ datafile.id}}/">
+         class="datafile-info-toggle metadata_hidden btn" href="/ajax/parameters/{{ datafile.id}}/">
           <i class="icon-list"></i>
       </a>
     </div>

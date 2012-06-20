@@ -68,14 +68,14 @@ def _do_resize(img, size):
     if ',' in size:
         if size.startswith('!'):
             size = size[1:]
+            width, height = map(float, size.split(','))
+            image_ratio = float(img.width) / img.height
             # Maximum dimensions (aspect ratio preserved)
-            if img.height < img.width:
+            if image_ratio * height > width:
                 # Width determines resize
-                width = float(size.split(',')[0])
                 pct_resize(width/img.width)
             else:
                 # Height determines resize
-                height = float(size.split(',')[1])
                 pct_resize(height/img.height)
             return True
         else:

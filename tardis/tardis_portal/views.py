@@ -103,6 +103,24 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
+def get_dataset_info(dataset, include_thumbnail=False):
+    def get_thumbnail_url(datafile):
+        return reverse('tardis.tardis_portal.iiif.download_image',
+                       kwargs={'datafile_id': datafile.id,
+                               'region': 'full',
+                               'size': '100,',
+                               'rotation': 0,
+                               'quality': 'native',
+                               'format': 'jpg'})
+    obj = model_to_dict(dataset)
+    obj['url'] = dataset.get_absolute_url()
+    if include_thumbnail:
+        try:
+            obj['thumbnail'] = get_thumbnail_url(dataset.image)
+        except AttributeError:
+            pass
+    return obj
+
 
 class HttpResponseSeeAlso(HttpResponseRedirect):
     status_code=303
@@ -253,40 +271,57 @@ def about(request):
 
 
 def experiment_index(request):
-
-    experiments = None
-    shared_experiments = None
-
     if request.user.is_authenticated():
-        experiments = authz.get_owned_experiments(request)
-        if experiments:
-            experiments = experiments.order_by('-update_time')
+        return redirect('tardis_portal.experiment_list_mine')
+    else:
+        return redirect('tardis_portal.experiment_list_public')
 
-        shared_experiments = authz.get_shared_experiments(request)
-        if shared_experiments:
-            shared_experiments = shared_experiments.order_by('-update_time')
-
-    public_experiments = Experiment.objects.exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)
-    if public_experiments:
-        public_experiments = public_experiments.order_by('-update_time')
+@login_required
+def experiment_list_mine(request):
 
     c = Context({
-        'experiments': experiments,
-        'shared_experiments': shared_experiments,
-        'public_experiments': public_experiments,
-        'subtitle': 'Experiment Index',
-        'bodyclass': 'list',
-        'nav': [{'name': 'Data', 'link': '/experiment/view/'}],
-        'next': '/experiment/view/',
-        'data_pressed': True})
+        'subtitle': 'My Experiments',
+        'can_see_private': True,
+        'experiments': authz.get_owned_experiments(request)\
+                            .order_by('-update_time'),
+    })
 
     # TODO actually change loaders to load this based on stuff
     return HttpResponse(render_response_search(request,
-                        'tardis_portal/experiment_index.html', c))
+                        'tardis_portal/experiment/list_mine.html', c))
+
+@login_required
+def experiment_list_shared(request):
+
+    c = Context({
+        'subtitle': 'Shared Experiments',
+        'can_see_private': True,
+        'experiments': authz.get_shared_experiments(request) \
+                            .order_by('-update_time'),
+    })
+
+    # TODO actually change loaders to load this based on stuff
+    return HttpResponse(render_response_search(request,
+                        'tardis_portal/experiment/list_shared.html', c))
+
+def experiment_list_public(request):
+
+    private_filter = Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
+
+    c = Context({
+        'subtitle': 'Public Experiments',
+        'can_see_private': False,
+        'experiments': Experiment.objects.exclude(private_filter) \
+                                         .order_by('-update_time'),
+    })
+
+    return HttpResponse(render_response_search(request,
+                        'tardis_portal/experiment/list_public.html', c))
 
 
 @authz.experiment_access_required
-def view_experiment(request, experiment_id):
+def view_experiment(request, experiment_id,
+                    template_name='tardis_portal/view_experiment.html'):
 
     """View an existing experiment.
 
@@ -309,6 +344,8 @@ def view_experiment(request, experiment_id):
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
     c['subtitle'] = experiment.title
@@ -327,6 +364,12 @@ def view_experiment(request, experiment_id):
     if  'load' in request.GET:
         c['load'] = request.GET['load']
 
+    # Download protocols
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
+
     import sys
     appnames = []
     appurls = []
@@ -342,8 +385,7 @@ def view_experiment(request, experiment_id):
 
     c['apps'] = zip(appurls, appnames)
 
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/view_experiment.html', c))
+    return HttpResponse(render_response_index(request, template_name, c))
 
 
 @authz.experiment_access_required
@@ -380,13 +422,7 @@ def experiment_description(request, experiment_id):
     c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
-    size = 0
-    for df in c['datafiles']:
-        try:
-            size = size + long(df.size)
-        except:
-            pass
-    c['size'] = size
+    c['size'] = Dataset_File.sum_sizes(c['datafiles'])
 
     c['has_read_or_owner_ACL'] = \
         authz.has_read_or_owner_ACL(request, experiment_id)
@@ -438,90 +474,75 @@ class SearchQueryString():
     def query_string(self):
         return self.__unicode__()
 
+@authz.dataset_access_required
+def view_dataset(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    def get_datafiles_page():
+        # pagination was removed by someone in the interface but not here.
+        # need to fix.
+        pgresults = 100
+
+        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+
+        try:
+            page = int(request.GET.get('page', '1'))
+        except ValueError:
+            page = 1
+
+        # If page request (9999) is out of range, deliver last page of results.
+
+        try:
+            return paginator.page(page)
+        except (EmptyPage, InvalidPage):
+            return paginator.page(paginator.num_pages)
+
+
+    c = Context({
+        'dataset': dataset,
+        'datafiles': get_datafiles_page(),
+        'parametersets': dataset.getParameterSets()
+                                .exclude(schema__hidden=True),
+        'has_download_permissions':
+            authz.has_dataset_download_access(request, dataset_id),
+        'has_write_permissions':
+            authz.has_dataset_write(request, dataset_id),
+    })
+    return HttpResponse(render_response_index(request,
+                    'tardis_portal/view_dataset.html', c))
+
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets(request, experiment_id):
+    return view_experiment(request, experiment_id=experiment_id,
+                           template_name='tardis_portal/ajax/experiment_datasets.html')
 
-    """View a listing of dataset of an existing experiment as ajax loaded tab.
+@never_cache
+@authz.dataset_access_required
+def dataset_json(request, experiment_id=None, dataset_id=None):
+    # Experiment ID is optional (but dataset_id is not)!
+    dataset = Dataset.objects.get(id=dataset_id)
+    has_download_permissions = \
+        authz.has_dataset_download_access(request, dataset_id)
 
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment to be edited
-    :type experiment_id: string
-    :param template_name: the path of the template to render
-    :type template_name: string
-    :rtype: :class:`django.http.HttpResponse`
+    return HttpResponse(json.dumps(get_dataset_info(dataset,
+                                                    has_download_permissions)))
 
-    """
-    c = Context({'upload_complete_url':
-                     reverse('tardis.tardis_portal.views.upload_complete'),
-                 'searchDatafileSelectionForm':
-                     getNewSearchDatafileSelectionForm(),
-                 })
-
+@never_cache
+@authz.experiment_access_required
+def experiment_datasets_json(request, experiment_id):
     try:
         experiment = Experiment.safe.get(request, experiment_id)
-    except PermissionDenied:
-        return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
-    c['experiment'] = experiment
-    if 'query' in request.GET:
-
-        # We've been passed a query to get back highlighted results.
-        # Only pass back matching datafiles
-        #
-        search_query = FacetFixedSearchQuery(backend=HighlightSearchBackend())
-        sqs = SearchQuerySet(query=search_query)
-        query = SearchQueryString(request.GET['query'])
-        facet_counts = sqs.raw_search(query.query_string() + ' AND experiment_id_stored:%i' % (int(experiment_id)), end_offset=1).facet('dataset_id_stored').highlight().facet_counts()
-        if facet_counts:
-            dataset_id_facets = facet_counts['fields']['dataset_id_stored']
-        else:
-            dataset_id_facets = []
-
-        c['highlighted_datasets'] = [ int(f[0]) for f in dataset_id_facets ]
-        c['file_matched_datasets'] = []
-        c['search_query'] = query
-
-        # replace '+'s with spaces
-    elif 'datafileResults' in request.session and 'search' in request.GET:
-        c['highlighted_datasets'] = None
-        c['highlighted_dataset_files'] = [r.pk for r in request.session['datafileResults']]
-        c['file_matched_datasets'] = \
-            list(set(r.dataset.pk for r in request.session['datafileResults']))
-        c['search'] = True
-
-    else:
-        c['highlighted_datasets'] = None
-        c['highlighted_dataset_files'] = None
-        c['file_matched_datasets'] = None
-
-    c['datasets'] = \
-         Dataset.objects.filter(experiments=experiment_id)
-
-    c['has_download_permissions'] = \
+    has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    c['has_write_permissions'] = \
-        authz.has_write_permissions(request, experiment_id)
+    objects = [ get_dataset_info(ds, has_download_permissions) \
+                for ds in experiment.datasets.all() ]
 
-    c['has_staging_access'] = \
-        bool(get_full_staging_path(request.user.username))
-
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
-
-    if 'status' in request.GET:
-        c['status'] = request.GET['status']
-    if 'error' in request.GET:
-        c['error'] = request.GET['error']
-
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_datasets.html', c))
+    return HttpResponse(json.dumps(objects))
 
 
 @authz.dataset_access_required
@@ -978,10 +999,10 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     params = urlencode(params)
 
     c = Context({
-        'dataset': dataset,
+        'datafiles': dataset,
         'paginator': paginator,
         'immutable': immutable,
-        'dataset_id': dataset_id,
+        'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
         'highlighted_dataset_files': highlighted_dsf_pks,
@@ -2157,27 +2178,13 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
     return HttpResponse('')
 
-
 def stats(request):
-
-    def sum_str(*args):
-        def coerce_to_int(x):
-            try:
-                return int(x)
-            except ValueError:
-                return 0
-        return sum(map(coerce_to_int, args))
-
-
     # using count() is more efficient than using len() on a query set
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
         'datafile_count': Dataset_File.objects.all().count(),
-        'datafile_size': reduce(sum_str,
-                                Dataset_File.objects\
-                                    .exclude(size='')
-                                    .values_list('size', flat=True), 0),
+        'datafile_size': Dataset_File.sum_sizes(Dataset_File.objects.all()),
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
@@ -2581,114 +2588,6 @@ def single_search(request):
             ).__call__(request)
 
 
-@never_cache
-@authz.experiment_ownership_required
-def publish_experiment(request, experiment_id):
-    """
-    Make the experiment open to public access.
-    Sets off a chain of PublishProvider modules for
-    extra publish functionality.
-
-    :param request: a HTTP Request instance
-    :type request: :class:`django.http.HttpRequest`
-    :param experiment_id: the ID of the experiment to be published
-    :type experiment_id: string
-
-    """
-    import os
-
-    experiment = Experiment.objects.get(id=experiment_id)
-    username = request.user.username
-
-    if request.method == 'POST':  # If the form has been submitted...
-
-        legal = True
-        success = True
-        messages = []
-
-        context_dict = {}
-        context_dict['publish_result'] = "submitted"
-
-        passed_ands = False
-
-        opt_out_ands = False
-        if 'ands_register' in request.POST:
-            opt_out_ands = True
-
-        has_ands_registered = True
-        if 'monash_ands' in getTardisApps():
-            from tardis.apps.monash_ands.MonashANDSService\
-                import MonashANDSService
-
-            monashandsService = MonashANDSService(experiment_id)
-
-            has_ands_registered = monashandsService.has_registration_record()
-
-        passed_ands = has_ands_registered or opt_out_ands
-
-        if passed_ands == False:
-            success = False
-            messages.append('You must opt out of ANDS registration, or' + \
-                ' register with ANDS')
-
-        if  not 'legal' in request.POST:
-            logger.debug('Legal agreement for exp: ' + experiment_id +
-            ' not accepted.')
-            legal = False
-
-        if legal and success:
-            experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
-            experiment.save()
-
-        # set dictionary to legal status and publish success result
-        context_dict['legal'] = legal
-        context_dict['success'] = success
-        context_dict['messages'] = messages
-
-    else:
-
-        has_ands_registered = True
-
-        if 'monash_ands' in getTardisApps():
-            from tardis.apps.monash_ands.MonashANDSService\
-                import MonashANDSService
-
-            monashandsService = MonashANDSService(experiment_id)
-
-            if not monashandsService.has_registration_record():
-                has_ands_registered = False
-
-        TARDIS_ROOT = os.path.abspath(\
-        os.path.join(os.path.dirname(__file__)))
-
-        legalpath = os.path.join(TARDIS_ROOT,
-                      "legal.txt")
-
-        # if legal file isn't found then we can't proceed
-        try:
-            legalfile = open(legalpath, 'r')
-        except IOError:
-            logger.error('legal.txt not found. Publication halted.')
-            return return_response_error(request)
-
-        legaltext = legalfile.read()
-        legalfile.close()
-
-        cch = CreativeCommonsHandler(experiment_id=experiment_id, create=False)
-
-        context_dict = \
-        {'username': username,
-        'experiment': experiment,
-        'legaltext': legaltext,
-        'has_cc_license': cch.has_cc_license(),
-        'has_ands_registered': has_ands_registered,
-        }
-
-    c = Context(context_dict)
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/publish_experiment.html', c))
-
-
 @authz.experiment_ownership_required
 def choose_rights(request, experiment_id):
     '''
@@ -2819,38 +2718,47 @@ def manage_user_account(request):
                         'tardis_portal/manage_user_account.html', c))
 
 @login_required
-def add_or_edit_dataset(request, experiment_id, dataset_id=None):
-    if dataset_id:
-        if not has_dataset_write(request, dataset_id):
-            return HttpResponseForbidden()
-        dataset = Dataset.objects.get(id=dataset_id)
-    else:
-        if not has_experiment_write(request, experiment_id):
-            return HttpResponseForbidden()
-        dataset = None
+def add_dataset(request, experiment_id):
+    if not has_experiment_write(request, experiment_id):
+        return HttpResponseForbidden()
 
     # Process form or prepopulate it
     if request.method == 'POST':
         form = DatasetForm(request.POST)
         if form.is_valid():
-            if not dataset:
-                dataset = Dataset()
+            dataset = Dataset()
             dataset.description = form.cleaned_data['description']
             dataset.save()
             experiment = Experiment.objects.get(id=experiment_id)
             dataset.experiments.add(experiment)
             dataset.save()
-            return _redirect_303('tardis.tardis_portal.views.view_experiment', experiment_id)
+            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+                                 dataset.id)
     else:
-        if dataset:
-            form = DatasetForm(instance=dataset)
-        else:
-            form = DatasetForm()
+        form = DatasetForm()
 
-    if dataset:
-        c = Context({'form': form, 'dataset': dataset})
+    c = Context({'form': form})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/add_or_edit_dataset.html', c))
+
+@login_required
+def edit_dataset(request, dataset_id):
+    if not has_dataset_write(request, dataset_id):
+        return HttpResponseForbidden()
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    # Process form or prepopulate it
+    if request.method == 'POST':
+        form = DatasetForm(request.POST)
+        if form.is_valid():
+            dataset.description = form.cleaned_data['description']
+            dataset.save()
+            return _redirect_303('tardis.tardis_portal.views.view_dataset',
+                                 dataset.id)
     else:
-        c = Context({'form': form})
+        form = DatasetForm(instance=dataset)
+
+    c = Context({'form': form, 'dataset': dataset})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/add_or_edit_dataset.html', c))
 

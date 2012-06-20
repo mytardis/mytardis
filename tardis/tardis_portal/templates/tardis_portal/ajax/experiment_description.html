@@ -1,32 +1,7 @@
 <div id="experiment_description"
-    xmlns:dc="http://purl.org/dc/elements/1.1/"
     class="dl-horizontal">
 
   {% load capture %}
-
-  {% block authors %}
-  <dl>
-    <dt>Author{{ authors|pluralize }}</dt>
-    {% for author in authors %}
-      <dd property="dc:creator">{{ author.author }}</dd>
-    {% empty %}
-      <dd><em>None listed</em></dd>
-    {% endfor %}
-  </dl>
-  {% endblock authors %}
-
-  {% block abstract %}
-  <dl>
-    <dt>Abstract</dt>
-    {% if experiment.description %}
-      <dd property="dc:abstract">
-        {{ experiment.description|safe }}
-      </dd>
-    {% else %}
-      <dd><em>None provided</em></dd>
-    {% endif %}
-  </dl>
-  {% endblock abstract %}
 
   {% block handle %}
   {% if experiment.handle %}
@@ -42,10 +17,14 @@
   {% endblock handle %}
 
   {% block institution %}
+  {% if experiment.institution_name %}
   <dl>
     <dt>Institution</dt>
-    <dd>{{experiment.institution_name|default:""}}</dd>
+    <dd property="dc:publisher">
+      {{experiment.institution_name}}
+    </dd>
   </dl>
+  {% endif %}
   {% endblock institution %}
 
   {% block start_end_time %}
@@ -57,69 +36,17 @@
   {% endif %}
   {% endblock start_end_time %}
 
-  {% block experiment_metadata %}
-  <dl>
-    <dt>Experiment Metadata</dt>
-    <dd>
-      <div class="experiment_md_container">
-
-          {% if has_write_permissions %}{% if not experiment.locked %}
-              <a title="Add" id="expAddTrigger" class="btn btn-primary btn-mini"
-                 href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}"
-                 data-toggle_selector=".experiment_metadata_toggle">
-                <i class="icon-plus"></i>
-                Add
-              </a>
-          {% endif %}{% endif %}
-
-          <a title="Show/Hide"
-             class="experiment_metadata_toggle metadata_hidden btn btn-primary btn-mini"
-             href="/ajax/experiment_metadata/{{experiment.id}}/">
-              <i class="icon-folder-close"></i>
-              Show/Hide
-          </a>
-      </div>
-    </dd>
-    <dd>
-      <div class="experiment_metadata" style="display:none;"></div>
-    </dd>
-  </dl>
-  {% endblock experiment_metadata %}
-
-  {% block dataset_info %}
-  <dl>
-    <dt>Datasets</dt>
-    <dd>{{experiment.datasets.all.count}}</dd>
-    <dt>Files</dt>
-    <dd>{{datafiles.count}}</dd>
-    <dt>Size</dt>
-    <dd>{{size|filesizeformat}}</dd>
-  </dl>
-  {% endblock dataset_info %}
-
-  {% block updated %}
-  <dl>
-    <dt>Last Updated</dt>
-    <dd>{{ experiment.update_time }}</dd>
-  </dl>
-  {% endblock updated %}
-
-  {% block public_access %}
-  <dl>
-    <dt>Public Access</dt>
-    <dd>{{ experiment.get_public_access_display }}</dd>
-  </dl>
-  {% endblock public_access %}
-
   {% block license %}
-  <div>
+  <dl>
     <dt>Licensing</dt>
     <dd>
       {% if experiment.license_id %}
         <div class="row-fluid">
           <div class="span6">
             This experiment data is licensed under
-            <a rel="license" href="{{ experiment.license.url }}">
+            <a rel="license"
+               property="dc:license"
+               href="{{ experiment.license.url }}">
               {{ experiment.license.name }}</a>.
           </div>
           {% if experiment.license.image_url != None %}
@@ -145,10 +72,10 @@
 
   {% block experiment_admin %}
       {% block experiment_owners %}
-      {% if owners %}
+      {% if experiment.get_owners %}
       <dl>
         <dt>Experiment Administrators</dt>
-        {% for owner in owners %}
+        {% for owner in experiment.get_owners %}
           <dd>
           {% capture as owner_text %}
             {% if owner.first_name and owner.last_name %}
@@ -174,21 +101,15 @@
   {% block downloads %}
   {% if has_download_permissions %}
   <dl class="download_entire_experiment">
+    <dd>
     {% for p in protocol %}
-      <dd>
-    {% if p.0 %}
-      <a class="btn" href="{{p.1}}">
+      <a class="btn" href="{{p.1}}"
+         title="Download Entire Experiment as {{p.0|upper}}">
         <i class="icon-download-alt"></i>
-        Download Entire Experiment ({{p.0|upper}})
+        {{p.0|upper}}
       </a>
-    {% else %}
-      <a class="btn btn-primary" href="{{p.1}}">
-        <i class="icon-download-alt"></i>
-        Download Entire Experiment
-      </a>
-    {% endif %}
-      </dd>
     {% endfor %}
+      </dd>
   </dl>
   {% endif %}
   {% endblock downloads %}

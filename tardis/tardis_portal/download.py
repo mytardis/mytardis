@@ -217,7 +217,6 @@ def download_datafiles(request):
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # (tarfile count?)
-    expid = request.POST['expid']
 
     comptype = "zip"
     if 'comptype' in request.POST:
@@ -273,6 +272,12 @@ def download_datafiles(request):
 
     if len(df_set) == 0:
         return return_response_error(request)
+
+    # Handle missing experiment ID - only need it for naming
+    try:
+        expid = request.POST['expid']
+    except KeyError:
+        expid = iter(df_set).next().dataset.get_first_experiment().id
 
     if comptype == "tar":
         reader = StreamingFile(_write_tar_func('datasets', df_set))

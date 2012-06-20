@@ -31,15 +31,26 @@ core_urls = patterns(
     (r'^robots\.txt$', lambda r: HttpResponse("User-agent: *\nDisallow: /download/\nDisallow: /stats/", mimetype="text/plain"))
 )
 
+experiment_lists = patterns(
+    'tardis.tardis_portal.views',
+    url(r'^$', 'experiment_index'),
+    url(r'^/mine$', 'experiment_list_mine',
+        name="tardis_portal.experiment_list_mine"),
+    url(r'^/public$', 'experiment_list_public',
+        name="tardis_portal.experiment_list_public"),
+    url(r'^/shared$', 'experiment_list_shared',
+        name="tardis_portal.experiment_list_shared"),
+    )
+
 experiment_urls = patterns(
     'tardis.tardis_portal.views',
-    url(r'^view/(?P<experiment_id>\d+)/$', 'view_experiment', name='experiment'),
+    (r'^view/(?P<experiment_id>\d+)/$', 'view_experiment'),
     (r'^edit/(?P<experiment_id>\d+)/$', 'edit_experiment'),
-    (r'^view/$', 'experiment_index'),
+    (r'^list', include(experiment_lists)),
+    (r'^view/$', 'experiment_index'), # Legacy URL
     (r'^search/$', 'search_experiment'),
     (r'^register/$', 'register_experiment_ws_xmldata'),
     (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
-    (r'^view/(?P<experiment_id>\d+)/publish/$', 'publish_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -65,8 +76,7 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
-    (r'^(?P<experiment_id>\d+)/dataset/add$', 'add_or_edit_dataset'),
-    (r'^(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)/edit$', 'add_or_edit_dataset'),
+    (r'^(?P<experiment_id>\d+)/add-dataset$', 'add_dataset'),
     )
 
 token_urls = patterns(
@@ -89,6 +99,8 @@ accounts_urls = patterns(
 dataset_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
+    (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
+    (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',
@@ -104,6 +116,13 @@ datafile_urls = patterns(
         'tardis.tardis_portal.download.view_datafile',
         name="view_datafile"),
     (r'^iiif/', include(iiif_urls)),
+)
+
+json_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
+    (r'^experiment/(?P<experiment_id>\d+)/dataset/$', 'experiment_datasets_json'),
+    (r'^experiment/(?P<experiment_id>\d+)/dataset/(?P<dataset_id>\d+)$', 'dataset_json'),
 )
 
 ajax_urls = patterns(
@@ -134,11 +153,10 @@ ajax_urls = patterns(
     (r'^add_experiment_parameters/(?P<experiment_id>\d+)/$',
         'add_experiment_par'),
     (r'^parameter_field_list/$', 'retrieve_field_list'),
-    (r'^view/(?P<experiment_id>\d+)/publish/$',
-        'publish_experiment'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
     (r'^license/list$', 'retrieve_licenses'),
-    )
+    (r'^json/', include(json_urls))
+)
 
 download_urls = patterns(
     'tardis.tardis_portal.download',

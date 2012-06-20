@@ -1,0 +1,38 @@
+<div class="pull-left" style="margin-right: 10px">
+  <div style="text-align: center; font-size: 32px">
+    <i class="icon-folder-open"></i>
+  </div>
+  <br/>
+  <label class="badge badge-info "
+         style="display: block; margin-left: auto; margin-right: auto"
+         for="dataset-checkbox-{{id}}">
+    <i class="icon-download-alt"></i>
+    <input id="dataset-checkbox-{{id}}"
+           name="dataset"
+           type="checkbox"
+           class="dataset_checkbox"
+           style="display: inline"
+           value="{{id}}" />
+  </label>
+</div>
+<div class="pull-left" style="margin-right: 10px">
+  {{#thumbnail}}
+      <img alt="Thumbnail for Dataset #{{ id }}"
+           src="{{ thumbnail }}"
+           onerror="$(this).hide()"/>
+  {{/thumbnail}}
+  {{^thumbnail}}
+      <canvas style="width: 100px"></canvas>
+  {{/thumbnail}}
+</div>
+<p>
+  <a class="dataset-link" href="{{ url }}">
+  {{#description}}
+    {{ description }}
+  {{/description}}
+  {{^description}}
+    <em>Dataset #{{id}}</em>
+  {{/description}}
+  </a>
+</p>
+<div style="clear: both"></div>

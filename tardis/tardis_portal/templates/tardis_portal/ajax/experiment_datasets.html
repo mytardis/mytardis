@@ -1,120 +1,16 @@
 {% load basiccomparisonfilters %}
+{% load url from future %}
 {% load capture %}
 {% load uploadify_tags %}
 {% load static from staticfiles %}
-
-{% block script %}
-
-<script type="text/javascript">
-  function disableEnterKey(e) {
-    var key;
-    if (window.event) {
-      key = window.event.keyCode; //IE
-    } else {
-      key = e.which; //firefox
-    }
-    return (key != 13);
-  }
-
-  $('.filename_search').live(
-      'keyup',
-      function(e) {
-        e.preventDefault();
-        if (e.keyCode == 13) {
-          var dataset_id = $(this).siblings('.dataset_id').val();
-
-          $(this).parents('.datafile_list').load(
-              "/ajax/datafile_list/" + dataset_id + "/?filename="
-                  + $(this).val());
-        }
-      });
-
-  $("input[name$='show_search']")
-      .live(
-          'click',
-          function() {
-            var show_search = $(this).val();
-            $('.datafile_list')
-                .each(
-                    function() {
-                      var dataset_id = $(this).find('.dataset_id').val();
-                      var params = [];
-                      var toggle = $(this).siblings('.datafile_list_toggle');
-                      var loadHtml = '<img src="{% static 'images/ajax-loader.gif' %}"/><br />';
-
-                      html = $(this).siblings('.datafile_list_toggle').attr(
-                          'href')
-                      if (show_search == "matches") {
-                        html = html + '&limit=true'
-                      } else {
-                        html = html.replace('&limit=true', '')
-                      }
-                      toggle.attr('href', html);
-
-                      if (toggle.hasClass('files_shown')) {
-                        $(this).html(loadHtml);
-                        $(this).load(html);
-                      }
-                    });
-            if ($(this).val() == "matches") {
-              $(".dataset").hide();
-              $(".search_match").show();
-              $(".datafile_match").show();
-            } else {
-              $(".dataset").show();
-            }
-          });
-
-
-  $("#uploadify").live("allUploadsComplete", function(e, data){
-      // refresh datafile list
-      var dataset_id = $(this).attr('data-dataset_id');
-      $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
-  });
-
-  $('.upload_files_link').live('click', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/upload_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-              modal.find('#uploadify').on('allUploadsComplete', function(data) {
-                modal.modal('hide');
-              })
-            });
-  });
-
-  $('.import_staging_files_link').live('click', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/import_staging_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-            });
-  });
-</script>
-
-{% endblock %}
+{% load dataset_tags %}
 
 {% capture as action_bar %}
   {% if has_download_permissions or has_write_permissions %}
-  <div>
+  <p>
     {% if has_write_permissions %}
     <a class="add-dataset btn btn-primary pull-right"
-       href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id %}">
+       href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
       <i class="icon-plus"></i>
       Add new
     </a>
@@ -123,152 +19,36 @@
     {% if has_download_permissions %}
       <button type="submit" class="btn btn-primary">
         <i class="icon-download-alt"></i>
-        Download Selected Files
+        Download Selected
       </button>
     {% endif %}
-  </div>
-  <br />
+  </p>
   {% endif %}
 {% endcapture %}
 
-<div class="modal hide fade" id="modal-upload-files">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Upload Files</h1>
-  </div>
-
-  <div class="loading-placeholder" style="display: none">
-    <p>Please wait... <img src="{% static 'images/ajax-loader.gif' %}" alt="loading" /></p>
-  </div>
-
-  <div class="modal-body"></div>
-
-</div>
-
 <div id="experiment_datasets">
-  {% if highlighted_datasets or file_matched_datasets %}
-  <form name="search_select_form" id="search_form" method="post" action="">
-    <div><label><input type="radio" name="show_search" value="all" checked>Show all</label></div>
-    <div><label><input type="radio" name="show_search" value="matches">Search matches only</label></div>
-  </form>
-  {% endif %}
-  <form method="POST" action="{% url tardis.tardis_portal.download.download_datafiles %}" target="_blank">
+  <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
+    {{ action_bar }}
+    {% if experiment.datasets.count|gt:2 %}
+    <p class="js-required">
+      <label for="dataset-filter-text" style="display: inline">
+        File filter:
+      </label>
+      <input id="dataset-filter-text" class="span4" type="text"
+        placeholder="Just start typing to filter based on descriptions"
+        autocomplete="off"
+        onkeyup="datasetTiles.filter(filterDescription($(this).val()))"/>
+    </p>
+    {% endif %}
 
     <div id="datasets">
-    {{ action_bar }}
-      {% for dataset in datasets %}
-    <div class="dataset{% if dataset.pk in highlighted_datasets %} search_match{% endif %}{% if dataset.pk in file_matched_datasets %} datafile_match{% endif %}">
+    {{ experiment.datasets.all|dataset_tiles:has_download_permissions }}
+    </div>
 
-      {% if has_download_permissions %}
-      <div class="pull-right">
-        {% for datafile in dataset.get_images|slice:":1" %}
-          {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',100' rotation=0 quality='native' format='jpg' as thumbnail %}
-          {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
-          <a href="{{ image }}">
-            <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
-          </a>
-        {% endfor %}
-      </div>
-      {% endif %}
-
-      <div class="dataset_title">
-        <span{% if dataset.pk in highlighted_datasets %} style="background-color: #FFFF00"{% endif %}>
-          <label class="checkbox">
-            <input type="checkbox" class="dataset_checkbox" name="dataset" value="{{dataset.id}}" />
-            <span style="text-transform: uppercase; font-weight: bold">
-              Dataset #{{ forloop.counter }}:
-            </span>
-            {{ dataset.description|safe }}
-            {% if has_write_permissions %}
-            <a title="Edit Dataset"
-               href="{% url tardis.tardis_portal.views.add_or_edit_dataset experiment.id dataset.id %}">
-              <i class="icon-pencil"></i>
-            </a>
-            {% endif %}
-          </label>
-        </span>
-      </div> <!-- dataset title -->
-
-      <div class="dataset_info">
-        <dl>
-          <dt>Dataset Metadata</dt>
-          <dd>
-            {% if has_write_permissions %}{% if not experiment.public %}{% if not dataset.immutable %}
-            <a title="Add"
-               href="{% url tardis.tardis_portal.views.add_dataset_par dataset.id %}"
-               class="jqModalDsAdd btn btn-primary btn-mini"
-               data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
-              <i class="icon-plus"></i>
-              Add
-            </a>
-            {% endif %}{% endif %}{% endif %}
-
-            <a id="dataset_metadata_toggle_{{dataset.id}}" title="Show/Hide"
-               href="/ajax/dataset_metadata/{{dataset.id}}/"
-               class="dataset_metadata_toggle metadata_hidden btn btn-primary btn-mini">
-              <i class="icon-folder-close"></i>
-              Show/Hide
-            </a>
-          </dd>
-          <dd>
-            <div class="dataset_metadata">
-            </div> <!-- dataset metadata -->
-          </dd>
-        </dl>
-
-
-          <dl class="dataset_datafiles">
-            <dt>
-              <span{% if dataset.pk in file_matched_datasets %} style="background-color: #FFFF00"{% endif %}>
-              Data Files ({{ dataset.dataset_file_set.count }})
-              </span>
-            </dt>
-            <dd>
-            {% if dataset.dataset_file_set.count|lt:"1000000" %}
-              {% if not dataset.immutable %}
-                {% if has_write_permissions %}
-                    <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
-                      <i class="icon-upload-alt"></i>
-                      Upload Files
-                    </a>
-                {% endif %}
-                {% if has_write_permissions and has_staging_access %}
-                    <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
-                      <i class="icon-arrow-right"></i>
-                      Import Staging Files
-                    </a>
-                {% endif %}
-              {% endif %}
-              <a class="datafile_list_toggle files_hidden btn btn-primary btn-mini"
-                 href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}?{% if search_query %}query={{ search_query.url_safe_query }}{% if search%}&{% endif %}{% endif %}{% if search %}search=true{% endif %}" title="Show/Hide">
-                  <i class="icon-folder-close"></i>
-                  Show/Hide
-              </a>
-            {% else %}
-              <a target="_blank" href="{% url tardis.tardis_portal.views.retrieve_datafile_list dataset.id %}">[Show]</a>
-            {% endif %}
-            </dd>
-            <dd>
-            {% if dataset.dataset_file_set.count|gt:"1000000" %}
-              <br/>
-              <p><em><strong>Note:</strong> Due to large dataset, files will load in a new window</em></p>
-            {% endif %}
-              <div class="datafile_list" style="display:none;">
-              </div>
-            </dd>
-          </dl> <!-- dataset_datafiles -->
-      </div> <!-- dataset_info -->
-  </div> <!-- dataset -->
-      {% if not forloop.last %}
-      <hr />
-      {% endif %}
-      {% endfor %}
-
-    {% if datasets.count|gt:4 %}
+    {% if experiment.datasets.count|gt:4 %}
     {{ action_bar }}
     {% endif %}
-    </div>
   </form>
 </div> <!-- experiment_datasets -->
 

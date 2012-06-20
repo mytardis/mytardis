@@ -13,6 +13,8 @@
   // Mixin Underscore.String to Underscore.js
   _.mixin(_.string.exports());
 </script>
+<!-- Modernizr -->
+<script type="text/javascript" src="{% static 'js/lib/modernizr.min.js' %}"></script>
 <!-- Backbone.js -->
 <script type="text/javascript" src="{% static 'js/lib/backbone-min.js' %}"></script>
 <!-- Backbone Forms -->
@@ -48,6 +50,7 @@ The Font Awesome webfont, CSS, and LESS files are licensed under CC BY 3.0.
 
 {% block site_js %}
 <script type="text/javascript" src="{% static 'js/main.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/backbone-models.js' %}"></script>
 {% endblock %}
 
 {% block site_css %}

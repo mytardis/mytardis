@@ -304,7 +304,8 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             def _get_location(metadata):
                 return "http://%s%s" % \
                     ( site.domain,
-                      reverse('experiment', args=[metadata.getMap().get('id')]) )
+                      reverse('tardis.tardis_portal.views.view_experiment',
+                              args=[metadata.getMap().get('id')]) )
             # registryObjects
             wrapper = self.writeRegistryObjectsWrapper()
             # registryObject

@@ -639,6 +639,61 @@ class ExperimentTestCase(TestCase):
             .to_equal(data['authors'].split(', '))
 
 
+    def testDatasetJson(self):
+        user = self.user
+
+        # Create test experiment and make user the owner of it
+        experiment = Experiment(title='Text Experiment',
+                                institution_name='Test Uni',
+                                created_by=user)
+        experiment.save()
+        acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(user.id),
+            experiment=experiment,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        acl.save()
+
+        # Create some datasets
+        def create_dataset(i):
+            ds = Dataset.objects.create(description="Dataset #%d" % i)
+            ds.experiments.add(experiment)
+            ds.save()
+            return (i, ds)
+        datasets = dict(map(create_dataset, range(1,11)))
+
+        # Login as user
+        client = Client()
+        login = client.login(username=self.username, password=self.password)
+        self.assertTrue(login)
+
+        # Get JSON
+        json_url = reverse('tardis.tardis_portal.views.experiment_datasets_json',
+                           kwargs={'experiment_id': str(experiment.id)})
+
+        # Check the JSON
+        response = client.get(json_url)
+        expect(response.status_code).to_equal(200)
+        items = json.loads(response.content)
+        for item in items:
+            ensure('id' in item, True, "Missing dataset ID")
+            dataset = datasets[item['id']]
+            # Check attributes
+            expect(item['description']).to_equal(dataset.description)
+            expect(item['immutable']).to_equal(dataset.immutable)
+            expect(item['url']).to_equal(dataset.get_absolute_url())
+            # Check experiment list is the same
+            expect(frozenset(item['experiments']))\
+                .to_equal(frozenset(dataset.experiments\
+                                        .values_list('id', flat=True)))
+            # Check there's a series of individual resources under it
+            response = client.get(json_url+str(item['id']))
+            expect(response.status_code).to_equal(200)
+
+
 
 
 

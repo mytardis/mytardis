@@ -282,6 +282,8 @@ class Level2TestCase(TestCase):
                         {'arg': '16,16', 'width': 16, 'height': 16},
                         # Maximum dimensions (aspect ratio preserved)
                         {'arg': '!16,16', 'width': 16, 'height': 11},
+                        {'arg': '!90,11', 'width': 17, 'height': 11},
+                        {'arg': '!16,10', 'width': 15, 'height': 10},
                         ]
         for data in permutations:
             response = get_with_size(data['arg'])
