@@ -528,9 +528,11 @@ def experiment_datasets(request, experiment_id):
 def retrieve_dataset_metadata(request, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
+    parametersets = dataset.datasetparameterset_set.exclude(schema__hidden=True)
 
-    c = Context({'dataset': dataset, })
-    c['has_write_permissions'] = has_write_permissions
+    c = Context({'dataset': dataset,
+                 'parametersets': parametersets,
+                 'has_write_permissions': has_write_permissions})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/dataset_metadata.html', c))
 
@@ -541,11 +543,12 @@ def retrieve_experiment_metadata(request, experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
     has_write_permissions = \
         authz.has_write_permissions(request, experiment_id)
+    parametersets = experiment.experimentparameterset_set\
+                              .exclude(schema__hidden=True)
 
-    c = Context({'experiment': experiment, })
-    # If the experiment is public, we don't allow editing
-    c['has_write_permissions'] = has_write_permissions and \
-                                 experiment.public_access != Experiment.PUBLIC_ACCESS_NONE
+    c = Context({'experiment': experiment,
+                 'parametersets': parametersets,
+                 'has_write_permissions': has_write_permissions})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_metadata.html', c))
 
@@ -890,7 +893,8 @@ def register_experiment_ws_xmldata(request):
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
-    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)
+    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)\
+                                 .exclude(schema__hidden=True)
 
     dataset_id = Dataset_File.objects.get(id=dataset_file_id).dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
