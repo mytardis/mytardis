@@ -608,12 +608,11 @@ class ExperimentTestCase(TestCase):
 
         # Check the form is accessible
         response = client.get(edit_url)
-        print response
         expect(response.status_code).to_equal(200)
 
         # Create client and go to account management URL
         data = {'title': 'I Am the Very Model of a Modern Major-General',
-                'authors': 'W. S. Gilbert, Arthur Sullivan',
+                'authors': 'W. S. Gilbert(http://en.wikipedia.org/wiki/W._S._Gilbert), Arthur Sullivan (http://en.wikipedia.org/wiki/Arthur_Sullivan)',
                 'institution_name': 'Savoy Theatre',
                 'description':
                     "I am the very model of a modern Major-General,"+
@@ -636,26 +635,34 @@ class ExperimentTestCase(TestCase):
 
         # Check authors were created properly
         expect([a.author for a in experiment.author_experiment_set.all()])\
-            .to_equal(data['authors'].split(', '))
+            .to_equal(['W. S. Gilbert', 'Arthur Sullivan'])
+        expect([a.url for a in experiment.author_experiment_set.all()])\
+            .to_equal(['http://en.wikipedia.org/wiki/W._S._Gilbert',
+                       'http://en.wikipedia.org/wiki/Arthur_Sullivan'])
 
 
     def testDatasetJson(self):
         user = self.user
 
         # Create test experiment and make user the owner of it
-        experiment = Experiment(title='Text Experiment',
-                                institution_name='Test Uni',
-                                created_by=user)
-        experiment.save()
-        acl = ExperimentACL(
-            pluginId=django_user,
-            entityId=str(user.id),
-            experiment=experiment,
-            canRead=True,
-            isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
-        acl.save()
+        def create_experiment(i):
+            experiment = Experiment(title='Text Experiment #%d' % i,
+                                     institution_name='Test Uni',
+                                     created_by=user)
+            experiment.save()
+            acl = ExperimentACL(
+                pluginId=django_user,
+                entityId=str(user.id),
+                experiment=experiment,
+                canRead=True,
+                isOwner=True,
+                aclOwnershipType=ExperimentACL.OWNER_OWNED,
+                )
+            acl.save()
+            return experiment
+
+        experiments = map(create_experiment, range(1,6))
+        experiment = experiments[0]
 
         # Create some datasets
         def create_dataset(i):
@@ -674,11 +681,8 @@ class ExperimentTestCase(TestCase):
         json_url = reverse('tardis.tardis_portal.views.experiment_datasets_json',
                            kwargs={'experiment_id': str(experiment.id)})
 
-        # Check the JSON
-        response = client.get(json_url)
-        expect(response.status_code).to_equal(200)
-        items = json.loads(response.content)
-        for item in items:
+        # How to check items
+        def check_item(item):
             ensure('id' in item, True, "Missing dataset ID")
             dataset = datasets[item['id']]
             # Check attributes
@@ -689,9 +693,62 @@ class ExperimentTestCase(TestCase):
             expect(frozenset(item['experiments']))\
                 .to_equal(frozenset(dataset.experiments\
                                         .values_list('id', flat=True)))
-            # Check there's a series of individual resources under it
+
+        # Check the JSON
+        response = client.get(json_url)
+        expect(response.status_code).to_equal(200)
+        items = json.loads(response.content)
+        for item in items:
+            check_item(item)
+            # Check there's an individual resource
             response = client.get(json_url+str(item['id']))
             expect(response.status_code).to_equal(200)
+            item = json.loads(response.content)
+            check_item(item)
+            # Attempt to remove the dataset from the original experiment
+            # Should fail because it would leave the dataset orphaned
+            response = client.delete(json_url+str(item['id']),
+                                      content_type='application/json')
+            expect(response.status_code).to_equal(403)
+            # Add the dataset to another experiment with PUT
+            new_url = reverse('tardis.tardis_portal.views.dataset_json',
+                           kwargs={'experiment_id': str(experiments[1].id),
+                                   'dataset_id': item['id']})
+            response = client.put(new_url,
+                                  data=json.dumps(item),
+                                  content_type='application/json')
+            item = json.loads(response.content)
+            check_item(item)
+            # This dataset should now have two experiments
+            expect(item['experiments']).to_equal([e.id for e in experiments[:2]])
+            # Add the rest of the experiments to the dataset
+            item['experiments'] = [e.id for e in experiments]
+            # Send the revised dataset back to be altered with PUT
+            response = client.put(json_url+str(item['id']),
+                                  data=json.dumps(item),
+                                  content_type='application/json')
+            expect(response.status_code).to_equal(200)
+            item = json.loads(response.content)
+            check_item(item)
+            expect(item['experiments']).to_equal([e.id for e in experiments])
+            # Remove the dataset from the original experiment
+            # Should succeed because there are now many more experiments
+            response = client.delete(json_url+str(item['id']),
+                                      content_type='application/json')
+            expect(response.status_code).to_equal(200)
+            item = json.loads(response.content)
+            check_item(item)
+            # Expect the item is now in all but the first experiment
+            expect(item['experiments']).to_equal([e.id for e in experiments][1:])
+            # Check it no longer exists
+            response = client.get(json_url+str(item['id']))
+            expect(response.status_code).to_equal(404)
+
+
+
+
+
+
 
 
 

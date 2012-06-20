@@ -63,6 +63,10 @@ var userAutocompleteHandler = function(term, users, authMethod) {
   return matches;
 };
 
+var isLoggedIn = function() {
+  return $('#user-menu').size() > 0;
+}
+
 $(document).ready(function(){
   if ($('#id_q').length > 0) {
     activateSearchAutocomplete();

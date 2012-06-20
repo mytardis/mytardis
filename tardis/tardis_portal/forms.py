@@ -41,6 +41,7 @@ from os.path import basename
 from UserDict import UserDict
 
 from django import forms
+from django.forms import ValidationError
 from django.forms.util import ErrorList
 from django.forms.models import ModelChoiceField
 from django.forms.models import inlineformset_factory
@@ -335,77 +336,17 @@ class RegisterExperimentForm(forms.Form):
     originid = forms.CharField(max_length=400, required=False)
     from_url = forms.CharField(max_length=400, required=False)
 
-class Author_Experiment(forms.ModelForm):
-
-    class Meta:
-        model = models.Author_Experiment
-        exclude = ('experiment',)
-
-
-class FullExperimentModel(UserDict):
-    """
-    This is a dict wrapper that store the values returned from
-    the :func:`tardis.tardis_portal.forms.FullExperiment.save` function.
-    It provides a convience method for saving the model objects.
-    """
-
-    def save_m2m(self):
-        """
-        {'experiment': experiment,
-        'author_experiments': author_experiments,
-        'authors': authors,
-        'datasets': datasets,
-        'dataset_files': dataset_files}
-        """
-        self.data['experiment'].save()
-        for ae in self.data['author_experiments']:
-            ae.experiment = ae.experiment
-            ae.save()
-
-
-class DataFileFormSet(BaseInlineFormSet):
-
-    def __init__(self, *args, **kwargs):
-        if 'post_save_cb' in kwargs:
-            self._post_save_cb = kwargs['post_save_cb']
-            del kwargs['post_save_cb']
-        else:
-            self._post_save_cb = None
-        super(DataFileFormSet, self).__init__(**kwargs)
-
-    def save_new(self, form, commit=True):
-        #this is a local file so correct the missing details
-        datafile = super(DataFileFormSet, self).save_new(form, commit=False)
-
-        filepath = form.cleaned_data['filename']
-        datafile.filename = basename(filepath)
-
-        if not 'url' in form.cleaned_data or not form.cleaned_data['url']:
-            datafile.url = filepath
-
-        if not 'size' in form.cleaned_data or not form.cleaned_data['size']:
-            datafile.size = u'0'
-
-        if not 'protocol' in form.cleaned_data:
-            datafile.protocol = u''
-
-        if commit == True:
-            datafile = super(DataFileFormSet, self).save_new(form,
-                                                             commit=commit)
-        return datafile
-
-    def save_existing(self, form, instance, commit=True):
-        datafile = super(DataFileFormSet, self).save_existing(form,
-                                                              instance,
-                                                              commit=commit)
-        return datafile
-
 class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = models.Dataset
         exclude = ('experiments', 'immutable')
 
+class Author_Experiment(forms.ModelForm):
+
+    class Meta:
+        model = models.Author_Experiment
+        exclude = ('experiment', )
 
 
 class ExperimentForm(forms.ModelForm):
@@ -423,10 +364,30 @@ class ExperimentForm(forms.ModelForm):
         model = models.Experiment
         fields = ('title', 'institution_name', 'description')
 
+    class FullExperiment(UserDict):
+        """
+        This is a dict wrapper that store the values returned from
+        the :func:`tardis.tardis_portal.forms.ExperimentForm.save` function.
+        It provides a convience method for saving the model objects.
+        """
+
+        def save_m2m(self):
+            """
+            {'experiment': experiment,
+            'author_experiments': author_experiments,
+            'authors': authors,
+            'datasets': datasets,
+            'dataset_files': dataset_files}
+            """
+            self.data['experiment'].save()
+            for ae in self.data['author_experiments']:
+                ae.experiment = self.data['experiment']
+                print ae
+                ae.save()
+
     def __init__(self, data=None, files=None, auto_id='%s', prefix=None,
                  initial=None, error_class=ErrorList, label_suffix=':',
                  empty_permitted=False, instance=None, extra=0):
-        self.author_experiments = []
 
         super(ExperimentForm, self).__init__(data=data,
                                              files=files,
@@ -439,51 +400,84 @@ class ExperimentForm(forms.ModelForm):
                                              empty_permitted=False)
 
         # fix up experiment form
-        post_authors = self._parse_authors(data)
-        self._fill_authors(post_authors)
         if instance:
             authors = instance.author_experiment_set.all()
-            self.authors_experiments = [Author_Experiment(instance=a) for a
-                                        in authors]
-            self.initial['authors'] = ', '.join([a.author for a in authors])
-            self.fields['authors'] = \
-                MultiValueCommaSeparatedField([author.fields['author'] for
-                                            author in self.author_experiments],
-                                            widget=CommaSeparatedInput())
+            self.author_experiments = [Author_Experiment(instance=a)
+                                       for a in authors]
+            for ae in self.author_experiments:
+                try:
+                    assert ae.is_valid()
+                except AssertionError:
+                    print ae.errors
 
-    def _parse_authors(self, data=None):
-        """
-        create a dictionary containing each of the sub form types.
-        """
-        authors = []
-        if not data:
-            return authors
-        if 'authors' in data:
-            authors = [a.strip() for a in
-                       data.get('authors').split(',')]
-        return authors
+            if not data:
+                self.initial['authors'] = ', '.join([self._format_author(a)
+                                                     for a in authors])
 
-    def _fill_authors(self, authors):
-        if self.instance:
-            o_author_experiments = \
-                self.instance.author_experiment_set.all()
         else:
-            o_author_experiments = []
-        for num, author in enumerate(authors):
-            try:
-                o_ae = o_author_experiments[num]
-            except IndexError:
-                o_ae = models.Author_Experiment()
-                o_ae.experiment = self.instance
-            f = Author_Experiment(data={'author': author,
-                                        'order': num},
-                                  instance=o_ae)
-            self.author_experiments.append(f)
+            self.author_experiments = []
+
+        if data:
+            self._update_authors(data)
 
         self.fields['authors'] = \
             MultiValueCommaSeparatedField([author.fields['author'] for
                                         author in self.author_experiments],
-                                        widget=CommaSeparatedInput())
+                widget=CommaSeparatedInput(attrs={
+                    'placeholder': "eg. Howard W. Florey, Brian Schmidt "+
+                                   "(http://nla.gov.au/nla.party-1480342)"}),
+                help_text="Comma-separated authors and optional URLs")
+
+        for _, field in self.fields.items():
+            field.widget.attrs['class'] = "span8"
+
+    def _format_author(self, author):
+        if author.url:
+            return "%s (%s)" % (author.author, author.url)
+        return author.author
+
+    def _parse_authors(self, data):
+        """
+        create a dictionary containing each of the sub form types.
+        """
+        if 'authors' not in data:
+            return []
+
+        def build_dict(order, author_str):
+            import re
+            author_str = author_str.strip()
+            url_match = re.match('([^\(]+)\(([^\)]+)\)', author_str)
+            if url_match:
+                try:
+                    author_str, url = url_match.group(1, 2)
+                    # Check that it really is a URL
+                    url = Author_Experiment().fields['url'].clean(url)
+                    return {'order': order,
+                            'author': author_str.strip(),
+                            'url': url}
+                except ValidationError:
+                    pass
+            return {'order': order,
+                    'author': author_str}
+
+        return [build_dict(i, a)
+                for i, a in enumerate(data.get('authors').split(','))]
+
+    def _update_authors(self, data):
+        # For each author in the POST in a position
+        for data in self._parse_authors(data):
+            try:
+                # Get the current author for that position
+                o_ae = self.author_experiments[data['order']]
+                # Update the author form for that position with the new data
+                self.author_experiments[data['order']] = \
+                    Author_Experiment(data=data,
+                                      instance=o_ae.instance)
+            except IndexError:
+                # Or create an author for that position
+                o_ae = Author_Experiment(data=data,
+                                         instance=models.Author_Experiment())
+                self.author_experiments.append(o_ae)
 
     def save(self, commit=True):
         # remove m2m field before saving
@@ -495,11 +489,10 @@ class ExperimentForm(forms.ModelForm):
         author_experiments = []
 
         for ae in self.author_experiments:
-            ae.instance.experiment = ae.instance.experiment
             o_ae = ae.save(commit=commit)
             author_experiments.append(o_ae)
 
-        return FullExperimentModel({'experiment': experiment,
+        return self.FullExperiment({'experiment': experiment,
                                     'author_experiments': author_experiments,
                                     'authors': authors})
 

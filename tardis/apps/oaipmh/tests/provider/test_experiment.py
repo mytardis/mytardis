@@ -27,6 +27,12 @@ def _create_test_data():
                             created_by=user)
     experiment.public_access = Experiment.PUBLIC_ACCESS_METADATA
     experiment.save()
+    experiment.author_experiment_set.create(order=0,
+                                            author="John Cleese",
+                                            url="http://nla.gov.au/nla.party-1")
+    experiment.author_experiment_set.create(order=1,
+                                            author="Michael Palin",
+                                            url="http://nla.gov.au/nla.party-2")
     return (experiment, user)
 
 class AbstractExperimentProviderTC():
@@ -173,6 +179,8 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
             .to_equal(License.get_none_option_license().name)
         expect(metadata.getField('related_info'))\
             .to_equal([])
+        expect(len(metadata.getField('collectors')))\
+            .to_equal(2)
         expect(about).to_equal(None)
 
     def testListRecords(self):
@@ -203,7 +211,7 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                 expect(metadata.getField('family_name'))\
                     .to_equal(str(self._user.last_name))
         # There should only have been one
-        expect(len(results)).to_equal(2)
+        expect(len(results)).to_equal(1)
         # Remove public flag
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()

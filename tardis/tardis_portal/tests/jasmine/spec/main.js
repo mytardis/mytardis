@@ -2,6 +2,21 @@ jasmine.getFixtures().fixturesPath = "/jasmine/fixtures/";
 
 describe("Main", function() {
 
+  describe("login detection", function() {
+      it("should use user menu to determine state", function() {
+          // Check we get false if the user menu is absent
+          expect($('#user-menu')).not.toExist();
+          expect(isLoggedIn()).toBe(false);
+          // Check we get true if the user menu is present
+          $('body').append($('<div id="user-menu"></div>'));
+          expect($('#user-menu')).toExist();
+          expect(isLoggedIn()).toBe(true);
+          // Check that removing the user menu changes response
+          $('#user-menu').remove();
+          expect(isLoggedIn()).toBe(false);
+      });
+  });
+
   describe("search box typeahead", function() {
       it("should activate typeahead for #id_q", function() {
           loadFixtures("search_autocomplete.html");
