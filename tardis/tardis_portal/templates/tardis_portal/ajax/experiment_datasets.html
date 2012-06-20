@@ -30,17 +30,6 @@
   <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
     {{ action_bar }}
-    {% if experiment.datasets.count|gt:2 %}
-    <p class="js-required">
-      <label for="dataset-filter-text" style="display: inline">
-        File filter:
-      </label>
-      <input id="dataset-filter-text" class="span4" type="text"
-        placeholder="Just start typing to filter based on descriptions"
-        autocomplete="off"
-        onkeyup="datasetTiles.filter(filterDescription($(this).val()))"/>
-    </p>
-    {% endif %}
 
     <div id="datasets">
     {{ experiment.datasets.all|dataset_tiles:has_download_permissions }}

@@ -251,6 +251,11 @@ class Author_Experiment(models.Model):
     experiment = models.ForeignKey(Experiment)
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
+    url = models.URLField(
+        verify_exists=True,
+        max_length=2000,
+        blank=True,
+        help_text="URL identifier for the author")
 
     def save(self, *args, **kwargs):
         super(Author_Experiment, self).save(*args, **kwargs)

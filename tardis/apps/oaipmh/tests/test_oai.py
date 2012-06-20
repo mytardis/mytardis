@@ -19,9 +19,7 @@ def _create_test_data():
                 last_name='Atkins',
                 email='tommy@atkins.net')
     user.save()
-    user2 = User(username='otheradmin', email='otheradmin@example.test')
-    user2.save()
-    map(lambda u: UserProfile(user=u).save(), [user, user2])
+    UserProfile(user=user).save()
     license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
                        url='http://creativecommons.org/licenses/by-nd/2.5/au/',
                        internal_description='CC BY 2.5 AU',
@@ -33,9 +31,15 @@ def _create_test_data():
     experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
     experiment.license = license_
     experiment.save()
+    experiment.author_experiment_set.create(order=0,
+                                            author="John Cleese",
+                                            url="http://nla.gov.au/nla.party-1")
+    experiment.author_experiment_set.create(order=1,
+                                            author="Michael Palin",
+                                            url="http://nla.gov.au/nla.party-2")
     acl = ExperimentACL(experiment=experiment,
                     pluginId='django_user',
-                    entityId=str(user2.id),
+                    entityId=str(user.id),
                     isOwner=True,
                     canRead=True,
                     canWrite=True,
@@ -145,9 +149,14 @@ class EndpointTestCase(TestCase):
         #     <key>user/1</key>
         #     <relation type="isManagedBy"/>
         # </relatedObjexperimentect>
-        expect(collection.xpath('r:relatedObject/r:key/text()',
+        expect(collection.xpath(
+            'r:relatedObject[r:relation/@type="isManagedBy"]/r:key/text()',
             namespaces=ns)) \
             .to_equal(['keydomain.test.example/user/1'])
+        expect(collection.xpath(
+            'r:relatedObject[r:relation/@type="hasCollector"]/r:key/text()',
+            namespaces=ns)) \
+            .to_equal(["http://nla.gov.au/nla.party-%d" % i for i in (1, 2)])
 
     def _check_user_regobj(self, user, registryObject):
         ns = self.ns
@@ -183,9 +192,10 @@ class EndpointTestCase(TestCase):
                 .to_equal(user.email)
         # <relatedObject>
         #     <key>user/1</key>
-        #     <relation type="isManagedBy"/>
+        #     <relation type="isManagerOf"/>
         # </relatedObjexperimentect>
-        expect(collection.xpath('r:relatedObject/r:key/text()',
+        expect(collection.xpath(
+            'r:relatedObject[r:relation/@type="isManagerOf"]/r:key/text()',
             namespaces=ns)) \
             .to_equal(['keydomain.test.example/experiment/1'])
 

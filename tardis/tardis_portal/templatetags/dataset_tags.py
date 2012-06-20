@@ -15,11 +15,25 @@ def dataset_tiles(datasets, include_thumbnails):
     # Get data to template (used by JSON service too)
     data = ( get_dataset_info(ds, bool(include_thumbnails)) for ds in datasets )
 
+    class DatasetInfo(object):
+
+        def __init__(self, **data):
+            self.__dict__.update(data)
+
+        def experiment_badge(self):
+            count = len(self.experiments);
+            return render_mustache('tardis_portal/badges/experiment_count', {
+                'title': "In %d experiment%s" % (count, pluralize(count)),
+                'count': count,
+            })
+
+
     class DatasetsInfo(object):
         # Generator which renders a dataset at a time
         def datasets(self):
             for ds in data:
-                yield render_mustache('tardis_portal/dataset_tile', ds)
+                yield render_mustache('tardis_portal/dataset_tile',
+                                      DatasetInfo(**ds))
 
     # Render template
     return render_mustache('tardis_portal/dataset_tiles', DatasetsInfo())
