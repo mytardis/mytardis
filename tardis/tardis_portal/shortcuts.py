@@ -10,52 +10,17 @@ from django.http import HttpResponse, \
 from tardis.tardis_portal.models import \
     ExperimentParameterSet, Schema
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
-from tardis.tardis_portal.staging import get_full_staging_path
 
 from django.template.loader import render_to_string
 
 
 def render_response_index(request, *args, **kwargs):
-
-    is_authenticated = request.user.is_authenticated()
-    if is_authenticated:
-        is_superuser = request.user.is_superuser
-        username = request.user.username
-    else:
-        is_superuser = False
-        username = None
-
-    if ('context_instance' in kwargs):
-        kwargs['context_instance'] = RequestContext(request,
-                                                    kwargs['context_instance'])
-    else:
-        kwargs['context_instance'] = RequestContext(request)
-    kwargs['context_instance']['is_authenticated'] = is_authenticated
-    kwargs['context_instance']['is_superuser'] = is_superuser
-    kwargs['context_instance']['username'] = username
-
-    staging = get_full_staging_path(
-                                username)
-    if staging:
-        kwargs['context_instance']['has_staging_access'] = True
-    else:
-        kwargs['context_instance']['has_staging_access'] = False
-
     return render(request, *args, **kwargs)
 
 
-def render_response_search(request, *args, **kwargs):
+def render_response_search(request, url, c):
 
     from tardis.tardis_portal.views import getNewSearchDatafileSelectionForm
-
-    is_authenticated = request.user.is_authenticated()
-    if is_authenticated:
-        is_superuser = request.user.is_superuser
-        username = request.user.username
-    else:
-        is_superuser = False
-        username = None
-
 
     links = {}
     for app in settings.INSTALLED_APPS:
@@ -66,22 +31,11 @@ def render_response_search(request, *args, **kwargs):
             except:
                 pass
 
-    kwargs['context_instance'] = RequestContext(request)
-    kwargs['context_instance']['is_authenticated'] = is_authenticated
-    kwargs['context_instance']['is_superuser'] = is_superuser
-    kwargs['context_instance']['username'] = username
-    kwargs['context_instance']['searchDatafileSelectionForm'] = \
+    c['searchDatafileSelectionForm'] = \
         getNewSearchDatafileSelectionForm(request.GET.get('type', None))
-    kwargs['context_instance']['links'] = links
+    c['links'] = links
 
-    staging = get_full_staging_path(
-                                username)
-    if staging:
-        kwargs['context_instance']['has_staging_access'] = True
-    else:
-        kwargs['context_instance']['has_staging_access'] = False
-
-    return render(request, *args, **kwargs)
+    return render(request, url, c)
 
 
 def return_response_not_found(request):

@@ -1,4 +1,5 @@
 from django.conf import settings
+from tardis.tardis_portal.staging import get_full_staging_path
 
 def single_search_processor(request):
 
@@ -29,3 +30,17 @@ def registration_processor(request):
             pass
         return False
     return {'registration_enabled': is_registration_enabled()}
+
+def user_details_processor(request):
+    is_authenticated = request.user.is_authenticated()
+    if is_authenticated:
+        is_superuser = request.user.is_superuser
+        username = request.user.username
+    else:
+        is_superuser = False
+        username = None
+    staging = True if get_full_staging_path(username) else False
+    return {'username': username,
+            'is_authenticated': is_authenticated,
+            'is_superuser': is_superuser, 
+            'has_staging_access': staging}
