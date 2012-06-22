@@ -83,7 +83,7 @@ class Dataset_File(models.Model):
         if self.mimetype:
             return self.mimetype
         else:
-            suffix = self.filename.split('.')[-1]
+            suffix = path.splitext(self.filename)[-1]
             try:
                 import mimetypes
                 return mimetypes.types_map['.%s' % suffix.lower()]
@@ -91,51 +91,43 @@ class Dataset_File(models.Model):
                 return 'application/octet-stream'
 
     def get_view_url(self):
-        from tardis.tardis_portal.download \
-            import IMAGEMAGICK_AVAILABLE, MIMETYPES_TO_VIEW_AS_PNG
         import re
-        viewable_mimetype_patterns = ['image/.*', 'text/.*']
+        viewable_mimetype_patterns = ('image/.*', 'text/.*')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
-        # We should avoid listing files that require conversion
-        if (not IMAGEMAGICK_AVAILABLE and
-            self.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG):
-            return ''
-        kwargs = {'datafile_id': self.id}
-        return reverse('view_datafile', kwargs=kwargs)
+        return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_actual_url(self):
-        # Remote files are easy
-        if any(map(self.url.startswith, ['http://', 'https://', 'ftp://'])):
+        url = urlparse(self.url)
+        if url.scheme == '':
+            # Local file
+            return 'file://'+self.get_absolute_filepath()
+        # Remote files are also easy
+        if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
-        # Otherwise, resolve actual file system path
-        file_path = self.get_absolute_filepath()
-        if path.isfile(file_path):
-            return 'file://'+file_path
         return None
 
     def get_download_url(self):
-        view = ''
-        kwargs = {'datafile_id': self.id}
-
-        # these are the internally known protocols
-        protocols = ['', 'tardis', 'file', 'http', 'https', 'ftp']
-        if self.protocol in protocols:
-            view = 'tardis.tardis_portal.download.download_datafile'
-
-        # externally handled protocols
-        else:
+        def get_download_view():
+            # Handle external protocols
             try:
                 for module in settings.DOWNLOAD_PROVIDERS:
                     if module[0] == self.protocol:
-                        view = '%s.download_datafile' % module[1]
+                        return '%s.download_datafile' % module[1]
             except AttributeError:
                 pass
+            # Fallback to internal
+            url = urlparse(self.url)
+            # These are internally known protocols
+            if url.scheme in ('', 'http', 'https', 'ftp', 'file'):
+                return 'tardis.tardis_portal.download.download_datafile'
+            return None
 
-        if view:
-            return reverse(view, kwargs=kwargs)
-        else:
+        try:
+            return reverse(get_download_view(),
+                           kwargs={'datafile_id': self.id})
+        except:
             return ''
 
     def get_absolute_filepath(self):
