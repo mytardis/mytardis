@@ -140,7 +140,9 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
-        self.assertTrue(test_files_db[0].url == 'tardis://testfile.txt')
+        self.assertTrue(test_files_db[0].url == '%d/%d/testfile.txt' %
+                        (self.dataset.get_first_experiment().id,
+                         self.dataset.id))
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
@@ -532,7 +534,7 @@ class StageFilesTestCase(TestCase):
             expect(dataset.dataset_file_set.count()).to_equal(1)
             datafile = dataset.dataset_file_set.all()[0]
             expect(datafile.filename).to_equal(basename(f.name))
-            expect(datafile.url.startswith('tardis://')).to_be_truthy()
+            expect(urlparse(datafile.url).scheme).to_equal('')
 
 class ExperimentTestCase(TestCase):
 

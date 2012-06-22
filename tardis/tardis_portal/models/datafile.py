@@ -1,10 +1,12 @@
 from os import path
+from urlparse import urlparse
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.utils import _os
 
 from .dataset import Dataset
 
@@ -75,7 +77,7 @@ class Dataset_File(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return self.filename
+        return "%s %s # %s" % (self.md5sum, self.filename, self.mimetype)
 
     def get_mimetype(self):
         if self.mimetype:
@@ -136,55 +138,18 @@ class Dataset_File(models.Model):
         else:
             return ''
 
-    def get_relative_filepath(self):
-        if self.protocol == '' or self.protocol == 'tardis':
-            from os.path import abspath, join
-            return abspath(join(self.url.partition('://')[2]))
-        elif self.protocol == 'staging':
-            return self.url
-        # file should refer to an absolute location
-        elif self.protocol == 'file':
-            return self.url.partition('://')[2]
-
     def get_absolute_filepath(self):
-        # check for empty protocol field (historical reason) or
-        # 'tardis' which indicates a location within the tardis file
-        # store
-        if self.protocol == '' or self.protocol == 'tardis':
+        if self.protocol == 'staging':
+            return self.url
+        url = urlparse(self.url)
+        if url.scheme == '':
             try:
-                FILE_STORE_PATH = settings.FILE_STORE_PATH
+                # FILE_STORE_PATH must be set
+                return _os.safe_join(settings.FILE_STORE_PATH, url.path)
             except AttributeError:
                 return ''
-
-            raw_path = self.url.partition('://')[2]
-
-            def file_path_func(dataset, experiment, raw_path):
-                # Standard location for local files
-                return path.abspath(path.join(FILE_STORE_PATH,
-                                              str(experiment.id),
-                                              str(self.dataset.id),
-                                              raw_path))
-
-            def legacy_file_path_func(dataset, experiment, raw_path):
-                # Legacy location for local files
-                return path.abspath(path.join(FILE_STORE_PATH,
-                                              str(experiment.id),
-                                              raw_path))
-
-            # Loop through experiments (because we can't be 100% sure which
-            # experiment was the first one)
-            for func in (file_path_func, legacy_file_path_func):
-                for experiment in self.dataset.experiments.all():
-                    file_path = func(self.dataset, experiment, raw_path)
-                    if path.isfile(file_path):
-                        return file_path
-
-            return ''
-        elif self.protocol == 'staging':
-            return self.url
-        # file should refer to an absolute location
-        elif self.protocol == 'file':
-            return self.url.partition('://')[2]
+        if url.scheme == 'file':
+            return url.path
         # ok, it doesn't look like the file is stored locally
         else:
             return ''
@@ -198,11 +163,7 @@ class Dataset_File(models.Model):
         self.size = str(getsize(self.get_absolute_filepath()))
 
     def _set_mimetype(self):
-        try:
-            from magic import Magic
-        except:
-            # TODO log that this failed
-            return
+        from magic import Magic
         self.mimetype = Magic(mime=True).from_file(
             self.get_absolute_filepath())
 

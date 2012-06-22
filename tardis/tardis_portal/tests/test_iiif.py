@@ -4,6 +4,7 @@ import os
 import tempfile
 
 from compare import ensure, expect
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
@@ -46,9 +47,8 @@ def _create_datafile():
     f_loc = write_uploaded_file_to_dataset(dataset, fd, tempfilename)
     os.remove(tempfilename)
     datafile = Dataset_File(dataset=dataset)
-    base_path = datafile.dataset.get_absolute_filepath()
-    datafile.url = 'tardis://' + os.path.relpath(f_loc, base_path)
-    datafile.protocol = 'tardis'
+    datafile.url = os.path.relpath(f_loc, settings.FILE_STORE_PATH)
+    datafile.protocol = 'file'
     datafile.save()
     return datafile
 

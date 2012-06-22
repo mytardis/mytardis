@@ -92,7 +92,9 @@ class StagingFiles(TestCase):
                                      1234)
         self.assertEqual(df.size, 1234)
         self.assertEqual(df.filename, 'file')
-        self.assertEqual(df.url, "tardis://file")
+        self.assertEqual(df.url,
+                         "%d/%d/file" % (dataset.get_first_experiment().id,
+                                                  dataset.id))
 
 
 class TraverseTestCase(TestCase):
@@ -152,13 +154,6 @@ class TestPathResolution(TestCase):
             ap = path.join(settings.GET_FULL_STAGING_PATH_TEST,
                             p)
             sp = staging.calculate_relative_path('staging',
-                                               ap)
-            self.assertEqual(sp, p)
-
-        for p in self.paths:
-            ap = path.join(settings.FILE_STORE_PATH,
-                            p)
-            sp = staging.calculate_relative_path('tardis',
                                                ap)
             self.assertEqual(sp, p)
 
