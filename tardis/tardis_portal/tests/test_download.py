@@ -124,14 +124,20 @@ class DownloadTestCase(TestCase):
 
         self.dataset_file1 = Dataset_File(dataset=self.dataset1,
                                           filename=filename1,
-                                          protocol='tardis',
-                                          url='tardis://%s' % filename1)
+                                          protocol='',
+                                          url='%d/%d/%s'
+                                              % (self.experiment1.id,
+                                                 self.dataset1.id,
+                                                 filename1))
         self.dataset_file1.save()
 
         self.dataset_file2 = Dataset_File(dataset=self.dataset2,
                                           filename=basename(filename2),
-                                          protocol='tardis',
-                                          url='tardis://%s' % filename2)
+                                          protocol='',
+                                          url='%d/%d/%s'
+                                            % (self.experiment2.id,
+                                               self.dataset2.id,
+                                               filename2))
         self.dataset_file2.save()
 
     def tearDown(self):

@@ -44,10 +44,6 @@ class Dataset(models.Model):
     def get_first_experiment(self):
         return self.experiments.order_by('created_time')[:1].get()
 
-    def get_absolute_filepath(self):
-        return path.join(self.get_first_experiment().get_absolute_filepath(),
-                         str(self.id))
-
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""

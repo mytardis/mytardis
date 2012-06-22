@@ -100,7 +100,10 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
 
     buf = StringIO()
     try:
-        with Image(file=urlopen(datafile.get_actual_url())) as img:
+        url = datafile.get_actual_url()
+        if url == None:
+            return HttpResponseNotFound()
+        with Image(file=urlopen(url)) as img:
             # Handle region
             if region != 'full':
                 x, y, w, h = map(lambda x: int(x), region.split(','))
@@ -151,7 +154,10 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
                                         dataset_file_id=datafile.id):
         return HttpResponseNotFound()
 
-    with Image(filename=datafile.get_actual_url()) as img:
+    url = datafile.get_actual_url()
+    if url == None:
+        return HttpResponseNotFound()
+    with Image(file=urlopen(url)) as img:
         data = {'identifier': datafile.id,
                 'height': img.height,
                 'width':  img.width }
