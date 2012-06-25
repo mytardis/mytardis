@@ -99,6 +99,18 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware'
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = [
+    'django.core.context_processors.request',
+    'django.core.context_processors.static',
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'tardis.tardis_portal.context_processors.single_search_processor',
+    'tardis.tardis_portal.context_processors.tokenuser_processor',
+    'tardis.tardis_portal.context_processors.registration_processor',
+    'tardis.tardis_portal.context_processors.user_details_processor',
+]
+
 TEMPLATE_LOADERS = (
     'tardis.template.loaders.app_specific.Loader',
     'django.template.loaders.app_directories.Loader',

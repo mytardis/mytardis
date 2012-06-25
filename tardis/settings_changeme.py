@@ -98,6 +98,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     'tardis.tardis_portal.context_processors.single_search_processor',
     'tardis.tardis_portal.context_processors.tokenuser_processor',
     'tardis.tardis_portal.context_processors.registration_processor',
+    'tardis.tardis_portal.context_processors.user_details_processor',
 ]
 
 TEMPLATE_LOADERS = (
