@@ -39,12 +39,18 @@ staging.py
 import logging
 import shutil
 from os import path, makedirs, listdir, rmdir
+import posixpath
 
 from django.conf import settings
 
 
 logger = logging.getLogger(__name__)
 
+
+def get_dataset_path(dataset):
+    return path.join(settings.FILE_STORE_PATH,
+                     str(dataset.get_first_experiment().id),
+                     str(dataset.id))
 
 def staging_traverse(staging=settings.STAGING_PATH):
     """Recurse through directories and form HTML list tree for jtree
@@ -96,7 +102,7 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
         li = '<li class="fileicon" id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
                                     path.basename(pathname))
 
-    if pathname.rpartition('/')[2].startswith('.'):
+    if posixpath.basename(pathname).startswith('.'):
         return ''
     if path.isfile(pathname):
         return li + '</li>'
@@ -145,7 +151,7 @@ def stage_file(datafile):
     :param datafile: a datafile to be staged
     :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
     """
-    dataset_path = datafile.dataset.get_absolute_filepath()
+    dataset_path = get_dataset_path(datafile.dataset)
     copyfrom = datafile.url
 
     relpath = calculate_relative_path(datafile.protocol,
@@ -172,13 +178,13 @@ def stage_file(datafile):
     split_copyto = copyto.rpartition('/')
     filename = split_copyto[2]
     relpath = relpath.rpartition('/')[0]
-    if relpath:
-        relpath = relpath + path.sep
 
     datafile.filename = filename
-    datafile.url = "tardis://" + relpath + filename
-    datafile.protocol = "tardis"
-    datafile.size = path.getsize(datafile.get_absolute_filepath())
+    datafile.url = path.relpath(path.join(get_dataset_path(datafile.dataset),
+                                          relpath,
+                                          filename),
+                                settings.FILE_STORE_PATH)
+    datafile.protocol = ""
     datafile.save()
 
     # rmdir each dir from copyfrom[get_staging_path():] if empty
@@ -209,13 +215,9 @@ def calculate_relative_path(protocol, filepath):
     :type url: string
     """
     if protocol == "staging":
-        staging = settings.STAGING_PATH
-        rpath = filepath[len(staging)+1:]
-        return rpath.partition("/")[2]
-    elif protocol == "tardis":
-        staging = settings.STAGING_PATH
-        rpath = filepath[len(staging)-1:]
-        return rpath.lstrip(path.sep)
+        # Staging path contains user directories: STAGING_PATH/bob/...
+        return path.relpath(filepath, settings.STAGING_PATH) \
+                   .partition(path.sep)[-1]
     else:
         logger.error("the staging path of the file %s is invalid!" % filepath)
         raise ValueError("Unknown protocol, there is no way to calculate a relative url for %s urls." % protocol)
@@ -310,15 +312,11 @@ def add_datafile_to_dataset(dataset, filepath, size):
     """
     from tardis.tardis_portal.models import Dataset_File
 
-    experiment_path = path.join(settings.FILE_STORE_PATH,
-                                str(dataset.get_first_experiment().id))
-
-    dataset_path = path.join(experiment_path, str(dataset.id))
-    urlpath = 'tardis:/' + filepath[len(dataset_path):]
-    filename = urlpath.rpartition('/')[2]
+    urlpath = path.relpath(filepath, settings.FILE_STORE_PATH)
+    filename = posixpath.basename(urlpath)
 
     datafile = Dataset_File(dataset=dataset, filename=filename,
-                            url=urlpath, size=size, protocol='tardis')
+                            url=urlpath, size=size, protocol='')
     datafile.save()
 
     return datafile

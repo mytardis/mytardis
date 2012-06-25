@@ -1,10 +1,12 @@
 from os import path
+from urlparse import urlparse
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.utils import _os
 
 from .dataset import Dataset
 
@@ -75,13 +77,13 @@ class Dataset_File(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return self.filename
+        return "%s %s # %s" % (self.md5sum, self.filename, self.mimetype)
 
     def get_mimetype(self):
         if self.mimetype:
             return self.mimetype
         else:
-            suffix = self.filename.split('.')[-1]
+            suffix = path.splitext(self.filename)[-1]
             try:
                 import mimetypes
                 return mimetypes.types_map['.%s' % suffix.lower()]
@@ -89,102 +91,57 @@ class Dataset_File(models.Model):
                 return 'application/octet-stream'
 
     def get_view_url(self):
-        from tardis.tardis_portal.download \
-            import IMAGEMAGICK_AVAILABLE, MIMETYPES_TO_VIEW_AS_PNG
         import re
-        viewable_mimetype_patterns = ['image/.*', 'text/.*']
+        viewable_mimetype_patterns = ('image/.*', 'text/.*')
         if not any(re.match(p, self.get_mimetype())
                    for p in viewable_mimetype_patterns):
             return None
-        # We should avoid listing files that require conversion
-        if (not IMAGEMAGICK_AVAILABLE and
-            self.get_mimetype() in MIMETYPES_TO_VIEW_AS_PNG):
-            return ''
-        kwargs = {'datafile_id': self.id}
-        return reverse('view_datafile', kwargs=kwargs)
+        return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_actual_url(self):
-        # Remote files are easy
-        if any(map(self.url.startswith, ['http://', 'https://', 'ftp://'])):
+        url = urlparse(self.url)
+        if url.scheme == '':
+            # Local file
+            return 'file://'+self.get_absolute_filepath()
+        # Remote files are also easy
+        if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
-        # Otherwise, resolve actual file system path
-        file_path = self.get_absolute_filepath()
-        if path.isfile(file_path):
-            return 'file://'+file_path
         return None
 
     def get_download_url(self):
-        view = ''
-        kwargs = {'datafile_id': self.id}
-
-        # these are the internally known protocols
-        protocols = ['', 'tardis', 'file', 'http', 'https', 'ftp']
-        if self.protocol in protocols:
-            view = 'tardis.tardis_portal.download.download_datafile'
-
-        # externally handled protocols
-        else:
+        def get_download_view():
+            # Handle external protocols
             try:
                 for module in settings.DOWNLOAD_PROVIDERS:
                     if module[0] == self.protocol:
-                        view = '%s.download_datafile' % module[1]
+                        return '%s.download_datafile' % module[1]
             except AttributeError:
                 pass
+            # Fallback to internal
+            url = urlparse(self.url)
+            # These are internally known protocols
+            if url.scheme in ('', 'http', 'https', 'ftp', 'file'):
+                return 'tardis.tardis_portal.download.download_datafile'
+            return None
 
-        if view:
-            return reverse(view, kwargs=kwargs)
-        else:
+        try:
+            return reverse(get_download_view(),
+                           kwargs={'datafile_id': self.id})
+        except:
             return ''
-
-    def get_relative_filepath(self):
-        if self.protocol == '' or self.protocol == 'tardis':
-            from os.path import abspath, join
-            return abspath(join(self.url.partition('://')[2]))
-        elif self.protocol == 'staging':
-            return self.url
-        # file should refer to an absolute location
-        elif self.protocol == 'file':
-            return self.url.partition('://')[2]
 
     def get_absolute_filepath(self):
-        # check for empty protocol field (historical reason) or
-        # 'tardis' which indicates a location within the tardis file
-        # store
-        if self.protocol == '' or self.protocol == 'tardis':
+        if self.protocol == 'staging':
+            return self.url
+        url = urlparse(self.url)
+        if url.scheme == '':
             try:
-                FILE_STORE_PATH = settings.FILE_STORE_PATH
+                # FILE_STORE_PATH must be set
+                return _os.safe_join(settings.FILE_STORE_PATH, url.path)
             except AttributeError:
                 return ''
-
-            raw_path = self.url.partition('://')[2]
-
-            def file_path_func(dataset, experiment, raw_path):
-                # Standard location for local files
-                return path.abspath(path.join(FILE_STORE_PATH,
-                                              str(experiment.id),
-                                              str(self.dataset.id),
-                                              raw_path))
-
-            def legacy_file_path_func(dataset, experiment, raw_path):
-                # Legacy location for local files
-                return path.abspath(path.join(FILE_STORE_PATH,
-                                              str(experiment.id),
-                                              raw_path))
-
-            # Loop through experiments (because we can't be 100% sure which
-            # experiment was the first one)
-            for func in (file_path_func, legacy_file_path_func):
-                for experiment in self.dataset.experiments.all():
-                    file_path = func(self.dataset, experiment, raw_path)
-                    if path.isfile(file_path):
-                        return file_path
-
-            return ''
-        elif self.protocol == 'staging':
-            return self.url
-        # file should refer to an absolute location
-        elif self.protocol == 'file':
-            return self.url.partition('://')[2]
+        if url.scheme == 'file':
+            return url.path
         # ok, it doesn't look like the file is stored locally
         else:
             return ''
@@ -198,11 +155,7 @@ class Dataset_File(models.Model):
         self.size = str(getsize(self.get_absolute_filepath()))
 
     def _set_mimetype(self):
-        try:
-            from magic import Magic
-        except:
-            # TODO log that this failed
-            return
+        from magic import Magic
         self.mimetype = Magic(mime=True).from_file(
             self.get_absolute_filepath())
 

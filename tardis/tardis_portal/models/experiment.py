@@ -87,12 +87,6 @@ class Experiment(models.Model):
     def __unicode__(self):
         return self.title
 
-    def get_absolute_filepath(self):
-        """Return the absolute storage path
-        to the current ``Experiment``"""
-        store = settings.FILE_STORE_PATH
-        return path.join(store, str(self.id))
-
     def get_or_create_directory(self):
         dirname = path.join(settings.FILE_STORE_PATH,
                             str(self.id))
