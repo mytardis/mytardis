@@ -45,6 +45,9 @@ class Dataset_File(models.Model):
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
+    sha512sum = models.CharField(blank=True, max_length=128)
+    stay_remote = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -107,6 +110,15 @@ class Dataset_File(models.Model):
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
+
+    def get_file(self):
+        if not self.verified:
+            return None
+        try:
+            from urllib2 import urlopen
+            return urlopen(self.get_actual_url())
+        except:
+            return None
 
     def get_download_url(self):
         def get_download_view():
