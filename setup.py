@@ -39,7 +39,7 @@ setup(
         'pytz',         # Timezone library
         'iso8601',      # ISO8601 time formatting
         'pyoai',        # For OAI-PMH provider
-        'Wand>=0.1.10',    # For image file conversion
+        'Wand==0.1.10',    # For image file conversion
         'django-mustachejs', # For client-side Mustache template helpers
         'pystache', # For server-side Mustache rendering to aid SEO
         'rdflib',    # For ANZSRCO parsing for ANZSRC FoR codes
