@@ -28,15 +28,7 @@ from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error
 
-try:
-    from wand.image import Image
-    IMAGEMAGICK_AVAILABLE = True
-except (AttributeError, ImportError):
-    IMAGEMAGICK_AVAILABLE = False
-
 logger = logging.getLogger(__name__)
-
-MIMETYPES_TO_VIEW_AS_PNG = ['image/tiff']
 
 class StreamingFile:
 
@@ -72,7 +64,7 @@ class StreamingFile:
         self.reader.close()
         unlink(self.name)
 
-def view_datafile(request, datafile_id):
+def _create_download_response(request, datafile_id, disposition='attachment'):
     # Get datafile (and return 404 if absent)
     try:
         datafile = Dataset_File.objects.get(pk=datafile_id)
@@ -82,75 +74,60 @@ def view_datafile(request, datafile_id):
     if not has_datafile_download_access(request=request,
                                         dataset_file_id=datafile.id):
         return return_response_error(request)
-    # Get actual url for datafile
-    file_url = datafile.get_actual_url()
-    mimetype = datafile.get_mimetype()
-    if IMAGEMAGICK_AVAILABLE and mimetype in MIMETYPES_TO_VIEW_AS_PNG:
-        with Image(file=urlopen(file_url)) as img:
-            img.format = 'png'
-            content = img.make_blob()
-        # Should show up as a PNG file
-        response = HttpResponse(content, mimetype='image/png')
-        response['Content-Disposition'] = \
-            'inline; filename="%s.png"' % datafile.filename
-    else:
-        response = _create_download_response(datafile, file_url,
-                                             disposition='inline')
-    return response
-
-def download_datafile(request, datafile_id):
-    # Get datafile (and return 404 if absent)
-    try:
-        datafile = Dataset_File.objects.get(pk=datafile_id)
-    except Dataset_File.DoesNotExist:
-        return return_response_not_found(request)
-    # Check users has access to datafile
-    if not has_datafile_download_access(request=request, dataset_file_id=datafile.id):
-        return return_response_error(request)
-    # Get actual url for datafile
-    file_url = datafile.get_actual_url()
-    if not file_url:
-        # If file path doesn't resolve, return not found
-        return return_response_not_found(request)
-    # Just redirect for remote files
-    if not file_url.startswith('file://'):
-        return HttpResponseRedirect(datafile.url)
+    # Send an image that can be seen in the browser
+    if disposition == 'inline' and datafile.is_image():
+        from tardis.tardis_portal.iiif import download_image
+        args = (request, datafile.id, 'full', 'full', '0', 'native')
+        # Send unconverted image if web-compatible
+        if datafile.get_mimetype() in ('image/gif', 'image/jpeg', 'image/png'):
+            return download_image(*args)
+        # Send converted image
+        return download_image(*args, format='png')
     # Send local file
     try:
-        return _create_download_response(datafile, file_url)
+        # Get file object for datafile
+        file_obj = datafile.get_file()
+        if not file_obj:
+            # If file path doesn't resolve, return not found
+            return return_response_not_found(request)
+        wrapper = FileWrapper(file_obj)
+        response = HttpResponse(wrapper,
+                                mimetype=datafile.get_mimetype())
+        response['Content-Disposition'] = \
+            '%s; filename="%s"' % (disposition, datafile.filename)
+        return response
     except IOError:
         # If we can't read the file, return not found
         return return_response_not_found(request)
 
+def view_datafile(request, datafile_id):
+    return _create_download_response(request, datafile_id, 'inline')
+
+def download_datafile(request, datafile_id):
+    return _create_download_response(request, datafile_id)
 
 def _get_filename(rootdir, df):
     return path.join(rootdir, str(df.dataset.id), df.filename)
 
-def _create_download_response(datafile, file_url, disposition='attachment'):
-    wrapper = FileWrapper(urlopen(file_url))
-    response = HttpResponse(wrapper,
-                            mimetype=datafile.get_mimetype())
-    response['Content-Disposition'] = \
-        '%s; filename="%s"' % (disposition, datafile.filename)
-    return response
-
 def _get_datafile_details_for_archive(rootdir, datafiles):
-    return [(df.get_actual_url(), _get_filename(rootdir, df)) \
+    return [(df.get_file(), _get_filename(rootdir, df)) \
              for df in datafiles]
 
 def _write_files_to_archive(write_func, files):
-
-    for url, name in files:
+    for fileObj, name in files:
+        if not fileObj:
+            logger.debug('Skipping %s - no file available.' % name)
+            continue
         with NamedTemporaryFile(prefix='mytardis_tmp_dl_') as fdst:
             try:
                 # Copy url to destination file
-                shutil.copyfileobj(urlopen(url), fdst)
+                shutil.copyfileobj(fileObj, fdst)
                 # Flush the file so we can read from it properly
                 fdst.flush()
                 # Write file
                 write_func(fdst.name, name)
             except URLError:
-                logger.warn("Unable to fetch %s for archive download." % url)
+                logger.warn("Unable to fetch %s for archive download." % name)
 
 def _write_tar_func(rootdir, datafiles):
     logger.debug('Getting files to write to archive')

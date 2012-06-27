@@ -100,11 +100,11 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
 
     buf = StringIO()
     try:
-        url = datafile.get_actual_url()
-        if url == None:
+        file_obj = datafile.get_file()
+        if file_obj == None:
             return HttpResponseNotFound()
         from contextlib import closing
-        with closing(urlopen(url)) as f:
+        with closing(file_obj) as f:
             with Image(file=f) as img:
                 # Handle region
                 if region != 'full':
@@ -138,7 +138,10 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
                     if not mimetype in ALLOWED_MIMETYPES:
                         return HttpResponseNotFound()
                 img.save(file=buf)
-                return HttpResponse(buf.getvalue(), mimetype=mimetype)
+                response = HttpResponse(buf.getvalue(), mimetype=mimetype)
+                response['Content-Disposition'] = \
+                    'inline; filename="%s.png"' % datafile.filename
+                return response
     except MissingDelegateError:
         if format:
             return _invalid_media_response()
@@ -156,11 +159,11 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
                                         dataset_file_id=datafile.id):
         return HttpResponseNotFound()
 
-    url = datafile.get_actual_url()
-    if url == None:
+    file_obj = datafile.get_file()
+    if file_obj == None:
         return HttpResponseNotFound()
     from contextlib import closing
-    with closing(urlopen(url)) as f:
+    with closing(file_obj) as f:
         with Image(file=f) as img:
             data = {'identifier': datafile.id,
                     'height': img.height,
@@ -170,11 +173,10 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
         info = Element('info', nsmap=NSMAP)
         identifier = SubElement(info, 'identifier')
         identifier.text = datafile_id
-        with Image(filename=datafile.get_actual_url()) as img:
-            height = SubElement(info, 'height')
-            height.text = str(data['height'])
-            width = SubElement(info, 'width')
-            width.text = str(data['width'])
+        height = SubElement(info, 'height')
+        height.text = str(data['height'])
+        width = SubElement(info, 'width')
+        width.text = str(data['width'])
         return HttpResponse(etree.tostring(info, method='xml'),
                             mimetype="application/xml")
     if format == 'json':
