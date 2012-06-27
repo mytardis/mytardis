@@ -103,40 +103,42 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
         url = datafile.get_actual_url()
         if url == None:
             return HttpResponseNotFound()
-        with Image(file=urlopen(url)) as img:
-            # Handle region
-            if region != 'full':
-                x, y, w, h = map(lambda x: int(x), region.split(','))
-                img.crop(x, y, width=w, height=h)
-            # Handle size
-            if size != 'full':
-                # Check the image isn't empty
-                if 0 in (img.height, img.width):
-                    return _bad_request('size', 'Cannot resize empty image')
-                # Attempt resize
-                if not _do_resize(img, size):
-                    return _bad_request('size',
-                                        'Invalid size argument: %s' % size)
-            # Handle rotation
-            if rotation:
-                img.rotate(float(rotation))
-            # Handle quality (mostly by rejecting it)
-            if not quality in ['native', 'color']:
-                return _get_iiif_error('quality',
-                'This server does not support greyscale or bitonal quality.')
-            # Handle format
-            if format:
-                mimetype = mimetypes.types_map['.%s' % format.lower()]
-                img.format = format
-                if not mimetype in ALLOWED_MIMETYPES:
-                    return _invalid_media_response()
-            else:
-                mimetype = datafile.get_mimetype()
-                # If the native format is not allowed, pretend it doesn't exist.
-                if not mimetype in ALLOWED_MIMETYPES:
-                    return HttpResponseNotFound()
-            img.save(file=buf)
-            return HttpResponse(buf.getvalue(), mimetype=mimetype)
+        from contextlib import closing
+        with closing(urlopen(url)) as f:
+            with Image(file=f) as img:
+                # Handle region
+                if region != 'full':
+                    x, y, w, h = map(lambda x: int(x), region.split(','))
+                    img.crop(x, y, width=w, height=h)
+                # Handle size
+                if size != 'full':
+                    # Check the image isn't empty
+                    if 0 in (img.height, img.width):
+                        return _bad_request('size', 'Cannot resize empty image')
+                    # Attempt resize
+                    if not _do_resize(img, size):
+                        return _bad_request('size',
+                                            'Invalid size argument: %s' % size)
+                # Handle rotation
+                if rotation:
+                    img.rotate(float(rotation))
+                # Handle quality (mostly by rejecting it)
+                if not quality in ['native', 'color']:
+                    return _get_iiif_error('quality',
+                    'This server does not support greyscale or bitonal quality.')
+                # Handle format
+                if format:
+                    mimetype = mimetypes.types_map['.%s' % format.lower()]
+                    img.format = format
+                    if not mimetype in ALLOWED_MIMETYPES:
+                        return _invalid_media_response()
+                else:
+                    mimetype = datafile.get_mimetype()
+                    # If the native format is not allowed, pretend it doesn't exist.
+                    if not mimetype in ALLOWED_MIMETYPES:
+                        return HttpResponseNotFound()
+                img.save(file=buf)
+                return HttpResponse(buf.getvalue(), mimetype=mimetype)
     except MissingDelegateError:
         if format:
             return _invalid_media_response()
@@ -157,10 +159,12 @@ def download_info(request, datafile_id, format): #@ReservedAssignment
     url = datafile.get_actual_url()
     if url == None:
         return HttpResponseNotFound()
-    with Image(file=urlopen(url)) as img:
-        data = {'identifier': datafile.id,
-                'height': img.height,
-                'width':  img.width }
+    from contextlib import closing
+    with closing(urlopen(url)) as f:
+        with Image(file=f) as img:
+            data = {'identifier': datafile.id,
+                    'height': img.height,
+                    'width':  img.width }
 
     if format == 'xml':
         info = Element('info', nsmap=NSMAP)

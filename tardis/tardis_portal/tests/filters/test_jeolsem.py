@@ -12,6 +12,8 @@ from tardis.tardis_portal.models import User, UserProfile, \
 from tardis.tardis_portal.models.parameters import DatasetParameterSet
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
+from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
+
 
 class JEOLSEMFilterTestCase(TestCase):
 
@@ -47,10 +49,15 @@ class JEOLSEMFilterTestCase(TestCase):
         def create_datafile(index):
             testfile = path.join(path.dirname(__file__), 'fixtures',
                                  'jeol_sem_test%d.txt' % index)
+
+            size, sha512sum = get_size_and_sha512sum(testfile)
+
             datafile = Dataset_File(dataset=dataset,
                                     filename=path.basename(testfile),
                                     url='file://'+path.abspath(testfile),
-                                    protocol='file')
+                                    protocol='file',
+                                    size=size,
+                                    sha512sum=sha512sum)
             datafile.save()
             return datafile
 

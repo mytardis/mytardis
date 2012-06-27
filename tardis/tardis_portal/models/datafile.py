@@ -162,24 +162,6 @@ class Dataset_File(models.Model):
         return self.get_mimetype().startswith('image/') \
             and not self.get_mimetype() == 'image/x-icon'
 
-    def _set_size(self):
-        from os.path import getsize
-        self.size = str(getsize(self.get_absolute_filepath()))
-
-    def _set_mimetype(self):
-        from magic import Magic
-        self.mimetype = Magic(mime=True).from_file(
-            self.get_absolute_filepath())
-
-    def _set_md5sum(self):
-        f = open(self.get_absolute_filepath(), 'rb')
-        import hashlib
-        md5 = hashlib.new('md5')
-        for chunk in iter(lambda: f.read(128 * md5.block_size), ''):
-            md5.update(chunk)
-        f.close()
-        self.md5sum = md5.hexdigest()
-
     def deleteCompletely(self):
         import os
         filename = self.get_absolute_filepath()
@@ -192,17 +174,43 @@ def save_DatasetFile(sender, **kwargs):
     # the object can be accessed via kwargs 'instance' key.
     df = kwargs['instance']
 
-    if not df.get_absolute_filepath():
+    if df.verified:
+        return
+
+    url = df.get_actual_url()
+    if not url:
         return
 
     try:
-        if not df.size:
-            df._set_size()
-        if not df.md5sum:
-            df._set_md5sum()
-        if not df.mimetype:
-            df._set_mimetype()
+        from urllib2 import urlopen
+        import hashlib
+        from contextlib import closing
+        from magic import Magic
+        with closing(urlopen(url)) as f:
+            md5 = hashlib.new('md5')
+            sha512 = hashlib.new('sha512')
+            size = 0
+            mimetype_buffer = ''
 
+            def get_chunk():
+                return f.read(32 * sha512.block_size)
+
+            for chunk in iter(get_chunk, ''):
+                size += len(chunk)
+                if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                    mimetype_buffer += chunk
+                md5.update(chunk)
+                sha512.update(chunk)
+
+            if not (df.size and size == int(df.size)):
+                return
+
+            if sha512.hexdigest() == df.sha512sum:
+                df.md5sum = md5.hexdigest()
+                if not df.mimetype and len(mimetype_buffer) > 0:
+                    df.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
+                df.verified = True
+                df.save()
     except IOError:
         pass
     except OSError:
