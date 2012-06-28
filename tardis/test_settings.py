@@ -242,3 +242,8 @@ SYNC_CLIENT_KEY = 'valid_client_key'
 SYNC_ADMINS = ( 'syncadmin@localhost', )
 SERVER_EMAIL = 'transfers@localhost'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+REMOTE_SERVER_CREDENTIALS = [
+    # Just one server for tests
+    ('http://localhost:4272/', 'username', 'password')
+]

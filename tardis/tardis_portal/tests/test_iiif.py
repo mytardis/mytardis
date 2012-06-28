@@ -15,7 +15,6 @@ from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, Dataset, Dataset_File, datafile
 
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
-from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
 
 from wand.image import Image
 

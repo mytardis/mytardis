@@ -138,6 +138,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(), '/test/download/datafile/1/')
+        self.assertTrue(df_file.is_local())
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
@@ -152,6 +153,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
                          '/test/vbl/download/datafile/2/')
+        self.assertFalse(df_file.is_local())
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file1.txt',
@@ -167,6 +169,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
                          '/test/download/datafile/3/')
+        self.assertFalse(df_file.is_local())
 
     # check conversion of b64encoded images back into files
     def test_parameter(self):

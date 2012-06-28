@@ -144,10 +144,10 @@ class StagingHook():
         stage_file(instance)
 
 
-def stage_file(datafile, opener=build_opener()):
+def stage_file(datafile):
     from django.core.files.uploadedfile import TemporaryUploadedFile
     with TemporaryUploadedFile(datafile.filename, None, None, None) as tf:
-        if datafile.verify(tf.file, opener):
+        if datafile.verify(tempfile=tf.file):
             tf.file.flush()
             datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
             datafile.protocol = ''

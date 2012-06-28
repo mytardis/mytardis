@@ -1,5 +1,6 @@
-from os import path
 import djcelery
+from datetime import timedelta
+from os import path
 
 DEBUG = False
 
@@ -318,5 +319,13 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
+
+
+CELERYBEAT_SCHEDULE = {
+      "verify-files": {
+        "task": "tardis_portal.verify_files",
+        "schedule": timedelta(seconds=30)
+      },
+    }
 
 djcelery.setup_loader()

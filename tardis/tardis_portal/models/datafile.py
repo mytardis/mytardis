@@ -14,6 +14,8 @@ from django.utils import _os
 
 from .dataset import Dataset
 
+from tardis.tardis_portal.fetcher import get_privileged_opener
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -106,28 +108,37 @@ class Dataset_File(models.Model):
             return None
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
+    def is_local(self):
+        try:
+            if self.protocol in (t[0] for t in settings.DOWNLOAD_PROVIDERS):
+                return False
+        except AttributeError:
+            pass
+        return urlparse(self.url).scheme == ''
+
     def get_actual_url(self):
-        url = urlparse(self.url)
-        if url.scheme == '':
+        if self.is_local():
             # Local file
             return 'file://'+self.get_absolute_filepath()
         # Remote files are also easy
+        url = urlparse(self.url)
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
 
+    def _get_file(self):
+        try:
+            if self.is_local():
+                return default_storage.open(self.url)
+            else:
+                return get_privileged_opener().open(self.get_actual_url())
+        except:
+            return None
+
     def get_file(self):
         if not self.verified:
             return None
-        try:
-            url = urlparse(self.url)
-            if url.scheme == '':
-                return default_storage.open(url.path)
-            else:
-                from urllib2 import urlopen
-                return urlopen(self.get_actual_url())
-        except:
-            return None
+        return self._get_file()
 
     def get_download_url(self):
         def get_download_view():
@@ -175,8 +186,7 @@ class Dataset_File(models.Model):
         os.remove(filename)
         self.delete()
 
-    def verify(self, tempfile=None, opener=build_opener(),
-               allowEmptyChecksums=False):
+    def verify(self, tempfile=None, allowEmptyChecksums=False):
         '''
         Verifies this file matches its checksums. It must have at least one
         checksum hash to verify unless "allowEmptyChecksums" is True.
@@ -184,17 +194,15 @@ class Dataset_File(models.Model):
         If passed a file handle, it will write the file to it instead of
         discarding data as it's read.
         '''
-        url = self.get_actual_url()
-        if not url:
-            return False
+
 
         if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
             return False
 
-        def read_file(tf):
-            logger.info("Downloading %s for verification" % url)
+        def read_file(sf, tf):
+            logger.info("Downloading %s for verification" % self.url)
             from contextlib import closing
-            with closing(opener.open(url)) as f:
+            with closing(sf) as f:
                 md5 = hashlib.new('md5')
                 sha512 = hashlib.new('sha512')
                 size = 0
@@ -212,7 +220,11 @@ class Dataset_File(models.Model):
                         size,
                         mimetype_buffer)
 
-        md5sum, sha512sum, size, mimetype_buffer = read_file(tempfile)
+        sourcefile = self._get_file()
+        if not sourcefile:
+            return False
+        md5sum, sha512sum, size, mimetype_buffer = read_file(sourcefile,
+                                                             tempfile)
 
         if not (self.size and size == int(self.size)):
             logger.warn("%s failed size check: %d != %s" %
