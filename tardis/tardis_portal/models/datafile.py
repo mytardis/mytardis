@@ -1,4 +1,7 @@
+import hashlib
+from magic import Magic
 from os import path
+from urllib2 import build_opener
 from urlparse import urlparse
 
 from django.conf import settings
@@ -6,6 +9,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.core.files.storage import default_storage
 from django.utils import _os
 
 from .dataset import Dataset
@@ -80,7 +84,8 @@ class Dataset_File(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return "%s %s # %s" % (self.md5sum, self.filename, self.mimetype)
+        return "%s %s # %s" % (self.sha512sum[:32] or self.md5sum,
+                               self.filename, self.mimetype)
 
     def get_mimetype(self):
         if self.mimetype:
@@ -115,8 +120,12 @@ class Dataset_File(models.Model):
         if not self.verified:
             return None
         try:
-            from urllib2 import urlopen
-            return urlopen(self.get_actual_url())
+            url = urlparse(self.url)
+            if url.scheme == '':
+                return default_storage.open(url.path)
+            else:
+                from urllib2 import urlopen
+                return urlopen(self.get_actual_url())
         except:
             return None
 
@@ -143,8 +152,6 @@ class Dataset_File(models.Model):
             return ''
 
     def get_absolute_filepath(self):
-        if self.protocol == 'staging':
-            return self.url
         url = urlparse(self.url)
         if url.scheme == '':
             try:
@@ -168,6 +175,71 @@ class Dataset_File(models.Model):
         os.remove(filename)
         self.delete()
 
+    def verify(self, tempfile=None, opener=build_opener(),
+               allowEmptyChecksums=False):
+        '''
+        Verifies this file matches its checksums. It must have at least one
+        checksum hash to verify unless "allowEmptyChecksums" is True.
+
+        If passed a file handle, it will write the file to it instead of
+        discarding data as it's read.
+        '''
+        url = self.get_actual_url()
+        if not url:
+            return False
+
+        if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
+            return False
+
+        def read_file(tf):
+            logger.info("Downloading %s for verification" % url)
+            from contextlib import closing
+            with closing(opener.open(url)) as f:
+                md5 = hashlib.new('md5')
+                sha512 = hashlib.new('sha512')
+                size = 0
+                mimetype_buffer = ''
+                for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+                    size += len(chunk)
+                    if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                        mimetype_buffer += chunk
+                    md5.update(chunk)
+                    sha512.update(chunk)
+                    if tf:
+                        tf.write(chunk)
+                return (md5.hexdigest(),
+                        sha512.hexdigest(),
+                        size,
+                        mimetype_buffer)
+
+        md5sum, sha512sum, size, mimetype_buffer = read_file(tempfile)
+
+        if not (self.size and size == int(self.size)):
+            logger.warn("%s failed size check: %d != %s" %
+                         (self.url, size, self.size))
+            return False
+
+        if self.sha512sum and sha512sum != self.sha512sum:
+            logger.error("%s failed SHA-512 sum check: %s != %s" %
+                         (self.url, sha512sum, self.sha512sum))
+            return False
+
+        if self.md5sum and md5sum != self.md5sum:
+            logger.error("%s failed MD5 sum check: %s != %s" %
+                         (self.url, md5sum, self.md5sum))
+            return False
+
+        self.md5sum = md5sum
+        self.sha512sum = sha512sum
+        if not self.mimetype and len(mimetype_buffer) > 0:
+            self.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
+        self.verified = True
+        self.save()
+
+        logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
+                    "after successful verification")
+        return True
+
 
 def save_DatasetFile(sender, **kwargs):
 
@@ -177,43 +249,13 @@ def save_DatasetFile(sender, **kwargs):
     if df.verified:
         return
 
-    url = df.get_actual_url()
-    if not url:
-        return
-
     try:
-        from urllib2 import urlopen
-        import hashlib
-        from contextlib import closing
-        from magic import Magic
-        with closing(urlopen(url)) as f:
-            md5 = hashlib.new('md5')
-            sha512 = hashlib.new('sha512')
-            size = 0
-            mimetype_buffer = ''
-
-            def get_chunk():
-                return f.read(32 * sha512.block_size)
-
-            for chunk in iter(get_chunk, ''):
-                size += len(chunk)
-                if len(mimetype_buffer) < 8096: # Arbitrary memory limit
-                    mimetype_buffer += chunk
-                md5.update(chunk)
-                sha512.update(chunk)
-
-            if not (df.size and size == int(df.size)):
-                return
-
-            if sha512.hexdigest() == df.sha512sum:
-                df.md5sum = md5.hexdigest()
-                if not df.mimetype and len(mimetype_buffer) > 0:
-                    df.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
-                df.verified = True
-                df.save()
-    except IOError:
+        df.verify()
+    except IOError, e:
+        logger.info("IOError during verification: %s" % e)
         pass
-    except OSError:
+    except OSError, e:
+        logger.info("OSError during verification: %s" % e)
         pass
 
 

@@ -6,6 +6,7 @@ import tempfile
 from compare import ensure, expect
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
 from nose.plugins.skip import SkipTest
@@ -40,17 +41,17 @@ def _create_datafile():
     dataset.save()
 
     # Create new Datafile
-    _, tempfilename = tempfile.mkstemp()
+    tempfile = TemporaryUploadedFile('iiif_stored_file', None, None, None)
     with Image(filename='magick:rose') as img:
             img.format = 'tiff'
-            img.save(filename=tempfilename)
-    fd = open(tempfilename, 'r')
-    f_loc = write_uploaded_file_to_dataset(dataset, fd, tempfilename)
+            img.save(file=tempfile.file)
+            tempfile.file.flush()
     datafile = Dataset_File(dataset=dataset)
-    datafile.url = os.path.relpath(f_loc, settings.FILE_STORE_PATH)
-    datafile.protocol = 'file'
-    datafile.size, datafile.sha512sum = get_size_and_sha512sum(tempfilename)
-    os.remove(tempfilename)
+    datafile.size = os.path.getsize(tempfile.file.name)
+    #os.remove(tempfilename)
+    datafile.filename = 'iiif_named_file'
+    datafile.url = write_uploaded_file_to_dataset(dataset, tempfile)
+    datafile.verify(allowEmptyChecksums=True)
     datafile.save()
     return datafile
 

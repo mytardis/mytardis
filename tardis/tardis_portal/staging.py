@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+from django.core.exceptions import SuspiciousOperation
 
 """
 staging.py
@@ -38,6 +39,7 @@ staging.py
 
 import logging
 import shutil
+from urllib2 import build_opener
 from os import path, makedirs, listdir, rmdir
 import posixpath
 
@@ -46,10 +48,8 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-
 def get_dataset_path(dataset):
-    return path.join(settings.FILE_STORE_PATH,
-                     str(dataset.get_first_experiment().id),
+    return path.join(str(dataset.get_first_experiment().id),
                      str(dataset.id))
 
 def staging_traverse(staging=settings.STAGING_PATH):
@@ -144,58 +144,26 @@ class StagingHook():
         stage_file(instance)
 
 
-def stage_file(datafile):
-    """move files from the staging area to the dataset.
-    treat directories with care.
+def stage_file(datafile, opener=build_opener()):
+    from django.core.files.uploadedfile import TemporaryUploadedFile
+    with TemporaryUploadedFile(datafile.filename, None, None, None) as tf:
+        if datafile.verify(tf.file, opener):
+            tf.file.flush()
+            datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
+            datafile.protocol = ''
+            datafile.save()
 
-    :param datafile: a datafile to be staged
-    :type datafile: :class:`tardis.tardis_portal.models.Dataset_File`
-    """
-    dataset_path = get_dataset_path(datafile.dataset)
-    copyfrom = datafile.url
 
-    relpath = calculate_relative_path(datafile.protocol,
-                                      datafile.url)
-    copyto = path.join(dataset_path, relpath)
-    original_copyto = copyto
-
-    logger.debug('staging file: %s to %s' % (copyfrom, copyto))
-    if path.isdir(copyfrom):
-        if not path.exists(copyto):
-            makedirs(copyto)
-    else:
-        if path.exists(copyto):
-            logger.error("duplicate file: %s . Renaming." % copyto)
-            copyto = duplicate_file_check_rename(copyto)
-            # TODO raise error
-
-        if not path.exists(path.dirname(copyto)):
-            makedirs(path.dirname(copyto))
-
-        shutil.copy(copyfrom, copyto)
-
-    # duplicate file handling
-    split_copyto = copyto.rpartition('/')
-    filename = split_copyto[2]
-    relpath = relpath.rpartition('/')[0]
-
-    datafile.filename = filename
-    datafile.url = path.relpath(path.join(get_dataset_path(datafile.dataset),
-                                          relpath,
-                                          filename),
-                                settings.FILE_STORE_PATH)
-    datafile.protocol = ""
-    datafile.save()
-
-    # rmdir each dir from copyfrom[get_staging_path():] if empty
-    # currently doesn't do anything since we're copying and not moving..
-    basedir = copyfrom[:-len(relpath)]
-    while len(relpath) > 0:
-        try:
-            rmdir(basedir + relpath)
-        except OSError:
-            pass
-        relpath = path.dirname(relpath)
+def get_staging_url_and_size(username, filepath):
+    '''
+    Returns a file:// URL and the size of the file.
+    '''
+    from os.path import getsize
+    from django.utils import _os
+    staging_path = get_full_staging_path(username)
+    # Safe join should throw exception if filepath is unsafe
+    filepath = _os.safe_join(staging_path, filepath)
+    return ('file://'+filepath, getsize(filepath))
 
 
 def get_staging_path():
@@ -246,7 +214,7 @@ def duplicate_file_check_rename(copyto):
     return result
 
 
-def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
+def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
     """
     Writes file POST data to the dataset directory in the file store
 
@@ -257,69 +225,23 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post, filename=None):
     :rtype: the path of the file written to
     """
 
-    filename = filename or uploaded_file_post.name
+    filename = uploaded_file_post.name
 
-    experiment = dataset.get_first_experiment()
-    experiment_path = path.join(settings.FILE_STORE_PATH, str(experiment.id))
-
-    dataset_path = path.join(experiment_path, str(dataset.id))
+    from django.core.files.storage import default_storage
 
     # Path on disk can contain subdirectories - but if the request gets tricky with "../" or "/var" or something
     # we strip them out..
     try:
-        from django.utils import _os
-        copyto = _os.safe_join(dataset_path, filename)
-    except ValueError:
-        copyto = path.join(dataset_path, path.basename(filename))
+        copyto = path.join(get_dataset_path(dataset), filename)
+        default_storage.path(copyto)
+    except (SuspiciousOperation, ValueError):
+        copyto = path.join(get_dataset_path(dataset), path.basename(filename))
 
-    if not path.exists(path.dirname(copyto)):
-        makedirs(path.dirname(copyto))
+    logger.debug("Writing uploaded file %s" % copyto)
 
-    copyto = duplicate_file_check_rename(copyto)
-
-    logging.getLogger(__name__).debug("Writing uploaded file {0} to dataset {1}".format(copyto, dataset))
-    uploaded_file = open(copyto, 'wb+')
-
-    try:
-        # Check if we're using multiple chunks
-        if uploaded_file_post.multiple_chunks():
-            # We are, so let's write every chunk
-            for chunk in uploaded_file_post.chunks():
-                uploaded_file.write(chunk)
-        else:
-            # We're not, so just read and write
-            uploaded_file.write(uploaded_file_post.read())
-    except AttributeError:
-        # Handle ordinary files
-        uploaded_file.write(uploaded_file_post.read())
-
-    uploaded_file.close()
+    copyto = default_storage.save(copyto, uploaded_file_post)
 
     return copyto
-
-
-def add_datafile_to_dataset(dataset, filepath, size):
-    """
-    Adds datafile metadata to a dataset
-
-    :param dataset: dataset who's directory to be written to
-    :type dataset: :class:`tardis.tardis_portal.models.Dataset`
-    :param filepath: The full os path to the file
-    :type filepath: string
-    :param size: The file size in bytes
-    :type size: string
-    :rtype: The new datafile object
-    """
-    from tardis.tardis_portal.models import Dataset_File
-
-    urlpath = path.relpath(filepath, settings.FILE_STORE_PATH)
-    filename = posixpath.basename(urlpath)
-
-    datafile = Dataset_File(dataset=dataset, filename=filename,
-                            url=urlpath, size=size, protocol='')
-    datafile.save()
-
-    return datafile
 
 
 def get_full_staging_path(username):

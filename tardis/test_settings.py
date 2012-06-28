@@ -56,9 +56,10 @@ TEMPLATE_DIRS = ['.']
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
 
-MEDIA_ROOT = STATIC_DOC_ROOT
+DEFAULT_FILE_STORAGE = 'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
+MEDIA_ROOT = FILE_STORE_PATH
 
-MEDIA_URL = '/site_media/'
+MEDIA_URL = None
 STATIC_URL = '/static/'
 
 def get_admin_media_path():

@@ -69,33 +69,6 @@ class StagingFiles(TestCase):
             'testfile_2.txt')
         rmtree(test_dir)
 
-    def testAddDatafileToDataset(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
-        exp.save()
-        dataset = models.Dataset(description="dataset description...")
-        dataset.save()
-        dataset.experiments.add(exp)
-        dataset.save()
-
-        from tardis.tardis_portal.staging import add_datafile_to_dataset
-        from django.conf import settings
-        from os import path
-        experiment_path = path.join(settings.FILE_STORE_PATH,
-                                    str(dataset.get_first_experiment().id))
-        df = add_datafile_to_dataset(dataset,
-                                     path.join(experiment_path,
-                                               str(dataset.id), 'file'),
-                                     1234)
-        self.assertEqual(df.size, 1234)
-        self.assertEqual(df.filename, 'file')
-        self.assertEqual(df.url,
-                         "%d/%d/file" % (dataset.get_first_experiment().id,
-                                                  dataset.id))
-
 
 class TraverseTestCase(TestCase):
     dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
@@ -185,9 +158,9 @@ class TestStagingFiles(TestCase):
         self.temp = mkdtemp(dir=settings.GET_FULL_STAGING_PATH_TEST)
 
         self.file = mktemp(dir=self.temp)
-        f = open(self.file, "w+b")
-        f.write('test file')
-        f.close()
+        content = 'test file'
+        with open(self.file, "w+b") as f:
+            f.write(content)
 
         # make datafile
         exp = models.Experiment(title='test exp1',
@@ -206,8 +179,10 @@ class TestStagingFiles(TestCase):
         df = models.Dataset_File()
         df.dataset = dataset
         df.filename = path.basename(self.file)
-        df.url = self.file
+        df.url = 'file://'+self.file
         df.protocol = "staging"
+        df.size = len(content)
+        df.verify(allowEmptyChecksums=True)
         df.save()
         self.df = df
 

@@ -73,9 +73,9 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     save_datafile_add_form, MXDatafileSearchForm, RightsForm, ManageAccountForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
-from tardis.tardis_portal.staging import add_datafile_to_dataset,\
-    staging_traverse, write_uploaded_file_to_dataset,\
-    get_full_staging_path
+from tardis.tardis_portal.staging import get_full_staging_path, \
+    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size
+
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
@@ -2383,12 +2383,15 @@ def upload(request, dataset_id):
         if request.FILES:
 
             uploaded_file_post = request.FILES['Filedata']
-
             filepath = write_uploaded_file_to_dataset(dataset,
-                    uploaded_file_post)
-
-            add_datafile_to_dataset(dataset, filepath,
-                                    uploaded_file_post.size)
+                                                      uploaded_file_post)
+            datafile = Dataset_File(dataset=dataset,
+                                    filename=uploaded_file_post.name,
+                                    url=filepath,
+                                    size=uploaded_file_post.size,
+                                    protocol='')
+            datafile.verify(allowEmptyChecksums=True)
+            datafile.save()
 
     return HttpResponse('True')
 
@@ -2874,16 +2877,14 @@ def stage_files_to_dataset(request, dataset_id):
     except:
         return HttpResponse(status=400)
 
-    def make_staging_url(filepath):
-        from django.utils import _os
-        return _os.safe_join(get_full_staging_path(request.user.username),
-                              filepath)
-
     def create_staging_datafile(filepath):
+        url, size = get_staging_url_and_size(user.username, filepath)
         datafile = Dataset_File(dataset=dataset,
                                 protocol='staging',
-                                url=make_staging_url(filepath),
-                                filename=path.basename(filepath))
+                                url=url,
+                                filename=path.basename(filepath),
+                                size=size)
+        datafile.verify(allowEmptyChecksums=True)
         datafile.save()
         return datafile
 
