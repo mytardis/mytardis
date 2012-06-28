@@ -6,6 +6,7 @@ from StringIO import StringIO
 from urllib2 import urlopen
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseNotFound
+from django.views.decorators.http import etag
 
 from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
@@ -85,7 +86,20 @@ def _do_resize(img, size):
             return True
     return False
 
+def compute_etag(request, datafile_id, *args, **kwargs):
+    try:
+        datafile = Dataset_File.objects.get(pk=datafile_id)
+    except Dataset_File.DoesNotExist:
+        return None
+    if not has_datafile_download_access(request=request,
+                                        dataset_file_id=datafile.id):
+        return None
+    # OK, we can compute the Etag without giving anything away now
+    signature = datafile.sha512sum + json.dumps((args, kwargs))
+    import hashlib
+    return hashlib.sha1(signature).hexdigest()
 
+@etag(compute_etag)
 @compliance_header
 def download_image(request, datafile_id, region, size, rotation, quality, format=None): #@ReservedAssignment
     # Get datafile (and return 404 if absent)
@@ -147,6 +161,7 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
             return _invalid_media_response()
         return HttpResponseNotFound()
 
+@etag(compute_etag)
 @compliance_header
 def download_info(request, datafile_id, format): #@ReservedAssignment
     # Get datafile (and return 404 if absent)

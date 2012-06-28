@@ -95,6 +95,8 @@ class Level0TestCase(TestCase):
         expect(int(width.text)).to_equal(self.width)
         # Check compliance level
         _check_compliance_level(response)
+        # Check etag exists
+        ensure('Etag' in response, True, "Info should have an etag")
 
 
     def testCanGetInfoAsJSON(self):
@@ -111,6 +113,8 @@ class Level0TestCase(TestCase):
         expect(data['width']).to_equal(self.width)
         # Check compliance level
         _check_compliance_level(response)
+        # Check etag exists
+        ensure('Etag' in response, True, "Info should have an etag")
 
     def testCanGetOriginalImage(self):
         client = Client()
@@ -128,6 +132,8 @@ class Level0TestCase(TestCase):
             expect(img.height).to_equal(self.height)
         # Check compliance level
         _check_compliance_level(response)
+        # Check etag exists
+        ensure('Etag' in response, True, "Image should have an etag")
 
 class Level1TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
