@@ -239,24 +239,3 @@ class Dataset_File(models.Model):
         logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
                     "after successful verification")
         return True
-
-
-def save_DatasetFile(sender, **kwargs):
-
-    # the object can be accessed via kwargs 'instance' key.
-    df = kwargs['instance']
-
-    if df.verified:
-        return
-
-    try:
-        df.verify()
-    except IOError, e:
-        logger.info("IOError during verification: %s" % e)
-        pass
-    except OSError, e:
-        logger.info("OSError during verification: %s" % e)
-        pass
-
-
-pre_save.connect(save_DatasetFile, sender=Dataset_File)

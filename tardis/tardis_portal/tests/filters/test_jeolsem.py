@@ -58,6 +58,7 @@ class JEOLSEMFilterTestCase(TestCase):
                                     protocol='file',
                                     size=size,
                                     sha512sum=sha512sum)
+            datafile.verify()
             datafile.save()
             return datafile
 
