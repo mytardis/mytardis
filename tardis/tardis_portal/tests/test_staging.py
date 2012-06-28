@@ -40,36 +40,6 @@ from os import path
 from django.test import TestCase
 
 
-class StagingFiles(TestCase):
-    def setUp(self):
-        from django.contrib.auth.models import User
-        user = 'tardis_user1'
-        pwd = 'secret'
-        email = ''
-        self.user = User.objects.create_user(user, email, pwd)
-
-    def testDuplicateFileCheckRename(self):
-        from os import path
-        from tempfile import mkdtemp
-        from shutil import rmtree
-        from tardis.tardis_portal.staging import duplicate_file_check_rename
-        test_dir = mkdtemp()
-        path.join(test_dir, "testfile.txt")
-        f1 = open(path.join(test_dir, "testfile.txt"), 'w')
-        f1.close()
-        self.assertEqual(
-            path.basename(duplicate_file_check_rename(
-                path.join(test_dir, "testfile.txt"))),
-            'testfile_1.txt')
-        f1 = open(path.join(test_dir, "testfile_1.txt"), 'w')
-        f1.close()
-        self.assertEqual(
-            path.basename(duplicate_file_check_rename(
-                path.join(test_dir, "testfile.txt"))),
-            'testfile_2.txt')
-        rmtree(test_dir)
-
-
 class TraverseTestCase(TestCase):
     dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
     files = [['dir1', 'file1'],
@@ -114,27 +84,9 @@ class TraverseTestCase(TestCase):
         self.assertTrue('dir3' in result)
 
 
-class TestPathResolution(TestCase):
-    paths = ["dir123/file123",
-             "file.txt"]
-    username = "tardis_user1"
-
-    def test_absolute_to_relative(self):
-        from tardis.tardis_portal import staging
-        from django.conf import settings
-        from os import path
-        for p in self.paths:
-            ap = path.join(settings.GET_FULL_STAGING_PATH_TEST,
-                            p)
-            sp = staging.calculate_relative_path('staging',
-                                               ap)
-            self.assertEqual(sp, p)
-
-
 class TestStagingFiles(TestCase):
     def setUp(self):
         from tardis.tardis_portal import models
-        from tardis.tardis_portal.staging import calculate_relative_path
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
         from os import path

@@ -173,47 +173,6 @@ def get_staging_path():
     return settings.STAGING_PATH
 
 
-def calculate_relative_path(protocol, filepath):
-    """return the relative path to the datafile, that is the absolute path
-    minus the staging directory information.
-
-    :param protocol: a protocol
-    :type protocol: string
-    :param url: a url like path
-    :type url: string
-    """
-    if protocol == "staging":
-        # Staging path contains user directories: STAGING_PATH/bob/...
-        return path.relpath(filepath, settings.STAGING_PATH) \
-                   .partition(path.sep)[-1]
-    else:
-        logger.error("the staging path of the file %s is invalid!" % filepath)
-        raise ValueError("Unknown protocol, there is no way to calculate a relative url for %s urls." % protocol)
-
-    # if not filepath.startswith(staging):
-    #     raise ValueError("filepath %s is either already relative or invalid." % filepath)
-
-def duplicate_file_check_rename(copyto):
-    """
-    Checks if the destination for the file already exists and returns
-    a non-conflicting name
-
-    :param copyto: The destination path to check
-    :type copyto: string
-    :rtype: The new non-conflicting path (the original path if no conflicts)
-    """
-    i = 1
-    base, filename = path.split(copyto)
-    name, ext = path.splitext(filename)
-    result = copyto
-
-    while path.exists(result):
-        logger.debug('%s destination exists' % result)
-        result = path.join(base, "{0}_{1}{2}".format(name, i, ext))
-        i += 1
-    return result
-
-
 def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
     """
     Writes file POST data to the dataset directory in the file store
