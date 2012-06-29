@@ -169,6 +169,9 @@ STATICFILES_DIRS = (
     ('admin', ADMIN_MEDIA_STATIC_DOC_ROOT),
 )
 
+# Use cachable copies of static files
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
 TARDIS_APP_ROOT = 'tardis.apps'
