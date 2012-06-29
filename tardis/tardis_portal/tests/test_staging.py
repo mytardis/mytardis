@@ -40,63 +40,6 @@ from os import path
 from django.test import TestCase
 
 
-class StagingFiles(TestCase):
-    def setUp(self):
-        from django.contrib.auth.models import User
-        user = 'tardis_user1'
-        pwd = 'secret'
-        email = ''
-        self.user = User.objects.create_user(user, email, pwd)
-
-    def testDuplicateFileCheckRename(self):
-        from os import path
-        from tempfile import mkdtemp
-        from shutil import rmtree
-        from tardis.tardis_portal.staging import duplicate_file_check_rename
-        test_dir = mkdtemp()
-        path.join(test_dir, "testfile.txt")
-        f1 = open(path.join(test_dir, "testfile.txt"), 'w')
-        f1.close()
-        self.assertEqual(
-            path.basename(duplicate_file_check_rename(
-                path.join(test_dir, "testfile.txt"))),
-            'testfile_1.txt')
-        f1 = open(path.join(test_dir, "testfile_1.txt"), 'w')
-        f1.close()
-        self.assertEqual(
-            path.basename(duplicate_file_check_rename(
-                path.join(test_dir, "testfile.txt"))),
-            'testfile_2.txt')
-        rmtree(test_dir)
-
-    def testAddDatafileToDataset(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
-        exp.save()
-        dataset = models.Dataset(description="dataset description...")
-        dataset.save()
-        dataset.experiments.add(exp)
-        dataset.save()
-
-        from tardis.tardis_portal.staging import add_datafile_to_dataset
-        from django.conf import settings
-        from os import path
-        experiment_path = path.join(settings.FILE_STORE_PATH,
-                                    str(dataset.get_first_experiment().id))
-        df = add_datafile_to_dataset(dataset,
-                                     path.join(experiment_path,
-                                               str(dataset.id), 'file'),
-                                     1234)
-        self.assertEqual(df.size, 1234)
-        self.assertEqual(df.filename, 'file')
-        self.assertEqual(df.url,
-                         "%d/%d/file" % (dataset.get_first_experiment().id,
-                                                  dataset.id))
-
-
 class TraverseTestCase(TestCase):
     dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
     files = [['dir1', 'file1'],
@@ -141,27 +84,9 @@ class TraverseTestCase(TestCase):
         self.assertTrue('dir3' in result)
 
 
-class TestPathResolution(TestCase):
-    paths = ["dir123/file123",
-             "file.txt"]
-    username = "tardis_user1"
-
-    def test_absolute_to_relative(self):
-        from tardis.tardis_portal import staging
-        from django.conf import settings
-        from os import path
-        for p in self.paths:
-            ap = path.join(settings.GET_FULL_STAGING_PATH_TEST,
-                            p)
-            sp = staging.calculate_relative_path('staging',
-                                               ap)
-            self.assertEqual(sp, p)
-
-
 class TestStagingFiles(TestCase):
     def setUp(self):
         from tardis.tardis_portal import models
-        from tardis.tardis_portal.staging import calculate_relative_path
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
         from os import path
@@ -185,9 +110,9 @@ class TestStagingFiles(TestCase):
         self.temp = mkdtemp(dir=settings.GET_FULL_STAGING_PATH_TEST)
 
         self.file = mktemp(dir=self.temp)
-        f = open(self.file, "w+b")
-        f.write('test file')
-        f.close()
+        content = 'test file'
+        with open(self.file, "w+b") as f:
+            f.write(content)
 
         # make datafile
         exp = models.Experiment(title='test exp1',
@@ -206,8 +131,10 @@ class TestStagingFiles(TestCase):
         df = models.Dataset_File()
         df.dataset = dataset
         df.filename = path.basename(self.file)
-        df.url = self.file
+        df.url = 'file://'+self.file
         df.protocol = "staging"
+        df.size = len(content)
+        df.verify(allowEmptyChecksums=True)
         df.save()
         self.df = df
 

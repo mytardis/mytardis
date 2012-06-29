@@ -87,10 +87,12 @@ class JEOLSEMFilter(object):
 
 
     def get_file_contents(self, datafile):
-        file_url = datafile.get_actual_url()
-        if file_url == None:
+        from contextlib import closing
+        file_ = datafile.get_file()
+        if file_ == None:
             return ''
-        return urlopen(file_url).read()
+        with closing(file_) as f:
+            return f.read()
 
 
     def is_jeol_sem_metadata(self, filedata):

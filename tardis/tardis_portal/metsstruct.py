@@ -59,13 +59,15 @@ class Dataset():
 
 class Datafile():
 
-    def __init__(self, id, name, size, metadataIds):
+    def __init__(self, id, name, size, metadataIds, checksumType=None, checksum=None):
         self.id = id
         self.name = name
         self.size = size
         self.metadataIds = metadataIds
         self.url = None
         self.dataset = None
+        self.checksumType = checksumType
+        self.checksum = checksum
 
     def __str__(self):
         return 'Datafile\n' + \

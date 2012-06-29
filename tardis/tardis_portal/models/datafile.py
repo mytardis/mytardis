@@ -1,4 +1,7 @@
+import hashlib
+from magic import Magic
 from os import path
+from urllib2 import build_opener
 from urlparse import urlparse
 
 from django.conf import settings
@@ -6,9 +9,12 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
+from django.core.files.storage import default_storage
 from django.utils import _os
 
 from .dataset import Dataset
+
+from tardis.tardis_portal.fetcher import get_privileged_opener
 
 import logging
 logger = logging.getLogger(__name__)
@@ -45,6 +51,9 @@ class Dataset_File(models.Model):
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
+    sha512sum = models.CharField(blank=True, max_length=128)
+    stay_remote = models.BooleanField(default=False)
+    verified = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -77,7 +86,8 @@ class Dataset_File(models.Model):
             raise Schema.UnsupportedType
 
     def __unicode__(self):
-        return "%s %s # %s" % (self.md5sum, self.filename, self.mimetype)
+        return "%s %s # %s" % (self.sha512sum[:32] or self.md5sum,
+                               self.filename, self.mimetype)
 
     def get_mimetype(self):
         if self.mimetype:
@@ -98,15 +108,37 @@ class Dataset_File(models.Model):
             return None
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
+    def is_local(self):
+        try:
+            if self.protocol in (t[0] for t in settings.DOWNLOAD_PROVIDERS):
+                return False
+        except AttributeError:
+            pass
+        return urlparse(self.url).scheme == ''
+
     def get_actual_url(self):
-        url = urlparse(self.url)
-        if url.scheme == '':
+        if self.is_local():
             # Local file
             return 'file://'+self.get_absolute_filepath()
         # Remote files are also easy
+        url = urlparse(self.url)
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
+
+    def _get_file(self):
+        try:
+            if self.is_local():
+                return default_storage.open(self.url)
+            else:
+                return get_privileged_opener().open(self.get_actual_url())
+        except:
+            return None
+
+    def get_file(self):
+        if not self.verified:
+            return None
+        return self._get_file()
 
     def get_download_url(self):
         def get_download_view():
@@ -131,8 +163,6 @@ class Dataset_File(models.Model):
             return ''
 
     def get_absolute_filepath(self):
-        if self.protocol == 'staging':
-            return self.url
         url = urlparse(self.url)
         if url.scheme == '':
             try:
@@ -150,23 +180,11 @@ class Dataset_File(models.Model):
         return self.get_mimetype().startswith('image/') \
             and not self.get_mimetype() == 'image/x-icon'
 
-    def _set_size(self):
-        from os.path import getsize
-        self.size = str(getsize(self.get_absolute_filepath()))
-
-    def _set_mimetype(self):
-        from magic import Magic
-        self.mimetype = Magic(mime=True).from_file(
-            self.get_absolute_filepath())
-
-    def _set_md5sum(self):
-        f = open(self.get_absolute_filepath(), 'rb')
-        import hashlib
-        md5 = hashlib.new('md5')
-        for chunk in iter(lambda: f.read(128 * md5.block_size), ''):
-            md5.update(chunk)
-        f.close()
-        self.md5sum = md5.hexdigest()
+    def is_public(self):
+        from .experiment import Experiment
+        return Experiment.objects.filter(\
+                  datasets=self.dataset,
+                  public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
 
     def deleteCompletely(self):
         import os
@@ -174,27 +192,68 @@ class Dataset_File(models.Model):
         os.remove(filename)
         self.delete()
 
+    def verify(self, tempfile=None, allowEmptyChecksums=False):
+        '''
+        Verifies this file matches its checksums. It must have at least one
+        checksum hash to verify unless "allowEmptyChecksums" is True.
 
-def save_DatasetFile(sender, **kwargs):
-
-    # the object can be accessed via kwargs 'instance' key.
-    df = kwargs['instance']
-
-    if not df.get_absolute_filepath():
-        return
-
-    try:
-        if not df.size:
-            df._set_size()
-        if not df.md5sum:
-            df._set_md5sum()
-        if not df.mimetype:
-            df._set_mimetype()
-
-    except IOError:
-        pass
-    except OSError:
-        pass
+        If passed a file handle, it will write the file to it instead of
+        discarding data as it's read.
+        '''
 
 
-pre_save.connect(save_DatasetFile, sender=Dataset_File)
+        if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
+            return False
+
+        def read_file(sf, tf):
+            logger.info("Downloading %s for verification" % self.url)
+            from contextlib import closing
+            with closing(sf) as f:
+                md5 = hashlib.new('md5')
+                sha512 = hashlib.new('sha512')
+                size = 0
+                mimetype_buffer = ''
+                for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+                    size += len(chunk)
+                    if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                        mimetype_buffer += chunk
+                    md5.update(chunk)
+                    sha512.update(chunk)
+                    if tf:
+                        tf.write(chunk)
+                return (md5.hexdigest(),
+                        sha512.hexdigest(),
+                        size,
+                        mimetype_buffer)
+
+        sourcefile = self._get_file()
+        if not sourcefile:
+            return False
+        md5sum, sha512sum, size, mimetype_buffer = read_file(sourcefile,
+                                                             tempfile)
+
+        if not (self.size and size == int(self.size)):
+            logger.warn("%s failed size check: %d != %s" %
+                         (self.url, size, self.size))
+            return False
+
+        if self.sha512sum and sha512sum != self.sha512sum:
+            logger.error("%s failed SHA-512 sum check: %s != %s" %
+                         (self.url, sha512sum, self.sha512sum))
+            return False
+
+        if self.md5sum and md5sum != self.md5sum:
+            logger.error("%s failed MD5 sum check: %s != %s" %
+                         (self.url, md5sum, self.md5sum))
+            return False
+
+        self.md5sum = md5sum
+        self.sha512sum = sha512sum
+        if not self.mimetype and len(mimetype_buffer) > 0:
+            self.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
+        self.verified = True
+        self.save()
+
+        logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
+                    "after successful verification")
+        return True

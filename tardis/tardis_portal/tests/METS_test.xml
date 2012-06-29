@@ -205,42 +205,43 @@
 	<fileSec>
 		<fileGrp USE="original">
 			<file ID="F-1" MIMETYPE="application/octet-stream" SIZE="6148"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID=".DS_Store">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/.DS_Store" />
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID=".DS_Store">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/.DS_Store" />
 			</file>
 			<file ID="F-2" MIMETYPE="application/octet-stream" SIZE="76"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="batchrename.bat">
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="batchrename.bat">
 				<FLocat LOCTYPE="URL" xlink:type="simple"
-					xlink:href="tardis://Images/batchrename.bat" />
+					xlink:href="Images/batchrename.bat" />
 			</file>
 			<file ID="F-3" MIMETYPE="application/octet-stream" SIZE="1419287050"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment.zip">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment.zip" />
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="ment.zip">
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment.zip" />
 			</file>
 			<file ID="F-4" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0001.osc"
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="ment0001.osc"
 				ADMID="A-3">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment0001.osc" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment0001.osc" />
 			</file>
 			<file ID="F-5" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0002.osc"
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="ment0002.osc"
 				ADMID="A-4">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment0002.osc" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment0002.osc" />
 			</file>
 			<file ID="F-6" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0003.osc"
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="ment0003.osc"
 				ADMID="A-5">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment0003.osc" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment0003.osc" />
 			</file>
 			<file ID="F-7" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0004.osc"
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeef" CHECKSUMTYPE="MD5" OWNERID="ment0004.osc"
 				ADMID="A-6">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment0004.osc" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment0004.osc" />
 			</file>
 			<file ID="F-8" MIMETYPE="application/octet-stream" SIZE="18006000"
-				CHECKSUM="TODO:checksumming" CHECKSUMTYPE="MD5" OWNERID="ment0005.osc"
+				CHECKSUM="deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+				CHECKSUMTYPE="SHA-512" OWNERID="ment0005.osc"
 				ADMID="A-7">
-				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="tardis://Images/ment0005.osc" />
+				<FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="Images/ment0005.osc" />
 			</file>
 		</fileGrp>
 	</fileSec>

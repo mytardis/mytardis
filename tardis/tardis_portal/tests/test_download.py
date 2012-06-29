@@ -28,6 +28,13 @@ try:
 except (AttributeError, ImportError):
     IMAGEMAGICK_AVAILABLE = False
 
+
+def get_size_and_sha512sum(testfile):
+    import hashlib
+    with open(testfile, 'rb') as f:
+        contents = f.read()
+        return (len(contents), hashlib.sha512(contents).hexdigest())
+
 class StreamingFileTestCase(TestCase):
 
     def testDirectCopy(self):
@@ -122,22 +129,30 @@ class DownloadTestCase(TestCase):
             f.close()
 
 
+        size, sha512sum = get_size_and_sha512sum(testfile1)
         self.dataset_file1 = Dataset_File(dataset=self.dataset1,
                                           filename=filename1,
                                           protocol='',
+                                          size=size,
+                                          sha512sum=sha512sum,
                                           url='%d/%d/%s'
                                               % (self.experiment1.id,
                                                  self.dataset1.id,
                                                  filename1))
+        self.dataset_file1.verify()
         self.dataset_file1.save()
 
+        size, sha512sum = get_size_and_sha512sum(testfile2)
         self.dataset_file2 = Dataset_File(dataset=self.dataset2,
                                           filename=basename(filename2),
                                           protocol='',
+                                          size=size,
+                                          sha512sum=sha512sum,
                                           url='%d/%d/%s'
                                             % (self.experiment2.id,
                                                self.dataset2.id,
                                                filename2))
+        self.dataset_file2.verify()
         self.dataset_file2.save()
 
     def tearDown(self):
@@ -312,15 +327,19 @@ class DownloadTestCase(TestCase):
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
         # now check a JPG file
-        filename = join(abspath(dirname(__file__)),
-                        '../static/images/ands-logo-hi-res.jpg')
+        filename = abspath(join(dirname(__file__),
+                                '../static/images/ands-logo-hi-res.jpg'))
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
+        size, sha512sum = get_size_and_sha512sum(filename)
         pdf1 = Dataset_File(dataset=dataset,
                             filename=basename(filename),
+                            size=str(size),
+                            sha512sum=sha512sum,
                             url='file://%s' % filename,
                             protocol='file')
+        pdf1.verify()
         pdf1.save()
         try:
             from magic import Magic
@@ -338,7 +357,8 @@ class DownloadTestCase(TestCase):
                             protocol='file',
                             mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
                             size=str(0),
-                            md5sum='md5sum')
+                            # Empty string always has the same hash
+                            sha512sum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
         pdf2.save()
         try:
             from magic import Magic
@@ -347,7 +367,7 @@ class DownloadTestCase(TestCase):
             # XXX Test disabled becuse lib magic can't be loaded
             pass
         self.assertEqual(pdf2.size, str(0))
-        self.assertEqual(pdf2.md5sum, 'md5sum')
+        self.assertEqual(pdf2.md5sum, '')
 
         pdf2.mimetype = ''
         pdf2.save()

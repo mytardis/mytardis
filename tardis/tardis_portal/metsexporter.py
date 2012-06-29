@@ -112,16 +112,16 @@ class MetsExporter():
 
             experimentDiv.add_div(datasetDiv)
 
-            datafiles = Dataset_File.objects.filter(dataset=dataset)
-
-            for datafile in datafiles:
+            for datafile in dataset.dataset_file_set.filter(verified=True):
                 # add entry to fileSec
-                _file = fileType(ID="F-{0}".format(fileCounter),
-                    MIMETYPE=(datafile.mimetype or "application/octet-stream"),
-                    SIZE=datafile.size, CHECKSUM=(datafile.md5sum or
-                    "application/octet-stream"), CHECKSUMTYPE="MD5",
-                    OWNERID=datafile.filename, ADMID="A-{0}".format(
-                    metadataCounter))
+                _file = fileType(
+                                 ID="F-{0}".format(fileCounter),
+                                 MIMETYPE=datafile.mimetype,
+                                 SIZE=datafile.size,
+                                 CHECKSUM=datafile.sha512sum,
+                                 CHECKSUMTYPE="SHA-512",
+                                 OWNERID=datafile.filename,
+                                 ADMID="A-{0}".format(metadataCounter))
 
                 protocol = datafile.protocol
                 if protocol in replace_protocols:
