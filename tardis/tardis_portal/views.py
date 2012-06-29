@@ -863,14 +863,16 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
+    sync_root = ''
     if firstline.startswith('<experiment'):
         logger.debug('processing simple xml')
         processExperiment = ProcessExperiment()
-        eid = processExperiment.process_simple(filename, created_by, expid)
-
+        eid, sync_root = processExperiment.process_simple(filename,
+                                                          created_by,
+                                                          expid)
     else:
         logger.debug('processing METS')
-        eid = parseMets(filename, created_by, expid)
+        eid, sync_root = parseMets(filename, created_by, expid)
 
     auth_key = ''
     try:
@@ -914,7 +916,7 @@ def _registerExperimentDocument(filename, created_by, expid=None,
                                     aclOwnershipType=ExperimentACL.OWNER_OWNED)
                 acl.save()
 
-    return eid
+    return (eid, sync_root)
 
 
 # web service
@@ -958,11 +960,11 @@ def register_experiment_ws_xmldata(request):
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
             try:
-                _registerExperimentDocument(filename=filename,
-                                            created_by=user,
-                                            expid=local_id,
-                                            owners=owners,
-                                            username=username)
+                _, sync_path = _registerExperimentDocument(filename=filename,
+                                                           created_by=user,
+                                                           expid=local_id,
+                                                           owners=owners,
+                                                           username=username)
                 logger.info('=== processing experiment %s: DONE' % local_id)
             except:
                 logger.exception('=== processing experiment %s: FAILED!' % local_id)
@@ -976,7 +978,7 @@ def register_experiment_ws_xmldata(request):
                         uid=origin_id,
                         from_url=from_url)
 
-            response = HttpResponse(str(local_id), status=200)
+            response = HttpResponse(str(sync_path), status=200)
             response['Location'] = request.build_absolute_uri(
                 '/experiment/view/' + str(local_id))
             return response

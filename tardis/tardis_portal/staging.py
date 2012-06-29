@@ -154,6 +154,25 @@ def stage_file(datafile):
             datafile.save()
 
 
+def get_sync_root(prefix = ''):
+    from uuid import uuid4 as uuid
+    def get_candidate_path():
+        return path.join(settings.SYNC_TEMP_PATH, prefix + str(uuid()))
+    root = (p for p in iter(get_candidate_path,'') if not path.exists(p)).next()
+    makedirs(root)
+    return root
+
+
+def get_sync_url_and_protocol(sync_path, filepath):
+    from urlparse import urlparse
+    from django.utils import _os
+    urlObj = urlparse(filepath)
+    if urlObj.scheme == '':
+        return ('file://'+_os.safe_join(sync_path, filepath), '')
+    else:
+        return (filepath, urlObj.scheme)
+
+
 def get_staging_url_and_size(username, filepath):
     '''
     Returns a file:// URL and the size of the file.

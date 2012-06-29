@@ -40,6 +40,8 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/test/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
+SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
+                                        '../var/test/sync/'))
 
 STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'

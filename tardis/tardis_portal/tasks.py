@@ -4,6 +4,18 @@ from django.db import transaction
 from tardis.tardis_portal.staging import stage_file
 from tardis.tardis_portal.models import Dataset_File
 
+# Ensure filters are loaded
+try:
+    from tardis.tardis_portal.filters import FilterInitMiddleware
+    FilterInitMiddleware()
+except Exception:
+    pass
+try:
+    from tardis.tardis_portal.logging_middleware import LoggingMiddleware
+    LoggingMiddleware()
+except Exception:
+    pass
+
 @task(name="tardis_portal.verify_files", ignore_result=True)
 def verify_files():
     for datafile in Dataset_File.objects.filter(verified=False):

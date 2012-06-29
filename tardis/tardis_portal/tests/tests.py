@@ -45,6 +45,7 @@ import datetime
 from xml.sax.handler import feature_namespaces
 from xml.sax import make_parser
 
+from django.conf import settings
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
@@ -77,9 +78,9 @@ class SearchTestCase(TestCase):
                  'Cookson-notmets.xml']
         for f in files:
             filename = path.join(path.abspath(path.dirname(__file__)), f)
-            expid = _registerExperimentDocument(filename=filename,
-                                                created_by=user,
-                                                expid=None)
+            expid, _ = _registerExperimentDocument(filename=filename,
+                                                   created_by=user,
+                                                   expid=None)
             experiment = Experiment.objects.get(pk=expid)
 
             acl = ExperimentACL(pluginId=django_user,
@@ -396,7 +397,7 @@ class MetsExperimentStructCreatorTestCase(TestCase):
             'A-7'][0].name == 'ment0005.osc',
             'metadata A-7 should have ment0005.osc as the name')
         self.assertTrue(self.dataHolder.metadataMap[
-            'A-7'][0].url == 'tardis://Images/ment0005.osc',
+            'A-7'][0].url == 'Images/ment0005.osc',
             'metadata A-7 should have tardis://Images/ment0005.osc as the url')
         self.assertTrue(self.dataHolder.metadataMap[
             'A-7'][0].dataset.id == 'J-2',
@@ -432,8 +433,14 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         filename = path.join(path.abspath(path.dirname(__file__)),
                              './METS_test.xml')
 
-        expid = _registerExperimentDocument(filename, self.user, expid=None)
+        expid, sync_path = _registerExperimentDocument(filename,
+                                                       self.user,
+                                                       expid=None)
+        ensure(sync_path.startswith(settings.SYNC_TEMP_PATH), True,
+               "Sync path should be influenced by SYNC_TEMP_PATH: %s" %
+               sync_path)
         self.experiment = Experiment.objects.get(pk=expid)
+        self.sync_path = sync_path
 
     def tearDown(self):
         self.experiment.delete()
@@ -488,6 +495,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         self.assertTrue(frtypeParam.string_value == 'PIL200K')
 
     def testIngestedDatafileFields(self):
+        import hashlib
         from tardis.tardis_portal import models
         dataset = models.Dataset.objects.get(description='Bluebird')
         datafiles = dataset.dataset_file_set.all()
@@ -498,6 +506,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             'datafile should not be none')
         self.assertTrue(datafile.size == '18006000',
             'wrong file size for ment0003.osc')
+        expect(datafile.url).to_equal('file://'+path.join(self.sync_path,
+                                                        'Images/ment0003.osc'))
 
         datafileParams = models.DatafileParameter.objects.filter(
             parameterset__dataset_file=datafile)
@@ -511,6 +521,17 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         positionerStrParam = datafileParams.get(name__name='positionerString')
         self.assertTrue(
             positionerStrParam.string_value == 'UDEF1_2_PV1_2_3_4_5')
+
+        # Check MD5 works
+        self.assertTrue(datafile.md5sum == 'deadbeef' \
+                        * (hashlib.md5('').digest_size / 4),
+            'wrong MD5 hash for ment0003.osc')
+
+        # Check SHA-512 works
+        datafile = datafiles.get(filename='ment0005.osc')
+        self.assertTrue(datafile.sha512sum == 'deadbeef' \
+                        * (hashlib.sha512('').digest_size / 4),
+            'wrong SHA-512 hash for ment0005.osc')
 
     def testMetsExport(self):
         client = Client()
