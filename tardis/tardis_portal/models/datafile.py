@@ -180,6 +180,12 @@ class Dataset_File(models.Model):
         return self.get_mimetype().startswith('image/') \
             and not self.get_mimetype() == 'image/x-icon'
 
+    def is_public(self):
+        from .experiment import Experiment
+        return Experiment.objects.filter(\
+                  datasets=self.dataset,
+                  public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
+
     def deleteCompletely(self):
         import os
         filename = self.get_absolute_filepath()

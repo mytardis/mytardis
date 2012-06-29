@@ -12,7 +12,7 @@ from django.test.client import Client
 from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.models import User, UserProfile, \
-    Experiment, Dataset, Dataset_File, datafile
+    Experiment, ExperimentACL, Dataset, Dataset_File
 
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -34,6 +34,14 @@ def _create_datafile():
                                            created_by=user,
                                            public_access=full_access)
     experiment.save()
+    ExperimentACL(experiment=experiment,
+                  pluginId='django_user',
+                  entityId=str(user.id),
+                  isOwner=True,
+                  canRead=True,
+                  canWrite=True,
+                  canDelete=True,
+                  aclOwnershipType=ExperimentACL.OWNER_OWNED).save()
     dataset = Dataset()
     dataset.save()
     dataset.experiments.add(experiment)
@@ -94,8 +102,6 @@ class Level0TestCase(TestCase):
         expect(int(width.text)).to_equal(self.width)
         # Check compliance level
         _check_compliance_level(response)
-        # Check etag exists
-        ensure('Etag' in response, True, "Info should have an etag")
 
 
     def testCanGetInfoAsJSON(self):
@@ -112,8 +118,6 @@ class Level0TestCase(TestCase):
         expect(data['width']).to_equal(self.width)
         # Check compliance level
         _check_compliance_level(response)
-        # Check etag exists
-        ensure('Etag' in response, True, "Info should have an etag")
 
     def testCanGetOriginalImage(self):
         client = Client()
@@ -131,8 +135,6 @@ class Level0TestCase(TestCase):
             expect(img.height).to_equal(self.height)
         # Check compliance level
         _check_compliance_level(response)
-        # Check etag exists
-        ensure('Etag' in response, True, "Image should have an etag")
 
 class Level1TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
@@ -306,5 +308,73 @@ class Level2TestCase(TestCase):
         raise SkipTest
 
 
+class ExtraTestCases(TestCase):
+    """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
+    def setUp(self):
+        self.datafile = _create_datafile()
+        self.width = 70
+        self.height = 46
 
+    def testInfoHasEtags(self):
+        client = Client()
+        for format_ in ('json', 'xml'):
+            kwargs = {'datafile_id': self.datafile.id,
+                      'format': format_ }
+            url = reverse('tardis.tardis_portal.iiif.download_info',
+                          kwargs=kwargs)
+            response = client.get(url)
+            expect(response.status_code).to_equal(200)
+            # Check etag exists
+            ensure('Etag' in response, True, "Info should have an etag")
+
+    def testImageHasEtags(self):
+        client = Client()
+        kwargs = {'datafile_id': self.datafile.id,
+                  'region': 'full',
+                  'size': 'full',
+                  'rotation': '0',
+                  'quality': 'native' }
+        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+        response = client.get(url)
+        expect(response.status_code).to_equal(200)
+        # Check etag exists
+        ensure('Etag' in response, True, "Image should have an etag")
+
+    def testImageCacheControl(self):
+        client = Client()
+        kwargs = {'datafile_id': self.datafile.id,
+                  'region': 'full',
+                  'size': 'full',
+                  'rotation': '0',
+                  'quality': 'native' }
+        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+        response = client.get(url)
+        expect(response.status_code).to_equal(200)
+        # Check etag exists
+        ensure('Cache-Control' in response, True,
+               "Image should have a Cache-Control header")
+        ensure('max-age' in response['Cache-Control'], True,
+               "Image should have a Cache-Control header")
+        # By default the image is public, so
+        ensure('public' in response['Cache-Control'], True,
+               "Image should have a Cache-Control header")
+
+        is_logged_in = client.login(username='testuser', password='pwd')
+        expect(is_logged_in).to_be_truthy()
+
+        experiment = self.datafile.dataset.get_first_experiment()
+        experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
+        experiment.save()
+
+        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+        response = client.get(url)
+        expect(response.status_code).to_equal(200)
+        # Check etag exists
+        ensure('Cache-Control' in response, True,
+               "Image should have a Cache-Control header")
+        ensure('max-age' in response['Cache-Control'], True,
+               "Image should have a Cache-Control header")
+        # By default the image is now private, so
+        ensure('private' in response['Cache-Control'], True,
+               "Image should have a Cache-Control header")

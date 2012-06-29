@@ -4,15 +4,19 @@ import json
 import mimetypes
 from StringIO import StringIO
 from urllib2 import urlopen
+from django.conf import settings
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
+from django.utils.cache import patch_cache_control
 
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Experiment, Dataset_File
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 
 from wand.exceptions import MissingDelegateError
 from wand.image import Image
+
+MAX_AGE = getattr(settings, 'DATAFILE_CACHE_MAX_AGE', 60*60*24*7)
 
 NSMAP = { None: 'http://library.stanford.edu/iiif/image-api/ns/' }
 ALLOWED_MIMETYPES = ['image/jpeg', 'image/png', 'image/tiff',
@@ -107,10 +111,13 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
         datafile = Dataset_File.objects.get(pk=datafile_id)
     except Dataset_File.DoesNotExist:
         return HttpResponseNotFound()
-    # Check users has access to datafile
-    if not has_datafile_download_access(request=request,
-                                        dataset_file_id=datafile.id):
-        return HttpResponseNotFound()
+
+    is_public = datafile.is_public()
+    if not is_public:
+        # Check users has access to datafile
+        if not has_datafile_download_access(request=request,
+                                            dataset_file_id=datafile.id):
+            return HttpResponseNotFound()
 
     buf = StringIO()
     try:
@@ -154,7 +161,12 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
                 img.save(file=buf)
                 response = HttpResponse(buf.getvalue(), mimetype=mimetype)
                 response['Content-Disposition'] = \
-                    'inline; filename="%s.png"' % datafile.filename
+                    'inline; filename="%s.%s"' % (datafile.filename, format)
+                # Set Cache
+                if is_public:
+                    patch_cache_control(response, public=True, max_age=MAX_AGE)
+                else:
+                    patch_cache_control(response, private=True, max_age=MAX_AGE)
                 return response
     except MissingDelegateError:
         if format:
