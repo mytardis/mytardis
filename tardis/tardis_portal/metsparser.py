@@ -80,7 +80,9 @@ recommends.
 
 """
 
+import hashlib
 import logging
+import re
 
 from xml.sax import SAXParseException, ContentHandler
 from xml.sax.handler import feature_namespaces
@@ -89,6 +91,8 @@ from xml.sax import make_parser
 from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
 from tardis.tardis_portal.metshandler import store_metadata_value
+from tardis.tardis_portal.staging import \
+    get_sync_root, get_sync_url_and_protocol
 
 from django.conf import settings
 
@@ -149,11 +153,14 @@ class MetsExperimentStructCreator(ContentHandler):
             fileId = _getAttrValueByQName(attrs, 'ID')
             fileSize = _getAttrValueByQName(attrs, 'SIZE')
             fileMetadataIds = _getAttrValueByQName(attrs, 'ADMID')
+            fileChecksumType = _getAttrValueByQName(attrs, 'CHECKSUMTYPE')
+            fileChecksum = _getAttrValueByQName(attrs, 'CHECKSUM')
 
             # instantiate the datafile
             self.datafile = metsstruct.Datafile(
                 fileId, fileName, fileSize, fileMetadataIds is not None and
-                fileMetadataIds.split() or None)
+                fileMetadataIds.split() or None,
+                fileChecksumType, fileChecksum)
 
             # add an entry for this datafile in the metadataMap so we can
             # easily look it up later on when we do our second parse
@@ -297,10 +304,11 @@ class MetsMetadataInfoHandler(ContentHandler):
 
     '''
 
-    def __init__(self, holder, tardisExpId, createdBy):
+    def __init__(self, holder, tardisExpId, createdBy, syncRootDir):
         self.holder = holder
         self.tardisExpId = tardisExpId
         self.createdBy = createdBy
+        self.syncRootDir = syncRootDir
 
         self.inDmdSec = False
         self.inName = False
@@ -663,12 +671,41 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 if not self.metsObject.size:
                                     size = 0
 
+
+                                def checksum(obj, type_):
+                                    # Check if the checksum is of type
+                                    if obj.checksumType != type_:
+                                        return ''
+                                    checksum = obj.checksum.lower()
+                                    # Ensure the checksum is hexdecimal
+                                    if not re.match('[0-9a-f]+$', checksum):
+                                        return ''
+                                    # Get algorithm
+                                    try:
+                                        name = type_.replace('-','').lower()
+                                        alg = getattr(hashlib, name)
+                                    except:
+                                        return ''
+                                    # Check checksum is the correct length
+                                    hex_length = alg('').digest_size * 2
+                                    if hex_length != len(checksum):
+                                        return ''
+                                    # Should be valid checksum of given type
+                                    return checksum
+
+                                sync_url, proto = get_sync_url_and_protocol(
+                                                    self.syncRootDir,
+                                                    self.metsObject.url)
+
                                 self.modelDatafile = models.Dataset_File(
                                     dataset=thisFilesDataset,
                                     filename=self.metsObject.name,
-                                    url=self.metsObject.url,
+                                    url=sync_url,
                                     size=size,
-                                    protocol=self.metsObject.url.split('://')[0])
+                                    md5sum=checksum(self.metsObject, 'MD5'),
+                                    sha512sum=checksum(self.metsObject,
+                                                       'SHA-512'),
+                                    protocol=proto)
 
                                 self.modelDatafile.save()
                             else:
@@ -826,10 +863,16 @@ def parseMets(filename, createdBy, expId=None):
     parser.setContentHandler(MetsExperimentStructCreator(dataHolder))
     parser.parse(filename)
 
+    # Get the destination directory
+    if expId:
+        sync_root = get_sync_root(prefix="%d-" % expId)
+    else:
+        sync_root = get_sync_root()
+
     # on the second pass, we'll parse the document so that we can tie
     # the metadata info with the experiment/dataset/datafile objects
     parser.setContentHandler(
-        MetsMetadataInfoHandler(dataHolder, expId, createdBy))
+        MetsMetadataInfoHandler(dataHolder, expId, createdBy, sync_root))
     parser.parse(filename)
 
     endParseTime = time.time()
@@ -838,4 +881,4 @@ def parseMets(filename, createdBy, expId=None):
     timeDiff = endParseTime - startParseTime
     logger.debug('time difference in seconds: %s' % (timeDiff))
 
-    return dataHolder.experimentDatabaseId
+    return (dataHolder.experimentDatabaseId, sync_root)

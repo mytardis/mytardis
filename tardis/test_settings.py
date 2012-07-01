@@ -40,6 +40,8 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
                                          '../var/test/store/'))
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
+SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
+                                        '../var/test/sync/'))
 
 STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
@@ -56,9 +58,10 @@ TEMPLATE_DIRS = ['.']
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
                             'tardis_portal/site_media').replace('\\', '/')
 
-MEDIA_ROOT = STATIC_DOC_ROOT
+DEFAULT_FILE_STORAGE = 'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
+MEDIA_ROOT = FILE_STORE_PATH
 
-MEDIA_URL = '/site_media/'
+MEDIA_URL = None
 STATIC_URL = '/static/'
 
 def get_admin_media_path():
@@ -241,3 +244,8 @@ SYNC_CLIENT_KEY = 'valid_client_key'
 SYNC_ADMINS = ( 'syncadmin@localhost', )
 SERVER_EMAIL = 'transfers@localhost'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+REMOTE_SERVER_CREDENTIALS = [
+    # Just one server for tests
+    ('http://localhost:4272/', 'username', 'password')
+]

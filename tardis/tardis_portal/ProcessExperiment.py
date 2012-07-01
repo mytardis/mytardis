@@ -40,6 +40,8 @@ import logging
 from django.utils.safestring import SafeUnicode
 
 from tardis.tardis_portal.models import *
+from tardis.tardis_portal.staging import \
+    get_sync_root, get_sync_url_and_protocol
 
 
 logger = logging.getLogger(__name__)
@@ -109,7 +111,9 @@ class ProcessExperiment:
             return string
 
     # this is the worst code of all time :) -steve
+    # Yes. Yes it is. - Tim
     def process_simple(self, filename, created_by, eid):
+        sync_root = get_sync_root()
 
         f = open(filename)
         e = 0
@@ -433,16 +437,15 @@ class ProcessExperiment:
                     else:
                         filename = datafile['path']
 
-                    url = datafile['path']
-                    protocol = url.partition('://')[0]
-                    if protocol in  ['file', 'http', 'https']:
-                        protocol = ''
+                    sync_url, proto = get_sync_url_and_protocol(
+                                        sync_root,
+                                        datafile['path'])
 
                     dfile = Dataset_File(dataset=d,
                                          filename=filename,
-                                         url=url,
+                                         url=sync_url,
                                          size=datafile['size'],
-                                         protocol=protocol)
+                                         protocol=proto)
                     dfile.save()
 
                     current_df_id = dfile.id
@@ -529,4 +532,4 @@ class ProcessExperiment:
             except:
                 pass
 
-        return experiment.id
+        return (experiment.id, sync_root)

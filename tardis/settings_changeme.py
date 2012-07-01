@@ -1,5 +1,6 @@
-from os import path
 import djcelery
+from datetime import timedelta
+from os import path
 
 DEBUG = False
 
@@ -135,18 +136,23 @@ FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
+SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
+    '../var/sync/')).replace('\\', '/')
+
 STAGING_PROTOCOL = 'ldap'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 STAGING_MOUNT_USER_SUFFIX_ENABLE = False
 
+DEFAULT_FILE_STORAGE = 'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
+
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = STATIC_DOC_ROOT
+MEDIA_ROOT = FILE_STORE_PATH
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = '/site_media/'
+MEDIA_URL = None
 
 # Static content location
 STATIC_URL = '/static/'
@@ -316,5 +322,13 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
+
+
+CELERYBEAT_SCHEDULE = {
+      "verify-files": {
+        "task": "tardis_portal.verify_files",
+        "schedule": timedelta(seconds=30)
+      },
+    }
 
 djcelery.setup_loader()
