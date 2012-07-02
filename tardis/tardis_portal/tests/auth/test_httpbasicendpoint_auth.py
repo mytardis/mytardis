@@ -5,7 +5,7 @@ Created on Dec 15, 2011
 '''
 from django.test import TestCase
 from django.test.client import RequestFactory
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 import base64
 import urllib2
 import tempfile
@@ -154,6 +154,15 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         mockUserDao.should_receive('get').and_raise(User.DoesNotExist())
         mockUserDao.should_call('create_user').with_args(username, '')\
             .at_least.once
+        # Ditto for group object retrieval
+        group = Group.objects.create(name='test-group')
+        group.save();
+        mockGroupDao = flexmock(Group.objects)
+        mockGroupDao.should_receive('get').with_args(name='test-group')\
+            .and_return(group).at_least.once
+        mockGroupDao.should_receive('get').with_args(name='unknown-group')\
+            .and_raise(Group.DoesNotExist)
+        
         result = auth.authenticate(request)
         server.stop()
         self._checkResult(result, username)
