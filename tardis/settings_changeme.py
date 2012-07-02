@@ -229,6 +229,8 @@ DEFAULT_AUTH = 'localdb'
 
 AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 
+# New users are added to these groups by default.
+NEW_USER_INITIAL_GROUPS = []
 
 ACCOUNT_ACTIVATION_DAYS = 3
 
