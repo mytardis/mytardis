@@ -4,7 +4,8 @@ Created on 15/03/2011
 @author: gerson
 '''
 
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.models import User, Group
 from tardis.tardis_portal.models import UserProfile, UserAuthentication
 
 
@@ -46,13 +47,24 @@ def create_user(auth_method, user_id, email=''):
                                     password=password,
                                     email=email)
     user.save()
-
-    userProfile = UserProfile(user=user, isDjangoAccount=False)
-    userProfile.save()
-
+    configure_user(user)
     userAuth = UserAuthentication(userProfile=userProfile,
         username=user_id, authenticationMethod=auth_method)
     userAuth.save()
 
     return user
 
+def configure_user(user):
+    """ Configure a user account that has just been created by adding
+    the user to the default groups and creating a UserProfile.
+
+    :param user: the User instance for the newly created account
+    """
+    for group_name in settings.NEW_USER_INITIAL_GROUPS:
+        try:
+            group = Group.objects.get(name=group_name)
+            user.groups.add(group)
+        except Group.DoesNotExist:
+            pass
+    userProfile = UserProfile(user=user, isDjangoAccount=False)
+    userProfile.save()
