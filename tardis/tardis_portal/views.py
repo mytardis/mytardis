@@ -116,10 +116,14 @@ def get_dataset_info(dataset, include_thumbnail=False, from_experiment=None):
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
     
     obj['url'] = dataset.get_absolute_url()
-    if from_experiment:
-        obj['url'] = obj['url'] + \
-            "?from_experiment=" + \
-            str(from_experiment.id)
+    
+    try:
+        if from_experiment.id:
+            obj['url'] = obj['url'] + \
+                "?from_experiment=" + \
+                str(from_experiment.id)
+    except TypeError:
+        pass
         
     if include_thumbnail:
         try:
