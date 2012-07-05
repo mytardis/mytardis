@@ -103,7 +103,7 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False, from_experiment=None):
+def get_dataset_info(dataset, include_thumbnail=False, from_experiment=""):
     def get_thumbnail_url(datafile):
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': datafile.id,
@@ -116,14 +116,10 @@ def get_dataset_info(dataset, include_thumbnail=False, from_experiment=None):
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
     
     obj['url'] = dataset.get_absolute_url()
-    
-    try:
-        if from_experiment.id:
-            obj['url'] = obj['url'] + \
-                "?from_experiment=" + \
-                str(from_experiment.id)
-    except TypeError:
-        pass
+    if not from_experiment == "":
+        obj['url'] = obj['url'] + \
+            "?from_experiment=" + \
+            str(from_experiment.pk)    
         
     if include_thumbnail:
         try:
@@ -634,7 +630,7 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    objects = [ get_dataset_info(ds, has_download_permissions) \
+    objects = [ get_dataset_info(ds, has_download_permissions, experiment) \
                 for ds in experiment.datasets.all() ]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
