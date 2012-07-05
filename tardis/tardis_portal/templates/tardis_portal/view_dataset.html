@@ -333,6 +333,16 @@ $('#modal-metadata .submit-button').click(function() {
       <span>Untitled Dataset</span>
     {% endif %}
   </h1>
+  {% if from_experiment %}
+  <h4>
+      From
+      <a property="dc:title"
+         class="experiment-link"
+         href="{{ from_experiment.get_absolute_url }}">
+      {{ from_experiment.title }}
+      </a>
+  </h4>
+  {% endif %}
   <p style="text-align: right">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
