@@ -80,6 +80,9 @@ AUTH_PROVIDERS = (('localdb', 'Local DB',
                   ('ldap', 'LDAP',
                    'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
 )
+
+NEW_USER_INITIAL_GROUPS = ['test-group']
+
 DEFAULT_AUTH = 'localdb'
 
 USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',)
