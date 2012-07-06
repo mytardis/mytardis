@@ -32,7 +32,7 @@
     {{ action_bar }}
 
     <div id="datasets">
-    {{ experiment.datasets.all|dataset_tiles:has_download_permissions }}
+    {{ experiment|dataset_tiles:has_download_permissions }}
     </div>
 
     {% if experiment.datasets.count|gt:4 %}
