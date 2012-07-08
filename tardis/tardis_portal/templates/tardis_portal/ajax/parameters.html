@@ -2,6 +2,7 @@
 <div class="datafile_parameters">
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
+    {% if not parameterset.schema.immutable %}
     {% if has_write_permissions %}
       <div class="pull-right">
         <a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
@@ -11,6 +12,7 @@
           Edit
         </a>
       </div>
+    {% endif %}
     {% endif %}
   {% endcapture %}
   <div style="margin-top: 10px; margin-bottom: 10px;">
