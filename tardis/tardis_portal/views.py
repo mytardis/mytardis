@@ -193,9 +193,8 @@ def site_settings(request):
 
 
 @never_cache
-def load_image(request, experiment_id, parameter):
+def load_image(request, parameter):
     file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
-                                       str(experiment_id),
                                        parameter.string_value))
 
     from django.core.servers.basehttp import FileWrapper
@@ -208,7 +207,7 @@ def load_experiment_image(request, parameter_id):
     parameter = ExperimentParameter.objects.get(pk=parameter_id)
     experiment_id = parameter.parameterset.experiment.id
     if authz.has_experiment_access(request, experiment_id):
-        return load_image(request, experiment_id, parameter)
+        return load_image(request, parameter)
     else:
         return return_response_error(request)
 
@@ -216,9 +215,8 @@ def load_experiment_image(request, parameter_id):
 def load_dataset_image(request, parameter_id):
     parameter = DatafileParameter.objects.get(pk=parameter_id)
     dataset = parameter.parameterset.dataset
-    experiment_id = dataset.experiment.id
     if  authz.has_dataset_access(request, dataset.id):
-        return load_image(request, experiment_id, parameter)
+        return load_image(request, parameter)
     else:
         return return_response_error(request)
 
@@ -226,9 +224,8 @@ def load_dataset_image(request, parameter_id):
 def load_datafile_image(request, parameter_id):
     parameter = DatafileParameter.objects.get(pk=parameter_id)
     dataset_file = parameter.parameterset.dataset_file
-    experiment_id = dataset_file.dataset.experiment.id
     if authz.has_datafile_access(request, dataset_file.id):
-        return load_image(request, experiment_id, parameter)
+        return load_image(request, parameter)
     else:
         return return_response_error(request)
 
