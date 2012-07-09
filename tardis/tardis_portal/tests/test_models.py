@@ -258,13 +258,13 @@ class ModelTestCase(TestCase):
                                                    string_value=b64encode(open(filename).read()))
         exp_parameter.save()
 
-        self.assertEqual("<img src='/test/DatafileImage/load/%i/' />" % df_parameter.id,
+        self.assertEqual("<a href='/test/DatafileImage/load/%i/' target='_blank'><img src='/test/DatafileImage/load/%i/' /></a>" % (df_parameter.id, df_parameter.id),
                          df_parameter.get())
 
-        self.assertEqual("<img src='/test/DatasetImage/load/%i/' />" % ds_parameter.id,
+        self.assertEqual("<a href='/test/DatasetImage/load/%i/' target='_blank'><img src='/test/DatasetImage/load/%i/' /></a>" % (ds_parameter.id, ds_parameter.id),
                          ds_parameter.get())
 
-        self.assertEqual("<img src='/test/ExperimentImage/load/%i/' />" % exp_parameter.id,
+        self.assertEqual("<a href='/test/ExperimentImage/load/%i/' target='_blank'><img src='/test/ExperimentImage/load/%i/' /></a>" % (exp_parameter.id, exp_parameter.id),
                          exp_parameter.get())
 
         remove(path.join(settings.FILE_STORE_PATH, df_parameter.string_value))
