@@ -121,7 +121,7 @@ def download_image(request, datafile_id, region, size, rotation, quality, format
 
     buf = StringIO()
     try:
-        file_obj = datafile.get_file()
+        file_obj = datafile.get_image_data()
         if file_obj == None:
             return HttpResponseNotFound()
         from contextlib import closing

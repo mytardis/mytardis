@@ -19,8 +19,9 @@ from tardis.tardis_portal.fetcher import get_privileged_opener
 import logging
 logger = logging.getLogger(__name__)
 
-IMAGE_FILTER = Q(mimetype__startswith='image/') & \
-              ~Q(mimetype='image/x-icon')
+IMAGE_FILTER = (Q(mimetype__startswith='image/') & \
+              ~Q(mimetype='image/x-icon')) | \
+               (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))
 
 class Dataset_File(models.Model):
     """Class to store meta-data about a physical file
@@ -175,10 +176,65 @@ class Dataset_File(models.Model):
         # ok, it doesn't look like the file is stored locally
         else:
             return ''
+            
+    def has_image(self):
+        from .parameters import DatafileParameter
+        
+        if self.is_image():
+            return True
+
+        # look for image data in parameters
+        pss = self.getParameterSets()
+        
+        if not pss:
+            return False
+        
+        for ps in pss:
+            dps = DatafileParameter.objects.filter(\
+            parameterset=ps, name__data_type=5,\
+            name__units__startswith="image")
+            
+            if len(dps):
+                return True
+        
+        return False
 
     def is_image(self):
         return self.get_mimetype().startswith('image/') \
             and not self.get_mimetype() == 'image/x-icon'
+            
+    def get_image_data(self):
+        from .parameters import DatafileParameter
+
+        if self.is_image():
+            return self.get_file()
+
+        # look for image data in parameters
+        pss = self.getParameterSets()
+
+        if not pss:
+            return None
+
+        preview_image_data = None
+        for ps in pss:
+            dps = DatafileParameter.objects.filter(\
+            parameterset=ps, name__data_type=5,\
+            name__units__startswith="image")
+
+            if len(dps):
+                preview_image_par = dps[0]
+
+        if preview_image_par:
+            file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
+                                               preview_image_par.string_value))
+
+            from django.core.servers.basehttp import FileWrapper
+            preview_image_file = file(file_path)
+            
+            return preview_image_file
+            
+        else:
+            return None
 
     def is_public(self):
         from .experiment import Experiment
