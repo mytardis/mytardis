@@ -83,7 +83,8 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
     
-from tardis.tardis_portal.tasks import create_staging_datafile
+from tardis.tardis_portal.tasks import create_staging_datafiles,\
+    create_staging_datafile
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2901,8 +2902,8 @@ def stage_files_to_dataset(request, dataset_id):
         files = json.loads(request.body)
     except:
         return HttpResponse(status=400)
-
-    datafiles = [create_staging_datafile.delay(f, user.username, dataset_id) for f in files]
+        
+    create_staging_datafiles.delay(files, user.id, dataset_id)
 
     return HttpResponse(status=201)
 

@@ -1,10 +1,16 @@
 from celery.task import task
 from os import path
 from django.db import transaction
+from django.contrib.auth.models import User
 
 from tardis.tardis_portal.staging import stage_file
 from tardis.tardis_portal.models import Dataset_File, Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
+from tardis.tardis_portal.email import email_user
+
+from django.template import Context
+
+from django.contrib.sites.models import Site
 
 # Ensure filters are loaded
 try:
@@ -54,6 +60,26 @@ def make_local_copy(datafile_id):
         if not datafile.is_local():
             stage_file(datafile)
 
+@task(name="tardis_portal.create_staging_datafiles", ignore_result=True)
+def create_staging_datafiles(files, user_id, dataset_id):
+    user = User.objects.get(id=user_id)
+
+    [create_staging_datafile.delay(f, user.username, dataset_id) for f in files]
+
+    current_site = Site.objects.get_current()
+
+    context = Context({
+        'username': user.username,
+        'current_site': current_site.domain,
+        'dataset_id': dataset_id,
+        })
+    subject = '[MyTardis] Import Successful'
+
+    if not user.email:
+        return None
+
+    email_user_task.delay(subject, 'import_staging_success', context, user)
+
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
 def create_staging_datafile(filepath, username, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
@@ -66,4 +92,8 @@ def create_staging_datafile(filepath, username, dataset_id):
                             size=size)
     datafile.verify(allowEmptyChecksums=True)
     datafile.save()
-    return datafile
+    
+
+@task(name="tardis_portal.email_user_task", ignore_result=True)
+def email_user_task(subject, template_name, context, user):
+    email_user(subject, template_name, context, user)
