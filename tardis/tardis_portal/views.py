@@ -46,6 +46,7 @@ from os import path
 import logging
 import json
 from operator import itemgetter
+from celery.task import task
 
 from django.template import Context
 from django.conf import settings
@@ -81,6 +82,8 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
+    
+from tardis.tardis_portal.tasks import create_staging_datafile
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2889,7 +2892,6 @@ def stage_files_to_dataset(request, dataset_id):
         return response
 
     user = request.user
-    dataset = Dataset.objects.get(id=dataset_id)
 
     # Incoming data MUST be JSON
     if not request.META['CONTENT_TYPE'].startswith('application/json'):
@@ -2900,21 +2902,9 @@ def stage_files_to_dataset(request, dataset_id):
     except:
         return HttpResponse(status=400)
 
-    def create_staging_datafile(filepath):
-        url, size = get_staging_url_and_size(user.username, filepath)
-        datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
-                                filename=path.basename(filepath),
-                                size=size)
-        datafile.verify(allowEmptyChecksums=True)
-        datafile.save()
-        return datafile
+    datafiles = [create_staging_datafile.delay(f, user.username, dataset_id) for f in files]
 
-    datafiles = [create_staging_datafile(f) for f in files]
-
-    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
-                        status=201)
+    return HttpResponse(status=201)
 
 
 

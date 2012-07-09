@@ -1,8 +1,10 @@
 from celery.task import task
+from os import path
 from django.db import transaction
 
 from tardis.tardis_portal.staging import stage_file
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Dataset_File, Dataset
+from tardis.tardis_portal.staging import get_staging_url_and_size
 
 # Ensure filters are loaded
 try:
@@ -52,3 +54,16 @@ def make_local_copy(datafile_id):
         if not datafile.is_local():
             stage_file(datafile)
 
+@task(name="tardis_portal.create_staging_datafile", ignore_result=True)
+def create_staging_datafile(filepath, username, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    url, size = get_staging_url_and_size(username, filepath)
+    datafile = Dataset_File(dataset=dataset,
+                            protocol='staging',
+                            url=url,
+                            filename=path.basename(filepath),
+                            size=size)
+    datafile.verify(allowEmptyChecksums=True)
+    datafile.save()
+    return datafile
