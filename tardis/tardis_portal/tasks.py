@@ -62,9 +62,48 @@ def make_local_copy(datafile_id):
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)
 def create_staging_datafiles(files, user_id, dataset_id):
-    user = User.objects.get(id=user_id)
+    import os
+    from os import path
 
-    [create_staging_datafile.delay(f, user.username, dataset_id) for f in files]
+    from tardis.tardis_portal.staging import get_full_staging_path
+
+    def f7(seq):
+        # removes any duplicate files that resulted from traversal
+        seen = set()
+        seen_add = seen.add
+        return [ x for x in seq if x not in seen and not seen_add(x)]
+
+    def list_dir(dir):
+        # returns a list from a recursive directory search
+        file_list = []
+
+        for dirname, dirnames, filenames in os.walk(dir):
+            for filename in filenames:
+                 file_list.append(os.path.join(dirname, filename))
+
+        return file_list
+
+    user = User.objects.get(id=user_id)
+    staging = get_full_staging_path(user.username)
+    stage_files = []
+        
+    for f in files:
+        abs_path = ''
+        if f == 'phtml_1':
+            abs_path = staging
+        else:
+            abs_path = path.join(staging, f)
+
+        if path.isdir(abs_path):
+            stage_files = stage_files + list_dir(abs_path)
+        else:
+            stage_files.append(abs_path) 
+            
+    full_file_list = f7(stage_files)
+    
+    # traverse directory paths (if any to build file list)
+
+    [create_staging_datafile.delay(f, user.username, dataset_id) for f in full_file_list]
 
     current_site = Site.objects.get_current()
 

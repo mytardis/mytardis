@@ -141,6 +141,7 @@ def staging_list(pathname=settings.STAGING_PATH,
     """
     directory_listing = ''
     
+    # so people aren't malicious with the loading of files in the UI
     if not path.abspath(pathname).startswith(dirname):
         return None
 

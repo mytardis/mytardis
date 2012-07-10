@@ -79,8 +79,7 @@ $('.add_files').live('click', function(){
 $('#staging-import-button').click(function() {
   // Get files
   var files = _.map(
-      $('#staging-file-tree').jstree('get_checked', -1, true)
-                             .filter('.jstree-leaf'),
+      $('#staging-file-tree').jstree('get_checked', -1, true),
       function(v) {
         return $(v).attr('id')
       }
