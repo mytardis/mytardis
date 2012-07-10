@@ -75,7 +75,8 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size
+    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size, \
+    staging_list
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
@@ -2440,6 +2441,33 @@ def import_staging_files(request, dataset_id):
         'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
      })
     return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+    
+@authz.dataset_write_permissions_required
+def list_staging_files(request, dataset_id):
+    """
+    Creates an jstree view of the staging area of the user, and provides
+    a selection mechanism importing files.
+    """
+
+    staging = get_full_staging_path(request.user.username)
+    if not staging:
+        return HttpResponseNotFound()
+
+    from_path = staging
+    root = False
+    try:
+        path_var = request.GET.get('path', '')
+        if not path_var:
+            root = True
+        from_path = path.join(staging, urllib2.unquote(path_var))
+    except ValueError:
+        from_path = staging
+
+    c = Context({
+        'dataset_id': dataset_id,
+        'directory_listing': staging_list(from_path, staging, root=root),
+     })
+    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)    
 
 @authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,

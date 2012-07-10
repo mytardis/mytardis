@@ -1,7 +1,41 @@
 <script type="text/javascript">
-$("#staging-file-tree").jstree({
+var treeConfig = {
     core : { /* core options go here */ },
-    plugins : [ "themes", "html_data", "checkbox" ]
+    plugins : [ "themes", "html_data", "checkbox" ],
+    "html_data" : {      
+        "ajax" : {
+            "type": 'GET',       
+            "url": function (node) {
+                var nodeId = "";
+                var url = ""
+                if (node == -1)
+                {
+                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}";
+                }
+                else
+                {
+                    nodeId = encodeURIComponent(node.attr('id'));
+                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}?path=" + nodeId;
+                }
+
+                return url;
+            },           
+            "success": function (new_data) {
+                return new_data;
+            }
+        }
+    }
+}
+
+$(document).ready(function(){
+ $("#staging-file-tree").jstree(treeConfig);
+
+ // $('#staging-file-tree ins').live('click',function(){
+ //    var tree = jQuery.jstree._reference("#staging-file-tree");
+ //    var currentNode = tree._get_node(null, false);
+ //    tree.refresh(currentNode);
+ // });
+
 });
 
 //Get checked
@@ -34,7 +68,7 @@ $('.add_files').live('click', function(){
 <p>
   <strong>Select Files To Be Added To A Dataset:</strong>
 </p>
-<div id="staging-file-tree">{{directory_listing|safe}}</div>
+<div id="staging-file-tree"></div>
 
 <button id="staging-import-button" class="btn btn-primary">
   <i class="icon-arrow-right"></i>

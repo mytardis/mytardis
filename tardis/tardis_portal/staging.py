@@ -114,7 +114,56 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
             ul = ul + traverse(path.join(pathname, f), dirname)
         return li + ul + '</ul></li>'
     return ''
+    
+def staging_list(pathname=settings.STAGING_PATH,
+    dirname=settings.STAGING_PATH, root=False):
+    from django.utils import _os
+    from django.core.files.storage import default_storage
+    """Traverse a path and return an alphabetically by filename
+    sorted nested group of
+    unordered (<ul>) list HTML tags::
 
+       <ul>
+         <li id="dir2/file2"><a>file2</a></li>
+         <li id="dir2/file3"><a>file3</a></li>
+         <li id="dir2/subdir"><a>subdir</a>
+           <ul>
+             <li id="dir2/subdir/file4"><a>file4</a></li>
+           </ul>
+         </li>
+       </ul>
+
+    :param pathname: the directory to traverse
+    :type pathname: string
+    :param dirname: the root directory of the traversal
+    :type dirname: string
+    :rtype: string
+    """
+    directory_listing = ''
+    
+    if not path.abspath(pathname).startswith(dirname):
+        return None
+
+    filelist = listdir(pathname)
+    filelist.sort()
+    for f in filelist:    
+        if path.isdir(_os.safe_join(pathname, f)):
+            li = '<li class="jstree-closed" id="%s"><a>%s</a>' % (path.relpath(_os.safe_join(pathname, f), dirname),
+                                        path.basename(f))
+            directory_listing = directory_listing + li + '<ul></ul></li>'                                        
+        else:
+            if not posixpath.basename(f).startswith('.'):
+                li = '<li class="fileicon" id="%s"><a>%s</a>' % (path.relpath(_os.safe_join(pathname, f), dirname),
+                                            path.basename(f))
+                directory_listing = directory_listing + li + '</li>'                                        
+
+    if root:
+    # root call
+        directory_listing = '<ul><li id="phtml_1"><a>My Files</a><ul>' +  \
+            directory_listing + \
+            '</ul></li></ul>'
+        
+    return directory_listing
 
 class StagingHook():
     __name__ = 'StagingHook'
