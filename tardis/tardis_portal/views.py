@@ -2909,7 +2909,6 @@ def stage_files_to_dataset(request, dataset_id):
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
 
-    Returns a JSON list of created paths for the files.
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
@@ -2933,9 +2932,6 @@ def stage_files_to_dataset(request, dataset_id):
         
     create_staging_datafiles.delay(files, user.id, dataset_id)
 
-    return HttpResponse(status=201)
-
-
-
-
+    email = {'email' : user.email}
+    return HttpResponse(json.dumps(email), status=201)
 

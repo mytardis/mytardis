@@ -1,3 +1,7 @@
+{% load mustachejs %}
+{% mustachejs "tardis_portal/import_staging_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
+
 <script type="text/javascript">
 var treeConfig = {
     core : { /* core options go here */ },
@@ -97,8 +101,35 @@ $('#staging-import-button').click(function() {
     data: JSON.stringify(files),
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
-    complete: function() {
-      modal.modal('hide');
+    error: function(jqXHR, textStatus, errorThrown) {
+      var errorData = {'message': errorThrown};
+      errorData[textStatus] = true;
+      // Show error message
+      $('#datafile-download').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/ajax_error'],
+              errorData, Mustache.TEMPLATES)
+      );
+    },
+    success: function(data, textStatus, jqHXR) {
+        if(files != '')
+        {
+            var templateData = {'import_staging': true};
+            
+            if(data != '')
+            {
+                templateData['email'] = data.email;
+            }
+
+            $('#datafile-download').before(       
+              Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/import_staging_message'],
+              templateData, Mustache.TEMPLATES)
+            );
+        }
+    },
+    complete: function(jqXHR, textStatus) {
+        modal.modal('hide');
     }
   });
 });

@@ -389,7 +389,7 @@ $('#modal-metadata .submit-button').click(function() {
   </div>
   <hr class="visible-phone"/>
   <div class="span6">
-    <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
+    <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
       <div class="row-fluid">
         <div class="pull-left">
           {% if has_download_permissions %}
