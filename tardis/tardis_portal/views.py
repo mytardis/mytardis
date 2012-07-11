@@ -75,7 +75,7 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size, \
+    write_uploaded_file_to_dataset, get_staging_url_and_size, \
     staging_list
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
@@ -2436,7 +2436,6 @@ def import_staging_files(request, dataset_id):
 
     c = Context({
         'dataset_id': dataset_id,
-        'directory_listing': staging_traverse(staging),
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
         'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
      })
