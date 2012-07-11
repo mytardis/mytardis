@@ -160,9 +160,11 @@ def staging_list(pathname=settings.STAGING_PATH,
 
     if root:
     # root call
-        directory_listing = '<ul><li id="phtml_1"><a>My Files</a><ul>' +  \
-            directory_listing + \
-            '</ul></li></ul>'
+        directory_listing = '<ul><li id="phtml_1"><a>'\
+            + str(path.split(path.dirname(pathname))[1]) \
+            + '</a><ul>' \
+            + directory_listing \
+            + '</ul></li></ul>'
         
     return directory_listing
 
