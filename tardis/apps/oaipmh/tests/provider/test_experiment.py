@@ -11,7 +11,10 @@ import oaipmh.interfaces
 import pytz
 
 from tardis.tardis_portal.models import Experiment, License, User, UserProfile
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.util import get_local_time
+
+from tardis.apps.related_info.views import SCHEMA_URI
 
 from ...provider.experiment import AbstractExperimentProvider, \
     DcExperimentProvider, RifCsExperimentProvider
@@ -22,6 +25,10 @@ def _create_test_data():
                 email='voltaire@gmail.com')
     user.save()
     UserProfile(user=user).save()
+    return (_create_experiment(user, False), 
+            _create_experiment(user, True), user)
+
+def _create_experiment(user, bad):
     experiment = Experiment(title='Norwegian Blue',
                             description='Parrot + 40kV',
                             created_by=user)
@@ -33,7 +40,19 @@ def _create_test_data():
     experiment.author_experiment_set.create(order=1,
                                             author="Michael Palin",
                                             url="http://nla.gov.au/nla.party-2")
-    return (experiment, user)
+    psm = ParameterSetManager(parentObject=experiment, schema=SCHEMA_URI)
+    if bad:
+        params = {'type': 'website',
+                  'identifier': 'https://www.badexample.com/'}
+    else:
+        params = {'type': 'website',
+                  'identifier': 'https://www.example.com/',
+                  'title': 'Google',
+                  'notes': 'This is a note.'}
+    for k, v in params.items():
+        psm.set_param(k, v)
+    return experiment
+    
 
 class AbstractExperimentProviderTC():
     __metaclass__ = ABCMeta
@@ -50,7 +69,7 @@ class AbstractExperimentProviderTC():
         return ''
 
     def setUp(self):
-        self._experiment, self._user = _create_test_data()
+        self._experiment, self._experiment2, self._user = _create_test_data()
 
     def testIdentify(self):
         '''
@@ -73,17 +92,20 @@ class AbstractExperimentProviderTC():
                       .listIdentifiers(self._getProviderMetadataPrefix())
         # Iterate through headers
         for header in headers:
-            if header.identifier().startswith('experiment'):
-                expect(header.identifier()).to_contain(str(self._experiment.id))
-                expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(self._experiment.update_time))
-        # Remove public flag
+            if not header.identifier().startswith('experiment'):
+                continue
+            e = self._experiment if header.identifier() == 'experiment/1' \
+                else self._experiment2 
+            expect(header.identifier()).to_contain(str(e.id))
+            expect(header.datestamp().replace(tzinfo=pytz.utc)) \
+                .to_equal(get_local_time(e.update_time))
+        # Remove public flag on first experiment
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider() \
             .listIdentifiers(self._getProviderMetadataPrefix())
-        # Not public, so should not appear
-        expect(len(headers)).to_equal(0)
+        # First is not public, so should not appear
+        expect(len(headers)).to_equal(1)
 
     def testListIdentifiersDoesNotHandleSets(self):
         def call_with_set():
@@ -134,21 +156,23 @@ class DcExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         results = self._getProvider().listRecords('oai_dc')
         # Iterate through headers
         for header, metadata, _ in results:
-            expect(header.identifier()).to_contain(str(self._experiment.id))
+            e = self._experiment if header.identifier() == 'experiment/1' \
+                else self._experiment2
+            expect(header.identifier()).to_contain(str(e.id))
             expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                .to_equal(get_local_time(self._experiment.update_time))
+                .to_equal(get_local_time(e.update_time))
             expect(metadata.getField('title'))\
-                .to_equal([str(self._experiment.title)])
+                .to_equal([str(e.title)])
             expect(metadata.getField('description'))\
-                .to_equal([str(self._experiment.description)])
-        # There should only have been one
-        expect(len(results)).to_equal(1)
-        # Remove public flag
+                .to_equal([str(e.description)])
+        # There should have been two
+        expect(len(results)).to_equal(2)
+        # Remove public flag on first one
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('oai_dc')
-        # Not public, so should not appear
-        expect(len(headers)).to_equal(0)
+        # First one not public, so should not appear
+        expect(len(headers)).to_equal(1)
 
 
 class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
@@ -178,7 +202,11 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         expect(metadata.getField('licence_name'))\
             .to_equal(License.get_none_option_license().name)
         expect(metadata.getField('related_info'))\
-            .to_equal([])
+            .to_equal([{'notes': 'This is a note.', \
+                        'identifier': 'https://www.example.com/', \
+                        'type': 'website', \
+                        'id': 1, \
+                        'title': 'Google'}])
         expect(len(metadata.getField('collectors')))\
             .to_equal(2)
         expect(about).to_equal(None)
@@ -188,17 +216,28 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
         # Iterate through headers
         for header, metadata, _ in results:
             if header.identifier().startswith('experiment'):
-                expect(header.identifier()).to_contain(str(self._experiment.id))
+                e = self._experiment if header.identifier() == 'experiment/1' \
+                    else self._experiment2
+                expect(header.identifier()).to_contain(str(e.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
-                    .to_equal(get_local_time(self._experiment.update_time))
+                    .to_equal(get_local_time(e.update_time))
                 expect(metadata.getField('title'))\
-                    .to_equal(str(self._experiment.title))
+                    .to_equal(str(e.title))
                 expect(metadata.getField('description'))\
-                    .to_equal(str(self._experiment.description))
+                    .to_equal(str(e.description))
                 expect(metadata.getField('licence_uri'))\
                     .to_equal(License.get_none_option_license().url)
                 expect(metadata.getField('licence_name'))\
                     .to_equal(License.get_none_option_license().name)
+                if e == self._experiment:
+                    expect(metadata.getField('related_info'))\
+                        .to_equal([{'notes': 'This is a note.', \
+                                        'identifier': 'https://www.example.com/', \
+                                        'type': 'website', \
+                                        'id': 1, \
+                                        'title': 'Google'}])
+                else:
+                    expect(metadata.getField('related_info')).to_equal([{}])
             else:
                 expect(header.identifier()).to_contain(str(self._user.id))
                 expect(header.datestamp().replace(tzinfo=pytz.utc))\
@@ -210,14 +249,14 @@ class RifCsExperimentProviderTestCase(AbstractExperimentProviderTC, TestCase):
                     .to_equal(str(self._user.first_name))
                 expect(metadata.getField('family_name'))\
                     .to_equal(str(self._user.last_name))
-        # There should only have been one
-        expect(len(results)).to_equal(1)
-        # Remove public flag
+        # There should have been two
+        expect(len(results)).to_equal(2)
+        # Remove public flag on first experiment
         self._experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         self._experiment.save()
         headers = self._getProvider().listRecords('rif')
-        # Not public, so should not appear
-        expect(len(headers)).to_equal(0)
+        # Should now be one
+        expect(len(headers)).to_equal(1)
 
     def tearDown(self):
         pass

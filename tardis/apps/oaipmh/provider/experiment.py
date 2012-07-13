@@ -14,7 +14,7 @@ import pytz
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.models import Author_Experiment, Experiment,\
-    ExperimentParameterSet, License, User
+    ExperimentParameterSet, ExperimentParameter, License, User
 from tardis.tardis_portal.util import get_local_time, get_utc_time
 
 from .base import BaseProvider
@@ -212,9 +212,14 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
         def get_related_info(ps):
             psm = ParameterSetManager(ps)
             parameter_names = ['type','identifier','title','notes']
-            return dict([('id', ps.id)]+ # Use set ID
-                    zip(parameter_names,
-                        (psm.get_param(k, True) for k in parameter_names)))
+            try:
+                return dict([('id', ps.id)] + # Use set ID 
+                            zip(parameter_names,
+                                (psm.get_param(k, True) \
+                                     for k in parameter_names)))
+            except ExperimentParameter.DoesNotExist:
+                return dict() # drop Related_Info record with missing fields
+
         ns = 'http://ands.org.au/standards/rif-cs/registryObjects#relatedInfo'
         related_info = map(get_related_info, ExperimentParameterSet.objects\
                                                 .filter(experiment=experiment,
