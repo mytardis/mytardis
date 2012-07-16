@@ -37,8 +37,8 @@ class Experiment(models.Model):
 
     PUBLIC_ACCESS_CHOICES = (
         (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
-        (PUBLIC_ACCESS_METADATA,    'Metadata only (no data file access)'),
-        (PUBLIC_ACCESS_FULL,        'Everything'),
+        (PUBLIC_ACCESS_METADATA,    'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL,        'Public'),
     )
 
     url = models.URLField(verify_exists=False, max_length=255,

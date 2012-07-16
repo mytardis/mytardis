@@ -20,7 +20,7 @@ var loadLicenses = async.memoize(function(public_access, callback) {
 var selectLicenseOption = function(value) {
   var selectedOption = $('.license-option input[value="'+value+'"]')
                         .parents('.license-option');
-  selectedOption.find('.use-button').prop('disabled', true);
+  selectedOption.find('.use-button').addClass('disabled');
   selectedOption.find('.use-button').text('Selected');
 };
 
@@ -40,34 +40,10 @@ var populateLicenseOptions = function(public_access, markSameLicense) {
 };
 </script>
 
-<!-- Confirmation Dialog -->
-<div class="modal hide fade" id="modal-legal">
-  <div class="modal-header">
-    <h1 class="title">Legal</h1>
-  </div>
-
-  <div class="modal-body form-horizontal">
-    <pre id="publishing-legal-text"></pre>
-    <label class="checkbox">
-      <input id="publishing-consent" type="checkbox" value="Agree" />
-      I agree to the above terms
-    </label>
-  </div>
-  <div class="modal-footer">
-    <button class="submit-button btn btn-success">
-      <i class="icon-ok"></i>
-      Confirm
-    </button>
-    <button class="cancel-button btn">
-      <i class="icon-cancel"></i>
-      Cancel
-    </button>
-  </div>
-</div>
 <script type="text/javascript">
-$('#publishing-consent').change(function() {
+$('#publishing-consent').live("change", function() {
   // (submit disabled) <=> !(consent checked)
-  $('#modal-legal .submit-button').prop('disabled', !$(this).prop('checked'))
+  $('#legal-section .submit-button').prop('disabled', !$(this).prop('checked'))
 });
 // Disable submit button (as consent checkbox should start unchecked)
 $('#publishing-consent').trigger('change');
@@ -83,19 +59,24 @@ $.ajax({
   }
 });
 
-$('#modal-legal .submit-button').click(function() {
+$('#legal-section .submit-button').live("click", function() {
   // Submit form
   $('form.experiment-rights').trigger('submit');
-  $('#modal-legal').modal('hide');
+  $('#legal-section').hide();
 });
-$('#modal-legal .cancel-button').click(function() {
+$('#legal-section .cancel-button').live("click", function() {
   // Just refresh this tab pane to reset previous values
-  $('#modal-legal').parents('.tab-pane').trigger('experiment-change');
-  $('#modal-legal').modal('hide');
+  $('#legal-section').parents('.tab-pane').trigger('experiment-change');
+  $('#legal-section').hide();
 });
 </script>
 
+<!-- Success / Error Message -->
+<div id="choose-rights-message"></div>
+
 <!-- Selection form -->
+<h3>Step 1: Change Public Access:</h3>
+<br/>
 <form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
       method="post" class="experiment-rights form-horizontal">
   {% load bootstrap %}
@@ -119,7 +100,7 @@ $('#modal-legal .cancel-button').click(function() {
   // Set default state
   publicAccessSelector.change();
   </script>
-
+<h3>Step 2: Select a license:</h3>
   <div id="license-options"></div>
   <script type="text/javascript">
   $(document).on('click', '#license-options .use-button', function(evt) {
@@ -130,14 +111,14 @@ $('#modal-legal .cancel-button').click(function() {
     // Enable all buttons, then disable the one we selected
     $(this).parents('#license-options')
            .find('.use-button')
-           .prop('disabled', false)
+           .removeClass('disabled')
            .text('Use');
-    $(this).prop('disabled', true);
+    $(this).addClass('disabled');
     $(this).text('Selected');
     // Hide any current messages
     $(this).parents('.tab-pane').find('.alert .close').click();
     // Show confirmation window
-    $('#modal-legal').modal('show');
+    $('#legal-section').show();
   });
   </script>
 
@@ -163,13 +144,13 @@ $('form.experiment-rights').submit(function(evt) {
     url:  form.attr('action'),
     data: form.serialize(),
     success: function(data) {
-      var thisTabPane = $(form).parents('.tab-pane');
+      var thisModal = $(form).parents('.modal-body');
       // Load new values into pane
-      thisTabPane.html(data);
-      // Notify the *other* panes
-      $('.tab-pane').not(thisTabPane).trigger('experiment-change');
+      thisModal.html(data);
       // Show update message
-      $('form.experiment-rights').before(
+      $('#legal-section').hide();
+      
+      $('#choose-rights-message').html(
           Mustache.to_html(
               Mustache.TEMPLATES['tardis_portal/rights_update_message'],
               templateData, Mustache.TEMPLATES)
@@ -179,7 +160,7 @@ $('form.experiment-rights').submit(function(evt) {
       var errorData = {'message': errorThrown};
       errorData[textStatus] = true;
       // Show error message
-      $('form.experiment-rights').before(
+      $('#choose-rights-message').html(
           Mustache.to_html(
               Mustache.TEMPLATES['tardis_portal/ajax_error'],
               errorData, Mustache.TEMPLATES)
@@ -188,6 +169,30 @@ $('form.experiment-rights').submit(function(evt) {
   });
 });
 </script>
+
+<!-- Confirmation Dialog -->
+<div id="legal-section">
+    <h3 class="title">Step 3: Accept The Legal Agreement:</h3>
+
+  <div class="form-horizontal">
+    <pre id="publishing-legal-text"></pre>
+    <label class="checkbox">
+      <input id="publishing-consent" type="checkbox" value="Agree" />
+      I agree to the above terms
+    </label>
+  </div>
+  <div class="footer">
+    <button class="submit-button btn btn-success">
+      <i class="icon-ok"></i>
+      Confirm
+    </button>
+    <button class="cancel-button btn">
+      <i class="icon-cancel"></i>
+      Cancel
+    </button>
+  </div>
+  <br/>
+</div>
 
 {% endblock %}
 

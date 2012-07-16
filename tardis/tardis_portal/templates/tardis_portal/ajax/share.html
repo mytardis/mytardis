@@ -1,7 +1,30 @@
 {% load static from staticfiles %}
 {% load url from future %}
+{% load experiment_tags %}
 {% block script %}
 <script type="text/javascript">
+$('.public_access_link').live('click', function(evt) {
+    var experiment_id = $(this).attr('data-experiment_id');
+    var modal = $('#modal-public-access');
+
+
+    modal.find('.modal-body').html('');
+    modal.find('.loading-placeholder').show();
+    modal.modal('show');
+
+    modal.find('.modal-body')
+         .load("/ajax/experiment/" + experiment_id + "/rights", function() {
+            modal.find('.loading-placeholder').hide();
+            $('#legal-section').hide();
+            // modal.modal('hide');
+        });
+       
+});
+
+$('#modal-public-access').bind('hidden', function () {
+  $('.tab-pane').trigger('experiment-change');
+});
+
 function SelectAll(id)
 {
     document.getElementById(id).focus();
@@ -17,15 +40,62 @@ function SelectAll(id)
 {% mustachejs "tardis_portal/rights_update_message" %}
 {% mustachejs "tardis_portal/ajax_error" %}
 
+<!-- public access modal !-->
+<div class="modal hide fade" id="modal-public-access">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Public Access</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+</div>
+
+<hr/>
 <div class="sharing-sections">
     <div class="sharing-section public-access">
     <h3>Public Access</h3>
         <p>
-        This experiment is x
+            <dl>
+              <dt>Current Public Access Settings</dt>
+              <dd style="padding-top: 5px;">
+                {{ experiment|experiment_public_access_badge }}
+              </dd>
+            </dl>            
+            <dl>
+              <dt>Current License</dt>
+              <dd>
+                {% if experiment.license_id %}
+                  <div class="row-fluid">
+                    <div class="span6">
+                      This experiment data is licensed under
+                      <a rel="license"
+                         property="dc:license"
+                         href="{{ experiment.license.url }}">
+                        {{ experiment.license.name }}</a>.
+                    </div>
+                    {% if experiment.license.image_url != None %}
+                    <div class="span6">
+                      <img src="{{ experiment.license.image_url }}"/>
+                    </div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <abbr title="All rights reserved">
+                    Unspecified
+                  </abbr>
+                {% endif %}
+              </dd>
+            </dl>
         </p>
-        <button type="submit" class="btn btn-primary">
+        <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-primary" title="Change">
+          <i class="icon-cog"></i>
           Change
-        </button>
+        </a>
     </div>
     <hr/>
     <div class="sharing-section sharing">
@@ -36,6 +106,7 @@ function SelectAll(id)
             <li><strong>Bob Jones</strong></li>        
         </ul>
         <button type="submit" class="btn btn-primary">
+          <i class="icon-share"></i>
           Share
         </button>
     </div>
