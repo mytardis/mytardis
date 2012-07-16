@@ -2698,6 +2698,29 @@ def single_search(request):
 
 
 @authz.experiment_ownership_required
+def share(request, experiment_id):
+    '''
+    Choose access rights and licence.
+    '''
+    experiment = Experiment.objects.get(id=experiment_id)
+    def is_valid_owner(owner):
+        if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
+            return True
+        return owner.get_profile().isValidPublicContact()
+
+    # Forbid access if no valid owner is available (and show error message)
+    if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
+        c = Context({'no_valid_owner': True, 'experiment': experiment})
+        return HttpResponseForbidden(\
+                    render_response_index(request, \
+                        'tardis_portal/ajax/unable_to_choose_rights.html', c))
+
+    c = Context({'experiment': experiment})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/share.html', c))
+
+
+@authz.experiment_ownership_required
 def choose_rights(request, experiment_id):
     '''
     Choose access rights and licence.
@@ -2920,3 +2943,4 @@ def stage_files_to_dataset(request, dataset_id):
 
 
 
+                                                                                                                                                                                                                                                                                                                      

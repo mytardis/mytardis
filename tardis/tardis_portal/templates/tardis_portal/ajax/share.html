@@ -1,0 +1,131 @@
+{% load static from staticfiles %}
+{% load url from future %}
+{% block script %}
+<script type="text/javascript">
+function SelectAll(id)
+{
+    document.getElementById(id).focus();
+    document.getElementById(id).select();
+}
+</script>
+{% endblock %}
+{% block content %}
+
+<!-- Scripts -->
+{% load mustachejs %}
+{% mustachejs "tardis_portal/license_selector" %}
+{% mustachejs "tardis_portal/rights_update_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
+
+<div class="sharing-sections">
+    <div class="sharing-section public-access">
+    <h3>Public Access</h3>
+        <p>
+        This experiment is x
+        </p>
+        <button type="submit" class="btn btn-primary">
+          Change
+        </button>
+    </div>
+    <hr/>
+    <div class="sharing-section sharing">
+    <h3>User and Group Sharing</h3>
+    <p>These users etc..</p>
+        <ul>
+            <li><strong>Steve Androulakis</strong></li>
+            <li><strong>Bob Jones</strong></li>        
+        </ul>
+        <button type="submit" class="btn btn-primary">
+          Share
+        </button>
+    </div>
+    <hr/>
+    <div class="sharing-section sharing">
+    <h3>Links</h3>
+    <p>This experiment can be accessed by everybody with the link below:
+        <input id="public-link" value="http://www.mytardis.org/XOJWE25"
+            class="span9" onClick="SelectAll('public-link');"
+            readonly="readonly"
+            style="cursor:auto; font-weight:bold"></p>
+    <br/>
+    <p>Temporary access links exist for this experiment:</p>
+    <table class="table table-striped">
+        <tr>
+            <tr>
+                <th style="width: 60%;">
+                    Link
+                </th>
+                <th>
+                    Expiry
+                </th>
+                <th>
+                    Remove
+                </th>                
+            </tr>
+            <td>
+                <input id="public-link1" value="http://www.mytardis.org/XOJWE25"
+                    onClick="SelectAll('public-link1');"
+                    readonly="readonly"
+                    style="cursor:auto;">  
+            </td>
+            <td>
+                29th July, 2012
+            </td>  
+            <td>
+                [x]
+            </td>            
+        </tr>
+        <tr>
+            <td>
+                <input id="public-link2" value="http://www.mytardis.org/XOJWE25"
+                    onClick="SelectAll('public-link2');"
+                    readonly="readonly"
+                    style="cursor:auto"> 
+            </td>
+            <td>
+                29th July, 2012
+            </td> 
+            <td>
+                [x]
+            </td>                                 
+        </tr>      
+    </table>
+    <button type="submit" class="btn btn-primary">
+        Create New Temporary Link      
+    </button>
+    </div>
+    <hr/>
+    <div class="sharing-section sharing">
+    <h3>Feeds</h3>
+    <p>Data feeds for this experiment exist:</p>
+    <table class="table table-striped">
+        <tr>
+            <tr>
+                <th>Name</th>
+                <th style="width: 60%;">
+                    Link
+                </th>               
+            </tr>
+                <td>OAI-DC</td>            
+                <td>
+                    <input id="public-link3" value="http://www.mytardis.org/XOJWE25"
+                        onClick="SelectAll('public-link3');"
+                        readonly="readonly"
+                        style="cursor:auto;">  
+                </td>         
+        </tr>
+        <tr>
+            <td>RIF-CS</td>
+            <td>
+                <input id="public-link4" value="http://www.mytardis.org/XOJWE25"
+                    onClick="SelectAll('public-link4');"
+                    readonly="readonly"
+                    style="cursor:auto"> 
+            </td>                               
+        </tr>      
+    </table>
+    </div>      
+</div>
+
+{% endblock %}
+

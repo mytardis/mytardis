@@ -259,7 +259,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
       <li><a data-toggle="tab" title="Description" href="{% url 'tardis.tardis_portal.views.experiment_description' experiment.id %}">Description</a></li>
       <li><a data-toggle="tab" title="Metadata" href="{% url 'tardis.tardis_portal.views.retrieve_experiment_metadata' experiment.id %}">Metadata</a></li>
       {% if is_owner %}
-        <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}">Public Access / Licensing</a></li>
+        <li><a data-toggle="tab" title="Sharing" href="{% url 'tardis.tardis_portal.views.share' experiment.id %}">Sharing</a></li>
         <li><a data-toggle="tab" title="Transfer Datasets" href="{% url 'tardis.tardis_portal.views.experiment_dataset_transfer' experiment.id %}">Transfer Datasets</a></li>
       {% endif %}
       <!-- {{ apps }} -->

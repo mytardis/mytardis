@@ -154,6 +154,7 @@ ajax_urls = patterns(
         'add_experiment_par'),
     (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
+    (r'^experiment/(?P<experiment_id>\d+)/share$', 'share'),    
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$', 'experiment_dataset_transfer'),
     (r'^license/list$', 'retrieve_licenses'),
     (r'^json/', include(json_urls))
@@ -256,3 +257,4 @@ urlpatterns = patterns(
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
+                                                                          
