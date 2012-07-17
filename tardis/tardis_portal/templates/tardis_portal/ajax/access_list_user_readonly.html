@@ -14,6 +14,9 @@
       {% if user_acl.canWrite %}
       <span class="label label-success">Edit</span>
       {% endif %}
+      {% if user_acl.isOwner %}
+      <span class="label label-info">Owner</span>
+      {% endif %}      
     </div>
   </div> <!-- access_list_user -->
 

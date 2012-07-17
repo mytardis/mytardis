@@ -60,6 +60,11 @@ $('.share_link').live('click', function(evt) {
                  'dataType': 'json',
                  'url': '/ajax/user_list/',
                  'success': function(users) {
+                   if($('select#id_authMethod option').length == 1)
+                   {
+                       $('#id_authMethod_label').hide();
+                       $('#id_authMethod').hide();
+                   }
                    $("#id_entered_user").autocomplete({
                        'source': _.bind( function(query, callback) {
                          var authMethod = $("#id_authMethod").val();
@@ -89,12 +94,35 @@ $('.share_link').live('click', function(evt) {
                }
                var experiment_id = $(this).siblings(".experiment_id").val();
                var users_div = $(this).parents('.access_list1').children('.users');
-               var canRead = $(this).siblings(".canRead").is(':checked');
-               var canWrite = $(this).siblings(".canWrite").is(':checked');
-               var canDelete = $(this).siblings(".canDelete").is(':checked');
-               var permissions = '/?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete;
+               
+               var permissions = $(this).siblings("#id_permission").val();
+               
+               var canDelete = false
+               if(permissions == "read")
+               {
+                   var canRead = true
+               }
+               else if(permissions == "edit")
+               {
+                   var canRead = true
+                   var canWrite = true
+               }
+               else if(permissions == "owner")
+               {
+                   var canRead = true
+                   var canWrite = true
+                   var isOwner = true
+                   var canDelete = true
+               }
+
+               var permissions = '/?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
                action = '/experiment/control_panel/' + experiment_id +
                  '/access_list/add/user/' + username + permissions;
+
+                 // if(authMethod)
+                 // {
+                 //     permissions = permissions + '&authMethod=' + authMethod;
+                 // }
 
                $.ajax({
                  'async': false,
@@ -261,12 +289,13 @@ $(document).ready(function() {
     <h3>User and Group Sharing</h3>
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"/>
+    <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-primary" title="Change">
+        <i class="icon-share"></i>
+        Change User Sharing
+    </a>
+    <br/><br/>    
     <p>Groups who have a share in this experiment:</p>
-    <div id="experiment_group_list"/>
-        <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-primary" title="Change">
-            <i class="icon-share"></i>
-            Change
-        </a>        
+    <div id="experiment_group_list"/>        
     </div>
     <hr/>
     <div class="sharing-section sharing">

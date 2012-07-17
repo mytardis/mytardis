@@ -1985,6 +1985,7 @@ def add_experiment_access_user(request, experiment_id, username):
     canRead = False
     canWrite = False
     canDelete = False
+    isOwner = False
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
@@ -1997,6 +1998,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
+            
+    if 'isOwner' in request.GET:
+        if request.GET['isOwner'] == 'true':
+            isOwner = True   
 
     authMethod = request.GET['authMethod']
     user = auth_service.getUser(authMethod, username)
@@ -2022,6 +2027,7 @@ def add_experiment_access_user(request, experiment_id, username):
                             canRead=canRead,
                             canWrite=canWrite,
                             canDelete=canDelete,
+                            isOwner=isOwner,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         acl.save()
