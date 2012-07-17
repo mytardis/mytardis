@@ -13,7 +13,7 @@
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
 	      <br/><span id="id_authMethod_label">{{ field.label }}:<br/><br/></span> {{ field }}
-          Permissions: 
+          <br/>Permissions: 
           <br/>
               <select id="id_permission">
               <option value="read">View Only</option>

@@ -1822,13 +1822,14 @@ def retrieve_access_list_group(request, experiment_id):
 
     from tardis.tardis_portal.forms import AddGroupPermissionsForm
 
-    user_owned_groups = Experiment.safe.user_owned_groups(request,
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
                                                           experiment_id)
-    system_owned_groups = Experiment.safe.system_owned_groups(request,
+
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
                                                             experiment_id)
 
-    c = Context({'user_owned_groups': user_owned_groups,
-                 'system_owned_groups': system_owned_groups,
+    c = Context({'group_acls_user_owned': group_acls_user_owned,
+                 'group_acls_system_owned': group_acls_system_owned,
                  'experiment_id': experiment_id,
                  'addGroupPermissionsForm': AddGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
@@ -1839,14 +1840,15 @@ def retrieve_access_list_group(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_group_readonly(request, experiment_id):
 
-    user_owned_groups = Experiment.safe.user_owned_groups(request,
-                                                          experiment_id)
-    system_owned_groups = Experiment.safe.system_owned_groups(request,
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
                                                             experiment_id)
 
-    c = Context({'user_owned_groups': user_owned_groups,
-                 'system_owned_groups': system_owned_groups,
-                 'experiment_id': experiment_id })
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
+                                                          experiment_id)                                                         
+
+    c = Context({'experiment_id': experiment_id,
+                 'group_acls_system_owned': group_acls_system_owned,
+                 'group_acls_user_owned': group_acls_user_owned })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group_readonly.html', c))
 
@@ -2169,7 +2171,7 @@ def change_group_permissions(request, experiment_id, group_id):
 @never_cache
 @transaction.commit_manually
 @authz.experiment_ownership_required
-def add_experiment_access_group(request, experiment_id, groupname):
+def create_experiment_access_group(request, experiment_id, groupname):
 
     create = False
     canRead = False
@@ -2186,9 +2188,9 @@ def add_experiment_access_group(request, experiment_id, groupname):
         if request.GET['canWrite'] == 'true':
             canWrite = True
 
-#    if 'canDelete' in request.GET:
-#        if request.GET['canDelete'] == 'true':
-#            canDelete = True
+   # if 'canDelete' in request.GET:
+   #     if request.GET['canDelete'] == 'true':
+   #         canDelete = True
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
@@ -2278,6 +2280,79 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.save()
 
     c = Context({'group': group,
+                 'experiment_id': experiment_id})
+    response = HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/add_group_result.html', c))
+    transaction.commit()
+    return response
+
+
+@never_cache
+@transaction.commit_manually
+@authz.experiment_ownership_required
+def add_experiment_access_group(request, experiment_id, groupname):
+
+    create = False
+    canRead = False
+    canWrite = False
+    canDelete = False
+    isOwner = False
+    authMethod = localdb_auth_key
+    admin = None
+
+    if 'canRead' in request.GET:
+        if request.GET['canRead'] == 'true':
+            canRead = True
+
+    if 'canWrite' in request.GET:
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
+
+    if 'canDelete' in request.GET:
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
+
+    if 'isOwner' in request.GET:
+        if request.GET['isOwner'] == 'true':
+            isOwner = True
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        transaction.rollback()
+        return HttpResponse('Experiment (id=%d) does not exist' %
+                            (experiment_id))
+
+    try:
+        group = Group.objects.get(name=groupname)
+    except Group.DoesNotExist:
+        transaction.rollback()
+        return HttpResponse('Group %s does not exist' % (groupname))
+
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_group,
+        entityId=str(group.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+    if acl.count() > 0:
+        # An ACL already exists for this experiment/group.
+        transaction.rollback()
+        return HttpResponse('Could not create group %s ' \
+            '(It is likely that it already exists)' % (groupname))
+
+    acl = ExperimentACL(experiment=experiment,
+                        pluginId=django_group,
+                        entityId=str(group.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        isOwner=isOwner,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
+
+    c = Context({'group': group,
+                'group_acl': acl,
                  'experiment_id': experiment_id})
     response = HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))

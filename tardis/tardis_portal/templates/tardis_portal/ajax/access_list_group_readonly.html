@@ -1,18 +1,45 @@
+{% load url from future %}
 <div class="groups">
-{% if user_owned_groups or system_owned_groups %}
-{% for group in system_owned_groups %}
+{% if group_acls_system_owned or group_acls_user_owned %}
+{% for group_acl in group_acls_system_owned %}
+{% with group=group_acl.get_related_object_group %}
   <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
-    <div class="span12">
+    <div class="span9">
       <strong>{{ group.name }}</strong>
     </div>
+    <div class="span3">
+      {% if group_acl.canRead %}
+      <span class="label label-success">Read</span>
+      {% endif %}
+      {% if group_acl.canWrite %}
+      <span class="label label-success">Edit</span>
+      {% endif %}
+      {% if group_acl.isOwner %}
+      <span class="label label-info">Owner</span>
+      {% endif %}      
+    </div>    
   </div>
+{% endwith %}
 {% endfor %}
-{% for group in user_owned_groups %}
+{% for group_acl in group_acls_user_owned %}
+{% with group=group_acl.get_related_object_group %}
   <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
-    <div class="span12">
+    <div class="span9">
       <strong>{{ group.name }}</strong>
     </div>
+    <div class="span3">
+      {% if group_acl.canRead %}
+      <span class="label label-success">Read</span>
+      {% endif %}
+      {% if group_acl.canWrite %}
+      <span class="label label-success">Edit</span>
+      {% endif %}
+      {% if group_acl.isOwner %}
+      <span class="label label-info">Owner</span>
+      {% endif %}      
+    </div>    
   </div>
+{% endwith %}
 {% endfor %}
 {% else %}
 <p>

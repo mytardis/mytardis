@@ -3,18 +3,29 @@
   <div class="span4">
     <strong>{{ group.name }}</strong>
   </div>
-  <div class="span4">
+    <div class="span4">
+      {% if group_acl.canRead %}
+      <span class="label label-success">Read</span>
+      {% endif %}
+      {% if group_acl.canWrite %}
+      <span class="label label-success">Edit</span>
+      {% endif %}
+      {% if group_acl.isOwner %}
+      <span class="label label-info">Owner</span>
+      {% endif %}         
+   </div>
     {% if system %}
     <em>(System Group)</em>
     {% else %}
+    <div class="span4">
     <a class="change_group btn btn-mini btn-warning"
        href="{% url 'tardis.tardis_portal.views.change_group_permissions' experiment_id group.id %}">
       <i class="icon-pencil"></i> Edit
-    </a>
+    </a>        
     <a class="remove_group btn btn-mini btn-danger"
        href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
       <i class="icon-remove"></i> Delete
     </a>
+    </div>
     {% endif %}
-  </div>
 </div> <!-- access_list_group -->

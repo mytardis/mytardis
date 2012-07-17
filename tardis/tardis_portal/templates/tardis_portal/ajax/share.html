@@ -119,11 +119,6 @@ $('.share_link').live('click', function(evt) {
                action = '/experiment/control_panel/' + experiment_id +
                  '/access_list/add/user/' + username + permissions;
 
-                 // if(authMethod)
-                 // {
-                 //     permissions = permissions + '&authMethod=' + authMethod;
-                 // }
-
                $.ajax({
                  'async': false,
                  'global': true,
@@ -184,6 +179,157 @@ $('#modal-share').bind('hidden', function () {
   $('.tab-pane').trigger('experiment-change');
 });
 
+
+// group sharing modal
+
+$('.share_link_group').live('click', function(evt) {
+    var experiment_id = $(this).attr('data-experiment_id');
+    var modal = $('#modal-share-group');
+
+
+    modal.find('.modal-body').html('');
+    modal.find('.loading-placeholder').show();
+    modal.modal('show');
+
+    modal.find('.modal-body')
+         .load("/experiment/control_panel/" + experiment_id + "/access_list/group/", function() {
+            modal.find('.loading-placeholder').hide();
+
+            var users = null;
+
+            var groups = (function () {
+              var val = null;
+              $.ajax({
+                'async': false,
+                'global': false,
+                'url': '/ajax/group_list',
+                'success': function (data) { val = data; }
+              });
+              return val;
+            })();
+
+            // $(".creategroup").live('click', function()
+            // {
+            //     if($(this).is(':checked'))
+            //     {
+            //         $(this).parents('.access_list2').find('.newgroup').show();
+            //     }
+            //     else
+            //     {
+            //         $(this).parents('.access_list2').find('.newgroup').hide();
+            //     }
+            // });
+
+            // TODO: Replace with Bootstrap typeahead
+            $(".groupsuggest").typeahead({
+              'source': groups.split(" ~ ")
+            });
+
+            $("#group.form_submit").unbind('click');
+            $("#group.form_submit").click(function(event) {
+              event.preventDefault();
+
+              // TODO: shift group creation to group management page
+              var experiment_id = $(this).parents('.access_list2').find(".experiment_id").val();
+              // var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
+              var groupsuggest = $(this).parents('.access_list2').find(".groupsuggest").val();
+              // var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
+              var groups_div = $(this).parents('.access_list2').children('.groups');
+              // var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
+              // var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
+              // var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
+              // var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
+              // var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+              
+              action = '/experiment/control_panel/' + experiment_id + '/access_list/add/group/' + groupsuggest
+
+              var permissions = $(this).siblings("#id_permission_group").val();
+              
+              var canDelete = false
+              if(permissions == "read")
+              {
+                  var canRead = true
+              }
+              else if(permissions == "edit")
+              {
+                  var canRead = true
+                  var canWrite = true
+              }
+              else if(permissions == "owner")
+              {
+                  var canRead = true
+                  var canWrite = true
+                  var isOwner = true
+                  var canDelete = true
+              }
+
+              var permissions = '?canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
+              action = action + permissions;
+
+              $.ajax({
+                'async': false,
+                'global': true,
+                type: "GET",
+                url: action,
+                success: function(data) {
+                groups_div.hide().append(data).fadeIn();
+
+                // todo this is a duplicate function..
+                $(".remove_group").unbind('click');
+                    $(".remove_group").click(function() {
+                      var href = $(this).attr("href");
+                      remove_group = $(this);
+
+                      $.ajax({
+                        'async': false,
+                        'global': false,
+                        'url': href,
+                        'success': function (data) {
+                          val = data;
+                          if(val == "OK") {
+                        remove_group.fadeOut(300, function(){
+                          remove_group.parents('.access_list_group').remove();
+                        });
+                          }
+                          else { alert(val); }
+                        }
+                      }); // end ajax
+                      return false;
+                    }); // end remove group
+                },
+                error: function(data) { alert('Error adding group!'); }
+              });
+              return false;
+            });
+
+            $(".remove_group").unbind('click');
+            $(".remove_group").click(function() {
+
+              var href = $(this).attr("href");
+
+              remove_group = $(this);
+
+              $.ajax({
+                'async': false,
+                'global': false,
+                'url': href,
+                'success': function (data) {
+                  val = data;
+                  if(val == "OK") {
+                    remove_group.fadeOut(300, function(){
+                      remove_group.parents('.access_list_group').remove();
+                        });
+                  }
+                  else { alert("val"); }
+                }
+              }); // end ajax
+              
+              return false;
+            }); // end remove group
+            
+    });
+});
+
 $('.copylink').live('click', function(evt)
 {
     $(this).focus();
@@ -227,11 +373,27 @@ $(document).ready(function() {
 
 </div>
 
-<!-- sharing modal !-->
+<!-- sharing user modal !-->
 <div class="modal hide fade" id="modal-share">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Public Access</h1>
+    <h1 class="title">User Sharing</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body">
+  </div>
+
+</div>
+
+<!-- sharing group modal !-->
+<div class="modal hide fade" id="modal-share-group">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Group Sharing</h1>
   </div>
 
   <div class="loading-placeholder" style="display: none">
@@ -281,7 +443,7 @@ $(document).ready(function() {
         </p>
         <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-primary" title="Change">
           <i class="icon-cog"></i>
-          Change
+          Change Public Access
         </a>
     </div>
     <hr/>
@@ -296,6 +458,10 @@ $(document).ready(function() {
     <br/><br/>    
     <p>Groups who have a share in this experiment:</p>
     <div id="experiment_group_list"/>        
+    <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-primary" title="Change">
+        <i class="icon-share"></i>
+        Change Group Sharing
+    </a>    
     </div>
     <hr/>
     <div class="sharing-section sharing">

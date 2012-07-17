@@ -1,19 +1,25 @@
+<div class="access_list2">
 <div class="groups">
-{% for group in system_owned_groups %}
+{% for group_acl in group_acls_system_owned %}
+  {% with group=group_acl.get_related_object_group %}
   {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
+  {% endwith %}
 {% endfor %}
-{% for group in user_owned_groups %}
+{% for group_acl in group_acls_user_owned %}
+  {% with group=group_acl.get_related_object_group %}
   {% include "tardis_portal/ajax/add_group_result.html" %}
+  {% endwith %}
 {% endfor %}
 </div> <!-- groups -->
 <p>
-  <strong><label>Add group name: </label></strong>
+  <strong><label>Add group: </label></strong>
 
   {% for field in addGroupPermissionsForm %}
       {% if field.label == "Authentication Method" %}
 		<div class="newgroup" style="display: none">
 	      {{ field.label }}: {{ field }}
 		<br/><br/>
+		</div>
       {% else %}
           {% if field.label == "Group" %}
               {{ field }}
@@ -35,10 +41,18 @@
 	      {% endif %}
       {% endif %}
   {% endfor %}
-
+  Permissions: 
+  <br/>
+      <select id="id_permission_group">
+      <option value="read">View Only</option>
+      <option value="edit">View and Edit</option>
+      <option value="owner">Full Owner</option>
+  </select>  
+  <br/>
   <a class="form_submit btn btn-primary" id="group" href="">
     <i class="icon-plus"></i>
     Add Group
   </a>
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>
+</div>
