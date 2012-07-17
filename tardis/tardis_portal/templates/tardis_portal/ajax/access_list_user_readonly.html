@@ -1,0 +1,22 @@
+<div class="users">
+{% for user_acl in user_acls %}
+  {% with user=user_acl.get_related_object %}
+  {% load url from future %}
+  <div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+    <div class="span9">
+      <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>
+      {% if user.email %}<em>({{ user.email }})</em>{% endif %}
+    </div>
+    <div class="span3">
+      {% if user_acl.canRead %}
+      <span class="label label-success">Read</span>
+      {% endif %}
+      {% if user_acl.canWrite %}
+      <span class="label label-success">Edit</span>
+      {% endif %}
+    </div>
+  </div> <!-- access_list_user -->
+
+  {% endwith %}
+{% endfor %}
+</div>

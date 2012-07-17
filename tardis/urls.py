@@ -61,6 +61,8 @@ experiment_urls = patterns(
      '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
+     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
+      'retrieve_access_list_user_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
      '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'

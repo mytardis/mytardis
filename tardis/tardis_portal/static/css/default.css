@@ -48,5 +48,12 @@
 form .dataset-download-box {
 	display: block;
 	margin-left: auto;
-	margin-right: auto
+	margin-right: auto;
+}
+
+input.copylink
+{
+    cursor:auto;
+    font-weight:bold;
+    padding: 5px;
 }

@@ -1807,6 +1807,17 @@ def retrieve_access_list_user(request, experiment_id):
 
 @never_cache
 @authz.experiment_ownership_required
+def retrieve_access_list_user_readonly(request, experiment_id):
+    from tardis.tardis_portal.forms import AddUserPermissionsForm
+    user_acls = Experiment.safe.user_acls(request, experiment_id)
+
+    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_user_readonly.html', c))                        
+
+
+@never_cache
+@authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
     from tardis.tardis_portal.forms import AddGroupPermissionsForm

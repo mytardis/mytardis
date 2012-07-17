@@ -25,11 +25,19 @@ $('#modal-public-access').bind('hidden', function () {
   $('.tab-pane').trigger('experiment-change');
 });
 
-function SelectAll(id)
+$('.copylink').live('click', function(evt)
 {
-    document.getElementById(id).focus();
-    document.getElementById(id).select();
-}
+    $(this).focus();
+    $(this).select();
+});
+
+// user access list
+$(document).ready(function() {
+  var $target = $("#experiment_user_list");
+  $target.html(loadingHTML + "</br>");
+  var href = "/experiment/control_panel/{{experiment.id}}/access_list/user/readonly/"
+  $target.load(href);
+ });
 </script>
 {% endblock %}
 {% block content %}
@@ -55,7 +63,6 @@ function SelectAll(id)
 
 </div>
 
-<hr/>
 <div class="sharing-sections">
     <div class="sharing-section public-access">
     <h3>Public Access</h3>
@@ -101,23 +108,22 @@ function SelectAll(id)
     <div class="sharing-section sharing">
     <h3>User and Group Sharing</h3>
     <p>These users etc..</p>
-        <ul>
+    <div id="experiment_user_list"/>
+        <!-- <ul>
             <li><strong>Steve Androulakis</strong></li>
             <li><strong>Bob Jones</strong></li>        
-        </ul>
+        </ul> -->
         <button type="submit" class="btn btn-primary">
           <i class="icon-share"></i>
-          Share
+          Change
         </button>
     </div>
     <hr/>
     <div class="sharing-section sharing">
     <h3>Links</h3>
     <p>This experiment can be accessed by everybody with the link below:
-        <input id="public-link" value="http://www.mytardis.org/XOJWE25"
-            class="span9" onClick="SelectAll('public-link');"
-            readonly="readonly"
-            style="cursor:auto; font-weight:bold"></p>
+        <input class="copylink span9" value="http://www.mytardis.org/XOJWE25"
+            readonly="readonly"></p>
     <br/>
     <p>Temporary access links exist for this experiment:</p>
     <table class="table table-striped">
@@ -134,10 +140,9 @@ function SelectAll(id)
                 </th>                
             </tr>
             <td>
-                <input id="public-link1" value="http://www.mytardis.org/XOJWE25"
-                    onClick="SelectAll('public-link1');"
+                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
                     readonly="readonly"
-                    style="cursor:auto;">  
+                    >  
             </td>
             <td>
                 29th July, 2012
@@ -148,10 +153,9 @@ function SelectAll(id)
         </tr>
         <tr>
             <td>
-                <input id="public-link2" value="http://www.mytardis.org/XOJWE25"
-                    onClick="SelectAll('public-link2');"
+                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
                     readonly="readonly"
-                    style="cursor:auto"> 
+                    > 
             </td>
             <td>
                 29th July, 2012
@@ -179,19 +183,17 @@ function SelectAll(id)
             </tr>
                 <td>OAI-DC</td>            
                 <td>
-                    <input id="public-link3" value="http://www.mytardis.org/XOJWE25"
-                        onClick="SelectAll('public-link3');"
+                    <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
                         readonly="readonly"
-                        style="cursor:auto;">  
+                        >  
                 </td>         
         </tr>
         <tr>
             <td>RIF-CS</td>
             <td>
-                <input id="public-link4" value="http://www.mytardis.org/XOJWE25"
-                    onClick="SelectAll('public-link4');"
+                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
                     readonly="readonly"
-                    style="cursor:auto"> 
+                    > 
             </td>                               
         </tr>      
     </table>
