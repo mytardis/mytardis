@@ -61,6 +61,7 @@ from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
+from django.contrib.sites.models import Site
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -2823,7 +2824,13 @@ def share(request, experiment_id):
                     render_response_index(request, \
                         'tardis_portal/ajax/unable_to_choose_rights.html', c))
 
-    c = Context({'experiment': experiment})
+    domain = current_site = Site.objects.get_current().domain
+    public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
+
+    c = Context({'experiment': experiment,
+        'public_link': public_link,
+        'domain': domain
+        })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/share.html', c))
 

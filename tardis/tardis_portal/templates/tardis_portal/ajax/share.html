@@ -336,17 +336,60 @@ $('.copylink').live('click', function(evt)
     $(this).select();
 });
 
-// user access list
 $(document).ready(function() {
+    
+// user access list    
   var $target_user = $("#experiment_user_list");
   $target_user.html(loadingHTML + "</br>");
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/user/readonly/"
   $target_user.load(href);
-  
+
+//group access list
   var $target_group = $("#experiment_group_list");
   $target_group.html(loadingHTML + "</br>");
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/group/readonly/"
   $target_group.load(href);  
+
+// token access list
+  var $target_token = $("#experiment_token_list");
+  $target_token.html(loadingHTML + "</br>");
+  var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
+  $target_token.load(href);
+  
+  var refreshFunctionFor = function($toggle) {
+      return function(data, textStatus, jqXHR) {
+          if (data.success) {
+              if ($toggle.hasClass('tokens_shown')) {
+                  $toggle.click();
+                  $toggle.click();
+              } else {
+                  $toggle.click();
+              }
+          } else {
+              alert('An error occurred.  Please try again later');
+          }
+      };
+  };
+  
+  $('.token_delete').live('click', function(evt){
+      evt.preventDefault();
+      var $toggle = $($(this).attr('data-toggle_selector'));
+      $.post(this.href, {}, refreshFunctionFor($toggle));
+      $(this).parents('tr').remove();
+  });
+
+  $('.create_token_link').live('click', function(evt){
+     evt.preventDefault();
+     var $toggle = $(this).siblings('.access_list_token_toggle');
+     $.post(this.href, {}, refreshFunctionFor($toggle));  // TODO error-handling
+     
+     var $target_token = $("#experiment_token_list");
+     $target_token.html(loadingHTML + "</br>");
+     var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
+     $target_token.load(href); // TODO de-dupe code
+  });  
+  
+  
  });
 </script>
 {% endblock %}
@@ -448,14 +491,16 @@ $(document).ready(function() {
     </div>
     <hr/>
     <div class="sharing-section sharing">
-    <h3>User and Group Sharing</h3>
+    <h3>Sharing</h3>
+    <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"/>
     <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-primary" title="Change">
         <i class="icon-share"></i>
         Change User Sharing
     </a>
-    <br/><br/>    
+    <br/><br/> 
+    <h4>Groups</h4>       
     <p>Groups who have a share in this experiment:</p>
     <div id="experiment_group_list"/>        
     <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-primary" title="Change">
@@ -466,53 +511,28 @@ $(document).ready(function() {
     <hr/>
     <div class="sharing-section sharing">
     <h3>Links</h3>
-    <p>This experiment can be accessed by everybody with the link below:
-        <input class="copylink span9" value="http://www.mytardis.org/XOJWE25"
+        {% if public_link %}
+        <p>This experiment can be viewed by everybody with the link below:
+        <input class="copylink span9" value="{{domain}}{{experiment.get_absolute_url}}"
             readonly="readonly"></p>
+            {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
+                <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
+            {% endif %}
+        {% else %}
+        <p>This experiment is private. A temporary link can be created and privately shared for direct access.</p>
+        {% endif %}
+        
     <br/>
-    <p>Temporary access links exist for this experiment:</p>
-    <table class="table table-striped">
-        <tr>
-            <tr>
-                <th style="width: 60%;">
-                    Link
-                </th>
-                <th>
-                    Expiry
-                </th>
-                <th>
-                    Remove
-                </th>                
-            </tr>
-            <td>
-                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
-                    readonly="readonly"
-                    >  
-            </td>
-            <td>
-                29th July, 2012
-            </td>  
-            <td>
-                [x]
-            </td>            
-        </tr>
-        <tr>
-            <td>
-                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
-                    readonly="readonly"
-                    > 
-            </td>
-            <td>
-                29th July, 2012
-            </td> 
-            <td>
-                [x]
-            </td>                                 
-        </tr>      
-    </table>
-    <button type="submit" class="btn btn-primary">
-        Create New Temporary Link      
-    </button>
+    <p>Temporary access links exist for this experiment and will provide full access to recipients regardless of an experiment's public status.</p>
+    <div id="experiment_token_list"/>
+
+    <a title="Create New Temporary Link"
+        href="{{ experiment.get_create_token_url }}"
+        class="create_token_link btn btn-primary">
+        Create New Temporary Link 
+    </a>
+
+    
     </div>
     <hr/>
     <div class="sharing-section sharing">

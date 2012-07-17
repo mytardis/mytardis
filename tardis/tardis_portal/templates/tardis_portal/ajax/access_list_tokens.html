@@ -1,35 +1,37 @@
+<div class="access_list3">
 {% load url from future %}
 <div class="tokens table table-condensed">
   <div class="access_list_tokens">
     {% if not tokens %}
       <p>No tokens defined </p>
     {% else %}
-        <table>
-          <thead>
+    <table class="table table-striped">
             <tr>
+                <th style="width: 60%;">
+                    Temporary Link
+                </th>
                 <th>
-                    Expiry Date
+                    Expiry
                 </th>
                 <th>
                     Granted By
-                </th>
+                </th>                
                 <th>
-                    URL
-                </th>
-
+                    
+                </th>                
             </tr>
-          </thead>
-          <tbody>
             {% for token in tokens %}
             <tr>
+                <td>
+                    <input class="copylink span12" value="{{ token.url }}"
+                        readonly="readonly"
+                        >                    
+                </td>                
                 <td align="center">
                     {{ token.expiry_date }}
                 </td>
                 <td align="center">
                     {{ token.user }}
-                </td>
-                <td>
-                    <a href="{{ token.url }}" class="token_url">{{ token.url }}</a>
                 </td>
                 <td>
                   <a title="Delete Token"
@@ -42,8 +44,8 @@
                 </td>
             </tr>
             {% endfor %}
-          </tbody>
         </table>
     {% endif %}
   </div> <!-- access_list_tokens -->
 </div> <!-- tokens -->
+</div>
