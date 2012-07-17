@@ -1837,6 +1837,22 @@ def retrieve_access_list_group(request, experiment_id):
 
 @never_cache
 @authz.experiment_ownership_required
+def retrieve_access_list_group_readonly(request, experiment_id):
+
+    user_owned_groups = Experiment.safe.user_owned_groups(request,
+                                                          experiment_id)
+    system_owned_groups = Experiment.safe.system_owned_groups(request,
+                                                            experiment_id)
+
+    c = Context({'user_owned_groups': user_owned_groups,
+                 'system_owned_groups': system_owned_groups,
+                 'experiment_id': experiment_id })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_group_readonly.html', c))
+
+
+@never_cache
+@authz.experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
     groups = Experiment.safe.external_users(request, experiment_id)

@@ -61,16 +61,18 @@ experiment_urls = patterns(
      '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
-     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
       'retrieve_access_list_user_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),
+     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),    
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
      '(?P<group_id>\d+)/$', 'change_group_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
      'retrieve_access_list_group'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/readonly/$',
+      'retrieve_access_list_group_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
      'retrieve_access_list_external'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',

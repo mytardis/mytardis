@@ -1,0 +1,22 @@
+<div class="groups">
+{% if user_owned_groups or system_owned_groups %}
+{% for group in system_owned_groups %}
+  <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+    <div class="span12">
+      <strong>{{ group.name }}</strong>
+    </div>
+  </div>
+{% endfor %}
+{% for group in user_owned_groups %}
+  <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+    <div class="span12">
+      <strong>{{ group.name }}</strong>
+    </div>
+  </div>
+{% endfor %}
+{% else %}
+<p>
+<em>There are currently no groups with access to this experiment.</em>
+</p>
+{% endif %}
+</div> <!-- groups -->
