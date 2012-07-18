@@ -231,20 +231,19 @@ class AddGroupPermissionsForm(forms.Form):
 
     addgroup = forms.CharField(label='Group', required=False, max_length=100)
     addgroup.widget.attrs['class'] = 'groupsuggest'
-    # create = forms.BooleanField(label='CREATE?', required=False)
-    # create.widget.attrs['class'] = 'creategroup'
     authMethod = forms.CharField(required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
-    # adduser = forms.CharField(label='User', required=False, max_length=100)
-    # adduser.widget.attrs['class'] = 'usersuggest'
-    # read = forms.BooleanField(label='READ', required=False, initial=True)
-    # read.widget.attrs['class'] = 'canRead'
-    # write = forms.BooleanField(label='EDIT', required=False)
-    # write.widget.attrs['class'] = 'canWrite'
-    # delete = forms.BooleanField(label='DELETE', required=False,
-    #                                widget=forms.HiddenInput)
-    # delete.widget.attrs['class'] = 'canDelete'
+
+
+class CreateGroupPermissionsForm(forms.Form):
+    addgroup = forms.CharField(label='Group', required=False, max_length=100)
+    addgroup.widget.attrs['class'] = 'groupsuggest'
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+    adduser = forms.CharField(label='User', required=False, max_length=100)
+    adduser.widget.attrs['class'] = 'usersuggest'
 
 
 class ManageGroupPermissionsForm(forms.Form):

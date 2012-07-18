@@ -64,9 +64,10 @@ experiment_urls = patterns(
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
       'retrieve_access_list_user_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),    
+     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),   
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
+    (r'^control_panel/create/group/$', 'create_group'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
      '(?P<group_id>\d+)/$', 'change_group_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
@@ -138,6 +139,7 @@ ajax_urls = patterns(
     (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
     (r'^group_list/$', 'retrieve_group_list'),
+    (r'^group_list_by_user/$', 'retrieve_group_list_by_user'),    
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
     (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),

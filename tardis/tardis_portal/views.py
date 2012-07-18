@@ -71,7 +71,8 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form, MXDatafileSearchForm, RightsForm, ManageAccountForm
+    save_datafile_add_form, MXDatafileSearchForm, RightsForm,\
+    ManageAccountForm, CreateGroupPermissionsForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import get_full_staging_path, \
@@ -1891,12 +1892,20 @@ def retrieve_group_userlist(request, group_id):
 
 
 @never_cache
+def retrieve_group_list_by_user(request):
+
+    groups = Group.objects.filter(groupadmin__user=request.user)
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_list.html', c))
+
+
+@never_cache
 @permission_required('auth.change_group')
 @login_required()
 def manage_groups(request):
 
-    groups = Group.objects.filter(groupadmin__user=request.user)
-    c = Context({'groups': groups})
+    c = Context({})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_group_members.html', c))
 
@@ -2169,79 +2178,38 @@ def change_group_permissions(request, experiment_id, group_id):
                             'tardis_portal/form_template.html', c))
 
 
+@transaction.commit_on_success
 @never_cache
-@transaction.commit_manually
-@authz.experiment_ownership_required
-def create_experiment_access_group(request, experiment_id, groupname):
+def create_group(request):
 
-    create = False
-    canRead = False
-    canWrite = False
-    canDelete = False
+    if not 'group' in request.GET:
+        c = Context({'createGroupPermissionsForm': CreateGroupPermissionsForm() })
+        
+        response = HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/create_group.html', c))
+        return response        
+
     authMethod = localdb_auth_key
     admin = None
-
-    if 'canRead' in request.GET:
-        if request.GET['canRead'] == 'true':
-            canRead = True
-
-    if 'canWrite' in request.GET:
-        if request.GET['canWrite'] == 'true':
-            canWrite = True
-
-   # if 'canDelete' in request.GET:
-   #     if request.GET['canDelete'] == 'true':
-   #         canDelete = True
+    groupname = None
+    
+    if 'group' in request.GET:
+        groupname = request.GET['group']
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
 
-    if 'create' in request.GET:
-        if request.GET['create'] == 'true':
-            create = True
+    if 'authMethod' in request.GET:
+        authMethod = request.GET['authMethod']        
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        transaction.rollback()
-        return HttpResponse('Experiment (id=%d) does not exist' %
-                            (experiment_id))
-
-    if create:
-        try:
-            group = Group(name=groupname)
-            group.save()
-        except:
-            transaction.rollback()
-            return HttpResponse('Could not create group %s ' \
-            '(It is likely that it already exists)' % (groupname))
-    else:
-        try:
-            group = Group.objects.get(name=groupname)
-        except Group.DoesNotExist:
-            transaction.rollback()
-            return HttpResponse('Group %s does not exist' % (groupname))
-
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
-        pluginId=django_group,
-        entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-
-    if acl.count() > 0:
-        # An ACL already exists for this experiment/group.
+        group = Group(name=groupname)
+        group.save()
+    except:
         transaction.rollback()
         return HttpResponse('Could not create group %s ' \
-            '(It is likely that it already exists)' % (groupname))
+        '(It is likely that it already exists)' % (groupname))
 
-    acl = ExperimentACL(experiment=experiment,
-                        pluginId=django_group,
-                        entityId=str(group.id),
-                        canRead=canRead,
-                        canWrite=canWrite,
-                        canDelete=canDelete,
-                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    acl.save()
 
     adminuser = None
     if admin:
@@ -2271,7 +2239,7 @@ def create_experiment_access_group(request, experiment_id, groupname):
         adminuser.save()
 
     # add the current user as admin as well for newly created groups
-    if create and not request.user == adminuser:
+    if not request.user == adminuser:
         user = request.user
 
         groupadmin = GroupAdmin(user=user, group=group)
@@ -2280,11 +2248,11 @@ def create_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
-    c = Context({'group': group,
-                 'experiment_id': experiment_id})
-    response = HttpResponse(render_response_index(request,
-        'tardis_portal/ajax/add_group_result.html', c))
+    c = Context({'group': group})
     transaction.commit()
+
+    response = HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/create_group.html', c))
     return response
 
 
