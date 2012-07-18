@@ -356,37 +356,28 @@ $(document).ready(function() {
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
   $target_token.load(href);
   
-  var refreshFunctionFor = function($toggle) {
-      return function(data, textStatus, jqXHR) {
-          if (data.success) {
-              if ($toggle.hasClass('tokens_shown')) {
-                  $toggle.click();
-                  $toggle.click();
-              } else {
-                  $toggle.click();
-              }
-          } else {
-              alert('An error occurred.  Please try again later');
-          }
-      };
-  };
+
   
   $('.token_delete').live('click', function(evt){
+      var delRow = $(this).parents('tr')
       evt.preventDefault();
       var $toggle = $($(this).attr('data-toggle_selector'));
-      $.post(this.href, {}, refreshFunctionFor($toggle));
-      $(this).parents('tr').remove();
+      $.post(this.href, {}, function()
+      {
+          delRow.remove();          
+      });
   });
 
   $('.create_token_link').live('click', function(evt){
      evt.preventDefault();
      var $toggle = $(this).siblings('.access_list_token_toggle');
-     $.post(this.href, {}, refreshFunctionFor($toggle));  // TODO error-handling
-     
      var $target_token = $("#experiment_token_list");
      $target_token.html(loadingHTML + "</br>");
-     var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
-     $target_token.load(href); // TODO de-dupe code
+     $.post(this.href, {}, function(data)
+     {
+         $target_token.load(href);
+     });  // TODO error-handling
+     
   });  
   
   
@@ -534,7 +525,7 @@ $(document).ready(function() {
 
     
     </div>
-    <hr/>
+    <!-- TODO: feeds <hr/>
     <div class="sharing-section sharing">
     <h3>Feeds</h3>
     <p>Data feeds for this experiment exist:</p>
@@ -562,7 +553,7 @@ $(document).ready(function() {
             </td>                               
         </tr>      
     </table>
-    </div>      
+    </div>       -->
 </div>
 
 {% endblock %}
