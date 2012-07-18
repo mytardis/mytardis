@@ -317,6 +317,7 @@ $('#modal-metadata .submit-button').click(function() {
 </div>
 
 <div class="page-header">
+  <h4>Dataset</h4>
   {% if has_write_permissions %}
   <div class="pull-right">
     <a class="btn btn-warning" title="Edit Dataset"
@@ -334,13 +335,15 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
   </h1>
   {% if from_experiment %}
-  <h4>
-      From
+  <h4 style="padding-top: 4px">
+      <small>
+      From the experiment: 
       <a property="dc:title"
          class="experiment-link"
          href="{{ from_experiment.get_absolute_url }}">
       {{ from_experiment.title }}
       </a>
+      </small>
   </h4>
   {% endif %}
   <p style="text-align: right">
