@@ -84,9 +84,11 @@ def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
 
 def has_experiment_download_access(request, experiment_id):
+    
     if Experiment.safe.owned_and_shared(request) \
                       .filter(id=experiment_id) \
                       .exists():
+                      
         return True
     else:
         exp = Experiment.objects.get(id=experiment_id)
@@ -99,6 +101,7 @@ def has_dataset_ownership(request, dataset_id):
 
 def has_dataset_access(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
+
     return any(has_experiment_access(request, experiment.id)
                for experiment in dataset.experiments.all())
 
@@ -179,7 +182,7 @@ def has_write_permissions(request, experiment_id):
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
-    experiment = Experiment.safe.get(request, experiment_id)
+    experiment = Experiment.objects.get(id=experiment_id)
     if experiment.locked:
         return False
 
