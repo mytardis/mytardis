@@ -334,12 +334,6 @@ $('.share_link_group').live('click', function(evt) {
     });
 });
 
-$('.copylink').live('click', function(evt)
-{
-    $(this).focus();
-    $(this).select();
-});
-
 $(document).ready(function() {
     
 // user access list    
@@ -445,7 +439,7 @@ $(document).ready(function() {
 </div>
 
 <div class="sharing-sections">
-    <div class="sharing-section public-access">
+    <div class="sharing-section public-access row-fluid">
     <h3>Public Access</h3>
         <p>
             <dl>
@@ -486,7 +480,7 @@ $(document).ready(function() {
         </a>
     </div>
     <hr/>
-    <div class="sharing-section sharing">
+    <div class="sharing-section sharing row-fluid">
     <h3>Sharing</h3>
     <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
@@ -505,12 +499,12 @@ $(document).ready(function() {
     </a>    
     </div>
     <hr/>
-    <div class="sharing-section sharing">
+    <div class="sharing-section sharing row-fluid">
     <h3>Links</h3>
         {% if public_link %}
-        <p>This experiment can be viewed by everybody with the link below:
-        <input class="copylink span9" value="{{domain}}{{experiment.get_absolute_url}}"
-            readonly="readonly"></p>
+        <p>This experiment can be viewed by everybody with the link below:</p>
+            <br/>
+        <p><div class="copylink">{{domain}}{{experiment.get_absolute_url}}</div><br/></p>
             {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
                 <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
             {% endif %}
@@ -531,35 +525,6 @@ $(document).ready(function() {
 
     
     </div>
-    <!-- TODO: feeds <hr/>
-    <div class="sharing-section sharing">
-    <h3>Feeds</h3>
-    <p>Data feeds for this experiment exist:</p>
-    <table class="table table-striped">
-        <tr>
-            <tr>
-                <th>Name</th>
-                <th style="width: 60%;">
-                    Link
-                </th>               
-            </tr>
-                <td>OAI-DC</td>            
-                <td>
-                    <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
-                        readonly="readonly"
-                        >  
-                </td>         
-        </tr>
-        <tr>
-            <td>RIF-CS</td>
-            <td>
-                <input class="copylink span12" value="http://www.mytardis.org/XOJWE25"
-                    readonly="readonly"
-                    > 
-            </td>                               
-        </tr>      
-    </table>
-    </div>       -->
 </div>
 
 {% endblock %}
