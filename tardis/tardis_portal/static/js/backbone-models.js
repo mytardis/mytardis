@@ -56,7 +56,8 @@ var MyTardis = (function(){
   var DatasetFilter = Backbone.View.extend({
     tagName: "p",
     events:  {
-      "keyup input": "doFilter"
+      "keyup input": "doFilter",
+      "keypress input[type=text]": "filterOnEnter"
     },
     initialize: function(options) {
       this._datasetTiles = options['datasetTiles'];
@@ -78,6 +79,13 @@ var MyTardis = (function(){
     doFilter: function() {
       var searchTerm = $(this.el).find('input').val();
       this._datasetTiles.filter(this._filterDescription(searchTerm));
+    },
+    filterOnEnter: function(e) {
+        if (e.keyCode == 13)
+        {
+          e.preventDefault();
+          return false;
+        }
     }
   });
 
