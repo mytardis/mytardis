@@ -50,10 +50,15 @@ $('.share_link').live('click', function(evt) {
          .load("/experiment/control_panel/" + experiment_id + "/access_list/user/", function() {
             modal.find('.loading-placeholder').hide();
 
-               $("#id_entered_user").keypress(function() {
+               $("#id_entered_user").keypress(function(e) {
                    // Reset autocomplete user when typing in the user edit field.
                    $(this).siblings("#id_autocomp_user").val('');
                    $(this).siblings("#id_authMethod").attr('disabled', '');
+                   
+                   if (e.keyCode == 13)
+                   {
+                       $("#user.form_submit").click();
+                   }
                });
                // Load user list and activate field autocompletion
                $.ajax({
@@ -211,18 +216,13 @@ $('.share_link_group').live('click', function(evt) {
               });
               return val;
             })();
-
-            // $(".creategroup").live('click', function()
-            // {
-            //     if($(this).is(':checked'))
-            //     {
-            //         $(this).parents('.access_list2').find('.newgroup').show();
-            //     }
-            //     else
-            //     {
-            //         $(this).parents('.access_list2').find('.newgroup').hide();
-            //     }
-            // });
+            
+            $("#id_addgroup").keypress(function(e) {
+                 if (e.keyCode == 13)
+                 {
+                     $("#group.form_submit").click();
+                 }
+             });
 
             // TODO: Replace with Bootstrap typeahead
             $(".groupsuggest").typeahead({
