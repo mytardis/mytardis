@@ -49,9 +49,9 @@
   <div></div>
 {% endif %}
 
-<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET">
-  <label for="filename-search-text" style="display: inline">File filter:</label>
-  <input id="filename-search-text"
+<p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
+  <label for="filename-search-text" style="display: inline;">File filter:</label>
+  <input id="filename-search-text" style="width: 95%; margin-top: 5px;"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
       placeholder='Enter part or all of a filename, then press enter.'
       type="text"
