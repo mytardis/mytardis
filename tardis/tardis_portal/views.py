@@ -2783,7 +2783,11 @@ def share(request, experiment_id):
     def is_valid_owner(owner):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
-        return owner.get_profile().isValidPublicContact()
+            
+        userProfile, created = UserProfile.objects.get_or_create(
+            user=owner)
+            
+        return userProfile.isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
@@ -2812,7 +2816,11 @@ def choose_rights(request, experiment_id):
     def is_valid_owner(owner):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
-        return owner.get_profile().isValidPublicContact()
+        
+        userProfile, created = UserProfile.objects.get_or_create(
+            user=owner)
+
+        return userProfile.isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
