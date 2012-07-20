@@ -143,6 +143,7 @@ ajax_urls = patterns(
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
     (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),
+    (r'^list_staging_files/(?P<dataset_id>\d+)/$', 'list_staging_files'),
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),

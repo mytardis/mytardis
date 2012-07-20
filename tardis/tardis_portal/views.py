@@ -46,6 +46,7 @@ from os import path
 import logging
 import json
 from operator import itemgetter
+from celery.task import task
 
 from django.template import Context
 from django.conf import settings
@@ -76,13 +77,17 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size
+    write_uploaded_file_to_dataset, get_staging_url_and_size, \
+    staging_list
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
+    
+from tardis.tardis_portal.tasks import create_staging_datafiles,\
+    create_staging_datafile
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
@@ -2508,11 +2513,37 @@ def import_staging_files(request, dataset_id):
 
     c = Context({
         'dataset_id': dataset_id,
-        'directory_listing': staging_traverse(staging),
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
         'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
      })
     return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+    
+@authz.dataset_write_permissions_required
+def list_staging_files(request, dataset_id):
+    """
+    Creates an jstree view of the staging area of the user, and provides
+    a selection mechanism importing files.
+    """
+
+    staging = get_full_staging_path(request.user.username)
+    if not staging:
+        return HttpResponseNotFound()
+
+    from_path = staging
+    root = False
+    try:
+        path_var = request.GET.get('path', '')
+        if not path_var:
+            root = True
+        from_path = path.join(staging, urllib2.unquote(path_var))
+    except ValueError:
+        from_path = staging
+
+    c = Context({
+        'dataset_id': dataset_id,
+        'directory_listing': staging_list(from_path, staging, root=root),
+     })
+    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)    
 
 @authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
@@ -2991,7 +3022,6 @@ def stage_files_to_dataset(request, dataset_id):
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
 
-    Returns a JSON list of created paths for the files.
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
@@ -3003,7 +3033,6 @@ def stage_files_to_dataset(request, dataset_id):
         return response
 
     user = request.user
-    dataset = Dataset.objects.get(id=dataset_id)
 
     # Incoming data MUST be JSON
     if not request.META['CONTENT_TYPE'].startswith('application/json'):
@@ -3013,25 +3042,10 @@ def stage_files_to_dataset(request, dataset_id):
         files = json.loads(request.body)
     except:
         return HttpResponse(status=400)
+        
+    create_staging_datafiles.delay(files, user.id, dataset_id)
 
-    def create_staging_datafile(filepath):
-        url, size = get_staging_url_and_size(user.username, filepath)
-        datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
-                                filename=path.basename(filepath),
-                                size=size)
-        datafile.verify(allowEmptyChecksums=True)
-        datafile.save()
-        return datafile
-
-    datafiles = [create_staging_datafile(f) for f in files]
-
-    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
-                        status=201)
-
-
-
-
+    email = {'email' : user.email}
+    return HttpResponse(json.dumps(email), status=201)
 
                                                                                                                                                                                                                                                                                                                       

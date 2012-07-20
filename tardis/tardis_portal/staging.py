@@ -51,30 +51,11 @@ logger = logging.getLogger(__name__)
 def get_dataset_path(dataset):
     return path.join(str(dataset.get_first_experiment().id),
                      str(dataset.id))
-
-def staging_traverse(staging=settings.STAGING_PATH):
-    """Recurse through directories and form HTML list tree for jtree
-
-    :param staging: the path to begin traversing
-    :type staging: string
-    :rtype: string
-    """
-
-    ul = '<ul><li id="phtml_1"><a>My Files</a><ul>'
-
-    filelist = []
-    try:
-        filelist = listdir(staging)
-        filelist.sort()
-    except OSError:
-        logger.error('staging directory doesnt exist' +\
-            str(staging))
-    for f in filelist:
-        ul = ul + traverse(path.join(staging, f), staging)
-    return ul + '</ul></li></ul>'
-
-
-def traverse(pathname, dirname=settings.STAGING_PATH):
+    
+def staging_list(pathname=settings.STAGING_PATH,
+    dirname=settings.STAGING_PATH, root=False):
+    from django.utils import _os
+    from django.core.files.storage import default_storage
     """Traverse a path and return an alphabetically by filename
     sorted nested group of
     unordered (<ul>) list HTML tags::
@@ -95,26 +76,36 @@ def traverse(pathname, dirname=settings.STAGING_PATH):
     :type dirname: string
     :rtype: string
     """
-    if path.isdir(pathname):
-        li = '<li id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
-                                    path.basename(pathname))
-    else:
-        li = '<li class="fileicon" id="%s"><a>%s</a>' % (path.relpath(pathname, dirname),
-                                    path.basename(pathname))
+    directory_listing = ''
+    
+    # so people aren't malicious with the loading of files in the UI
+    if not path.abspath(pathname).startswith(dirname):
+        return None
 
-    if posixpath.basename(pathname).startswith('.'):
-        return ''
-    if path.isfile(pathname):
-        return li + '</li>'
-    if path.isdir(pathname):
-        ul = '<ul>'
-        filelist = listdir(pathname)
-        filelist.sort()
-        for f in filelist:
-            ul = ul + traverse(path.join(pathname, f), dirname)
-        return li + ul + '</ul></li>'
-    return ''
+    filelist = listdir(pathname)
+    filelist.sort()
+    for f in filelist:    
+        if path.isdir(_os.safe_join(pathname, f)):
+            li = '<li class="jstree-closed" id="%s"><a>%s</a>' \
+            % (path.relpath(_os.safe_join(pathname, f), dirname),
+                                        path.basename(f))
+            directory_listing = directory_listing + li + '<ul></ul></li>'                                        
+        else:
+            if not posixpath.basename(f).startswith('.'):
+                li = '<li class="fileicon" id="%s"><a>%s</a>' \
+                % (path.relpath(_os.safe_join(pathname, f), dirname),
+                                            path.basename(f))
+                directory_listing = directory_listing + li + '</li>'                                        
 
+    if root:
+    # root call
+        directory_listing = '<ul><li id="phtml_1"><a>'\
+            + str(path.split(path.dirname(pathname))[1]) \
+            + '</a><ul>' \
+            + directory_listing \
+            + '</ul></li></ul>'
+        
+    return directory_listing
 
 class StagingHook():
     __name__ = 'StagingHook'

@@ -1,0 +1,12 @@
+<div class="alert alert-success">
+  <a class="close" data-dismiss="alert">×</a>
+  <strong>Importing files..</strong>
+  {{#import_staging}}
+    {{#email}}
+      An email will be sent to {{email}} when complete.
+    {{/email}}
+    {{^email}}
+      Check here shortly for completion of your import.
+    {{/email}}
+  {{/import_staging}}
+</div>

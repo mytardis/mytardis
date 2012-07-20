@@ -1,7 +1,45 @@
+{% load mustachejs %}
+{% mustachejs "tardis_portal/import_staging_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
+
 <script type="text/javascript">
-$("#staging-file-tree").jstree({
-    core : { /* core options go here */ },
-    plugins : [ "themes", "html_data", "checkbox" ]
+var treeConfig = {
+    core : { "initially_open" : ['phtml_1'] },
+    plugins : [ "themes", "html_data", "checkbox" ],
+    "html_data" : {      
+        "ajax" : {
+            "type": 'GET',       
+            "url": function (node) {
+                var nodeId = "";
+                var url = ""
+                if (node == -1)
+                {
+                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}";
+                }
+                else
+                {
+                    nodeId = encodeURIComponent(node.attr('id'));
+                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}?path=" + nodeId;
+                }
+
+                return url;
+            },           
+            "success": function (new_data) {
+                return new_data;
+            }
+        }
+    }
+}
+
+$(document).ready(function(){
+ $("#staging-file-tree").jstree(treeConfig);
+
+ // $('#staging-file-tree ins').live('click',function(){
+ //    var tree = jQuery.jstree._reference("#staging-file-tree");
+ //    var currentNode = tree._get_node(null, false);
+ //    tree.refresh(currentNode);
+ // });
+
 });
 
 //Get checked
@@ -31,10 +69,18 @@ $('.add_files').live('click', function(){
 <p id="mountpath">
   <strong>{{staging_mount_prefix}}{{username}}</strong>
 </p>
+<hr/>
 <p>
-  <strong>Select Files To Be Added To A Dataset:</strong>
+  <h3>Select files and directories to be added to a dataset:</h3>
 </p>
-<div id="staging-file-tree">{{directory_listing|safe}}</div>
+<div id="staging-file-tree"
+    style="
+    border: 1px solid #BCE8F1;
+    font-size: 120%;
+    margin: 15px;
+    padding: 10px;
+    background: #D9EDF7;
+    "></div>
 
 <button id="staging-import-button" class="btn btn-primary">
   <i class="icon-arrow-right"></i>
@@ -45,8 +91,7 @@ $('.add_files').live('click', function(){
 $('#staging-import-button').click(function() {
   // Get files
   var files = _.map(
-      $('#staging-file-tree').jstree('get_checked', -1, true)
-                             .filter('.jstree-leaf'),
+      $('#staging-file-tree').jstree('get_checked', -1, true),
       function(v) {
         return $(v).attr('id')
       }
@@ -64,8 +109,35 @@ $('#staging-import-button').click(function() {
     data: JSON.stringify(files),
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
-    complete: function() {
-      modal.modal('hide');
+    error: function(jqXHR, textStatus, errorThrown) {
+      var errorData = {'message': errorThrown};
+      errorData[textStatus] = true;
+      // Show error message
+      $('#datafile-download').before(
+          Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/ajax_error'],
+              errorData, Mustache.TEMPLATES)
+      );
+    },
+    success: function(data, textStatus, jqHXR) {
+        if(files != '')
+        {
+            var templateData = {'import_staging': true};
+            
+            if(data != '')
+            {
+                templateData['email'] = data.email;
+            }
+
+            $('#datafile-download').before(       
+              Mustache.to_html(
+              Mustache.TEMPLATES['tardis_portal/import_staging_message'],
+              templateData, Mustache.TEMPLATES)
+            );
+        }
+    },
+    complete: function(jqXHR, textStatus) {
+        modal.modal('hide');
     }
   });
 });
