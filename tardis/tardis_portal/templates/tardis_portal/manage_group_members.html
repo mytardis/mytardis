@@ -28,7 +28,6 @@ $(document).ready(function() {
                 $("#group.form_submit").click(function(event) {
                   event.preventDefault();
 
-                  // TODO: shift group creation to group management page
                   var group = $(this).parents('.group_create').find("#id_addgroup").val();
                   var admin = $(this).parents('.group_create').find("#id_adduser").val();
                   var authMethod = $(this).parents('.group_create').find("#id_authMethod").val();
@@ -42,6 +41,7 @@ $(document).ready(function() {
                     type: "GET",
                     url: action,
                     success: function(data) {
+                        modal.modal('hide');
                     },
                     error: function(data) { alert('Error adding group!'); }
                   });
