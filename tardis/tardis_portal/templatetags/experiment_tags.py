@@ -4,7 +4,8 @@ from django.template.defaultfilters import pluralize, filesizeformat
 from django.contrib.humanize.templatetags.humanize import naturalday
 from tardis.tardis_portal.util import get_local_time
 
-from tardis.tardis_portal.util import render_mustache
+from tardis.tardis_portal.util import render_mustache,\
+    render_public_access_badge
 
 register = template.Library()
 
@@ -58,23 +59,7 @@ def experiment_public_access_badge(experiment):
     """
     Displays an badge the level of public access for this experiment
     """
-    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'No public access',
-            'label': 'Private',
-            'private': True,
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'Only descriptions are public, not data',
-            'label': 'Metadata',
-        })
-    if experiment.public_access == experiment.PUBLIC_ACCESS_FULL:
-        return render_mustache('tardis_portal/badges/public_access', {
-            'title': 'All data is public',
-            'label': 'Public',
-            'public': True,
-        })
+    return render_public_access_badge(experiment)
 
 
 @register.filter

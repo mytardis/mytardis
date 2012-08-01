@@ -96,6 +96,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.hacks import oracle_dbops_hack
+from tardis.tardis_portal.util import render_public_access_badge
 
 from haystack.views import SearchView
 from haystack.query import SearchQuerySet
@@ -2930,6 +2931,18 @@ def retrieve_licenses(request):
     except KeyError:
         licenses = License.get_suitable_licenses()
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
+
+
+def experiment_public_access_badge(request, experiment_id):
+    try:
+        experiment = Experiment.objects.get(id=experiment_id)
+    except Experiment.DoesNotExist:
+        HttpResponse('')
+    
+    if authz.has_experiment_access(request, experiment_id):
+        return HttpResponse(render_public_access_badge(experiment))
+    else:
+        return HttpResponse('')
 
 
 @login_required

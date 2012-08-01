@@ -17,6 +17,7 @@
 {% mustachejs "tardis_portal/badges/datafile_count" %}
 
 <script type="text/javascript">
+
     var toggle_files = function(loadCallback) {
         var $this = $(this);
         var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
@@ -246,7 +247,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     {{ experiment|experiment_datafiles_badge }}&nbsp;
     {{ experiment|experiment_size_badge }}&nbsp;
     {{ experiment|experiment_last_updated_badge }}&nbsp;
-    {{ experiment|experiment_public_access_badge }}&nbsp;
+    <span id="experiment-public-access-badge">{{ experiment|experiment_public_access_badge }}</span>&nbsp;
   </p>
 </div>
 

@@ -165,6 +165,9 @@ $('form.experiment-rights').submit(function(evt) {
               Mustache.TEMPLATES['tardis_portal/rights_update_message'],
               templateData, Mustache.TEMPLATES)
       );
+      
+      // update badge on view experiment page
+      $('#experiment-public-access-badge').load("public_access_badge/")
     },
     error: function(jqXHR, textStatus, errorThrown) {
       var errorData = {'message': errorThrown};
