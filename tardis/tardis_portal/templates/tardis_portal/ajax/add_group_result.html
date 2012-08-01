@@ -24,11 +24,7 @@
     {% if system %}
     <em>(System Group)</em>
     {% else %}
-    <div class="span4">
-    <a class="change_group btn btn-mini btn-warning"
-       href="{% url 'tardis.tardis_portal.views.change_group_permissions' experiment_id group.id %}">
-      <i class="icon-pencil"></i> Edit
-    </a>        
+    <div class="span4">       
     <a class="remove_group btn btn-mini btn-danger"
        href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
       <i class="icon-remove"></i> Delete
