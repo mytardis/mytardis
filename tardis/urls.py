@@ -64,7 +64,7 @@ experiment_urls = patterns(
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
       'retrieve_access_list_user_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),   
+     '(?P<groupname>.+)/$', 'add_experiment_access_group'),   
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
     (r'^control_panel/create/group/$', 'create_group'),     
@@ -143,7 +143,6 @@ ajax_urls = patterns(
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
     (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),
-    (r'^list_staging_files/(?P<dataset_id>\d+)/$', 'list_staging_files'),
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
@@ -178,6 +177,7 @@ download_urls = patterns(
 group_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
+    (r'^(?P<group_id>\d+)/readonly$', 'retrieve_group_userlist_readonly'),
     (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',

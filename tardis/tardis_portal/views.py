@@ -75,6 +75,7 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     ManageAccountForm, CreateGroupPermissionsForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
+
 from tardis.tardis_portal.staging import get_full_staging_path, \
     staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size
 
@@ -1889,6 +1890,17 @@ def retrieve_group_userlist(request, group_id):
                  'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/group_user_list.html', c))
+
+
+@never_cache
+def retrieve_group_userlist_readonly(request, group_id):
+
+    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    users = User.objects.filter(groups__id=group_id)
+    c = Context({'users': users, 'group_id': group_id,
+                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_user_list_readonly.html', c))
 
 
 @never_cache

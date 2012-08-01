@@ -2,12 +2,16 @@
 <div class="groups">
 {% for group_acl in group_acls_system_owned %}
   {% with group=group_acl.get_related_object_group %}
+  <div class="group">
   {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
+  </div>
   {% endwith %}
 {% endfor %}
 {% for group_acl in group_acls_user_owned %}
   {% with group=group_acl.get_related_object_group %}
+  <div class="group">
   {% include "tardis_portal/ajax/add_group_result.html" %}
+  </div>
   {% endwith %}
 {% endfor %}
 </div> <!-- groups -->
