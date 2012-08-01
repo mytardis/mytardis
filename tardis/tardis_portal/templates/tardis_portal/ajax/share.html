@@ -318,6 +318,43 @@ $('.share_link_group').bind('click', function(evt) {
                 url: action,
                 success: function(data) {
                 groups_div.hide().append(data).fadeIn();
+                
+                // view group members
+                $(".member_list_user_toggle").unbind('click');
+                $(".member_list_user_toggle").bind('click', function(evt){
+                    evt.preventDefault()
+
+                    var icon = $(this).find('i');
+                    icon.toggleClass('icon-folder-open icon-folder-close');
+                    $(this).toggleClass('members-shown members-hidden');
+
+                    var user_list = $(this).parents('.access_list_group').find('.access_list');
+                    // If not showing members, just hide user list
+                    if (!$(this).hasClass('members-shown')) {
+                      user_list.hide();
+                      return;
+                    }
+                    
+                    user_list.html(loadingHTML);
+                    // Load (jQuery AJAX "load()") and show access list
+                    user_list.load(this.href, function() {
+                      // Load user list and activate field autocompletion
+                      $.ajax({
+                        'dataType': 'json',
+                        'url': '/ajax/user_list/',
+                        'success': function(users) {
+                          $("#id_adduser").autocomplete({
+                              'source': _.bind( function(query, callback) {
+                                var authMethod = $("#id_authMethod").val();
+                                callback(
+                                    userAutocompleteHandler(
+                                        query.term, this.users, authMethod));
+                              }, { 'users': users })
+                          });
+                        }
+                      });
+                    }).show();
+                });  // end member_list_user_toggle                
 
                 // todo this is a duplicate function..
                 $(".remove_group").unbind('click');
@@ -341,6 +378,7 @@ $('.share_link_group').bind('click', function(evt) {
                       }); // end ajax
                       return false;
                     }); // end remove group
+                                      
                 },
                 error: function(data) { alert('Error adding group!'); }
               });
