@@ -3,7 +3,8 @@
 {% load experiment_tags %}
 {% block script %}
 <script type="text/javascript">
-$('.public_access_link').live('click', function(evt) {
+$('.public_access_link').unbind('click');
+$('.public_access_link').bind('click', function(evt) {
     var experiment_id = $(this).attr('data-experiment_id');
     var modal = $('#modal-public-access');
 
@@ -36,8 +37,10 @@ String.prototype.endsWith = function(t, i) { if (i==false) { return (t
 (t.toLowerCase() == this.substring(this.length -
 t.length).toLowerCase()); } }
 
+// user sharing modal
 
-$('.share_link').live('click', function(evt) {
+$(".share_link").unbind('click');
+$('.share_link').bind('click', function(evt) {
     var experiment_id = $(this).attr('data-experiment_id');
     var modal = $('#modal-share');
 
@@ -191,7 +194,8 @@ $('#modal-share-group').bind('hidden', function () {
 
 // group sharing modal
 
-$('.share_link_group').live('click', function(evt) {
+$(".share_link_group").unbind('click');
+$('.share_link_group').bind('click', function(evt) {
     var experiment_id = $(this).attr('data-experiment_id');
     var modal = $('#modal-share-group');
 
@@ -211,7 +215,7 @@ $('.share_link_group').live('click', function(evt) {
               $.ajax({
                 'async': false,
                 'global': false,
-                'url': '/ajax/group_list',
+                'url': '/ajax/group_list/',
                 'success': function (data) { val = data; }
               });
               return val;
@@ -228,6 +232,43 @@ $('.share_link_group').live('click', function(evt) {
             $(".groupsuggest").typeahead({
               'source': groups.split(" ~ ")
             });
+            
+            // view group members
+            $(".member_list_user_toggle").unbind('click');
+            $(".member_list_user_toggle").bind('click', function(evt){
+                evt.preventDefault()
+
+                var icon = $(this).find('i');
+                icon.toggleClass('icon-folder-open icon-folder-close');
+                $(this).toggleClass('members-shown members-hidden');
+
+                var user_list = $(this).parents('.group').find('.access_list');
+                // If not showing members, just hide user list
+                if (!$(this).hasClass('members-shown')) {
+                  user_list.hide();
+                  return;
+                }
+
+                user_list.html(loadingHTML);
+                // Load (jQuery AJAX "load()") and show access list
+                user_list.load(this.href, function() {
+                  // Load user list and activate field autocompletion
+                  $.ajax({
+                    'dataType': 'json',
+                    'url': '/ajax/user_list/',
+                    'success': function(users) {
+                      $("#id_adduser").autocomplete({
+                          'source': _.bind( function(query, callback) {
+                            var authMethod = $("#id_authMethod").val();
+                            callback(
+                                userAutocompleteHandler(
+                                    query.term, this.users, authMethod));
+                          }, { 'users': users })
+                      });
+                    }
+                  });
+                }).show();
+            });            
 
             $("#group.form_submit").unbind('click');
             $("#group.form_submit").click(function(event) {
@@ -267,7 +308,7 @@ $('.share_link_group').live('click', function(evt) {
                   var canDelete = true
               }
 
-              var permissions = '?canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
+              var permissions = '/?canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
               action = action + permissions;
 
               $.ajax({
@@ -355,7 +396,6 @@ $(document).ready(function() {
   $target_token.load(href);
   
 
-  
   $('.token_delete').live('click', function(evt){
       var delRow = $(this).parents('tr')
       evt.preventDefault();
@@ -366,7 +406,8 @@ $(document).ready(function() {
       });
   });
 
-  $('.create_token_link').live('click', function(evt){
+  $(".create_token_link").unbind('click');
+  $('.create_token_link').bind('click', function(evt){
      evt.preventDefault();
      var $toggle = $(this).siblings('.access_list_token_toggle');
      var $target_token = $("#experiment_token_list");
@@ -379,40 +420,6 @@ $(document).ready(function() {
      
   });
   
-  $(".member_list_user_toggle").live('click', function(evt){
-      evt.preventDefault()
-
-      var icon = $(this).find('i');
-      icon.toggleClass('icon-folder-open icon-folder-close');
-      $(this).toggleClass('members-shown members-hidden');
-
-      var user_list = $(this).parents('.group').find('.access_list');
-      // If not showing members, just hide user list
-      if (!$(this).hasClass('members-shown')) {
-        user_list.hide();
-        return;
-      }
-
-      user_list.html(loadingHTML);
-      // Load (jQuery AJAX "load()") and show access list
-      user_list.load(this.href, function() {
-        // Load user list and activate field autocompletion
-        $.ajax({
-          'dataType': 'json',
-          'url': '/ajax/user_list/',
-          'success': function(users) {
-            $("#id_adduser").autocomplete({
-                'source': _.bind( function(query, callback) {
-                  var authMethod = $("#id_authMethod").val();
-                  callback(
-                      userAutocompleteHandler(
-                          query.term, this.users, authMethod));
-                }, { 'users': users })
-            });
-          }
-        });
-      }).show();
-  });
  });
 </script>
 {% endblock %}
