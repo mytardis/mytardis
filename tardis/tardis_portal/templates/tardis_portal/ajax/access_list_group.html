@@ -1,22 +1,19 @@
+{% load url from future %}
 <div class="access_list2">
 <div class="groups">
 {% for group_acl in group_acls_system_owned %}
   {% with group=group_acl.get_related_object_group %}
-  <div class="group">
   {% include "tardis_portal/ajax/add_group_result.html" with system="true" %}
-  </div>
   {% endwith %}
 {% endfor %}
 {% for group_acl in group_acls_user_owned %}
   {% with group=group_acl.get_related_object_group %}
-  <div class="group">
   {% include "tardis_portal/ajax/add_group_result.html" %}
-  </div>
   {% endwith %}
 {% endfor %}
 </div> <!-- groups -->
 <p>
-  <strong><label>Add group: </label></strong>
+  <strong><label>Add group to experiment: </label></strong>
 
   {% for field in addGroupPermissionsForm %}
       {% if field.label == "Authentication Method" %}
@@ -58,4 +55,8 @@
   </a>
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>
+<div>Go to <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
+  <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>
+  Group Management
+</a></div>
 </div>
