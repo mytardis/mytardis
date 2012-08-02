@@ -165,12 +165,14 @@ $(document).ready(function() {
   <h1>Manage Group Members</h1>
 </div>
 
+{% if perms.auth.add_group %}
 <div class="pull-right">
 <a class="create_group_link btn btn-warning" title="Create Group">
   <i class="icon-plus"></i>
   Create Group
 </a>
 </div>
+{% endif %}
 
 <div id="grouplist"/>
 
