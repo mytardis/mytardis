@@ -289,9 +289,14 @@ class Dataset_File(models.Model):
                                                              tempfile)
 
         if not (self.size and size == int(self.size)):
-            logger.warn("%s failed size check: %d != %s" %
-                         (self.url, size, self.size))
-            return False
+            if (self.sha512sum or self.md5sum) and not self.size: 
+                # If the size is missing but we have a checksum to check
+                # the missing size is harmless ... we will fill it in below.
+                logger.warn("%s size is missing" % (self.url))
+            else:
+                logger.error("%s failed size check: %d != %s" %
+                            (self.url, size, self.size))
+                return False
 
         if self.sha512sum and sha512sum.lower() != self.sha512sum.lower():
             logger.error("%s failed SHA-512 sum check: %s != %s" %
@@ -305,6 +310,7 @@ class Dataset_File(models.Model):
 
         self.md5sum = md5sum.lower()
         self.sha512sum = sha512sum.lower()
+        self.size = str(size)
         if not self.mimetype and len(mimetype_buffer) > 0:
             self.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
         self.verified = True
