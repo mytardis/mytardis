@@ -293,18 +293,18 @@ class Dataset_File(models.Model):
                          (self.url, size, self.size))
             return False
 
-        if self.sha512sum and sha512sum != self.sha512sum:
+        if self.sha512sum and sha512sum.lower() != self.sha512sum.lower():
             logger.error("%s failed SHA-512 sum check: %s != %s" %
                          (self.url, sha512sum, self.sha512sum))
             return False
 
-        if self.md5sum and md5sum != self.md5sum:
+        if self.md5sum and md5sum.lower() != self.md5sum.lower():
             logger.error("%s failed MD5 sum check: %s != %s" %
                          (self.url, md5sum, self.md5sum))
             return False
 
-        self.md5sum = md5sum
-        self.sha512sum = sha512sum
+        self.md5sum = md5sum.lower()
+        self.sha512sum = sha512sum.lower()
         if not self.mimetype and len(mimetype_buffer) > 0:
             self.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
         self.verified = True
