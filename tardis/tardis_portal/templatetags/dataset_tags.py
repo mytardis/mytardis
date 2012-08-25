@@ -15,7 +15,7 @@ def dataset_tiles(experiment, include_thumbnails):
     datasets = experiment.datasets.all()
     
     # Get data to template (used by JSON service too)
-    data = ( get_dataset_info(ds, bool(include_thumbnails), experiment) for ds in datasets )
+    data = ( get_dataset_info(ds, bool(include_thumbnails)) for ds in datasets )
 
     class DatasetInfo(object):
 

@@ -338,7 +338,7 @@ $('#modal-metadata .submit-button').click(function() {
   <h4 style="padding-top: 4px">
       <small>
       From the experiment: 
-      <a property="dc:title"
+      <a
          class="experiment-link"
          href="{{ from_experiment.get_absolute_url }}">
       {{ from_experiment.title }}
@@ -389,6 +389,28 @@ $('#modal-metadata .submit-button').click(function() {
     <div id="metadata-pane" class="row-fluid">
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
+    {% if other_experiments %}
+    <div id="other-experiments-pane">
+        <h3>Other Experiments</h3>
+        <em>This dataset also appears in these experiments:</em>
+        <br/>
+        <div id="other-experiments-content">
+            <table class="table span12">
+                {% for other_experiment in other_experiments %}
+                {% if other_experiment != from_experiment %}
+                <tr><td>
+                    <a
+                       class="experiment-link"
+                       href="{{ other_experiment.get_absolute_url }}">
+                    {{ other_experiment.title }}
+                </a>
+                </td></tr>
+                {% endif %}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endif %}
   </div>
   <hr class="visible-phone"/>
   <div class="span6">

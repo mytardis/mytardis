@@ -92,7 +92,7 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    render_response_search
+    render_response_search, get_experiment_referer
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.hacks import oracle_dbops_hack
@@ -107,7 +107,7 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False, from_experiment=""):
+def get_dataset_info(dataset, include_thumbnail=False):
     def get_thumbnail_url(datafile):
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': datafile.id,
@@ -119,11 +119,7 @@ def get_dataset_info(dataset, include_thumbnail=False, from_experiment=""):
     obj = model_to_dict(dataset)
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
     
-    obj['url'] = dataset.get_absolute_url()
-    if not from_experiment == "":
-        obj['url'] = obj['url'] + \
-            "?from_experiment=" + \
-            str(from_experiment.pk)    
+    obj['url'] = dataset.get_absolute_url()    
         
     if include_thumbnail:
         try:
@@ -496,22 +492,6 @@ class SearchQueryString():
 def view_dataset(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
     
-    def get_from_experiment():
-        # display the experiment that
-        # the dataset was loaded from, if applicable
-        from_experiment = None
-        try:
-            from_experiment_get = int(request.GET.get('from_experiment'))
-
-            experiment = Experiment.objects.get(id=from_experiment_get)
-            if authz.has_experiment_access(request, experiment.id):
-                if dataset.experiments.filter(id=experiment.id):
-                    from_experiment = experiment
-        except (ValueError, TypeError, Experiment.DoesNotExist):
-            pass
-            
-        return from_experiment
-
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
@@ -536,13 +516,16 @@ def view_dataset(request, dataset_id):
     c = Context({
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
-        'from_experiment': get_from_experiment(),
         'parametersets': dataset.getParameterSets()
                                 .exclude(schema__hidden=True),
         'has_download_permissions':
             authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
             authz.has_dataset_write(request, dataset_id),
+        'from_experiment': \
+            get_experiment_referer(request, dataset_id),
+        'other_experiments': \
+            authz.get_accessible_experiments_for_dataset(request, dataset_id)
     })
     return HttpResponse(render_response_index(request,
                     'tardis_portal/view_dataset.html', c))
@@ -631,7 +614,7 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    objects = [ get_dataset_info(ds, has_download_permissions, experiment) \
+    objects = [ get_dataset_info(ds, has_download_permissions) \
                 for ds in experiment.datasets.all() ]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
@@ -2800,7 +2783,7 @@ def share(request, experiment_id):
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)    
 
-    domain = current_site = Site.objects.get_current().domain
+    domain = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
 
     c['experiment'] = experiment
