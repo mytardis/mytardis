@@ -1810,7 +1810,6 @@ def retrieve_access_list_user(request, experiment_id):
 
 
 @never_cache
-@authz.experiment_ownership_required
 def retrieve_access_list_user_readonly(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
     user_acls = Experiment.safe.user_acls(request, experiment_id)
@@ -1841,7 +1840,6 @@ def retrieve_access_list_group(request, experiment_id):
 
 
 @never_cache
-@authz.experiment_ownership_required
 def retrieve_access_list_group_readonly(request, experiment_id):
 
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
@@ -1867,7 +1865,7 @@ def retrieve_access_list_external(request, experiment_id):
                         'tardis_portal/ajax/access_list_external.html', c))
 
 @never_cache
-@authz.experiment_ownership_required
+@authz.experiment_download_required
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
     tokens = [{'expiry_date': token.expiry_date,
@@ -2787,35 +2785,28 @@ def single_search(request):
             ).__call__(request)
 
 
-@authz.experiment_ownership_required
 def share(request, experiment_id):
     '''
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
-    def is_valid_owner(owner):
-        if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
-            return True
-            
-        userProfile, created = UserProfile.objects.get_or_create(
-            user=owner)
-            
-        return userProfile.isValidPublicContact()
-
-    # Forbid access if no valid owner is available (and show error message)
-    if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
-        c = Context({'no_valid_owner': True, 'experiment': experiment})
-        return HttpResponseForbidden(\
-                    render_response_index(request, \
-                        'tardis_portal/ajax/unable_to_choose_rights.html', c))
+    
+    c = Context({})
+    
+    c['has_write_permissions'] = \
+        authz.has_write_permissions(request, experiment_id)
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
+    if request.user.is_authenticated():
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)    
 
     domain = current_site = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
 
-    c = Context({'experiment': experiment,
-        'public_link': public_link,
-        'domain': domain
-        })
+    c['experiment'] = experiment
+    c['public_link'] = public_link
+    c['domain'] = domain
+
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/share.html', c))
 

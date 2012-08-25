@@ -30,6 +30,7 @@
                     {{ token.user }}
                 </td>
                 <td>
+                {% if is_owner %}
                   <a title="Delete Token"
                     href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
                     class="token_delete btn btn-danger btn-mini"
@@ -37,6 +38,7 @@
                     <i class="icon-remove"></i>
                     Delete
                   </a>
+                {% endif %}
                 </td>
             </tr>
             {% endfor %}

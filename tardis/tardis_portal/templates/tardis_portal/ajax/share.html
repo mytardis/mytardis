@@ -552,10 +552,12 @@ $(document).ready(function() {
               </dd>
             </dl>
         </p>
+        {% if is_owner %}
         <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-primary" title="Change">
           <i class="icon-cog"></i>
           Change Public Access
         </a>
+        {% endif %}
     </div>
     <hr/>
     <div class="sharing-section sharing row-fluid">
@@ -563,18 +565,22 @@ $(document).ready(function() {
     <h4>Users</h4>
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"/>
+    {% if is_owner %}
     <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-primary" title="Change">
         <i class="icon-share"></i>
         Change User Sharing
     </a>
+    {% endif %}
     <br/><br/> 
     <h4>Groups</h4>       
     <p>Groups who have a share in this experiment:</p>
-    <div id="experiment_group_list"/>        
+    <div id="experiment_group_list"/> 
+    {% if is_owner %}       
     <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-primary" title="Change">
         <i class="icon-share"></i>
         Change Group Sharing
     </a>    
+    {% endif %}
     </div>
     <hr/>
     <div class="sharing-section sharing row-fluid">
@@ -587,19 +593,23 @@ $(document).ready(function() {
                 <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
             {% endif %}
         {% else %}
-        <p>This experiment is private. A temporary link can be created and privately shared for direct access.</p>
+        <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
         {% endif %}
-        
+    
+    {% if has_download_permissions %}
     <br/>
-    <p>Temporary access links exist for this experiment and will provide full access to recipients regardless of an experiment's public status.</p>
+    <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
     <div id="experiment_token_list"/>
 
-    <a title="Create New Temporary Link"
-        href="{{ experiment.get_create_token_url }}"
-        class="create_token_link btn btn-primary">
-        <i class="icon-plus-sign"></i>
-        Create New Temporary Link 
-    </a>
+        {% if is_owner %}
+        <a title="Create New Temporary Link"
+            href="{{ experiment.get_create_token_url }}"
+            class="create_token_link btn btn-primary">
+            <i class="icon-plus-sign"></i>
+            Create New Temporary Link 
+        </a>
+        {% endif %}
+    {% endif %}
 
     
     </div>
