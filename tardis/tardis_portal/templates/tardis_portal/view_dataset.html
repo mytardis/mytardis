@@ -389,9 +389,9 @@ $('#modal-metadata .submit-button').click(function() {
     <div id="metadata-pane" class="row-fluid">
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
-    {% if other_experiments %}
     <div id="other-experiments-pane">
         <h3>Other Experiments</h3>
+        {% if other_experiments|length > 1 %}
         <em>This dataset also appears in these experiments:</em>
         <br/>
         <div id="other-experiments-content">
@@ -408,9 +408,12 @@ $('#modal-metadata .submit-button').click(function() {
                 {% endif %}
                 {% endfor %}
             </table>
-        </div>
+        </div>        
+        <br/>
+        {% else %}
+        <em>This dataset doesn't appear in any other experiments.</em>
+        {% endif %}
     </div>
-    {% endif %}
   </div>
   <hr class="visible-phone"/>
   <div class="span6">
