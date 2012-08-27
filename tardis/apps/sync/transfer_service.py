@@ -144,7 +144,8 @@ class TransferClient(object):
         logger.debug('Sending file request to %s' % from_url)
         # This could differ from institution to institution, so a better method
         # of setting the right path is probably needed.
-        dest_file_path = str(synced_exp.experiment.id)
+        dest_file_path = str(self.get_status(synced_exp)['message'])
+        logger.debug('Destination file path set to %s' % dest_file_path)
         # This reverse assumes that the urlpatterns are the same at each end.
         # It might be better if the from_url pointed directly to the file transfer
         # view, so we don't need to guess.
