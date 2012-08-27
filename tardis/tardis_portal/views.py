@@ -986,7 +986,8 @@ def register_experiment_ws_xmldata(request):
                 received_remote.send(sender=Experiment,
                         instance=e,
                         uid=origin_id,
-                        from_url=from_url)
+                        from_url=from_url,
+                        sync_path=sync_path)
 
             response = HttpResponse(str(sync_path), status=200)
             response['Location'] = request.build_absolute_uri(
