@@ -155,10 +155,16 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # create a group and add it to experiment1
-        response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/group/%s/?canRead=true&create=true'
-                                    % (self.experiment1.id, 'group1'))
+        response = self.client1.get('/experiment/control_panel'
+                                    '/create/group/?group=%s&authMethod=localdb'
+                                    % ('group1'))
         self.assertEqual(response.status_code, 200)
+
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/add/group/%s/?canRead=true'
+                                    '&canWrite=true&canDelete=false&isOwner=undefined'
+                                    % (self.experiment1.id, 'group1'))
+        self.assertEqual(response.status_code, 200)        
 
         # add user2 as admin to the newly created group
         group = Group.objects.get(name='group1')
@@ -422,10 +428,16 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
         # create a group 'group1w' with write permissions
-        response = self.client1.get('/experiment/control_panel/%i/access_list'
-                                    '/add/group/%s/?canRead=true&canWrite=true&create=true'
-                                    % (self.experiment1.id, 'group1w'))
+        response = self.client1.get('/experiment/control_panel'
+                                    '/create/group/?group=%s&authMethod=localdb'
+                                    % ('group1w'))
         self.assertEqual(response.status_code, 200)
+
+        response = self.client1.get('/experiment/control_panel/%i'
+                                    '/access_list/add/group/%s/?canRead=true'
+                                    '&canWrite=true&canDelete=false&isOwner=undefined'
+                                    % (self.experiment1.id, 'group1w'))
+        self.assertEqual(response.status_code, 200)        
 
         # add user2 to 'group1w' which gives him write permissions
         group = Group.objects.get(name='group1w')
