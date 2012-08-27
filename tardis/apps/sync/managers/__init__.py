@@ -9,7 +9,7 @@ def load_manager():
             'tardis.apps.sync.managers.default_manager.SyncManager')
     (module, cls) = manager_class.rsplit('.', 1)
 
-    try: 
+    try:
         return getattr(importlib.import_module(module), cls)
 
     except ImportError, e:
@@ -26,4 +26,6 @@ def load_manager():
         raise ImproperlyConfigured, '%s is not available. Available choices: %s' %  \
                     (manager_name, ', '.join(available_managers))
 
-manager = load_manager()
+# manager = load_manager()
+# steve
+manager = getattr(importlib.import_module('tardis.apps.sync.managers.default_manager'), 'SyncManager')
