@@ -90,9 +90,10 @@ def experiment_received(sender, **kwargs):
     logger.info('Sync app saw experiment %s' % uid)
     synced_exp = SyncedExperiment(experiment=exp, uid=uid, provider_url=from_url)
     synced_exp.save()
-    
-    status['status'] = 'ingest_response_path'
-    status['human_status'] = 'Ingest Response Path'
-    status['timestamp'] = time.time()
-    status['message'] = sync_path
-    synced_exp.save_status(status)
+ 
+    ingest_status = dict()
+    ingest_status['status'] = 'ingest_response_path'
+    ingest_status['human_status'] = 'Ingest Response Path'
+    ingest_status['timestamp'] = time.time()
+    ingest_status['message'] = sync_path
+    synced_exp.save_status(ingest_status)
