@@ -116,6 +116,14 @@ class MetsExporter():
 
             for datafile in dataset.dataset_file_set.filter(verified=True):
                 # add entry to fileSec
+                parameterSets = DatafileParameterSet.objects.filter(
+                    dataset_file=datafile)
+
+		if not parameterSets:
+                    ADMID_val = None
+                else:
+                    ADMID_val = "A-{0}".format(metadataCounter)
+		
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
                                  MIMETYPE=datafile.mimetype,
@@ -123,7 +131,7 @@ class MetsExporter():
                                  CHECKSUM=datafile.sha512sum,
                                  CHECKSUMTYPE="SHA-512",
                                  OWNERID=datafile.filename,
-                                 ADMID="A-{0}".format(metadataCounter))
+                                 ADMID=ADMID_val)
 
                 protocol = datafile.protocol
                 if protocol in replace_protocols:
@@ -137,8 +145,6 @@ class MetsExporter():
 
                 # add entry to structMap
                 datasetDiv.add_fptr(fptr(FILEID="F-{0}".format(fileCounter)))
-                parameterSets = DatafileParameterSet.objects.filter(
-                    dataset_file=datafile)
 
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")
