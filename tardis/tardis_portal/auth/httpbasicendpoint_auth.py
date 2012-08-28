@@ -65,7 +65,11 @@ class HttpBasicEndpointAuth(AuthProvider):
         return user
 
     def get_user(self, user_id):
-        raise NotImplemented()
+        try:
+            user = User.objects.get(username=user_id)
+        except User.DoesNotExist:
+            user = None
+        return user
 
     def _set_password(self, username, password):
         self.passman.clear()
