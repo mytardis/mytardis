@@ -136,51 +136,50 @@ class SyncManager(object):
         for owner in site_owners:
             mpform.add_field('experiment_owner', owner)
 
-        # aside from a METS record, why are we doing this here?
-        # a pre-requisite for this code to run is an already-ingested METS?
-        # -steve
+        # export METS file
+        filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
+        logger.debug('=== extracting mets file for experiment %s ' % uid)
+        from tardis.tardis_portal.metsexporter import MetsExporter
+        exporter = MetsExporter()
         
-        # # export METS file
-        # filename = 'mets_expid_%i_%s' % (experiment.id, protocol)
-        # logger.debug('=== extracting mets file for experiment %s ' % uid)
-        # from tardis.tardis_portal.metsexporter import MetsExporter
-        # exporter = MetsExporter()
-        # if protocol:
-        #     # translate vbl:// into tardis:// url for datafiles
-        #     metsfile = exporter.export(experimentId=experiment.id,
-        #                                replace_protocols={'vbl': protocol},
-        #                                filename=filename,
-        #                                export_images=False)
-        # else:
-        #     metsfile = exporter.export(experimentId=experiment.id,
-        #                                filename=filename,
-        #                                export_images=False)
-        # logger.debug('=== extraction done, filename = %s' % metsfile)
-        # 
-        # f = open(metsfile, "r")
-        # mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
-        # body = str(mpform)
-        # 
-        # logger.debug('about to send register request to site %s' % url)
-        # 
-        # # build the request
-        # headers = {
-        #     'User-agent': 'MyTardis',
-        #     'Content-type': mpform.get_content_type(),
-        # }
-        # 
-        # # This should be made into a background task.
-        # # Or rather- the processing on the other end should be.
-        # h = Http(timeout=9999, disable_ssl_certificate_validation=True)
-        # h.force_exception_to_status_code = True
-        # resp, content = h.request(url, 'POST', headers=headers, body=body)
-        # f.close()
-        # 
-        # if resp.status != 200:
-        #     logger.error('Posting experiment to %s failed:' % url)
-        #     logger.error('%s: %s' % (resp.status, resp.reason))
-        #     logger.debug('SERVER RESPONSE: ' + content)
-        #     return False
+        if protocol:
+            # translate vbl:// into tardis:// url for datafiles
+            metsfile = exporter.export(experimentId=experiment.id,
+                                       replace_protocols={'vbl': protocol},
+                                       filename=filename,
+                                       export_images=False,
+                                       temp_file=True)
+        else:
+            metsfile = exporter.export(experimentId=experiment.id,
+                                       filename=filename,
+                                       export_images=False,
+                                       temp_file=True)
+        logger.debug('=== extraction done, filename = %s' % metsfile)
+
+        f = open(metsfile, "r")
+        mpform.add_file('xmldata', 'METS.xml', fileHandle=f)
+        body = str(mpform)
+
+        logger.debug('about to send register request to site %s' % url)
+
+        # build the request
+        headers = {
+            'User-agent': 'MyTardis',
+            'Content-type': mpform.get_content_type(),
+        }
+
+        # This should be made into a background task.
+        # Or rather- the processing on the other end should be.
+        h = Http(timeout=9999, disable_ssl_certificate_validation=True)
+        h.force_exception_to_status_code = True
+        resp, content = h.request(url, 'POST', headers=headers, body=body)
+        f.close()
+
+        if resp.status != 200:
+            logger.error('Posting experiment to %s failed:' % url)
+            logger.error('%s: %s' % (resp.status, resp.reason))
+            logger.debug('SERVER RESPONSE: ' + content)
+            return False
         return True
 
     def start_file_transfer(self, uid, site_settings_url, dest_path):
@@ -196,7 +195,7 @@ class SyncManager(object):
 
 
     def _start_file_transfer(self, experiment, settings, path):
-        return True
+        return True # TODO: steve put scp file transfer here
 
 
     def _get_status(self, experiment):
