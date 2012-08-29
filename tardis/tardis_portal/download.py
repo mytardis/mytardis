@@ -137,10 +137,16 @@ def _write_tar_func(rootdir, datafiles):
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile
-        tf = TarFile(filename, 'w')
-        logger.debug('Writing tar archive to %s' % filename)
-        _write_files_to_archive(tf.add, files)
-        tf.close()
+        try:
+            tf = TarFile(filename, 'w')
+            logger.debug('Writing tar archive to %s' % filename)
+            _write_files_to_archive(tf.add, files)
+            tf.close()
+        except IOError as ex:
+            logger.warn("I/O error({0}) while writing tar archive: {1}".format(e.errno, e.strerror))
+            unlink(filename)
+        finally:
+            tf.close()
     # Returns the function to do the actual writing
     return write_tar
 
@@ -152,10 +158,16 @@ def _write_zip_func(rootdir, datafiles):
     # Define the function
     def write_zip(filename):
         from zipfile import ZipFile
-        zf = ZipFile(filename, 'w', allowZip64=True)
-        logger.debug('Writing zip archive to %s' % filename)
-        _write_files_to_archive(zf.write, files)
-        zf.close()
+        try:
+            zf = ZipFile(filename, 'w', allowZip64=True)
+            logger.debug('Writing zip archive to %s' % filename)
+            _write_files_to_archive(zf.write, files)
+            zf.close()
+        except IOError as ex:
+            logger.warn("I/O error({0}) while writing zip archive: {1}".format(e.errno, e.strerror))
+            unlink(filename)
+        finally:
+            zf.close()
     # Returns the function to do the actual writing
     return write_zip
 
