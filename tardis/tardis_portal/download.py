@@ -119,8 +119,8 @@ def _get_filename(rootdir, df):
     return path.join(rootdir, str(df.dataset.id), df.filename)
 
 def _get_datafile_details_for_archive(rootdir, datafiles):
-    return [(df.get_file(), _get_filename(rootdir, df)) \
-             for df in datafiles]
+    return ((df.get_file(), _get_filename(rootdir, df)) \
+             for df in datafiles)
 
 def _write_files_to_archive(write_func, files):
     for fileObj, name in files:
@@ -142,7 +142,6 @@ def _write_tar_func(rootdir, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(rootdir, datafiles)
-    logger.debug('Have %d files to write to archive' % len(files))
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile
@@ -163,7 +162,6 @@ def _write_zip_func(rootdir, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(rootdir, datafiles)
-    logger.debug('Have %d files to write to archive' % len(files))
     # Define the function
     def write_zip(filename):
         from zipfile import ZipFile
@@ -295,3 +293,5 @@ def download_datafiles(request):
     else:
         response = return_response_not_found(request)
     return response
+
+        
