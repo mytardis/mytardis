@@ -32,11 +32,19 @@ logger = logging.getLogger(__name__)
 
 class StreamingFile:
 
-    def __init__(self, writer_callable):
-        self.runnable = writer_callable
+    def __init__(self, writer_callable, asynchronous_file_creation=False):
+        # Caution, only use 'asynchronous_file_creation=True' if the 
+        # writer_callable outputs the file strictly sequentially.  If it seeks
+        # backwards to back-fill details (like ZipFile does!), this can cause 
+        # a data race and can result in a corrupted download.
         _, self.name = mkstemp()
-        self.thread = Thread(target=self)
-        self.thread.start()
+        self.asynchronous = asynchronous_file_creation
+        if asynchronous_file_creation:
+            self.runnable = writer_callable
+            self.thread = Thread(target=self)
+            self.thread.start()
+        else:
+            writer_callable(self.name)
         self.reader = open(self.name, 'rb')
 
     def __call__(self):
@@ -48,12 +56,13 @@ class StreamingFile:
 
         remaining_bytes = size
         buf = ''
-        while self.thread.is_alive() and remaining_bytes > 0:
-            from time import sleep
-            sleep(0.01)
-            read_bytes = read_file(remaining_bytes)
-            buf += read_bytes
-            remaining_bytes -= len(read_bytes)
+        if self.asynchronous:
+            while self.thread.is_alive() and remaining_bytes > 0:
+                from time import sleep
+                sleep(0.01)
+                read_bytes = read_file(remaining_bytes)
+                buf += read_bytes
+                remaining_bytes -= len(read_bytes)
 
         if remaining_bytes > 0:
             buf += read_file(remaining_bytes)
@@ -178,11 +187,14 @@ def download_experiment(request, experiment_id, comptype):
     takes string parameter "comptype" for compression method.
     Currently implemented: "zip" and "tar"
     """
+    # TODO: do size estimation, check available temp filespace, check download limits 
+    # TODO: intelligent selection of temp file versus in-memory buffering.
     datafiles = Dataset_File.objects\
         .filter(dataset__experiments__id=experiment_id)
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(str(experiment_id), datafiles))
+        reader = StreamingFile(_write_tar_func(str(experiment_id), datafiles),
+                               asynchronous_file_creation=True)
 
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
@@ -196,8 +208,7 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + str(experiment_id) + '-complete.zip"'
     else:
-        return return_response_not_found(request)
-    # response['Content-Length'] = fileSize + 5120
+        response = return_response_not_found(request)
     return response
 
 
@@ -205,8 +216,8 @@ def download_datafiles(request):
 
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
-    # (tarfile count?)
-
+    # TODO: do size estimation, check available temp filespace, check download limits 
+    # TODO: intelligent selection of temp file versus in-memory buffering.
     comptype = "zip"
     if 'comptype' in request.POST:
         comptype = request.POST['comptype']
@@ -269,22 +280,18 @@ def download_datafiles(request):
         expid = iter(df_set).next().dataset.get_first_experiment().id
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func('datasets', df_set))
-
-        # logger.info(cmd)
-        response = \
-            HttpResponse(FileWrapper(reader),
-                         mimetype='application/x-tar')
+        reader = StreamingFile(_write_tar_func('datasets', df_set),
+                               asynchronous_file_creation=True)
+        response = HttpResponse(FileWrapper(reader),
+                                mimetype='application/x-tar')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
-        return response
-    else:
+    elif comptype == "zip":
         reader = StreamingFile(_write_zip_func('datasets', df_set))
-
-        # logger.info(cmd)
-        response = \
-            HttpResponse(FileWrapper(reader),
-                         mimetype='application/zip')
+        response = HttpResponse(FileWrapper(reader),
+                                mimetype='application/zip')    
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
-        return response
+    else:
+        response = return_response_not_found(request)
+    return response
