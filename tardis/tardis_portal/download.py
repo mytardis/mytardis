@@ -11,12 +11,20 @@ import logging
 import shutil
 import subprocess
 import urllib
+import os, stat, time, struct
+
+try:
+    import zlib # We may need its compression method
+    crc32 = zlib.crc32
+except ImportError:
+    zlib = None
+    crc32 = binascii.crc32
+    
 from itertools import chain
 from tempfile import mkstemp, NamedTemporaryFile
 from threading import Thread
 from urllib2 import urlopen, URLError
-
-from os import path, devnull, unlink
+from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP_DEFLATED
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
@@ -71,8 +79,93 @@ class StreamingFile:
 
     def close(self):
         self.reader.close()
-        unlink(self.name)
+        os.unlink(self.name)
+        
+class StreamableZipFile(ZipFile):
+    def __init__(self, file, mode="r", compression=ZIP_STORED, allowZip64=False):
+        ZipFile.__init__(self, file, mode, compression, allowZip64)
+    
+    def write(self, filename, arcname=None, compress_type=None):
+        """Put the bytes from filename into the archive under the name
+        arcname.  The file is written in strictly sequential fashion - no seeking."""
+        
+        # This code is a tweaked version of ZipFile.write ...
+        # TODO: add an alternative version that works with a stream rather than a filename.
+        if not self.fp:
+            raise RuntimeError(
+                  "Attempt to write to ZIP archive that was already closed")
 
+        st = os.stat(filename)
+        isdir = stat.S_ISDIR(st.st_mode)
+        mtime = time.localtime(st.st_mtime)
+        date_time = mtime[0:6]
+        # Create ZipInfo instance to store file information
+        if arcname is None:
+            arcname = filename
+        arcname = os.path.normpath(os.path.splitdrive(arcname)[1])
+        while arcname[0] in (os.sep, os.altsep):
+            arcname = arcname[1:]
+        if isdir:
+            arcname += '/'
+        zinfo = ZipInfo(arcname, date_time)
+        zinfo.external_attr = (st[0] & 0xFFFF) << 16L      # Unix attributes
+        if compress_type is None:
+            zinfo.compress_type = self.compression
+        else:
+            zinfo.compress_type = compress_type
+
+        zinfo.file_size = st.st_size
+        zinfo.flag_bits = 0x08                  # Use trailing data descriptor for file sizes and CRC 
+        zinfo.header_offset = self.fp.tell()    # Start of header bytes
+
+        self._writecheck(zinfo)
+        self._didModify = True
+
+        if isdir:
+            zinfo.file_size = 0
+            zinfo.compress_size = 0
+            zinfo.CRC = 0
+            self.filelist.append(zinfo)
+            self.NameToInfo[zinfo.filename] = zinfo
+            self.fp.write(zinfo.FileHeader())
+            return
+
+        with open(filename, "rb") as fp:
+            # The CRC and sizes in the file header are zero ...
+            zinfo.CRC = CRC = 0
+            zinfo.compress_size = compress_size = 0
+            zinfo.file_size = file_size = 0
+            self.fp.write(zinfo.FileHeader())
+            if zinfo.compress_type == ZIP_DEFLATED:
+                cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
+                     zlib.DEFLATED, -15)
+            else:
+                cmpr = None
+            while 1:
+                buf = fp.read(1024 * 8)
+                if not buf:
+                    break
+                file_size = file_size + len(buf)
+                CRC = crc32(buf, CRC) & 0xffffffff
+                if cmpr:
+                    buf = cmpr.compress(buf)
+                    compress_size = compress_size + len(buf)
+                self.fp.write(buf)
+        if cmpr:
+            buf = cmpr.flush()
+            compress_size = compress_size + len(buf)
+            self.fp.write(buf)
+            zinfo.compress_size = compress_size
+        else:
+            zinfo.compress_size = file_size
+        # Write the data descriptor after the file containing the true sizes and CRC
+        zinfo.CRC = CRC
+        zinfo.file_size = file_size
+        self.fp.write(struct.pack("<LLL", zinfo.CRC, zinfo.compress_size,
+              zinfo.file_size))
+        self.filelist.append(zinfo)
+        self.NameToInfo[zinfo.filename] = zinfo
+        
 def _create_download_response(request, datafile_id, disposition='attachment'):
     # Get datafile (and return 404 if absent)
     try:
@@ -116,7 +209,7 @@ def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
 def _get_filename(rootdir, df):
-    return path.join(rootdir, str(df.dataset.id), df.filename)
+    return os.path.join(rootdir, str(df.dataset.id), df.filename)
 
 def _get_datafile_details_for_archive(rootdir, datafiles):
     return ((df.get_file(), _get_filename(rootdir, df)) \
@@ -152,7 +245,7 @@ def _write_tar_func(rootdir, datafiles):
             tf.close()
         except IOError as ex:
             logger.warn("I/O error({0}) while writing tar archive: {1}".format(e.errno, e.strerror))
-            unlink(filename)
+            os.unlink(filename)
         finally:
             tf.close()
     # Returns the function to do the actual writing
@@ -164,15 +257,14 @@ def _write_zip_func(rootdir, datafiles):
     files = _get_datafile_details_for_archive(rootdir, datafiles)
     # Define the function
     def write_zip(filename):
-        from zipfile import ZipFile
         try:
-            zf = ZipFile(filename, 'w', allowZip64=True)
+            zf = StreamableZipFile(filename, 'w', allowZip64=True)
             logger.debug('Writing zip archive to %s' % filename)
             _write_files_to_archive(zf.write, files)
             zf.close()
         except IOError as ex:
             logger.warn("I/O error({0}) while writing zip archive: {1}".format(e.errno, e.strerror))
-            unlink(filename)
+            os.unlink(filename)
         finally:
             zf.close()
     # Returns the function to do the actual writing
@@ -199,7 +291,8 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + str(experiment_id) + '-complete.tar"'
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(str(experiment_id), datafiles))
+        reader = StreamingFile(_write_zip_func(str(experiment_id), datafiles),
+                               asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
 
@@ -285,7 +378,8 @@ def download_datafiles(request):
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func('datasets', df_set))
+        reader = StreamingFile(_write_zip_func('datasets', df_set),
+                               asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')    
         response['Content-Disposition'] = \
