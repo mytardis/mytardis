@@ -67,13 +67,14 @@ experiment_urls = patterns(
      '(?P<groupname>.+)/$', 'add_experiment_access_group'),   
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
-    (r'^control_panel/create/group/$', 'create_group'),     
+    (r'^control_panel/create/group/$', 'create_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
      '(?P<group_id>\d+)/$', 'change_group_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
      'retrieve_access_list_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/readonly/$',
-      'retrieve_access_list_group_readonly'),     
+      'retrieve_access_list_group_readonly'),
+    (r'^control_panel/create/user/$', 'create_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
      'retrieve_access_list_external'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',

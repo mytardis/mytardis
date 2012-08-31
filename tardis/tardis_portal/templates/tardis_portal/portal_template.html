@@ -126,7 +126,7 @@
                     </a>
                   </li>
                   {% endif %} -->
-                  {% if perms.auth.change_group %}
+                  {% if perms.auth.change_group or perms.auth.change_user %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
                       <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>

@@ -257,6 +257,12 @@ class ManageGroupPermissionsForm(forms.Form):
     admin.widget.attrs['class'] = 'isAdmin'
 
 
+class CreateUserPermissionsForm(RegistrationForm):
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+
+
 class DatafileSearchForm(forms.Form):
 
     filename = forms.CharField(required=False, max_length=100)

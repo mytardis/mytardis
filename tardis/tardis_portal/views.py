@@ -63,6 +63,8 @@ from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 from django.contrib.sites.models import Site
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -73,7 +75,8 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
     save_datafile_add_form, MXDatafileSearchForm, RightsForm,\
-    ManageAccountForm, CreateGroupPermissionsForm
+    ManageAccountForm, CreateGroupPermissionsForm,\
+    CreateUserPermissionsForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 
@@ -2367,6 +2370,60 @@ def stats(request):
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
+
+
+@transaction.commit_on_success
+@never_cache
+def create_user(request):
+
+    if not 'user' in request.POST:
+        c = Context({'createUserPermissionsForm': CreateUserPermissionsForm() })
+
+        response = HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/create_user.html', c))
+        return response
+
+    authMethod = localdb_auth_key
+
+    if 'user' in request.POST:
+        username = request.POST['user']
+
+    if 'authMethod' in request.POST:
+        authMethod = request.POST['authMethod']
+
+    if 'email' in request.POST:
+        email = request.POST['email']    
+        
+    if 'password' in request.POST:
+        password = request.POST['password']
+
+    try:
+        validate_email(email)
+        
+        user = User.objects.create_user(username, email, password)
+
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile.save()
+
+        authentication = UserAuthentication(userProfile=userProfile,
+                                            username=username,
+                                            authenticationMethod=authMethod)
+        authentication.save()
+
+    except ValidationError:
+        return HttpResponse('Could not create user %s ' \
+        '(Email address is invalid: %s)' % (username, email), status=403)
+    except:
+        transaction.rollback()
+        return HttpResponse('Could not create user %s ' \
+        '(It is likely that this username already exists)' % (username), status=403)    
+
+    c = Context({'user_created': username})
+    transaction.commit()
+
+    response = HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/create_user.html', c))
+    return response
 
 
 def import_params(request):
