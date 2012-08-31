@@ -278,6 +278,13 @@ UPLOADIFY_PATH = '%s/%s' % (STATIC_URL, 'js/lib/uploadify')
 # Upload path that files are sent to
 UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
 
+# Download size limit: zero means no limit
+DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
+
+# Safety margin for temporary space when downloading.  (Estimated archive
+# file size + safety_margin must be less that available disk space ...)
+DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608
+
 # Disable registration (copy to your settings.py first!)
 # INSTALLED_APPS = filter(lambda x: x != 'registration', INSTALLED_APPS)
 

@@ -11,7 +11,7 @@ import logging
 import shutil
 import subprocess
 import urllib
-import os, stat, time, struct
+import os, platform, ctypes, stat, time, struct
 
 try:
     import zlib # We may need its compression method
@@ -21,7 +21,7 @@ except ImportError:
     crc32 = binascii.crc32
     
 from itertools import chain
-from tempfile import mkstemp, NamedTemporaryFile
+from tempfile import mkstemp, gettempdir, NamedTemporaryFile
 from threading import Thread
 from urllib2 import urlopen, URLError
 from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP_DEFLATED
@@ -243,6 +243,7 @@ def _write_tar_func(rootdir, datafiles):
             logger.debug('Writing tar archive to %s' % filename)
             _write_files_to_archive(tf.add, files)
             tf.close()
+            logger.debug('Completed tar archive size is %i' % os.stat(filename).st_size)
         except IOError as ex:
             logger.warn("I/O error({0}) while writing tar archive: {1}".format(e.errno, e.strerror))
             os.unlink(filename)
@@ -262,6 +263,7 @@ def _write_zip_func(rootdir, datafiles):
             logger.debug('Writing zip archive to %s' % filename)
             _write_files_to_archive(zf.write, files)
             zf.close()
+            logger.debug('Completed zip archive size is %i' % os.stat(filename).st_size)
         except IOError as ex:
             logger.warn("I/O error({0}) while writing zip archive: {1}".format(e.errno, e.strerror))
             os.unlink(filename)
@@ -270,6 +272,61 @@ def _write_zip_func(rootdir, datafiles):
     # Returns the function to do the actual writing
     return write_zip
 
+def _estimate_archive_size(rootdir, datafiles, comptype):
+    """
+    produces an estimate of the size of the uncompressed file archive.  This is
+    made based on the information we have to hand (i.e. the names and the notional file 
+    sizes from the database.  We don't try to access the files themselves, as this
+    potentially increases temporary disc space usage which is the resource we
+    are primarily trying to protect at this point.
+    """
+    # TODO - include the implied entries for directories in the estimates.
+    estimate = 0
+    for df in datafiles:
+        if comptype == "tar":
+            # File header + file size with padding to 512
+            estimate += 512 + ((int(df.get_size()) + 511) / 512) * 512
+        elif comptype == "zip":
+            name_length = len(_get_filename(rootdir, df))
+            # local header + content + DD + file header
+            estimate += (20 + name_length) + int(df.get_size()) + 8 + (46 + name_length) 
+    if comptype == "tar":
+         # Two records of zeros at the end.
+         estimate += 1024
+    elif comptype == "zip":
+        # Central directory overheads
+        estimate += 100 
+    return estimate
+
+def _get_free_temp_space():
+    """ Return free space on the file system holding the temporary directory (in bytes)
+    """
+    sys_type = platform.system()
+    if sys_type == 'Windows':
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(gettempdir()), 
+                                                   None, None, ctypes.pointer(free_bytes))
+        return free_bytes.value
+    elif sys_type == 'Darwin' or sys_type == 'DragonFly' or 'BSD' in sys_type:
+        st = os.statvfs(gettempdir())
+        return st.f_bfree * st.f_frsize
+    elif sys_type == 'Linux':
+        st = os.statvfs(gettempdir())
+        return st.f_bfree * st.f_bsize
+    else:
+        raise RuntimeError('Unsupported / unexpected platform type: %s' % sys_type)
+
+def _check_download_limits(rootdir, datafiles, comptype):
+    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
+    available = _get_free_temp_space()
+    logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
+    if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
+        return 'Download archive size exceeds the allowed limit: try a smaller download'
+    elif estimate > available + settings.DOWNLOAD_SPACE_SAFETY_MARGIN:
+        return 'Insufficient temp file space available to create the archive:' \
+                ' try a smaller download, or try again later'
+    else:
+        return None
 
 @experiment_download_required
 def download_experiment(request, experiment_id, comptype):
@@ -281,23 +338,27 @@ def download_experiment(request, experiment_id, comptype):
     # TODO: intelligent selection of temp file versus in-memory buffering.
     datafiles = Dataset_File.objects\
         .filter(dataset__experiments__id=experiment_id)
+    rootdir = str(experiment_id)
+    msg = _check_download_limits(rootdir, datafiles, comptype)
+    if msg:
+        return return_response_not_found(request)
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(str(experiment_id), datafiles),
+        reader = StreamingFile(_write_tar_func(rootdir, datafiles),
                                asynchronous_file_creation=True)
 
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + str(experiment_id) + '-complete.tar"'
+            + rootdir + '-complete.tar"'
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(str(experiment_id), datafiles),
+        reader = StreamingFile(_write_zip_func(rootdir, datafiles),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
 
         response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + str(experiment_id) + '-complete.zip"'
+            + rootdir + '-complete.zip"'
     else:
         response = return_response_not_found(request)
     return response
@@ -363,6 +424,11 @@ def download_datafiles(request):
 
     if len(df_set) == 0:
         return return_response_error(request)
+    
+    rootdir = datasets
+    msg = _check_download_limits(rootdir, datafiles, comptype)
+    if msg:
+        return return_response_not_found(request)
 
     # Handle missing experiment ID - only need it for naming
     try:
@@ -371,14 +437,14 @@ def download_datafiles(request):
         expid = iter(df_set).next().dataset.get_first_experiment().id
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func('datasets', df_set),
+        reader = StreamingFile(_write_tar_func(rootdir, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func('datasets', df_set),
+        reader = StreamingFile(_write_zip_func(rootdir, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')    

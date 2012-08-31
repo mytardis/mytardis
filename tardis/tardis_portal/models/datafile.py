@@ -74,6 +74,9 @@ class Dataset_File(models.Model):
         # Filter empty sizes, get array of sizes, then reduce
         return reduce(sum_str, datafiles.exclude(size='')
                                         .values_list('size', flat=True), 0)
+        
+    def get_size(self):
+        return self.size
 
     def getParameterSets(self, schemaType=None):
         """Return datafile parametersets associated with this experiment.
