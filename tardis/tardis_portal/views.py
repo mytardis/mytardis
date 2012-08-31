@@ -84,6 +84,9 @@ from tardis.tardis_portal.staging import get_full_staging_path, \
     write_uploaded_file_to_dataset, get_staging_url_and_size, \
     staging_list
 
+from tardis.tardis_portal.tasks import create_staging_datafiles,\
+    create_staging_datafile
+
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
@@ -3077,7 +3080,6 @@ def stage_files_to_dataset(request, dataset_id):
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
 
-    Returns a JSON list of created paths for the files.
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
@@ -3089,7 +3091,6 @@ def stage_files_to_dataset(request, dataset_id):
         return response
 
     user = request.user
-    dataset = Dataset.objects.get(id=dataset_id)
 
     # Incoming data MUST be JSON
     if not request.META['CONTENT_TYPE'].startswith('application/json'):
@@ -3100,22 +3101,9 @@ def stage_files_to_dataset(request, dataset_id):
     except:
         return HttpResponse(status=400)
 
-    def create_staging_datafile(filepath):
-        url, size = get_staging_url_and_size(user.username, filepath)
-        datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
-                                filename=path.basename(filepath),
-                                size=size)
-        datafile.verify(allowEmptyChecksums=True)
-        datafile.save()
-        return datafile
+    create_staging_datafiles.delay(files, user.id, dataset_id)
 
-    datafiles = [create_staging_datafile(f) for f in files]
-
-    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
-                        status=201)
-
-
+    email = {'email' : user.email}
+    return HttpResponse(json.dumps(email), status=201)
 
 
