@@ -98,12 +98,12 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
   </td>
   <td>
     {% if has_download_permissions and datafile.get_view_url %}
-      <a  class="filelink"
+      <a  class="filelink datafile_name"
           href="{{ datafile.get_view_url }}"
           title="View"
           target="_blank">{{ datafile.filename }}</a>
     {% else %}
-    {{ datafile.filename }}
+    <span class="datafile_name">{{ datafile.filename }}</span>
     {% endif %}
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
 
@@ -120,7 +120,6 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% endif %}
     {% endif %}
 
-    <div class="datafile-info" style="display:none;"></div>
   </td>
   <td style="width: 110px">
     <div class="btn-group pull-right">

@@ -9,6 +9,8 @@
 {% block script %}
 <script type="text/javascript">
     var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
+    
+    var shown_datafile_href = "";
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -91,6 +93,7 @@
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        $('#datafile-info').load(shown_datafile_href);
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -114,7 +117,7 @@
         evt.preventDefault();
         var $this = $(this);
         var $datafile_metadata_container =
-          $this.parents('.datafile').find('.datafile-info');
+          $('#datafile-info');
 
         $this.toggleClass('metadata_shown metadata_hidden');
         $datafile_metadata_container.toggle();
@@ -123,6 +126,7 @@
             var href = $this.attr("href");
             $datafile_metadata_container.html(loadingHTML);
             $datafile_metadata_container.load(href);
+            shown_datafile_href = href
             $datafile_metadata_container.show();
         } else {
             $datafile_metadata_container.hide();
@@ -372,6 +376,7 @@ $('#modal-metadata .submit-button').click(function() {
 
 <div class="row-fluid" >
   <div class="span7">
+      <h3>Preview Images</h3>
     <div class="row-fluid" style="margin-bottom: 20px">
     {% if dataset.get_images.count > 0 %}
       <div id="preview" class="carousel" style="margin: 0 auto 0 auto">
@@ -403,6 +408,9 @@ $('#modal-metadata .submit-button').click(function() {
       <div class="alert">No previews available</div>
     {% endif %}
     </div>
+    <div id="metadata-pane-datafile" class="row-fluid">
+      {% include "tardis_portal/ajax/datafile_metadata.html" %}
+    </div>    
     <div id="metadata-pane" class="row-fluid">
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
@@ -463,6 +471,7 @@ $(document).ready(function(){
   $('#metadata-pane').on('reload', function() {
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_dataset_metadata' dataset.id %}');
   });
+
   // Reload metadata when we close the metadata modal
   $('#modal-metadata').on('hide', function() {
     $('#metadata-pane').trigger('reload');

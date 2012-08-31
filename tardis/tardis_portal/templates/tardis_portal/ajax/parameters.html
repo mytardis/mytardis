@@ -1,5 +1,4 @@
 {% load capture %}
-<div class="datafile_parameters">
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
     {% if not parameterset.schema.immutable %}

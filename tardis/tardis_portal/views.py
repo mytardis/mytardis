@@ -1018,11 +1018,14 @@ def retrieve_parameters(request, dataset_file_id):
     parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)\
                                  .exclude(schema__hidden=True)
 
-    dataset_id = Dataset_File.objects.get(id=dataset_file_id).dataset.id
+    datafile = Dataset_File.objects.get(id=dataset_file_id)
+    dataset_id = datafile.dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'parametersets': parametersets,
-                 'has_write_permissions': has_write_permissions})
+                 'has_write_permissions': has_write_permissions,
+                 'has_download_permissions': 
+                 authz.has_dataset_download_access(request, dataset_id) })
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
