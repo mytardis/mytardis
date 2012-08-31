@@ -50,10 +50,9 @@
 {% endif %}
 
 <p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
-  <label for="filename-search-text" style="display: inline;">File filter:</label>
-  <input id="filename-search-text" style="width: 95%; margin-top: 5px;"
+  <input id="filename-search-text" style="width: 95%; font-size: 120%; margin-top: 5px;"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
-      placeholder='Enter part or all of a filename, then press enter.'
+      placeholder='Search: Enter part or all of a filename, then press enter.'
       type="text"
       class="span5"
       name="filename"
@@ -61,7 +60,22 @@
       value="{{filename_search|default:''}}" />
 </p>
 
-
+<div class="pull-right">
+  {% if not dataset.immutable %}
+    {% if has_write_permissions %}
+        <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-mini" title="Upload Files">
+          <i class="icon-upload-alt"></i>
+          Upload Files
+        </a>
+    {% endif %}
+    {% if has_write_permissions and has_staging_access %}
+        <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
+          <i class="icon-arrow-right"></i>
+          Import Staging Files
+        </a>
+    {% endif %}
+  {% endif %}
+</div>
 
 
 <table class="datafiles table table-condensed">
@@ -108,10 +122,10 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 
     <div class="datafile-info" style="display:none;"></div>
   </td>
-  <td>
+  <td style="width: 110px">
     <div class="btn-group pull-right">
       {% if has_download_permissions %}
-      <a  class="btn btn-primary"
+      <a  class="btn"
           href="{{ datafile.get_download_url }}"
           title="Download">
           <i class="icon-download-alt icon-large"></i>
@@ -135,16 +149,17 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 {% endfor %}
 </tbody>
 </table>
-<script type="text/javascript">
-(function() {
-  var btnGroups = $('tr.datafile .btn-group');
-  var addWidths = function(memo, v, k) {
-    return memo + $(v).outerWidth();
-  };
-  var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0);
-  btnGroups.css('width', calculatedWidth+"px");
-})();
-</script>
+{# this appears to break things? Why is it here? -steve #}
+{# <script type="text/javascript"> #}
+{# (function() { #}
+{#   var btnGroups = $('tr.datafile .btn-group'); #}
+{#   var addWidths = function(memo, v, k) { #}
+{#     return memo + $(v).outerWidth(); #}
+{#   }; #}
+{#   var calculatedWidth = _.reduce(btnGroups.first().find('a.btn'), addWidths, 0); #}
+{#   btnGroups.css('width', calculatedWidth+"px"); #}
+{# })(); #}
+{# </script> #}
 
 
 {{ paginator_block }}
