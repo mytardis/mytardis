@@ -59,3 +59,15 @@ div.copylink {
     border-radius: 3px 3px 3px 3px;
     word-wrap: break-word;
 }
+
+.download-selected {
+    font-weight: bold;
+    margin: 3% 0 2% 0;
+}
+
+/*override for bootstrap nav pills*/
+.nav-pills > .active > a, .nav-pills > .active > a:hover {
+    background-color: #EBF8FF;
+    font-weight: bold;
+    color: #0088CC;
+}

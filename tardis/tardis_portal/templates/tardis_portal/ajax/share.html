@@ -553,7 +553,7 @@ $(document).ready(function() {
             </dl>
         </p>
         {% if is_owner %}
-        <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-primary" title="Change">
+        <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-mini" title="Change">
           <i class="icon-cog"></i>
           Change Public Access
         </a>
@@ -566,7 +566,7 @@ $(document).ready(function() {
     <p>Users who have a share in this experiment:</p>
     <div id="experiment_user_list"/>
     {% if is_owner %}
-    <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-primary" title="Change">
+    <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-mini" title="Change">
         <i class="icon-share"></i>
         Change User Sharing
     </a>
@@ -576,7 +576,7 @@ $(document).ready(function() {
     <p>Groups who have a share in this experiment:</p>
     <div id="experiment_group_list"/> 
     {% if is_owner %}       
-    <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-primary" title="Change">
+    <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-mini" title="Change">
         <i class="icon-share"></i>
         Change Group Sharing
     </a>    
@@ -604,7 +604,7 @@ $(document).ready(function() {
         {% if is_owner %}
         <a title="Create New Temporary Link"
             href="{{ experiment.get_create_token_url }}"
-            class="create_token_link btn btn-primary">
+            class="create_token_link btn btn-mini">
             <i class="icon-plus-sign"></i>
             Create New Temporary Link 
         </a>

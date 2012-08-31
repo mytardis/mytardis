@@ -215,10 +215,10 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   <h4>Experiment</h4>
   {% if has_write_permissions and not experiment.public %}
   <div class="pull-right">
-    <a class="btn btn-warning" title="Edit Experiment"
+    <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}">
       <i class="icon-pencil"></i>
-      Edit
+      Edit Experiment
     </a>
   </div>
   {% endif %}
@@ -251,11 +251,11 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
   </p>
 </div>
 
-<p class="abstract well" property="dc:abstract">
-  {{ experiment.description|safe }}
-</p>
 <div class="row-fluid" >
-  <div class="span6">
+  <div class="span7">
+  <p class="abstract well" property="dc:abstract">
+    {{ experiment.description|safe }}
+  </p>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
       <li><a data-toggle="tab" title="Description" href="{% url 'tardis.tardis_portal.views.experiment_description' experiment.id %}">Description</a></li>
@@ -274,7 +274,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     </div>
   </div>
   <hr class="visible-phone"/>
-  <div id="datasets-pane" class="span6">
+  <div id="datasets-pane" class="span5">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>

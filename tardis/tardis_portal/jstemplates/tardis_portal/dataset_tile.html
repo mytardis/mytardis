@@ -36,7 +36,7 @@
   {{#thumbnail}}
       <img alt="Thumbnail for Dataset #{{ id }}"
            src="{{ thumbnail }}"
-           onerror="$(this).hide()"/>
+           onerror="$(this).parent().html(canvas)"/>
   {{/thumbnail}}
   {{^thumbnail}}
       <canvas style="width: 100px"></canvas>
