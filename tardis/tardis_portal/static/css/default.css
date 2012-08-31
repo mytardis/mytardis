@@ -26,9 +26,12 @@
 }
 
 .abstract-clickable {
-  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+#abstract-toggle {
+    margin-bottom: -40px;
 }
 
 .truncated-text {
@@ -70,4 +73,9 @@ div.copylink {
     background-color: #EBF8FF;
     font-weight: bold;
     color: #0088CC;
+}
+
+.dataset-link {
+    font-weight: bold;
+    font-size: 110%;
 }

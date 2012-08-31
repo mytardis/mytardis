@@ -252,9 +252,16 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
 </div>
 
 <div class="row-fluid" >
-  <div class="span7">
-  <p class="abstract well" property="dc:abstract">
-    {{ experiment.description|safe }}
+  <div class="span7">   
+  <div align="center">
+  <a id="abstract-toggle" class="btn btn-mini" title="Toggle Full Description">
+     Toggle Full Description
+  </a>          
+  </div>           
+  <p class="abstract well" property="dc:abstract">    
+      <span id="truncated">
+          {{ experiment.description|striptags }}
+      </span>
   </p>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
@@ -371,12 +378,15 @@ $(document).ready(function() {
   });
   // Abbreviate abstract
   $('.abstract').each(function(i, v) {
-    var span = $('<span/>').addClass('truncated-text').text($(v).text());
-    $(v).empty().append(span);
+    var span = $('#truncated');
+    span = span.addClass('truncated-text')
+    abstractText = '{{ experiment.description|safe|linebreaksbr }}'
+    span = span.html(abstractText);
+    $(v).empty().html(span);
     $(v).addClass('abstract-clickable');
-    $(v).tooltip({'title': 'Click to toggle full text'});
-    $(v).click(function(evt) { span.toggleClass('truncated-text'); });
+    $('#abstract-toggle').click(function(evt) { span.toggleClass('truncated-text'); });
   });
+  
 });
 
 </script>
