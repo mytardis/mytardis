@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from compare import expect
-from os import makedirs
+from os import makedirs, unlink, close, stat
 from os.path import abspath, basename, dirname, join, exists
 from shutil import rmtree
 from tempfile import mkstemp
@@ -17,10 +17,10 @@ from nose.plugins.skip import SkipTest
 
 import filecmp
 
-from tardis.tardis_portal.download import StreamingFile
+from tardis.tardis_portal.download import StreamingFile, StreamableZipFile
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
 
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkstemp
 
 try:
     from wand.image import Image
@@ -34,6 +34,18 @@ def get_size_and_sha512sum(testfile):
     with open(testfile, 'rb') as f:
         contents = f.read()
         return (len(contents), hashlib.sha512(contents).hexdigest())
+    
+def _generate_test_image(testfile):
+    if IMAGEMAGICK_AVAILABLE:
+        with Image(filename='logo:') as img:
+            img.format = 'tiff'
+            img.save(filename=testfile)
+    else:
+        # Apparently ImageMagick isn't installed...
+        # Write a "fake" TIFF file
+        f = open(testfile, 'w')
+        f.write("II\x2a\x00")
+        f.close()
 
 class StreamingFileTestCase(TestCase):
 
@@ -47,7 +59,7 @@ class StreamingFileTestCase(TestCase):
                     sleep(0.1)
                     f.write("%d\n" % i)
 
-        # Create
+        # Test the asynchronous flavor
         reader = StreamingFile(writeTestData, asynchronous_file_creation=True)
         expect(reader.thread.is_alive()).to_be_truthy()
         expect(exists(reader.name)).to_be_truthy()
@@ -60,8 +72,52 @@ class StreamingFileTestCase(TestCase):
         expect(exists(reader.name)).to_be_truthy()
         reader.close()
         expect(exists(reader.name)).to_be_falsy()
+        
+        # Test the synchronous flavor
+        reader = StreamingFile(writeTestData, asynchronous_file_creation=False)
+        expect(hasattr(reader, 'thread')).to_be_falsy()
+        expect(exists(reader.name)).to_be_truthy()
+        contents = reader.read(10)
+        expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
+        contents = reader.read(1024)
+        expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
+        contents = reader.read(1024)
+        expect(contents).to_equal('')
+        expect(exists(reader.name)).to_be_truthy()
+        reader.close()
+        expect(exists(reader.name)).to_be_falsy()
+        
+class StreamableZipFileTestCase(TestCase):
+    def testCreateZip(self):
+        (zipFileObj, self.zipFilename) = mkstemp(suffix='zip')
+        (tiffFileObj, self.tiffFilename) = mkstemp(suffix='tiff')
+        try:
+            close(zipFileObj)
+            close(tiffFileObj)
+            _generate_test_image(self.tiffFilename)
+            self._create_test_zip()
+            self._check_test_zip()
+        finally:
+            unlink(self.zipFilename)
+            unlink(self.tiffFilename)
 
-
+    def _create_test_zip(self):
+        zip = StreamableZipFile(self.zipFilename, 'w')
+        try:
+            zip.write(self.tiffFilename, arcname='image')
+        finally:
+            zip.close()
+        
+    def _check_test_zip(self):
+        zip = ZipFile(self.zipFilename, 'r')
+        try:
+            info = zip.getinfo('image')
+            expect(info).to_be_truthy()
+            expect(info.flag_bits).to_equal(8)
+            expect(info.filename).to_equal('image')
+            expect(info.file_size).to_equal(stat(self.tiffFilename).st_size)
+        finally:
+            zip.close()
 
 class DownloadTestCase(TestCase):
 
@@ -117,17 +173,7 @@ class DownloadTestCase(TestCase):
         f.close()
 
         testfile2 = abspath(join(self.dest2, filename2))
-        if IMAGEMAGICK_AVAILABLE:
-            with Image(filename='logo:') as img:
-                img.format = 'tiff'
-                img.save(filename=testfile2)
-        else:
-            # Apparently ImageMagick isn't installed...
-            # Write a "fake" TIFF file
-            f = open(testfile2, 'w')
-            f.write("II\x2a\x00")
-            f.close()
-
+        _generate_test_image(testfile2)
 
         size, sha512sum = get_size_and_sha512sum(testfile1)
         self.dataset_file1 = Dataset_File(dataset=self.dataset1,
