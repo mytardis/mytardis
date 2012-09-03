@@ -48,7 +48,7 @@ class StreamingFileTestCase(TestCase):
                     f.write("%d\n" % i)
 
         # Create
-        reader = StreamingFile(writeTestData)
+        reader = StreamingFile(writeTestData, asynchronous_file_creation=True)
         expect(reader.thread.is_alive()).to_be_truthy()
         expect(exists(reader.name)).to_be_truthy()
         contents = reader.read(10)
@@ -321,7 +321,7 @@ class DownloadTestCase(TestCase):
             from magic import Magic
             self.assertEqual(df.mimetype, 'text/plain; charset=us-ascii')
         except:
-            # XXX Test disabled becuse lib magic can't be loaded
+            # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(df.size, str(13))
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
@@ -345,7 +345,7 @@ class DownloadTestCase(TestCase):
             from magic import Magic
             self.assertEqual(pdf1.mimetype, 'image/jpeg')
         except:
-            # XXX Test disabled becuse lib magic can't be loaded
+            # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(pdf1.size, str(14232))
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
@@ -364,7 +364,7 @@ class DownloadTestCase(TestCase):
             from magic import Magic
             self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
         except:
-            # XXX Test disabled becuse lib magic can't be loaded
+            # XXX Test disabled because lib magic can't be loaded
             pass
         self.assertEqual(pdf2.size, str(0))
         self.assertEqual(pdf2.md5sum, '')
@@ -376,5 +376,5 @@ class DownloadTestCase(TestCase):
             from magic import Magic
             self.assertEqual(pdf2.mimetype, 'application/pdf')
         except:
-            # XXX Test disabled becuse lib magic can't be loaded
+            # XXX Test disabled because lib magic can't be loaded
             pass

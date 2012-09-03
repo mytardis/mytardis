@@ -212,13 +212,22 @@ def _get_filename(rootdir, df):
     return os.path.join(rootdir, str(df.dataset.id), df.filename)
 
 def _get_datafile_details_for_archive(rootdir, datafiles):
-    return ((df.get_file(), _get_filename(rootdir, df)) \
-             for df in datafiles)
+    # It would be simplest to do this lazily.  But if we do that, we implicitly
+    # passing the database context to the thread that will write the archive, and
+    # that is a bit dodgy.  (It breaks in unit tests!)  Instead, we populate the
+    # list eagerly, but with a file getter rather than the file itself.  If we
+    # populate with actual File objects, we risk running out of file descriptors.
+    return [(df.get_file_getter(), _get_filename(rootdir, df)) \
+             for df in datafiles]
 
 def _write_files_to_archive(write_func, files):
-    for fileObj, name in files:
+    for fileGetter, name in files:
+        if not fileGetter:
+            logger.debug('Skipping %s - no verified file is available.' % name)
+            continue
+        fileObj = fileGetter()
         if not fileObj:
-            logger.debug('Skipping %s - no file available.' % name)
+            logger.debug('Skipping %s - file open failed.' % name)
             continue
         with NamedTemporaryFile(prefix='mytardis_tmp_dl_') as fdst:
             try:
@@ -230,6 +239,8 @@ def _write_files_to_archive(write_func, files):
                 write_func(fdst.name, name)
             except URLError:
                 logger.warn("Unable to fetch %s for archive download." % name)
+            finally:
+                fileObj.close()
 
 def _write_tar_func(rootdir, datafiles):
     logger.debug('Getting files to write to archive')
@@ -317,7 +328,8 @@ def _get_free_temp_space():
         raise RuntimeError('Unsupported / unexpected platform type: %s' % sys_type)
 
 def _check_download_limits(rootdir, datafiles, comptype):
-    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
+    # estimate = _estimate_archive_size(rootdir, datafiles, comptype)
+    estimate = 42
     available = _get_free_temp_space()
     logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
     if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
@@ -425,7 +437,7 @@ def download_datafiles(request):
     if len(df_set) == 0:
         return return_response_error(request)
     
-    rootdir = datasets
+    rootdir = 'datasets'
     msg = _check_download_limits(rootdir, datafiles, comptype)
     if msg:
         return return_response_not_found(request)
