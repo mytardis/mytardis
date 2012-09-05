@@ -74,6 +74,9 @@ class Dataset_File(models.Model):
         # Filter empty sizes, get array of sizes, then reduce
         return reduce(sum_str, datafiles.exclude(size='')
                                         .values_list('size', flat=True), 0)
+        
+    def get_size(self):
+        return self.size
 
     def getParameterSets(self, schemaType=None):
         """Return datafile parametersets associated with this experiment.
@@ -126,15 +129,34 @@ class Dataset_File(models.Model):
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
-
+    
     def _get_file(self):
         try:
-            if self.is_local():
-                return default_storage.open(self.url)
-            else:
-                return get_privileged_opener().open(self.get_actual_url())
+            return self._get_file_getter()()
         except:
             return None
+        
+    def get_file_getter(self):
+        """Return a function that will return a File-like handle for the Datafile's
+           data.  The returned function uses a cached URL for the file to avoid 
+           depending on the current database transaction.
+        """
+        
+        if not self.verified:
+            return None
+        return self._get_file_getter()
+
+    def _get_file_getter(self):
+        if self.is_local():
+            theUrl = self.url
+            def getter():
+                return default_storage.open(theUrl)
+            return getter
+        else:
+            theUrl = self.get_actual_url()
+            def getter():
+                return get_privileged_opener().open(theUrl)
+            return getter
 
     def get_file(self):
         if not self.verified:
