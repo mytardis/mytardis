@@ -480,6 +480,10 @@ $(document).ready(function(){
   // Create a reload event handler
   $('#metadata-pane').on('reload', function() {
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_dataset_metadata' dataset.id %}');
+    if(prev_file_select)
+    {
+        $('#datafile-info').load(prev_file_select.find('.datafile-info-toggle').attr('href'));
+    }
   });
 
   // Reload metadata when we close the metadata modal
