@@ -34,7 +34,7 @@ from django.conf import settings
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
-    return_response_error
+    return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
 
@@ -328,8 +328,7 @@ def _get_free_temp_space():
         raise RuntimeError('Unsupported / unexpected platform type: %s' % sys_type)
 
 def _check_download_limits(rootdir, datafiles, comptype):
-    # estimate = _estimate_archive_size(rootdir, datafiles, comptype)
-    estimate = 42
+    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
     available = _get_free_temp_space()
     logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
     if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
@@ -346,14 +345,13 @@ def download_experiment(request, experiment_id, comptype):
     takes string parameter "comptype" for compression method.
     Currently implemented: "zip" and "tar"
     """
-    # TODO: do size estimation, check available temp filespace, check download limits 
     # TODO: intelligent selection of temp file versus in-memory buffering.
     datafiles = Dataset_File.objects\
         .filter(dataset__experiments__id=experiment_id)
     rootdir = str(experiment_id)
     msg = _check_download_limits(rootdir, datafiles, comptype)
     if msg:
-        return return_response_not_found(request)
+        return render_error_message(request, 'Requested download is too large: %s' % msg)
 
     if comptype == "tar":
         reader = StreamingFile(_write_tar_func(rootdir, datafiles),
@@ -372,16 +370,23 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + rootdir + '-complete.zip"'
     else:
-        response = return_response_not_found(request)
+        response = render_error_message(request, 'Unsupported download format: %s' % comptype)
     return response
 
 
 def download_datafiles(request):
-
+    """
+    takes string parameter "comptype" for compression method.
+    Currently implemented: "zip" and "tar"
+    The datafiles to be downloaded are selected using "datafile", "dataset" or "url" parameters.
+    An "expid" parameter may be supplied for use in the download archive name.  If "url" is used,
+    the "expid" parameter is also used to limit the datafiles to be downloaded to a given experiment.
+    """
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
-    # TODO: do size estimation, check available temp filespace, check download limits 
     # TODO: intelligent selection of temp file versus in-memory buffering.
+    
+    logger.error('In download_datafiles !!')
     comptype = "zip"
     if 'comptype' in request.POST:
         comptype = request.POST['comptype']
@@ -414,11 +419,11 @@ def download_datafiles(request):
                                chain.from_iterable(map(get_datafile,
                                                        datafiles))))
         else:
-            return return_response_not_found(request)
+            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
 
     elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
-            return return_response_not_found(request)
+            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
 
         for url in request.POST.getlist('url'):
             url = urllib.unquote(url)
@@ -430,17 +435,18 @@ def download_datafiles(request):
                                             dataset_file_id=datafile.id):
                 df_set = set([datafile])
     else:
-        return return_response_not_found(request)
+        return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
 
     logger.info('Files for archive command: %s' % df_set)
 
     if len(df_set) == 0:
-        return return_response_error(request)
+        return render_error_message(request, 'You do not have download access for any of the '
+                                    'selected Datasets or Datafiles ')
     
     rootdir = 'datasets'
     msg = _check_download_limits(rootdir, datafiles, comptype)
     if msg:
-        return return_response_not_found(request)
+        return render_error_message(request, 'Requested download is too large: %s' % msg)
 
     # Handle missing experiment ID - only need it for naming
     try:
@@ -463,7 +469,7 @@ def download_datafiles(request):
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
     else:
-        response = return_response_not_found(request)
+        response = render_error_message(request, 'Unsupported download format: %s' % comptype)
     return response
 
         
