@@ -382,8 +382,8 @@ $('#modal-metadata .submit-button').click(function() {
 
 <div class="row-fluid" >
   <div class="span7">
-      <h3>Preview Images</h3>
     <div class="row-fluid" style="margin-bottom: 20px">
+    <h3>Preview Images</h3>
     <div class="info-box">        
     {% if dataset.get_images.count > 0 %}
       <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
@@ -411,12 +411,10 @@ $('#modal-metadata .submit-button').click(function() {
             <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
         {% endif %}
       </div>
-      </div>
     {% else %}
-      <div class="info-box">
           <div class="alert">No previews available</div>
-      </div>
     {% endif %}
+      </div>    
     </div>
     <div id="metadata-pane-datafile" class="row-fluid">
       {% include "tardis_portal/ajax/datafile_metadata.html" %}
@@ -455,7 +453,7 @@ $('#modal-metadata .submit-button').click(function() {
   <hr class="visible-phone"/>
   <div class="span5">
       <h3 style="display: inline">
-      {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count|gt:1 %}s{%endif%}
+      {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
       </h3>      
       
     <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
