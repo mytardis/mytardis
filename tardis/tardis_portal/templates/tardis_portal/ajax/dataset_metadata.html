@@ -13,6 +13,7 @@
 </div>
 {% endif %}
 <h3>Dataset Metadata</h3>
+<div class="info-box">
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
@@ -57,3 +58,4 @@
     There is no metadata for this dataset.
   </div>
 {% endfor %}
+</div>

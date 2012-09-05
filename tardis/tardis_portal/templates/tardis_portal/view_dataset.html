@@ -378,6 +378,7 @@ $('#modal-metadata .submit-button').click(function() {
   <div class="span7">
       <h3>Preview Images</h3>
     <div class="row-fluid" style="margin-bottom: 20px">
+    <div class="info-box">        
     {% if dataset.get_images.count > 0 %}
       <div id="preview" class="carousel" style="margin: 0 auto 0 auto">
         <!-- Carousel items -->
@@ -404,18 +405,22 @@ $('#modal-metadata .submit-button').click(function() {
             <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
         {% endif %}
       </div>
+      </div>
     {% else %}
-      <div class="alert">No previews available</div>
+      <div class="info-box">
+          <div class="alert">No previews available</div>
+      </div>
     {% endif %}
     </div>
     <div id="metadata-pane-datafile" class="row-fluid">
       {% include "tardis_portal/ajax/datafile_metadata.html" %}
-    </div>    
-    <div id="metadata-pane" class="row-fluid">
+    </div>
+    <div id="metadata-pane" class="row-fluid">    
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
     <div id="other-experiments-pane">
         <h3>Other Experiments</h3>
+        <div class="info-box">
         {% if other_experiments|length > 1 %}
         <em>This dataset also appears in these experiments:</em>
         <br/>
@@ -438,6 +443,7 @@ $('#modal-metadata .submit-button').click(function() {
         {% else %}
         <em>This dataset doesn't appear in any other experiments.</em>
         {% endif %}
+        </div>
     </div>
   </div>
   <hr class="visible-phone"/>
