@@ -1023,6 +1023,7 @@ def retrieve_parameters(request, dataset_file_id):
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'parametersets': parametersets,
+                 'datafile': datafile,
                  'has_write_permissions': has_write_permissions,
                  'has_download_permissions': 
                  authz.has_dataset_download_access(request, dataset_id) })

@@ -1,34 +1,3 @@
-<div class="datafile_parameters">
-    <strong><h3 style="display: inline;"><small>For the file:</small></h3>
-        {% if has_download_permissions and parameterset.dataset_file.get_view_url %}
-          <a  class="filelink datafile_name"
-              href="{{ parameterset.dataset_file.get_view_url }}"
-              title="View"
-              target="_blank">{{ parameterset.dataset_file.filename }}</a>
-        {% else %}
-        <span class="datafile_name">{{ parameterset.dataset_file.filename }}</span>
-        {% endif %}
-        {% if parameterset.dataset_file.size %}<span style="margin-right: 5px">({{ parameterset.dataset_file.size|filesizeformat }})</span>{% endif %}    
-    </strong>
-    <br/>
-
-    <div class="btn-group pull-right">
-      {% if has_download_permissions %}
-      <a  class="btn"
-          href="{{ parameterset.dataset_file.get_download_url }}"
-          title="Download">
-          <i class="icon-download-alt icon-large"></i>
-      </a>
-      {% endif %}
-      {% if has_write_permissions and not immutable %}
-      <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par parameterset.dataset_file.id %}"
-       data-toggle_selector="#datafile_metadata_toggle_{{parameterset.dataset_file.id}}"
-       class="btn add-metadata">
-          <i class="icon-plus"></i>
-       </a>
-       {% endif %}
-    </div>
-
 <table class="parameter_table table table-striped table-bordered {{ parameterset.schema.name|slugify }}">
   <tr>
     <th class="schema_name" title="{{ parameterset.schema.namespace }}{% if parameterset.schema.immutable %} (immutable){% endif %}" colspan="2">

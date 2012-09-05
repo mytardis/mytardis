@@ -1,4 +1,33 @@
 {% load capture %}
+<div class="datafile_parameters">
+    <strong><h3 style="display: inline;"><small>For the file:</small></h3>
+        {% if has_download_permissions and datafile.get_view_url %}
+          <a  class="filelink datafile_name"
+              href="{{ datafile.get_view_url }}"
+              title="View"
+              target="_blank">{{ datafile.filename }}</a>
+        {% else %}
+        <span class="datafile_name">{{ datafile.filename }}</span>
+        {% endif %}
+        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}    
+    </strong>
+
+    <div class="btn-group pull-right">
+      {% if has_download_permissions %}
+      <a  class="btn"
+          href="{{ datafile.get_download_url }}"
+          title="Download">
+          <i class="icon-download-alt icon-large"></i>
+      </a>
+      {% endif %}
+      {% if has_write_permissions and not immutable %}
+      <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+       data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
+       class="btn add-metadata">
+          <i class="icon-plus"></i>
+       </a>
+       {% endif %}
+    </div>
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
     {% if not parameterset.schema.immutable %}
@@ -18,6 +47,8 @@
     {% include "tardis_portal/ajax/parameter_table.html" with parameters=parameterset.datafileparameter_set.all%}
   </div>
 {% empty %}
-    There is no metadata for this file
+    <br/>
+    <em>There is no metadata for this file.
+        {% if has_write_permissions and not immutable %}Click the <i class="icon-plus"></i> button to add.</em>{% endif %}
 {% endfor %}
 </div>
