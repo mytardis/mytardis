@@ -328,8 +328,7 @@ def _get_free_temp_space():
         raise RuntimeError('Unsupported / unexpected platform type: %s' % sys_type)
 
 def _check_download_limits(rootdir, datafiles, comptype):
-    # estimate = _estimate_archive_size(rootdir, datafiles, comptype)
-    estimate = 42
+    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
     available = _get_free_temp_space()
     logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
     if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
@@ -438,7 +437,7 @@ def download_datafiles(request):
         return return_response_error(request)
     
     rootdir = 'datasets'
-    msg = _check_download_limits(rootdir, datafiles, comptype)
+    msg = _check_download_limits(rootdir, df_set, comptype)
     if msg:
         return return_response_not_found(request)
 
