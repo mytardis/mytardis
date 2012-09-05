@@ -7,6 +7,7 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 
 from tardis.tardis_portal.util import render_mustache
 from tardis.tardis_portal.views import get_dataset_info
+from tardis.tardis_portal.models.dataset import Dataset
 
 register = template.Library()
 
@@ -28,6 +29,14 @@ def dataset_tiles(experiment, include_thumbnails):
                 'title': "In %d experiment%s" % (count, pluralize(count)),
                 'count': count,
             })
+
+        def dataset_size_badge(self):
+            ds = Dataset.objects.get(id=self.id)
+            return dataset_size_badge(ds)
+
+        def dataset_datafiles_badge(self):
+            ds = Dataset.objects.get(id=self.id)
+            return dataset_datafiles_badge(ds)
 
 
     class DatasetsInfo(object):

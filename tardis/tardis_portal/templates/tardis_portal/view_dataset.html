@@ -11,6 +11,7 @@
     var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
     
     var shown_datafile_href = "";
+    var prev_file_select = null;
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -119,18 +120,23 @@
         var $datafile_metadata_container =
           $('#datafile-info');
 
-        $this.toggleClass('metadata_shown metadata_hidden');
         $datafile_metadata_container.toggle();
+        
+        if(prev_file_select)
+        {
+            prev_file_select.removeClass("file-select");
+        }       
+        
+        var file_select = $this.parents('tr.datafile');
+        file_select.addClass("file-select");
+        prev_file_select = file_select;
 
-        if ($this.hasClass('metadata_shown')) {
-            var href = $this.attr("href");
-            $datafile_metadata_container.html(loadingHTML);
-            $datafile_metadata_container.load(href);
-            shown_datafile_href = href
-            $datafile_metadata_container.show();
-        } else {
-            $datafile_metadata_container.hide();
-        }
+        var href = $this.attr("href");
+        $datafile_metadata_container.html(loadingHTML);
+        $datafile_metadata_container.load(href);
+        shown_datafile_href = href
+        $datafile_metadata_container.show();
+
     });
 
     var loadModalRemoteBody = function(trigger, modal) {
@@ -380,9 +386,9 @@ $('#modal-metadata .submit-button').click(function() {
     <div class="row-fluid" style="margin-bottom: 20px">
     <div class="info-box">        
     {% if dataset.get_images.count > 0 %}
-      <div id="preview" class="carousel" style="margin: 0 auto 0 auto">
+      <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
-        <div class="carousel-inner" style="background-color: black;">
+        <div class="carousel-inner" style="background-color: white;">
           {% for datafile in dataset.get_images %}
             <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}

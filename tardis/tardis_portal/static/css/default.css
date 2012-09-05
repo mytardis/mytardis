@@ -70,7 +70,7 @@ div.copylink {
 
 /*override for bootstrap nav pills*/
 .nav-pills > .active > a, .nav-pills > .active > a:hover {
-    background-color: #EBF8FF;
+    background-color: #D3DFE6;
     font-weight: bold;
     color: #0088CC;
 }
@@ -85,8 +85,16 @@ div.copylink {
     font-weight: bold;
 }
 
-.info-box{
+.info-box {
     border: 1px solid #DDDDDD;
     padding: 5px 10px 5px 10px;
     margin: 5px 20px 25px 10px;
+}
+
+.file-select {
+    background-color: #D3DFE6;
+}
+
+.table tbody tr.file-select:hover td, .table tbody tr.file-select:hover th {
+    background-color: #D3DFE6;
 }

@@ -6,9 +6,10 @@
   <a title="Add"
      href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
      class="add-metadata btn btn-mini"
+     style="margin-right: 20px"
      data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
     <i class="icon-plus"></i>
-    Add
+    Add Dataset Metadata
   </a>
 </div>
 {% endif %}
@@ -54,7 +55,7 @@
     {% endwith %}
   </div>
 {% empty %}
-  <div class="alert alert-info">
+  <div>
     There is no metadata for this dataset.
   </div>
 {% endfor %}
