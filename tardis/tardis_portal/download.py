@@ -446,7 +446,7 @@ def download_datafiles(request):
                                     'selected Datasets or Datafiles ', status=403)
     
     rootdir = 'datasets'
-    msg = _check_download_limits(rootdir, datafiles, comptype)
+    msg = _check_download_limits(rootdir, df_set, comptype)
     if msg:
         return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
 
