@@ -38,10 +38,11 @@ def render_response_search(request, url, c):
     return render(request, url, c)
 
 
-def render_error_message(request, message):
+def render_error_message(request, message, status=400):
     """Render a simple text error message in a generic error page.  Any newlines are turned into <br>."""
     formatted = string.replace(cgi.escape(message), '\n', '<br>')
-    return render(request, 'tardis_portal/user_error.html', {'error_message' : formatted})
+    return render(request, 'tardis_portal/user_error.html', 
+                  {'error_message' : formatted}, status=status)
 
 
 def return_response_not_found(request):

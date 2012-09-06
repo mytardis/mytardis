@@ -351,7 +351,7 @@ def download_experiment(request, experiment_id, comptype):
     rootdir = str(experiment_id)
     msg = _check_download_limits(rootdir, datafiles, comptype)
     if msg:
-        return render_error_message(request, 'Requested download is too large: %s' % msg)
+        return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
 
     if comptype == "tar":
         reader = StreamingFile(_write_tar_func(rootdir, datafiles),
@@ -370,7 +370,7 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + rootdir + '-complete.zip"'
     else:
-        response = render_error_message(request, 'Unsupported download format: %s' % comptype)
+        response = render_error_message(request, 'Unsupported download format: %s' % comptype, status=404)
     return response
 
 
@@ -405,7 +405,6 @@ def download_datafiles(request):
                                                     dataset_file_id=datafile.id):
                         yield datafile
 
-
             # Generator to produce datafile from datafile id
             def get_datafile(dfid):
                 datafile = Dataset_File.objects.get(pk=dfid)
@@ -419,12 +418,14 @@ def download_datafiles(request):
                                chain.from_iterable(map(get_datafile,
                                                        datafiles))))
         else:
-            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
+            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
+                                        status=404)
 
     elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
-            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
-
+            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
+                                        status=404)
+        
         for url in request.POST.getlist('url'):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
@@ -435,18 +436,19 @@ def download_datafiles(request):
                                             dataset_file_id=datafile.id):
                 df_set = set([datafile])
     else:
-        return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded')
+        return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
+                                    status=404)
 
     logger.info('Files for archive command: %s' % df_set)
-
+    
     if len(df_set) == 0:
         return render_error_message(request, 'You do not have download access for any of the '
-                                    'selected Datasets or Datafiles ')
+                                    'selected Datasets or Datafiles ', status=403)
     
     rootdir = 'datasets'
     msg = _check_download_limits(rootdir, datafiles, comptype)
     if msg:
-        return render_error_message(request, 'Requested download is too large: %s' % msg)
+        return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
 
     # Handle missing experiment ID - only need it for naming
     try:
@@ -469,7 +471,7 @@ def download_datafiles(request):
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
     else:
-        response = render_error_message(request, 'Unsupported download format: %s' % comptype)
+        response = render_error_message(request, 'Unsupported download format: %s' % comptype, status=404)
     return response
 
         
