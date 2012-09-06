@@ -106,7 +106,6 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
     <span class="datafile_name">{{ datafile.filename }}</span>
     {% endif %}
     {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
-    {% if not datafile.verify %}(unverified){% endif%}
     {% if has_download_permissions and datafile.get_view_url %}
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
