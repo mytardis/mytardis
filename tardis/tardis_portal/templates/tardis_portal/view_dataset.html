@@ -373,6 +373,14 @@ $('#modal-metadata .submit-button').click(function() {
         {% endif %}
     
   {% endif %}
+  {% if dataset.immutable %}
+  <h4 style="padding-top: 4px">
+      <small>
+      This experiment has been set to immutable on creation (cannot be modified)
+      </small>
+  </h4>  
+  {% endif %}
+  
   <p style="text-align: right">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
