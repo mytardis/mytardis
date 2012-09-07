@@ -71,7 +71,7 @@ def client_key_required(f):
     return wrap
 
 # provider api
-#@client_key_required
+@client_key_required
 @never_cache
 def get_experiment(request):
     """ Request that an experiment be transferred from the provider
@@ -115,7 +115,7 @@ def handle_file_transfer_request(form):
     return HttpResponse('OK', status=200)
 
 
-#@client_key_required
+@client_key_required
 @never_cache
 def transfer_status(request, uid):
     """Request information about the status of the transfer of 
