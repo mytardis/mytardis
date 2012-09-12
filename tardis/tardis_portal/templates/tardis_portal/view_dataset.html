@@ -434,24 +434,22 @@ $('#modal-metadata .submit-button').click(function() {
         <h3>Other Experiments</h3>
         <div class="info-box">
         {% if other_experiments|length > 1 %}
-        <em>This dataset also appears in these experiments:</em>
+        <div>
+        <em>This dataset also appears in these experiments.</em>
+        </div>
         <br/>
         <div id="other-experiments-content">
-            <table class="table span12">
                 {% for other_experiment in other_experiments %}
                 {% if other_experiment != from_experiment %}
-                <tr><td>
+                    <div>
                     <a
                        class="experiment-link"
                        href="{{ other_experiment.get_absolute_url }}">
                     {{ other_experiment.title }}
-                </a>
-                </td></tr>
+                    </div>
                 {% endif %}
                 {% endfor %}
-            </table>
         </div>        
-        <br/>
         {% else %}
         <em>This dataset doesn't appear in any other experiments.</em>
         {% endif %}
