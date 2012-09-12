@@ -14,8 +14,13 @@ $('.public_access_link').bind('click', function(evt) {
     modal.modal('show');
 
     modal.find('.modal-body')
-         .load("/ajax/experiment/" + experiment_id + "/rights", function() {
+         .load("/ajax/experiment/" + experiment_id + "/rights", function(response, status, xhr) {
             modal.find('.loading-placeholder').hide();
+            
+            if (status == "error") {
+                $(this).html(response);
+            }
+            
             $('#legal-section').hide();
         });
        
