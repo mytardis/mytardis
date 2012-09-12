@@ -227,6 +227,32 @@ var MyTardis = (function(){
       this.model.bind('change', this.render);
       this.model.bind('sync', this.render);
     },
+    templateWrapper: {
+      'experiment_badge': function() {
+        var count = _.isArray(this.experiments) ?
+            this.experiments.length : 0;
+        return Mustache.to_html(
+            Mustache.TEMPLATES['tardis_portal/badges/experiment_count'],
+            {
+              'title': _.sprintf("In %d experiment%s",
+                                 count, count == 1 ? '' : 's'),
+              'count': count,
+            },
+            Mustache.TEMPLATES
+        );
+      },
+      'datafile_badge': function() {
+        var count = _.isArray(this.datafiles) ? this.datafiles.length : 0;
+        return Mustache.to_html(
+            Mustache.TEMPLATES['tardis_portal/badges/datafile_count'],
+            {
+              'title': _.sprintf("%d file%s", count, count == 1 ? '' : 's'),
+              'count': count,
+            },
+            Mustache.TEMPLATES
+        );
+      }
+    },
     render: function() {
       // Wrap data with helper functions
       var data = _.defaults(_.clone(this.templateWrapper),
