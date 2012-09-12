@@ -258,7 +258,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
      Toggle Full Description
   </a>          
   </div>           
-  <p class="abstract well info-box" style="padding-top: 25px" property="dc:abstract">    
+  <p class="abstract well info-box" property="dc:abstract">    
       <span id="truncated">
           {{ experiment.description|striptags }}
       </span>
@@ -378,13 +378,18 @@ $(document).ready(function() {
   });
   // Abbreviate abstract
   $('.abstract').each(function(i, v) {
-    var span = $('#truncated');
-    span = span.addClass('truncated-text')
-    abstractText = '{{ experiment.description|safe|linebreaksbr }}'
-    span = span.html(abstractText);
-    $(v).empty().html(span);
-    $(v).addClass('abstract-clickable');
-    $('#abstract-toggle').click(function(evt) { span.toggleClass('truncated-text'); });
+    if($(this).text().length > 100)
+    {
+        $(this).attr('style', 'padding-top: 25px;');
+        $('#abstract-toggle').attr('style', 'display: inline;');
+        var span = $('#truncated');
+        span = span.addClass('truncated-text')
+        abstractText = '{{ experiment.description|safe|linebreaksbr }}'
+        span = span.html(abstractText);
+        $(v).empty().html(span);
+        $(v).addClass('abstract-clickable');
+        $('#abstract-toggle').click(function(evt) { span.toggleClass('truncated-text'); }); 
+    }
   });
   
 });

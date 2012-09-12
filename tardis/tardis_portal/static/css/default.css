@@ -32,6 +32,7 @@
 
 #abstract-toggle {
     margin-bottom: -7px;
+    display: none;
 }
 
 .truncated-text {
