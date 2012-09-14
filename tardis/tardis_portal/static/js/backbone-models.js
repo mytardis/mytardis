@@ -198,7 +198,9 @@ var MyTardis = (function(){
       ));
       // Fill in the placeholders (because Mustache can't inject DOM)
       _.each(newContents.find('.dataset-tile-placeholder'), function(v) {
+          
         var view = this.tiles[parseInt($(v).attr('data-dsid'))];
+
         $(v).parent().replaceWith(view.el);
       }, this);
       // Add filter control if necessary
@@ -215,6 +217,8 @@ var MyTardis = (function(){
     }
   });
 
+  var dfcount = 0;
+  var dssize = "0";
   module.DatasetTile = Backbone.View.extend({
     tagName: "div",
     className: "dataset-tile thumbnail",
@@ -226,35 +230,46 @@ var MyTardis = (function(){
       this.render = _.bind(this.render, this);
       this.model.bind('change', this.render);
       this.model.bind('sync', this.render);
+      
+      $.ajax({
+        url: '/ajax/json/dataset/' + this.model.id,
+        async: false,
+        dataType: 'json',
+        success: function (dsdata) {
+            var dsdatafiles = dsdata['datafiles'];
+            dfcount = dsdatafiles.length;
+            dssize = dsdata['size_human_readable'];            
+        }
+      });
+
     },
     templateWrapper: {
-      'experiment_badge': function() {
-        var count = _.isArray(this.experiments) ?
-            this.experiments.length : 0;
+      'dataset_datafiles_badge': function() {
+
         return Mustache.to_html(
-            Mustache.TEMPLATES['tardis_portal/badges/experiment_count'],
+            Mustache.TEMPLATES['tardis_portal/badges/datafile_count'],
             {
-              'title': _.sprintf("In %d experiment%s",
-                                 count, count == 1 ? '' : 's'),
-              'count': count,
+              'title': _.sprintf("Contains %s file%s",
+                                 dfcount, dfcount == 1 ? '' : 's'),
+              'count': dfcount,             
             },
             Mustache.TEMPLATES
         );
       },
-      'datafile_badge': function() {
-        var count = _.isArray(this.datafiles) ? this.datafiles.length : 0;
+      'dataset_size_badge': function() {
+      
         return Mustache.to_html(
-            Mustache.TEMPLATES['tardis_portal/badges/datafile_count'],
+            Mustache.TEMPLATES['tardis_portal/badges/size'],
             {
-              'title': _.sprintf("%d file%s", count, count == 1 ? '' : 's'),
-              'count': count,
+              'title': _.sprintf("Dataset size is ", dssize),
+              'label': dssize,
             },
             Mustache.TEMPLATES
         );
       }
     },
     render: function() {
-      // Wrap data with helper functions
+      // Wrap data with helper functions #steve
       var data = _.defaults(_.clone(this.templateWrapper),
                             this.model.attributes);
       // Render

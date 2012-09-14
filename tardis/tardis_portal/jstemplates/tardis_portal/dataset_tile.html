@@ -26,17 +26,18 @@
     </a>
   </p>
   <p>
-  {{{ dataset_datafiles_badge }}}
+      {{{ dataset_datafiles_badge }}}
   </p>
   <p>
-  {{{ dataset_size_badge }}}
+      {{{ dataset_size_badge }}}
   </p>
+
 </div>
 <div class="pull-left" style="margin-right: 10px">
   {{#thumbnail}}
       <img alt="Thumbnail for Dataset #{{ id }}"
            src="{{ thumbnail }}"
-           onerror="$(this).parent().html(canvas)"/>
+           onerror="$(this).hide()"/>
   {{/thumbnail}}
   {{^thumbnail}}
       <canvas style="width: 100px"></canvas>

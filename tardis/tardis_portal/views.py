@@ -65,6 +65,7 @@ from django.views.decorators.cache import never_cache
 from django.contrib.sites.models import Site
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.template.defaultfilters import pluralize, filesizeformat
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -126,9 +127,12 @@ def get_dataset_info(dataset, include_thumbnail=False):
                                'format': 'jpg'})
     obj = model_to_dict(dataset)
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
-    
-    obj['url'] = dataset.get_absolute_url()    
-        
+
+    obj['url'] = dataset.get_absolute_url() 
+
+    obj['size'] = dataset.get_size()
+    obj['size_human_readable'] = filesizeformat(dataset.get_size())
+
     if include_thumbnail:
         try:
             obj['thumbnail'] = get_thumbnail_url(dataset.image)
