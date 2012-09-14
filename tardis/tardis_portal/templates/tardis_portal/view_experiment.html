@@ -383,8 +383,8 @@ $(document).ready(function() {
         $(this).attr('style', 'padding-top: 25px;');
         $('#abstract-toggle').attr('style', 'display: inline;');
         var span = $('#truncated');
-        span = span.addClass('truncated-text')
-        abstractText = '{{ experiment.description|safe|linebreaksbr }}'
+        span = span.addClass('truncated-text');
+        abstractText = '{{ experiment.description|safe|linebreaksbr }}';
         span = span.html(abstractText);
         $(v).empty().html(span);
         $(v).addClass('abstract-clickable');

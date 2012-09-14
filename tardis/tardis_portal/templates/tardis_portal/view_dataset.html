@@ -94,7 +94,7 @@
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
-        $('#datafile-info').load(shown_datafile_href);
+        //$('#datafile-info').load(shown_datafile_href); steve errant function
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -287,10 +287,17 @@
 {% endblock %}
 
 {% block content %}
+
+<script type="text/javascript">
+$('#modal-metadata .submit-button').live('click', function() {
+  $('#modal-metadata .modal-body form').submit();
+});
+</script>
+
 <div class="modal hide fade" id="modal-metadata">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Add Parameters</h1>
+    <h1 class="title"></h1>
   </div>
 
   <div class="loading-placeholder" style="display: none">
@@ -306,12 +313,6 @@
     </button>
   </div>
 </div>
-
-<script type="text/javascript">
-$('#modal-metadata .submit-button').click(function() {
-  $('#modal-metadata .modal-body form').submit();
-});
-</script>
 
 <div class="modal hide fade" id="modal-upload-files">
   <div class="modal-header">
