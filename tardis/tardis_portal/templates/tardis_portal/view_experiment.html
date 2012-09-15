@@ -272,13 +272,16 @@ $('#modal-metadata .submit-button').click(function() {
 <div class="row-fluid" >
   <div class="span7">   
   <div align="center" style="margin-bottom: -20px">
+  <div id="abstractText" style="display: none;">
+    {{ experiment.description|safe|linebreaksbr }}
+  </div>
   <a id="abstract-toggle" class="btn btn-mini" title="Toggle Full Description">
      Toggle Full Description
   </a>          
   </div>           
   <p class="abstract well info-box" property="dc:abstract">    
       <span id="truncated">
-          {{ experiment.description|striptags }}
+          {{ experiment.description|safe|linebreaksbr }}
       </span>
   </p>
     <!-- Tab buttons -->
@@ -394,6 +397,7 @@ $(document).ready(function() {
     'placement': 'top',
     'selector': 'span.badge'
   });
+
   // Abbreviate abstract
   $('.abstract').each(function(i, v) {
     if($(this).text().length > 100)
@@ -402,9 +406,8 @@ $(document).ready(function() {
         $('#abstract-toggle').attr('style', 'display: inline;');
         var span = $('#truncated');
         span = span.addClass('truncated-text');
-        abstractText = '{{ experiment.description|safe|linebreaksbr }}';
-        span = span.html(abstractText);
-        $(v).empty().html(span);
+        spanhtml = span.html($('#abstractText').html());
+        $(v).empty().html(spanhtml);
         $(v).addClass('abstract-clickable');
         $('#abstract-toggle').click(function(evt) { span.toggleClass('truncated-text'); }); 
     }
