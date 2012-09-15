@@ -126,10 +126,10 @@
             if (contentContainer.find('form').length > 0) {
               contentContainer.parents('.modal').find('.modal-footer').show();
             }
+            $('#experiment-tab-metadata').trigger('experiment-change');            
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
-        $('#experiment-tab-metadata').trigger('experiment-change');
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -141,11 +141,11 @@
         	contentContainer.html(data);
           if (contentContainer.find('form').length > 0) {
         	  contentContainer.parents('.modal').find('.modal-footer').show();
+          $('#experiment-tab-metadata').trigger('experiment-change');        	  
           }
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
-        $('#experiment-tab-metadata').trigger('experiment-change');
         return false;
     });
 
