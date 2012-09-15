@@ -129,6 +129,7 @@
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        $('#experiment-tab-metadata').trigger('experiment-change');
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -144,6 +145,7 @@
         });
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        $('#experiment-tab-metadata').trigger('experiment-change');
         return false;
     });
 
@@ -207,9 +209,8 @@
 
 <script type="text/javascript">
 $('#modal-metadata .submit-button').click(function() {
-	$('#modal-metadata .modal-body form').submit();
+    $('#modal-metadata .modal-body form').submit();
 });
-$('#modal-metadata .close').click(refreshMetadataDisplay);
 </script>
 
 <div class="page-header">
