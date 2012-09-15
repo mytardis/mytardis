@@ -121,14 +121,22 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        $.post(href, form.serialize(), function(data) {
-            contentContainer.html(data);
-            if (contentContainer.find('form').length > 0) {
-              contentContainer.parents('.modal').find('.modal-footer').show();
-            }
-            $('#experiment-tab-metadata').trigger('experiment-change');            
+        
+        $.ajax({
+          type: 'POST',
+          url: href,
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length > 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').show();
+                }
+            },
+          async:false
         });
-        // Hide the form buttons
+        
+        $('#experiment-tab-metadata').trigger('experiment-change');        
+        
         form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
@@ -136,14 +144,22 @@
         e.preventDefault();
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
-
-        $.post(form.attr('action'), form.serialize(), function(data) {
-        	contentContainer.html(data);
-          if (contentContainer.find('form').length > 0) {
-        	  contentContainer.parents('.modal').find('.modal-footer').show();
-          $('#experiment-tab-metadata').trigger('experiment-change');        	  
-          }
+        
+        $.ajax({
+          type: 'POST',
+          url: form.attr('action'),
+          data: form.serialize(),
+          success: function(data) {
+                  	contentContainer.html(data);
+                    if (contentContainer.find('form').length > 0) {
+                  	  contentContainer.parents('.modal').find('.modal-footer').show();       	  
+                }
+            },
+          async:false
         });
+        
+        $('#experiment-tab-metadata').trigger('experiment-change'); 
+
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
         return false;
