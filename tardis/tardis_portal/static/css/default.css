@@ -99,3 +99,7 @@ div.copylink {
 .table tbody tr.file-select:hover td, .table tbody tr.file-select:hover th {
     background-color: #D3DFE6;
 }
+
+.pagination {
+    height: auto;
+}
