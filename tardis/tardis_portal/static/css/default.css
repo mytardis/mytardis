@@ -111,3 +111,8 @@ div.copylink {
 .parameter_value {
     width: 400px;
 }
+
+.brand a:hover {
+    color: white;
+    text-decoration: none;
+}
