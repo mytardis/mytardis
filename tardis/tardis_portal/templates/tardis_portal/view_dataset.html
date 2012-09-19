@@ -86,15 +86,25 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        $.post(href, form.serialize(), function(data) {
-            contentContainer.html(data);
-            if (contentContainer.find('form').length > 0) {
-              contentContainer.parents('.modal').find('.modal-footer').show();
-            }
-        });
+        
+        $.ajax({
+          type: 'POST',
+          url: href,
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length > 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').show();
+                }
+            },
+          async:false
+        });        
+        
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
-        //$('#datafile-info').load(shown_datafile_href); steve errant function
+        
+        $('#metadata-pane').trigger('reload');
+
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -102,14 +112,23 @@
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
 
-        $.post(form.attr('action'), form.serialize(), function(data) {
-          contentContainer.html(data);
-          if (contentContainer.find('form').length > 0) {
-            contentContainer.parents('.modal').find('.modal-footer').show();
-          }
-        });
+        $.ajax({
+          type: 'POST',
+          url: form.attr('action'),
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length > 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').show();
+                }
+            },
+          async:false
+        });        
+
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        $('#metadata-pane').trigger('reload');
+        
         return false;
     });
 
@@ -493,15 +512,11 @@ $(document).ready(function(){
     }
   });
 
-  // Reload metadata when we close the metadata modal
-  $('#modal-metadata').on('hide', function() {
-    $('#metadata-pane').trigger('reload');
-  })
-
   // Create a reload event handler
   $('#datafiles-pane').on('reload', function() {
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
   });
+
   // Reload data file list when we close the upload modal
   $('#modal-upload-files').on('hide', function() {
     $('#datafiles-pane').trigger('reload');

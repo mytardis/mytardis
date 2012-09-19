@@ -135,7 +135,7 @@
           async:false
         });
         
-        $('#experiment-tab-metadata').trigger('experiment-change');        
+        refreshMetadataDisplay();        
         
         form.parents('.modal').find('.modal-footer').hide();
         return false;
@@ -158,7 +158,7 @@
           async:false
         });
         
-        $('#experiment-tab-metadata').trigger('experiment-change'); 
+        refreshMetadataDisplay();
 
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
