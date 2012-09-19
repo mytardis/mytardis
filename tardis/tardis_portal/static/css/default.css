@@ -103,3 +103,11 @@ div.copylink {
 .pagination {
     height: auto;
 }
+
+.parameter_name {
+    width: 203px;
+}
+
+.parameter_value {
+    width: 400px;
+}
