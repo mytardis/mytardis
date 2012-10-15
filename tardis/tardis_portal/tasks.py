@@ -26,7 +26,7 @@ except Exception:
 
 @task(name="tardis_portal.verify_files", ignore_result=True)
 def verify_files():
-    for datafile in Dataset_File.objects.filter(verified=False):
+    for datafile in Dataset_File.objects.filter(verified=False).exclude(protocol='staging'):
         if datafile.stay_remote or datafile.is_local():
             verify_as_remote.delay(datafile.id)
         else:
