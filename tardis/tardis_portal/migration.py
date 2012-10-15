@@ -40,6 +40,10 @@ class PutRequest(urllib2.Request):
     def get_method(self):
         return 'PUT'
     
+class DeleteRequest(urllib2.Request):
+    def get_method(self):
+        return 'DELETE'
+    
 class Simple_Http_Transfer:
     def __init__(self, **kwargs):
         self.base_url = kwargs['base_url']
@@ -61,7 +65,13 @@ class Simple_Http_Transfer:
         raise NotImplementedError()
     
     def generate_url(self, datafile):
-        
+        raise NotImplementedError()
+    
+    def transfer_file(self, datafile, url):
+        raise NotImplementedError()
+    
+    def cleanup(self, url):
+        raise NotImplementedError()
         
     def _check_url(self, url):
         if not url.startsWith(base_url):
