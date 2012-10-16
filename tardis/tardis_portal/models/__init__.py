@@ -44,6 +44,7 @@ from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .experiment import Experiment, ExperimentACL, Author_Experiment
 from .dataset import Dataset
 from .datafile import Dataset_File
+from .replica import Datafile_Replica
 from .license import License
 from .hooks import staging_hook
 from .parameters import DatafileParameter, DatafileParameterSet, \
