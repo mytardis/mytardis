@@ -43,14 +43,11 @@
 	}
 
         $('.nav a').each(function(i,v) {
-            if ($(v).attr('href') == window.location.pathname) {
+            if ($(v).attr('href') == window.location.pathname
+	    || ($(v).attr('href').match("^\/experiment/view/") &&
+                data)) {
                   $(v).parent().addClass('active');
             }
-            else if($(v).attr('href').match("^\/experiment") &&
-                data)
-           {
-               $(v).parent().addClass('active');
-           }
         });
     });
     </script>
