@@ -35,10 +35,22 @@
     <script type="text/javascript">
     // Set active nav button
     $(function() {
+        var data = false;
+	if(window.location.pathname.match("^\/experiment")
+          || window.location.pathname.match("^\/dataset"))
+	{
+	    data = true;
+	}
+
         $('.nav a').each(function(i,v) {
             if ($(v).attr('href') == window.location.pathname) {
                   $(v).parent().addClass('active');
             }
+            else if($(v).attr('href').match("^\/experiment") &&
+                data)
+           {
+               $(v).parent().addClass('active');
+           }
         });
     });
     </script>
