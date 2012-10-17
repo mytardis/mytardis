@@ -10,7 +10,6 @@ def migrate_datafile(datafile, destination):
     transfered = destination.transfer_provider.transfer_file(datafile, target_url)
     if check_file_transferred(datafile, destination, target_url):
         datafile.url = target_url
-        datafile.alternate_urls.add(target_url)
         datafile.save()
         return True
     else:
