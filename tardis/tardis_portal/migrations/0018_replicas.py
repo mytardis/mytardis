@@ -17,20 +17,11 @@ class Migration(SchemaMigration):
             ('verified', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('tardis_portal', ['Datafile_Replica'])
-        # Rename deprecated fields in 'Dataset_File'
-        db.rename_column('tardis_portal_dataset_file', 'url', 'old_url')
-        db.rename_column('tardis_portal_dataset_file', 'verified', 'old_verified')
-        db.rename_column('tardis_portal_dataset_file', 'protocol', 'old_protocol')
 
 
     def backwards(self, orm):
         # Deleting model 'Datafile_Replica'
         db.delete_table('tardis_portal_datafile_replica')
-        # Rerename deprecated fields in 'Dataset_File'
-        db.rename_column('tardis_portal_dataset_file', 'old_url', 'url')
-        db.rename_column('tardis_portal_dataset_file', 'old_verified', 'verified')
-        db.rename_column('tardis_portal_dataset_file', 'old_protocol', 'protocol')
-
 
 
     models = {
@@ -117,12 +108,12 @@ class Migration(SchemaMigration):
             'md5sum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'blank': 'True'}),
             'mimetype': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'}),
             'modification_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'old_protocol': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
-            'old_url': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
-            'old_verified': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'protocol': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
             'sha512sum': ('django.db.models.fields.CharField', [], {'max_length': '128', 'blank': 'True'}),
             'size': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
-            'stay_remote': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+            'stay_remote': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'url': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
+            'verified': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         'tardis_portal.datasetparameter': {
             'Meta': {'ordering': "['name']", 'object_name': 'DatasetParameter'},
@@ -234,7 +225,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 11, 16, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 11, 15, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})

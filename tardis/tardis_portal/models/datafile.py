@@ -61,9 +61,9 @@ class Dataset_File(models.Model):
     sha512sum = models.CharField(blank=True, max_length=128)
     stay_remote = models.BooleanField(default=False)
     # Old fields to be removed after data migration
-    old_url = models.CharField(max_length=400)
-    old_protocol = models.CharField(blank=True, max_length=10)
-    old_verified = models.BooleanField(default=False)
+    url = models.CharField(max_length=400)
+    protocol = models.CharField(blank=True, max_length=10)
+    verified = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -208,32 +208,3 @@ class Dataset_File(models.Model):
                   datasets=self.dataset,
                   public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
 
-    def get_replicas(self):
-        from .replica import Datafile_Replica
-        return Datafile_Replica.objects.filter(datafile=self)
-
-    def is_local(self):
-        """
-        Return true if at least of the replicas is local.
-        """
-        for replica in self.get_replicas():
-            if replica.is_local():
-                return True
-        return False
-
-    def verifyAll(self, allowEmptyChecksums=False):
-        '''
-        Verifies all replicas match the datafile sizes and checksums. The 
-        datafile must have at least one checksum hash to verify unless 
-        "allowEmptyChecksums" is True.  The Datafile will be updated with 
-        missing sizes, checksums and an intuited mimetype.
-        '''
-        
-        atFirst = True
-        for replica in self.get_replicas():
-           if not replica.verify(self, 
-                                 allowEmptyChecksums=allowEmptyChecksums,
-                                 updateDatafile=atFirst):
-               return False
-           atFirst = False
-        return True

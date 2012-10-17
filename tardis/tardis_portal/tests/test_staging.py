@@ -134,7 +134,7 @@ class TestStagingFiles(TestCase):
         df.url = 'file://'+self.file
         df.protocol = "staging"
         df.size = len(content)
-        df.verifyAll(allowEmptyChecksums=True)
+        df.verify(allowEmptyChecksums=True)
         df.save()
         self.df = df
 

@@ -2413,7 +2413,7 @@ def upload(request, dataset_id):
                                     url=filepath,
                                     size=uploaded_file_post.size,
                                     protocol='')
-            datafile.verifyAll(allowEmptyChecksums=True)
+            datafile.verify(allowEmptyChecksums=True)
             datafile.save()
 
     return HttpResponse('True')
@@ -2907,7 +2907,7 @@ def stage_files_to_dataset(request, dataset_id):
                                 url=url,
                                 filename=path.basename(filepath),
                                 size=size)
-        datafile.verifyAll(allowEmptyChecksums=True)
+        datafile.verify(allowEmptyChecksums=True)
         datafile.save()
         return datafile
 
