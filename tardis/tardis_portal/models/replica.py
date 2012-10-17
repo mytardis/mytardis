@@ -177,7 +177,6 @@ class Datafile_Replica(models.Model):
             df.size = str(size)
             if not df.mimetype and len(mimetype_buffer) > 0:
                 df.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
-            df.save()
 
         self.verified = True
         self.save()
