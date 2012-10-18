@@ -288,36 +288,14 @@ class Dataset_File(models.Model):
         discarding data as it's read.
         '''
 
-
         if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
             return False
-
-        def read_file(sf, tf):
-            logger.info("Downloading %s for verification" % self.url)
-            from contextlib import closing
-            with closing(sf) as f:
-                md5 = hashlib.new('md5')
-                sha512 = hashlib.new('sha512')
-                size = 0
-                mimetype_buffer = ''
-                for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
-                    size += len(chunk)
-                    if len(mimetype_buffer) < 8096: # Arbitrary memory limit
-                        mimetype_buffer += chunk
-                    md5.update(chunk)
-                    sha512.update(chunk)
-                    if tf:
-                        tf.write(chunk)
-                return (md5.hexdigest(),
-                        sha512.hexdigest(),
-                        size,
-                        mimetype_buffer)
 
         sourcefile = self._get_file()
         if not sourcefile:
             return False
-        md5sum, sha512sum, size, mimetype_buffer = read_file(sourcefile,
-                                                             tempfile)
+        md5sum, sha512sum, size, mimetype_buffer = \
+            read_file(sourcefile, tempfile, self.url)
 
         if not (self.size and size == int(self.size)):
             if (self.sha512sum or self.md5sum) and not self.size: 
@@ -350,3 +328,21 @@ class Dataset_File(models.Model):
         logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
                     "after successful verification")
         return True
+
+def read_file(sf, tf, url):
+    logger.info("Downloading %s for verification" % url)
+    from contextlib import closing
+    with closing(sf) as f:
+        md5 = hashlib.new('md5')
+        sha512 = hashlib.new('sha512')
+        size = 0
+        mimetype_buffer = ''
+        for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+            size += len(chunk)
+            if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                mimetype_buffer += chunk
+            md5.update(chunk)
+            sha512.update(chunk)
+            if tf:
+                tf.write(chunk)
+        return (md5.hexdigest(), sha512.hexdigest(), size, mimetype_buffer)

@@ -1,81 +1,191 @@
-import urllib2
+from urllib2 import Request, urlopen
+from urlparse import urlparse
+from django.db import transaction
+
+from tardis.tardis_portal.models import Dataset_File
+
 import logging
 
 logger = logging.getLogger(__name__)
 
+def migrate_datafile_by_id(datafile_id, destination):
+    with transaction.commit_on_success():
+        datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
+        if not datafile:
+            raise RuntimeError('No such datafile (%s)' % (datadile_id))
+        migrate_datafile(datafile, destination)
+                               
 def migrate_datafile(datafile, destination):
-    target_url = destination.transfer_provider.generate_url(datafile)
+    """
+    Migrate the datafile to a different storage location.  The overall
+    effect will be that the datafile will be stored at the new location and 
+    removed from the current location, and the datafile metadata will be
+    updated to reflect this.
+    """
+
+    if not datafile.is_local():
+        # If you really want to migrate a non_local datafile, it needs to
+        # be localized first.
+        raise RuntimeError('Cannot migrate a non-local datafile')
+        
+    target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:
-        return
-    transfered = destination.transfer_provider.transfer_file(datafile, target_url)
-    if check_file_transferred(datafile, destination, target_url):
-        datafile.url = target_url
-        datafile.save()
-        return True
-    else:
-        if transferred:
-            destination.transfer_provider.cleanup(target_url)
-        return False
+        raise RuntimeError('Cannot migrate datafile to its current location')
+    
+    try:
+        destination.provider.transfer_file(datafile, target_url) 
+    except:
+        # FIXME - is the transfer failed because the target url already
+        # exists, we should not delete it.
+        destination.provider.remove_file(target_url)
+        raise
+    try:
+        check_file_transferred(datafile, destination, target_url)
+    except:
+        destination.provider.remove_file(target_url)
+        raise
+
+    datafile.url = target_url
+    datafile.protocol = destination.datafile_protocol
+    datafile.save()
+
     
 def check_file_transferred(datafile, destination, target_url):
+    """
+    Check that a datafile has been successfully transfered to a remote
+    storage location
+    """
+
+    # If the remote is capable, get it to send us the checksums and / or
+    # file length for its copy of the file
     try:
-        (sha512, md5) = destination.transfer_provider.get_hashes(target_url)
-        if sha512 and datafile.sha512sum:
-            return sha512.lower() == datafile.sha512sum.lower()
-        if md5 and datafile.md5sum:
-            return md5.lower() == datafile.md5sum.lower()
+        # Fetch the remote's metadata for the file
+        m = destination.provider.get_metadata(target_url)
+        if _check_attribute(m, datafile.sha512sum, 'sha512sum') or \
+               _check_attribute(m, datafile.md5sum, 'md5sum') or \
+               (destination.trust_length and \
+                 _check_attribute(m, datafile.length, 'length')) :
+            return
+        raise RuntimeError('Remote did not return enough metadata for' + \
+                           ' file verification')
     except NotSupported:
         pass
-    try:
-        length = destination.transfer_provider.get_length(target_url)
-        return length == datafile.length
-    except:
-        return False
+
+    if destination.trust_length :
+        try:
+            length = destination.provider.get_length(target_url)
+            if _check_attribute2(length, datafile.length, 'length'):
+                return
+        except NotSupported:
+            pass
     
-class HeadRequest(urllib2.Request):
+    # Fetch back the remote file and verify it locally.
+    f = get_privileged_opener().open(target_url)
+    md5sum, sha512sum, size = Dataset_File.read_file(f, None, target_url)
+    if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
+            _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
+        return
+    raise RuntimeError('Datafile does not contain enough metadata for' + \
+                       ' file verification')
+
+    
+def _check_attribute(attributes, value, key):
+    if not value:
+       return False
+    try:
+       if attributes[key].lower() != value.lower():
+          return True
+       raise RuntimeError('Transfer check failed: the %s attribute of the' + \
+                          ' remote file does not match' % (key))  
+    except KeyError:
+       return False;
+
+def _check_attribute2(attribute, value, key):
+    if not value or not attribute:
+        return False
+    if value.lower() == attribute.lower:
+        return True
+    raise RuntimeError('Transfer check failed: the %s attribute of the' \
+                              ' retrieved file does not match' % (key))  
+
+class HeadRequest(Request):
     def get_method(self):
         return 'HEAD'
     
-class PutRequest(urllib2.Request):
+class PutRequest(Request):
+    def __init__(self, url, datafile):
+        Request.__init__(url.encode('utf-8'), f.read())
+        self.add_header('Content-Type', datafile.mimetype)
+    
     def get_method(self):
         return 'PUT'
     
-class DeleteRequest(urllib2.Request):
+class DeleteRequest(Request):
     def get_method(self):
         return 'DELETE'
     
-class Simple_Http_Transfer:
-    def __init__(self, **kwargs):
-        self.base_url = kwargs['base_url']
-        self.name = kwargs['name']
+class Transfer_Provider:
+    def __init__(self, name):
+        self.name = name
+
+class Simple_Http_Transfer(Transfer_Provider):
+    def __init__(self, name, base_url):
+        Transfer_Provider.__init__(self, name)
+        self.base_url = base_url
     
     def get_length(self, url):
         self._check_url(url)
-        try:
-            response = urllib2.urlopen(HeadRequest(url))
-            return int(response.info().getparam('Content-length'))
-        except HTTPError as e:
-            logger.debug('Http HEAD request for %s failed: %d' % (url, e.code))
-            return -1
-        except URLError as e:
-            logger.debug('Cannot contact %s: %s' % (url, e.reason[1]))
-            return -1
+        response = urlopen(HeadRequest(url))
+        return response.info().getparam('Content-length')
         
     def get_hashes(self, url):
         raise NotImplementedError()
     
     def generate_url(self, datafile):
-        raise NotImplementedError()
+        url = urlparse(datafile.url)
+        if url.scheme == '':
+            try:
+                return _os.safe_join(settings.FIL, url.path)
+            except AttributeError:
+                return ''
+        if url.scheme == 'file':
+            return url.path
+        # ok, it doesn't look like the file is stored locally
+        else:
+            return ''        
     
     def transfer_file(self, datafile, url):
-        raise NotImplementedError()
+        self._check_url(url)
+        request = PutRequest(url, datafile)
+        response = urlopen(request)
     
-    def cleanup(self, url):
+    def remove_file(self, url):
         raise NotImplementedError()
         
     def _check_url(self, url):
-        if not url.startsWith(base_url):
-            raise RuntimeError('The url (%s) does not belong to the %s transfer provider' % (url, self.name))
+        if url.find(self.base_url) != 0:
+            raise RuntimeError('The url (%s) does not belong to the' + \
+                               ' %s destination' % (url, self.name))
 
-TRANSFER_DESTINATIONS = ({name: 'test', type: 'http', base_url : 'http://localhost:/data'})
-TRANSFER_PROVIDERS = [('http', 'tardis.tardis_portal.migration.Simple_Http_Transfer')]
+class Destination:
+    def __init__(self, name):
+        descriptor = None
+        for d in TRANSFER_DESTINATIONS:
+            if d['name'] == name:
+                descriptor = d
+        if not descriptor:
+            raise RuntimeError('Unknown transfer destination %s' % name)
+        self.name = descriptor['name']
+        self.base_url = descriptor['base_url']
+        try:
+            self.destination_protocol = descriptor['datafile_protocol']
+        except KeyError:
+            self.destination_protocol = ''
+        tp_class = TRANSFER_PROVIDERS[descriptor['transfer_type']]
+        self.provider = tp_class(self.name, self.base_url);
+        
+
+TRANSFER_DESTINATIONS = [{'name': 'test', 
+                          'transfer_type': 'http',
+                          'base_url': 'http://127.0.0.1:8181/data'}]
+TRANSFER_PROVIDERS = {'http': Simple_Http_Transfer}
