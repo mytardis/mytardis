@@ -114,7 +114,8 @@ class HeadRequest(Request):
     
 class PutRequest(Request):
     def __init__(self, url, datafile):
-        Request.__init__(url.encode('utf-8'), f.read())
+        Request.__init__(url.encode('utf-8'), 
+                         datafile.get_file(requireVerified=False).read())
         self.add_header('Content-Type', datafile.mimetype)
     
     def get_method(self):
@@ -143,16 +144,9 @@ class Simple_Http_Transfer(Transfer_Provider):
     
     def generate_url(self, datafile):
         url = urlparse(datafile.url)
-        if url.scheme == '':
-            try:
-                return _os.safe_join(settings.FIL, url.path)
-            except AttributeError:
-                return ''
-        if url.scheme == 'file':
-            return url.path
-        # ok, it doesn't look like the file is stored locally
-        else:
-            return ''        
+        if url.scheme == '' or url.scheme == 'file':
+            return self.base_url + url.path
+        raise RuntimeError("Cannot generate a URL from '%s'" % datafile.url)
     
     def transfer_file(self, datafile, url):
         self._check_url(url)
@@ -164,8 +158,8 @@ class Simple_Http_Transfer(Transfer_Provider):
         
     def _check_url(self, url):
         if url.find(self.base_url) != 0:
-            raise RuntimeError('The url (%s) does not belong to the' + \
-                               ' %s destination' % (url, self.name))
+            raise RuntimeError(('The url (%s) does not belong to the' + \
+                                ' %s destination') % (url, self.name))
 
 class Destination:
     def __init__(self, name):

@@ -1,19 +1,21 @@
 from django.test import TestCase
 from compare import expect
+from tempfile import NamedTemporaryFile
 from nose.tools import ok_, eq_
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 from tardis.tardis_portal.migration import Destination, Transfer_Provider,\
     Simple_Http_Transfer
+from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationTestCase(TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        pass
+    def setUp(self):
+        self.dummy_dataset = Dataset()
+        self.dummy_dataset.save()
 
-    @classmethod
-    def tearDownClass(cls):
+    def tearDown(self):
+        self.dummy_dataset.delete()
         pass
 
     def testDestination(self):
@@ -30,9 +32,23 @@ class MigrationTestCase(TestCase):
     def testProvider(self):
         dest = Destination('test').provider
         provider = dest
-        datafile = None
+        datafile = self._generate_datafile("/1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
         provider.transfer_file(datafile, url)
+
+    def _generate_datafile(self, path, content):
+        file = NamedTemporaryFile(delete=False)
+        file.write(content)
+        file.close()
+        datafile = Dataset_File()
+        datafile.url = path
+        datafile.mimetype = "application/unspecified"
+        datafile.filename = file.name
+        datafile.dataset_id = self.dummy_dataset.id
+        datafile.size = str(len(content))
+        datafile.save()
+        return datafile
+
 
 class TestServer(HTTPServer):
     def __init__():
