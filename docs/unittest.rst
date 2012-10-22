@@ -35,14 +35,19 @@ Running Individual Unit Tests
 The unit tests reside in the ./tardis/tardis_portal/tests directory. 
 To run the unit tests individually, you can use this command::
 
-    ./bin/django test <test_file_name_here>
+    ./bin/django test --settings=tardis.test_settings <test_file_name_here>
     
 Note that the test file name argument should be the full path with "." as folder
 separator. For example, if you want to run the test "test_authentication.py",
 then your command to execute this test would be::
 
-    ./bin/django test tardis.tardis_portal.tests.test_authentication
+    ./bin/django test --settings=tardis.test_settings \
+                      tardis.tardis_portal.tests.test_authentication
     
 You can choose to include different options when running the unit tests (e.g. 
-run in verbose mode, print out a traceback, etc.). Run the test with --help flag
-to see the the full list of options.
+run in verbose mode, print out a traceback, etc.). Run the test or django test
+command with --help flag to see the the full list of options::
+
+    ./bin/django test --settings=tardis.test_settings --help
+
+    
