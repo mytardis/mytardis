@@ -132,7 +132,15 @@ class Simple_Http_Transfer(Transfer_Provider):
     def get_length(self, url):
         self._check_url(url)
         response = urlopen(HeadRequest(url))
-        return response.info().getparam('Content-length')
+        print('response - %s / %s' % (response, response.__class__))
+        print('response.info() - %s' % response.info())
+        length = response.info().get('Content-length')
+        if length is None:
+            raise RuntimeError("No content-length in response")
+        try:
+            return int(length)
+        except TypeError:
+            raise RuntimeError("Content-length is not numeric")
         
     def get_hashes(self, url):
         raise NotImplementedError()

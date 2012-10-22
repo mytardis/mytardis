@@ -43,6 +43,7 @@ class MigrationTestCase(TestCase):
         datafile = self._generate_datafile("/1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
         provider.transfer_file(datafile, url)
+        provider.get_length(url)
 
     def _generate_datafile(self, path, content):
         file = NamedTemporaryFile(delete=False)
@@ -81,7 +82,15 @@ class TestServer:
             pass
             
         def do_HEAD(self):
-            pass
+            try:
+                (data, length, mimetype) = self.server.store[self.path] 
+            except:
+                self.send_error(404)
+                return
+            self.send_response(200)
+            self.send_header('Content-length', str(length))
+            self.send_header('Content-type', mimetype)
+            self.end_headers()
 
         def log_message(self, msg, *args):
             print(msg % args)
