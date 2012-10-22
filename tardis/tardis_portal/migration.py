@@ -150,6 +150,11 @@ class Simple_Http_Transfer(Transfer_Provider):
         response = urlopen(GetRequest(url + "?hashes"))
         return simplejson.load(response)
     
+    def get_file(self, url):
+        self._check_url(url)
+        response = urlopen(GetRequest(url))
+        return response.read()
+    
     def generate_url(self, datafile):
         url = urlparse(datafile.url)
         if url.scheme == '' or url.scheme == 'file':

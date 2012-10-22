@@ -9,6 +9,7 @@ from nose.tools import ok_, eq_
 
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 import BaseHTTPServer, base64, os, SocketServer, threading, urllib2
+from urllib2 import HTTPError
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 
@@ -44,14 +45,32 @@ class MigrationTestCase(TestCase):
         provider = dest
         datafile = self._generate_datafile("/1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
+        self.assertEquals(url, 'http://127.0.0.1:4272/data/1/2/3')
         provider.put_file(datafile, url)
+
+        self.assertEqual(provider.get_file(url), "Hi mum")
+        with self.assertRaises(RuntimeError):
+            provider.get_file('https://127.0.0.1:4272/data/1/2/4')
+        with self.assertRaises(HTTPError):
+            provider.get_file('http://127.0.0.1:4272/data/1/2/4')
+
         self.assertEqual(provider.get_length(url), 6)
+        with self.assertRaises(RuntimeError):
+            provider.get_length('https://127.0.0.1:4272/data/1/2/4')
+        with self.assertRaises(HTTPError):
+            provider.get_length('http://127.0.0.1:4272/data/1/2/4')
+
         self.assertEqual(provider.get_hashes(url),
                          {'sha512sum' : '2274cc8c16503e3d182ffaa835c543bce27' +
                           '8bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e5abea29b' +
                           'c05f7f0ea662cb4b0e805e56bbce97f00f94ea6e6498', 
                           'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
                           'length' : 6})
+        with self.assertRaises(RuntimeError):
+            provider.get_hashes('https://127.0.0.1:4272/data/1/2/4')
+        with self.assertRaises(HTTPError):
+            provider.get_hashes('http://127.0.0.1:4272/data/1/2/4')
+            
 
     def _generate_datafile(self, path, content):
         file = NamedTemporaryFile(delete=False)
@@ -73,7 +92,7 @@ class TestServer:
     '''
 
     class TestRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
-        def do_GET(self):
+        def do_GET(self, outputBody=True):
             (path, query) = self._splitPath()
             try:
                 (data, length, mimetype) = self.server.store[path] 
@@ -86,16 +105,14 @@ class TestServer:
                     length = len(data)
                     mimetype = 'application/json'
                 else:
-                    raise RuntimeError("Unknown query")
+                    self.send_error(400)
             self.send_response(200)
             self.send_header('Content-length', str(length))
             self.send_header('Content-type', mimetype)
             self.end_headers()
-            self.wfile.write(data)
+            if outputBody:
+                self.wfile.write(data)
     
-        def do_POST(self):
-            pass
-
         def do_PUT(self):
             length = int(self.headers.getheader('Content-Length'))
             mimetype = self.headers.getheader('Content-Type')
@@ -105,17 +122,9 @@ class TestServer:
 
         def do_DELETE(self):
             pass
-            
+
         def do_HEAD(self):
-            try:
-                (data, length, mimetype) = self.server.store[self.path] 
-            except:
-                self.send_error(404)
-                return
-            self.send_response(200)
-            self.send_header('Content-length', str(length))
-            self.send_header('Content-type', mimetype)
-            self.end_headers()
+            self.do_GET(outputBody=False)
 
         def log_message(self, msg, *args):
             print(msg % args)
