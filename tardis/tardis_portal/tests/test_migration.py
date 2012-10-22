@@ -2,6 +2,8 @@ from django.test import TestCase
 from compare import expect
 from threading import Thread
 import logging
+import simplejson
+import hashlib
 from tempfile import NamedTemporaryFile
 from nose.tools import ok_, eq_
 
@@ -42,8 +44,14 @@ class MigrationTestCase(TestCase):
         provider = dest
         datafile = self._generate_datafile("/1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
-        provider.transfer_file(datafile, url)
-        provider.get_length(url)
+        provider.put_file(datafile, url)
+        self.assertEqual(provider.get_length(url), 6)
+        self.assertEqual(provider.get_hashes(url),
+                         {'sha512sum' : '2274cc8c16503e3d182ffaa835c543bce27' +
+                          '8bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e5abea29b' +
+                          'c05f7f0ea662cb4b0e805e56bbce97f00f94ea6e6498', 
+                          'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
+                          'length' : 6})
 
     def _generate_datafile(self, path, content):
         file = NamedTemporaryFile(delete=False)
@@ -66,7 +74,24 @@ class TestServer:
 
     class TestRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         def do_GET(self):
-            pass
+            (path, query) = self._splitPath()
+            try:
+                (data, length, mimetype) = self.server.store[path] 
+            except:
+                self.send_error(404)
+                return
+            if query:
+                if query == 'hashes':
+                    data = self._createHashResponse(data)
+                    length = len(data)
+                    mimetype = 'application/json'
+                else:
+                    raise RuntimeError("Unknown query")
+            self.send_response(200)
+            self.send_header('Content-length', str(length))
+            self.send_header('Content-type', mimetype)
+            self.end_headers()
+            self.wfile.write(data)
     
         def do_POST(self):
             pass
@@ -94,6 +119,24 @@ class TestServer:
 
         def log_message(self, msg, *args):
             print(msg % args)
+
+        def _splitPath(self):
+            tmp = self.path.split('?', 1)
+            if len(tmp) == 2:
+                return (tmp[0], tmp[1])
+            else:
+                return (tmp[0], None)
+
+        def _createHashResponse(self, data):
+            m = hashlib.sha512()
+            m.update(data)
+            sha512 = m.hexdigest()
+            m = hashlib.md5()
+            m.update(data)
+            md5 = m.hexdigest()
+            return simplejson.dumps({'sha512sum' : sha512, 
+                                     'md5sum' : md5,
+                                     'length' : len(data)})
 
     class ThreadedTCPServer(SocketServer.ThreadingMixIn, \
                             BaseHTTPServer.HTTPServer):

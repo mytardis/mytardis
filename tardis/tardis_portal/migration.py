@@ -1,6 +1,7 @@
 from urllib2 import Request, urlopen
 from urlparse import urlparse
 from django.db import transaction
+import simplejson
 
 from tardis.tardis_portal.models import Dataset_File
 
@@ -33,7 +34,7 @@ def migrate_datafile(datafile, destination):
         raise RuntimeError('Cannot migrate datafile to its current location')
     
     try:
-        destination.provider.transfer_file(datafile, target_url) 
+        destination.provider.put_file(datafile, target_url) 
     except:
         # FIXME - is the transfer failed because the target url already
         # exists, we should not delete it.
@@ -116,6 +117,10 @@ class PutRequest(Request):
     def get_method(self):
         return 'PUT'
     
+class GetRequest(Request):
+    def get_method(self):
+        return 'GET'
+    
 class DeleteRequest(Request):
     def get_method(self):
         return 'DELETE'
@@ -132,8 +137,6 @@ class Simple_Http_Transfer(Transfer_Provider):
     def get_length(self, url):
         self._check_url(url)
         response = urlopen(HeadRequest(url))
-        print('response - %s / %s' % (response, response.__class__))
-        print('response.info() - %s' % response.info())
         length = response.info().get('Content-length')
         if length is None:
             raise RuntimeError("No content-length in response")
@@ -143,7 +146,9 @@ class Simple_Http_Transfer(Transfer_Provider):
             raise RuntimeError("Content-length is not numeric")
         
     def get_hashes(self, url):
-        raise NotImplementedError()
+        self._check_url(url)
+        response = urlopen(GetRequest(url + "?hashes"))
+        return simplejson.load(response)
     
     def generate_url(self, datafile):
         url = urlparse(datafile.url)
@@ -151,7 +156,7 @@ class Simple_Http_Transfer(Transfer_Provider):
             return self.base_url + url.path
         raise RuntimeError("Cannot generate a URL from '%s'" % datafile.url)
     
-    def transfer_file(self, datafile, url):
+    def put_file(self, datafile, url):
         self._check_url(url)
         with open(datafile.filename) as f:
             content = f.read()
