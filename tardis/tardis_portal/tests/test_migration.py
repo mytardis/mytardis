@@ -4,7 +4,11 @@ from threading import Thread
 import logging
 from tempfile import NamedTemporaryFile
 from nose.tools import ok_, eq_
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+import BaseHTTPServer, base64, os, SocketServer, threading, urllib2
+
+from tardis.tardis_portal.fetcher import get_privileged_opener
 
 from tardis.tardis_portal.migration import Destination, Transfer_Provider,\
     Simple_Http_Transfer
@@ -15,7 +19,7 @@ class MigrationTestCase(TestCase):
     def setUp(self):
         self.dummy_dataset = Dataset()
         self.dummy_dataset.save()
-        self.server = ServerThread()
+        self.server = TestServer()
         self.server.start()
 
     def tearDown(self):
@@ -54,27 +58,59 @@ class MigrationTestCase(TestCase):
         return datafile
 
 
-class ServerThread(Thread):
+class TestServer:
+    '''
+    Utility class for running a test web server with a given handler.
+    '''
+
+    class TestRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+        def do_GET(self):
+            pass
+    
+        def do_POST(self):
+            pass
+
+        def do_PUT(self):
+            length = int(self.headers.getheader('Content-Length'))
+            mimetype = self.headers.getheader('Content-Type')
+            data = self.rfile.read(length)
+            self.server.store[self.path] = (data, length, mimetype) 
+            self.send_response(200)
+
+        def do_DELETE(self):
+            pass
+            
+        def do_HEAD(self):
+            pass
+
+        def log_message(self, msg, *args):
+            print(msg % args)
+
+    class ThreadedTCPServer(SocketServer.ThreadingMixIn, \
+                            BaseHTTPServer.HTTPServer):
+        pass
 
     def __init__(self):
-        Thread.__init__(self)
-        self.httpd = TestServer()
+        self.handler = self.TestRequestHandler
 
-    def run(self):
-        self.httpd.serve_forever(poll_interval=0.01)
+    def start(self):
+        server = self.ThreadedTCPServer(('127.0.0.1', self.getPort()),
+                                        self.handler)
+        server_thread = threading.Thread(target=server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+        server.store = {}
+        self.server = server
+        return server.socket.getsockname()
+
+    def getUrl(self):
+        return 'http://%s:%d/' % self.server.socket.getsockname()
+
+    @classmethod
+    def getPort(cls):
+        return 4272
 
     def stop(self):
-        self.httpd.shutdown()
-        self.httpd.socket.close()
-        self.join()
+        self.server.shutdown()
+        self.server.socket.close()
 
-class TestServer(HTTPServer):
-    def __init__(self):
-        HTTPServer.__init__(self, ('127.0.0.1', 8181), TestRequestHandler)
-
-class TestRequestHandler(BaseHTTPRequestHandler):
-    def do_GET():
-        pass
-    
-    def do_POST():
-        pass

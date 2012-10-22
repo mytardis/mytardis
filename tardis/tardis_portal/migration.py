@@ -112,16 +112,7 @@ class HeadRequest(Request):
     def get_method(self):
         return 'HEAD'
     
-def _get_datafile_content(datafile):
-    with open(datafile.filename) as f:
-        return f.read()
-
 class PutRequest(Request):
-    def __init__(self, url, datafile):
-        Request.__init__(self, url.encode('utf-8'), 
-                         _get_datafile_content(datafile))
-        self.add_header('Content-Type', datafile.mimetype)
-    
     def get_method(self):
         return 'PUT'
     
@@ -154,8 +145,13 @@ class Simple_Http_Transfer(Transfer_Provider):
     
     def transfer_file(self, datafile, url):
         self._check_url(url)
-        request = PutRequest(url, datafile)
-        response = urlopen(request)
+        with open(datafile.filename) as f:
+            content = f.read()
+        request = PutRequest(url)
+        request.add_header('Content-Length', str(len(content)))
+        request.add_header('Content-Type', datafile.mimetype)
+        response = urlopen(request, data=content)
+        print(response)
     
     def remove_file(self, url):
         raise NotImplementedError()
@@ -185,5 +181,5 @@ class Destination:
 
 TRANSFER_DESTINATIONS = [{'name': 'test', 
                           'transfer_type': 'http',
-                          'base_url': 'http://127.0.0.1:8181/data'}]
+                          'base_url': 'http://127.0.0.1:4272/data'}]
 TRANSFER_PROVIDERS = {'http': Simple_Http_Transfer}
