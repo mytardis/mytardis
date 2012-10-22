@@ -112,10 +112,14 @@ class HeadRequest(Request):
     def get_method(self):
         return 'HEAD'
     
+def _get_datafile_content(datafile):
+    with open(datafile.filename) as f:
+        return f.read()
+
 class PutRequest(Request):
     def __init__(self, url, datafile):
-        Request.__init__(url.encode('utf-8'), 
-                         datafile.get_file(requireVerified=False).read())
+        Request.__init__(self, url.encode('utf-8'), 
+                         _get_datafile_content(datafile))
         self.add_header('Content-Type', datafile.mimetype)
     
     def get_method(self):

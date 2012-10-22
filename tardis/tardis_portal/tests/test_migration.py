@@ -1,5 +1,7 @@
 from django.test import TestCase
 from compare import expect
+from threading import Thread
+import logging
 from tempfile import NamedTemporaryFile
 from nose.tools import ok_, eq_
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -13,10 +15,12 @@ class MigrationTestCase(TestCase):
     def setUp(self):
         self.dummy_dataset = Dataset()
         self.dummy_dataset.save()
+        self.server = ServerThread()
+        self.server.start()
 
     def tearDown(self):
         self.dummy_dataset.delete()
-        pass
+        self.server.stop()
 
     def testDestination(self):
         '''
@@ -50,9 +54,23 @@ class MigrationTestCase(TestCase):
         return datafile
 
 
+class ServerThread(Thread):
+
+    def __init__(self):
+        Thread.__init__(self)
+        self.httpd = TestServer()
+
+    def run(self):
+        self.httpd.serve_forever(poll_interval=0.01)
+
+    def stop(self):
+        self.httpd.shutdown()
+        self.httpd.socket.close()
+        self.join()
+
 class TestServer(HTTPServer):
-    def __init__():
-        HTTPServer.__init__(('127.0.0.1', 8181), TestRequestHandler)
+    def __init__(self):
+        HTTPServer.__init__(self, ('127.0.0.1', 8181), TestRequestHandler)
 
 class TestRequestHandler(BaseHTTPRequestHandler):
     def do_GET():
