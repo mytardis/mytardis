@@ -34,6 +34,10 @@ def migrate_datafile(datafile, destination):
         # If you really want to migrate a non_local datafile, it needs to
         # be localized first.
         raise MigrationError('Cannot migrate a non-local datafile')
+
+    if not datafile.verified or destination.trust_length:
+        raise MigrationError('Only verified datasets can be migrated' \
+                                 ' to this destination')
         
     target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:
@@ -74,9 +78,8 @@ def check_file_transferred(datafile, destination, target_url):
                (destination.trust_length and \
                  _check_attribute(m, datafile.length, 'length')) :
             return
-        raise MigrationError('Remote did not return enough metadata for' \
-                                 ' file verification')
-    except NotSupported:
+        raise MigrationError('Not enough metadata for verification')
+    except NotImplementedError:
         pass
 
     if destination.trust_length :
@@ -84,7 +87,7 @@ def check_file_transferred(datafile, destination, target_url):
             length = destination.provider.get_length(target_url)
             if _check_attribute2(length, datafile.length, 'length'):
                 return
-        except NotSupported:
+        except NotImplementedError:
             pass
     
     # Fetch back the remote file and verify it locally.
@@ -93,8 +96,7 @@ def check_file_transferred(datafile, destination, target_url):
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return
-    raise MigrationError('Datafile does not contain enough metadata for' \
-                             ' file verification')
+    raise MigrationError('Not enough metadata for file verification')
 
     
 def _check_attribute(attributes, value, key):
@@ -152,9 +154,9 @@ class Simple_Http_Transfer(Transfer_Provider):
         except TypeError:
             raise MigrationProviderError("Content-length is not numeric")
         
-    def get_hashes(self, url):
+    def get_metadata(self, url):
         self._check_url(url)
-        response = urlopen(GetRequest(url + "?hashes"))
+        response = urlopen(GetRequest(url + "?metadata"))
         return simplejson.load(response)
     
     def get_file(self, url):
@@ -198,6 +200,7 @@ class Destination:
             raise ValueError('Unknown transfer destination %s' % name)
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
+        self.trust_length = False
         try:
             self.destination_protocol = descriptor['datafile_protocol']
         except KeyError:

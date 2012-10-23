@@ -1,10 +1,7 @@
 from django.test import TestCase
 from compare import expect
 from threading import Thread
-import logging
-import simplejson
-import hashlib
-from tempfile import NamedTemporaryFile
+import logging, simplejson, hashlib, os
 from nose.tools import ok_, eq_
 
 from SimpleHTTPServer import SimpleHTTPRequestHandler
@@ -12,9 +9,10 @@ import BaseHTTPServer, base64, os, SocketServer, threading, urllib2
 from urllib2 import HTTPError
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
-
-from tardis.tardis_portal.migration import Destination, Transfer_Provider,\
-    Simple_Http_Transfer, MigrationError, MigrationProviderError
+from tardis.test_settings import FILE_STORE_PATH
+from tardis.tardis_portal.migration import Destination, Transfer_Provider, \
+    Simple_Http_Transfer, MigrationError, MigrationProviderError, \
+    migrate_datafile
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationTestCase(TestCase):
@@ -41,8 +39,7 @@ class MigrationTestCase(TestCase):
             dest2 = Destination('unknown')
 
     def testProvider(self):
-        dest = Destination('test').provider
-        provider = dest
+        provider = Destination('test').provider
         datafile = self._generate_datafile("/1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
         self.assertEquals(url, 'http://127.0.0.1:4272/data/1/2/3')
@@ -60,16 +57,16 @@ class MigrationTestCase(TestCase):
         with self.assertRaises(HTTPError):
             provider.get_length('http://127.0.0.1:4272/data/1/2/4')
 
-        self.assertEqual(provider.get_hashes(url),
+        self.assertEqual(provider.get_metadata(url),
                          {'sha512sum' : '2274cc8c16503e3d182ffaa835c543bce27' +
                           '8bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e5abea29b' +
                           'c05f7f0ea662cb4b0e805e56bbce97f00f94ea6e6498', 
                           'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
                           'length' : 6})
         with self.assertRaises(MigrationProviderError):
-            provider.get_hashes('https://127.0.0.1:4272/data/1/2/4')
+            provider.get_metadata('https://127.0.0.1:4272/data/1/2/4')
         with self.assertRaises(HTTPError):
-            provider.get_hashes('http://127.0.0.1:4272/data/1/2/4')
+            provider.get_metadata('http://127.0.0.1:4272/data/1/2/4')
             
         provider.remove_file(url)
         with self.assertRaises(MigrationProviderError):
@@ -77,14 +74,28 @@ class MigrationTestCase(TestCase):
         with self.assertRaises(HTTPError):
             provider.remove_file(url)
 
+    def testMigration(self):
+        dest = Destination('test')
+        datafile = self._generate_datafile("/1/2/3", "Hi mum")
+        with self.assertRaises(MigrationError):
+            migrate_datafile(datafile, dest)
+        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        datafile.save()
+        migrate_datafile(datafile, dest)
+
     def _generate_datafile(self, path, content):
-        file = NamedTemporaryFile(delete=False)
+        filepath = os.path.normpath(FILE_STORE_PATH + path)
+        try:
+            os.makedirs(os.path.dirname(filepath))
+        except:
+            pass
+        file = open(filepath, 'wb+')
         file.write(content)
         file.close()
         datafile = Dataset_File()
         datafile.url = path
         datafile.mimetype = "application/unspecified"
-        datafile.filename = file.name
+        datafile.filename = filepath
         datafile.dataset_id = self.dummy_dataset.id
         datafile.size = str(len(content))
         datafile.save()
@@ -105,7 +116,7 @@ class TestServer:
                 self.send_error(404)
                 return
             if query:
-                if query == 'hashes':
+                if query == 'metadata':
                     data = self._createHashResponse(data)
                     length = len(data)
                     mimetype = 'application/json'
