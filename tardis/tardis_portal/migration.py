@@ -103,7 +103,7 @@ def _check_attribute(attributes, value, key):
     if not value:
        return False
     try:
-       if attributes[key].lower() != value.lower():
+       if attributes[key].lower() == value.lower():
           return True
        raise MigrationError('Transfer check failed: the %s attribute of the' \
                                 ' remote file does not match' % (key))  
@@ -200,16 +200,18 @@ class Destination:
             raise ValueError('Unknown transfer destination %s' % name)
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
-        self.trust_length = False
+        self.trust_length = descriptor['trust_length']
         try:
-            self.destination_protocol = descriptor['datafile_protocol']
+            self.datafile_protocol = descriptor['datafile_protocol']
         except KeyError:
-            self.destination_protocol = ''
+            self.datafile_protocol = ''
         tp_class = TRANSFER_PROVIDERS[descriptor['transfer_type']]
         self.provider = tp_class(self.name, self.base_url);
         
 
 TRANSFER_DESTINATIONS = [{'name': 'test', 
                           'transfer_type': 'http',
-                          'base_url': 'http://127.0.0.1:4272/data'}]
+                          'datafile_protocol': '',
+                          'trust_length': False,
+                          'base_url': 'http://127.0.0.1:4272/data/'}]
 TRANSFER_PROVIDERS = {'http': Simple_Http_Transfer}

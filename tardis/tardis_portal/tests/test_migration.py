@@ -40,7 +40,7 @@ class MigrationTestCase(TestCase):
 
     def testProvider(self):
         provider = Destination('test').provider
-        datafile = self._generate_datafile("/1/2/3", "Hi mum")
+        datafile = self._generate_datafile("1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
         self.assertEquals(url, 'http://127.0.0.1:4272/data/1/2/3')
         provider.put_file(datafile, url)
@@ -76,7 +76,7 @@ class MigrationTestCase(TestCase):
 
     def testMigration(self):
         dest = Destination('test')
-        datafile = self._generate_datafile("/1/2/3", "Hi mum")
+        datafile = self._generate_datafile("1/2/3", "Hi mum")
         with self.assertRaises(MigrationError):
             migrate_datafile(datafile, dest)
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
