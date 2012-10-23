@@ -9,11 +9,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+class MigrationError(Exception):
+    pass
+
+class MigrationProviderError(MigrationError):
+    pass
+
 def migrate_datafile_by_id(datafile_id, destination):
     with transaction.commit_on_success():
         datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
         if not datafile:
-            raise RuntimeError('No such datafile (%s)' % (datadile_id))
+            raise ValueError('No such datafile (%s)' % (datadile_id))
         migrate_datafile(datafile, destination)
                                
 def migrate_datafile(datafile, destination):
@@ -27,11 +33,12 @@ def migrate_datafile(datafile, destination):
     if not datafile.is_local():
         # If you really want to migrate a non_local datafile, it needs to
         # be localized first.
-        raise RuntimeError('Cannot migrate a non-local datafile')
+        raise MigrationError('Cannot migrate a non-local datafile')
         
     target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:
-        raise RuntimeError('Cannot migrate datafile to its current location')
+        raise MigrationError('Cannot migrate a datafile to its' \
+                                 ' current location')
     
     try:
         destination.provider.put_file(datafile, target_url) 
@@ -67,8 +74,8 @@ def check_file_transferred(datafile, destination, target_url):
                (destination.trust_length and \
                  _check_attribute(m, datafile.length, 'length')) :
             return
-        raise RuntimeError('Remote did not return enough metadata for' + \
-                           ' file verification')
+        raise MigrationError('Remote did not return enough metadata for' \
+                                 ' file verification')
     except NotSupported:
         pass
 
@@ -86,8 +93,8 @@ def check_file_transferred(datafile, destination, target_url):
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return
-    raise RuntimeError('Datafile does not contain enough metadata for' + \
-                       ' file verification')
+    raise MigrationError('Datafile does not contain enough metadata for' \
+                             ' file verification')
 
     
 def _check_attribute(attributes, value, key):
@@ -96,8 +103,8 @@ def _check_attribute(attributes, value, key):
     try:
        if attributes[key].lower() != value.lower():
           return True
-       raise RuntimeError('Transfer check failed: the %s attribute of the' + \
-                          ' remote file does not match' % (key))  
+       raise MigrationError('Transfer check failed: the %s attribute of the' \
+                                ' remote file does not match' % (key))  
     except KeyError:
        return False;
 
@@ -106,8 +113,8 @@ def _check_attribute2(attribute, value, key):
         return False
     if value.lower() == attribute.lower:
         return True
-    raise RuntimeError('Transfer check failed: the %s attribute of the' \
-                              ' retrieved file does not match' % (key))  
+    raise MigrationError('Transfer check failed: the %s attribute of the' \
+                           ' retrieved file does not match' % (key))  
 
 class HeadRequest(Request):
     def get_method(self):
@@ -139,11 +146,11 @@ class Simple_Http_Transfer(Transfer_Provider):
         response = urlopen(HeadRequest(url))
         length = response.info().get('Content-length')
         if length is None:
-            raise RuntimeError("No content-length in response")
+            raise MigrationProviderError("No content-length in response")
         try:
             return int(length)
         except TypeError:
-            raise RuntimeError("Content-length is not numeric")
+            raise MigrationProviderError("Content-length is not numeric")
         
     def get_hashes(self, url):
         self._check_url(url)
@@ -159,7 +166,8 @@ class Simple_Http_Transfer(Transfer_Provider):
         url = urlparse(datafile.url)
         if url.scheme == '' or url.scheme == 'file':
             return self.base_url + url.path
-        raise RuntimeError("Cannot generate a URL from '%s'" % datafile.url)
+        raise MigrationProviderError("Cannot generate a URL from '%s'" \
+                                         % datafile.url)
     
     def put_file(self, datafile, url):
         self._check_url(url)
@@ -172,12 +180,13 @@ class Simple_Http_Transfer(Transfer_Provider):
         print(response)
     
     def remove_file(self, url):
-        raise NotImplementedError()
+        self._check_url(url)
+        urlopen(DeleteRequest(url))
         
     def _check_url(self, url):
         if url.find(self.base_url) != 0:
-            raise RuntimeError(('The url (%s) does not belong to the' + \
-                                ' %s destination') % (url, self.name))
+            raise MigrationProviderError(('The url (%s) does not belong to' \
+                                ' the %s destination') % (url, self.name))
 
 class Destination:
     def __init__(self, name):
@@ -186,7 +195,7 @@ class Destination:
             if d['name'] == name:
                 descriptor = d
         if not descriptor:
-            raise RuntimeError('Unknown transfer destination %s' % name)
+            raise ValueError('Unknown transfer destination %s' % name)
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
         try:

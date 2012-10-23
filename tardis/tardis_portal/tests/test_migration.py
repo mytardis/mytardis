@@ -14,7 +14,7 @@ from urllib2 import HTTPError
 from tardis.tardis_portal.fetcher import get_privileged_opener
 
 from tardis.tardis_portal.migration import Destination, Transfer_Provider,\
-    Simple_Http_Transfer
+    Simple_Http_Transfer, MigrationError, MigrationProviderError
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationTestCase(TestCase):
@@ -37,7 +37,7 @@ class MigrationTestCase(TestCase):
         self.assertIsInstance(dest.provider, Transfer_Provider)
         self.assertIsInstance(dest.provider, Simple_Http_Transfer)
         
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             dest2 = Destination('unknown')
 
     def testProvider(self):
@@ -49,13 +49,13 @@ class MigrationTestCase(TestCase):
         provider.put_file(datafile, url)
 
         self.assertEqual(provider.get_file(url), "Hi mum")
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(MigrationProviderError):
             provider.get_file('https://127.0.0.1:4272/data/1/2/4')
         with self.assertRaises(HTTPError):
             provider.get_file('http://127.0.0.1:4272/data/1/2/4')
 
         self.assertEqual(provider.get_length(url), 6)
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(MigrationProviderError):
             provider.get_length('https://127.0.0.1:4272/data/1/2/4')
         with self.assertRaises(HTTPError):
             provider.get_length('http://127.0.0.1:4272/data/1/2/4')
@@ -66,11 +66,16 @@ class MigrationTestCase(TestCase):
                           'c05f7f0ea662cb4b0e805e56bbce97f00f94ea6e6498', 
                           'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
                           'length' : 6})
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(MigrationProviderError):
             provider.get_hashes('https://127.0.0.1:4272/data/1/2/4')
         with self.assertRaises(HTTPError):
             provider.get_hashes('http://127.0.0.1:4272/data/1/2/4')
             
+        provider.remove_file(url)
+        with self.assertRaises(MigrationProviderError):
+            provider.get_length('https://127.0.0.1:4272/data/1/2/4')
+        with self.assertRaises(HTTPError):
+            provider.remove_file(url)
 
     def _generate_datafile(self, path, content):
         file = NamedTemporaryFile(delete=False)
@@ -106,6 +111,7 @@ class TestServer:
                     mimetype = 'application/json'
                 else:
                     self.send_error(400)
+                    return
             self.send_response(200)
             self.send_header('Content-length', str(length))
             self.send_header('Content-type', mimetype)
@@ -121,7 +127,14 @@ class TestServer:
             self.send_response(200)
 
         def do_DELETE(self):
-            pass
+            (path, query) = self._splitPath()
+            if query:
+                self.send_error(400)
+            try:
+                self.server.store.pop(path) 
+                self.send_response(200)
+            except:
+                self.send_error(404)
 
         def do_HEAD(self):
             self.do_GET(outputBody=False)
