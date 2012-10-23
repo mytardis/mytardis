@@ -139,17 +139,14 @@ class Dataset_File(models.Model):
             return self.url
         return None
     
-    def get_file_getter(self):
+    def get_file_getter(self, requireVerified=True):
         """Return a function that will return a File-like handle for the Datafile's
            data.  The returned function uses a cached URL for the file to avoid 
            depending on the current database transaction.
         """
         
-        if not self.verified:
+        if requireVerified and not self.verified:
             return None
-        return self._get_file_getter()
-
-    def _get_file_getter(self):
         if self.is_local():
             theUrl = self.url
             def getter():
@@ -165,7 +162,7 @@ class Dataset_File(models.Model):
         if requireVerified and not self.verified:
             return None
         try:
-            return self._get_file_getter()()
+            return self.get_file_getter(requireVerified=requireVerified)()
         except:
             return None
 
@@ -290,6 +287,7 @@ class Dataset_File(models.Model):
 
         sourcefile = self.get_file(requireVerified=False)
         if not sourcefile:
+            logger.error("%s content not accessible" % self.url)
             return False
         md5sum, sha512sum, size, mimetype_buffer = \
             read_file(sourcefile, tempfile, self.url)
