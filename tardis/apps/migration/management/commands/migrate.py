@@ -5,15 +5,8 @@ Management command to migrate datafiles, datasets and experiments
 import sys
 import traceback
 from optparse import make_option
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction, DEFAULT_DB_ALIAS
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
-from tardis.tardis_portal.models import Author_Experiment, ExperimentACL
-from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
-from tardis.tardis_portal.models import DatasetParameterSet
-from tardis.tardis_portal.models import DatafileParameterSet
+from django.conf import settings
 
-DEFAULT_MIGRATION_DESTINATION = 'test'
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
@@ -28,10 +21,10 @@ class Command(BaseCommand):
         make_option('--dest',
                     action='store',
                     dest='dest',
-                    default=False,
+                    default=settings.DEFAULT_MIGRATION_DESTINATION,
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
-                        DEFAULT_MIGRATION_DESTINATION),
+                        settings.DEFAULT_MIGRATION_DESTINATION),
         )
 
     def handle(self, *args, **options):

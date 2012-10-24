@@ -4,6 +4,7 @@ from django.db import transaction
 import simplejson
 
 from tardis.tardis_portal.models import Dataset_File
+from django.conf import settings
 
 import logging
 
@@ -193,7 +194,7 @@ class Simple_Http_Transfer(Transfer_Provider):
 class Destination:
     def __init__(self, name):
         descriptor = None
-        for d in TRANSFER_DESTINATIONS:
+        for d in settings.MIGRATION_DESTINATIONS:
             if d['name'] == name:
                 descriptor = d
         if not descriptor:
@@ -205,13 +206,7 @@ class Destination:
             self.datafile_protocol = descriptor['datafile_protocol']
         except KeyError:
             self.datafile_protocol = ''
-        tp_class = TRANSFER_PROVIDERS[descriptor['transfer_type']]
+        tp_class = settings.MIGRATION_PROVIDERS[descriptor['transfer_type']]
         self.provider = tp_class(self.name, self.base_url);
         
 
-TRANSFER_DESTINATIONS = [{'name': 'test', 
-                          'transfer_type': 'http',
-                          'datafile_protocol': '',
-                          'trust_length': False,
-                          'base_url': 'http://127.0.0.1:4272/data/'}]
-TRANSFER_PROVIDERS = {'http': Simple_Http_Transfer}

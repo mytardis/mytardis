@@ -344,3 +344,7 @@ CELERYBEAT_SCHEDULE = {
     }
 
 djcelery.setup_loader()
+
+MIGRATION_DESTINATIONS = []
+DEFAULT_MIGRATION_DESTINATION = 'unknown'
+MITRATION_PROVIDERS = {'http': Simple_Http_Transfer}
