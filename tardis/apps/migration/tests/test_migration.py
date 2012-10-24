@@ -77,14 +77,20 @@ class MigrationTestCase(TestCase):
     def testMigration(self):
         dest = Destination('test')
         datafile = self._generate_datafile("1/2/3", "Hi mum")
+
+        # Attempt to migrate without datafile hashes ... should
+        # fail because we can't verify.
         with self.assertRaises(MigrationError):
             migrate_datafile(datafile, dest)
+
+        # Verify sets hashes ...
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
+
         migrate_datafile(datafile, dest)
 
     def _generate_datafile(self, path, content):
-        filepath = os.path.normpath(FILE_STORE_PATH + path)
+        filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
         try:
             os.makedirs(os.path.dirname(filepath))
         except:
