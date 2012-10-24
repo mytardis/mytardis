@@ -10,8 +10,8 @@ from urllib2 import HTTPError
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
-from tardis.tardis_portal.migration import Destination, Transfer_Provider, \
-    Simple_Http_Transfer, MigrationError, MigrationProviderError, \
+from tardis.apps.migration import Destination, TransferProvider, \
+    SimpleHttpTransfer, MigrationError, MigrationProviderError, \
     migrate_datafile
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
@@ -32,8 +32,8 @@ class MigrationTestCase(TestCase):
         Test that Destination instantiation works
         '''
         dest = Destination('test')
-        self.assertIsInstance(dest.provider, Transfer_Provider)
-        self.assertIsInstance(dest.provider, Simple_Http_Transfer)
+        self.assertIsInstance(dest.provider, TransferProvider)
+        self.assertIsInstance(dest.provider, SimpleHttpTransfer)
         
         with self.assertRaises(ValueError):
             dest2 = Destination('unknown')
@@ -86,8 +86,11 @@ class MigrationTestCase(TestCase):
         # Verify sets hashes ...
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
+        path = datafile.filename
+        self.assertTrue(os.path.exists(path))
 
         migrate_datafile(datafile, dest)
+        self.assertFalse(os.path.exists(path))
 
     def _generate_datafile(self, path, content):
         filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)

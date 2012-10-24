@@ -1,7 +1,7 @@
 from urllib2 import Request, urlopen
 from urlparse import urlparse
 from django.db import transaction
-import simplejson
+import simplejson, os
 
 from tardis.tardis_portal.models import Dataset_File
 from django.conf import settings
@@ -39,7 +39,6 @@ def migrate_datafile(datafile, destination):
     if not datafile.verified or destination.trust_length:
         raise MigrationError('Only verified datasets can be migrated' \
                                  ' to this destination')
-        
     target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:
         raise MigrationError('Cannot migrate a datafile to its' \
@@ -60,7 +59,13 @@ def migrate_datafile(datafile, destination):
 
     datafile.url = target_url
     datafile.protocol = destination.datafile_protocol
+    filename = datafile.filename
+    datafile.filename = ''
     datafile.save()
+    # FIXME - do this more reliably ...
+    os.remove(filename)
+    logger.error('Migrated and removed file %s for datafile %s' % \
+           (filename, datafile.id))
 
     
 def check_file_transferred(datafile, destination, target_url):
@@ -135,13 +140,13 @@ class DeleteRequest(Request):
     def get_method(self):
         return 'DELETE'
     
-class Transfer_Provider:
+class TransferProvider:
     def __init__(self, name):
         self.name = name
 
-class Simple_Http_Transfer(Transfer_Provider):
+class SimpleHttpTransfer(TransferProvider):
     def __init__(self, name, base_url):
-        Transfer_Provider.__init__(self, name)
+        TransferProvider.__init__(self, name)
         self.base_url = base_url
     
     def get_length(self, url):
@@ -206,7 +211,10 @@ class Destination:
             self.datafile_protocol = descriptor['datafile_protocol']
         except KeyError:
             self.datafile_protocol = ''
-        tp_class = settings.MIGRATION_PROVIDERS[descriptor['transfer_type']]
-        self.provider = tp_class(self.name, self.base_url);
+        # FIXME - is there a better way to do this?
+        exec 'import tardis\n' + \
+            'self.provider = ' + \
+            settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
+                '(self.name, self.base_url)'
         
 
