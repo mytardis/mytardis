@@ -19,7 +19,7 @@ def migrate_datafile_by_id(datafile_id, destination):
     with transaction.commit_on_success():
         datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
         if not datafile:
-            raise ValueError('No such datafile (%s)' % (datadile_id))
+            raise ValueError('No such datafile (%s)' % (datafile_id))
         migrate_datafile(datafile, destination)
                                
 def migrate_datafile(datafile, destination):
