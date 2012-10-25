@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from tardis.apps.migration import Destination, MigrationError, \
     migrate_datafile_by_id
+from tardis.tardis_portal.models import Dataset_File
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
@@ -43,9 +44,13 @@ class Command(BaseCommand):
             for id in args[1:]:
                 try:
                     migrate_datafile_by_id(id, dest)
-                    print('Migrated datafile %s' % id)
+                    self.stderr.write('Migrated datafile %s\n' % id)
+                except Dataset_File.DoesNotExist:
+                    self.stderr.write('Datafile %s does not exist\n' % id)
                 except MigrationError as e:
-                    print('Migration failed for %s : %s' % (id, e.args[0]))
+                    self.stderr.write( \
+                        'Migration failed for datafile %s : %s\n' % \
+                            (id, e.args[0]))
         else:
             raise CommandError("Unrecognized or unimplemented " \
                                    "subcommand: %s" % args[0])

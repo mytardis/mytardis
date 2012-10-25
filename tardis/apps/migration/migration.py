@@ -37,7 +37,7 @@ def migrate_datafile(datafile, destination):
         raise MigrationError('Cannot migrate a non-local datafile')
 
     if not datafile.verified or destination.trust_length:
-        raise MigrationError('Only verified datasets can be migrated' \
+        raise MigrationError('Only verified datafiles can be migrated' \
                                  ' to this destination')
     target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:

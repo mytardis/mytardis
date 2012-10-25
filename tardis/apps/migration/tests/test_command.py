@@ -1,4 +1,5 @@
 import os
+from StringIO import StringIO
 
 from django.test import TestCase
 from django.test.client import Client
@@ -23,7 +24,18 @@ class MigrateCommandTestCase(TestCase):
 
     def testMigrateDataset(self):
         datafile = self._generate_datafile("1/2/3", "Hi mum")
-        call_command('migrate', 'datafile', datafile.id)
+        err = StringIO()
+        call_command('migrate', 'datafile', datafile.id, stderr=err)
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'Migration failed for datafile %s : ' \
+                          'Only verified datafiles can be migrated ' \
+                          'to this destination\n' % datafile.id)
+                          
+        err = StringIO()
+        call_command('migrate', 'datafile', 999, stderr=err)
+        err.seek(0)
+        self.assertEquals(err.read(), 'Datafile 999 does not exist\n')
 
     def _generate_datafile(self, path, content):
         filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
