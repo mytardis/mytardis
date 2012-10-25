@@ -199,11 +199,13 @@ class SimpleHttpTransfer(TransferProvider):
 class Destination:
     def __init__(self, name):
         descriptor = None
+        if len(settings.MIGRATION_DESTINATIONS) == 0:
+            raise MigrationError("No destinations have been configured")
         for d in settings.MIGRATION_DESTINATIONS:
             if d['name'] == name:
                 descriptor = d
         if not descriptor:
-            raise ValueError('Unknown transfer destination %s' % name)
+            raise ValueError('Unknown destination %s' % name)
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
         self.trust_length = descriptor['trust_length']

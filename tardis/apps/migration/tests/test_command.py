@@ -37,6 +37,14 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), 'Datafile 999 does not exist\n')
 
+        err = StringIO()
+        try:
+            call_command('migrate', 'datafile', 999, dest='nowhere', stderr=err)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
+
     def _generate_datafile(self, path, content):
         filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
         try:

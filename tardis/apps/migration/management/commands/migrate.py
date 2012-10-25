@@ -35,11 +35,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
-        try:
-            dest = Destination(options['dest'])
-        except ValueError:
-            raise CommandError("Destination %s not recognized" % \
-                                   options['dest'])
+        dest = self._get_destination(options['dest'])
+        if not dest:
+            return
         if args[0] == 'datafile':
             for id in args[1:]:
                 try:
@@ -55,3 +53,12 @@ class Command(BaseCommand):
             raise CommandError("Unrecognized or unimplemented " \
                                    "subcommand: %s" % args[0])
         
+    def _get_destination(self, destName):
+        if not destName: 
+            raise CommandError("No default destination has been configured")
+        try:
+            return Destination(destName)
+        except MigrationError as e:
+            raise CommandError("Migration error: %s" % e.args[0])
+        except ValueError:
+            raise CommandError("Destination %s not known" % destName)
