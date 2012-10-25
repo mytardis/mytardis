@@ -5,8 +5,12 @@ Management command to migrate datafiles, datasets and experiments
 import sys
 import traceback
 from optparse import make_option
-from django.conf import settings
 
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+from tardis.apps.migration import Destination, MigrationError, \
+    migrate_datafile_by_id
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
