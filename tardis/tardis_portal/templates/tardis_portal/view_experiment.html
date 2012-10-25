@@ -272,16 +272,13 @@ $('#modal-metadata .submit-button').click(function() {
 <div class="row-fluid" >
   <div class="span7">   
   <div align="center" style="margin-bottom: -20px">
-  <div id="abstractText" style="display: none;">
-    {{ experiment.description|safe|linebreaksbr }}
-  </div>
-  <a id="abstract-toggle" class="btn btn-mini" title="Toggle Full Description">
+  <div id="abstractHolder" style="display: none">{{ experiment.description|safe|linebreaksbr }}</div>
+  <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
      Toggle Full Description
   </a>          
   </div>           
   <p class="abstract well info-box" property="dc:abstract">    
-      <span id="truncated">
-          {{ experiment.description|safe|linebreaksbr }}
+      <span id="abstractText">
       </span>
   </p>
     <!-- Tab buttons -->
@@ -399,19 +396,42 @@ $(document).ready(function() {
   });
 
   // Abbreviate abstract
-  $('.abstract').each(function(i, v) {
-    if($(this).text().length > 100)
+  var hideAbstract = false;
+  var spanhtml = $('#abstractHolder').html();
+  var spantext = $('#abstractHolder').text();
+
+    if(spanhtml.length > 100)
     {
-        $(this).attr('style', 'padding-top: 25px;');
+	hideAbstract = true;
+        $('#abstractText').parent().attr('style', 'padding-top: 25px;');
         $('#abstract-toggle').attr('style', 'display: inline;');
-        var span = $('#truncated');
-        span = span.addClass('truncated-text');
-        spanhtml = span.html($('#abstractText').html());
-        $(v).empty().html(spanhtml);
-        $(v).addClass('abstract-clickable');
-        $('#abstract-toggle').click(function(evt) { span.toggleClass('truncated-text'); }); 
+
+        span = $('#abstractText').addClass('truncated-text');
+
+        $('#abstractText').empty().html(spantext);
+        $('#abstractText').parent().addClass('abstract-clickable');
+
+        $('#abstract-toggle').click(function(evt) {
+           if(!hideAbstract)
+           {
+             span.addClass('truncated-text');
+             $('#abstractText').empty().html(spantext);
+             hideAbstract = true;
+	     $('#abstract-toggle').text('Show Description');
+           }
+           else
+           {
+             span.removeClass('truncated-text');
+             $('#abstractText').empty().html(spanhtml);
+             hideAbstract = false;
+             $('#abstract-toggle').text('Hide Description');
+           }
+      }); 
     }
-  });
+    else
+    {
+	$('#abstractText').html(spanhtml);
+    }
   
 });
 
