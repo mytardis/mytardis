@@ -257,9 +257,10 @@ REMOTE_SERVER_CREDENTIALS = [
 ]
 
 MIGRATION_DESTINATIONS = [{'name': 'test', 
-                          'transfer_type': 'http',
-                          'datafile_protocol': '',
-                          'trust_length': False,
-                          'base_url': 'http://127.0.0.1:4272/data/'}]
+                           'transfer_type': 'http',
+                           'datafile_protocol': '',
+                           'trust_length': False,
+                           'metadata_supported': True,
+                           'base_url': 'http://127.0.0.1:4272/data/'}]
 DEFAULT_MIGRATION_DESTINATION = 'test'
 MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer'}

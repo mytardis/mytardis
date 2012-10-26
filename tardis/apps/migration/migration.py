@@ -151,9 +151,10 @@ class TransferProvider:
         self.name = name
 
 class SimpleHttpTransfer(TransferProvider):
-    def __init__(self, name, base_url):
+    def __init__(self, name, base_url, metadata_supported=False):
         TransferProvider.__init__(self, name)
         self.base_url = base_url
+        self.metadata_supported = metadata_supported
     
     def get_length(self, url):
         self._check_url(url)
@@ -167,6 +168,8 @@ class SimpleHttpTransfer(TransferProvider):
             raise MigrationProviderError("Content-length is not numeric")
         
     def get_metadata(self, url):
+        if not self.metadata_supported:
+            raise NotImplementedError
         self._check_url(url)
         response = urlopen(GetRequest(url + "?metadata"))
         return simplejson.load(response)
@@ -214,13 +217,12 @@ class Destination:
             raise ValueError('Unknown destination %s' % name)
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
-        self.trust_length = descriptor['trust_length']
-        try:
-            self.datafile_protocol = descriptor['datafile_protocol']
-        except KeyError:
-            self.datafile_protocol = ''
+        self.trust_length = descriptor.get('trust_length', False)
+        self.datafile_protocol = descriptor.get('datafile_protocol', '')
+        self.metadata_supported = descriptor.get('metadata_supported', False)
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
             'self.provider = ' + \
             settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
-                '(self.name, self.base_url)'
+                '(self.name, self.base_url, ' + \
+                'metadata_supported=self.metadata_supported)'
