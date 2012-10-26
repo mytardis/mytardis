@@ -92,7 +92,7 @@ class Command(BaseCommand):
             experiment = Experiment.objects.get(id=id)
             return Dataset_File.objects.\
                 filter(dataset__experiments__id=id).\
-                value_list('id', flat=True)
+                values_list('id', flat=True)
         except Experiment.DoesNotExist:
             self.stderr.write('Experiment %s does not exist\n' % id)
             return []

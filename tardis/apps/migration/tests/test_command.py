@@ -4,23 +4,27 @@ from StringIO import StringIO
 from django.test import TestCase
 from django.test.client import Client
 from django.core.management import call_command
+from django.contrib.auth.models import User
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
 from tardis.apps.migration.tests import SimpleHttpTestServer
-from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
+from tardis.tardis_portal.models import \
+    Dataset_File, Dataset, Experiment, UserProfile
 
 class MigrateCommandTestCase(TestCase):
 
     def setUp(self):
         self.dummy_dataset = Dataset()
         self.dummy_dataset.save()
+        self.dummy_user = self._generate_user()
         self.server = SimpleHttpTestServer()
         self.server.start()
 
     def tearDown(self):
         self.dummy_dataset.delete()
+        self.dummy_user.delete()
         self.server.stop()
 
     def testMigrateDatafile(self):
@@ -79,6 +83,26 @@ class MigrateCommandTestCase(TestCase):
         err = StringIO()
         try:
             call_command('migrate', 'dataset', dataset.id, 
+                         verbose=True, stderr=err)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+
+    def testMigrateExperiment(self):
+        datafile = self._generate_datafile("3/2/3", "Hi mum")
+        datafile2 = self._generate_datafile("3/2/4", "Hi mum")
+        datafile3 = self._generate_datafile("3/2/5", "Hi mum")
+        dataset = self._generate_dataset([datafile,datafile2,datafile3])
+        experiment = self._generate_experiment([dataset])
+
+        err = StringIO()
+        try:
+            call_command('migrate', 'experiment', experiment.id, 
                          verbose=True, stderr=err)
         except SystemExit:
             pass
@@ -165,3 +189,20 @@ class MigrateCommandTestCase(TestCase):
             df.dataset_id = dataset.id
             df.save()
         return dataset
+
+    def _generate_experiment(self, datasets):
+        experiment = Experiment(created_by=self.dummy_user)
+        experiment.save()
+        for ds in datasets:
+            ds.experiments.add(experiment)
+            ds.save()
+        return experiment
+
+    def _generate_user(self):
+        user = User(username='jim',
+                    first_name='James',
+                    last_name='Spriggs',
+                    email='jim.spriggs@goonshow.com')
+        user.save()
+        UserProfile(user=user).save()
+        return user
