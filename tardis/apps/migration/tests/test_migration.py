@@ -90,6 +90,19 @@ class MigrationTestCase(TestCase):
         migrate_datafile(datafile, dest)
         self.assertFalse(os.path.exists(path))
 
+    def testMigrationNoHashes(self):
+        # Tweak the server to turn off the '?metadata' query
+        self.server.server.allowQuery = False
+        
+        dest = Destination('test')
+        datafile = self._generate_datafile("1/2/3", "Hi mum")
+        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        datafile.save()
+        path = datafile.filename
+        self.assertTrue(os.path.exists(path))
+        migrate_datafile(datafile, dest)
+        self.assertFalse(os.path.exists(path))
+
     def _generate_datafile(self, path, content):
         filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
         try:

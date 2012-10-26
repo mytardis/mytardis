@@ -15,7 +15,7 @@ class SimpleHttpTestServer:
                 self.send_error(404)
                 return
             if query:
-                if query == 'metadata':
+                if query == 'metadata' and self.server.allowQuery:
                     data = self._createHashResponse(data)
                     length = len(data)
                     mimetype = 'application/json'
@@ -74,12 +74,14 @@ class SimpleHttpTestServer:
                             BaseHTTPServer.HTTPServer):
         pass
 
-    def __init__(self):
+    def __init__(self, allowQuery=True):
         self.handler = self.RequestHandler
+        self.allowQuery = allowQuery
 
     def start(self):
         server = self.ThreadedTCPServer(('127.0.0.1', self.getPort()),
                                         self.handler)
+        server.allowQuery = self.allowQuery
         server_thread = threading.Thread(target=server.serve_forever)
         server_thread.daemon = True
         server_thread.start()

@@ -1,10 +1,12 @@
-from urllib2 import Request, urlopen
+from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
-from django.db import transaction
 import simplejson, os
 
-from tardis.tardis_portal.models import Dataset_File
+from django.db import transaction
 from django.conf import settings
+
+from tardis.tardis_portal.models import Dataset_File, generate_file_checksums
+from tardis.tardis_portal.fetcher import get_privileged_opener
 
 import logging
 
@@ -87,6 +89,10 @@ def check_file_transferred(datafile, destination, target_url):
         raise MigrationError('Not enough metadata for verification')
     except NotImplementedError:
         pass
+    except HTTPError as e:
+        # Bad request means that the remote didn't recognize the query
+        if e.code != 400:
+            raise
 
     if destination.trust_length :
         try:
@@ -98,7 +104,7 @@ def check_file_transferred(datafile, destination, target_url):
     
     # Fetch back the remote file and verify it locally.
     f = get_privileged_opener().open(target_url)
-    md5sum, sha512sum, size = Dataset_File.read_file(f, None, target_url)
+    md5sum, sha512sum, size, x = generate_file_checksums(f, None)
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return
@@ -119,7 +125,7 @@ def _check_attribute(attributes, value, key):
 def _check_attribute2(attribute, value, key):
     if not value or not attribute:
         return False
-    if value.lower() == attribute.lower:
+    if value.lower() == attribute.lower():
         return True
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))  
@@ -218,5 +224,3 @@ class Destination:
             'self.provider = ' + \
             settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
                 '(self.name, self.base_url)'
-        
-

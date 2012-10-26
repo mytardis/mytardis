@@ -289,8 +289,9 @@ class Dataset_File(models.Model):
         if not sourcefile:
             logger.error("%s content not accessible" % self.url)
             return False
+        logger.info("Downloading %s for verification" % self.url)
         md5sum, sha512sum, size, mimetype_buffer = \
-            read_file(sourcefile, tempfile, self.url)
+            generate_file_checksums(sourcefile, tempfile)
 
         if not (self.size and size == int(self.size)):
             if (self.sha512sum or self.md5sum) and not self.size: 
@@ -324,10 +325,9 @@ class Dataset_File(models.Model):
                     "after successful verification")
         return True
 
-def read_file(sf, tf, url):
-    logger.info("Downloading %s for verification" % url)
+def generate_file_checksums(sourceFile, tempFile):
     from contextlib import closing
-    with closing(sf) as f:
+    with closing(sourceFile) as f:
         md5 = hashlib.new('md5')
         sha512 = hashlib.new('sha512')
         size = 0
@@ -338,6 +338,8 @@ def read_file(sf, tf, url):
                 mimetype_buffer += chunk
             md5.update(chunk)
             sha512.update(chunk)
-            if tf:
-                tf.write(chunk)
-        return (md5.hexdigest(), sha512.hexdigest(), size, mimetype_buffer)
+            if tempFile:
+                tempFile.write(chunk)
+    return (md5.hexdigest(), sha512.hexdigest(), 
+            size, mimetype_buffer)
+                    
