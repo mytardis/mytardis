@@ -37,23 +37,25 @@ class MigrationTestCase(TestCase):
             dest2 = Destination('unknown')
 
     def testProvider(self):
-        provider = Destination('test').provider
+        dest = Destination('test')
+        provider = dest.provider
+        base_url = dest.base_url
         datafile = self._generate_datafile("1/2/3", "Hi mum")
         url = provider.generate_url(datafile)
-        self.assertEquals(url, 'http://127.0.0.1:4272/data/1/2/3')
+        self.assertEquals(url, base_url + '1/2/3')
         provider.put_file(datafile, url)
 
         self.assertEqual(provider.get_file(url), "Hi mum")
         with self.assertRaises(MigrationProviderError):
-            provider.get_file('https://127.0.0.1:4272/data/1/2/4')
+            provider.get_file('http://foo/data/1/2/4')
         with self.assertRaises(HTTPError):
-            provider.get_file('http://127.0.0.1:4272/data/1/2/4')
+            provider.get_file(base_url + '1/2/4')
 
         self.assertEqual(provider.get_length(url), 6)
         with self.assertRaises(MigrationProviderError):
-            provider.get_length('https://127.0.0.1:4272/data/1/2/4')
+            provider.get_length('http://foo/data/1/2/4')
         with self.assertRaises(HTTPError):
-            provider.get_length('http://127.0.0.1:4272/data/1/2/4')
+            provider.get_length(base_url + '1/2/4')
 
         self.assertEqual(provider.get_metadata(url),
                          {'sha512sum' : '2274cc8c16503e3d182ffaa835c543bce27' +
@@ -62,13 +64,13 @@ class MigrationTestCase(TestCase):
                           'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
                           'length' : 6})
         with self.assertRaises(MigrationProviderError):
-            provider.get_metadata('https://127.0.0.1:4272/data/1/2/4')
+            provider.get_metadata('http:/foo/data/1/2/4')
         with self.assertRaises(HTTPError):
-            provider.get_metadata('http://127.0.0.1:4272/data/1/2/4')
+            provider.get_metadata(base_url + '1/2/4')
             
         provider.remove_file(url)
         with self.assertRaises(MigrationProviderError):
-            provider.get_length('https://127.0.0.1:4272/data/1/2/4')
+            provider.get_length('http://foo/data/1/2/4')
         with self.assertRaises(HTTPError):
             provider.remove_file(url)
 
