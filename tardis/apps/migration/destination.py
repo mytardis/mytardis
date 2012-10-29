@@ -1,5 +1,7 @@
 from django.conf import settings
 
+from tardis.apps.migration import MigrationError
+
 class Destination:
     def __init__(self, name):
         descriptor = None
