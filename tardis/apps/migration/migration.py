@@ -130,6 +130,6 @@ def _check_attribute2(attribute, value, key):
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))  
     
-class TransferProvider:
+class TransferProvider(object):
     def __init__(self, name):
         self.name = name

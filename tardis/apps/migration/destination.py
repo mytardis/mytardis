@@ -15,7 +15,6 @@ class Destination:
         self.trust_length = descriptor.get('trust_length', False)
         self.datafile_protocol = descriptor.get('datafile_protocol', '')
         self.metadata_supported = descriptor.get('metadata_supported', False)
-        self.create_parents = descriptor.get('create_parents', True)
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
             'self.provider = ' + \

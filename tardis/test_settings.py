@@ -261,14 +261,11 @@ MIGRATION_DESTINATIONS = [{'name': 'test',
                            'datafile_protocol': '',
                            'trust_length': False,
                            'metadata_supported': True,
-                           'create_parents': True,
                            'base_url': 'http://127.0.0.1:4272/data/'},
                           {'name': 'test2', 
                            'transfer_type': 'dav',
                            'datafile_protocol': '',
                            'trust_length': False,
-                           'metadata_supported': True,
-                           'create_parents': True,
                            'base_url': 'http://127.0.0.1/data/'}]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'

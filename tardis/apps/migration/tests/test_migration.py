@@ -36,8 +36,13 @@ class MigrationTestCase(TestCase):
         with self.assertRaises(ValueError):
             dest2 = Destination('unknown')
 
-    def testProvider(self):
-        dest = Destination('test')
+    def testWebDAVProvider(self):
+        self.do_Provider(Destination('test2'))
+
+    def testSimpleHttpProvider(self):
+        self.do_Provider(Destination('test'))
+
+    def do_Provider(self, dest):
         provider = dest.provider
         base_url = dest.base_url
         datafile = self._generate_datafile("1/2/3", "Hi mum")
@@ -57,16 +62,20 @@ class MigrationTestCase(TestCase):
         with self.assertRaises(HTTPError):
             provider.get_length(base_url + '1/2/4')
 
-        self.assertEqual(provider.get_metadata(url),
-                         {'sha512sum' : '2274cc8c16503e3d182ffaa835c543bce27' +
-                          '8bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e5abea29b' +
-                          'c05f7f0ea662cb4b0e805e56bbce97f00f94ea6e6498', 
-                          'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
-                          'length' : 6})
-        with self.assertRaises(MigrationProviderError):
-            provider.get_metadata('http:/foo/data/1/2/4')
-        with self.assertRaises(HTTPError):
-            provider.get_metadata(base_url + '1/2/4')
+        try:
+            self.assertEqual(provider.get_metadata(url),
+                             {'sha512sum' : '2274cc8c16503e3d182ffaa835c543b' +
+                              'ce278bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e' +
+                              '5abea29bc05f7f0ea662cb4b0e805e56bbce97f00f94e' +
+                              'a6e6498', 
+                              'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
+                              'length' : 6})
+            with self.assertRaises(MigrationProviderError):
+                provider.get_metadata('http:/foo/data/1/2/4')
+                with self.assertRaises(HTTPError):
+                    provider.get_metadata(base_url + '1/2/4')
+        except NotImplementedError:
+            pass
             
         provider.remove_file(url)
         with self.assertRaises(MigrationProviderError):
