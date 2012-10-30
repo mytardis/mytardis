@@ -31,15 +31,11 @@ class Command(BaseCommand):
                     default=settings.DEFAULT_MIGRATION_DESTINATION,
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
-                        settings.DEFAULT_MIGRATION_DESTINATION),
-        make_option('-v', '--verbose',
-                    action='store_true',
-                    dest='verbose',
-                    help='Produce output for each Datafile migrated')
+                        settings.DEFAULT_MIGRATION_DESTINATION), 
         )
 
     def handle(self, *args, **options):
-        verbose = options['verbose']
+        verbose = options['verbosity'] > 1
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
         subcommand = args[0]
@@ -108,3 +104,7 @@ class Command(BaseCommand):
             raise CommandError("Migration error: %s" % e.args[0])
         except ValueError:
             raise CommandError("Destination %s not known" % destName)
+
+    def _list_destinations(self):
+        for dest in settings.MIGRATION_DESTINATIONS:
+            print dest['name']
