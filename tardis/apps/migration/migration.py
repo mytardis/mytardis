@@ -42,13 +42,8 @@ def migrate_datafile(datafile, destination):
         raise MigrationError('Cannot migrate a datafile to its' \
                                  ' current location')
     
-    try:
-        destination.provider.put_file(datafile, target_url) 
-    except:
-        # FIXME - is the transfer failed because the target url already
-        # exists, we should not delete it.
-        destination.provider.remove_file(target_url)
-        raise
+    destination.provider.put_file(datafile, target_url) 
+
     try:
         check_file_transferred(datafile, destination, target_url)
     except:
