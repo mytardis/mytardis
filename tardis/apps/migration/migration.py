@@ -2,28 +2,24 @@ from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
 import simplejson, os
 
-from django.db import transaction
 from django.conf import settings
 
-from tardis.tardis_portal.models import Dataset_File, generate_file_checksums
 from tardis.tardis_portal.fetcher import get_privileged_opener
+
+from .base import MigrationError
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-class MigrationError(Exception):
-    pass
-
-class MigrationProviderError(MigrationError):
-    pass
-
 def migrate_datafile_by_id(datafile_id, destination):
-    with transaction.commit_on_success():
-        datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
-        if not datafile:
-            raise ValueError('No such datafile (%s)' % (datafile_id))
-        migrate_datafile(datafile, destination)
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Dataset_File
+
+    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
+    if not datafile:
+        raise ValueError('No such datafile (%s)' % (datafile_id))
+    migrate_datafile(datafile, destination)
                                
 def migrate_datafile(datafile, destination):
     """
@@ -102,6 +98,9 @@ def check_file_transferred(datafile, destination, target_url):
         except NotImplementedError:
             pass
     
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import generate_file_checksums
+
     # Fetch back the remote file and verify it locally.
     f = get_privileged_opener().open(target_url)
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
@@ -130,6 +129,3 @@ def _check_attribute2(attribute, value, key):
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))  
     
-class TransferProvider(object):
-    def __init__(self, name):
-        self.name = name

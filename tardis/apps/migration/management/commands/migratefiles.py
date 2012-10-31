@@ -3,7 +3,6 @@ Management command to migrate datafiles, datasets and experiments
 """
 
 import sys
-import traceback
 from optparse import make_option
 
 from django.conf import settings

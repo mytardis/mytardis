@@ -2,7 +2,7 @@ from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
 import simplejson, os
 
-from tardis.apps.migration import TransferProvider, MigrationProviderError
+from .base import MigrationError, MigrationProviderError, TransferProvider
 
 class SimpleHttpTransfer(TransferProvider):
     class HeadRequest(Request):
