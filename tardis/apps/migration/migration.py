@@ -1,6 +1,6 @@
 from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
-import simplejson, os
+import os
 
 from django.conf import settings
 
