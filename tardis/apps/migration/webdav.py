@@ -1,6 +1,5 @@
 from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
-import simplejson, os
 
 from tardis.apps.migration import TransferProvider, MigrationProviderError, \
     SimpleHttpTransfer
