@@ -121,11 +121,14 @@ class MigrateCommandTestCase(TestCase):
         except SystemExit:
             pass
         err.seek(0)
-        self.assertEquals(err.read(), 'Datafile 999 does not exist\n')
+        self.assertEquals(err.read(), 
+                          'Datafile 999 does not exist\n'
+                          'Error: No Datafiles selected\n')
 
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', 999, dest='nowhere', stderr=err)
+            call_command('migratefiles', 'datafile', 999, 
+                         dest='nowhere', stderr=err)
         except SystemExit:
             pass
         err.seek(0)
@@ -142,8 +145,8 @@ class MigrateCommandTestCase(TestCase):
                 pass
             err.seek(0)
             self.assertEquals(err.read(), 
-                              'Error: No default destination has been ' \
-                                  'configured\n')
+                              'Error: No default destination has been '
+                              'configured\n')
         finally:
             settings.DEFAULT_MIGRATION_DESTINATION = saved
 

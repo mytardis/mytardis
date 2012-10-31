@@ -41,14 +41,12 @@ class Command(BaseCommand):
         if subcommand == 'destinations':
             self._list_destinations()
             return
-        if len(args) == 1:
-            raise CommandError("Expected one or more ids after the subcommand")
         args = args[1:]
         dest = self._get_destination(options['dest'])
         if not dest:
             return
         if subcommand == 'datafile' or subcommand == 'datafiles': 
-            ids = args
+            ids = self._check_datafile_ids(args)
         elif subcommand == 'dataset' or subcommand == 'datasets':
             ids = []
             for id in args:
@@ -58,9 +56,12 @@ class Command(BaseCommand):
             for id in args:
                 ids.extend(self._ids_for_experiment(id))
         else:
-            raise CommandError("Unrecognized or unimplemented " \
-                                   "subcommand: %s" % args[0])
-        print ids
+            raise CommandError("Unrecognized subcommand: %s" % args[0])
+        if len(args) == 0:
+            raise CommandError("Expected one or more ids after the subcommand")
+        elif len(ids) == 0:
+            raise CommandError("No Datafiles selected")
+
         for id in ids:
             try:
                 migrate_datafile_by_id(id, dest)
@@ -73,6 +74,16 @@ class Command(BaseCommand):
                     'Migration failed for datafile %s : %s\n' % \
                         (id, e.args[0]))
         
+    def _check_datafile_ids(self, ids):
+        res = []
+        for id in ids:
+            try:
+                Dataset_File.objects.get(id=id)
+                res.append(id)
+            except Dataset_File.DoesNotExist:
+                self.stderr.write('Datafile %s does not exist\n' % id)
+        return res
+
     def _ids_for_dataset(self, id):
         try:
             dataset = Dataset.objects.get(id=id)
