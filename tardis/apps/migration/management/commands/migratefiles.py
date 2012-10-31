@@ -56,7 +56,8 @@ class Command(BaseCommand):
             for id in args:
                 ids.extend(self._ids_for_experiment(id))
         else:
-            raise CommandError("Unrecognized subcommand: %s" % args[0])
+            raise CommandError("Unrecognized subcommand: %s" % subcommand)
+
         if len(args) == 0:
             raise CommandError("Expected one or more ids after the subcommand")
         elif len(ids) == 0:
