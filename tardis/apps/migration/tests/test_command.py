@@ -177,7 +177,7 @@ class MigrateCommandTestCase(TestCase):
         datafile = Dataset_File()
         datafile.url = path
         datafile.mimetype = "application/unspecified"
-        datafile.filename = filepath
+        datafile.filename = os.path.basename(filepath)
         datafile.dataset_id = self.dummy_dataset.id
         datafile.size = str(len(content))
         if verify:

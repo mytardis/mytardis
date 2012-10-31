@@ -160,10 +160,12 @@ class Dataset_File(models.Model):
 
     def get_file(self, requireVerified=True):
         if requireVerified and not self.verified:
+            print "Not verified"
             return None
         try:
             return self.get_file_getter(requireVerified=requireVerified)()
         except:
+            print "Error in get_file: ", sys.exc_info()[0]
             return None
 
     def get_download_url(self):

@@ -50,10 +50,9 @@ def migrate_datafile(datafile, destination):
         destination.provider.remove_file(target_url)
         raise
 
+    filename = datafile.get_absolute_filepath()
     datafile.url = target_url
     datafile.protocol = destination.datafile_protocol
-    filename = datafile.filename
-    datafile.filename = ''
     datafile.save()
     # FIXME - do this more reliably ...
     os.remove(filename)

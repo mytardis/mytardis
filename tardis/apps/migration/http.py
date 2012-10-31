@@ -60,7 +60,7 @@ class SimpleHttpTransfer(TransferProvider):
     
     def put_file(self, datafile, url):
         self._check_url(url)
-        with open(datafile.filename) as f:
+        with datafile.get_file() as f:
             content = f.read()
         request = self.PutRequest(url)
         request.add_header('Content-Length', str(len(content)))
