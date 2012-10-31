@@ -1,5 +1,7 @@
 from SimpleHTTPServer import SimpleHTTPRequestHandler
-import BaseHTTPServer, SocketServer, threading, hashlib, simplejson
+import BaseHTTPServer, SocketServer, threading, hashlib
+
+from django.utils import simplejson
 
 class SimpleHttpTestServer:
     '''
