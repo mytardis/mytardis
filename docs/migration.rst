@@ -4,7 +4,19 @@ Migration App
 
 The migration app supports the orderly migration of data files between different storage locations under the control of a single MyTardis instance.
 
-The initial version of the app simply provides a django-admin command for manually migrating the data associated with a Datafile, Dataset or Experiment.  This will evolve to the point where the migration can be run on a schedule, and the selection of files for migration is based on tailorable criteria, and is aware of storage availability.
+The initial version of the app simply provides a django admin command for manually migrating the data associated with a Datafile, Dataset or Experiment.  
+
+TO DO:
+
+ * Provide a framework that allows migrations to be run on a schedule, and the selection of files for migration is based on tailorable criteria, and is aware of storage availability.
+
+ * Once the datafile has migrated, the default behaviour of MyTardis when the user attempts to fetch / view the Datafile is to fetch back a temporary copy.  Arrange that the temporary copy can be cached and/or reinstated locally.  Arrange that the files can be retrieved directly from the secondary store to the user's web browser.  (The last would involve some kind of SSO involving MyTardis and the secondary store's web server.)
+
+ * Provide some indication to end users that datafiles have been migrated and that access will be slower.
+
+ * Provide some mechanism for end users to influence which files are migrated, or not.
+
+ * Work needs to be done on configuration of the destinations and providers ... so configuration details are liable to change.
 
 Setup
 =====
@@ -20,13 +32,18 @@ Add the migration application to the INSTALLED_APPS list in your MyTardis projec
 Describe the available destinations for transferring files to.  Each destination is a dictionary in the list, and the 'name' attribute gives its name::
 
     MIGRATION_DESTINATIONS = [{'name': 'test', 
-                               'transfer_type': 'http',
+                               'transfer_type': 'dav',
                                'datafile_protocol': '',
                                'trust_length': False,
-                               'metadata_supported': True,
                                'base_url': 'http://127.0.0.1:4272/data/'}]
 
-(TODO - describe the other attributes.)
+The options are as follows:
+
+  * The 'name' is the name of the transfer destination, as used in the "--dest" option.
+  * The 'transfer_type' is the provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
+  * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
+  * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
+  * The 'base_url' field is used by the provider to form the target URL for the transfer.  The resulting URL will be saved in the Datafile's 'url' file folloing a successful transfer. 
 
 Specify the default migration destination.  If none is specified, the "--dest" option becomes mandatory for the "migrate" command::
 
@@ -34,23 +51,27 @@ Specify the default migration destination.  If none is specified, the "--dest" o
 
 List the migration transfer provider classes.  Currently we only implement one provider, but adding custom providers should not be difficult::
 
-    MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer'}
+    MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
+                           'dav': 'tardis.apps.migration.WebDAVTransfer'}
 
+The SimpleHttpTransfer provider requires a remote server that can accept GET, PUT, DELETE and HEAD requests.  Optionally, it can send a GET with a query for the remote file metadata (file size and hashes) which it will use to verify that the the file has migrated correctly before deleting the local copy.
+
+The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums. 
 
 Commands
 ========
 
-The initial version of the migration app provides the "migrate" command to perform migrations
+The initial version of the migration app provides the "migratefiles" command to perform migrations
 
 Usage
 ~~~~~
-``./bin/django-admin migrate datafile | datafiles <id> ...``
-``./bin/django-admin migrate dataset | datasets <id> ...``
-``./bin/django-admin migrate experiment | experiments <id> ...``
-``./bin/django-admin migrate destinations``
+``./bin/django migratefiles datafile | datafiles <id> ...``
+``./bin/django migratefiles dataset | datasets <id> ...``
+``./bin/django migratefiles experiment | experiments <id> ...``
+``./bin/django migratefiles destinations``
 
 .. option:: -d DESTINATION, --dest=DESTINATION
-.. option:: -v, --verbose
+.. option:: --verbosity={0,1,2,3}
 
 The first form migrates the files associated with one or more DataFiles.  The migration of a single file is atomic.  If the migration succeeds, the Datafile metadata in MyTardis will have been updated to the new location.  If it fails, the metadata will not be altered.  The migration process also takes steps to ensure that the file has been correctly transferred.  The final step of a migration is to delete the original copy of the file.  This is currently not performed atomically.
 
@@ -71,8 +92,7 @@ Currently, only Datafiles that are local and verified can be migrated.  The reas
 When a file is migrated, the Datafile is changed as follows:
 
  * The 'url' field is set to the url of the file at the destination.
- * The 'protocol' field is set to the 'datafile_protocol' attribute in the destination descriptor.
- * The 'filename' field is cleared.
+ * The 'protocol' field is set to the 'datafile_protocol' attribute in the destination descriptor.  The default is an empty string, which will cause MyTardis to use its built-in file fetching support to pull files back. 
 
 We currently support two ways of checking that a file has been transferred correctly.  The preferred way is to get the transfer destination to calculate and return the metadata (checksums and length) for its copy of the file.  If that fails (or is not supported), the fallback is to read back the file from the destination and do the checksumming locally.
 
