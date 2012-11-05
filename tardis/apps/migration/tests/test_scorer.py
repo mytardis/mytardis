@@ -37,30 +37,36 @@ from tardis.tardis_portal.models import \
     Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
 
 from tardis.apps.migration import MigrationScorer
+from tardis.apps.migration.models import UserPriority
 
 class MigrateScorerTestCase(TestCase):
 
     def testScoring(self):
-        user1 = self._generate_user('ron')
-        user2 = self._generate_user('eunice')
+        user1 = self._generate_user('ron', 2)
+        user2 = self._generate_user('eunice', 1)
         exp1 = self._generate_experiment([user1, user2])
         exp2 = self._generate_experiment([user1])
+        exp3 = self._generate_experiment([user1])
         ds1 = self._generate_dataset([exp1])
         ds2 = self._generate_dataset([exp1, exp2])
+        ds3 = self._generate_dataset([exp3])
         df1 = self._generate_datafile('1/2/1', 100, ds1)
         df2 = self._generate_datafile('1/2/2', 100, ds1, verified=False)
         df3 = self._generate_datafile('http://foo.com/1/2/3', 1000, ds1)
         df4 = self._generate_datafile('1/2/4', 1000, ds2)
         df5 = self._generate_datafile('1/2/5', 10000, ds2)
+        df6 = self._generate_datafile('1/2/6', 100000, ds3)
         scorer = MigrationScorer()
-        self.assertEquals(2.0, scorer.score_datafile(df1))
-        self.assertEquals([(df1, 2.0,)], 
+        self.assertEquals(4.0, scorer.score_datafile(df1))
+        self.assertEquals([(df1, 4.0)], 
                           scorer.score_datafiles_in_dataset(ds1))
-        self.assertEquals([(df1, 2.0,), (df4, 3.0), (df5, 4.0)],
+        self.assertEquals([(df1, 4.0), (df4, 6.0), (df5, 8.0)],
                           scorer.score_datafiles_in_experiment(exp1))
-        self.assertEquals([(df4, 3.0), (df5, 4.0)],
+        self.assertEquals([(df4, 6.0), (df5, 8.0)],
                           scorer.score_datafiles_in_experiment(exp2))
-        self.assertEquals([(df1, 2.0,), (df4, 3.0), (df5, 4.0)],
+        self.assertEquals([(df6, 5.0)],
+                          scorer.score_datafiles_in_experiment(exp3))
+        self.assertEquals([(df1, 4.0), (df4, 6.0), (df5, 8.0), (df6, 5.0)],
                           scorer.score_all_datafiles())
         pass
 
@@ -98,8 +104,10 @@ class MigrateScorerTestCase(TestCase):
             acl.save()
         return experiment
 
-    def _generate_user(self, name):
+    def _generate_user(self, name, priority):
         user = User(username=name)
         user.save()
         UserProfile(user=user).save()
+        if priority != 2:
+            UserPriority(user=user,priority=priority).save()
         return user
