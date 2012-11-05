@@ -42,8 +42,8 @@ from tardis.apps.migration.models import UserPriority
 class MigrateScorerTestCase(TestCase):
 
     def testScoring(self):
-        user1 = self._generate_user('ron', 2)
-        user2 = self._generate_user('eunice', 1)
+        user1 = self._generate_user('joe', 2)
+        user2 = self._generate_user('fred', 1)
         exp1 = self._generate_experiment([user1, user2])
         exp2 = self._generate_experiment([user1])
         exp3 = self._generate_experiment([user1])
@@ -60,13 +60,13 @@ class MigrateScorerTestCase(TestCase):
         self.assertEquals(4.0, scorer.score_datafile(df1))
         self.assertEquals([(df1, 4.0)], 
                           scorer.score_datafiles_in_dataset(ds1))
-        self.assertEquals([(df1, 4.0), (df4, 6.0), (df5, 8.0)],
+        self.assertEquals([(df5, 8.0), (df4, 6.0), (df1, 4.0)],
                           scorer.score_datafiles_in_experiment(exp1))
-        self.assertEquals([(df4, 6.0), (df5, 8.0)],
+        self.assertEquals([(df5, 8.0), (df4, 6.0)],
                           scorer.score_datafiles_in_experiment(exp2))
         self.assertEquals([(df6, 5.0)],
                           scorer.score_datafiles_in_experiment(exp3))
-        self.assertEquals([(df1, 4.0), (df4, 6.0), (df5, 8.0), (df6, 5.0)],
+        self.assertEquals([(df5, 8.0), (df4, 6.0), (df6, 5.0), (df1, 4.0)],
                           scorer.score_all_datafiles())
         pass
 

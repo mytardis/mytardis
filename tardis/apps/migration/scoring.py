@@ -55,7 +55,7 @@ class MigrationScorer:
         def score_it(datafile):
             return (datafile, ds_score * self.datafile_score(datafile))
         datafiles = Dataset_File.objects.filter(dataset=dataset, verified=True)
-        return map(score_it, filter(Dataset_File.is_local, datafiles))
+        return self._filter_map_sort(datafiles, score_it)
 
     def score_datafiles_in_experiment(self, experiment):
         from tardis.tardis_portal.models import Dataset_File
@@ -64,7 +64,7 @@ class MigrationScorer:
             return (datafile, ds_score * self.datafile_score(datafile))
         datafiles = Dataset_File.objects.\
             filter(dataset__experiments__id=experiment.id, verified=True)
-        return map(score_it, filter(Dataset_File.is_local, datafiles))
+        return self._filter_map_sort(datafiles, score_it)
 
     def score_all_datafiles(self):
         from tardis.tardis_portal.models import Dataset_File
@@ -72,7 +72,14 @@ class MigrationScorer:
             ds_score = self.dataset_score(datafile.dataset)
             return (datafile, ds_score * self.datafile_score(datafile))
         datafiles = Dataset_File.objects.filter(verified=True)
-        return map(score_it, filter(Dataset_File.is_local, datafiles))
+        return self._filter_map_sort(datafiles, score_it)
+
+    def _filter_map_sort(self, datafiles, mapper):
+        from tardis.tardis_portal.models import Dataset_File
+        def get_score(tpl):
+            return tpl[1]        
+        return sorted(map(mapper, filter(Dataset_File.is_local, datafiles)),
+                      None, get_score, True)
 
     def datafile_score(self, datafile):
         return math.log10(float(datafile.size))
