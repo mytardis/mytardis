@@ -1,5 +1,5 @@
 import math
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationScorer:
     """
@@ -11,6 +11,11 @@ class MigrationScorer:
     A MigrationScorer instance memoizes the score contributions of users
     and experiments and datasets.  It is therefore stateful. 
     """
+
+    dataset_scores = {}
+    experiment_scores = {}
+    user_scores = {}
+    group_scores = {}
     
     def score_datafile(self, datafile):
         return self.datafile_score(datafile) * \
@@ -42,7 +47,17 @@ class MigrationScorer:
         return math.log10(float(datafile.size))
 
     def dataset_score(self, dataset):
-        return 1.0
+        try:
+            return self.dataset_scores[dataset.id]
+        except KeyError:
+            pass
+        max_score = 0.0
+        for exp in Dataset.objects.get(id=dataset.id).experiments.all():
+            score = self.experiment_score(exp)
+            if score > max_score:
+                max_score = score
+        self.dataset_scores[dataset.id] = score
+        return max_score
 
     def experiment_score(self, experiment):
         return 1.0
