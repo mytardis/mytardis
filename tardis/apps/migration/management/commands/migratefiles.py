@@ -38,7 +38,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from tardis.apps.migration import Destination, MigrationError, \
-    migrate_datafile_by_id
+    MigrationScorer, migrate_datafile_by_id
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class Command(BaseCommand):
@@ -69,6 +69,9 @@ class Command(BaseCommand):
         subcommand = args[0]
         if subcommand == 'destinations':
             self._list_destinations()
+            return
+        elif subcommand == 'score':
+            self._score_all_datafiles()
             return
         args = args[1:]
         dest = self._get_destination(options['dest'])
@@ -148,3 +151,11 @@ class Command(BaseCommand):
     def _list_destinations(self):
         for dest in settings.MIGRATION_DESTINATIONS:
             print dest['name']
+
+    def _score_all_datafiles(self):
+        scores = MigrationScorer().score_all_datafiles()
+        for entry in scores:
+            datafile = entry[0]
+            print "datafile %s / %s, size = %s, score = %s" % \
+                (datafile.url, datafile.id, datafile.size, entry[1]) 
+            
