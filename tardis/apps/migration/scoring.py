@@ -1,5 +1,7 @@
 import math
-from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
+#from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
+#from tardis.apps.migration.models import UserPriority, GroupPriority, \
+#    get_user_priority, get_group_priority
 
 class MigrationScorer:
     """
@@ -22,6 +24,7 @@ class MigrationScorer:
             self.dataset_score(datafile.dataset)
 
     def score_datafiles_in_dataset(self, dataset):
+        from tardis.tardis_portal.models import Dataset_File
         ds_score = self.dataset_score(dataset)
         def score_it(datafile):
             return (datafile, ds_score * self.datafile_score(datafile))
@@ -29,6 +32,7 @@ class MigrationScorer:
         return map(score_it, filter(Dataset_File.is_local, datafiles))
 
     def score_datafiles_in_experiment(self, experiment):
+        from tardis.tardis_portal.models import Dataset_File
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
             return (datafile, ds_score * self.datafile_score(datafile))
@@ -37,6 +41,7 @@ class MigrationScorer:
         return map(score_it, filter(Dataset_File.is_local, datafiles))
 
     def score_all_datafiles(self):
+        from tardis.tardis_portal.models import Dataset_File
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
             return (datafile, ds_score * self.datafile_score(datafile))
@@ -47,6 +52,7 @@ class MigrationScorer:
         return math.log10(float(datafile.size))
 
     def dataset_score(self, dataset):
+        from tardis.tardis_portal.models import Dataset
         try:
             return self.dataset_scores[dataset.id]
         except KeyError:
@@ -73,7 +79,16 @@ class MigrationScorer:
         return max_score
     
     def user_score(self, user):
-        return 1.0
+        from tardis.apps.migration.models import get_user_priority
+        try:
+            return self.user_scores[user.id]
+        except KeyError:
+            pass
+        priority = get_user_priority(user)
+        score = [5.0, 2.0, 1.0, 0.5, 0.2][priority]
+        self.user_scores[user.id] = score
+        return score
+        
    
     def group_score(self, group):
         return 1.0
