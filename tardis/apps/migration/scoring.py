@@ -56,16 +56,26 @@ class MigrationScorer:
             score = self.experiment_score(exp)
             if score > max_score:
                 max_score = score
-        self.dataset_scores[dataset.id] = score
+        self.dataset_scores[dataset.id] = max_score
         return max_score
 
     def experiment_score(self, experiment):
-        return 1.0
+        try:
+            return self.experiment_scores[experiment.id]
+        except KeyError:
+            pass
+        max_score = 0.0
+        for user in experiment.get_owners():
+            score = self.user_score(user)
+            if score > max_score:
+                max_score = score
+        self.experiment_scores[experiment.id] = max_score
+        return max_score
     
     def user_score(self, user):
-        raise 1.0
+        return 1.0
    
     def group_score(self, group):
-        raise 1.0
+        return 1.0
 
     

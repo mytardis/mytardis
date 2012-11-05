@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 
 from tardis.tardis_portal.models import \
-    Dataset_File, Dataset, Experiment, UserProfile
+    Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
 
 from tardis.apps.migration import MigrationScorer
 
@@ -57,6 +57,16 @@ class MigrateScorerTestCase(TestCase):
     def _generate_experiment(self, users):
         experiment = Experiment(created_by=users[0])
         experiment.save()
+        for user in users:
+            acl = ExperimentACL(experiment=experiment,
+                                pluginId='django_user',
+                                entityId=str(user.id),
+                                isOwner=True,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl.save()
         return experiment
 
     def _generate_user(self, name):
