@@ -32,7 +32,7 @@ from compare import expect
 from nose.tools import ok_, eq_
 
 import logging, base64, os, urllib2
-from urllib2 import HTTPError
+from urllib2 import HTTPError, urlopen
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
@@ -66,6 +66,16 @@ class MigrationTestCase(TestCase):
             dest2 = Destination('unknown')
 
     def testWebDAVProvider(self):
+        # Note: this test requires an external WebDAV test server configured
+        # as per the 'test2' destination in the test_settings.py file.  We
+        # skip the test is the server isn't there.
+        try:
+            dest = Destination('test2')
+            urlopen(dest.base_url)
+        except HTTPError:
+            print 'SKIPPING TEST - "test2" server on %s not responding' % \
+                dest.base_url
+            return
         self.do_Provider(Destination('test2'))
 
     def testSimpleHttpProvider(self):
