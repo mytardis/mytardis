@@ -82,7 +82,11 @@ class MigrationScorer:
                       None, get_score, True)
 
     def datafile_score(self, datafile):
-        return math.log10(float(datafile.size))
+        try:
+            return math.log10(float(datafile.size))
+        except:
+            # Size is zero ... something else we can't cope with
+            return 0.0
 
     def dataset_score(self, dataset):
         from tardis.tardis_portal.models import Dataset

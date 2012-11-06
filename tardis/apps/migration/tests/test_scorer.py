@@ -47,15 +47,19 @@ class MigrateScorerTestCase(TestCase):
         exp1 = self._generate_experiment([user1, user2])
         exp2 = self._generate_experiment([user1])
         exp3 = self._generate_experiment([user1])
+        exp4 = self._generate_experiment([user1])
         ds1 = self._generate_dataset([exp1])
         ds2 = self._generate_dataset([exp1, exp2])
         ds3 = self._generate_dataset([exp3])
+        ds4 = self._generate_dataset([exp4])
         df1 = self._generate_datafile('1/2/1', 100, ds1)
         df2 = self._generate_datafile('1/2/2', 100, ds1, verified=False)
         df3 = self._generate_datafile('http://foo.com/1/2/3', 1000, ds1)
         df4 = self._generate_datafile('1/2/4', 1000, ds2)
         df5 = self._generate_datafile('1/2/5', 10000, ds2)
         df6 = self._generate_datafile('1/2/6', 100000, ds3)
+        df7 = self._generate_datafile('1/2/7', 0, ds4)
+        df8 = self._generate_datafile('1/2/8', -1, ds4)
         scorer = MigrationScorer()
         self.assertEquals(4.0, scorer.score_datafile(df1))
         self.assertEquals([(df1, 4.0)], 
@@ -66,9 +70,12 @@ class MigrateScorerTestCase(TestCase):
                           scorer.score_datafiles_in_experiment(exp2))
         self.assertEquals([(df6, 5.0)],
                           scorer.score_datafiles_in_experiment(exp3))
-        self.assertEquals([(df5, 8.0), (df4, 6.0), (df6, 5.0), (df1, 4.0)],
+        self.assertEquals([(df5, 8.0), (df4, 6.0), (df6, 5.0), (df1, 4.0),
+                           (df7, 0.0), (df8, 0.0)],
                           scorer.score_all_datafiles())
-        pass
+        self.assertEquals([(df7, 0.0), (df8, 0.0)], 
+                          scorer.score_datafiles_in_dataset(ds4))
+        
 
     def _generate_datafile(self, path, size, dataset, verified=True):
         datafile = Dataset_File()
