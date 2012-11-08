@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from lxml import etree
+from lxml.etree import XMLSyntaxError
 import urllib
 import logging
 from StringIO import StringIO
@@ -63,16 +64,25 @@ class SiteParser(URLParser):
         tree = etree.iterparse(f, events=('start', 'end'))
         sites = []
         site = None
-        for event, element in tree:
-            # print event, element.tag, element.text
-            if element.tag == 'site':
-                if event == 'start':
-                    site = {}
-                    sites.append(site)
-                if event == 'end':
-                    site = None
-            elif site is not None:
-                site[element.tag] = SafeUnicode(element.text)
+        seen_sites_end = False
+        try:
+            for event, element in tree:
+                # print event, element.tag, element.text
+                if element.tag == 'sites' and event == 'end':
+                    seen_sites_end = True
+                elif element.tag == 'site':
+                    if event == 'start':
+                        site = {}
+                        sites.append(site)
+                    if event == 'end':
+                        site = None
+                elif site is not None:
+                    site[element.tag] = SafeUnicode(element.text)
+        except XMLSyntaxError as e:
+            # Workaround for a spurious "internal error" exception
+            # that is thrown after parsing the closing 'sites' tag
+            if not seen_sites_end:
+                raise e
         return sites
 
 
@@ -86,26 +96,38 @@ class SiteSettingsParser(URLParser):
         tree = etree.iterparse(f, events=('start', 'end'))
         settings = {}
         current_level = settings
-        for event, element in tree:
-            # print event, element.tag, element.text
-            text = SafeUnicode(element.text).strip()
-            if not text:
-                if event == 'start':
-                    # Add a nested dict, saving the parent.
-                    current_level[element.tag] = { '_parent': current_level }
-                    current_level = current_level[element.tag]
-                elif event == 'end':
-                    # Un-nest back to the parent level.
-                    parent = current_level['_parent']
-                    del current_level['_parent']
-                    current_level = parent
-            elif event == 'start':
-                if element.tag in current_level:
-                    if not isinstance(current_level[element.tag], list):
-                        current_level[element.tag] = [ current_level[element.tag] ]
-                    current_level[element.tag].append(text)
-                else:
-                    current_level[element.tag] = text
+        seen_site_settings_end = False
+        try: 
+            for event, element in tree:
+                # print event, element.tag, element.text
+                if event == 'end' and element.tag == 'site-settings':
+                    seen_site_settings_end = True
+                text = SafeUnicode(element.text).strip()
+                if not text:
+                    if event == 'start':
+                        # Add a nested dict, saving the parent.
+                        current_level[element.tag] = {
+                            '_parent': current_level }
+                        current_level = current_level[element.tag]
+                    elif event == 'end':
+                        # Un-nest back to the parent level.
+                        parent = current_level['_parent']
+                        del current_level['_parent']
+                        current_level = parent
+                elif event == 'start':
+                    if element.tag in current_level:
+                        if not isinstance(current_level[element.tag], list):
+                            current_level[element.tag] = [ 
+                                current_level[element.tag] ]
+                        current_level[element.tag].append(text)
+                    else:
+                        current_level[element.tag] = text
+        except XMLSyntaxError as e:
+            # Workaround for a spurious "internal error" exception
+            # that is thrown after parsing the closing 'site-settings' tag
+            if not seen_site_settings_end:
+                raise e
+
         # Fix for email-ends-with
         s = settings['site-settings']
         if not isinstance(s['email-endswith'], list):
