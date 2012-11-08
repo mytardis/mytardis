@@ -32,7 +32,7 @@ from compare import expect
 from nose.tools import ok_, eq_
 
 import logging, base64, os, urllib2
-from urllib2 import HTTPError, urlopen
+from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
@@ -72,7 +72,7 @@ class MigrationTestCase(TestCase):
         try:
             dest = Destination('test2')
             urlopen(dest.base_url)
-        except HTTPError:
+        except URLError:
             print 'SKIPPING TEST - "test2" server on %s not responding' % \
                 dest.base_url
             return
