@@ -246,7 +246,6 @@ class Author_Experiment(models.Model):
     author = models.CharField(max_length=255)
     order = models.PositiveIntegerField()
     url = models.URLField(
-        verify_exists=True,
         max_length=2000,
         blank=True,
         help_text="URL identifier for the author")
