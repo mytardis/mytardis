@@ -154,8 +154,13 @@ class Command(BaseCommand):
 
     def _score_all_datafiles(self):
         scores = MigrationScorer().score_all_datafiles()
+        total = 0
         for entry in scores:
             datafile = entry[0]
-            print "datafile %s / %s, size = %s, score = %s" % \
-                (datafile.url, datafile.id, datafile.size, entry[1]) 
+            try:
+                total += int(datafile.size)
+            except:
+                pass
+            print "datafile %s / %s, size = %s, score = %s, total_size = %d" % \
+                (datafile.url, datafile.id, datafile.size, entry[1], total) 
             
