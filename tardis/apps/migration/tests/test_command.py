@@ -40,7 +40,7 @@ from tardis.test_settings import FILE_STORE_PATH
 
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.tardis_portal.models import \
-    Dataset_File, Dataset, Experiment, UserProfile
+    Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
 
 class MigrateCommandTestCase(TestCase):
 
@@ -73,6 +73,19 @@ class MigrateCommandTestCase(TestCase):
 
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
+        
+        # Dry run ...
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'datafile', datafile.id, 
+                         verbosity=1, stdout=out, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Would have migrated datafile %s\n' % datafile.id)
+
+        # Real run, verbose
         out = StringIO()
         try:
             call_command('migratefiles', 'datafile', datafile.id, 
@@ -83,15 +96,17 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n' % datafile.id)
 
-        err = StringIO()
+        # Real run, normal
+        out = StringIO()
         try:
             call_command('migratefiles', 'datafile', datafile2.id, 
-                         datafile3.id, verbosity=1, stderr=err)
+                         datafile3.id, verbosity=1, stdout=out)
         except SystemExit:
             pass
-        err.seek(0)
-        self.assertEquals(err.read(), '') 
+        out.seek(0)
+        self.assertEquals(out.read(), '') 
 
+        # Cannot migrate a file that is not local (now)
         err = StringIO()
         try:
             call_command('migratefiles', 'datafile', datafile.id, 
@@ -109,6 +124,21 @@ class MigrateCommandTestCase(TestCase):
         datafile3 = self._generate_datafile("2/2/5", "Hi mum")
         dataset = self._generate_dataset([datafile,datafile2,datafile3])
 
+        # Dry run
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'dataset', dataset.id, 
+                         verbosity=2, stdout=out, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Would have migrated datafile %s\n'
+                          'Would have migrated datafile %s\n'
+                          'Would have migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+
+        # Real run, verbose
         out = StringIO()
         try:
             call_command('migratefiles', 'dataset', dataset.id, 
@@ -162,6 +192,64 @@ class MigrateCommandTestCase(TestCase):
             pass
         err.seek(0)
         self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
+
+    def testMigrateScore(self):
+        datafile = self._generate_datafile("3/2/3", "Hi mum")
+        datafile2 = self._generate_datafile("3/2/4", "Hi mum")
+        datafile3 = self._generate_datafile("3/2/5", "Hi mum")
+        dataset = self._generate_dataset([datafile,datafile2,datafile3])
+        experiment = self._generate_experiment([dataset])
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'score', stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(),
+                          'datafile %s / %s, size = 6, '
+                          'score = 0.778151250384, total_size = 6\n'
+                          'datafile %s / %s, size = 6, '
+                          'score = 0.778151250384, total_size = 12\n'
+                          'datafile %s / %s, size = 6, '
+                          'score = 0.778151250384, total_size = 18\n' % 
+                          (datafile.url, datafile.id, 
+                           datafile2.url, datafile2.id, 
+                           datafile3.url, datafile3.id))
+    
+    def testMigrateReclaim(self):
+        datafile = self._generate_datafile("3/2/3", "Hi mum")
+        datafile2 = self._generate_datafile("3/2/4", "Hi mum")
+        datafile3 = self._generate_datafile("3/2/5", "Hi mum")
+        dataset = self._generate_dataset([datafile,datafile2,datafile3])
+        experiment = self._generate_experiment([dataset])
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'reclaim', '11', 
+                         stdout=out, verbosity=2, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(),
+                          'Would have migrated %s / %s saving 6 bytes\n'
+                          'Would have migrated %s / %s saving 6 bytes\n'
+                          'Would have reclaimed 12 bytes\n' %
+                          (datafile.url, datafile.id, 
+                           datafile2.url, datafile2.id))
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'reclaim', '11', 
+                         stdout=out, verbosity=2)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(),
+                          'Migrating %s / %s saving 6 bytes\n'
+                          'Migrating %s / %s saving 6 bytes\n'
+                          'Reclaimed 12 bytes\n' %
+                          (datafile.url, datafile.id, 
+                           datafile2.url, datafile2.id))
 
     def testMigrateConfig(self):
         try:
@@ -228,6 +316,15 @@ class MigrateCommandTestCase(TestCase):
         for ds in datasets:
             ds.experiments.add(experiment)
             ds.save()
+        acl = ExperimentACL(experiment=experiment,
+                            pluginId='django_user',
+                            entityId=str(self.dummy_user.id),
+                            isOwner=True,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl.save()
         return experiment
 
     def _generate_user(self):

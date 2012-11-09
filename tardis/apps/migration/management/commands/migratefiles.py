@@ -38,7 +38,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from tardis.apps.migration import Destination, MigrationError, \
-    MigrationScorer, migrate_datafile_by_id
+    MigrationScorer, migrate_datafile, migrate_datafile_by_id
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class Command(BaseCommand):
@@ -185,7 +185,7 @@ class Command(BaseCommand):
             except:
                 pass
             self.stdout.write("datafile %s / %s, size = %s, " \
-                              "score = %s, total_size = %d" % \
+                              "score = %s, total_size = %d\n" % \
                                   (datafile.url, datafile.id, 
                                    datafile.size, entry[1], total)) 
             
@@ -204,18 +204,18 @@ class Command(BaseCommand):
             datafile = entry[0]
             if self.verbosity > 1:
                 if self.dryRun:
-                    self.stdout.write("would have migrated %s / %s " \
-                                          "saving %d bytes" % \
+                    self.stdout.write("Would have migrated %s / %s " \
+                                          "saving %s bytes\n" % \
                                           (datafile.url, datafile.id, 
                                            datafile.size))
                 else:
-                    self.stdout.write("migrating %s / %s saving %d bytes" % \
+                    self.stdout.write("Migrating %s / %s saving %s bytes\n" % \
                                           (datafile.url, datafile.id, 
                                            datafile.size))
             total += int(datafile.size) 
             if not self.dryRun:
                 migrate_datafile(datafile, self.dest)
         if self.dryRun:
-            self.stdout.write("Would have reclaimed %d bytes" % total)
+            self.stdout.write("Would have reclaimed %d bytes\n" % total)
         else:
-            self.stdout.write("Reclaimed %d bytes" % total)
+            self.stdout.write("Reclaimed %d bytes\n" % total)
