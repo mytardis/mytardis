@@ -51,6 +51,7 @@ class Command(BaseCommand):
         '    datafile <id> ...     : migrates files for datafiles\n' \
         '    dataset <id> ...      : migrates files for datasets\n' \
         '    experiment <id> ...   : migrates files for experiments\n' \
+        '    reclaim <N>           : migrate files to reclaim N bytes\n' \
         '    destinations          : lists the recognized destinations' 
     option_list = BaseCommand.option_list + (
         make_option('-d', '--dest',
@@ -60,10 +61,17 @@ class Command(BaseCommand):
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
                         settings.DEFAULT_MIGRATION_DESTINATION), 
+        make_option('-n', '--dryRun',
+                    action='store',
+                    dest='dryRun',
+                    default=False,
+                    help='Dry run mode just lists the datafiles that' \
+                        ' would be migrated'), 
         )
 
     def handle(self, *args, **options):
-        verbose = options['verbosity'] > 1
+        self.verbosity = options.get('verbosity', 1)
+        self.dryRun = options.get('dryRun', False)
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
         subcommand = args[0]
@@ -74,22 +82,43 @@ class Command(BaseCommand):
             self._score_all_datafiles()
             return
         args = args[1:]
-        dest = self._get_destination(options['dest'])
-        if not dest:
+        self.dest = self._get_destination(options.get('dest', None))
+        if not self.dest:
             return
-        if subcommand == 'datafile' or subcommand == 'datafiles': 
-            ids = self._check_datafile_ids(args)
+        if subcommand == 'reclaim':
+            self._reclaim(args)
+        elif subcommand == 'datafile' or subcommand == 'datafiles':
+            self._datafiles(args)
         elif subcommand == 'dataset' or subcommand == 'datasets':
-            ids = []
-            for id in args:
-                ids.extend(self._ids_for_dataset(id))
+            self._datasets(args)
         elif subcommand == 'experiment' or subcommand == 'experiments':
-            ids = []
-            for id in args:
-                ids.extend(self._ids_for_experiment(id))
+            self._experiments(args)
         else:
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
+    def _datafiles(self, args):
+        ids = []
+        for id in args:
+            try:
+                Dataset_File.objects.get(id=id)
+                ids.append(id)
+            except Dataset_File.DoesNotExist:
+                self.stderr.write('Datafile %s does not exist\n' % id)
+        self._migrate_datafiles(args, ids)
+
+    def _datasets(self, args):
+        ids = []
+        for id in args:
+            ids.extend(self._ids_for_dataset(id))
+        self._migrate_datafiles(args, ids)
+
+    def _experiments(self, args):
+        ids = []
+        for id in args:
+            ids.extend(self._ids_for_experiment(id))
+        self._migrate_datafiles(args, ids)
+
+    def _migrate_datafiles(self, args, ids):
         if len(args) == 0:
             raise CommandError("Expected one or more ids after the subcommand")
         elif len(ids) == 0:
@@ -97,9 +126,13 @@ class Command(BaseCommand):
 
         for id in ids:
             try:
-                migrate_datafile_by_id(id, dest)
-                if verbose:
-                    self.stderr.write('Migrated datafile %s\n' % id)
+                if self.dryRun:
+                    self.stdout.write('Would have migrated datafile %s\n' % id)
+                else:
+                    migrate_datafile_by_id(id, self.dest)
+                    if self.verbosity > 1:
+                        self.stdout.write('Migrated datafile %s\n' % id)
+                    
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
             except MigrationError as e:
@@ -107,16 +140,6 @@ class Command(BaseCommand):
                     'Migration failed for datafile %s : %s\n' % \
                         (id, e.args[0]))
         
-    def _check_datafile_ids(self, ids):
-        res = []
-        for id in ids:
-            try:
-                Dataset_File.objects.get(id=id)
-                res.append(id)
-            except Dataset_File.DoesNotExist:
-                self.stderr.write('Datafile %s does not exist\n' % id)
-        return res
-
     def _ids_for_dataset(self, id):
         try:
             dataset = Dataset.objects.get(id=id)
@@ -150,7 +173,7 @@ class Command(BaseCommand):
 
     def _list_destinations(self):
         for dest in settings.MIGRATION_DESTINATIONS:
-            print dest['name']
+            self.stdout.write(dest['name'])
 
     def _score_all_datafiles(self):
         scores = MigrationScorer().score_all_datafiles()
@@ -161,6 +184,38 @@ class Command(BaseCommand):
                 total += int(datafile.size)
             except:
                 pass
-            print "datafile %s / %s, size = %s, score = %s, total_size = %d" % \
-                (datafile.url, datafile.id, datafile.size, entry[1], total) 
+            self.stdout.write("datafile %s / %s, size = %s, " \
+                              "score = %s, total_size = %d" % \
+                                  (datafile.url, datafile.id, 
+                                   datafile.size, entry[1], total)) 
             
+    def _reclaim(self, args):
+        if len(args) != 1:
+            raise CommandError("reclaim subcommand requires an argument")
+        try:
+            required_amount = int(args[0])
+        except:
+            raise CommandError("reclaim argument must be an integer")
+        scores = MigrationScorer().score_all_datafiles()
+        total = 0
+        for entry in scores:
+            if total >= required_amount:
+                break
+            datafile = entry[0]
+            if self.verbosity > 1:
+                if self.dryRun:
+                    self.stdout.write("would have migrated %s / %s " \
+                                          "saving %d bytes" % \
+                                          (datafile.url, datafile.id, 
+                                           datafile.size))
+                else:
+                    self.stdout.write("migrating %s / %s saving %d bytes" % \
+                                          (datafile.url, datafile.id, 
+                                           datafile.size))
+            total += int(datafile.size) 
+            if not self.dryRun:
+                migrate_datafile(datafile, self.dest)
+        if self.dryRun:
+            self.stdout.write("Would have reclaimed %d bytes" % total)
+        else:
+            self.stdout.write("Reclaimed %d bytes" % total)

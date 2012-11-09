@@ -86,7 +86,7 @@ def migrate_datafile(datafile, destination):
     datafile.save()
     # FIXME - do this more reliably ...
     os.remove(filename)
-    logger.error('Migrated and removed file %s for datafile %s' % \
+    logger.info('Migrated and removed file %s for datafile %s' % \
            (filename, datafile.id))
 
     

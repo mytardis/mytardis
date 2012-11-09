@@ -73,20 +73,20 @@ class MigrateCommandTestCase(TestCase):
 
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
-        err = StringIO()
+        out = StringIO()
         try:
             call_command('migratefiles', 'datafile', datafile.id, 
-                         verbosity=2, stderr=err)
+                         verbosity=2, stdout=out)
         except SystemExit:
             pass
-        err.seek(0)
-        self.assertEquals(err.read(), 
+        out.seek(0)
+        self.assertEquals(out.read(), 
                           'Migrated datafile %s\n' % datafile.id)
 
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile2.id, datafile3.id, 
-                         verbosity=1, stderr=err)
+            call_command('migratefiles', 'datafile', datafile2.id, 
+                         datafile3.id, verbosity=1, stderr=err)
         except SystemExit:
             pass
         err.seek(0)
@@ -109,14 +109,14 @@ class MigrateCommandTestCase(TestCase):
         datafile3 = self._generate_datafile("2/2/5", "Hi mum")
         dataset = self._generate_dataset([datafile,datafile2,datafile3])
 
-        err = StringIO()
+        out = StringIO()
         try:
             call_command('migratefiles', 'dataset', dataset.id, 
-                         verbosity=2, stderr=err)
+                         verbosity=2, stdout=out)
         except SystemExit:
             pass
-        err.seek(0)
-        self.assertEquals(err.read(), 
+        out.seek(0)
+        self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n' % 
@@ -129,14 +129,14 @@ class MigrateCommandTestCase(TestCase):
         dataset = self._generate_dataset([datafile,datafile2,datafile3])
         experiment = self._generate_experiment([dataset])
 
-        err = StringIO()
+        out = StringIO()
         try:
             call_command('migratefiles', 'experiment', experiment.id, 
-                         verbosity=2, stderr=err)
+                         verbosity=2, stdout=out)
         except SystemExit:
             pass
-        err.seek(0)
-        self.assertEquals(err.read(), 
+        out.seek(0)
+        self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n' % 
