@@ -22,7 +22,7 @@ setup(
         'lxml',
         'feedparser',
         'elementtree',
-        'django==1.4',
+        'django==1.4.1',
         'django-registration',
         'django-extensions',
         'django-form-utils',
