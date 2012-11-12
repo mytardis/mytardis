@@ -36,6 +36,7 @@ models.py
 
 """
 import json
+import time
 
 from django.db import models
 from django.dispatch import receiver
@@ -84,7 +85,15 @@ def experiment_received(sender, **kwargs):
     exp = kwargs['instance']
     uid = kwargs['uid']
     from_url = kwargs['from_url']
+    sync_path = kwargs['sync_path']
+        
     logger.info('Sync app saw experiment %s' % uid)
     synced_exp = SyncedExperiment(experiment=exp, uid=uid, provider_url=from_url)
     synced_exp.save()
-
+ 
+    ingest_status = dict()
+    ingest_status['status'] = 'ingest_response_path'
+    ingest_status['human_status'] = 'Ingest Response Path'
+    ingest_status['timestamp'] = time.time()
+    ingest_status['message'] = sync_path
+    synced_exp.save_status(ingest_status)

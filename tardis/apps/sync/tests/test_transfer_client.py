@@ -35,9 +35,20 @@ class TCInitialisationTestCase(TestCase):
         self.implements_http_client_interface(tc)
         self.assertEqual(tc.client.__class__, PluggableHttpClient)
 
-def get_synced_exp(url, uid, exp_id):
+def get_synced_exp(url, uid, exp_id, transfer_path=None):
     exp = flexmock(id=exp_id)
-    se = flexmock(provider_url=url, uid=uid, experiment=exp)
+    ingest_status = None
+    #todo this is dodgy somewhat
+    if transfer_path:
+        import json
+        json_message = dict()
+        json_message['status'] = 'ingest_response_path'
+        json_message['message'] = transfer_path
+
+        ingest_status = json.dumps(json_message)
+        se = flexmock(provider_url=url, uid=uid, experiment=exp, msg=ingest_status)
+    else:
+        se = flexmock(provider_url=url, uid=uid, experiment=exp)
     return se
 
 class StubbedHttpClient(HttpClient):
@@ -57,7 +68,7 @@ class TCTransferTestCase(TestCase):
 
     def setUp(self):
         settings.MYTARDIS_SITE_URL='http://www.tardis.com'
-        self.se = get_synced_exp('http://www.test.com', 'test_uid', 1)
+        self.se = get_synced_exp('http://www.test.com', 'test_uid', 1, transfer_path="1")
 
     def test_true_on_success(self):
         def post(self, url, headers={}, data={}):

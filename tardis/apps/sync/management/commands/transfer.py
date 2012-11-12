@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand, CommandError
 from tardis.apps.sync.transfer_service import TransferService
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.models import Experiment, ExperimentACL
+from tardis.tardis_portal.models.experiment import Experiment, ExperimentACL
 
 class Command(BaseCommand):
     # TODO slightly more flexible command line options
@@ -26,10 +26,7 @@ class Command(BaseCommand):
         
         try:
             owner_emails = []
-            acls = ExperimentACL.objects.filter(experiment=experiment, isOwner=True)
-            for acl in acls:
-                if acl:
-                    owner_emails.extend([user.email for user in acl.get_related_users()])
+            owner_emails.extend([user.email for user in experiment.get_owners()])
                 
         except User.DoesNotExist:
             raise CommandError("No users found for experiment EPN:%s" % (epn))

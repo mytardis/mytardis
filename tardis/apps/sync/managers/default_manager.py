@@ -141,16 +141,19 @@ class SyncManager(object):
         logger.debug('=== extracting mets file for experiment %s ' % uid)
         from tardis.tardis_portal.metsexporter import MetsExporter
         exporter = MetsExporter()
+        
         if protocol:
             # translate vbl:// into tardis:// url for datafiles
             metsfile = exporter.export(experimentId=experiment.id,
                                        replace_protocols={'vbl': protocol},
                                        filename=filename,
-                                       export_images=False)
+                                       export_images=False,
+                                       temp_file=True)
         else:
             metsfile = exporter.export(experimentId=experiment.id,
                                        filename=filename,
-                                       export_images=False)
+                                       export_images=False,
+                                       temp_file=True)
         logger.debug('=== extraction done, filename = %s' % metsfile)
 
         f = open(metsfile, "r")
@@ -192,7 +195,7 @@ class SyncManager(object):
 
 
     def _start_file_transfer(self, experiment, settings, path):
-        return True
+        return True # TODO: steve put scp file transfer here
 
 
     def _get_status(self, experiment):
