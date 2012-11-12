@@ -29,6 +29,8 @@
 
 import math
 
+USER_PRIORITY_SCORES = [5.0, 2.0, 1.0, 0.5, 0.2]
+
 class MigrationScorer:
     """
     This class implements the algorithms for scoring a group of Datafiles
@@ -40,10 +42,11 @@ class MigrationScorer:
     and experiments and datasets.  It is therefore stateful. 
     """
 
-    dataset_scores = {}
-    experiment_scores = {}
-    user_scores = {}
-    group_scores = {}
+    def __init__(self):
+        self.dataset_scores = {}
+        self.experiment_scores = {}
+        self.user_scores = {}
+        self.group_scores = {}
     
     def score_datafile(self, datafile):
         return self.datafile_score(datafile) * \
@@ -122,7 +125,7 @@ class MigrationScorer:
         except KeyError:
             pass
         priority = get_user_priority(user)
-        score = [5.0, 2.0, 1.0, 0.5, 0.2][priority]
+        score = USER_PRIORITY_SCORES[priority]
         self.user_scores[user.id] = score
         return score
    

@@ -37,7 +37,8 @@ from tardis.tardis_portal.models import \
     Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
 
 from tardis.apps.migration import MigrationScorer
-from tardis.apps.migration.models import UserPriority
+from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY, \
+   get_user_priority
 
 class MigrateScorerTestCase(TestCase):
 
@@ -61,6 +62,14 @@ class MigrateScorerTestCase(TestCase):
         df7 = self._generate_datafile('1/2/7', 0, ds4)
         df8 = self._generate_datafile('1/2/8', -1, ds4)
         scorer = MigrationScorer()
+       
+        self.assertEquals(2.0, scorer.datafile_score(df1))
+        self.assertEquals(2, get_user_priority(user1))
+        self.assertEquals(1, get_user_priority(user2))
+        self.assertEquals(1.0, scorer.user_score(user1))
+        self.assertEquals(2.0, scorer.user_score(user2))
+        self.assertEquals(2.0, scorer.experiment_score(exp1))
+        self.assertEquals(2.0, scorer.dataset_score(df1.dataset))
         self.assertEquals(4.0, scorer.score_datafile(df1))
         self.assertEquals([(df1, 4.0)], 
                           scorer.score_datafiles_in_dataset(ds1))
@@ -115,6 +124,6 @@ class MigrateScorerTestCase(TestCase):
         user = User(username=name)
         user.save()
         UserProfile(user=user).save()
-        if priority != 2:
+        if priority != DEFAULT_USER_PRIORITY:
             UserPriority(user=user,priority=priority).save()
         return user
