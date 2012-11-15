@@ -35,15 +35,20 @@ Describe the available destinations for transferring files to.  Each destination
                                'transfer_type': 'dav',
                                'datafile_protocol': '',
                                'trust_length': False,
+			       'user' : 'username',
+			       'password' : 'secret',
+			       'realm' : 'realmName',
+			       'auth' : 'digest',
                                'base_url': 'http://127.0.0.1:4272/data/'}]
 
-The options are as follows:
+The attributes are as follows:
 
   * The 'name' is the name of the transfer destination, as used in the "--dest" option.
   * The 'transfer_type' is the provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
   * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
   * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
-  * The 'base_url' field is used by the provider to form the target URL for the transfer.  The resulting URL will be saved in the Datafile's 'url' file folloing a successful transfer. 
+  * The 'base_url' field is used by the provider to form the target URL for the transfer.  The resulting URL will be saved in the Datafile's 'url' file folloing a successful transfer.
+  * The 'user', 'password', 'realm' and 'auth' attributes provide optional credentials for the provider to use when talking to the target server.  If 'realm' is omitted (or None) then you are saying to provide the user / password irrespective of the challenge realm.  The 'auth' property can be 'basic' or 'digest', and defaults to 'digest'.
 
 Specify the default migration destination.  If none is specified, the "--dest" option becomes mandatory for the "migrate" command::
 
@@ -57,6 +62,16 @@ List the migration transfer provider classes.  Currently we only implement one p
 The SimpleHttpTransfer provider requires a remote server that can accept GET, PUT, DELETE and HEAD requests.  Optionally, it can send a GET with a query for the remote file metadata (file size and hashes) which it will use to verify that the the file has migrated correctly before deleting the local copy.
 
 The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums. 
+
+Security Considerations
+=======================
+
+We recommend that the target server for a migration destination should be locked down, and that all access and updates to the base URL should limitted to a site specific admin account.
+
+We recommend that the target server use HTTP Digest rather than HTTP Basic authentication to provide minimum protection for the admin credentials.
+
+If there is a significant risk of network snooping, etc, consider using SSL/TLS for the transfers. 
+
 
 Commands
 ========

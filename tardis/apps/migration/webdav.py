@@ -35,28 +35,13 @@ from tardis.apps.migration import TransferProvider, MigrationProviderError, \
 
 
 class WebDAVTransfer(SimpleHttpTransfer):
-    class HeadRequest(Request):
-        def get_method(self):
-            return 'HEAD'
-    
-    class PutRequest(Request):
-        def get_method(self):
-            return 'PUT'
-    
-    class GetRequest(Request):
-        def get_method(self):
-            return 'GET'
-    
-    class DeleteRequest(Request):
-        def get_method(self):
-            return 'DELETE'
     
     class MkcolRequest(Request):
         def get_method(self):
             return 'MKCOL'
     
-    def __init__(self, name, base_url, metadata_supported=False):
-        SimpleHttpTransfer.__init__(self, name, base_url)
+    def __init__(self, name, base_url, opener, metadata_supported=False):
+        SimpleHttpTransfer.__init__(self, name, base_url, opener)
 
     def get_metadata(self, url):
         raise NotImplementedError
@@ -74,7 +59,7 @@ class WebDAVTransfer(SimpleHttpTransfer):
                 partial += part
                 try:
                     request = self.MkcolRequest(partial)
-                    response = urlopen(request)
+                    response = self.opener.open(request)
                 except HTTPError as e:
                     if e.code == 405 or e.code == 301:
                         pass

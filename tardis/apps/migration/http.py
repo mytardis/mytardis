@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from urllib2 import Request, urlopen, HTTPError
+from urllib2 import Request, HTTPError
 from urlparse import urlparse
 import os
 
@@ -52,14 +52,15 @@ class SimpleHttpTransfer(TransferProvider):
         def get_method(self):
             return 'DELETE'
     
-    def __init__(self, name, base_url, metadata_supported=False):
+    def __init__(self, name, base_url, opener, metadata_supported=False):
         TransferProvider.__init__(self, name)
         self.base_url = base_url
         self.metadata_supported = False
+        self.opener = opener
 
     def get_length(self, url):
         self._check_url(url)
-        response = urlopen(self.HeadRequest(url))
+        response = self.opener.open(self.HeadRequest(url))
         length = response.info().get('Content-length')
         if length is None:
             raise MigrationProviderError("No content-length in response")
@@ -72,12 +73,12 @@ class SimpleHttpTransfer(TransferProvider):
         if not self.metadata_supported:
             raise NotImplementedError
         self._check_url(url)
-        response = urlopen(self.GetRequest(url + "?metadata"))
+        response = self.opener.open(self.GetRequest(url + "?metadata"))
         return simplejson.load(response)
     
     def get_file(self, url):
         self._check_url(url)
-        response = urlopen(self.GetRequest(url))
+        response = self.opener.open(self.GetRequest(url))
         return response.read()
     
     def generate_url(self, datafile):
@@ -94,11 +95,11 @@ class SimpleHttpTransfer(TransferProvider):
         request = self.PutRequest(url)
         request.add_header('Content-Length', str(len(content)))
         request.add_header('Content-Type', datafile.mimetype)
-        response = urlopen(request, data=content)
+        response = self.opener.open(request, data=content)
     
     def remove_file(self, url):
         self._check_url(url)
-        urlopen(self.DeleteRequest(url))
+        self.opener.open(self.DeleteRequest(url))
 
     def _check_url(self, url):
         if url.find(self.base_url) != 0:

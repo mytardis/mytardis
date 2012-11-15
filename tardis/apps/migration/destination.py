@@ -27,6 +27,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+import urllib2
+
 from django.conf import settings
 
 from tardis.apps.migration import MigrationError
@@ -46,9 +48,28 @@ class Destination:
         self.trust_length = descriptor.get('trust_length', False)
         self.datafile_protocol = descriptor.get('datafile_protocol', '')
         self.metadata_supported = descriptor.get('metadata_supported', False)
+        
+        user = descriptor.get('user')
+        if user:
+            password = descriptor.get('password', '')
+            realm = descriptor.get('realm', None)
+            auth = descriptor.get('auth', 'digest')
+            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(realm, self.base_url, user, password)
+            if auth == 'basic':
+                handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+            elif auth == 'digest':
+                handler = urllib2.HTTPDigestAuthHandler(password_mgr)
+            else:
+                raise ValueError('Unknown auth type "%s"' % auth)
+            opener = urllib2.build_opener(handler)
+        else:
+            opener = urllib2.build_opener()
+
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
             'self.provider = ' + \
             settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
-                '(self.name, self.base_url, ' + \
+                '(self.name, self.base_url, opener, ' + \
                 'metadata_supported=self.metadata_supported)'
+
