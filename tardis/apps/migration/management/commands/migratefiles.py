@@ -176,7 +176,7 @@ class Command(BaseCommand):
             self.stdout.write(dest['name'])
 
     def _score_all_datafiles(self):
-        scores = MigrationScorer().score_all_datafiles()
+        scores = self._do_score_all()
         total = 0
         for entry in scores:
             datafile = entry[0]
@@ -196,8 +196,7 @@ class Command(BaseCommand):
             required_amount = int(args[0])
         except:
             raise CommandError("reclaim argument must be an integer")
-        scorer = MigrationScorer(settings.MIGRATION_SCORING_PARAMS)
-        scores = scorer.score_all_datafiles()
+        scores = self._do_score_all()
         total = 0
         for entry in scores:
             if total >= required_amount:
@@ -220,3 +219,7 @@ class Command(BaseCommand):
             self.stdout.write("Would have reclaimed %d bytes\n" % total)
         else:
             self.stdout.write("Reclaimed %d bytes\n" % total)
+
+    def _do_score_all(self):
+        scorer = MigrationScorer(settings.MIGRATION_SCORING_PARAMS)
+        return scorer.score_all_datafiles()
