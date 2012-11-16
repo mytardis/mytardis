@@ -196,7 +196,8 @@ class Command(BaseCommand):
             required_amount = int(args[0])
         except:
             raise CommandError("reclaim argument must be an integer")
-        scores = MigrationScorer().score_all_datafiles()
+        scorer = MigrationScorer(settings.MIGRATION_SCORING_PARAMS)
+        scores = scorer.score_all_datafiles()
         total = 0
         for entry in scores:
             if total >= required_amount:

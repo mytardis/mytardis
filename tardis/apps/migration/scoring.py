@@ -27,9 +27,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import math
+import math, time, os
 
-USER_PRIORITY_SCORES = [5.0, 2.0, 1.0, 0.5, 0.2]
+DEFAULT_PARAMS = {
+    'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+    'file_size_weighting': 1.0,
+    'file_access_weighting': 0.0,
+    'file_age_weighting': 0.0}
 
 class MigrationScorer:
     """
@@ -42,11 +46,17 @@ class MigrationScorer:
     and experiments and datasets.  It is therefore stateful. 
     """
 
-    def __init__(self):
+    def __init__(self, params=DEFAULT_PARAMS):
         self.dataset_scores = {}
         self.experiment_scores = {}
         self.user_scores = {}
         self.group_scores = {}
+        self.now = time.time()
+        self.user_priority_weighting = params['user_priority_weighting']
+        self.file_size_weighting = params['file_size_weighting']
+        self.file_access_weighting = params['file_access_weighting']
+        self.file_age_weighting = params['file_age_weighting']
+
     
     def score_datafile(self, datafile):
         return self.datafile_score(datafile) * \
@@ -86,9 +96,16 @@ class MigrationScorer:
 
     def datafile_score(self, datafile):
         try:
-            return math.log10(float(datafile.size))
+            score = math.log10(float(datafile.size)) * self.file_size_weighting
+            if self.file_access_weighting > 0.0 or \
+                    self.file_age_weighting > 0.0:
+                stat = os.stat(datafile.get_absolute_filepath())
+                score += (now - stat.ST_MTIME) * self.file_age_weighting + \
+                    (now - stat.ST_ATIME) * self.file_access_weighting
+            return score
         except:
-            # Size is zero ... something else we can't cope with
+            # Size is zero, or file is missing or something else we 
+            # can't cope with
             return 0.0
 
     def dataset_score(self, dataset):
@@ -125,7 +142,7 @@ class MigrationScorer:
         except KeyError:
             pass
         priority = get_user_priority(user)
-        score = USER_PRIORITY_SCORES[priority]
+        score = self.user_priority_weighting[priority]
         self.user_scores[user.id] = score
         return score
    
