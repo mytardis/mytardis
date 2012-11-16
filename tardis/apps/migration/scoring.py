@@ -100,6 +100,11 @@ class MigrationScorer:
             if self.file_access_weighting > 0.0 or \
                     self.file_age_weighting > 0.0:
                 stat = os.stat(datafile.get_absolute_filepath())
+                # FIXME - it would be better to use creation / access 
+                # times maintained by MyTardis rather that file timestamps.
+                # The former would allow us to deal with remote files.  The
+                # latter is sensitive to inadvertent "touching" from outside
+                # of MyTardis.
                 score += (now - stat.ST_MTIME) * self.file_age_weighting + \
                     (now - stat.ST_ATIME) * self.file_access_weighting
             return score
