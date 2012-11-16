@@ -62,14 +62,14 @@ class Destination:
                 handler = urllib2.HTTPDigestAuthHandler(password_mgr)
             else:
                 raise ValueError('Unknown auth type "%s"' % auth)
-            opener = urllib2.build_opener(handler)
+            self.opener = urllib2.build_opener(handler)
         else:
-            opener = urllib2.build_opener()
+            self.opener = urllib2.build_opener()
 
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
             'self.provider = ' + \
             settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
-                '(self.name, self.base_url, opener, ' + \
+                '(self.name, self.base_url, self.opener, ' + \
                 'metadata_supported=self.metadata_supported)'
 

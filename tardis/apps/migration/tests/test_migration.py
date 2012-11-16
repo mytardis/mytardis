@@ -37,8 +37,8 @@ from urllib2 import HTTPError, URLError, urlopen
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.apps.migration import Destination, TransferProvider, \
-    SimpleHttpTransfer, MigrationError, MigrationProviderError, \
-    migrate_datafile
+    SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
+    MigrationProviderError, migrate_datafile
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
@@ -62,26 +62,40 @@ class MigrationTestCase(TestCase):
         self.assertIsInstance(dest.provider, TransferProvider)
         self.assertIsInstance(dest.provider, SimpleHttpTransfer)
         
+        dest = Destination('test2')
+        self.assertIsInstance(dest.provider, TransferProvider)
+        self.assertIsInstance(dest.provider, WebDAVTransfer)
+        
+        dest = Destination('test3')
+        self.assertIsInstance(dest.provider, TransferProvider)
+        self.assertIsInstance(dest.provider, WebDAVTransfer)
+        
         with self.assertRaises(ValueError):
             dest2 = Destination('unknown')
 
     def testWebDAVProvider(self):
-        # Note: this test requires an external WebDAV test server configured
-        # as per the 'test2' destination in the test_settings.py file.  We
-        # skip the test is the server isn't there.
-        try:
-            dest = Destination('test2')
-            urlopen(dest.base_url)
-        except URLError:
-            print 'SKIPPING TEST - "test2" server on %s not responding' % \
-                dest.base_url
-            return
-        self.do_Provider(Destination('test2'))
+        self.do_ext_provider('test2')
+
+    def testWebDAVProviderWithAuth(self):
+        self.do_ext_provider('test3')
 
     def testSimpleHttpProvider(self):
-        self.do_Provider(Destination('test'))
+        self.do_provider(Destination('test'))
 
-    def do_Provider(self, dest):
+    def do_ext_provider(self, dest_name):
+        # This test requires an external test server configured
+        # as per the 'dest_name' destination.  We skip the test is the 
+        # server doesn't respond.
+        try:
+            dest = Destination(dest_name)
+            dest.opener.open(dest.base_url)
+        except URLError:
+            print 'SKIPPING TEST - %s server on %s not responding\n' % \
+                (dest_name, dest.base_url)
+            return
+        self.do_provider(dest)
+
+    def do_provider(self, dest):
         provider = dest.provider
         base_url = dest.base_url
         datafile = self._generate_datafile("1/2/3", "Hi mum")

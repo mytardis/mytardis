@@ -266,6 +266,15 @@ MIGRATION_DESTINATIONS = [{'name': 'test',
                            'transfer_type': 'dav',
                            'datafile_protocol': '',
                            'trust_length': False,
+                           'base_url': 'http://127.0.0.1/data/'},
+                          {'name': 'test3', 
+                           'transfer_type': 'dav',
+                           'datafile_protocol': '',
+                           'trust_length': False,
+                           'user' : 'datameister',
+                           'password' : 'geheimnis',
+                           'auth' : 'basic',
+                           'realm' : 'wunderland',
                            'base_url': 'http://127.0.0.1/data/'}]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'
