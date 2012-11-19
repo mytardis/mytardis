@@ -31,8 +31,11 @@ import math, time, os
 
 DEFAULT_PARAMS = {
     'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+    'file_size_threshold': 0,
     'file_size_weighting': 1.0,
+    'file_access_threshold': 0,
     'file_access_weighting': 0.0,
+    'file_age_threshold': 0,
     'file_age_weighting': 0.0}
 
 class MigrationScorer:
@@ -56,7 +59,11 @@ class MigrationScorer:
         self.file_size_weighting = params['file_size_weighting']
         self.file_access_weighting = params['file_access_weighting']
         self.file_age_weighting = params['file_age_weighting']
-
+        self.file_size_threshold = params['file_size_threshold']
+        self.file_access_threshold = params['file_access_threshold']
+        self.file_age_threshold = params['file_age_threshold']
+        self.use_file_timestamps = \
+            self.file_access_weighting > 0.0 or self.file_age_weighting > 0.0
     
     def score_datafile(self, datafile):
         return self.datafile_score(datafile) * \
@@ -96,22 +103,39 @@ class MigrationScorer:
 
     def datafile_score(self, datafile):
         try:
-            score = math.log10(float(datafile.size)) * self.file_size_weighting
-            if self.file_access_weighting > 0.0 or \
-                    self.file_age_weighting > 0.0:
+            score = self._adjust(math.log10(float(datafile.size)),
+                                 self.file_size_threshold,
+                                 self.file_size_weighting)
+            if self.use_file_timestamps:
                 stat = os.stat(datafile.get_absolute_filepath())
                 # FIXME - it would be better to use creation / access 
                 # times maintained by MyTardis rather that file timestamps.
                 # The former would allow us to deal with remote files.  The
                 # latter is sensitive to inadvertent "touching" from outside
                 # of MyTardis.
-                score += (now - stat.ST_MTIME) * self.file_age_weighting + \
-                    (now - stat.ST_ATIME) * self.file_access_weighting
+                score += self._adjust(self._days_ago(stat.st_mtime),
+                                      self.file_age_threshold,
+                                      self.file_age_weighting)
+                score += self._adjust(self._days_ago(stat.st_atime),
+                                      self.file_access_threshold,
+                                      self.file_access_weighting)
             return score
         except:
             # Size is zero, or file is missing or something else we 
             # can't cope with
             return 0.0
+
+    def _days_ago(self, ts):
+        delta = self.now - ts
+        if delta < 0:
+            raise ValueError('timestamp is in the future - %d' % ts)
+        return int(delta) / (60 * 60 * 24)
+
+    def _adjust(self, raw, threshold, weighting):
+        if raw <= threshold:
+            return 0.0
+        else:
+            return (raw - threshold) * weighting
 
     def dataset_score(self, dataset):
         from tardis.tardis_portal.models import Dataset

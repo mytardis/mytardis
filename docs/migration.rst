@@ -56,12 +56,55 @@ Specify the default migration destination.  If none is specified, the "--dest" o
 
 List the migration transfer provider classes.  Currently we only implement one provider, but adding custom providers should not be difficult::
 
-    MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
-                           'dav': 'tardis.apps.migration.WebDAVTransfer'}
+    MIGRATION_PROVIDERS = {
+         'http': 'tardis.apps.migration.SimpleHttpTransfer',
+         'dav': 'tardis.apps.migration.WebDAVTransfer'}
 
 The SimpleHttpTransfer provider requires a remote server that can accept GET, PUT, DELETE and HEAD requests.  Optionally, it can send a GET with a query for the remote file metadata (file size and hashes) which it will use to verify that the the file has migrated correctly before deleting the local copy.
 
 The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums. 
+
+Finally, you need to specify the tuning parameters for the "scoring" formula used to decide what files to migrate; for example::
+
+    MIGRATION_SCORING_PARAMS = {
+         'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+         'file_size_threshold': 0,
+         'file_size_weighting': 1.0,
+         'file_access_threshold': 0,
+         'file_access_weighting': 0.0,
+         'file_age_threshold': 0,
+         'file_age_weighting': 0.0}
+
+The base formula is as follows::
+
+    score = datafile_score * dataset_weighting
+
+    datafile_score = size_score + age_score + access_score
+
+    size_score = if log10(size) > file_size_threshold:
+                     (log10(size) - file_size_threshold) * file_size_weighting
+ 		 else:
+                     0.0
+
+    age_score = if age > file_age_threshold:
+                    (age - file_age_threshold) * file_age_weighting
+	        else:
+	            0.0
+   
+    access_score = if access > file_access_threshold:
+                      (access - file_access_threshold) * file_access_weighting
+	           else:
+	              0.0
+   
+    dataset_weighting = Max-over-experiments(experiment_weighting)
+
+    experiment_weighting = Max-over-owners(user_weighting)
+
+    user_weighting = user_priority_weighting[user.priority]) 
+
+where the file size is measured in bytes, and the access and age times are measured in days since the last access or update based on file system timestamps.
+
+(The example above has weightings of zero for the file age and access, so scoring will only take account of file sizes.)
 
 Security Considerations
 =======================

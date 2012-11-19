@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
+import os, tempfile, time
 from StringIO import StringIO
 
 from django.test import TestCase
@@ -42,51 +42,87 @@ from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY, \
 
 class MigrateScorerTestCase(TestCase):
 
-    def testScoring(self):
-        user1 = self._generate_user('joe', 2)
-        user2 = self._generate_user('fred', 1)
-        exp1 = self._generate_experiment([user1, user2])
-        exp2 = self._generate_experiment([user1])
-        exp3 = self._generate_experiment([user1])
-        exp4 = self._generate_experiment([user1])
-        ds1 = self._generate_dataset([exp1])
-        ds2 = self._generate_dataset([exp1, exp2])
-        ds3 = self._generate_dataset([exp3])
-        ds4 = self._generate_dataset([exp4])
-        df1 = self._generate_datafile('1/2/1', 100, ds1)
-        df2 = self._generate_datafile('1/2/2', 100, ds1, verified=False)
-        df3 = self._generate_datafile('http://foo.com/1/2/3', 1000, ds1)
-        df4 = self._generate_datafile('1/2/4', 1000, ds2)
-        df5 = self._generate_datafile('1/2/5', 10000, ds2)
-        df6 = self._generate_datafile('1/2/6', 100000, ds3)
-        df7 = self._generate_datafile('1/2/7', 0, ds4)
-        df8 = self._generate_datafile('1/2/8', -1, ds4)
-        scorer = MigrationScorer()
-       
-        self.assertEquals(2.0, scorer.datafile_score(df1))
-        self.assertEquals(2, get_user_priority(user1))
-        self.assertEquals(1, get_user_priority(user2))
-        self.assertEquals(1.0, scorer.user_score(user1))
-        self.assertEquals(2.0, scorer.user_score(user2))
-        self.assertEquals(2.0, scorer.experiment_score(exp1))
-        self.assertEquals(2.0, scorer.dataset_score(df1.dataset))
-        self.assertEquals(4.0, scorer.score_datafile(df1))
-        self.assertEquals([(df1, 4.0)], 
-                          scorer.score_datafiles_in_dataset(ds1))
-        self.assertEquals([(df5, 8.0), (df4, 6.0), (df1, 4.0)],
-                          scorer.score_datafiles_in_experiment(exp1))
-        self.assertEquals([(df5, 8.0), (df4, 6.0)],
-                          scorer.score_datafiles_in_experiment(exp2))
-        self.assertEquals([(df6, 5.0)],
-                          scorer.score_datafiles_in_experiment(exp3))
-        self.assertEquals([(df5, 8.0), (df4, 6.0), (df6, 5.0), (df1, 4.0),
-                           (df7, 0.0), (df8, 0.0)],
-                          scorer.score_all_datafiles())
-        self.assertEquals([(df7, 0.0), (df8, 0.0)], 
-                          scorer.score_datafiles_in_dataset(ds4))
-        
+    def _setup(self):
+        self.user1 = self._generate_user('joe', 2)
+        self.user2 = self._generate_user('fred', 1)
+        self.exp1 = self._generate_experiment([self.user1, self.user2])
+        self.exp2 = self._generate_experiment([self.user1])
+        self.exp3 = self._generate_experiment([self.user1])
+        self.exp4 = self._generate_experiment([self.user1])
+        self.ds1 = self._generate_dataset([self.exp1])
+        self.ds2 = self._generate_dataset([self.exp1, self.exp2])
+        self.ds3 = self._generate_dataset([self.exp3])
+        self.ds4 = self._generate_dataset([self.exp4])
+        self.df1 = self._generate_datafile('1/2/1', 100, self.ds1)
+        self.df2 = self._generate_datafile(
+            '1/2/2', 100, self.ds1, verified=False)
+        self.df3 = self._generate_datafile(
+            'http://foo.com/1/2/3', 1000, self.ds1)
+        self.df4 = self._generate_datafile('1/2/4', 1000, self.ds2)
+        self.df5 = self._generate_datafile('1/2/5', 10000, self.ds2)
+        self.df6 = self._generate_datafile('1/2/6', 100000, self.ds3)
+        self.df7 = self._generate_datafile('1/2/7', 0, self.ds4)
+        self.df8 = self._generate_datafile('1/2/8', -1, self.ds4)
 
-    def _generate_datafile(self, path, size, dataset, verified=True):
+    def testScoring(self):
+        self._setup()
+        scorer = MigrationScorer()
+        self.assertEquals(2.0, scorer.datafile_score(self.df1))
+        self.assertEquals(2, get_user_priority(self.user1))
+        self.assertEquals(1, get_user_priority(self.user2))
+        self.assertEquals(1.0, scorer.user_score(self.user1))
+        self.assertEquals(2.0, scorer.user_score(self.user2))
+        self.assertEquals(2.0, scorer.experiment_score(self.exp1))
+        self.assertEquals(2.0, scorer.dataset_score(self.df1.dataset))
+        self.assertEquals(4.0, scorer.score_datafile(self.df1))
+        self.assertEquals([(self.df1, 4.0)], 
+                          scorer.score_datafiles_in_dataset(self.ds1))
+        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0), (self.df1, 4.0)],
+                          scorer.score_datafiles_in_experiment(self.exp1))
+        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0)],
+                          scorer.score_datafiles_in_experiment(self.exp2))
+        self.assertEquals([(self.df6, 5.0)],
+                          scorer.score_datafiles_in_experiment(self.exp3))
+        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0), (self.df6, 5.0), 
+                           (self.df1, 4.0), (self.df7, 0.0), (self.df8, 0.0)],
+                          scorer.score_all_datafiles())
+        self.assertEquals([(self.df7, 0.0), (self.df8, 0.0)], 
+                          scorer.score_datafiles_in_dataset(self.ds4))
+
+    def testScoringWithTimes(self):
+        self._setup()
+        scorer = MigrationScorer({
+                'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+                'file_size_weighting': 1.0,
+                'file_access_weighting': 1.0,
+                'file_age_weighting': 1.0,
+                'file_size_threshold': 0,
+                'file_access_threshold': 0,
+                'file_age_threshold': 1})
+        
+        self.assertEquals(0.0, scorer.datafile_score(self.df1))
+     
+        f = tempfile.NamedTemporaryFile(
+            dir='/home/scrawley/git/mytardis/var/test/store')
+        f.write("Hi Mom!!\n")
+        self.df1.url = f.name
+
+        self.assertEquals(2.0, scorer.datafile_score(self.df1))
+        
+        older = time.time() - (60 * 60 * 24 + 300)
+        os.utime(f.name, (older, older))
+
+        self.assertEquals(3.0, scorer.datafile_score(self.df1))
+
+        older = time.time() - (60 * 60 * 24 * 2 + 300)
+        os.utime(f.name, (older, older))
+
+        self.assertEquals(5.0, scorer.datafile_score(self.df1))
+
+        f.close()
+
+    def _generate_datafile(self, path, size, dataset, \
+                               verified=True):
         datafile = Dataset_File()
         datafile.url = path
         datafile.mimetype = "application/unspecified"

@@ -281,8 +281,11 @@ DEFAULT_MIGRATION_DESTINATION = 'test'
 
 MIGRATION_SCORING_PARAMS = {
     'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+    'file_size_threshold': 0,
     'file_size_weighting': 1.0,
+    'file_access_threshold': 0,
     'file_access_weighting': 0.0,
+    'file_age_threshold': 0,
     'file_age_weighting': 0.0}
 
 MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
