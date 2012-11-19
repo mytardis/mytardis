@@ -445,7 +445,16 @@ $('#modal-metadata .submit-button').live('click', function() {
       </div>    
     </div>
     <div id="metadata-pane-datafile" class="row-fluid">
-      {% include "tardis_portal/ajax/datafile_details.html" %}
+       <h3>Datafile Information</h3>
+       <div id="datafile-info">
+	 <div class="info-box"> 
+	   <em>Click the 
+	   <i class="icon-list"></i>
+	   button next to any file to view details and actions.
+	   </em>
+	 </div>
+       </div>
+       {# include "tardis_portal/ajax/datafile_details.html" #}
     </div>
     <div id="metadata-pane" class="row-fluid">    
       {% include "tardis_portal/ajax/dataset_metadata.html" %}

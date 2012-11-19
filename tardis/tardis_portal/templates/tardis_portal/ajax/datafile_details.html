@@ -1,9 +1,14 @@
-<h3>Datafile Metadata</h3>
-<div class="info-box"> 
-<div id="datafile-info">
-    <em>Click the 
-          <i class="icon-list"></i>
-        button next to any file to view its metadata.
-    </em>
-</div>
-</div>
+{% if datafile_id %}
+  {% for name, url in file_views %}
+    <a class="btn btn-warning {% if forloop.first %}pressed{% endif %}" 
+       href="{{url}}/{{datafile_id}}">{{name}}</a>
+  {% endfor %}
+  <div class="info-box">
+    <h1>{{default_name}}</h1>
+    <div id="datafile-app">
+  </div></div>
+  <script type="text/javascript">
+    $("#datafile-app").load("{{default_url}}");
+  </script>
+{% else %}
+{% endif %}

@@ -1028,6 +1028,35 @@ def register_experiment_ws_xmldata(request):
 
 @never_cache
 @authz.datafile_access_required
+def display_datafile_details(request, dataset_file_id):
+    """
+    Displays a box, with a list of interaction options depending on
+    the file type given and displays the one with the highest priority
+    first.
+    Low number == high priority
+    """
+    # retrieve valid interactions for file type
+    # create priority-ordered list for buttons
+    # send default one to template to be called by ajax
+    file_views = [["Datafile Metadata",
+                   "/ajax/parameters/%s" % dataset_file_id],
+                  ["Jolecule 3D viewer",
+                   "/ajax/jolecule/%s" % dataset_file_id],
+    ]
+    context = Context({
+        'datafile_id': dataset_file_id,
+        'file_views': file_views,
+        'default_name': file_views[0][0],
+        'default_url': file_views[0][1],
+    })
+    return HttpResponse(render_response_index(
+        request,
+        "tardis_portal/ajax/datafile_details.html",
+        context))
+
+
+@never_cache
+@authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
