@@ -32,6 +32,7 @@ from StringIO import StringIO
 
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.conf import settings
 
 from tardis.tardis_portal.models import \
     Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
@@ -102,8 +103,7 @@ class MigrateScorerTestCase(TestCase):
         
         self.assertEquals(0.0, scorer.datafile_score(self.df1))
      
-        f = tempfile.NamedTemporaryFile(
-            dir='/home/scrawley/git/mytardis/var/test/store')
+        f = tempfile.NamedTemporaryFile(dir=settings.FILE_STORE_PATH)
         f.write("Hi Mom!!\n")
         self.df1.url = f.name
 
