@@ -89,6 +89,23 @@ def migrate_datafile(datafile, destination):
     logger.info('Migrated and removed file %s for datafile %s' % \
            (filename, datafile.id))
 
+def restore_file(datafile):
+    """
+    Restore a file that has been migrated
+    """
+    
+    if datafile.is_local():
+        return
+
+    destination = _identify_destination(datafile.url)
+    if not destination:
+        raise MigrationError('Cannot identify the migration destination' \
+                                 ' holding %s' % datafile.url)
+
+    if not datafile.verified or destination.trust_length:
+        raise MigrationError('Only verified datafiles can be restored' \
+                                 ' from destination %s' % destination.name)
+
     
 def check_file_transferred(datafile, destination, target_url):
     """
@@ -151,5 +168,7 @@ def _check_attribute2(attribute, value, key):
     if value.lower() == attribute.lower():
         return True
     raise MigrationError('Transfer check failed: the %s attribute of the' \
-                           ' retrieved file does not match' % (key))  
+                           ' retrieved file does not match' % (key))
+
+
     

@@ -33,16 +33,33 @@ from django.conf import settings
 
 from tardis.apps.migration import MigrationError
 
+
 class Destination:
-    def __init__(self, name):
-        descriptor = None
-        if len(settings.MIGRATION_DESTINATIONS) == 0:
-            raise MigrationError("No destinations have been configured")
-        for d in settings.MIGRATION_DESTINATIONS:
-            if d['name'] == name:
-                descriptor = d
-        if not descriptor:
+
+    destinations = None
+    
+    @classmethod
+    def get_destination(cls, name):
+        try:
+            return cls._get_destinations()[name]
+        except KeyError:
             raise ValueError('Unknown destination %s' % name)
+
+    @classmethod
+    def _get_destinations(cls):
+        if cls.destinations == None:
+            if len(settings.MIGRATION_DESTINATIONS) == 0:
+                raise MigrationError("No destinations have been configured")
+            cls.destinations = {}
+            for d in settings.MIGRATION_DESTINATIONS:
+                cls.destinations[d['name']] = Destination(d)
+        return cls.destinations
+
+    @classmethod
+    def identify_destination(url):
+        return None
+
+    def __init__(self, descriptor):
         self.name = descriptor['name']
         self.base_url = descriptor['base_url']
         self.trust_length = descriptor.get('trust_length', False)

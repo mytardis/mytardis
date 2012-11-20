@@ -165,7 +165,7 @@ class Command(BaseCommand):
                 raise CommandError("No default destination has been configured")
             destName = settings.DEFAULT_MIGRATION_DESTINATION
         try:
-            return Destination(destName)
+            return Destination.get_destination(destName)
         except MigrationError as e:
             raise CommandError("Migration error: %s" % e.args[0])
         except ValueError:

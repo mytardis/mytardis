@@ -58,20 +58,23 @@ class MigrationTestCase(TestCase):
         '''
         Test that Destination instantiation works
         '''
-        dest = Destination('test')
+        dest = Destination.get_destination('test')
         self.assertIsInstance(dest.provider, TransferProvider)
         self.assertIsInstance(dest.provider, SimpleHttpTransfer)
         
-        dest = Destination('test2')
+        dest = Destination.get_destination('test2')
         self.assertIsInstance(dest.provider, TransferProvider)
         self.assertIsInstance(dest.provider, WebDAVTransfer)
         
-        dest = Destination('test3')
+        dest = Destination.get_destination('test3')
         self.assertIsInstance(dest.provider, TransferProvider)
         self.assertIsInstance(dest.provider, WebDAVTransfer)
         
+        dest2 = Destination.get_destination('test3')
+        self.assertEqual(dest, dest2)
+
         with self.assertRaises(ValueError):
-            dest2 = Destination('unknown')
+            dest2 = Destination.get_destination('unknown')
 
     def testWebDAVProvider(self):
         self.do_ext_provider('test2')
@@ -80,14 +83,14 @@ class MigrationTestCase(TestCase):
         self.do_ext_provider('test3')
 
     def testSimpleHttpProvider(self):
-        self.do_provider(Destination('test'))
+        self.do_provider(Destination.get_destination('test'))
 
     def do_ext_provider(self, dest_name):
         # This test requires an external test server configured
         # as per the 'dest_name' destination.  We skip the test is the 
         # server doesn't respond.
         try:
-            dest = Destination(dest_name)
+            dest = Destination.get_destination(dest_name)
             dest.opener.open(dest.base_url)
         except URLError:
             print 'SKIPPING TEST - %s server on %s not responding\n' % \
@@ -138,7 +141,7 @@ class MigrationTestCase(TestCase):
             provider.remove_file(url)
 
     def testMigration(self):
-        dest = Destination('test')
+        dest = Destination.get_destination('test')
         datafile = self._generate_datafile("1/2/3", "Hi mum")
 
         # Attempt to migrate without datafile hashes ... should
@@ -158,7 +161,7 @@ class MigrationTestCase(TestCase):
         # Tweak the server to turn off the '?metadata' query
         self.server.server.allowQuery = False
         
-        dest = Destination('test')
+        dest = Destination.get_destination('test')
         datafile = self._generate_datafile("1/2/3", "Hi mum")
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
