@@ -38,7 +38,7 @@ from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.apps.migration import Destination, TransferProvider, \
     SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
-    MigrationProviderError, migrate_datafile
+    MigrationProviderError, migrate_datafile, restore_datafile
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
@@ -156,6 +156,10 @@ class MigrationTestCase(TestCase):
         self.assertTrue(os.path.exists(path))
         migrate_datafile(datafile, dest)
         self.assertFalse(os.path.exists(path))
+
+        # Bring it back
+        restore_datafile(datafile)
+        self.assertTrue(os.path.exists(path))
 
     def testMigrationNoHashes(self):
         # Tweak the server to turn off the '?metadata' query

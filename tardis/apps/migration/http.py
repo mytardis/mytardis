@@ -87,6 +87,9 @@ class SimpleHttpTransfer(TransferProvider):
             return self.base_url + url.path
         raise MigrationProviderError("Cannot generate a URL from '%s'" \
                                          % datafile.url)
+
+    def url_matches(self, url):
+        return url.startswith(self.base_url)
     
     def put_file(self, datafile, url):
         self._check_url(url)

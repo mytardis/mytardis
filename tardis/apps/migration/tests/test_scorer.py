@@ -40,30 +40,32 @@ from tardis.tardis_portal.models import \
 from tardis.apps.migration import MigrationScorer
 from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY, \
    get_user_priority
+from tardis.apps.migration.tests.generate import \
+    generate_datafile, generate_dataset, generate_experiment, generate_user
 
 class MigrateScorerTestCase(TestCase):
 
     def _setup(self):
-        self.user1 = self._generate_user('joe', 2)
-        self.user2 = self._generate_user('fred', 1)
-        self.exp1 = self._generate_experiment([self.user1, self.user2])
-        self.exp2 = self._generate_experiment([self.user1])
-        self.exp3 = self._generate_experiment([self.user1])
-        self.exp4 = self._generate_experiment([self.user1])
-        self.ds1 = self._generate_dataset([self.exp1])
-        self.ds2 = self._generate_dataset([self.exp1, self.exp2])
-        self.ds3 = self._generate_dataset([self.exp3])
-        self.ds4 = self._generate_dataset([self.exp4])
-        self.df1 = self._generate_datafile('1/2/1', 100, self.ds1)
-        self.df2 = self._generate_datafile(
-            '1/2/2', 100, self.ds1, verified=False)
-        self.df3 = self._generate_datafile(
-            'http://foo.com/1/2/3', 1000, self.ds1)
-        self.df4 = self._generate_datafile('1/2/4', 1000, self.ds2)
-        self.df5 = self._generate_datafile('1/2/5', 10000, self.ds2)
-        self.df6 = self._generate_datafile('1/2/6', 100000, self.ds3)
-        self.df7 = self._generate_datafile('1/2/7', 0, self.ds4)
-        self.df8 = self._generate_datafile('1/2/8', -1, self.ds4)
+        self.user1 = generate_user('joe', 2)
+        self.user2 = generate_user('fred', 1)
+        self.exp1 = generate_experiment(users=[self.user1, self.user2])
+        self.exp2 = generate_experiment(users=[self.user1])
+        self.exp3 = generate_experiment(users=[self.user1])
+        self.exp4 = generate_experiment(users=[self.user1])
+        self.ds1 = generate_dataset(experiments=[self.exp1])
+        self.ds2 = generate_dataset(experiments=[self.exp1, self.exp2])
+        self.ds3 = generate_dataset(experiments=[self.exp3])
+        self.ds4 = generate_dataset(experiments=[self.exp4])
+        self.df1 = generate_datafile('1/2/1', self.ds1, size=100)
+        self.df2 = generate_datafile('1/2/2', self.ds1, size=100, 
+                                     verified=False)
+        self.df3 = generate_datafile('http://foo.com/1/2/3', self.ds1, 
+                                     size=1000)
+        self.df4 = generate_datafile('1/2/4', self.ds2, size=1000)
+        self.df5 = generate_datafile('1/2/5', self.ds2, size=10000)
+        self.df6 = generate_datafile('1/2/6', self.ds3, size=100000)
+        self.df7 = generate_datafile('1/2/7', self.ds4, size=0)
+        self.df8 = generate_datafile('1/2/8', self.ds4, size=-1)
 
     def testScoring(self):
         self._setup()
@@ -120,46 +122,3 @@ class MigrateScorerTestCase(TestCase):
         self.assertEquals(5.0, scorer.datafile_score(self.df1))
 
         f.close()
-
-    def _generate_datafile(self, path, size, dataset, \
-                               verified=True):
-        datafile = Dataset_File()
-        datafile.url = path
-        datafile.mimetype = "application/unspecified"
-        datafile.filename = os.path.basename(path)
-        datafile.dataset_id = dataset.id
-        datafile.size = size
-        datafile.verified = verified
-        datafile.save()
-        return datafile
-
-    def _generate_dataset(self, experiments):
-        dataset = Dataset()
-        dataset.save()
-        for exp in experiments:
-            dataset.experiments.add(exp)
-        dataset.save()
-        return dataset
-
-    def _generate_experiment(self, users):
-        experiment = Experiment(created_by=users[0])
-        experiment.save()
-        for user in users:
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId='django_user',
-                                entityId=str(user.id),
-                                isOwner=True,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
-            acl.save()
-        return experiment
-
-    def _generate_user(self, name, priority):
-        user = User(username=name)
-        user.save()
-        UserProfile(user=user).save()
-        if priority != DEFAULT_USER_PRIORITY:
-            UserPriority(user=user,priority=priority).save()
-        return user

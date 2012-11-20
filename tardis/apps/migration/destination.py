@@ -56,7 +56,10 @@ class Destination:
         return cls.destinations
 
     @classmethod
-    def identify_destination(url):
+    def identify_destination(cls, url):
+        for d in cls._get_destinations().viewvalues():
+            if d.provider.url_matches(url):
+                return d
         return None
 
     def __init__(self, descriptor):

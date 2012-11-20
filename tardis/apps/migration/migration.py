@@ -35,8 +35,9 @@ import os
 from django.conf import settings
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
+from tardis.tardis_portal.staging import stage_file
 
-from .base import MigrationError
+from tardis.apps.migration import Destination, MigrationError
 
 import logging
 
@@ -58,7 +59,7 @@ def migrate_datafile(datafile, destination):
     removed from the current location, and the datafile metadata will be
     updated to reflect this.
     """
-
+    
     if not datafile.is_local():
         # If you really want to migrate a non_local datafile, it needs to
         # be localized first.
@@ -89,23 +90,29 @@ def migrate_datafile(datafile, destination):
     logger.info('Migrated and removed file %s for datafile %s' % \
            (filename, datafile.id))
 
-def restore_file(datafile):
+def restore_datafile(datafile):
     """
     Restore a file that has been migrated
     """
     
-    if datafile.is_local():
-        return
+    # (Deferred imports to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Dataset_File
+    from django.db import transaction
+    with transaction.commit_on_success():
+        datafile = Dataset_File.objects.select_for_update().get(
+            id=datafile.id)
+        if datafile.is_local():
+            return
+        destination = Destination.identify_destination(datafile.url)
+        if not destination:
+            raise MigrationError('Cannot identify the migration destination' \
+                                     ' holding %s' % datafile.url)
 
-    destination = _identify_destination(datafile.url)
-    if not destination:
-        raise MigrationError('Cannot identify the migration destination' \
-                                 ' holding %s' % datafile.url)
-
-    if not datafile.verified or destination.trust_length:
-        raise MigrationError('Only verified datafiles can be restored' \
+        if not datafile.verified or destination.trust_length:
+            raise MigrationError('Only verified datafiles can be restored' \
                                  ' from destination %s' % destination.name)
-
+    
+        stage_file(datafile)
     
 def check_file_transferred(datafile, destination, target_url):
     """
@@ -149,7 +156,6 @@ def check_file_transferred(datafile, destination, target_url):
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return
     raise MigrationError('Not enough metadata for file verification')
-
     
 def _check_attribute(attributes, value, key):
     if not value:
