@@ -99,20 +99,19 @@ def restore_datafile(datafile):
     from tardis.tardis_portal.models import Dataset_File
     from django.db import transaction
     with transaction.commit_on_success():
-        datafile = Dataset_File.objects.select_for_update().get(
-            id=datafile.id)
-        if datafile.is_local():
+        df = Dataset_File.objects.select_for_update().get(id=datafile.id)
+        if df.is_local():
             return
-        destination = Destination.identify_destination(datafile.url)
+        destination = Destination.identify_destination(df.url)
         if not destination:
             raise MigrationError('Cannot identify the migration destination' \
-                                     ' holding %s' % datafile.url)
-
-        if not datafile.verified or destination.trust_length:
+                                     ' holding %s' % df.url)
+        if not df.verified or destination.trust_length:
             raise MigrationError('Only verified datafiles can be restored' \
                                  ' from destination %s' % destination.name)
-    
-        stage_file(datafile)
+        df.verified = False
+        if not stage_file(df):
+            raise MigrationError('Restoration failed')
     
 def check_file_transferred(datafile, destination, target_url):
     """

@@ -40,18 +40,23 @@ from tardis.apps.migration import Destination, TransferProvider, \
     SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
     MigrationProviderError, migrate_datafile, restore_datafile
 from tardis.apps.migration.tests import SimpleHttpTestServer
+from tardis.apps.migration.tests.generate import \
+    generate_datafile, generate_dataset, generate_experiment, generate_user
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationTestCase(TestCase):
 
     def setUp(self):
-        self.dummy_dataset = Dataset()
-        self.dummy_dataset.save()
+        self.user = generate_user('fred')
+        self.experiment = generate_experiment(users=[self.user])
+        self.dataset = generate_dataset(experiments=[self.experiment])
         self.server = SimpleHttpTestServer()
         self.server.start()
 
     def tearDown(self):
-        self.dummy_dataset.delete()
+        self.dataset.delete()
+        self.experiment.delete()
+        self.user.delete()
         self.server.stop()
 
     def testDestination(self):
@@ -101,7 +106,7 @@ class MigrationTestCase(TestCase):
     def do_provider(self, dest):
         provider = dest.provider
         base_url = dest.base_url
-        datafile = self._generate_datafile("1/2/3", "Hi mum")
+        datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         url = provider.generate_url(datafile)
         self.assertEquals(url, base_url + '1/2/3')
@@ -142,7 +147,9 @@ class MigrationTestCase(TestCase):
 
     def testMigration(self):
         dest = Destination.get_destination('test')
-        datafile = self._generate_datafile("1/2/3", "Hi mum")
+        
+        datafile = generate_datafile(None, self.dataset, "Hi mum",
+                                     verify=False)
 
         # Attempt to migrate without datafile hashes ... should
         # fail because we can't verify.
@@ -166,7 +173,7 @@ class MigrationTestCase(TestCase):
         self.server.server.allowQuery = False
         
         dest = Destination.get_destination('test')
-        datafile = self._generate_datafile("1/2/3", "Hi mum")
+        datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
         path = datafile.get_absolute_filepath()
@@ -174,21 +181,4 @@ class MigrationTestCase(TestCase):
         migrate_datafile(datafile, dest)
         self.assertFalse(os.path.exists(path))
 
-    def _generate_datafile(self, path, content):
-        filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
-        try:
-            os.makedirs(os.path.dirname(filepath))
-        except:
-            pass
-        file = open(filepath, 'wb+')
-        file.write(content)
-        file.close()
-        datafile = Dataset_File()
-        datafile.url = path
-        datafile.mimetype = "application/unspecified"
-        datafile.filename = os.path.basename(filepath)
-        datafile.dataset_id = self.dummy_dataset.id
-        datafile.size = str(len(content))
-        datafile.save()
-        return datafile
 

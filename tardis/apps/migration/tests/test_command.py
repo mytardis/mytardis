@@ -221,7 +221,7 @@ class MigrateCommandTestCase(TestCase):
                            datafile2.url, datafile2.id, 
                            datafile3.url, datafile3.id))
     
-    def xestMigrateReclaim(self):
+    def testMigrateReclaim(self):
         dataset = generate_dataset()
         datafile = generate_datafile("3/2/3", dataset, "Hi mum")
         datafile2 = generate_datafile("3/2/4", dataset, "Hi mum")
