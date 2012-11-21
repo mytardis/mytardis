@@ -123,6 +123,12 @@ class MigrationScorer:
                 score += self._adjust(self._days_ago(stat.st_atime),
                                       self.file_access_threshold,
                                       self.file_access_weighting)
+                logger.info('Scored datafile %s (%s, %d, %d) as %f',
+                            datafile.id, datafile.size, stat.st_mtime,
+                            stat.st_atime, score)
+            else:
+                logger.info('Scored datafile %s (%s) as %f',
+                            datafile.id, datafile.size, score)
             return score
         except:
             # Size is zero, or file is missing or something else we 
