@@ -35,7 +35,7 @@ from tardis.test_settings import FILE_STORE_PATH
 
 def generate_datafile(path, dataset, content=None, size=-1, 
                       verify=True, verified=True):
-    from tardis.apps.migration.models import Dataset_File
+    from tardis.tardis_portal.models import Dataset_File
     datafile = Dataset_File()
     # Normally we use any old string for the datafile path, but some
     # tests require the path to be the same as what 'staging' would use
@@ -71,7 +71,7 @@ def generate_datafile(path, dataset, content=None, size=-1,
     return datafile
 
 def generate_dataset(datafiles=[], experiments=[]):
-    from tardis.apps.migration.models import Dataset
+    from tardis.tardis_portal.models import Dataset
     dataset = Dataset()
     dataset.save()
     for df in datafiles:
@@ -83,7 +83,7 @@ def generate_dataset(datafiles=[], experiments=[]):
     return dataset
 
 def generate_experiment(datasets=[], users=[]):
-    from tardis.apps.migration.models import Experiment, ExperimentACL
+    from tardis.tardis_portal.models import Experiment, ExperimentACL
     experiment = Experiment(created_by=users[0])
     experiment.save()
     for ds in datasets:
@@ -101,12 +101,13 @@ def generate_experiment(datasets=[], users=[]):
         acl.save()
     return experiment
 
-def generate_user(name, priority=DEFAULT_USER_PRIORITY):
+def generate_user(name, priority=-1):
     from django.contrib.auth.models import User
     from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY
+    from tardis.tardis_portal.models import UserProfile
     user = User(username=name)
     user.save()
     UserProfile(user=user).save()
-    if priority != DEFAULT_USER_PRIORITY:
+    if priority >= 0 and priority != DEFAULT_USER_PRIORITY:
         UserPriority(user=user,priority=priority).save()
     return user

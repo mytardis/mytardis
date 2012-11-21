@@ -115,6 +115,7 @@ class Command(BaseCommand):
 
 
     def _datafiles(self, args, migrate):
+        from tardis.tardis_portal.models import Dataset_File
         ids = []
         for id in args:
             try:
@@ -137,6 +138,7 @@ class Command(BaseCommand):
         self._process_datafiles(args, ids, migrate)
 
     def _process_datafiles(self, args, ids, migrate):
+        from tardis.tardis_portal.models import Dataset_File
         if len(args) == 0:
             raise CommandError("Expected one or more ids")
         elif len(ids) == 0:
@@ -164,6 +166,7 @@ class Command(BaseCommand):
                          id, e.args[0]))
         
     def _ids_for_dataset(self, id):
+        from tardis.tardis_portal.models import Dataset, Dataset_File
         try:
             dataset = Dataset.objects.get(id=id)
             return Dataset_File.objects.filter(dataset=id).\
@@ -173,6 +176,7 @@ class Command(BaseCommand):
             return []
 
     def _ids_for_experiment(self, id):
+        from tardis.tardis_portal.models import Dataset_File, Experiment
         try:
             experiment = Experiment.objects.get(id=id)
             return Dataset_File.objects.\
