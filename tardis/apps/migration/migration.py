@@ -85,8 +85,8 @@ def migrate_datafile(datafile, destination):
     datafile.save()
     # FIXME - do this more reliably ...
     os.remove(filename)
-    logger.info('Migrated and removed file %s for datafile %s' % \
-           (filename, datafile.id))
+    logger.info('Migrated and removed file %s for datafile %s' %
+                (filename, datafile.id))
     return True
 
 def restore_datafile_by_id(datafile_id):
@@ -120,7 +120,9 @@ def restore_datafile(datafile):
         df.verified = False
         if not stage_file(df):
             raise MigrationError('Restoration failed')
-    return True
+        logger.info('Restored file %s for datafile %s' %
+                    (df.get_absolute_filepath(), df.id))
+        return True
     
 def check_file_transferred(datafile, destination, target_url):
     """

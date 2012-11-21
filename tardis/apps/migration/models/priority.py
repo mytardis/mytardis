@@ -29,7 +29,6 @@
 
 
 from django.db import models
-from django.contrib.auth.models import User, Group
 
 DEFAULT_USER_PRIORITY = 2
 DEFAULT_GROUP_PRIORITY = 2
@@ -40,6 +39,7 @@ class UserPriority(models.Model):
     higher (or lower) priority when scoring files for migration
     """
 
+    from django.contrib.auth.models import User
     user = models.ForeignKey(User, unique=True)
     priority = models.IntegerField()
 
@@ -60,6 +60,7 @@ class GroupPriority(models.Model):
     higher (or lower) priority when scoring files for migration
     """
 
+    from django.contrib.auth.models import Group
     group = models.ForeignKey(Group, unique=True)
     priority = models.IntegerField()
 

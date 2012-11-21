@@ -42,7 +42,6 @@ from tardis.apps.migration import Destination, TransferProvider, \
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
-from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class MigrationTestCase(TestCase):
 

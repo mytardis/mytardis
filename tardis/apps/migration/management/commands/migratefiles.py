@@ -40,7 +40,6 @@ from django.core.management.base import BaseCommand, CommandError
 from tardis.apps.migration import Destination, MigrationError, \
     MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
     restore_datafile_by_id
-from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
@@ -73,6 +72,9 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from tardis.tardis_portal.models import \
+            Dataset_File, Dataset, Experiment
+
         self.verbosity = options.get('verbosity', 1)
         self.dryRun = options.get('dryRun', False)
         if len(args) == 0:

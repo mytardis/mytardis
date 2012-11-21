@@ -29,6 +29,10 @@
 
 import math, time, os
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 DEFAULT_PARAMS = {
     'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
     'file_size_threshold': 0,
@@ -123,6 +127,7 @@ class MigrationScorer:
         except:
             # Size is zero, or file is missing or something else we 
             # can't cope with
+            logger.exception('Problem scoring datafile %d' % datafile.id)
             return 0.0
 
     def _days_ago(self, ts):

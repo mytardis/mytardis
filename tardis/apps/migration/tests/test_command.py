@@ -33,7 +33,6 @@ from StringIO import StringIO
 from django.test import TestCase
 from django.test.client import Client
 from django.core.management import call_command
-from django.contrib.auth.models import User
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
@@ -43,7 +42,6 @@ from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
     generate_user
 
-from tardis.tardis_portal.models import Dataset
 
 class MigrateCommandTestCase(TestCase):
 

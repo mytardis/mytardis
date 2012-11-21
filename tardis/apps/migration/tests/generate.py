@@ -29,17 +29,13 @@
 
 # Utility functions for generating test objects.
 import os
-from django.contrib.auth.models import User
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
-from tardis.tardis_portal.models import \
-    Dataset_File, Dataset, Experiment, UserProfile, ExperimentACL
-from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY
-
 def generate_datafile(path, dataset, content=None, size=-1, 
                       verify=True, verified=True):
+    from tardis.apps.migration.models import Dataset_File
     datafile = Dataset_File()
     # Normally we use any old string for the datafile path, but some
     # tests require the path to be the same as what 'staging' would use
@@ -75,6 +71,7 @@ def generate_datafile(path, dataset, content=None, size=-1,
     return datafile
 
 def generate_dataset(datafiles=[], experiments=[]):
+    from tardis.apps.migration.models import Dataset
     dataset = Dataset()
     dataset.save()
     for df in datafiles:
@@ -86,6 +83,7 @@ def generate_dataset(datafiles=[], experiments=[]):
     return dataset
 
 def generate_experiment(datasets=[], users=[]):
+    from tardis.apps.migration.models import Experiment, ExperimentACL
     experiment = Experiment(created_by=users[0])
     experiment.save()
     for ds in datasets:
@@ -104,6 +102,8 @@ def generate_experiment(datasets=[], users=[]):
     return experiment
 
 def generate_user(name, priority=DEFAULT_USER_PRIORITY):
+    from django.contrib.auth.models import User
+    from tardis.apps.migration.models import UserPriority, DEFAULT_USER_PRIORITY
     user = User(username=name)
     user.save()
     UserProfile(user=user).save()
