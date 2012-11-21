@@ -38,7 +38,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from tardis.apps.migration import Destination, MigrationError, \
-    MigrationScorer, migrate_datafile, migrate_datafile_by_id
+    MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
+    restore_datafile_by_id
 from tardis.tardis_portal.models import Dataset_File, Dataset, Experiment
 
 class Command(BaseCommand):
@@ -48,8 +49,8 @@ class Command(BaseCommand):
         'individual Datafile is migrated atomically, but there are no ' \
         'guarantees of atomicity at the Dataset or Experiment level.  The ' \
         'following subcommands are supported:\n' \
-        '    migrate <target> <id> ... : migrates files for targets\n' \
-        '    restore <target> <id> ... : restores files for targets\n' \
+        '    migrate <target> <id> ... : migrates <target> files to destination \n' \
+        '    restore <target> <id> ... : restores <target> files from any destination\n' \
         '    reclaim <N>               : migrate files to reclaim N bytes\n' \
         '    score                     : score and list all files\n' \
         '    destinations              : lists the recognized destinations\n' \
@@ -60,7 +61,6 @@ class Command(BaseCommand):
         make_option('-d', '--dest',
                     action='store',
                     dest='dest',
-                    default=settings.DEFAULT_MIGRATION_DESTINATION,
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
                         settings.DEFAULT_MIGRATION_DESTINATION), 
@@ -85,7 +85,7 @@ class Command(BaseCommand):
             self._score_all_datafiles()
             return
         args = args[1:]
-        self.dest = self._get_destination(options.get('dest', None))
+        self._set_destination(options.get('dest', None))
         if not self.dest:
             return
         if subcommand == 'reclaim':
@@ -96,6 +96,9 @@ class Command(BaseCommand):
             target = args[0]
             args = args[1:]
             migrate = subcommand == 'migrate'
+            if not migrate and options['dest']:
+                raise CommandError("The --dest option cannot be used with "
+                                   "the restore subcommand")
             if target == 'datafile' or target == 'datafiles':
                 self._datafiles(args, migrate)
             elif target == 'dataset' or target == 'datasets':
@@ -105,7 +108,6 @@ class Command(BaseCommand):
             else:
                 raise CommandError("Unknown migrate / restore target: %s" % 
                                    target)
-            
         else:
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
@@ -134,7 +136,7 @@ class Command(BaseCommand):
 
     def _process_datafiles(self, args, ids, migrate):
         if len(args) == 0:
-            raise CommandError("Expected one or more ids after the subcommand")
+            raise CommandError("Expected one or more ids")
         elif len(ids) == 0:
             raise CommandError("No Datafiles selected")
 
@@ -149,8 +151,7 @@ class Command(BaseCommand):
                             self.verbosity > 1:
                         self.stdout.write('Migrated datafile %s\n' % id)
                 else:
-                    if restore_datafile_by_id(id, self.dest) and \
-                            self.verbosity > 1:
+                    if restore_datafile_by_id(id) and self.verbosity > 1:
                         self.stdout.write('Restored datafile %s\n' % id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
@@ -179,13 +180,13 @@ class Command(BaseCommand):
             self.stderr.write('Experiment %s does not exist\n' % id)
             return []
 
-    def _get_destination(self, destName):
+    def _set_destination(self, destName):
         if not destName: 
             if not settings.DEFAULT_MIGRATION_DESTINATION:
-                raise CommandError("No default destination has been configured")
+                raise CommandError("No default destination configured")
             destName = settings.DEFAULT_MIGRATION_DESTINATION
         try:
-            return Destination.get_destination(destName)
+            self.dest = Destination.get_destination(destName)
         except MigrationError as e:
             raise CommandError("Migration error: %s" % e.args[0])
         except ValueError:
@@ -211,7 +212,7 @@ class Command(BaseCommand):
             
     def _reclaim(self, args):
         if len(args) != 1:
-            raise CommandError("reclaim subcommand requires an argument")
+            raise CommandError("Reclaim subcommand requires an argument")
         try:
             required_amount = int(args[0])
         except:

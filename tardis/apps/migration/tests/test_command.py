@@ -48,22 +48,21 @@ from tardis.tardis_portal.models import Dataset
 class MigrateCommandTestCase(TestCase):
 
     def setUp(self):
-        self.dummy_dataset = Dataset()
-        self.dummy_dataset.save()
         self.dummy_user = generate_user('joe')
         self.server = SimpleHttpTestServer()
         self.server.start()
 
     def tearDown(self):
-        self.dummy_dataset.delete()
         self.dummy_user.delete()
         self.server.stop()
 
     def testMigrateDatafile(self):
-        datafile = generate_datafile("1/2/3", self.dummy_dataset,
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset,
                                      "Hi mum", verify=False, verified=False)
-        datafile2 = generate_datafile("1/2/4", self.dummy_dataset, "Hi mum")
-        datafile3 = generate_datafile("1/2/5", self.dummy_dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
         err = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', 
@@ -120,12 +119,37 @@ class MigrateCommandTestCase(TestCase):
             pass
         err.seek(0)
         self.assertEquals(err.read(), '') # Should "fail" silently
+
+        # Real restore, verbose
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+
+        # Cannot restore files that are (now) local
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), '') # Fail quietly
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
-        datafile = generate_datafile("2/2/3", dataset, "Hi mum")
-        datafile2 = generate_datafile("2/2/4", dataset, "Hi mum")
-        datafile3 = generate_datafile("2/2/5", dataset, "Hi mum")
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
 
         # Dry run
         out = StringIO()
@@ -155,12 +179,25 @@ class MigrateCommandTestCase(TestCase):
                           'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'dataset', dataset.id, 
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+
     def testMigrateExperiment(self):
         dataset = generate_dataset()
-        datafile = generate_datafile("3/2/3", dataset, "Hi mum")
-        datafile2 = generate_datafile("3/2/4", dataset, "Hi mum")
-        datafile3 = generate_datafile("3/2/5", dataset, "Hi mum")
         experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -175,6 +212,21 @@ class MigrateCommandTestCase(TestCase):
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'experiment', 
+                         experiment.id, 
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+
 
 
     def testMigrateErrors(self):
@@ -198,12 +250,12 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
 
-    def testMigrateScore(self):
+    def testScore(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile("3/2/3", dataset, "Hi mum")
-        datafile2 = generate_datafile("3/2/4", dataset, "Hi mum")
-        datafile3 = generate_datafile("3/2/5", dataset, "Hi mum")
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -224,10 +276,10 @@ class MigrateCommandTestCase(TestCase):
     
     def testMigrateReclaim(self):
         dataset = generate_dataset()
-        datafile = generate_datafile("3/2/3", dataset, "Hi mum")
-        datafile2 = generate_datafile("3/2/4", dataset, "Hi mum")
-        datafile3 = generate_datafile("3/2/5", dataset, "Hi mum")
         experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -268,8 +320,7 @@ class MigrateCommandTestCase(TestCase):
                 pass
             err.seek(0)
             self.assertEquals(err.read(), 
-                              'Error: No default destination has been '
-                              'configured\n')
+                              'Error: No default destination configured\n')
         finally:
             settings.DEFAULT_MIGRATION_DESTINATION = saved
 

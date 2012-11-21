@@ -89,6 +89,15 @@ def migrate_datafile(datafile, destination):
            (filename, datafile.id))
     return True
 
+def restore_datafile_by_id(datafile_id):
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Dataset_File
+
+    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
+    if not datafile:
+        raise ValueError('No such datafile (%s)' % (datafile_id))
+    return restore_datafile(datafile)
+                               
 def restore_datafile(datafile):
     """
     Restore a file that has been migrated
@@ -100,7 +109,7 @@ def restore_datafile(datafile):
     with transaction.commit_on_success():
         df = Dataset_File.objects.select_for_update().get(id=datafile.id)
         if df.is_local():
-            False
+            return False
         destination = Destination.identify_destination(df.url)
         if not destination:
             raise MigrationError('Cannot identify the migration destination' \
