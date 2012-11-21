@@ -57,7 +57,7 @@ class Destination:
 
     @classmethod
     def identify_destination(cls, url):
-        for d in cls._get_destinations().viewvalues():
+        for d in cls._get_destinations().values():
             if d.provider.url_matches(url):
                 return d
         return None

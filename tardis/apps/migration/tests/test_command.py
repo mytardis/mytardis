@@ -66,7 +66,8 @@ class MigrateCommandTestCase(TestCase):
         datafile3 = generate_datafile("1/2/5", self.dummy_dataset, "Hi mum")
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile.id, stderr=err)
+            call_command('migratefiles', 'migrate', 'datafile', 
+                         datafile.id, stderr=err)
         except SystemExit:
             pass
         err.seek(0)
@@ -81,7 +82,7 @@ class MigrateCommandTestCase(TestCase):
         # Dry run ...
         out = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile.id, 
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
                          verbosity=1, stdout=out, dryRun=True)
         except SystemExit:
             pass
@@ -92,7 +93,7 @@ class MigrateCommandTestCase(TestCase):
         # Real run, verbose
         out = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile.id, 
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
                          verbosity=2, stdout=out)
         except SystemExit:
             pass
@@ -103,7 +104,7 @@ class MigrateCommandTestCase(TestCase):
         # Real run, normal
         out = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile2.id, 
+            call_command('migratefiles', 'migrate', 'datafile', datafile2.id, 
                          datafile3.id, verbosity=1, stdout=out)
         except SystemExit:
             pass
@@ -113,14 +114,12 @@ class MigrateCommandTestCase(TestCase):
         # Cannot migrate a file that is not local (now)
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', datafile.id, 
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
                          verbosity=2, stderr=err)
         except SystemExit:
             pass
         err.seek(0)
-        self.assertEquals(err.read(), 
-                          'Migration failed for datafile %s : Cannot migrate '\
-                              'a non-local datafile\n' % datafile.id)
+        self.assertEquals(err.read(), '') # Should "fail" silently
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
@@ -131,7 +130,7 @@ class MigrateCommandTestCase(TestCase):
         # Dry run
         out = StringIO()
         try:
-            call_command('migratefiles', 'dataset', dataset.id, 
+            call_command('migratefiles', 'migrate', 'dataset', dataset.id, 
                          verbosity=2, stdout=out, dryRun=True)
         except SystemExit:
             pass
@@ -145,7 +144,7 @@ class MigrateCommandTestCase(TestCase):
         # Real run, verbose
         out = StringIO()
         try:
-            call_command('migratefiles', 'dataset', dataset.id, 
+            call_command('migratefiles', 'migrate', 'dataset', dataset.id, 
                          verbosity=2, stdout=out)
         except SystemExit:
             pass
@@ -165,7 +164,8 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'experiment', experiment.id, 
+            call_command('migratefiles', 'migrate', 'experiment', 
+                         experiment.id, 
                          verbosity=2, stdout=out)
         except SystemExit:
             pass
@@ -180,7 +180,8 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateErrors(self):
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', 999, stderr=err)
+            call_command('migratefiles', 'migrate', 'datafile', 
+                         999, stderr=err)
         except SystemExit:
             pass
         err.seek(0)
@@ -190,7 +191,7 @@ class MigrateCommandTestCase(TestCase):
 
         err = StringIO()
         try:
-            call_command('migratefiles', 'datafile', 999, 
+            call_command('migratefiles', 'migrate', 'datafile', 999, 
                          dest='nowhere', stderr=err)
         except SystemExit:
             pass
@@ -261,7 +262,8 @@ class MigrateCommandTestCase(TestCase):
             settings.DEFAULT_MIGRATION_DESTINATION = ''
             err = StringIO()
             try:
-                call_command('migratefiles', 'datafile', 999, stderr=err)
+                call_command('migratefiles', 'migrate', 'datafile', 
+                             999, stderr=err)
             except SystemExit:
                 pass
             err.seek(0)
@@ -276,7 +278,8 @@ class MigrateCommandTestCase(TestCase):
             settings.MIGRATION_DESTINATIONS = []
             err = StringIO()
             try:
-                call_command('migratefiles', 'datafile', 999, stderr=err)
+                call_command('migratefiles', 'migrate', 'datafile', 
+                             999, stderr=err)
             except SystemExit:
                 pass
             err.seek(0)

@@ -48,11 +48,14 @@ class Command(BaseCommand):
         'individual Datafile is migrated atomically, but there are no ' \
         'guarantees of atomicity at the Dataset or Experiment level.  The ' \
         'following subcommands are supported:\n' \
-        '    datafile <id> ...     : migrates files for datafiles\n' \
-        '    dataset <id> ...      : migrates files for datasets\n' \
-        '    experiment <id> ...   : migrates files for experiments\n' \
-        '    reclaim <N>           : migrate files to reclaim N bytes\n' \
-        '    destinations          : lists the recognized destinations' 
+        '    migrate <target> <id> ... : migrates files for targets\n' \
+        '    restore <target> <id> ... : restores files for targets\n' \
+        '    reclaim <N>               : migrate files to reclaim N bytes\n' \
+        '    score                     : score and list all files\n' \
+        '    destinations              : lists the recognized destinations\n' \
+        'where <target> is "datafile", "dataset" or "experiment", and the ' \
+        '<id>s are the mytardis numeric ids for the respective objects\n' 
+
     option_list = BaseCommand.option_list + (
         make_option('-d', '--dest',
                     action='store',
@@ -87,16 +90,27 @@ class Command(BaseCommand):
             return
         if subcommand == 'reclaim':
             self._reclaim(args)
-        elif subcommand == 'datafile' or subcommand == 'datafiles':
-            self._datafiles(args)
-        elif subcommand == 'dataset' or subcommand == 'datasets':
-            self._datasets(args)
-        elif subcommand == 'experiment' or subcommand == 'experiments':
-            self._experiments(args)
+        elif subcommand == 'migrate' or subcommand == 'restore':
+            if len(args) == 0:
+                raise CommandError("Expected a migrate / restore target")
+            target = args[0]
+            args = args[1:]
+            migrate = subcommand == 'migrate'
+            if target == 'datafile' or target == 'datafiles':
+                self._datafiles(args, migrate)
+            elif target == 'dataset' or target == 'datasets':
+                self._datasets(args, migrate)
+            elif target == 'experiment' or target == 'experiments':
+                self._experiments(args, migrate)
+            else:
+                raise CommandError("Unknown migrate / restore target: %s" % 
+                                   target)
+            
         else:
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
-    def _datafiles(self, args):
+
+    def _datafiles(self, args, migrate):
         ids = []
         for id in args:
             try:
@@ -104,21 +118,21 @@ class Command(BaseCommand):
                 ids.append(id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
-        self._migrate_datafiles(args, ids)
+        self._process_datafiles(args, ids, migrate)
 
-    def _datasets(self, args):
+    def _datasets(self, args, migrate):
         ids = []
         for id in args:
             ids.extend(self._ids_for_dataset(id))
-        self._migrate_datafiles(args, ids)
+        self._process_datafiles(args, ids, migrate)
 
-    def _experiments(self, args):
+    def _experiments(self, args, migrate):
         ids = []
         for id in args:
             ids.extend(self._ids_for_experiment(id))
-        self._migrate_datafiles(args, ids)
+        self._process_datafiles(args, ids, migrate)
 
-    def _migrate_datafiles(self, args, ids):
+    def _process_datafiles(self, args, ids, migrate):
         if len(args) == 0:
             raise CommandError("Expected one or more ids after the subcommand")
         elif len(ids) == 0:
@@ -127,18 +141,24 @@ class Command(BaseCommand):
         for id in ids:
             try:
                 if self.dryRun:
-                    self.stdout.write('Would have migrated datafile %s\n' % id)
-                else:
-                    migrate_datafile_by_id(id, self.dest)
-                    if self.verbosity > 1:
+                    self.stdout.write(
+                        'Would have %s datafile %s\n' %  
+                        ('migrated' if migrate else 'restored', id))
+                elif migrate:
+                    if migrate_datafile_by_id(id, self.dest) and \
+                            self.verbosity > 1:
                         self.stdout.write('Migrated datafile %s\n' % id)
-                    
+                else:
+                    if restore_datafile_by_id(id, self.dest) and \
+                            self.verbosity > 1:
+                        self.stdout.write('Restored datafile %s\n' % id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
-            except MigrationError as e:
-                self.stderr.write( \
-                    'Migration failed for datafile %s : %s\n' % \
-                        (id, e.args[0]))
+            except MigrationError as e:              
+                self.stderr.write(
+                    '%s failed for datafile %s : %s\n' % \
+                        ('Migration' if migrate else 'Restoration',
+                         id, e.args[0]))
         
     def _ids_for_dataset(self, id):
         try:

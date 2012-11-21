@@ -50,7 +50,7 @@ def migrate_datafile_by_id(datafile_id, destination):
     datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
     if not datafile:
         raise ValueError('No such datafile (%s)' % (datafile_id))
-    migrate_datafile(datafile, destination)
+    return migrate_datafile(datafile, destination)
                                
 def migrate_datafile(datafile, destination):
     """
@@ -61,9 +61,7 @@ def migrate_datafile(datafile, destination):
     """
     
     if not datafile.is_local():
-        # If you really want to migrate a non_local datafile, it needs to
-        # be localized first.
-        raise MigrationError('Cannot migrate a non-local datafile')
+        return False
 
     if not datafile.verified or destination.trust_length:
         raise MigrationError('Only verified datafiles can be migrated' \
@@ -89,6 +87,7 @@ def migrate_datafile(datafile, destination):
     os.remove(filename)
     logger.info('Migrated and removed file %s for datafile %s' % \
            (filename, datafile.id))
+    return True
 
 def restore_datafile(datafile):
     """
@@ -101,7 +100,7 @@ def restore_datafile(datafile):
     with transaction.commit_on_success():
         df = Dataset_File.objects.select_for_update().get(id=datafile.id)
         if df.is_local():
-            return
+            False
         destination = Destination.identify_destination(df.url)
         if not destination:
             raise MigrationError('Cannot identify the migration destination' \
@@ -112,6 +111,7 @@ def restore_datafile(datafile):
         df.verified = False
         if not stage_file(df):
             raise MigrationError('Restoration failed')
+    return True
     
 def check_file_transferred(datafile, destination, target_url):
     """

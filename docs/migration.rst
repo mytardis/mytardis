@@ -123,19 +123,26 @@ The initial version of the migration app provides the "migratefiles" command to 
 
 Usage
 ~~~~~
-``./bin/django migratefiles datafile | datafiles <id> ...``
-``./bin/django migratefiles dataset | datasets <id> ...``
-``./bin/django migratefiles experiment | experiments <id> ...``
+``./bin/django migratefiles migrate <target> <id> ...``
+``./bin/django migratefiles restore <target> <id> ...``
+``./bin/django migratefiles reclaim <amount>``
+``./bin/django migratefiles score``
 ``./bin/django migratefiles destinations``
 
 .. option:: -d DESTINATION, --dest=DESTINATION
 .. option:: --verbosity={0,1,2,3}
 
-The first form migrates the files associated with one or more DataFiles.  The migration of a single file is atomic.  If the migration succeeds, the Datafile metadata in MyTardis will have been updated to the new location.  If it fails, the metadata will not be altered.  The migration process also takes steps to ensure that the file has been correctly transferred.  The final step of a migration is to delete the original copy of the file.  This is currently not performed atomically.
+The first form migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type. 
 
-The second and third forms migrate all Datafiles in the respective Datasets or Experiments.  These operations are atomic at the level of a single Datafile, as above.
+The migration of a single file is atomic.  If the migration succeeds, the Datafile metadata in MyTardis will have been updated to the new location.  If it fails, the metadata will not be altered.  The migration process also takes steps to ensure that the file has been correctly transferred.  The final step of a migration is to delete the original copy of the file.  This is currently not performed atomically.
 
-The final form of the command lists the transfer destinations that the app has been configured with.   
+The second form attempts to restore (bring back to local disc) the data associated with the selected DataFiles, DataSets or Experiments.  (The current implementation temporarily marks each Datafile as "not verified" and attempts to "stage" it.)
+
+The third form attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
+
+The fourth form simply scores all of the local files and lists their details in descending score order. 
+
+The final form of the command lists the configured transfer destinations.   
 
 Architecture
 ============
