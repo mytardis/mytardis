@@ -1036,13 +1036,19 @@ def display_datafile_details(request, dataset_file_id):
     Low number == high priority
     """
     # retrieve valid interactions for file type
+    the_file = Dataset_File.objects.get(id=dataset_file_id)
+    the_schemas = [p.schema for p in the_file.getParameterSets()]
+    # TODO: implement database for this
+    #file_views = get_valid_views(the_schemas)
+    file_views = [["Datafile Metadata",
+                   "/ajax/parameters/%s" % dataset_file_id]]
+    if u'http://www.tardis.edu.au/schemas/trdDatafile/1' in \
+       [s.namespace for s in the_schemas]:
+        file_views.append(["Jolecule 3D viewer",
+                       "/apps/jolecule/%s" % dataset_file_id])
+
     # create priority-ordered list for buttons
     # send default one to template to be called by ajax
-    file_views = [["Datafile Metadata",
-                   "/ajax/parameters/%s" % dataset_file_id],
-                  ["Jolecule 3D viewer",
-                   "/ajax/jolecule/%s" % dataset_file_id],
-    ]
     context = Context({
         'datafile_id': dataset_file_id,
         'file_views': file_views,

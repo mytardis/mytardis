@@ -1,6 +1,6 @@
 {% if datafile_id %}
   {% for name, url in file_views %}
-    <a class="btn btn-warning {% if forloop.first %}pressed{% endif %}" 
+    <a class="btn btn-warning {% if forloop.first %}active{% endif %}" 
        href="{{url}}/{{datafile_id}}">{{name}}</a>
   {% endfor %}
   <div class="info-box">
