@@ -36,10 +36,12 @@ from optparse import make_option
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.log import dictConfig
 
 from tardis.apps.migration import Destination, MigrationError, \
     MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
     restore_datafile_by_id
+from tardis.tardis_portal.logging_middleware import LOGGING
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
@@ -70,6 +72,8 @@ class Command(BaseCommand):
                     help='Dry run mode just lists the datafiles that' \
                         ' would be migrated'), 
         )
+
+    conf = dictConfig(LOGGING)
 
     def handle(self, *args, **options):
         from tardis.tardis_portal.models import \
@@ -200,7 +204,9 @@ class Command(BaseCommand):
 
     def _list_destinations(self):
         for dest in settings.MIGRATION_DESTINATIONS:
-            self.stdout.write(dest['name'])
+            self.stdout.write('{0:<16} : {1:} : {2:}\n'.
+                              format(dest['name'], dest['transfer_type'],
+                                     dest['base_url']))
 
     def _score_all_datafiles(self):
         scores = self._do_score_all()
