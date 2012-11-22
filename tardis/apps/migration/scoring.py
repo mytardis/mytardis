@@ -139,7 +139,7 @@ class MigrationScorer:
     def _days_ago(self, ts):
         delta = self.now - ts
         if delta < 0:
-            raise ValueError('timestamp is in the future - %d' % ts)
+            delta = 0
         return int(delta) / (60 * 60 * 24)
 
     def _adjust(self, raw, threshold, weighting):

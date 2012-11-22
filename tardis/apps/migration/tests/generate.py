@@ -49,6 +49,7 @@ def generate_datafile(path, dataset, content=None, size=-1,
     if content:
         try:
             os.makedirs(os.path.dirname(filepath))
+            os.remove(filepath)
         except:
             pass
         file = open(filepath, 'wb+')
