@@ -28,7 +28,7 @@
 #
 
 from urllib2 import Request, HTTPError
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 import os
 
 from django.utils import simplejson
@@ -54,6 +54,8 @@ class SimpleHttpTransfer(TransferProvider):
     
     def __init__(self, name, base_url, opener, metadata_supported=False):
         TransferProvider.__init__(self, name)
+        if not base_url.endswith('/'):
+            base_url = base_url + '/'
         self.base_url = base_url
         self.metadata_supported = False
         self.opener = opener
@@ -84,7 +86,7 @@ class SimpleHttpTransfer(TransferProvider):
     def generate_url(self, datafile):
         url = urlparse(datafile.url)
         if url.scheme == '' or url.scheme == 'file':
-            return self.base_url + url.path
+            return urljoin(self.base_url, url.path)
         raise MigrationProviderError("Cannot generate a URL from '%s'" \
                                          % datafile.url)
 
@@ -105,7 +107,7 @@ class SimpleHttpTransfer(TransferProvider):
         self.opener.open(self.DeleteRequest(url))
 
     def _check_url(self, url):
-        if url.find(self.base_url) != 0:
+        if not url.startswith(self.base_url):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination') % (url, self.name))
 

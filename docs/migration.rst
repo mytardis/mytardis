@@ -131,6 +131,9 @@ Usage
 
 .. option:: -d DESTINATION, --dest=DESTINATION
 .. option:: --verbosity={0,1,2,3}
+.. option:: -n, --dryRun
+.. option:: --noRemove
+.. option:: --mirror
 
 The first form migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type. 
 
@@ -142,7 +145,15 @@ The third form attempts to reclaim "<amount>" bytes of local disc space by migra
 
 The fourth form simply scores all of the local files and lists their details in descending score order. 
 
-The final form of the command lists the configured transfer destinations.   
+The final form of the command lists the configured transfer destinations.
+
+The options are as follows:
+
+  * --dest selects the remote location for the migrate and reclaim subcommands.  (For the restore subcommand, the destination is local, and the remote source location is implied by the Datafile's 'url' attribute.) 
+  * --verbosity determines how much output is produced in the normal django command fashion.
+  * --dryRun lists the files that would be migrated or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore would have worked.)
+  * --noRemove performs the migrate or restore action, but does not remove the source file.
+  * --mirror performs the file transfer, but doesn't update the database or remove the source file.
 
 Architecture
 ============

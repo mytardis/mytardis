@@ -43,16 +43,16 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def migrate_datafile_by_id(datafile_id, destination):
+def migrate_datafile_by_id(datafile_id, destination, noRemove=False):
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Dataset_File
 
     datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
     if not datafile:
         raise ValueError('No such datafile (%s)' % (datafile_id))
-    return migrate_datafile(datafile, destination)
+    return migrate_datafile(datafile, destination, noRemove=noRemove)
                                
-def migrate_datafile(datafile, destination):
+def migrate_datafile(datafile, destination, noRemove=False):
     """
     Migrate the datafile to a different storage location.  The overall
     effect will be that the datafile will be stored at the new location and 
@@ -83,22 +83,25 @@ def migrate_datafile(datafile, destination):
     datafile.url = target_url
     datafile.protocol = destination.datafile_protocol
     datafile.save()
-    # FIXME - do this more reliably ...
-    os.remove(filename)
-    logger.info('Migrated and removed file %s for datafile %s' %
+    logger.info('Migrated file %s for datafile %s' %
                 (filename, datafile.id))
+    # FIXME - do this more reliably ...
+    if not noRemove:
+        os.remove(filename)
+        logger.info('Removed local file %s for datafile %s' %
+                    (filename, datafile.id))
     return True
 
-def restore_datafile_by_id(datafile_id):
+def restore_datafile_by_id(datafile_id, noRemove=False):
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Dataset_File
 
     datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
     if not datafile:
         raise ValueError('No such datafile (%s)' % (datafile_id))
-    return restore_datafile(datafile)
+    return restore_datafile(datafile, noRemove=noRemove)
                                
-def restore_datafile(datafile):
+def restore_datafile(datafile, noRemove=False):
     """
     Restore a file that has been migrated
     """
@@ -118,10 +121,14 @@ def restore_datafile(datafile):
             raise MigrationError('Only verified datafiles can be restored' \
                                  ' from destination %s' % destination.name)
         df.verified = False
+        url = df.url
         if not stage_file(df):
             raise MigrationError('Restoration failed')
         logger.info('Restored file %s for datafile %s' %
                     (df.get_absolute_filepath(), df.id))
+        if not noRemove:
+            destination.provider.remove_file(url)
+            logger.info('Removed remote file %s for datafile %s' % (url, df.id))
         return True
     
 def check_file_transferred(datafile, destination, target_url):

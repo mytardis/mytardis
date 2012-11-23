@@ -70,7 +70,13 @@ class Command(BaseCommand):
                     dest='dryRun',
                     default=False,
                     help='Dry run mode just lists the datafiles that' \
-                        ' would be migrated'), 
+                        ' would be migrated / restored'), 
+        make_option('--noRemove',
+                    action='store',
+                    dest='noRemove',
+                    default=False,
+                    help='No remove mode migrates / restores without' \
+                        ' removing the local / remote copy of the file'), 
         )
 
     conf = dictConfig(LOGGING)
@@ -80,6 +86,7 @@ class Command(BaseCommand):
             Dataset_File, Dataset, Experiment
 
         self.verbosity = options.get('verbosity', 1)
+        self.noRemove = options.get('noRemove', False)
         self.dryRun = options.get('dryRun', False)
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
@@ -151,16 +158,20 @@ class Command(BaseCommand):
         for id in ids:
             try:
                 if self.dryRun:
-                    self.stdout.write(
-                        'Would have %s datafile %s\n' %  
+                    self.stdout.write( \
+                        'Would have %s datafile %s\n' % \
                         ('migrated' if migrate else 'restored', id))
-                elif migrate:
-                    if migrate_datafile_by_id(id, self.dest) and \
-                            self.verbosity > 1:
-                        self.stdout.write('Migrated datafile %s\n' % id)
+                    continue
+
+                if migrate:
+                    ok = migrate_datafile_by_id(id, self.dest, \
+                                              noRemove=self.noRemove)
                 else:
-                    if restore_datafile_by_id(id) and self.verbosity > 1:
-                        self.stdout.write('Restored datafile %s\n' % id)
+                    ok = restore_datafile_by_id(id, noRemove=self.noRemove)
+                if ok and self.verbosity > 1:
+                    self.stdout.write( \
+                        '%s datafile %s\n' % \
+                        ('Migrated' if migrate else 'Restored', id))
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
             except MigrationError as e:              

@@ -167,6 +167,12 @@ class MigrationTestCase(TestCase):
         restore_datafile(datafile)
         self.assertTrue(os.path.exists(path))
 
+        # Repeat the process with 'noRemove'
+        migrate_datafile(datafile, dest, noRemove=True)
+        self.assertTrue(os.path.exists(path))
+        restore_datafile(datafile)
+        self.assertTrue(os.path.exists(path))        
+
     def testMigrationNoHashes(self):
         # Tweak the server to turn off the '?metadata' query
         self.server.server.allowQuery = False
