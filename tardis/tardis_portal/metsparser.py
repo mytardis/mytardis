@@ -96,6 +96,7 @@ from tardis.tardis_portal.staging import \
 
 from django.conf import settings
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,6 +112,7 @@ class MetsDataHolder():
 
     metadataMap = None
     metsStructMap = None
+    datafilesNoMd = {}
 
 
 class MetsExperimentStructCreator(ContentHandler):
@@ -136,6 +138,7 @@ class MetsExperimentStructCreator(ContentHandler):
         # is done.
         self.metadataMap = {}
         self.metsStructMap = {}
+        self.datafilesNoMd = {}
 
     def startElementNS(self, name, qname, attrs):
 
@@ -164,12 +167,22 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # add an entry for this datafile in the metadataMap so we can
             # easily look it up later on when we do our second parse
+            logger.info('=== found datafile xml: %s' % fileName)
+            logger.info('=== found datafile ids: %s' % fileMetadataIds)
             if fileMetadataIds is not None:
                 for fileMetadataId in fileMetadataIds.split():
                     if fileMetadataId in self.metadataMap:
                         self.metadataMap[fileMetadataId].append(self.datafile)
                     else:
                         self.metadataMap[fileMetadataId] = [self.datafile]
+            else:
+                #todo reimplement. Rushed implementation
+                logger.info('=== no metadata for datafile: %s' % fileName)
+                self.datafilesNoMd[fileId] = self.datafile
+                # for files with no metadata parameters
+                # todo: needs reimplementation
+                self.holder.datafilesNoMd = self.datafilesNoMd
+
 
         elif elName == 'FLocat' and self.inFileGrp and \
                 _getAttrValueByQName(attrs, 'LOCTYPE') == 'URL':
@@ -270,6 +283,7 @@ class MetsExperimentStructCreator(ContentHandler):
             # technically, we've finished doing our first pass here.
             # at this point we can assume that we already have the experiment
             # structure available that we can use on our second pass
+
             self.holder.metsStructMap = self.metsStructMap
             self.holder.metadataMap = self.metadataMap
 
@@ -656,6 +670,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                             # when we start adding "soft" metadata
                             # parameters to it, we already have an
                             # entry for it in the DB
+                            logger.info('=== found datafile: %s' % self.metsObject.name)
 
                             # look up the dataset this file belongs to
                             thisFilesDataset = self.datasetLookupDict[
@@ -707,6 +722,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                        'SHA-512'),
                                     protocol=proto)
 
+                                logger.info('=== saving datafile: %s' % self.metsObject.name)
                                 self.modelDatafile.save()
                             else:
                                 self.modelDatafile = thisFilesDataset.dataset_file_set.get(
@@ -736,6 +752,62 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterName, parameterValues,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
+
+
+                            logger.info('=== hello: %s' % self.datasetLookupDict)
+                            logger.info('=== yo: %s' % self.holder.datafilesNoMd)
+                            #save datafiles that don't have metadata parameters
+                            #todo: this has gone from unimplemented to poorly implemented.
+                            for df in self.holder.datafilesNoMd.itervalues():
+                                logger.info('=== hello: %s' % str(df.dataset.id))
+                                
+                                if df.dataset.id in self.datasetLookupDict:
+                                    # look up the dataset this file belongs to
+                                    thisFilesDataset = self.datasetLookupDict[
+                                        df.dataset.id]
+
+                                    size = df.size
+
+                                    if not df.size:
+                                        size = 0
+
+                                    def checksum(obj, type_):
+                                        # Check if the checksum is of type
+                                        if obj.checksumType != type_:
+                                            return ''
+                                        checksum = obj.checksum.lower()
+                                        # Ensure the checksum is hexdecimal
+                                        if not re.match('[0-9a-f]+$', checksum):
+                                            return ''
+                                        # Get algorithm
+                                        try:
+                                            name = type_.replace('-','').lower()
+                                            alg = getattr(hashlib, name)
+                                        except:
+                                            return ''
+                                        # Check checksum is the correct length
+                                        hex_length = alg('').digest_size * 2
+                                        if hex_length != len(checksum):
+                                            return ''
+                                        # Should be valid checksum of given type
+                                        return checksum
+                            
+                                    sync_url, proto = get_sync_url_and_protocol(
+                                                        get_sync_root(),
+                                                        df.url)
+                            
+                                    self.modelDatafile = models.Dataset_File(
+                                        dataset=thisFilesDataset,
+                                        filename=df.name,
+                                        url=sync_url,
+                                        size=size,
+                                        md5sum=checksum(df, 'MD5'),
+                                        sha512sum=checksum(df,
+                                                           'SHA-512'),
+                                        protocol=proto)
+                            
+                                    logger.info('=== saving datafile: %s' % df.name)
+                                    self.modelDatafile.save()
 
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested ' +

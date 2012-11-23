@@ -1,7 +1,7 @@
 from os import path
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.safestring import SafeUnicode
@@ -37,8 +37,8 @@ class Experiment(models.Model):
 
     PUBLIC_ACCESS_CHOICES = (
         (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
-        (PUBLIC_ACCESS_METADATA,    'Metadata only (no data file access)'),
-        (PUBLIC_ACCESS_FULL,        'Everything'),
+        (PUBLIC_ACCESS_METADATA,    'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL,        'Public'),
     )
 
     url = models.URLField(verify_exists=False, max_length=255,
@@ -231,6 +231,17 @@ class ExperimentACL(models.Model):
         if self.pluginId == 'django_user':
             return User.objects.get(pk=self.entityId)
         return None
+
+
+    def get_related_object_group(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_group':
+            return Group.objects.get(pk=self.entityId)
+        return None
+
 
     def __unicode__(self):
         return '%i | %s' % (self.experiment.id, self.experiment.title)

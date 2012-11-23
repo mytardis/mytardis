@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
-    has_experiment_write, has_dataset_write
 """
 views.py
 
@@ -38,6 +36,9 @@ views.py
 .. moduleauthor:: Ulrich Felzmaann <ulrich.felzmann@versi.edu.au>
 
 """
+
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
+    has_experiment_write, has_dataset_write
 
 from base64 import b64decode
 import urllib2
@@ -61,6 +62,10 @@ from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
+from django.contrib.sites.models import Site
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.template.defaultfilters import pluralize, filesizeformat
 
 from tardis.urls import getTardisApps
 from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
@@ -70,11 +75,18 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     ChangeGroupPermissionsForm, ChangeUserPermissionsForm, \
     ImportParamsForm, create_parameterset_edit_form, \
     save_datafile_edit_form, create_datafile_add_form,\
-    save_datafile_add_form, MXDatafileSearchForm, RightsForm, ManageAccountForm
+    save_datafile_add_form, MXDatafileSearchForm, RightsForm,\
+    ManageAccountForm, CreateGroupPermissionsForm,\
+    CreateUserPermissionsForm
 
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
+
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    staging_traverse, write_uploaded_file_to_dataset, get_staging_url_and_size
+    write_uploaded_file_to_dataset, get_staging_url_and_size, \
+    staging_list
+
+from tardis.tardis_portal.tasks import create_staging_datafiles,\
+    create_staging_datafile
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
@@ -89,10 +101,12 @@ from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
-    render_response_search, render_error_message
+    render_response_search, render_error_message, \
+    get_experiment_referer
 from tardis.tardis_portal.metsparser import parseMets
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.hacks import oracle_dbops_hack
+from tardis.tardis_portal.util import render_public_access_badge
 
 from haystack.views import SearchView
 from haystack.query import SearchQuerySet
@@ -103,7 +117,7 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False, from_experiment=""):
+def get_dataset_info(dataset, include_thumbnail=False):
     def get_thumbnail_url(datafile):
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': datafile.id,
@@ -114,13 +128,12 @@ def get_dataset_info(dataset, include_thumbnail=False, from_experiment=""):
                                'format': 'jpg'})
     obj = model_to_dict(dataset)
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
-    
-    obj['url'] = dataset.get_absolute_url()
-    if not from_experiment == "":
-        obj['url'] = obj['url'] + \
-            "?from_experiment=" + \
-            str(from_experiment.pk)    
-        
+
+    obj['url'] = dataset.get_absolute_url() 
+
+    obj['size'] = dataset.get_size()
+    obj['size_human_readable'] = filesizeformat(dataset.get_size())
+
     if include_thumbnail:
         try:
             obj['thumbnail'] = get_thumbnail_url(dataset.image)
@@ -492,22 +505,6 @@ class SearchQueryString():
 def view_dataset(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
     
-    def get_from_experiment():
-        # display the experiment that
-        # the dataset was loaded from, if applicable
-        from_experiment = None
-        try:
-            from_experiment_get = int(request.GET.get('from_experiment'))
-
-            experiment = Experiment.objects.get(id=from_experiment_get)
-            if authz.has_experiment_access(request, experiment.id):
-                if dataset.experiments.filter(id=experiment.id):
-                    from_experiment = experiment
-        except (ValueError, TypeError, Experiment.DoesNotExist):
-            pass
-            
-        return from_experiment
-
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
@@ -532,13 +529,16 @@ def view_dataset(request, dataset_id):
     c = Context({
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
-        'from_experiment': get_from_experiment(),
         'parametersets': dataset.getParameterSets()
                                 .exclude(schema__hidden=True),
         'has_download_permissions':
             authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
             authz.has_dataset_write(request, dataset_id),
+        'from_experiment': \
+            get_experiment_referer(request, dataset_id),
+        'other_experiments': \
+            authz.get_accessible_experiments_for_dataset(request, dataset_id)
     })
     return HttpResponse(render_response_index(request,
                     'tardis_portal/view_dataset.html', c))
@@ -627,7 +627,7 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    objects = [ get_dataset_info(ds, has_download_permissions, experiment) \
+    objects = [ get_dataset_info(ds, has_download_permissions) \
                 for ds in experiment.datasets.all() ]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
@@ -997,7 +997,8 @@ def register_experiment_ws_xmldata(request):
                 received_remote.send(sender=Experiment,
                         instance=e,
                         uid=origin_id,
-                        from_url=from_url)
+                        from_url=from_url,
+                        sync_path=sync_path)
 
             response = HttpResponse(str(sync_path), status=200)
             response['Location'] = request.build_absolute_uri(
@@ -1023,11 +1024,15 @@ def retrieve_parameters(request, dataset_file_id):
     parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)\
                                  .exclude(schema__hidden=True)
 
-    dataset_id = Dataset_File.objects.get(id=dataset_file_id).dataset.id
+    datafile = Dataset_File.objects.get(id=dataset_file_id)
+    dataset_id = datafile.dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
     c = Context({'parametersets': parametersets,
-                 'has_write_permissions': has_write_permissions})
+                 'datafile': datafile,
+                 'has_write_permissions': has_write_permissions,
+                 'has_download_permissions': 
+                 authz.has_dataset_download_access(request, dataset_id) })
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/parameters.html', c))
@@ -1806,22 +1811,49 @@ def retrieve_access_list_user(request, experiment_id):
 
 
 @never_cache
+def retrieve_access_list_user_readonly(request, experiment_id):
+    from tardis.tardis_portal.forms import AddUserPermissionsForm
+    user_acls = Experiment.safe.user_acls(request, experiment_id)
+
+    c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_user_readonly.html', c))                        
+
+
+@never_cache
 @authz.experiment_ownership_required
 def retrieve_access_list_group(request, experiment_id):
 
     from tardis.tardis_portal.forms import AddGroupPermissionsForm
 
-    user_owned_groups = Experiment.safe.user_owned_groups(request,
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
                                                           experiment_id)
-    system_owned_groups = Experiment.safe.system_owned_groups(request,
+
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
                                                             experiment_id)
 
-    c = Context({'user_owned_groups': user_owned_groups,
-                 'system_owned_groups': system_owned_groups,
+    c = Context({'group_acls_user_owned': group_acls_user_owned,
+                 'group_acls_system_owned': group_acls_system_owned,
                  'experiment_id': experiment_id,
                  'addGroupPermissionsForm': AddGroupPermissionsForm()})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_group.html', c))
+
+
+@never_cache
+def retrieve_access_list_group_readonly(request, experiment_id):
+
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
+                                                            experiment_id)
+
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
+                                                          experiment_id)                                                         
+
+    c = Context({'experiment_id': experiment_id,
+                 'group_acls_system_owned': group_acls_system_owned,
+                 'group_acls_user_owned': group_acls_user_owned })
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/access_list_group_readonly.html', c))
 
 
 @never_cache
@@ -1834,7 +1866,7 @@ def retrieve_access_list_external(request, experiment_id):
                         'tardis_portal/ajax/access_list_external.html', c))
 
 @never_cache
-@authz.experiment_ownership_required
+@authz.experiment_download_required
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
     tokens = [{'expiry_date': token.expiry_date,
@@ -1861,12 +1893,31 @@ def retrieve_group_userlist(request, group_id):
 
 
 @never_cache
+def retrieve_group_userlist_readonly(request, group_id):
+
+    from tardis.tardis_portal.forms import ManageGroupPermissionsForm
+    users = User.objects.filter(groups__id=group_id)
+    c = Context({'users': users, 'group_id': group_id,
+                 'manageGroupPermissionsForm': ManageGroupPermissionsForm()})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_user_list_readonly.html', c))
+
+
+@never_cache
+def retrieve_group_list_by_user(request):
+
+    groups = Group.objects.filter(groupadmin__user=request.user)
+    c = Context({'groups': groups})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/group_list.html', c))
+
+
+@never_cache
 @permission_required('auth.change_group')
 @login_required()
 def manage_groups(request):
 
-    groups = Group.objects.filter(groupadmin__user=request.user)
-    c = Context({'groups': groups})
+    c = Context({})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/manage_group_members.html', c))
 
@@ -1958,6 +2009,7 @@ def add_experiment_access_user(request, experiment_id, username):
     canRead = False
     canWrite = False
     canDelete = False
+    isOwner = False
 
     if 'canRead' in request.GET:
         if request.GET['canRead'] == 'true':
@@ -1970,6 +2022,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
+            
+    if 'isOwner' in request.GET:
+        if request.GET['isOwner'] == 'true':
+            isOwner = True   
 
     authMethod = request.GET['authMethod']
     user = auth_service.getUser(authMethod, username)
@@ -1995,6 +2051,7 @@ def add_experiment_access_user(request, experiment_id, username):
                             canRead=canRead,
                             canWrite=canWrite,
                             canDelete=canDelete,
+                            isOwner=isOwner,
                             aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
         acl.save()
@@ -2133,79 +2190,38 @@ def change_group_permissions(request, experiment_id, group_id):
                             'tardis_portal/form_template.html', c))
 
 
+@transaction.commit_on_success
 @never_cache
-@transaction.commit_manually
-@authz.experiment_ownership_required
-def add_experiment_access_group(request, experiment_id, groupname):
+def create_group(request):
 
-    create = False
-    canRead = False
-    canWrite = False
-    canDelete = False
+    if not 'group' in request.GET:
+        c = Context({'createGroupPermissionsForm': CreateGroupPermissionsForm() })
+        
+        response = HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/create_group.html', c))
+        return response        
+
     authMethod = localdb_auth_key
     admin = None
-
-    if 'canRead' in request.GET:
-        if request.GET['canRead'] == 'true':
-            canRead = True
-
-    if 'canWrite' in request.GET:
-        if request.GET['canWrite'] == 'true':
-            canWrite = True
-
-#    if 'canDelete' in request.GET:
-#        if request.GET['canDelete'] == 'true':
-#            canDelete = True
+    groupname = None
+    
+    if 'group' in request.GET:
+        groupname = request.GET['group']
 
     if 'admin' in request.GET:
         admin = request.GET['admin']
 
-    if 'create' in request.GET:
-        if request.GET['create'] == 'true':
-            create = True
+    if 'authMethod' in request.GET:
+        authMethod = request.GET['authMethod']        
 
     try:
-        experiment = Experiment.objects.get(pk=experiment_id)
-    except Experiment.DoesNotExist:
-        transaction.rollback()
-        return HttpResponse('Experiment (id=%d) does not exist' %
-                            (experiment_id))
-
-    if create:
-        try:
-            group = Group(name=groupname)
-            group.save()
-        except:
-            transaction.rollback()
-            return HttpResponse('Could not create group %s ' \
-            '(It is likely that it already exists)' % (groupname))
-    else:
-        try:
-            group = Group.objects.get(name=groupname)
-        except Group.DoesNotExist:
-            transaction.rollback()
-            return HttpResponse('Group %s does not exist' % (groupname))
-
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
-        pluginId=django_group,
-        entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-
-    if acl.count() > 0:
-        # An ACL already exists for this experiment/group.
+        group = Group(name=groupname)
+        group.save()
+    except:
         transaction.rollback()
         return HttpResponse('Could not create group %s ' \
-            '(It is likely that it already exists)' % (groupname))
+        '(It is likely that it already exists)' % (groupname))
 
-    acl = ExperimentACL(experiment=experiment,
-                        pluginId=django_group,
-                        entityId=str(group.id),
-                        canRead=canRead,
-                        canWrite=canWrite,
-                        canDelete=canDelete,
-                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    acl.save()
 
     adminuser = None
     if admin:
@@ -2235,7 +2251,7 @@ def add_experiment_access_group(request, experiment_id, groupname):
         adminuser.save()
 
     # add the current user as admin as well for newly created groups
-    if create and not request.user == adminuser:
+    if not request.user == adminuser:
         user = request.user
 
         groupadmin = GroupAdmin(user=user, group=group)
@@ -2244,7 +2260,80 @@ def add_experiment_access_group(request, experiment_id, groupname):
         user.groups.add(group)
         user.save()
 
+    c = Context({'group': group})
+    transaction.commit()
+
+    response = HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/create_group.html', c))
+    return response
+
+
+@never_cache
+@transaction.commit_manually
+@authz.experiment_ownership_required
+def add_experiment_access_group(request, experiment_id, groupname):
+
+    create = False
+    canRead = False
+    canWrite = False
+    canDelete = False
+    isOwner = False
+    authMethod = localdb_auth_key
+    admin = None
+
+    if 'canRead' in request.GET:
+        if request.GET['canRead'] == 'true':
+            canRead = True
+
+    if 'canWrite' in request.GET:
+        if request.GET['canWrite'] == 'true':
+            canWrite = True
+
+    if 'canDelete' in request.GET:
+        if request.GET['canDelete'] == 'true':
+            canDelete = True
+
+    if 'isOwner' in request.GET:
+        if request.GET['isOwner'] == 'true':
+            isOwner = True
+
+    try:
+        experiment = Experiment.objects.get(pk=experiment_id)
+    except Experiment.DoesNotExist:
+        transaction.rollback()
+        return HttpResponse('Experiment (id=%d) does not exist' %
+                            (experiment_id))
+
+    try:
+        group = Group.objects.get(name=groupname)
+    except Group.DoesNotExist:
+        transaction.rollback()
+        return HttpResponse('Group %s does not exist' % (groupname))
+
+    acl = ExperimentACL.objects.filter(
+        experiment=experiment,
+        pluginId=django_group,
+        entityId=str(group.id),
+        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+    if acl.count() > 0:
+        # An ACL already exists for this experiment/group.
+        transaction.rollback()
+        return HttpResponse('Could not create group %s ' \
+            '(It is likely that it already exists)' % (groupname))
+
+    acl = ExperimentACL(experiment=experiment,
+                        pluginId=django_group,
+                        entityId=str(group.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        isOwner=isOwner,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl.save()
+
     c = Context({'group': group,
+                'group_acl': acl,
                  'experiment_id': experiment_id})
     response = HttpResponse(render_response_index(request,
         'tardis_portal/ajax/add_group_result.html', c))
@@ -2294,6 +2383,60 @@ def stats(request):
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
+
+
+@transaction.commit_on_success
+@never_cache
+def create_user(request):
+
+    if not 'user' in request.POST:
+        c = Context({'createUserPermissionsForm': CreateUserPermissionsForm() })
+
+        response = HttpResponse(render_response_index(request,
+            'tardis_portal/ajax/create_user.html', c))
+        return response
+
+    authMethod = localdb_auth_key
+
+    if 'user' in request.POST:
+        username = request.POST['user']
+
+    if 'authMethod' in request.POST:
+        authMethod = request.POST['authMethod']
+
+    if 'email' in request.POST:
+        email = request.POST['email']    
+        
+    if 'password' in request.POST:
+        password = request.POST['password']
+
+    try:
+        validate_email(email)
+        
+        user = User.objects.create_user(username, email, password)
+
+        userProfile = UserProfile(user=user, isDjangoAccount=True)
+        userProfile.save()
+
+        authentication = UserAuthentication(userProfile=userProfile,
+                                            username=username,
+                                            authenticationMethod=authMethod)
+        authentication.save()
+
+    except ValidationError:
+        return HttpResponse('Could not create user %s ' \
+        '(Email address is invalid: %s)' % (username, email), status=403)
+    except:
+        transaction.rollback()
+        return HttpResponse('Could not create user %s ' \
+        '(It is likely that this username already exists)' % (username), status=403)    
+
+    c = Context({'user_created': username})
+    transaction.commit()
+
+    response = HttpResponse(render_response_index(request,
+        'tardis_portal/ajax/create_user.html', c))
+    return response
 
 
 def import_params(request):
@@ -2418,6 +2561,7 @@ def upload(request, dataset_id):
 
     return HttpResponse('True')
 
+
 @authz.dataset_write_permissions_required
 def import_staging_files(request, dataset_id):
     """
@@ -2431,11 +2575,38 @@ def import_staging_files(request, dataset_id):
 
     c = Context({
         'dataset_id': dataset_id,
-        'directory_listing': staging_traverse(staging),
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
         'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
      })
     return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+
+
+def list_staging_files(request, dataset_id):
+    """
+    Creates an jstree view of the staging area of the user, and provides
+    a selection mechanism importing files.
+    """
+
+    staging = get_full_staging_path(request.user.username)
+    if not staging:
+        return HttpResponseNotFound()
+
+    from_path = staging
+    root = False
+    try:
+        path_var = request.GET.get('path', '')
+        if not path_var:
+            root = True
+        from_path = path.join(staging, urllib2.unquote(path_var))
+    except ValueError:
+        from_path = staging
+
+    c = Context({
+        'dataset_id': dataset_id,
+        'directory_listing': staging_list(from_path, staging, root=root),
+     })
+    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)
+
 
 @authz.dataset_write_permissions_required
 def upload_files(request, dataset_id,
@@ -2697,6 +2868,32 @@ def single_search(request):
             ).__call__(request)
 
 
+def share(request, experiment_id):
+    '''
+    Choose access rights and licence.
+    '''
+    experiment = Experiment.objects.get(id=experiment_id)
+    
+    c = Context({})
+    
+    c['has_write_permissions'] = \
+        authz.has_write_permissions(request, experiment_id)
+    c['has_download_permissions'] = \
+        authz.has_experiment_download_access(request, experiment_id)
+    if request.user.is_authenticated():
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)    
+
+    domain = Site.objects.get_current().domain
+    public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
+
+    c['experiment'] = experiment
+    c['public_link'] = public_link
+    c['domain'] = domain
+
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/ajax/share.html', c))
+
+
 @authz.experiment_ownership_required
 def choose_rights(request, experiment_id):
     '''
@@ -2706,7 +2903,11 @@ def choose_rights(request, experiment_id):
     def is_valid_owner(owner):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
-        return owner.get_profile().isValidPublicContact()
+        
+        userProfile, created = UserProfile.objects.get_or_create(
+            user=owner)
+
+        return userProfile.isValidPublicContact()
 
     # Forbid access if no valid owner is available (and show error message)
     if not any([is_valid_owner(owner) for owner in experiment.get_owners()]):
@@ -2806,6 +3007,18 @@ def retrieve_licenses(request):
     return HttpResponse(json.dumps([model_to_dict(x) for x in licenses]))
 
 
+def experiment_public_access_badge(request, experiment_id):
+    try:
+        experiment = Experiment.objects.get(id=experiment_id)
+    except Experiment.DoesNotExist:
+        HttpResponse('')
+    
+    if authz.has_experiment_access(request, experiment_id):
+        return HttpResponse(render_public_access_badge(experiment))
+    else:
+        return HttpResponse('')
+
+
 @login_required
 def manage_user_account(request):
     user = request.user
@@ -2877,7 +3090,6 @@ def stage_files_to_dataset(request, dataset_id):
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
 
-    Returns a JSON list of created paths for the files.
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
@@ -2889,7 +3101,6 @@ def stage_files_to_dataset(request, dataset_id):
         return response
 
     user = request.user
-    dataset = Dataset.objects.get(id=dataset_id)
 
     # Incoming data MUST be JSON
     if not request.META['CONTENT_TYPE'].startswith('application/json'):
@@ -2900,23 +3111,9 @@ def stage_files_to_dataset(request, dataset_id):
     except:
         return HttpResponse(status=400)
 
-    def create_staging_datafile(filepath):
-        url, size = get_staging_url_and_size(user.username, filepath)
-        datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
-                                filename=path.basename(filepath),
-                                size=size)
-        datafile.verify(allowEmptyChecksums=True)
-        datafile.save()
-        return datafile
+    create_staging_datafiles.delay(files, user.id, dataset_id)
 
-    datafiles = [create_staging_datafile(f) for f in files]
-
-    return HttpResponse(json.dumps([df.get_download_url() for df in datafiles]),
-                        status=201)
-
-
-
+    email = {'email' : user.email}
+    return HttpResponse(json.dumps(email), status=201)
 
 

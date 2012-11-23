@@ -1,0 +1,63 @@
+{% load url from future %}
+<div class="groups">
+{% if group_acls_system_owned or group_acls_user_owned %}
+  <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+      <div class="span10">
+      <table class="table table-striped">
+              <tr>
+                  <th>
+                      Name
+                  </th>               
+                  <th style="width: 120px">
+                      Permissions
+                  </th>                
+              </tr>   
+              {% for group_acl in group_acls_system_owned %}
+              {% with group=group_acl.get_related_object_group %}               
+                  <tr>
+                      <td>
+                          {{ group.name }}
+                      </td>
+                      <td>
+                          {% if group_acl.canRead %}
+                          <span class="label label-success">Read</span>
+                          {% endif %}
+                          {% if group_acl.canWrite %}
+                          <span class="label label-success">Edit</span>
+                          {% endif %}
+                          {% if group_acl.isOwner %}
+                          <span class="label label-info">Owner</span>
+                          {% endif %}
+                      </td>
+                  </tr>  
+              {% endwith %}
+              {% endfor %}
+              
+              {% for group_acl in group_acls_user_owned %}
+              {% with group=group_acl.get_related_object_group %}
+                  <tr>
+                      <td>
+                          {{ group.name }}
+                      </td>
+                      <td>
+                          {% if group_acl.canRead %}
+                          <span class="label label-success">Read</span>
+                          {% endif %}
+                          {% if group_acl.canWrite %}
+                          <span class="label label-success">Edit</span>
+                          {% endif %}
+                          {% if group_acl.isOwner %}
+                          <span class="label label-info">Owner</span>
+                          {% endif %}
+                      </td>
+                  </tr>    
+                  {% endwith %}
+                  {% endfor %}
+                  </table>
+                  </div>
+{% else %}
+<p>
+<em>There are currently no groups with access to this experiment.</em>
+</p>
+{% endif %}
+</div> <!-- groups -->

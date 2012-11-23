@@ -1,0 +1,51 @@
+<div class="users">
+  <div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+    <div class="span10">
+        <table class="table table-striped">
+                <tr>
+                    <th>
+                        Username
+                    </th>
+                    <th>
+                        Name
+                    </th>               
+                    <th style="width: 120px">
+                        Permissions
+                    </th>                
+                </tr>
+                {% for user_acl in user_acls %}
+                  {% with user=user_acl.get_related_object %}
+                  {% load url from future %}
+                <tr>
+                    <td>
+                        {{ user.username }}
+                    </td>                    
+                    <td>
+                        {% if user.first_name and user.last_name %}
+                            {{ user.first_name }} {{ user.last_name }}
+                        {% else %}
+                            <em>none</em>
+                        {% endif %}
+                    </td>                   
+                    <td>
+                          {% if user_acl.canRead %}
+                          <span class="label label-success">Read</span>
+                          {% endif %}
+                          {% if user_acl.canWrite %}
+                          <span class="label label-success">Edit</span>
+                          {% endif %}
+                          {% if user_acl.isOwner %}
+                          <span class="label label-info">Owner</span>
+                          {% endif %}      
+                    </td>            
+                </tr>   
+                  {% endwith %}
+                {% endfor %}                   
+        </table>        
+        
+      
+    </div>
+
+  </div> <!-- access_list_user -->
+
+</div>

@@ -7,24 +7,29 @@
 
 {% capture as action_bar %}
   {% if has_download_permissions or has_write_permissions %}
-  <p>
-    {% if has_write_permissions %}
-    <a class="add-dataset btn btn-primary pull-right"
-       href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
-      <i class="icon-plus"></i>
-      Add new
-    </a>
-    {% endif %}
-
     {% if has_download_permissions %}
-      <button type="submit" class="btn btn-primary">
+      <button type="submit" class="btn btn-mini download-selected">
         <i class="icon-download-alt"></i>
         Download Selected
       </button>
     {% endif %}
-  </p>
   {% endif %}
 {% endcapture %}
+
+<h3 style="display: inline">
+{{experiment.datasets.count}} Dataset{% if experiment.datasets.count|gt:1 %}s{%endif%}
+</h3>
+{% if has_download_permissions or has_write_permissions %}
+
+  {% if has_write_permissions %}
+  <a class="add-dataset btn btn-mini pull-right"
+     href="{% url 'tardis.tardis_portal.views.add_dataset' experiment.id %}">
+    <i class="icon-plus"></i>
+    Add New
+  </a>
+  {% endif %}
+{% endif %}
+<br/>
 
 <div id="experiment_datasets">
   <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">

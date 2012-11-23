@@ -1,0 +1,622 @@
+{% load static from staticfiles %}
+{% load url from future %}
+{% load experiment_tags %}
+{% block script %}
+<script type="text/javascript">
+$('.public_access_link').unbind('click');
+$('.public_access_link').bind('click', function(evt) {
+    var experiment_id = $(this).attr('data-experiment_id');
+    var modal = $('#modal-public-access');
+
+
+    modal.find('.modal-body').html('');
+    modal.find('.loading-placeholder').show();
+    modal.modal('show');
+
+    modal.find('.modal-body')
+         .load("/ajax/experiment/" + experiment_id + "/rights", function(response, status, xhr) {
+            modal.find('.loading-placeholder').hide();
+            
+            if (status == "error") {
+                $(this).html(response);
+            }
+            
+            $('#legal-section').hide();
+        });
+       
+});
+
+
+$('#modal-public-access').bind('hidden', function () {
+  $('.tab-pane').trigger('experiment-change');
+});
+
+
+//beginswith, endswith
+String.prototype.beginsWith = function(t, i) { if (i==false) { return
+(t == this.substring(0, t.length)); } else { return (t.toLowerCase()
+== this.substring(0, t.length).toLowerCase()); } }
+
+String.prototype.endsWith = function(t, i) { if (i==false) { return (t
+== this.substring(this.length - t.length)); } else { return
+(t.toLowerCase() == this.substring(this.length -
+t.length).toLowerCase()); } }
+
+// user sharing modal
+
+$(".share_link").unbind('click');
+$('.share_link').bind('click', function(evt) {
+    var experiment_id = $(this).attr('data-experiment_id');
+    var modal = $('#modal-share');
+
+
+    modal.find('.modal-body').html('');
+    modal.find('.loading-placeholder').show();
+    modal.modal('show');
+
+    modal.find('.modal-body')
+         .load("/experiment/control_panel/" + experiment_id + "/access_list/user/", function() {
+            modal.find('.loading-placeholder').hide();
+
+               $("#id_entered_user").keypress(function(e) {
+                   // Reset autocomplete user when typing in the user edit field.
+                   $(this).siblings("#id_autocomp_user").val('');
+                   $(this).siblings("#id_authMethod").attr('disabled', '');
+                   
+                   if (e.keyCode == 13)
+                   {
+                       $("#user.form_submit").click();
+                   }
+               });
+               // Load user list and activate field autocompletion
+               $.ajax({
+                 'dataType': 'json',
+                 'url': '/ajax/user_list/',
+                 'success': function(users) {
+                   if($('select#id_authMethod option').length == 1)
+                   {
+                       $('#id_authMethod_label').hide();
+                       $('#id_authMethod').hide();
+                   }
+                   $("#id_entered_user").autocomplete({
+                       'source': _.bind( function(query, callback) {
+                         var authMethod = $("#id_authMethod").val();
+                         callback(
+                             userAutocompleteHandler(
+                                 query.term, this.users, authMethod));
+                       }, { 'users': users })
+                   });
+                 }
+               });
+
+
+             $("#user.form_submit").unbind('click');
+             $("#user.form_submit").click(function(event) {
+               event.preventDefault();
+               var entered_user = $(this).siblings("#id_entered_user").val();
+               var autocomp_user = $(this).siblings("#id_autocomp_user").val();
+               if (autocomp_user != "") {
+                 // Use the details from the autocomplete.
+                 autocomp_user = autocomp_user.split(":");
+                 var username = autocomp_user[0];
+                 var authMethod = autocomp_user[1];
+               } else {
+                 // Autocomplete failed. Use the entered username as-is.
+                 var username = entered_user;
+                 var authMethod = $(this).siblings("#id_authMethod").val();
+               }
+               var experiment_id = $(this).siblings(".experiment_id").val();
+               var users_div = $(this).parents('.access_list1').children('.users');
+               
+               var permissions = $(this).siblings("#id_permission").val();
+               
+               var canDelete = false
+               if(permissions == "read")
+               {
+                   var canRead = true
+               }
+               else if(permissions == "edit")
+               {
+                   var canRead = true
+                   var canWrite = true
+               }
+               else if(permissions == "owner")
+               {
+                   var canRead = true
+                   var canWrite = true
+                   var isOwner = true
+                   var canDelete = true
+               }
+
+               var permissions = '/?authMethod=' + authMethod + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
+               action = '/experiment/control_panel/' + experiment_id +
+                 '/access_list/add/user/' + username + permissions;
+
+               $.ajax({
+                 'async': false,
+                 'global': true,
+                 type: "GET",
+                 url: action,
+                 success: function(data) {
+                     users_div.hide().append(data).fadeIn();
+                     // todo this is a duplicate function..
+                     $(".remove_user").unbind('click');
+                     $(".remove_user").click(function() {
+                       var href = $(this).attr("href");
+                       remove_user = $(this);
+                       $.ajax({
+                         'async': false,
+                         'global': false,
+                         'url': href,
+                         'success': function (data) {
+                           val = data;
+                           if(val == "OK") {
+                             remove_user.fadeOut(300, function(){ remove_user.parents('.access_list_user').remove(); });
+                           }
+                           else { alert(val); }
+                         }
+                       }); // end ajax
+                       return false;
+                     }); // end remove user
+                   },
+                 error: function(data) { alert('Error adding user'); }
+               });
+               return false;
+             });
+
+             $(".remove_user").unbind('click');
+             $(".remove_user").click(function() {
+
+               var href = $(this).attr("href");
+               remove_user = $(this);
+               $.ajax({
+                 'async': false,
+                 'global': false,
+                 'url': href,
+                 'success': function (data) {
+                   val = data;
+                   if(val == "OK") {
+                     remove_user.fadeOut(300, function(){ remove_user.parents('.access_list_user').remove(); });
+                   }
+                   else { alert(val); }
+                 }
+               }); // end ajax
+
+               return false;
+             }); // end remove user
+            });            
+       
+});
+
+$('#modal-share').bind('hidden', function () {
+  $('.tab-pane').trigger('experiment-change');
+});
+
+$('#modal-share-group').bind('hidden', function () {
+  $('.tab-pane').trigger('experiment-change');
+});
+
+
+// group sharing modal
+
+$(".share_link_group").unbind('click');
+$('.share_link_group').bind('click', function(evt) {
+    var experiment_id = $(this).attr('data-experiment_id');
+    var modal = $('#modal-share-group');
+
+
+    modal.find('.modal-body').html('');
+    modal.find('.loading-placeholder').show();
+    modal.modal('show');
+
+    modal.find('.modal-body')
+         .load("/experiment/control_panel/" + experiment_id + "/access_list/group/", function() {
+            modal.find('.loading-placeholder').hide();
+
+            var users = null;
+
+            var groups = (function () {
+              var val = null;
+              $.ajax({
+                'async': false,
+                'global': false,
+                'url': '/ajax/group_list/',
+                'success': function (data) { val = data; }
+              });
+              return val;
+            })();
+            
+            $("#id_addgroup").keypress(function(e) {
+                 if (e.keyCode == 13)
+                 {
+                     $("#group.form_submit").click();
+                 }
+             });
+
+            // TODO: Replace with Bootstrap typeahead
+            $(".groupsuggest").typeahead({
+              'source': groups.split(" ~ ")
+            });
+            
+            // view group members
+            $(".member_list_user_toggle").unbind('click');
+            $(".member_list_user_toggle").bind('click', function(evt){
+                evt.preventDefault()
+
+                var icon = $(this).find('i');
+                icon.toggleClass('icon-folder-open icon-folder-close');
+                $(this).toggleClass('members-shown members-hidden');
+
+                var user_list = $(this).parents('.group').find('.access_list');
+                // If not showing members, just hide user list
+                if (!$(this).hasClass('members-shown')) {
+                  user_list.hide();
+                  return;
+                }
+
+                user_list.html(loadingHTML);
+                // Load (jQuery AJAX "load()") and show access list
+                user_list.load(this.href, function() {
+                  // Load user list and activate field autocompletion
+                  $.ajax({
+                    'dataType': 'json',
+                    'url': '/ajax/user_list/',
+                    'success': function(users) {
+                      $("#id_adduser").autocomplete({
+                          'source': _.bind( function(query, callback) {
+                            var authMethod = $("#id_authMethod").val();
+                            callback(
+                                userAutocompleteHandler(
+                                    query.term, this.users, authMethod));
+                          }, { 'users': users })
+                      });
+                    }
+                  });
+                }).show();
+            });            
+
+            $("#group.form_submit").unbind('click');
+            $("#group.form_submit").click(function(event) {
+              event.preventDefault();
+
+              // TODO: shift group creation to group management page
+              var experiment_id = $(this).parents('.access_list2').find(".experiment_id").val();
+              // var usersuggest = $(this).parents('.access_list2').find(".usersuggest").val();
+              var groupsuggest = $(this).parents('.access_list2').find(".groupsuggest").val();
+              // var authMethod = $(this).parents('.access_list2').find("#id_authMethod").val();
+              var groups_div = $(this).parents('.access_list2').children('.groups');
+              // var create = $(this).parents('.access_list2').find(".creategroup").is(':checked');
+              // var canRead = $(this).parents('.access_list2').find(".canRead").is(':checked');
+              // var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
+              // var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
+              // var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
+              
+              action = '/experiment/control_panel/' + experiment_id + '/access_list/add/group/' + groupsuggest
+
+              var permissions = $(this).siblings("#id_permission_group").val();
+              
+              var canDelete = false
+              if(permissions == "read")
+              {
+                  var canRead = true
+              }
+              else if(permissions == "edit")
+              {
+                  var canRead = true
+                  var canWrite = true
+              }
+              else if(permissions == "owner")
+              {
+                  var canRead = true
+                  var canWrite = true
+                  var isOwner = true
+                  var canDelete = true
+              }
+
+              var permissions = '/?canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&isOwner=' + isOwner;
+              action = action + permissions;
+
+              $.ajax({
+                'async': false,
+                'global': true,
+                type: "GET",
+                url: action,
+                success: function(data) {
+                groups_div.hide().append(data).fadeIn();
+                
+                // view group members
+                $(".member_list_user_toggle").unbind('click');
+                $(".member_list_user_toggle").bind('click', function(evt){
+                    evt.preventDefault()
+
+                    var icon = $(this).find('i');
+                    icon.toggleClass('icon-folder-open icon-folder-close');
+                    $(this).toggleClass('members-shown members-hidden');
+
+                    var user_list = $(this).parents('.access_list_group').find('.access_list');
+                    // If not showing members, just hide user list
+                    if (!$(this).hasClass('members-shown')) {
+                      user_list.hide();
+                      return;
+                    }
+                    
+                    user_list.html(loadingHTML);
+                    // Load (jQuery AJAX "load()") and show access list
+                    user_list.load(this.href, function() {
+                      // Load user list and activate field autocompletion
+                      $.ajax({
+                        'dataType': 'json',
+                        'url': '/ajax/user_list/',
+                        'success': function(users) {
+                          $("#id_adduser").autocomplete({
+                              'source': _.bind( function(query, callback) {
+                                var authMethod = $("#id_authMethod").val();
+                                callback(
+                                    userAutocompleteHandler(
+                                        query.term, this.users, authMethod));
+                              }, { 'users': users })
+                          });
+                        }
+                      });
+                    }).show();
+                });  // end member_list_user_toggle                
+
+                // todo this is a duplicate function..
+                $(".remove_group").unbind('click');
+                    $(".remove_group").click(function() {
+                      var href = $(this).attr("href");
+                      remove_group = $(this);
+
+                      $.ajax({
+                        'async': false,
+                        'global': false,
+                        'url': href,
+                        'success': function (data) {
+                          val = data;
+                          if(val == "OK") {
+                        remove_group.fadeOut(300, function(){
+                          remove_group.parents('.access_list_group').remove();
+                        });
+                          }
+                          else { alert(val); }
+                        }
+                      }); // end ajax
+                      return false;
+                    }); // end remove group
+                                      
+                },
+                error: function(data) { alert('Error adding group!'); }
+              });
+              return false;
+            });
+
+            $(".remove_group").unbind('click');
+            $(".remove_group").click(function() {
+
+              var href = $(this).attr("href");
+
+              remove_group = $(this);
+
+              $.ajax({
+                'async': false,
+                'global': false,
+                'url': href,
+                'success': function (data) {
+                  val = data;
+                  if(val == "OK") {
+                    remove_group.fadeOut(300, function(){
+                      remove_group.parents('.access_list_group').remove();
+                        });
+                  }
+                  else { alert("val"); }
+                }
+              }); // end ajax
+              
+              return false;
+            }); // end remove group
+            
+    });
+});
+
+$(document).ready(function() {
+    
+// user access list    
+  var $target_user = $("#experiment_user_list");
+  $target_user.html(loadingHTML + "</br>");
+  var href = "/experiment/control_panel/{{experiment.id}}/access_list/user/readonly/"
+  $target_user.load(href);
+
+//group access list
+  var $target_group = $("#experiment_group_list");
+  $target_group.html(loadingHTML + "</br>");
+  var href = "/experiment/control_panel/{{experiment.id}}/access_list/group/readonly/"
+  $target_group.load(href);  
+
+// token access list
+  var $target_token = $("#experiment_token_list");
+  $target_token.html(loadingHTML + "</br>");
+  var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
+  $target_token.load(href);
+  
+
+  $('.token_delete').live('click', function(evt){
+      var delRow = $(this).parents('tr')
+      evt.preventDefault();
+      var $toggle = $($(this).attr('data-toggle_selector'));
+      $.post(this.href, {}, function()
+      {
+          delRow.remove();          
+      });
+  });
+
+  $(".create_token_link").unbind('click');
+  $('.create_token_link').bind('click', function(evt){
+     evt.preventDefault();
+     var $toggle = $(this).siblings('.access_list_token_toggle');
+     var $target_token = $("#experiment_token_list");
+     $target_token.html(loadingHTML + "</br>");
+     $.post(this.href, {}, function(data)
+     {
+         var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
+         $target_token.load(href);
+     });  // TODO error-handling
+     
+  });
+  
+ });
+</script>
+{% endblock %}
+{% block content %}
+
+<!-- Scripts -->
+{% load mustachejs %}
+{% mustachejs "tardis_portal/license_selector" %}
+{% mustachejs "tardis_portal/rights_update_message" %}
+{% mustachejs "tardis_portal/ajax_error" %}
+
+<!-- public access modal !-->
+<div class="modal hide fade" id="modal-public-access">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Public Access</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+</div>
+
+<!-- sharing user modal !-->
+<div class="modal hide fade" id="modal-share">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">User Sharing</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body">
+  </div>
+
+</div>
+
+<!-- sharing group modal !-->
+<div class="modal hide fade" id="modal-share-group">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Group Sharing</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body">
+  </div>
+
+</div>
+
+<div class="sharing-sections">
+    <div class="sharing-section public-access row-fluid">
+    <h3>Public Access</h3>
+        <p>
+            <dl>
+              <dt>Current Public Access Settings</dt>
+              <dd style="padding-top: 5px;">
+                {{ experiment|experiment_public_access_badge }}
+              </dd>
+            </dl>            
+            <dl>
+              <dt>Current License</dt>
+              <dd>
+                {% if experiment.license_id %}
+                  <div class="row-fluid">
+                    <div class="span6">
+                      This experiment data is licensed under
+                      <a rel="license"
+                         property="dc:license"
+                         href="{{ experiment.license.url }}">
+                        {{ experiment.license.name }}</a>.
+                    </div>
+                    {% if experiment.license.image_url != None %}
+                    <div class="span6">
+                      <img src="{{ experiment.license.image_url }}"/>
+                    </div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <abbr title="All rights reserved">
+                    Unspecified
+                  </abbr>
+                {% endif %}
+              </dd>
+            </dl>
+        </p>
+        {% if is_owner %}
+        <a data-experiment_id="{{experiment.id}}" class="public_access_link btn btn-mini" title="Change">
+          <i class="icon-cog"></i>
+          Change Public Access
+        </a>
+        {% endif %}
+    </div>
+    <hr/>
+    <div class="sharing-section sharing row-fluid">
+    <h3>Sharing</h3>
+    <h4>Users</h4>
+    <p>Users who have a share in this experiment:</p>
+    <div id="experiment_user_list"/>
+    {% if is_owner %}
+    <a data-experiment_id="{{experiment.id}}" class="share_link btn btn-mini" title="Change">
+        <i class="icon-share"></i>
+        Change User Sharing
+    </a>
+    {% endif %}
+    <br/><br/> 
+    <h4>Groups</h4>       
+    <p>Groups who have a share in this experiment:</p>
+    <div id="experiment_group_list"/> 
+    {% if is_owner %}       
+    <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-mini" title="Change">
+        <i class="icon-share"></i>
+        Change Group Sharing
+    </a>    
+    {% endif %}
+    </div>
+    <hr/>
+    <div class="sharing-section sharing row-fluid">
+    <h3>Links</h3>
+        {% if public_link %}
+        <p>This experiment can be viewed by everybody with the link below:</p>
+            <br/>
+        <p><div class="copylink">{{domain}}{{experiment.get_absolute_url}}</div><br/></p>
+            {% if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA %}
+                <p>This experiment has been set to <em>'metadata only'</em>. Registered users must be explicitly allowed to access files. Alternately, a temporary link can be created and privately shared for direct access.</p>
+            {% endif %}
+        {% else %}
+        <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
+        {% endif %}
+    
+    {% if has_download_permissions %}
+    <br/>
+    <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
+    <div id="experiment_token_list"/>
+
+        {% if is_owner %}
+        <a title="Create New Temporary Link"
+            href="{{ experiment.get_create_token_url }}"
+            class="create_token_link btn btn-mini">
+            <i class="icon-plus-sign"></i>
+            Create New Temporary Link 
+        </a>
+        {% endif %}
+    {% endif %}    
+    </div>
+    </div>
+
+{% endblock %}
+

@@ -4,10 +4,14 @@
 {% load capture %}
 {% load dataset_tags %}
 {% load uploadify_tags %}
+{% load basiccomparisonfilters %}
 
 {% block script %}
 <script type="text/javascript">
     var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
+    
+    var shown_datafile_href = "";
+    var prev_file_select = null;
 
     // file selectors
     jQuery('.dataset_selector_all').live('click', function() {
@@ -82,14 +86,25 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        $.post(href, form.serialize(), function(data) {
-            contentContainer.html(data);
-            if (contentContainer.find('form').length > 0) {
-              contentContainer.parents('.modal').find('.modal-footer').show();
-            }
-        });
+        
+        $.ajax({
+          type: 'POST',
+          url: href,
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length > 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').show();
+                }
+            },
+          async:false
+        });        
+        
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        
+        $('#metadata-pane').trigger('reload');
+
         return false;
     });
     $('#edit_metadata_form').live('submit', function(e) {
@@ -97,14 +112,23 @@
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
 
-        $.post(form.attr('action'), form.serialize(), function(data) {
-          contentContainer.html(data);
-          if (contentContainer.find('form').length > 0) {
-            contentContainer.parents('.modal').find('.modal-footer').show();
-          }
-        });
+        $.ajax({
+          type: 'POST',
+          url: form.attr('action'),
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length > 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').show();
+                }
+            },
+          async:false
+        });        
+
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
+        $('#metadata-pane').trigger('reload');
+        
         return false;
     });
 
@@ -113,19 +137,25 @@
         evt.preventDefault();
         var $this = $(this);
         var $datafile_metadata_container =
-          $this.parents('.datafile').find('.datafile-info');
+          $('#datafile-info');
 
-        $this.toggleClass('metadata_shown metadata_hidden');
         $datafile_metadata_container.toggle();
+        
+        if(prev_file_select)
+        {
+            prev_file_select.removeClass("file-select");
+        }       
+        
+        var file_select = $this.parents('tr.datafile');
+        file_select.addClass("file-select");
+        prev_file_select = file_select;
 
-        if ($this.hasClass('metadata_shown')) {
-            var href = $this.attr("href");
-            $datafile_metadata_container.html(loadingHTML);
-            $datafile_metadata_container.load(href);
-            $datafile_metadata_container.show();
-        } else {
-            $datafile_metadata_container.hide();
-        }
+        var href = $this.attr("href");
+        $datafile_metadata_container.html(loadingHTML);
+        $datafile_metadata_container.load(href);
+        shown_datafile_href = href
+        $datafile_metadata_container.show();
+
     });
 
     var loadModalRemoteBody = function(trigger, modal) {
@@ -276,10 +306,17 @@
 {% endblock %}
 
 {% block content %}
+
+<script type="text/javascript">
+$('#modal-metadata .submit-button').live('click', function() {
+  $('#modal-metadata .modal-body form').submit();
+});
+</script>
+
 <div class="modal hide fade" id="modal-metadata">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Add Parameters</h1>
+    <h1 class="title"></h1>
   </div>
 
   <div class="loading-placeholder" style="display: none">
@@ -296,16 +333,10 @@
   </div>
 </div>
 
-<script type="text/javascript">
-$('#modal-metadata .submit-button').click(function() {
-  $('#modal-metadata .modal-body form').submit();
-});
-</script>
-
 <div class="modal hide fade" id="modal-upload-files">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
-    <h1 class="title">Upload Files</h1>
+    <h1 class="title">Import Files</h1>
   </div>
 
   <div class="loading-placeholder" style="display: none">
@@ -317,12 +348,13 @@ $('#modal-metadata .submit-button').click(function() {
 </div>
 
 <div class="page-header">
+  <h4>Dataset</h4>
   {% if has_write_permissions %}
   <div class="pull-right">
-    <a class="btn btn-warning" title="Edit Dataset"
+    <a class="btn btn-warning btn-mini" title="Edit Dataset"
        href="{{ dataset.get_edit_url }}">
       <i class="icon-pencil"></i>
-      Edit
+      Edit Dataset Description
     </a>
   </div>
   {% endif %}
@@ -334,15 +366,41 @@ $('#modal-metadata .submit-button').click(function() {
     {% endif %}
   </h1>
   {% if from_experiment %}
-  <h4>
-      From
-      <a property="dc:title"
+  <h4 style="padding-top: 4px">
+      <small>
+      From the experiment: 
+      <a
          class="experiment-link"
          href="{{ from_experiment.get_absolute_url }}">
       {{ from_experiment.title }}
       </a>
+      </small>
   </h4>
+  {% else %} 
+        {% if other_experiments|length == 1 %}
+        <h4 style="padding-top: 4px">
+            <small>
+            From the experiment:        
+        {% for other_experiment in other_experiments %}
+            <a
+               class="experiment-link"
+               href="{{ other_experiment.get_absolute_url }}">
+            {{ other_experiment.title }}
+            </a>
+            </small>
+        </h4>
+        {% endfor %}    
+        {% endif %}
+    
   {% endif %}
+  {% if dataset.immutable %}
+  <h4 style="padding-top: 4px">
+      <small>
+      This experiment has been set to immutable on creation (cannot be modified)
+      </small>
+  </h4>  
+  {% endif %}
+  
   <p style="text-align: right">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
@@ -351,12 +409,14 @@ $('#modal-metadata .submit-button').click(function() {
 </div>
 
 <div class="row-fluid" >
-  <div class="span6">
+  <div class="span7">
     <div class="row-fluid" style="margin-bottom: 20px">
+    <h3>Preview Images</h3>
+    <div class="info-box">        
     {% if dataset.get_images.count > 0 %}
-      <div id="preview" class="carousel" style="margin: 0 auto 0 auto">
+      <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
-        <div class="carousel-inner" style="background-color: black;">
+        <div class="carousel-inner" style="background-color: white;">
           {% for datafile in dataset.get_images %}
             <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
               {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!320,240' rotation=0 quality='native' format='jpg' as thumbnail %}
@@ -380,39 +440,56 @@ $('#modal-metadata .submit-button').click(function() {
         {% endif %}
       </div>
     {% else %}
-      <div class="alert">No previews available</div>
+          <div class="alert">No previews available</div>
     {% endif %}
+      </div>    
     </div>
-    <div id="metadata-pane" class="row-fluid">
+    <div id="metadata-pane-datafile" class="row-fluid">
+      {% include "tardis_portal/ajax/datafile_metadata.html" %}
+    </div>
+    <div id="metadata-pane" class="row-fluid">    
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
+    </div>
+    <div id="other-experiments-pane">
+        <h3>Other Experiments</h3>
+        <div class="info-box">
+        {% if other_experiments|length > 1 %}
+        <div>
+        <em>This dataset also appears in these experiments.</em>
+        </div>
+        <br/>
+        <div id="other-experiments-content">
+                {% for other_experiment in other_experiments %}
+                {% if other_experiment != from_experiment %}
+                    <div>
+                    <a
+                       class="experiment-link"
+                       href="{{ other_experiment.get_absolute_url }}">
+                    {{ other_experiment.title }}
+                    </div>
+                {% endif %}
+                {% endfor %}
+        </div>        
+        {% else %}
+        <em>This dataset doesn't appear in any other experiments.</em>
+        {% endif %}
+        </div>
     </div>
   </div>
   <hr class="visible-phone"/>
-  <div class="span6">
-    <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
+  <div class="span5">
+      <h3 style="display: inline">
+      {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
+      </h3>      
+      
+    <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
       <div class="row-fluid">
         <div class="pull-left">
           {% if has_download_permissions %}
-            <button type="submit" class="btn btn-primary btn-mini">
+            <button type="submit" class="btn btn-mini download-selected">
               <i class="icon-download-alt"></i>
               Download Selected Files
             </button>
-          {% endif %}
-        </div>
-        <div class="pull-right">
-          {% if not dataset.immutable %}
-            {% if has_write_permissions %}
-                <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-primary btn-mini" title="Upload Files">
-                  <i class="icon-upload-alt"></i>
-                  Upload Files
-                </a>
-            {% endif %}
-            {% if has_write_permissions and has_staging_access %}
-                <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-primary btn-mini" title="Import Staging Files">
-                  <i class="icon-arrow-right"></i>
-                  Import Staging Files
-                </a>
-            {% endif %}
           {% endif %}
         </div>
       </div>
@@ -429,16 +506,17 @@ $(document).ready(function(){
   // Create a reload event handler
   $('#metadata-pane').on('reload', function() {
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_dataset_metadata' dataset.id %}');
+    if(prev_file_select)
+    {
+        $('#datafile-info').load(prev_file_select.find('.datafile-info-toggle').attr('href'));
+    }
   });
-  // Reload metadata when we close the metadata modal
-  $('#modal-metadata').on('hide', function() {
-    $('#metadata-pane').trigger('reload');
-  })
 
   // Create a reload event handler
   $('#datafiles-pane').on('reload', function() {
     $(this).load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
   });
+
   // Reload data file list when we close the upload modal
   $('#modal-upload-files').on('hide', function() {
     $('#datafiles-pane').trigger('reload');

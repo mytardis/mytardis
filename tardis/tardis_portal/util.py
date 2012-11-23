@@ -41,3 +41,22 @@ def _mustache_render(tmpl, data):
 
 def render_mustache(template_name, data):
     return _mustache_render(_load_template(template_name), data)
+    
+def render_public_access_badge(experiment):
+    if experiment.public_access == experiment.PUBLIC_ACCESS_NONE:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'No public access',
+            'label': 'Private',
+            'private': True,
+        })
+    if experiment.public_access == experiment.PUBLIC_ACCESS_METADATA:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'Only descriptions are public, not data',
+            'label': 'Metadata',
+        })
+    if experiment.public_access == experiment.PUBLIC_ACCESS_FULL:
+        return render_mustache('tardis_portal/badges/public_access', {
+            'title': 'All data is public',
+            'label': 'Public',
+            'public': True,
+        })    

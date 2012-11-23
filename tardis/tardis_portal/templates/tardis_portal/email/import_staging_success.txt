@@ -1,0 +1,4 @@
+Hello {{ username }} - Your files were imported successfully. Click here to view your data: {{ current_site }}/dataset/{{ dataset_id }}
+
+Regards,
+MyTardis Admin

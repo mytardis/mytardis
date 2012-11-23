@@ -38,7 +38,7 @@ class Migration(DataMigration):
                         return file_path
             raise IOError("Unable to resolve URL: " + df.url)
 
-        for df in orm.Dataset_File.objects.all():
+        for df in orm.Dataset_File.objects.iterator():
             # Only looking at "tardis://" urls
             if not (df.protocol == '' or df.protocol == 'tardis'):
                 continue

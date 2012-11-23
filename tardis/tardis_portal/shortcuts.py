@@ -1,4 +1,4 @@
-import json, string, cgi
+import json, string, cgi, re
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
@@ -12,7 +12,7 @@ from tardis.tardis_portal.models import \
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 from django.template.loader import render_to_string
-
+from django.contrib.sites.models import Site
 
 def render_response_index(request, *args, **kwargs):
     return render(request, *args, **kwargs)
@@ -56,6 +56,32 @@ def return_response_error_message(request, redirect_path, context):
 
 def return_response_error(request):
     return HttpResponseForbidden(render_response_index(request, '403.html', {}))
+
+
+def get_experiment_referer(request, dataset_id):
+    from tardis.tardis_portal.auth.decorators import get_accessible_experiments_for_dataset
+
+    try:
+        from_url = request.META['HTTP_REFERER']
+        from_url_split = re.sub('^https?:\/\/', '', from_url).split('/')
+
+        domain_url_split = Site.objects.get_current().domain.split('//')
+
+        referer = 0
+        if not from_url_split[0] == domain_url_split[1]:
+            return None
+
+        if from_url_split[1] == 'experiment' and from_url_split[2] == 'view':
+            referer = int(from_url_split[3])
+        else:
+            return None
+
+        for experiment in get_accessible_experiments_for_dataset(request, dataset_id):
+            if experiment.id == referer:
+                return experiment
+                break
+    except:
+        pass
 
 
 def render_to_file(template, filename, context):

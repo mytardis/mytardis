@@ -231,20 +231,19 @@ class AddGroupPermissionsForm(forms.Form):
 
     addgroup = forms.CharField(label='Group', required=False, max_length=100)
     addgroup.widget.attrs['class'] = 'groupsuggest'
-    create = forms.BooleanField(label='CREATE?', required=False)
-    create.widget.attrs['class'] = 'creategroup'
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
+
+
+class CreateGroupPermissionsForm(forms.Form):
+    addgroup = forms.CharField(label='Group', required=False, max_length=100)
+    addgroup.widget.attrs['class'] = 'groupsuggest'
     authMethod = forms.CharField(required=True,
         widget=forms.Select(choices=getAuthMethodChoices()),
         label='Authentication Method')
     adduser = forms.CharField(label='User', required=False, max_length=100)
     adduser.widget.attrs['class'] = 'usersuggest'
-    read = forms.BooleanField(label='READ', required=False, initial=True)
-    read.widget.attrs['class'] = 'canRead'
-    write = forms.BooleanField(label='EDIT', required=False)
-    write.widget.attrs['class'] = 'canWrite'
-    delete = forms.BooleanField(label='DELETE', required=False,
-                                   widget=forms.HiddenInput)
-    delete.widget.attrs['class'] = 'canDelete'
 
 
 class ManageGroupPermissionsForm(forms.Form):
@@ -256,6 +255,12 @@ class ManageGroupPermissionsForm(forms.Form):
     adduser.widget.attrs['class'] = 'usersuggest'
     admin = forms.BooleanField(label='Group Admin', required=False, initial=False)
     admin.widget.attrs['class'] = 'isAdmin'
+
+
+class CreateUserPermissionsForm(RegistrationForm):
+    authMethod = forms.CharField(required=True,
+        widget=forms.Select(choices=getAuthMethodChoices()),
+        label='Authentication Method')
 
 
 class DatafileSearchForm(forms.Form):
@@ -400,22 +405,12 @@ class ExperimentForm(forms.ModelForm):
                                              empty_permitted=False)
 
         # fix up experiment form
-        if instance:
-            authors = instance.author_experiment_set.all()
-            self.author_experiments = [Author_Experiment(instance=a)
-                                       for a in authors]
-            for ae in self.author_experiments:
-                try:
-                    assert ae.is_valid()
-                except AssertionError:
-                    print ae.errors
-
-            if not data:
+        if instance and not data:
+                authors = instance.author_experiment_set.all()
                 self.initial['authors'] = ', '.join([self._format_author(a)
                                                      for a in authors])
 
-        else:
-            self.author_experiments = []
+        self.author_experiments = []
 
         if data:
             self._update_authors(data)
@@ -482,6 +477,12 @@ class ExperimentForm(forms.ModelForm):
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data['authors']
+        
+        # fix up experiment form
+        if self.instance:
+            authors = self.instance.author_experiment_set.all()
+            for author in authors:
+                author.delete()        
 
         experiment = super(ExperimentForm, self).save(commit)
 

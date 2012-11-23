@@ -5,14 +5,15 @@
 <div class="pull-right">
   <a title="Add"
      href="{% url 'tardis.tardis_portal.views.add_dataset_par' dataset.id %}"
-     class="add-metadata btn btn-primary btn-mini"
-     data-toggle_selector="#dataset_metadata_toggle_{{dataset.id}}">
+     class="add-metadata btn btn-mini"
+     style="margin-right: 20px">
     <i class="icon-plus"></i>
-    Add
+    Add Dataset Metadata
   </a>
 </div>
 {% endif %}
-<h3>Metadata</h3>
+<h3>Dataset Metadata</h3>
+<div class="info-box">
 {% for parameterset in parametersets %}
   {% capture as edit_control %}
    {% if has_write_permissions and not parameterset.schema.immutable %}
@@ -53,7 +54,8 @@
     {% endwith %}
   </div>
 {% empty %}
-  <div class="alert alert-info">
+  <div>
     There is no metadata for this dataset.
   </div>
 {% endfor %}
+</div>

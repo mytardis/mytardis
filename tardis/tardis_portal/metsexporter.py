@@ -7,6 +7,7 @@ from base64 import b64encode
 from datetime import datetime
 from os.path import abspath, join
 import logging
+import tempfile
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.schema.mets import *
@@ -22,8 +23,9 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True):
+    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True, temp_file=None):
         self.export_images = export_images
+        self.temp_file = temp_file
         # initialise the metadata counter
         metadataCounter = 1
         experiment = Experiment.objects.get(id=experimentId)
@@ -114,6 +116,14 @@ class MetsExporter():
 
             for datafile in dataset.dataset_file_set.filter(verified=True):
                 # add entry to fileSec
+                parameterSets = DatafileParameterSet.objects.filter(
+                    dataset_file=datafile)
+
+		if not parameterSets:
+                    ADMID_val = None
+                else:
+                    ADMID_val = "A-{0}".format(metadataCounter)
+		
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
                                  MIMETYPE=datafile.mimetype,
@@ -121,7 +131,7 @@ class MetsExporter():
                                  CHECKSUM=datafile.sha512sum,
                                  CHECKSUMTYPE="SHA-512",
                                  OWNERID=datafile.filename,
-                                 ADMID="A-{0}".format(metadataCounter))
+                                 ADMID=ADMID_val)
 
                 protocol = datafile.protocol
                 if protocol in replace_protocols:
@@ -135,8 +145,6 @@ class MetsExporter():
 
                 # add entry to structMap
                 datasetDiv.add_fptr(fptr(FILEID="F-{0}".format(fileCounter)))
-                parameterSets = DatafileParameterSet.objects.filter(
-                    dataset_file=datafile)
 
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")
@@ -168,17 +176,21 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
-        dirname = experiment.get_or_create_directory()
-        if not filename:
-            if dirname is None:
-                from tempfile import mkdtemp
-                dirname = mkdtemp()
-            logger.debug('got directory %s' % dirname)
-            filename = 'mets_expid_%i.xml' % experiment.id
-        filepath = join(dirname, filename)
+        if not self.temp_file:
+            dirname = experiment.get_or_create_directory()
+            if not filename:
+                if dirname is None:
+                    from tempfile import mkdtemp
+                    dirname = mkdtemp()
+                logger.debug('got directory %s' % dirname)
+                filename = 'mets_expid_%i.xml' % experiment.id
+            filepath = join(dirname, filename)
+        else:
+            filepath = tempfile.NamedTemporaryFile(delete=False).name
+        
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
-        outfile.close()
+        outfile.close()       
         return filepath
 
     def getTechMDXmlDataForParameterSets(self, experiment, parameterSets, type="experiment"):
@@ -209,13 +221,14 @@ class MetsExporter():
                         parameter.name.units.startswith('image') and \
                         self.export_images == True:
 
-                    # encode image as b64
-                    file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
-                    try:
-                        store_metadata_value(metadataDict, parameter.name.name,
-                                     b64encode(open(file_path).read()))
-                    except:
-                        logger.exception('b64encoding failed: %s' % file_path)
+                    if not self.temp_file:
+                        # encode image as b64
+                        file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
+                        try:
+                            store_metadata_value(metadataDict, parameter.name.name,
+                                         b64encode(open(file_path).read()))
+                        except:
+                            logger.exception('b64encoding failed: %s' % file_path)
                 else:
                     try:
                         store_metadata_value(metadataDict, parameter.name.name,

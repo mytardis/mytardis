@@ -1,0 +1,14 @@
+{% load url from future %}
+<div class="access_list_user row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
+  <div class="span6">
+    <strong>{{ user.first_name }} {{ user.last_name }} [{{ user.username }}]</strong>
+    {% if user.email %}<em>({{ user.email }})</em>{% endif %}
+  </div>
+  <div class="span2">
+    {% if user.groupadmin_set.count %}
+      <span class="label label-success">Group Admin</span>
+    {% else %}
+      <span class="label label-info">Member</span>
+    {% endif %}
+  </div>
+</div> <!-- access_list_user -->
