@@ -224,7 +224,7 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
     if copyto != realcopyto:
         logger.debug("Actually wrote uploaded file to %s" % copyto)
 
-    return copyto
+    return realcopyto
 
 
 def get_full_staging_path(username):

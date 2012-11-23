@@ -28,6 +28,7 @@
 #
 
 from urllib2 import Request, HTTPError
+from urllib import quote
 from urlparse import urlparse, urljoin
 import os
 
@@ -86,7 +87,7 @@ class SimpleHttpTransfer(TransferProvider):
     def generate_url(self, datafile):
         url = urlparse(datafile.url)
         if url.scheme == '' or url.scheme == 'file':
-            return urljoin(self.base_url, url.path)
+            return urljoin(self.base_url, quote(url.path))
         raise MigrationProviderError("Cannot generate a URL from '%s'" \
                                          % datafile.url)
 

@@ -144,7 +144,7 @@ class MigrationTestCase(TestCase):
         with self.assertRaises(HTTPError):
             provider.remove_file(url)
 
-    def testMigration(self):
+    def testMigrateRestore(self):
         dest = Destination.get_destination('test')
         
         datafile = generate_datafile(None, self.dataset, "Hi mum",
@@ -171,7 +171,31 @@ class MigrationTestCase(TestCase):
         migrate_datafile(datafile, dest, noRemove=True)
         self.assertTrue(os.path.exists(path))
         restore_datafile(datafile)
-        self.assertTrue(os.path.exists(path))        
+        self.assertTrue(os.path.exists(path))
+
+    def testMigrateStoreWithSpaces(self):
+        dest = Destination.get_destination('test')
+        
+        datafile = generate_datafile('1/1/Hi Mum', self.dataset, "Hi mum")
+        datafile2 = generate_datafile('1/1/Hi Dad', self.dataset, "Hi dad")
+
+        path = datafile.get_absolute_filepath()
+        self.assertTrue(os.path.exists(path))
+        path2 = datafile.get_absolute_filepath()
+        self.assertTrue(os.path.exists(path2))
+
+        # Migrate them
+        migrate_datafile(datafile, dest)
+        self.assertFalse(os.path.exists(path))
+        migrate_datafile(datafile2, dest)
+        self.assertFalse(os.path.exists(path2))
+
+        # Bring them back
+        restore_datafile(datafile)
+        self.assertTrue(os.path.exists(path))
+        restore_datafile(datafile2)
+        self.assertTrue(os.path.exists(path2))
+
 
     def testMigrationNoHashes(self):
         # Tweak the server to turn off the '?metadata' query
