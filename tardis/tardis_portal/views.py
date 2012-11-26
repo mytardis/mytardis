@@ -1047,13 +1047,17 @@ def display_datafile_details(request, dataset_file_id):
         file_views.append(["Jolecule 3D viewer",
                        "/apps/jolecule/%s" % dataset_file_id])
 
-    # create priority-ordered list for buttons
+    # set defaults and create priority-ordered list for buttons
+    default_name = file_views[0][0]
+    default_url = file_views[0][1]
+    if len(file_views) < 2:
+        file_views = []
     # send default one to template to be called by ajax
     context = Context({
         'datafile_id': dataset_file_id,
         'file_views': file_views,
-        'default_name': file_views[0][0],
-        'default_url': file_views[0][1],
+        'default_name': default_name,
+        'default_url': default_url,
     })
     return HttpResponse(render_response_index(
         request,
