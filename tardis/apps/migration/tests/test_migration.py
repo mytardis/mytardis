@@ -34,6 +34,7 @@ from nose.tools import ok_, eq_
 import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
+from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.apps.migration import Destination, TransferProvider, \
@@ -160,18 +161,31 @@ class MigrationTestCase(TestCase):
         datafile.save()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
-        migrate_datafile(datafile, dest)
+        self.assertTrue(migrate_datafile(datafile, dest))
         self.assertFalse(os.path.exists(path))
 
         # Bring it back
-        restore_datafile(datafile)
+        url = datafile.url
+        self.assertTrue(restore_datafile(datafile))
         self.assertTrue(os.path.exists(path))
+        # Check it was deleted remotely
+        try:
+            dest.provider.get_length(url)
+            assertFail()
+        except HTTPError as e:
+            if e.code != 404:
+                raise e
+
+        # Refresh the datafile object because it is now stale ...
+        datafile = Dataset_File.objects.get(id=datafile.id)
 
         # Repeat the process with 'noRemove'
-        migrate_datafile(datafile, dest, noRemove=True)
+        self.assertTrue(migrate_datafile(datafile, dest, noRemove=True))
         self.assertTrue(os.path.exists(path))
-        restore_datafile(datafile)
+        self.assertEquals(dest.provider.get_length(url), 6)
+        self.assertTrue(restore_datafile(datafile, noRemove=True))
         self.assertTrue(os.path.exists(path))
+        self.assertEquals(dest.provider.get_length(url), 6)
 
     def testMigrateStoreWithSpaces(self):
         dest = Destination.get_destination('test')

@@ -37,6 +37,8 @@ from django.core.management import call_command
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
+from tardis.tardis_portal.models import Dataset_File
+
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
@@ -175,6 +177,28 @@ class MigrateCommandTestCase(TestCase):
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p))
 
+        # When we bring them back now, the local pathnames should change
+        # because the staging code won't clobber an existing file.
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+        for p, d in [(path, datafile), (path2, datafile2), 
+                     (path3, datafile3)]:
+            dd = Dataset_File.objects.get(id=d.id)
+            self.assertTrue(os.path.exists(p))
+            self.assertTrue(os.path.exists(dd.get_absolute_filepath()))
+            self.assertNotEqual(p, dd.get_absolute_filepath())
+            self.assertNotEqual(d.get_absolute_filepath(),
+                                dd.get_absolute_filepath())
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
@@ -258,8 +282,6 @@ class MigrateCommandTestCase(TestCase):
                           'Restored datafile %s\n'
                           'Restored datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
-
-
 
     def testMigrateErrors(self):
         err = StringIO()
