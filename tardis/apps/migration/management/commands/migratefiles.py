@@ -52,6 +52,8 @@ class Command(BaseCommand):
         'following subcommands are supported:\n' \
         '    migrate <target> <id> ... : migrates <target> files to destination \n' \
         '    restore <target> <id> ... : restores <target> files from any destination\n' \
+        '    mirror <target> <id> ...  : copies <target> files to destination\n' \
+        '                                but keeps them local\n' \
         '    reclaim <N>               : migrate files to reclaim N bytes\n' \
         '    score                     : score and list all files\n' \
         '    destinations              : lists the recognized destinations\n' \
@@ -76,7 +78,7 @@ class Command(BaseCommand):
                     dest='noRemove',
                     default=False,
                     help='No remove mode migrates / restores without' \
-                        ' removing the local / remote copy of the file'), 
+                        ' removing the local / remote copy of the file') 
         )
 
     conf = dictConfig(LOGGING)
@@ -103,29 +105,28 @@ class Command(BaseCommand):
             return
         if subcommand == 'reclaim':
             self._reclaim(args)
-        elif subcommand == 'migrate' or subcommand == 'restore':
+        elif subcommand == 'migrate' or subcommand == 'restore' or \
+                subcommand == 'mirror' :
             if len(args) == 0:
-                raise CommandError("Expected a migrate / restore target")
+                raise CommandError("Expected a %s target" % subcommand)
             target = args[0]
             args = args[1:]
-            migrate = subcommand == 'migrate'
-            if not migrate and options['dest']:
+            if subcommand == 'migrate' and options['dest']:
                 raise CommandError("The --dest option cannot be used with "
                                    "the restore subcommand")
             if target == 'datafile' or target == 'datafiles':
-                self._datafiles(args, migrate)
+                self._datafiles(args, subcommand)
             elif target == 'dataset' or target == 'datasets':
-                self._datasets(args, migrate)
+                self._datasets(args, subcommand)
             elif target == 'experiment' or target == 'experiments':
-                self._experiments(args, migrate)
+                self._experiments(args, subcommand)
             else:
-                raise CommandError("Unknown migrate / restore target: %s" % 
-                                   target)
+                raise CommandError("Unknown target: %s" % target)
         else:
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
 
-    def _datafiles(self, args, migrate):
+    def _datafiles(self, args, subcommand):
         from tardis.tardis_portal.models import Dataset_File
         ids = []
         for id in args:
@@ -134,21 +135,21 @@ class Command(BaseCommand):
                 ids.append(id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
-        self._process_datafiles(args, ids, migrate)
+        self._process_datafiles(args, ids, subcommand)
 
-    def _datasets(self, args, migrate):
+    def _datasets(self, args, subcommand):
         ids = []
         for id in args:
             ids.extend(self._ids_for_dataset(id))
-        self._process_datafiles(args, ids, migrate)
+        self._process_datafiles(args, ids, subcommand)
 
-    def _experiments(self, args, migrate):
+    def _experiments(self, args, subcommand):
         ids = []
         for id in args:
             ids.extend(self._ids_for_experiment(id))
-        self._process_datafiles(args, ids, migrate)
+        self._process_datafiles(args, ids, subcommand)
 
-    def _process_datafiles(self, args, ids, migrate):
+    def _process_datafiles(self, args, ids, subcommand):
         from tardis.tardis_portal.models import Dataset_File
         if len(args) == 0:
             raise CommandError("Expected one or more ids")
@@ -160,25 +161,42 @@ class Command(BaseCommand):
                 if self.dryRun:
                     self.stdout.write( \
                         'Would have %s datafile %s\n' % \
-                        ('migrated' if migrate else 'restored', id))
+                        (self._verb(subcommand).lower(), id))
                     continue
 
-                if migrate:
+                if subcommand == 'migrate':
                     ok = migrate_datafile_by_id(id, self.dest, \
                                               noRemove=self.noRemove)
+                elif subcommand == 'mirror':
+                    ok = migrate_datafile_by_id(id, self.dest, \
+                                              noUpdate=True)
                 else:
                     ok = restore_datafile_by_id(id, noRemove=self.noRemove)
                 if ok and self.verbosity > 1:
                     self.stdout.write( \
-                        '%s datafile %s\n' % \
-                        ('Migrated' if migrate else 'Restored', id))
+                        '%s datafile %s\n' % (self._verb(subcommand), id))
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
             except MigrationError as e:              
                 self.stderr.write(
                     '%s failed for datafile %s : %s\n' % \
-                        ('Migration' if migrate else 'Restoration',
-                         id, e.args[0]))
+                        (self._noun(subcommand), id, e.args[0]))
+
+    def _verb(self, subcommand):
+        if (subcommand == 'migrate'):
+            return 'Migrated'
+        elif (subcommand == 'restore'):
+            return 'Restored'
+        elif (subcommand == 'mirror'):
+            return 'Mirrored'
+        
+    def _noun(self, subcommand):
+        if (subcommand == 'migrate'):
+            return 'Migration'
+        elif (subcommand == 'restore'):
+            return 'Restoration'
+        elif (subcommand == 'mirror'):
+            return 'Mirroring'
         
     def _ids_for_dataset(self, id):
         from tardis.tardis_portal.models import Dataset, Dataset_File

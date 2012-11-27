@@ -125,6 +125,7 @@ Usage
 ~~~~~
 ``./bin/django migratefiles migrate <target> <id> ...``
 ``./bin/django migratefiles restore <target> <id> ...``
+``./bin/django migratefiles mirror <target> <id> ...``
 ``./bin/django migratefiles reclaim <amount>``
 ``./bin/django migratefiles score``
 ``./bin/django migratefiles destinations``
@@ -133,7 +134,6 @@ Usage
 .. option:: --verbosity={0,1,2,3}
 .. option:: -n, --dryRun
 .. option:: --noRemove
-.. option:: --mirror
 
 The first form migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type. 
 
@@ -141,19 +141,20 @@ The migration of a single file is atomic.  If the migration succeeds, the Datafi
 
 The second form attempts to restore (bring back to local disc) the data associated with the selected DataFiles, DataSets or Experiments.  (The current implementation temporarily marks each Datafile as "not verified" and attempts to "stage" it.)
 
-The third form attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
+The third form just copies the files to the destination.  It is equivalent to a 'migrate' without the database update and without the local file removal.
 
-The fourth form simply scores all of the local files and lists their details in descending score order. 
+The fourth form attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
+
+The fifth form simply scores all of the local files and lists their details in descending score order. 
 
 The final form of the command lists the configured transfer destinations.
 
 The options are as follows:
 
-  * --dest selects the remote location for the migrate and reclaim subcommands.  (For the restore subcommand, the destination is local, and the remote source location is implied by the Datafile's 'url' attribute.) 
+  * --dest selects the remote location for the migrate, mirror and reclaim subcommands.  (For the restore subcommand, the destination is local, and the remote source location is implied by the Datafile's 'url' attribute.) 
   * --verbosity determines how much output is produced in the normal django command fashion.
-  * --dryRun lists the files that would be migrated or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore would have worked.)
-  * --noRemove performs the migrate or restore action, but does not remove the source file.
-  * --mirror performs the file transfer, but doesn't update the database or remove the source file.
+  * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
+  * --noRemove performs the migrate or restore actions, but does not remove the source file.  (It is implied in the case of mirroring.)
 
 Architecture
 ============
@@ -173,3 +174,5 @@ When a file is migrated, the Datafile is changed as follows:
 We currently support two ways of checking that a file has been transferred correctly.  The preferred way is to get the transfer destination to calculate and return the metadata (checksums and length) for its copy of the file.  If that fails (or is not supported), the fallback is to read back the file from the destination and do the checksumming locally.
 
 Normally, we require there to be either an MD5 or SHA512 checksum in the metadata.  However if 'trust_length' is set, we will accept matching file lengths as being sufficient to verify the transfer.  That would normally be a bad idea, but if the transfer process is sufficiently reliable, file length checking may be sufficient.  (In this mode, a transfer provider could get away with sending a HEAD request and using the "Content-length".)
+
+Restoration is performed by re-staging the file.  However, there is a minor gotcha.  If a copy of the file already exists locally (and this is not recorded in the database), then the restored file's filename will be different to the original.  (The existing local copy of the file is not clobbered or renamed ...)

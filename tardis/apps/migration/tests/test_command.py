@@ -56,6 +56,34 @@ class MigrateCommandTestCase(TestCase):
         self.dummy_user.delete()
         self.server.stop()
 
+    def testMirrorDatafile(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi grandpa")
+
+        # Dry run ...
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'mirror', 'datafile', datafile.id, 
+                         verbosity=1, stdout=out, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Would have mirrored datafile %s\n' % datafile.id)
+
+        # Do it
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'mirror', 'datafile', datafile.id, 
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Mirrored datafile %s\n' % datafile.id)
+
+
     def testMigrateDatafile(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])

@@ -43,16 +43,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def migrate_datafile_by_id(datafile_id, destination, noRemove=False):
+def migrate_datafile_by_id(datafile_id, destination,
+                           noRemove=False, noUpdate=False):
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Dataset_File
 
     datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
     if not datafile:
         raise ValueError('No such datafile (%s)' % (datafile_id))
-    return migrate_datafile(datafile, destination, noRemove=noRemove)
+    return migrate_datafile(datafile, destination, 
+                            noRemove=noRemove, noUpdate=noUpdate)
                                
-def migrate_datafile(datafile, destination, noRemove=False):
+def migrate_datafile(datafile, destination, noRemove=False, noUpdate=False):
     """
     Migrate the datafile to a different storage location.  The overall
     effect will be that the datafile will be stored at the new location and 
@@ -68,6 +70,7 @@ def migrate_datafile(datafile, destination, noRemove=False):
                                  ' to this destination')
     target_url = destination.provider.generate_url(datafile)
     if target_url == datafile.url:
+        # We should get here ...
         raise MigrationError('Cannot migrate a datafile to its' \
                                  ' current location')
     
@@ -76,8 +79,12 @@ def migrate_datafile(datafile, destination, noRemove=False):
     try:
         check_file_transferred(datafile, destination, target_url)
     except:
+        # FIXME - should we always do this?
         destination.provider.remove_file(target_url)
         raise
+
+    if noUpdate:
+        return True
 
     filename = datafile.get_absolute_filepath()
     datafile.url = target_url

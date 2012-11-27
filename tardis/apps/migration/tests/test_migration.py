@@ -187,6 +187,26 @@ class MigrationTestCase(TestCase):
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
 
+    def testMirror(self):
+        dest = Destination.get_destination('test')
+        datafile = generate_datafile(None, self.dataset, "Hi granny")
+        path = datafile.get_absolute_filepath()
+        self.assertTrue(os.path.exists(path))
+        url = dest.provider.generate_url(datafile)
+
+        try:
+            dest.provider.get_length(url)
+            assertFail()
+        except HTTPError as e:
+            if e.code != 404:
+                raise e
+
+        self.assertTrue(migrate_datafile(datafile, dest, noUpdate=True))
+        datafile = Dataset_File.objects.get(id=datafile.id)
+        self.assertTrue(datafile.is_local())
+        self.assertEquals(dest.provider.get_length(url), 9)
+
+
     def testMigrateStoreWithSpaces(self):
         dest = Destination.get_destination('test')
         
