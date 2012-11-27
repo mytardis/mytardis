@@ -61,6 +61,7 @@ class MigrateCommandTestCase(TestCase):
                                      "Hi mum", verify=False, verified=False)
         datafile2 = generate_datafile(None, dataset, "Hi mum")
         datafile3 = generate_datafile(None, dataset, "Hi mum")
+
         err = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', 
@@ -75,6 +76,13 @@ class MigrateCommandTestCase(TestCase):
 
         self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
         datafile.save()
+
+        # (Paths should all be kosher now ...)
+        path = datafile.get_absolute_filepath()
+        path2 = datafile2.get_absolute_filepath()
+        path3 = datafile3.get_absolute_filepath()
+        for p in [path, path2, path3]:
+            self.assertTrue(os.path.exists(p))
         
         # Dry run ...
         out = StringIO()
@@ -86,8 +94,10 @@ class MigrateCommandTestCase(TestCase):
         out.seek(0)
         self.assertEquals(out.read(), 
                           'Would have migrated datafile %s\n' % datafile.id)
+        for p in [path, path2, path3]:
+            self.assertTrue(os.path.exists(p))
 
-        # Real run, verbose
+        # Real run, verbose (migrates 1)
         out = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
@@ -97,8 +107,10 @@ class MigrateCommandTestCase(TestCase):
         out.seek(0)
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n' % datafile.id)
+        for p in [path, path2, path3]:
+            self.assertTrue(os.path.exists(p) == (p != path))
 
-        # Real run, normal
+        # Real run, normal (migrates 2 & 3)
         out = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', datafile2.id, 
@@ -107,6 +119,8 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(), '') 
+        for p in [path, path2, path3]:
+            self.assertFalse(os.path.exists(p))
 
         # Cannot migrate a file that is not local (now)
         err = StringIO()
@@ -118,7 +132,7 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), '') # Should "fail" silently
 
-        # Real restore, verbose
+        # Real restore, verbose (restores 1, 2 & 3)
         out = StringIO()
         try:
             call_command('migratefiles', 'restore', 'datafile', datafile.id, 
@@ -131,6 +145,8 @@ class MigrateCommandTestCase(TestCase):
                           'Restored datafile %s\n'
                           'Restored datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
+        for p in [path, path2, path3]:
+            self.assertTrue(os.path.exists(p))
 
         # Cannot restore files that are (now) local
         out = StringIO()
@@ -140,7 +156,25 @@ class MigrateCommandTestCase(TestCase):
         except SystemExit:
             pass
         out.seek(0)
-        self.assertEquals(out.read(), '') # Fail quietly
+        self.assertEquals(out.read(), '') # Fail quietly ... not remote
+
+        # Now try migrating with 'no remove'
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, noRemove=True,
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id))
+        for p in [path, path2, path3]:
+            self.assertTrue(os.path.exists(p))
+
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
