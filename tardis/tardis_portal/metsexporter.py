@@ -123,7 +123,7 @@ class MetsExporter():
                     ADMID_val = None
                 else:
                     ADMID_val = "A-{0}".format(metadataCounter)
-		
+
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
                                  MIMETYPE=datafile.mimetype,
@@ -137,6 +137,7 @@ class MetsExporter():
                 if protocol in replace_protocols:
                     url = datafile.url.replace(protocol,
                                                replace_protocols[protocol])
+
                 else:
                     url = datafile.url
                 _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
@@ -187,10 +188,10 @@ class MetsExporter():
             filepath = join(dirname, filename)
         else:
             filepath = tempfile.NamedTemporaryFile(delete=False).name
-        
+
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
-        outfile.close()       
+        outfile.close()
         return filepath
 
     def getTechMDXmlDataForParameterSets(self, experiment, parameterSets, type="experiment"):
