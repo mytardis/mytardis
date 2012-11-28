@@ -739,11 +739,14 @@ def create_experiment(request,
 @authz.experiment_access_required
 def metsexport_experiment(request, experiment_id):
 
+    force_http_urls = 'force_http_urls' in request.GET
+
     from os.path import basename
     from django.core.servers.basehttp import FileWrapper
     from tardis.tardis_portal.metsexporter import MetsExporter
     exporter = MetsExporter()
-    filename = exporter.export(experiment_id)
+    filename = exporter.export(experiment_id,
+                               force_http_urls=force_http_urls)
     response = HttpResponse(FileWrapper(file(filename)),
                             mimetype='application')
     response['Content-Disposition'] = \
