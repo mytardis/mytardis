@@ -1033,31 +1033,33 @@ def display_datafile_details(request, dataset_file_id):
     Displays a box, with a list of interaction options depending on
     the file type given and displays the one with the highest priority
     first.
-    Low number == high priority
+    Views are set up in settings. Order of list is taken as priority.
+    Given URLs are called with the datafile id appended.
     """
     # retrieve valid interactions for file type
     the_file = Dataset_File.objects.get(id=dataset_file_id)
-    the_schemas = [p.schema for p in the_file.getParameterSets()]
-    # TODO: implement database for this
-    #file_views = get_valid_views(the_schemas)
-    file_views = [["Datafile Metadata",
-                   "/ajax/parameters/%s" % dataset_file_id]]
-    if u'http://www.tardis.edu.au/schemas/trdDatafile/1' in \
-       [s.namespace for s in the_schemas]:
-        file_views.append(["Jolecule 3D viewer",
-                       "/apps/jolecule/%s" % dataset_file_id])
+    the_schemas = [p.schema.namespace for p in the_file.getParameterSets()]
+    default_view = "Datafile Metadata"
+    apps = [
+        (default_view, '/ajax/parameters'), ]
+    if hasattr(settings, "DATAFILE_VIEWS"):
+        apps += settings.DATAFILE_VIEWS
 
-    # set defaults and create priority-ordered list for buttons
-    default_name = file_views[0][0]
-    default_url = file_views[0][1]
-    if len(file_views) < 2:
-        file_views = []
-    # send default one to template to be called by ajax
+    views = []
+    for ns, url in apps:
+        if ns == default_view:
+            views.append({"url": "%s/%s" % (url, dataset_file_id),
+                          "name": default_view})
+        elif ns in the_schemas:
+            try:
+                schema = Schema.objects.get(namespace__exact=ns)
+                views.append({"url": "%s/%s" % (url, dataset_file_id),
+                              "name": schema.name})
+            except Schema.DoesNotExist:
+                continue
     context = Context({
         'datafile_id': dataset_file_id,
-        'file_views': file_views,
-        'default_name': default_name,
-        'default_url': default_url,
+        'views': views,
     })
     return HttpResponse(render_response_index(
         request,

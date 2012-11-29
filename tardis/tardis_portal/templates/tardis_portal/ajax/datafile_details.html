@@ -1,14 +1,16 @@
 {% if datafile_id %}
-  {% for name, url in file_views %}
-    <a class="btn btn-warning {% if forloop.first %}active{% endif %}" 
-       href="{{url}}/{{datafile_id}}">{{name}}</a>
-  {% endfor %}
+  {% if views|length > 1 %}
+    {% for view in views %}
+      <a class="btn btn-warning {% if forloop.first %}active{% endif %}" 
+	 href="{{view.url}}">{{view.name}}</a>
+       {% endfor %}
+    {% endif %}
   <div class="info-box">
-    <h1>{{default_name}}</h1>
+    <h1>{{views.0.name}}</h1>
     <div id="datafile-app">
   </div></div>
   <script type="text/javascript">
-    $("#datafile-app").load("{{default_url}}");
+    $("#datafile-app").load("{{views.0.url}}");
   </script>
 {% else %}
 {% endif %}
