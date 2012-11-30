@@ -10,3 +10,4 @@ install:
  - bin/buildout install
 # # command to run tests
 script: "bin/django test"
+after_failure: "cat tardis-test.log"
