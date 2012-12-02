@@ -168,13 +168,17 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
+	# Use experiment directory, or temporary directory if unavailable
         dirname = experiment.get_or_create_directory()
+        if dirname is None:
+            from tempfile import mkdtemp
+            dirname = mkdtemp()
+	logger.debug('Using directory %s for METS export' % dirname)
+
+	# Use generated filename if not provided
         if not filename:
-            if dirname is None:
-                from tempfile import mkdtemp
-                dirname = mkdtemp()
-            logger.debug('got directory %s' % dirname)
             filename = 'mets_expid_%i.xml' % experiment.id
+
         filepath = join(dirname, filename)
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
