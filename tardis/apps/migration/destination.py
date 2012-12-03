@@ -39,6 +39,10 @@ class Destination:
     destinations = None
     
     @classmethod
+    def clear_destinations_cache(cls):
+        cls.destinations = None
+
+    @classmethod
     def get_destination(cls, name):
         try:
             return cls._get_destinations()[name]

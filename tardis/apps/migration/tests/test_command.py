@@ -39,6 +39,7 @@ from tardis.test_settings import FILE_STORE_PATH
 
 from tardis.tardis_portal.models import Dataset_File
 
+from tardis.apps.migration import Destination
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
@@ -311,7 +312,11 @@ class MigrateCommandTestCase(TestCase):
                           'Restored datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
-    def testMigrateErrors(self):
+    def testErrors(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+
         err = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', 
@@ -325,12 +330,22 @@ class MigrateCommandTestCase(TestCase):
 
         err = StringIO()
         try:
-            call_command('migratefiles', 'migrate', 'datafile', 999, 
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
                          dest='nowhere', stderr=err)
         except SystemExit:
             pass
         err.seek(0)
         self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
+
+        err = StringIO()
+        try:
+            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
+                         dest='test', stderr=err)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 'Error: The --dest option cannot '
+                          'be used with the restore subcommand\n')
 
     def testScore(self):
         dataset = generate_dataset()
@@ -391,13 +406,17 @@ class MigrateCommandTestCase(TestCase):
                            datafile2.url, datafile2.id))
 
     def testMigrateConfig(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+
         try:
             saved = settings.DEFAULT_MIGRATION_DESTINATION
             settings.DEFAULT_MIGRATION_DESTINATION = ''
             err = StringIO()
             try:
                 call_command('migratefiles', 'migrate', 'datafile', 
-                             999, stderr=err)
+                             datafile.id, stderr=err)
             except SystemExit:
                 pass
             err.seek(0)
@@ -409,10 +428,11 @@ class MigrateCommandTestCase(TestCase):
         try:
             saved = settings.MIGRATION_DESTINATIONS
             settings.MIGRATION_DESTINATIONS = []
+            Destination.clear_destinations_cache()
             err = StringIO()
             try:
                 call_command('migratefiles', 'migrate', 'datafile', 
-                             999, stderr=err)
+                             datafile.id, stderr=err)
             except SystemExit:
                 pass
             err.seek(0)

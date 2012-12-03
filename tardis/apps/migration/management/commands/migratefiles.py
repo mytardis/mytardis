@@ -111,7 +111,7 @@ class Command(BaseCommand):
                 raise CommandError("Expected a %s target" % subcommand)
             target = args[0]
             args = args[1:]
-            if subcommand == 'migrate' and options['dest']:
+            if subcommand == 'restore' and options['dest']:
                 raise CommandError("The --dest option cannot be used with "
                                    "the restore subcommand")
             if target == 'datafile' or target == 'datafiles':
