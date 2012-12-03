@@ -1,0 +1,13 @@
+language: python
+python:
+  - "2.6"
+# command to install dependencies
+install:
+ - curl -s "http://git.fedorahosted.org/cgit/mailcap.git/plain/mime.types" > mime.types
+ - sudo cp mime.types /etc/mime.types
+ - sudo apt-get install python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev
+ - python bootstrap.py --distribute
+ - bin/buildout install
+# # command to run tests
+script: "bin/django test"
+after_failure: "cat tardis-test.log"
