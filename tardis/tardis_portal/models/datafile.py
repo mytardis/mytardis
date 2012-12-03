@@ -29,7 +29,7 @@ class Dataset_File(models.Model):
     :attribute dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
     :attribute filename: the name of the file, excluding the path.
-    :attribute url: the url that the datafile is located at
+    :attribute url: the url that the datafile is located at; see below.
     :attribute size: the size of the file.
     :attribute protocol: the protocol used to access the file.
     :attribute created_time: time the file was added to tardis
@@ -41,6 +41,12 @@ class Dataset_File(models.Model):
     done by insterting the protocol into the url generated to the download
     location. If the `protocol` field is blank then the `file` protocol will
     be used.
+
+    The `url` field is currently a bit schizophrenic.  If the `protocol` field
+    is non-blank, then the contents of the field is up to the protocol handler.
+    If the `protocol` field is blank, then the field may be either a URL
+    (with a "scheme" component) or a relative file pathname.  In the latter
+    case, the `url` field won't be URL encoded.
     """
 
     dataset = models.ForeignKey(Dataset)

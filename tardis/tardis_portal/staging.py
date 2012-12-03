@@ -217,7 +217,10 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
 
     logger.debug("Writing uploaded file %s" % copyto)
 
-    copyto = default_storage.save(copyto, uploaded_file_post)
+    realcopyto = default_storage.save(copyto, uploaded_file_post)
+
+    if copyto != realcopyto:
+        logger.debug("Actually wrote uploaded file to %s" % copyto)
 
     return copyto
 
