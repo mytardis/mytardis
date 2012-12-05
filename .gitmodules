@@ -1,0 +1,6 @@
+[submodule "tardis/apps/repos-consumer"]
+	path = tardis/apps/repos-consumer
+	url = https://github.com/ianedwardthomas/mytardis-app-repos-consumer.git
+[submodule "tardis/apps/repos-producer"]
+	path = tardis/apps/repos-producer
+	url = https://github.com/ianedwardthomas/mytardis-app-repos-producer.git

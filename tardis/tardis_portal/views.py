@@ -129,7 +129,7 @@ def get_dataset_info(dataset, include_thumbnail=False):
     obj = model_to_dict(dataset)
     obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
 
-    obj['url'] = dataset.get_absolute_url() 
+    obj['url'] = dataset.get_absolute_url()
 
     obj['size'] = dataset.get_size()
     obj['size_human_readable'] = filesizeformat(dataset.get_size())
@@ -504,7 +504,7 @@ class SearchQueryString():
 @authz.dataset_access_required
 def view_dataset(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
-    
+
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
@@ -741,6 +741,13 @@ def create_experiment(request,
 def metsexport_experiment(request, experiment_id):
 
     force_http_urls = 'force_http_urls' in request.GET
+
+    from django.contrib.sites.models import Site
+    if force_http_urls:
+        protocol = ""
+        if request.is_secure():
+            protocol = "s"
+        force_http_urls = "http%s://%s" % (protocol, Site.objects.get_current().domain)
 
     from os.path import basename
     from django.core.servers.basehttp import FileWrapper
@@ -1034,7 +1041,7 @@ def retrieve_parameters(request, dataset_file_id):
     c = Context({'parametersets': parametersets,
                  'datafile': datafile,
                  'has_write_permissions': has_write_permissions,
-                 'has_download_permissions': 
+                 'has_download_permissions':
                  authz.has_dataset_download_access(request, dataset_id) })
 
     return HttpResponse(render_response_index(request,
@@ -1820,7 +1827,7 @@ def retrieve_access_list_user_readonly(request, experiment_id):
 
     c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
     return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/access_list_user_readonly.html', c))                        
+                        'tardis_portal/ajax/access_list_user_readonly.html', c))
 
 
 @never_cache
@@ -1850,7 +1857,7 @@ def retrieve_access_list_group_readonly(request, experiment_id):
                                                             experiment_id)
 
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
-                                                          experiment_id)                                                         
+                                                          experiment_id)
 
     c = Context({'experiment_id': experiment_id,
                  'group_acls_system_owned': group_acls_system_owned,
@@ -2025,10 +2032,10 @@ def add_experiment_access_user(request, experiment_id, username):
     if 'canDelete' in request.GET:
         if request.GET['canDelete'] == 'true':
             canDelete = True
-            
+
     if 'isOwner' in request.GET:
         if request.GET['isOwner'] == 'true':
-            isOwner = True   
+            isOwner = True
 
     authMethod = request.GET['authMethod']
     user = auth_service.getUser(authMethod, username)
@@ -2199,15 +2206,15 @@ def create_group(request):
 
     if not 'group' in request.GET:
         c = Context({'createGroupPermissionsForm': CreateGroupPermissionsForm() })
-        
+
         response = HttpResponse(render_response_index(request,
             'tardis_portal/ajax/create_group.html', c))
-        return response        
+        return response
 
     authMethod = localdb_auth_key
     admin = None
     groupname = None
-    
+
     if 'group' in request.GET:
         groupname = request.GET['group']
 
@@ -2215,7 +2222,7 @@ def create_group(request):
         admin = request.GET['admin']
 
     if 'authMethod' in request.GET:
-        authMethod = request.GET['authMethod']        
+        authMethod = request.GET['authMethod']
 
     try:
         group = Group(name=groupname)
@@ -2408,14 +2415,14 @@ def create_user(request):
         authMethod = request.POST['authMethod']
 
     if 'email' in request.POST:
-        email = request.POST['email']    
-        
+        email = request.POST['email']
+
     if 'password' in request.POST:
         password = request.POST['password']
 
     try:
         validate_email(email)
-        
+
         user = User.objects.create_user(username, email, password)
 
         userProfile = UserProfile(user=user, isDjangoAccount=True)
@@ -2432,7 +2439,7 @@ def create_user(request):
     except:
         transaction.rollback()
         return HttpResponse('Could not create user %s ' \
-        '(It is likely that this username already exists)' % (username), status=403)    
+        '(It is likely that this username already exists)' % (username), status=403)
 
     c = Context({'user_created': username})
     transaction.commit()
@@ -2876,15 +2883,15 @@ def share(request, experiment_id):
     Choose access rights and licence.
     '''
     experiment = Experiment.objects.get(id=experiment_id)
-    
+
     c = Context({})
-    
+
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
     if request.user.is_authenticated():
-        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)    
+        c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
 
     domain = Site.objects.get_current().domain
     public_link = experiment.public_access >= Experiment.PUBLIC_ACCESS_METADATA
@@ -2906,7 +2913,7 @@ def choose_rights(request, experiment_id):
     def is_valid_owner(owner):
         if not settings.REQUIRE_VALID_PUBLIC_CONTACTS:
             return True
-        
+
         userProfile, created = UserProfile.objects.get_or_create(
             user=owner)
 
@@ -3015,7 +3022,7 @@ def experiment_public_access_badge(request, experiment_id):
         experiment = Experiment.objects.get(id=experiment_id)
     except Experiment.DoesNotExist:
         HttpResponse('')
-    
+
     if authz.has_experiment_access(request, experiment_id):
         return HttpResponse(render_public_access_badge(experiment))
     else:

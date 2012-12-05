@@ -143,13 +143,9 @@ class MetsExporter():
                     url = datafile.url
 
                 if force_http_urls:
-                    from django.contrib.sites.models import Site
-
-                    current_site = Site.objects.get_current()
-                    current_site.domain
 
                     import urlparse
-                    url = urlparse.urljoin(current_site.domain,
+                    url = urlparse.urljoin(force_http_urls,
                                            datafile.get_download_url())
 
                 _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
