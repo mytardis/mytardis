@@ -13,11 +13,11 @@
     $(".df-view-button").click(function(e){
 	e.preventDefault();
 	$("#df-view-h1").text(this.innerText);
-	$("#datafile-app").getScript(this.href);
+	$("#datafile-app").load(this.href);
 	$(this).siblings().each(function(){$(this).removeClass("active");});
 	$(this).addClass("active");
     });
-    $("#datafile-app").getScript("{{views.0.url}}");
+    $("#datafile-app").load("{{views.0.url}}");
   </script>
 {% else %}
 {% endif %}
