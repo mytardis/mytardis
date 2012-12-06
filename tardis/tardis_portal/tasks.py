@@ -61,8 +61,8 @@ def make_local_copy(datafile_id):
             stage_file(datafile)
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)
-def create_staging_datafiles(files, user_id, dataset_id):
-    import os
+def create_staging_datafiles(files, user_id, dataset_id, is_secure):
+
     from os import path
 
     from tardis.tardis_portal.staging import get_full_staging_path
@@ -97,21 +97,24 @@ def create_staging_datafiles(files, user_id, dataset_id):
         if path.isdir(abs_path):
             stage_files = stage_files + list_dir(abs_path)
         else:
-            stage_files.append(abs_path) 
-            
+            stage_files.append(abs_path)
+
     full_file_list = f7(stage_files)
-    
+
     # traverse directory paths (if any to build file list)
 
     [create_staging_datafile.delay(f, user.username, dataset_id) for f in full_file_list]
 
-    current_site = Site.objects.get_current()
+    protocol = ""
+    if is_secure:
+        protocol = "s"
+    current_site_complete = "http%s://%s" % (protocol, Site.objects.get_current().domain)
 
     context = Context({
         'username': user.username,
-        'current_site': current_site.domain,
+        'current_site': current_site_complete,
         'dataset_id': dataset_id,
-        })
+    })
     subject = '[MyTardis] Import Successful'
 
     if not user.email:
