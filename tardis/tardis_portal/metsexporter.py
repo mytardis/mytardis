@@ -23,7 +23,8 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True, temp_file=None):
+    def export(self, experimentId, replace_protocols={}, filename=None,
+               export_images=True, temp_file=None, force_http_urls=False):
         self.export_images = export_images
         self.temp_file = temp_file
         # initialise the metadata counter
@@ -123,7 +124,7 @@ class MetsExporter():
                     ADMID_val = None
                 else:
                     ADMID_val = "A-{0}".format(metadataCounter)
-		
+
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
                                  MIMETYPE=datafile.mimetype,
@@ -134,11 +135,23 @@ class MetsExporter():
                                  ADMID=ADMID_val)
 
                 protocol = datafile.protocol
+
                 if protocol in replace_protocols:
                     url = datafile.url.replace(protocol,
                                                replace_protocols[protocol])
                 else:
                     url = datafile.url
+
+                if force_http_urls:
+                    from django.contrib.sites.models import Site
+
+                    current_site = Site.objects.get_current()
+                    current_site.domain
+
+                    import urlparse
+                    url = urlparse.urljoin(current_site.domain,
+                                           datafile.get_download_url())
+
                 _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
                     type_="simple"))
                 _fileGrp.add_file(_file)
@@ -187,10 +200,10 @@ class MetsExporter():
             filepath = join(dirname, filename)
         else:
             filepath = tempfile.NamedTemporaryFile(delete=False).name
-        
+
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
-        outfile.close()       
+        outfile.close()
         return filepath
 
     def getTechMDXmlDataForParameterSets(self, experiment, parameterSets, type="experiment"):
