@@ -36,6 +36,9 @@ class Dataset_File(models.Model):
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     :attribute md5sum: digest of length 32, containing only hexadecimal digits
+    :attribute sha512: digest of length 128, containing only hexadecimal digits
+    :attribute stay_remote: the file should not be pulled into the mytardis
+       managed file store.
 
     The `protocol` field is only used for rendering the download link, this
     done by insterting the protocol into the url generated to the download
@@ -136,23 +139,14 @@ class Dataset_File(models.Model):
             return self.url
         return None
     
-    def _get_file(self):
-        try:
-            return self._get_file_getter()()
-        except:
-            return None
-        
-    def get_file_getter(self):
+    def get_file_getter(self, requireVerified=True):
         """Return a function that will return a File-like handle for the Datafile's
            data.  The returned function uses a cached URL for the file to avoid 
            depending on the current database transaction.
         """
         
-        if not self.verified:
+        if requireVerified and not self.verified:
             return None
-        return self._get_file_getter()
-
-    def _get_file_getter(self):
         if self.is_local():
             theUrl = self.url
             def getter():
@@ -164,10 +158,15 @@ class Dataset_File(models.Model):
                 return get_privileged_opener().open(theUrl)
             return getter
 
-    def get_file(self):
-        if not self.verified:
+    def get_file(self, requireVerified=True):
+        if requireVerified and not self.verified:
+            print "Not verified"
             return None
-        return self._get_file()
+        try:
+            return self.get_file_getter(requireVerified=requireVerified)()
+        except:
+            print "Error in get_file: ", sys.exc_info()[0]
+            return None
 
     def get_download_url(self):
         def get_download_view():
@@ -285,36 +284,16 @@ class Dataset_File(models.Model):
         discarding data as it's read.
         '''
 
-
         if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
             return False
 
-        def read_file(sf, tf):
-            logger.info("Downloading %s for verification" % self.url)
-            from contextlib import closing
-            with closing(sf) as f:
-                md5 = hashlib.new('md5')
-                sha512 = hashlib.new('sha512')
-                size = 0
-                mimetype_buffer = ''
-                for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
-                    size += len(chunk)
-                    if len(mimetype_buffer) < 8096: # Arbitrary memory limit
-                        mimetype_buffer += chunk
-                    md5.update(chunk)
-                    sha512.update(chunk)
-                    if tf:
-                        tf.write(chunk)
-                return (md5.hexdigest(),
-                        sha512.hexdigest(),
-                        size,
-                        mimetype_buffer)
-
-        sourcefile = self._get_file()
+        sourcefile = self.get_file(requireVerified=False)
         if not sourcefile:
+            logger.error("%s content not accessible" % self.url)
             return False
-        md5sum, sha512sum, size, mimetype_buffer = read_file(sourcefile,
-                                                             tempfile)
+        logger.info("Downloading %s for verification" % self.url)
+        md5sum, sha512sum, size, mimetype_buffer = \
+            generate_file_checksums(sourcefile, tempfile)
 
         if not (self.size and size == int(self.size)):
             if (self.sha512sum or self.md5sum) and not self.size: 
@@ -347,3 +326,22 @@ class Dataset_File(models.Model):
         logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
                     "after successful verification")
         return True
+
+def generate_file_checksums(sourceFile, tempFile):
+    from contextlib import closing
+    with closing(sourceFile) as f:
+        md5 = hashlib.new('md5')
+        sha512 = hashlib.new('sha512')
+        size = 0
+        mimetype_buffer = ''
+        for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+            size += len(chunk)
+            if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                mimetype_buffer += chunk
+            md5.update(chunk)
+            sha512.update(chunk)
+            if tempFile:
+                tempFile.write(chunk)
+    return (md5.hexdigest(), sha512.hexdigest(), 
+            size, mimetype_buffer)
+                    
