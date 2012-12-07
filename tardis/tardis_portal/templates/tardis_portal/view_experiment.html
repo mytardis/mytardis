@@ -128,8 +128,8 @@
           data: form.serialize(),
           success: function(data) {
                   contentContainer.html(data);
-                  if (contentContainer.find('form').length > 0) {
-                    contentContainer.parents('.modal').find('.modal-footer').show();
+                  if (contentContainer.find('form').length == 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').hide();
                 }
             },
           async:false
@@ -151,8 +151,8 @@
           data: form.serialize(),
           success: function(data) {
                   	contentContainer.html(data);
-                    if (contentContainer.find('form').length > 0) {
-                  	  contentContainer.parents('.modal').find('.modal-footer').show();       	  
+                    if (contentContainer.find('form').length == 0) {
+                  	  contentContainer.parents('.modal').find('.modal-footer').hide();       	  
                 }
             },
           async:false
