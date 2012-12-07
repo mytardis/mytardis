@@ -3121,9 +3121,10 @@ def stage_files_to_dataset(request, dataset_id):
     except:
         return HttpResponse(status=400)
 
-    create_staging_datafiles.delay(files, user.id, dataset_id)
+    create_staging_datafiles.delay(files, user.id, dataset_id,
+                                   request.is_secure())
 
-    email = {'email' : user.email}
+    email = {'email': user.email}
     return HttpResponse(json.dumps(email), status=201)
 
 
