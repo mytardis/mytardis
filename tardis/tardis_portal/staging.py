@@ -152,7 +152,9 @@ def stage_file(datafile):
             datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
             datafile.protocol = ''
             datafile.save()
-
+            return True
+        else:
+            return False
 
 def get_sync_root(prefix = ''):
     from uuid import uuid4 as uuid
@@ -222,7 +224,7 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
     if copyto != realcopyto:
         logger.debug("Actually wrote uploaded file to %s" % copyto)
 
-    return copyto
+    return realcopyto
 
 
 def get_full_staging_path(username):

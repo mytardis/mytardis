@@ -255,3 +255,38 @@ REMOTE_SERVER_CREDENTIALS = [
     # Just one server for tests
     ('http://localhost:4272/', 'username', 'password')
 ]
+
+MIGRATION_DESTINATIONS = [{'name': 'test', 
+                           'transfer_type': 'http',
+                           'datafile_protocol': '',
+                           'trust_length': False,
+                           'metadata_supported': True,
+                           'base_url': 'http://127.0.0.1:4272/data/'},
+                          {'name': 'test2', 
+                           'transfer_type': 'dav',
+                           'datafile_protocol': '',
+                           'trust_length': False,
+                           'base_url': 'http://127.0.0.1/data/'},
+                          {'name': 'test3', 
+                           'transfer_type': 'dav',
+                           'datafile_protocol': '',
+                           'trust_length': False,
+                           'user' : 'datameister',
+                           'password' : 'geheimnis',
+                           'auth' : 'basic',
+                           'realm' : 'wunderland',
+                           'base_url': 'http://127.0.0.1/data/'}]
+
+DEFAULT_MIGRATION_DESTINATION = 'test'
+
+MIGRATION_SCORING_PARAMS = {
+    'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
+    'file_size_threshold': 0,
+    'file_size_weighting': 1.0,
+    'file_access_threshold': 0,
+    'file_access_weighting': 0.0,
+    'file_age_threshold': 0,
+    'file_age_weighting': 0.0}
+
+MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
+                       'dav': 'tardis.apps.migration.WebDAVTransfer'}
