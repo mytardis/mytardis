@@ -160,12 +160,14 @@ class Dataset_File(models.Model):
 
     def get_file(self, requireVerified=True):
         if requireVerified and not self.verified:
-            print "Not verified"
+            logger.warn("get_file() called with requireVerified=True, but file '%s' is not verified. Aborting." % self.filename)
             return None
         try:
             return self.get_file_getter(requireVerified=requireVerified)()
         except:
-            print "Error in get_file: ", sys.exc_info()[0]
+            import sys, traceback
+            logger.error("Error in get_file(), getting file %s from %s  " % ( self.filename, self.url ))
+            traceback.print_exc(file=sys.stdout)
             return None
 
     def get_download_url(self):
