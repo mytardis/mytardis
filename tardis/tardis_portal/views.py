@@ -1051,12 +1051,9 @@ def display_datafile_details(request, dataset_file_id):
             views.append({"url": "%s/%s" % (url, dataset_file_id),
                           "name": default_view})
         elif ns in the_schemas:
-            try:
-                schema = Schema.objects.get(namespace__exact=ns)
-                views.append({"url": "%s/%s" % (url, dataset_file_id),
-                              "name": schema.name})
-            except Schema.DoesNotExist:
-                continue
+            schema = Schema.objects.get(namespace__exact=ns)
+            views.append({"url": "%s/%s" % (url, dataset_file_id),
+                          "name": schema.name})
     context = Context({
         'datafile_id': dataset_file_id,
         'views': views,
