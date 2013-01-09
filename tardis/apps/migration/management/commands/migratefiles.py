@@ -50,17 +50,21 @@ class Command(BaseCommand):
         'individual Datafile is migrated atomically, but there are no ' \
         'guarantees of atomicity at the Dataset or Experiment level.  The ' \
         'following subcommands are supported:\n' \
-        '    migrate <target> <id> ... : migrates <target> files to destination \n' \
-        '    restore <target> <id> ... : restores <target> files from any destination\n' \
-        '    mirror <target> <id> ...  : copies <target> files to destination\n' \
-        '                                but keeps them local\n' \
-        '    reclaim <N>               : migrate files to reclaim N bytes\n' \
-        '    score                     : score and list all files\n' \
-        '    destinations              : lists the recognized destinations\n' \
+        '    migrate [<target> <id> ...] : migrates <target> files to destination \n' \
+        '    restore [<target> <id> ...] : restores <target> files from any destination\n' \
+        '    mirror [<target> <id> ...]  : copies <target> files to destination\n' \
+        '                                  but keeps them local\n' \
+        '    reclaim <N>                 : migrate files to reclaim N bytes\n' \
+        '    score                       : score and list all files\n' \
+        '    destinations                : lists the recognized destinations\n' \
         'where <target> is "datafile", "dataset" or "experiment", and the ' \
         '<id>s are the mytardis numeric ids for the respective objects\n' 
 
     option_list = BaseCommand.option_list + (
+        make_option('-a', '--all',
+                    action='store',
+                    dest='all',
+                    help='Process all datafiles'), 
         make_option('-d', '--dest',
                     action='store',
                     dest='dest',
@@ -90,6 +94,7 @@ class Command(BaseCommand):
         self.verbosity = options.get('verbosity', 1)
         self.noRemove = options.get('noRemove', False)
         self.dryRun = options.get('dryRun', False)
+        all = options.get('all', False)
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
         subcommand = args[0]
@@ -107,14 +112,20 @@ class Command(BaseCommand):
             self._reclaim(args)
         elif subcommand == 'migrate' or subcommand == 'restore' or \
                 subcommand == 'mirror' :
-            if len(args) == 0:
-                raise CommandError("Expected a %s target" % subcommand)
-            target = args[0]
-            args = args[1:]
             if subcommand == 'restore' and options['dest']:
                 raise CommandError("The --dest option cannot be used with "
                                    "the restore subcommand")
-            if target == 'datafile' or target == 'datafiles':
+            if all:
+                if len(args) != 0:
+                    raise CommandError("No target/ids allowed with --all")
+            else:
+                if len(args) == 0:
+                    raise CommandError("Expected a %s target" % subcommand) 
+                target = args[0]
+                args = args[1:]
+            if all:
+                self._all_datafiles(subcommand)
+            elif target == 'datafile' or target == 'datafiles':
                 self._datafiles(args, subcommand)
             elif target == 'dataset' or target == 'datasets':
                 self._datasets(args, subcommand)
@@ -125,6 +136,10 @@ class Command(BaseCommand):
         else:
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
+    def _all_datafiles(self, subcommand):
+        from tardis.tardis_portal.models import Dataset_File
+        for id in Dataset_File.objects.all().values_list('id', flat=True):
+            self._process_datafile(self, id)
 
     def _datafiles(self, args, subcommand):
         from tardis.tardis_portal.models import Dataset_File
@@ -135,52 +150,53 @@ class Command(BaseCommand):
                 ids.append(id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
-        self._process_datafiles(args, ids, subcommand)
+        self._process_selected_datafiles(args, ids, subcommand)
 
     def _datasets(self, args, subcommand):
         ids = []
         for id in args:
             ids.extend(self._ids_for_dataset(id))
-        self._process_datafiles(args, ids, subcommand)
+        self._process_selected_datafiles(args, ids, subcommand)
 
     def _experiments(self, args, subcommand):
         ids = []
         for id in args:
             ids.extend(self._ids_for_experiment(id))
-        self._process_datafiles(args, ids, subcommand)
+        self._process_selected_datafiles(args, ids, subcommand)
 
-    def _process_datafiles(self, args, ids, subcommand):
-        from tardis.tardis_portal.models import Dataset_File
+    def _process_selected_datafiles(self, args, ids, subcommand):
         if len(args) == 0:
             raise CommandError("Expected one or more ids")
         elif len(ids) == 0:
             raise CommandError("No Datafiles selected")
 
         for id in ids:
-            try:
-                if self.dryRun:
-                    self.stdout.write( \
-                        'Would have %s datafile %s\n' % \
-                        (self._verb(subcommand).lower(), id))
-                    continue
+            self._process_datafile(id, subcommand)
 
-                if subcommand == 'migrate':
-                    ok = migrate_datafile_by_id(id, self.dest, \
-                                              noRemove=self.noRemove)
-                elif subcommand == 'mirror':
-                    ok = migrate_datafile_by_id(id, self.dest, \
-                                              noUpdate=True)
-                else:
-                    ok = restore_datafile_by_id(id, noRemove=self.noRemove)
-                if ok and self.verbosity > 1:
-                    self.stdout.write( \
-                        '%s datafile %s\n' % (self._verb(subcommand), id))
-            except Dataset_File.DoesNotExist:
-                self.stderr.write('Datafile %s does not exist\n' % id)
-            except MigrationError as e:              
-                self.stderr.write(
-                    '%s failed for datafile %s : %s\n' % \
-                        (self._noun(subcommand), id, e.args[0]))
+    def _process_datafile(self, id, subcommand):
+        from tardis.tardis_portal.models import Dataset_File
+        if self.dryRun:
+            self.stdout.write( \
+                'Would have %s datafile %s\n' % \
+                    (self._verb(subcommand).lower(), id))
+            return
+        try:
+            if subcommand == 'migrate':
+                ok = migrate_datafile_by_id(id, self.dest,
+                                            noRemove=self.noRemove)
+            elif subcommand == 'mirror':
+                ok = migrate_datafile_by_id(id, self.dest, noUpdate=True)
+            elif subcommand == 'restore':
+                ok = restore_datafile_by_id(id, noRemove=self.noRemove)
+            if ok and self.verbosity > 1:
+                self.stdout.write('%s datafile %s\n' % \
+                                      (self._verb(subcommand), id))
+        except Dataset_File.DoesNotExist:
+            self.stderr.write('Datafile %s does not exist\n' % id)
+        except MigrationError as e:              
+            self.stderr.write(
+                '%s failed for datafile %s : %s\n' % \
+                    (self._noun(subcommand), id, e.args[0]))
 
     def _verb(self, subcommand):
         if (subcommand == 'migrate'):
