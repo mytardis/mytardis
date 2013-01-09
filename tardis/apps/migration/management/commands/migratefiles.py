@@ -139,7 +139,7 @@ class Command(BaseCommand):
     def _all_datafiles(self, subcommand):
         from tardis.tardis_portal.models import Dataset_File
         for id in Dataset_File.objects.all().values_list('id', flat=True):
-            self._process_datafile(self, id)
+            self._process_datafile(id, subcommand)
 
     def _datafiles(self, args, subcommand):
         from tardis.tardis_portal.models import Dataset_File

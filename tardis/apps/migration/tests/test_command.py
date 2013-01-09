@@ -311,6 +311,46 @@ class MigrateCommandTestCase(TestCase):
                           'Restored datafile %s\n'
                           'Restored datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
+ 
+    def testMigrateAll(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        dataset2 = generate_dataset()
+        experiment2 = generate_experiment([dataset2], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile4 = generate_datafile(None, dataset2, "Hi mum")
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', all=True,
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id, 
+                           datafile4.id))
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'restore', all=True,
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n'
+                          'Restored datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id,  
+                           datafile4.id))
 
     def testErrors(self):
         dataset = generate_dataset()
@@ -327,6 +367,15 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(err.read(), 
                           'Datafile 999 does not exist\n'
                           'Error: No Datafiles selected\n')
+        err = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', 'datafile', 
+                         999, stderr=err, all=True)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'Error: No target/ids allowed with --all\n')
 
         err = StringIO()
         try:
