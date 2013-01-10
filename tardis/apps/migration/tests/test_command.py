@@ -454,6 +454,25 @@ class MigrateCommandTestCase(TestCase):
                           (datafile.url, datafile.id, 
                            datafile2.url, datafile2.id))
 
+    def testMigrateEnsure(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3 = generate_datafile(None, dataset, "Hi mum")
+
+        # Ensuring that there are at least zero bytes of free space
+        # is a no-op ... but it tests the logic, and the method that
+        # enquires how much free disc space there is.
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'ensure', '0', 
+                         stdout=out, verbosity=2, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), '')
+
     def testMigrateConfig(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])

@@ -2,7 +2,7 @@
 Migration App
 =============
 
-The migration app supports the orderly migration of data files between different storage locations under the control of a single MyTardis instance.
+The migration app supports the orderly migration of data files between different storage locations under the control of a single MyTardis instance.  The secondary storage locations are essentially "dumb" consisting in the simple case of nothing more than an off-the-shelf WebDAV server.
 
 The initial version of the app simply provides a django admin command for manually migrating the data associated with a Datafile, Dataset or Experiment.  
 
@@ -123,9 +123,10 @@ The initial version of the migration app provides the "migratefiles" command to 
 
 Usage
 ~~~~~
-``./bin/django migratefiles migrate <target> <id> ...``
-``./bin/django migratefiles restore <target> <id> ...``
-``./bin/django migratefiles mirror <target> <id> ...``
+``./bin/django migratefiles migrate [<target> <id> ...]``
+``./bin/django migratefiles restore [<target> <id> ...]``
+``./bin/django migratefiles mirror [<target> <id> ...]``
+``./bin/django migratefiles ensure <amount>``
 ``./bin/django migratefiles reclaim <amount>``
 ``./bin/django migratefiles score``
 ``./bin/django migratefiles destinations``
@@ -134,24 +135,28 @@ Usage
 .. option:: --verbosity={0,1,2,3}
 .. option:: -n, --dryRun
 .. option:: --noRemove
+.. option:: -a, --all
 
-The first form migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type. 
+The 'migrate' subcommand migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type.  Alternatively, the "--all" option selects all Datafiles for migration.
 
 The migration of a single file is atomic.  If the migration succeeds, the Datafile metadata in MyTardis will have been updated to the new location.  If it fails, the metadata will not be altered.  The migration process also takes steps to ensure that the file has been correctly transferred.  The final step of a migration is to delete the original copy of the file.  This is currently not performed atomically.
 
-The second form attempts to restore (bring back to local disc) the data associated with the selected DataFiles, DataSets or Experiments.  (The current implementation temporarily marks each Datafile as "not verified" and attempts to "stage" it.)
+The 'restore' subcommand attempts to restore (bring back to local disc) the data associated with the selected DataFiles, DataSets or Experiments.  (The current implementation temporarily marks each Datafile as "not verified" and attempts to "stage" it.)
 
-The third form just copies the files to the destination.  It is equivalent to a 'migrate' without the database update and without the local file removal.
+The 'mirror' subcommand form just copies the files to the destination.  It is equivalent to a 'migrate' without the database update and without the local file removal.
 
-The fourth form attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
+The 'reclaim' subcommand attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
 
-The fifth form simply scores all of the local files and lists their details in descending score order. 
+The 'ensure' subcommand is like 'reclaim', but the "<amount>" argument is interpretted as the target amount of free space to maintain on the local file system.
 
-The final form of the command lists the configured transfer destinations.
+The 'score' subcommand simply scores all of the local files and lists their details in descending score order. 
+
+The 'list' subcommand lists the configured transfer destinations.
 
 The options are as follows:
 
   * --dest selects the remote location for the migrate, mirror and reclaim subcommands.  (For the restore subcommand, the destination is local, and the remote source location is implied by the Datafile's 'url' attribute.) 
+  * --all used with migrate, resore and mirror to select all Datafiles for the action.
   * --verbosity determines how much output is produced in the normal django command fashion.
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
   * --noRemove performs the migrate or restore actions, but does not remove the source file.  (It is implied in the case of mirroring.)

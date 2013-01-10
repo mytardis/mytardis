@@ -38,6 +38,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.log import dictConfig
 
+from tardis.tardis_portal.util import get_free_space
+
 from tardis.apps.migration import Destination, MigrationError, \
     MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
     restore_datafile_by_id
@@ -54,6 +56,7 @@ class Command(BaseCommand):
         '    restore [<target> <id> ...] : restores <target> files from any destination\n' \
         '    mirror [<target> <id> ...]  : copies <target> files to destination\n' \
         '                                  but keeps them local\n' \
+        '    ensure <N>                  : migrate files to ensure N bytes of free space\n' \
         '    reclaim <N>                 : migrate files to reclaim N bytes\n' \
         '    score                       : score and list all files\n' \
         '    destinations                : lists the recognized destinations\n' \
@@ -110,6 +113,8 @@ class Command(BaseCommand):
             return
         if subcommand == 'reclaim':
             self._reclaim(args)
+        elif subcommand == 'ensure':
+            self._ensure(args)
         elif subcommand == 'migrate' or subcommand == 'restore' or \
                 subcommand == 'mirror' :
             if subcommand == 'restore' and options['dest']:
@@ -271,13 +276,27 @@ class Command(BaseCommand):
         if len(args) != 1:
             raise CommandError("Reclaim subcommand requires an argument")
         try:
-            required_amount = int(args[0])
+            required_space = int(args[0])
         except:
-            raise CommandError("reclaim argument must be an integer")
+            raise CommandError("Reclaim argument must be an integer")
+        self._do_reclaim(required_space)
+
+    def _ensure(self, args):
+        if len(args) != 1:
+            raise CommandError("Ensure subcommand requires an argument")
+        try:
+            required_space = int(args[0])
+        except:
+            raise CommandError("Ensure argument must be an integer")
+        free_space = get_free_space(settings.FILE_STORE_PATH)
+        if free_space < required_space:
+            self._do_reclaim(required_space - free_space)
+    
+    def _do_reclaim(self, required):
         scores = self._do_score_all()
         total = 0
         for entry in scores:
-            if total >= required_amount:
+            if total >= required:
                 break
             datafile = entry[0]
             if self.verbosity > 1:
