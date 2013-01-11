@@ -33,6 +33,7 @@ from StringIO import StringIO
 from django.test import TestCase
 from django.test.client import Client
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
@@ -40,6 +41,7 @@ from tardis.test_settings import FILE_STORE_PATH
 from tardis.tardis_portal.models import Dataset_File
 
 from tardis.apps.migration import Destination
+from tardis.apps.migration.management.commands.migratefiles import Command
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
@@ -472,6 +474,44 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(), '')
+
+    def testParseAmount(self):
+        command = Command()
+        self.assertEquals(command._parse_amount(['0']), 0)
+        self.assertEquals(command._parse_amount(['1.0']), 1)
+        self.assertEquals(command._parse_amount(['1.999']), 1)
+        self.assertEquals(command._parse_amount(['1k']), 1024)
+        self.assertEquals(command._parse_amount(['1K']), 1024)
+        self.assertEquals(command._parse_amount(['1m']), 1024 * 1024)
+        self.assertEquals(command._parse_amount(['1g']), 1024 * 1024 * 1024)
+        self.assertEquals(command._parse_amount(['1000t']), 
+                          1024 * 1024 * 1024 * 1024 * 1000)
+        self.assertEquals(command._parse_amount(['1.1k']), 1024 + 102)
+
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount([])
+        self.assertEquals(str(cm.exception), 'missing <amount> argument')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1', '2'])
+        self.assertEquals(str(cm.exception), 'multiple <amount> arguments')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['abc'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(abc\).*')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['-1'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(-1\).*')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1z'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(1z\).*')
+             
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1.'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(1\.\).*')
+             
 
     def testMigrateConfig(self):
         dataset = generate_dataset()

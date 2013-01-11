@@ -31,7 +31,7 @@
 Management command to migrate datafiles, datasets and experiments
 """
 
-import sys
+import sys, re
 from optparse import make_option
 
 from django.conf import settings
@@ -273,24 +273,33 @@ class Command(BaseCommand):
                                    datafile.size, entry[1], total)) 
             
     def _reclaim(self, args):
-        if len(args) != 1:
-            raise CommandError("Reclaim subcommand requires an argument")
-        try:
-            required_space = int(args[0])
-        except:
-            raise CommandError("Reclaim argument must be an integer")
+        required_space = self._parse_amount(args)
         self._do_reclaim(required_space)
 
     def _ensure(self, args):
-        if len(args) != 1:
-            raise CommandError("Ensure subcommand requires an argument")
-        try:
-            required_space = int(args[0])
-        except:
-            raise CommandError("Ensure argument must be an integer")
+        required_space = self._parse_amount(args)
         free_space = get_free_space(settings.FILE_STORE_PATH)
         if free_space < required_space:
             self._do_reclaim(required_space - free_space)
+
+    def _parse_amount(self, args):
+        if len(args) < 1:
+            raise CommandError("missing <amount> argument")
+        elif len(args) > 1:
+            raise CommandError("multiple <amount> arguments")
+        pat = re.compile(r"^(\d+(?:\.\d+)?)([kmgtKMGT]?)$")
+        res = pat.match(args[0])
+        if res:
+            amount = float(res.group(1))
+            scale = res.group(2).lower()
+            factor = {'': 1, 'k': 1024, 'm': 1048576,
+                      'g': 1073741824, 't': 1099511627776}.get(scale)
+            amount = amount * factor
+            return long(amount)
+        else:
+            raise CommandError("<amount> argument (%s) must be a non-negative" \
+                               " number followed  by an optional scale" \
+                               " factor (K, M, G or T)" % args[0])
     
     def _do_reclaim(self, required):
         scores = self._do_score_all()
