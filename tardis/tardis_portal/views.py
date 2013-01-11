@@ -510,18 +510,27 @@ def view_dataset(request, dataset_id):
     the option to show metadata of each file and ways to download those files.
     With write permission this page also allows uploading and metadata
     editing.
-    Optionally, if provided in settings.py, datasets of a certain type can
-    override the default template.
+    Optionally, if set up in settings.py, datasets of a certain type can
+    override the default view.
     Settings example:
     DATASET_VIEWS = [("http://dataset.example/schema",
-                      "dataset_app/my_view_dataset_template.html"),]
-    Example template:
-    {% extends "tardis_portal/view_dataset.html" %}
-    {% block dataset_content_preview %}
-    MY AWESOME PREVIEW
-    {% endblock %}
+                      "tardis.apps.custom_views_app.views.my_view_dataset"),]
     """
     dataset = Dataset.objects.get(id=dataset_id)
+
+    if hasattr(settings, "DATASET_VIEWS"):
+        namespaces = [ps.schema.namespace
+                      for ps in dataset.getParameterSets()]
+        for ns, view_fn in settings.DATASET_VIEWS:
+            if ns in namespaces:
+                x = view_fn.split(".")
+                mod_name, fn_name = (".".join(x[:-1]), x[-1])
+                try:
+                    module = __import__(mod_name, fromlist=[fn_name])
+                    fn = getattr(module, fn_name)
+                    return fn(request, dataset_id)
+                except (ImportError, AttributeError):
+                    continue
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
@@ -542,15 +551,6 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
-    template_name = 'tardis_portal/view_dataset.html'
-    if hasattr(settings, "DATASET_VIEWS"):
-        namespaces = [ps.schema.namespace
-                      for ps in dataset.getParameterSets()]
-        for ns, ns_template in settings.DATASET_VIEWS:
-            if ns in namespaces:
-                template_name = ns_template
-                break
-
     upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
 
     c = Context({
@@ -568,8 +568,8 @@ def view_dataset(request, dataset_id):
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method,
     })
-    return HttpResponse(render_response_index(request,
-                                              template_name, c))
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/view_dataset.html', c))
 
 
 @never_cache
