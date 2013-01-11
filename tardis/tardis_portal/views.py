@@ -501,8 +501,26 @@ class SearchQueryString():
     def query_string(self):
         return self.__unicode__()
 
+
 @authz.dataset_access_required
 def view_dataset(request, dataset_id):
+    """Displays a Dataset and associated information.
+
+    Shows a dataset its metadata and a list of associated files with
+    the option to show metadata of each file and ways to download those files.
+    With write permission this page also allows uploading and metadata
+    editing.
+    Optionally, if provided in settings.py, datasets of a certain type can
+    override the default template.
+    Settings example:
+    DATASET_VIEWS = [("http://dataset.example/schema",
+                      "dataset_app/my_view_dataset_template.html"),]
+    Example template:
+    {% extends "tardis_portal/view_dataset.html" %}
+    {% block dataset_content_preview %}
+    MY AWESOME PREVIEW
+    {% endblock %}
+    """
     dataset = Dataset.objects.get(id=dataset_id)
 
     def get_datafiles_page():
@@ -524,6 +542,15 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
+    template_name = 'tardis_portal/view_dataset.html'
+    if hasattr(settings, "DATASET_VIEWS"):
+        namespaces = [ps.schema.namespace
+                      for ps in dataset.getParameterSets()]
+        for ns, ns_template in settings.DATASET_VIEWS:
+            if ns in namespaces:
+                template_name = ns_template
+                break
+
     upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
 
     c = Context({
@@ -542,7 +569,8 @@ def view_dataset(request, dataset_id):
         'upload_method': upload_method,
     })
     return HttpResponse(render_response_index(request,
-                    'tardis_portal/view_dataset.html', c))
+                                              template_name, c))
+
 
 @never_cache
 @authz.experiment_access_required

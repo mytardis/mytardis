@@ -1,0 +1,48 @@
+{% extends "tardis_portal/view_dataset.html" %}
+{% load url from future %}
+{% block dataset_content_preview %}
+    <div class="row-fluid" style="margin-bottom: 20px">
+    <h3>A few diffractions from your dataset</h3>
+    <div class="info-box">        
+    {% if dataset.get_images.count > 0 %}
+      <div id="preview" class="carousel" style="margin: 20px auto 20px auto;width: 500px; height: 500px;">
+        <!-- Carousel items -->
+        <div class="carousel-inner" style="background-color: white;">
+          {% for datafile in dataset.get_images %}
+            <div class="{{ forloop.first|yesno:'active ,' }}item" style="height: 100%">
+	      {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!500,500' rotation=0 quality='native' format='jpg' as thumbnail %}
+              {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
+              <a href="{{ image }}">
+                <img alt="Preview image for Datafile #{{ datafile.id }}"
+                     src="{{ thumbnail }}"
+                     style="display: block; margin-left: auto; margin-right: auto;"
+                     onerror="$(this).parents('.item').remove()"/>
+              </a>
+              <div class="carousel-caption">
+                <h4>{{ datafile.filename }}</h4>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% if dataset.get_images.count > 1 %}
+            <!-- Carousel nav -->
+            <a class="carousel-control left" href="#preview" data-slide="prev">&lsaquo;</a>
+            <a class="carousel-control right" href="#preview" data-slide="next">&rsaquo;</a>
+        {% endif %}
+      </div>
+    {% else %}
+          <div class="alert">No previews available</div>
+    {% endif %}
+      </div>    
+    </div>
+{% endblock %}
+
+{% block finalscript %}
+{{ block.super }}
+<script type="text/javascript">
+$(document).ready(function(){
+  $('#preview, #preview .carousel-inner').css('width', '500')
+                                         .css('height', '500');
+});
+</script>
+{% endblock finalscript %}

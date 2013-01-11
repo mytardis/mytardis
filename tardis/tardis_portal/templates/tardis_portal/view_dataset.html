@@ -393,6 +393,7 @@ $('#modal-metadata .submit-button').live('click', function() {
 
 <div class="row-fluid" >
   <div class="span7">
+    {% block dataset_content_preview %}
     <div class="row-fluid" style="margin-bottom: 20px">
     <h3>Preview Images</h3>
     <div class="info-box">        
@@ -427,6 +428,7 @@ $('#modal-metadata .submit-button').live('click', function() {
     {% endif %}
       </div>    
     </div>
+    {% endblock dataset_content_preview %}
     <div id="metadata-pane-datafile" class="row-fluid">
        <h3>Datafile Information</h3>
        <div id="datafile-info">
@@ -490,6 +492,7 @@ $('#modal-metadata .submit-button').live('click', function() {
   </div>
 </div>
 
+{% block finalscript %}
 <script type="text/javascript">
 $(document).ready(function(){
 
@@ -550,5 +553,5 @@ $(document).ready(function(){
 
 });
 </script>
-
+{% endblock finalscript %}
 {% endblock %}
