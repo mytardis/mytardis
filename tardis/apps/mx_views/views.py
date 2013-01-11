@@ -18,7 +18,8 @@ def view_full_dataset(request, dataset_id):
     also allows uploading and metadata editing.
 
     Settings for this view:
-    DATASET_VIEWS = [("http://synchrotron.org.au/views/full_dataset",
+    INSTALLED_APPS += ("mx_views",)
+    DATASET_VIEWS = [("http://synchrotron.org.au/views/dataset/full",
                       "tardis.apps.mx_views.views.view_full_dataset"),]
 
     """

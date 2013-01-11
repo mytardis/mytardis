@@ -528,7 +528,7 @@ def view_dataset(request, dataset_id):
                 try:
                     module = __import__(mod_name, fromlist=[fn_name])
                     fn = getattr(module, fn_name)
-                    return fn(request, dataset_id)
+                    return fn(request, dataset_id=dataset_id)
                 except (ImportError, AttributeError):
                     continue
 
