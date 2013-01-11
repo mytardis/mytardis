@@ -145,7 +145,7 @@ The 'restore' subcommand attempts to restore (bring back to local disc) the data
 
 The 'mirror' subcommand form just copies the files to the destination.  It is equivalent to a 'migrate' without the database update and without the local file removal.
 
-The 'reclaim' subcommand attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.
+The 'reclaim' subcommand attempts to reclaim "<amount>" bytes of local disc space by migrating files.  Files are selected for migration by scoring them using the configured scoring algorithm and parameters.  We then choose files with the highest scores.  The "<amount>" argument should be a number (>= zero) followed by an optional scale factor; e.g. "1.1k" means 1.1 multiplied by 1024 and truncated.  Scaling factors "k", "m", "g" and "t" are supported. 
 
 The 'ensure' subcommand is like 'reclaim', but the "<amount>" argument is interpretted as the target amount of free space to maintain on the local file system.
 
