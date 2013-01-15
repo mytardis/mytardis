@@ -18,7 +18,7 @@ def view_full_dataset(request, dataset_id):
     also allows uploading and metadata editing.
 
     Settings for this view:
-    INSTALLED_APPS += ("mx_views",)
+    INSTALLED_APPS += ("tardis.apps.mx_views",)
     DATASET_VIEWS = [("http://synchrotron.org.au/views/dataset/full",
                       "tardis.apps.mx_views.views.view_full_dataset"),]
 
@@ -44,6 +44,12 @@ def view_full_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
+    display_images = dataset.get_images()
+    image_count = len(display_images)
+    if image_count > 4:
+        # take 4 evenly spaced images from the set
+        display_images = display_images[0::image_count / 4][:4]
+
     c = Context({
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
@@ -56,7 +62,8 @@ def view_full_dataset(request, dataset_id):
         'from_experiment': \
             get_experiment_referer(request, dataset_id),
         'other_experiments': \
-            authz.get_accessible_experiments_for_dataset(request, dataset_id)
+            authz.get_accessible_experiments_for_dataset(request, dataset_id),
+        'display_images': display_images,
     })
     return HttpResponse(render_response_index(
         request, 'mx_views/view_full_dataset.html', c))

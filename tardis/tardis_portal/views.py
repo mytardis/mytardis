@@ -139,7 +139,18 @@ def get_dataset_info(dataset, include_thumbnail=False):
             obj['thumbnail'] = get_thumbnail_url(dataset.image)
         except AttributeError:
             pass
+
+    if hasattr(settings, "DATASET_VIEWS"):
+        schemas = {}
+        for ps in dataset.getParameterSets():
+            schemas[ps.schema.namespace] = ps.schema
+        for ns, view_fn in settings.DATASET_VIEWS:
+            if ns in schemas:
+                obj["datasettype"] = schemas[ns].name
+                break
+    
     return obj
+
 
 class HttpResponseMethodNotAllowed(HttpResponse):
     status_code=303
