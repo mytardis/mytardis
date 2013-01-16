@@ -20,7 +20,7 @@ setup(
     install_requires=[
         'setuptools',
         'lxml==2.2.7',
-        'pyparsing==1.5.7',
+        'pyparsing==1.5.6',
         'feedparser==5.1.2',
         'elementtree',
         'django==1.4.1',
