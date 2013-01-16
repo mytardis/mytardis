@@ -1,5 +1,6 @@
 from django.conf import settings
 
+import hashlib
 import pystache
 import pytz
 import os, platform, ctypes, stat, time, struct
@@ -51,6 +52,32 @@ def get_free_space(fs_dir):
     else:
         raise RuntimeError('Unsupported / unexpected platform type: %s' % \
                                sys_type)
+
+def generate_file_checksums(sourceFile, tempFile):
+    '''
+    Generate checksums, etcetera for a file read from 'sourceFile'.
+    If 'tempFile' is provided, the bytes are written to it as they are read.
+    The result is a tuple comprising the MD5 checksum, the SHA512 checksum,
+    the file length, and chunk containing the start of the file (for doing
+    mimetype guessing if necessary).
+    '''
+
+    from contextlib import closing
+    with closing(sourceFile) as f:
+        md5 = hashlib.new('md5')
+        sha512 = hashlib.new('sha512')
+        size = 0
+        mimetype_buffer = ''
+        for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
+            size += len(chunk)
+            if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+                mimetype_buffer += chunk
+            md5.update(chunk)
+            sha512.update(chunk)
+            if tempFile:
+                tempFile.write(chunk)
+    return (md5.hexdigest(), sha512.hexdigest(), 
+            size, mimetype_buffer)
 
 def _load_template(template_name):
     from mustachejs.loading import find

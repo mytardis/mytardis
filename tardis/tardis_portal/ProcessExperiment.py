@@ -41,7 +41,7 @@ from django.utils.safestring import SafeUnicode
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.staging import \
-    get_sync_root, get_sync_url_and_protocol
+    get_sync_root, get_sync_url_and_protocol, get_sync_location
 
 
 logger = logging.getLogger(__name__)
@@ -328,10 +328,13 @@ class ProcessExperiment:
 
                     dfile = Dataset_File(dataset=d,
                                          filename=filename,
-                                         url=url,
-                                         size=datafile['size'],
-                                         protocol=protocol)
+                                         size=datafile['size'])
                     dfile.save()
+                    replica = Replica(datafile=dfile,
+                                      url=url,
+                                      protocol=protocol,
+                                      location=get_sync_location()[0])
+                    replica.save()
                     current_df_id = dfile.id
 
                     for md in datafile['metadata']:

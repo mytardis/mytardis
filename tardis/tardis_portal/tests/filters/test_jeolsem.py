@@ -8,7 +8,7 @@ from django.test.client import Client
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
 from tardis.tardis_portal.models import User, UserProfile, \
-    ExperimentACL, Experiment, Dataset, Dataset_File
+    ExperimentACL, Experiment, Dataset, Dataset_File, Replica, Location
 from tardis.tardis_portal.models.parameters import DatasetParameterSet
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
@@ -54,12 +54,15 @@ class JEOLSEMFilterTestCase(TestCase):
 
             datafile = Dataset_File(dataset=dataset,
                                     filename=path.basename(testfile),
-                                    url='file://'+path.abspath(testfile),
-                                    protocol='file',
                                     size=size,
                                     sha512sum=sha512sum)
-            datafile.verify()
             datafile.save()
+            replica = Replica(datafile=datafile,
+                              url='file://'+path.abspath(testfile),
+                              protocol='file',
+                              location=Location.get_default_location())
+            replica.verify()
+            replica.save()
             return datafile
 
         self.dataset = dataset

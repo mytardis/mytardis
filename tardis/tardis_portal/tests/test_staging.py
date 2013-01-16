@@ -94,8 +94,9 @@ class TestStagingFiles(TestCase):
 
         # Disconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import staging_hook, Dataset_File
-        post_save.disconnect(staging_hook, sender=Dataset_File)
+        from tardis.tardis_portal.models import \
+            staging_hook, Dataset_File, Replica, Location
+        post_save.disconnect(staging_hook, sender=Replica)
 
         from django.contrib.auth.models import User
         user = 'tardis_user1'
@@ -117,8 +118,7 @@ class TestStagingFiles(TestCase):
         # make datafile
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
-                                created_by=self.user,
-                                )
+                                created_by=self.user)
         exp.save()
 
         # make dataset
@@ -127,25 +127,28 @@ class TestStagingFiles(TestCase):
         dataset.experiments.add(exp)
         dataset.save()
 
-        # create datasetfile
-        df = models.Dataset_File()
-        df.dataset = dataset
-        df.filename = path.basename(self.file)
-        df.url = 'file://'+self.file
-        df.protocol = "staging"
-        df.size = len(content)
-        df.verify(allowEmptyChecksums=True)
+        # create datafile
+        df = models.Dataset_File(dataset=dataset, size = len(content),
+                                 filename = path.basename(self.file))
         df.save()
-        self.df = df
+
+        # create replica
+        replica = models.Replica(datafile=df, url='file://'+self.file,
+                                 protocol="staging",
+                                 location=Location.get_location("staging"))
+        replica.verify(allowEmptyChecksums=True)
+        replica.save()
+        self.replica = replica
 
     def tearDown(self):
         # reconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import staging_hook, Dataset_File
-        post_save.connect(staging_hook, sender=Dataset_File)
+        from tardis.tardis_portal.models import \
+                                     staging_hook, Dataset_File, Replica
+        post_save.connect(staging_hook, sender=Replica)
 
 
-    def test_stage_file(self):
+    def test_stage_replica(self):
         from tardis.tardis_portal import staging
 
-        staging.stage_file(self.df)
+        staging.stage_replica(self.replica)

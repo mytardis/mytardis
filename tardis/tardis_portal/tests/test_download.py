@@ -18,7 +18,8 @@ from nose.plugins.skip import SkipTest
 import filecmp
 
 from tardis.tardis_portal.download import StreamingFile, StreamableZipFile
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import \
+    Experiment, Dataset, Dataset_File, Location, Replica
 
 from tempfile import NamedTemporaryFile, mkstemp
 
@@ -175,31 +176,27 @@ class DownloadTestCase(TestCase):
         testfile2 = abspath(join(self.dest2, filename2))
         _generate_test_image(testfile2)
 
-        size, sha512sum = get_size_and_sha512sum(testfile1)
-        self.dataset_file1 = Dataset_File(dataset=self.dataset1,
-                                          filename=filename1,
-                                          protocol='',
-                                          size=size,
-                                          sha512sum=sha512sum,
-                                          url='%d/%d/%s'
-                                              % (self.experiment1.id,
-                                                 self.dataset1.id,
-                                                 filename1))
-        self.dataset_file1.verify()
-        self.dataset_file1.save()
+        self.dataset_file1 = _build_datafile( \
+            testfile1, filename1, self.dataset1,
+            '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1),
+            '')
+                          
+        self.dataset_file2 = _build_datafile( \
+            testfile2, filename2, self.dataset2,
+            '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2),
+            '')
 
-        size, sha512sum = get_size_and_sha512sum(testfile2)
-        self.dataset_file2 = Dataset_File(dataset=self.dataset2,
-                                          filename=basename(filename2),
-                                          protocol='',
-                                          size=size,
-                                          sha512sum=sha512sum,
-                                          url='%d/%d/%s'
-                                            % (self.experiment2.id,
-                                               self.dataset2.id,
-                                               filename2))
-        self.dataset_file2.verify()
-        self.dataset_file2.save()
+    def _build_datafile(testfile, filename, dataset, url, protocol):
+        size, sha512sum = get_size_and_sha512sum(testfile)
+        datafile = Dataset_File(dataset=dataset, filename=filename1,
+                                size=size, sha512sum=sha512sum)
+        datafile.save()
+        replica = Replica(datafile=datafile, protocol=protocol, url=url,
+                          location=Location.get_default_location())
+        replica.verify()
+        replica.save()
+        return datafile
+
 
     def tearDown(self):
         self.user.delete()
@@ -379,14 +376,9 @@ class DownloadTestCase(TestCase):
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
         size, sha512sum = get_size_and_sha512sum(filename)
-        pdf1 = Dataset_File(dataset=dataset,
-                            filename=basename(filename),
-                            size=str(size),
-                            sha512sum=sha512sum,
-                            url='file://%s' % filename,
-                            protocol='file')
-        pdf1.verify()
-        pdf1.save()
+        pdf1 = _build_datafile(filename, filename, dataset, 
+                               'file://%s' % filename, 'file') 
+
         try:
             from magic import Magic
             self.assertEqual(pdf1.mimetype, 'image/jpeg')
@@ -397,14 +389,12 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
         # now check that we can override the physical file meta information
-        pdf2 = Dataset_File(dataset=dataset,
-                            filename=basename(filename),
-                            url='file://%s' % filename,
-                            protocol='file',
-                            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                            size=str(0),
-                            # Empty string always has the same hash
-                            sha512sum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
+        pdf2 = _build_datafile(filename, filename, dataset, 
+                               'file://%s' % filename, 'file') 
+        pdf2.mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        pdf2.size = str(0)
+        # Empty string always has the same hash
+        pdf2.sha512sum = 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e'
         pdf2.save()
         try:
             from magic import Magic

@@ -345,6 +345,15 @@ CELERYBEAT_SCHEDULE = {
 
 djcelery.setup_loader()
 
+DEFAULT_LOCATION = "local"
+
+INITIAL_LOCATIONS = [{name=DEFAULT_LOCATION,
+                      url='file:/' + FILE_STORE_PATH,
+                      type='online'},
+                     {name='staging',
+                      url='file:/' + STAGING_PATH,
+                      type='external'}]
+
 MIGRATION_DESTINATIONS = []
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'

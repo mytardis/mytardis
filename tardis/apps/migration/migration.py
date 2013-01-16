@@ -35,7 +35,7 @@ import os
 from django.conf import settings
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
-from tardis.tardis_portal.staging import stage_file
+from tardis.tardis_portal.staging import stage_replica
 
 from tardis.apps.migration import Destination, MigrationError
 

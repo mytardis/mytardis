@@ -1,18 +1,12 @@
-import hashlib
-from magic import Magic
 from os import path
-from urllib2 import build_opener
-from urlparse import urlparse
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models import Q
-from django.db.models.signals import pre_save
-from django.core.files.storage import default_storage
 from django.utils import _os
 
 from .dataset import Dataset
+from .replica import Replica
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 
@@ -52,11 +46,17 @@ class Dataset_File(models.Model):
     case, the `url` field won't be URL encoded.
     """
 
+    def get_url(self):
+        return self.get_preferred_replica().url
+        
+    def get_protocol(self):
+        return self.get_preferred_replica().protocol
+            
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    url = models.CharField(max_length=400)
+    url = property(get_url)
     size = models.CharField(blank=True, max_length=400)
-    protocol = models.CharField(blank=True, max_length=10)
+    protocol = property(get_protocol)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
@@ -121,89 +121,29 @@ class Dataset_File(models.Model):
             return None
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
-    def is_local(self):
-        try:
-            if self.protocol in (t[0] for t in settings.DOWNLOAD_PROVIDERS):
-                return False
-        except AttributeError:
-            pass
-        return urlparse(self.url).scheme == ''
-
-    def get_actual_url(self):
-        if self.is_local():
-            # Local file
-            return 'file://'+self.get_absolute_filepath()
-        # Remote files are also easy
-        url = urlparse(self.url)
-        if url.scheme in ('http', 'https', 'ftp', 'file'):
-            return self.url
-        return None
-    
-    def get_file_getter(self, requireVerified=True):
-        """Return a function that will return a File-like handle for the Datafile's
-           data.  The returned function uses a cached URL for the file to avoid 
-           depending on the current database transaction.
-        """
-        
-        if requireVerified and not self.verified:
-            return None
-        if self.is_local():
-            theUrl = self.url
-            def getter():
-                return default_storage.open(theUrl)
-            return getter
-        else:
-            theUrl = self.get_actual_url()
-            def getter():
-                return get_privileged_opener().open(theUrl)
-            return getter
-
-    def get_file(self, requireVerified=True):
-        if requireVerified and not self.verified:
-            print "Not verified"
-            return None
-        try:
-            return self.get_file_getter(requireVerified=requireVerified)()
-        except:
-            print "Error in get_file: ", sys.exc_info()[0]
-            return None
-
     def get_download_url(self):
-        def get_download_view():
-            # Handle external protocols
-            try:
-                for module in settings.DOWNLOAD_PROVIDERS:
-                    if module[0] == self.protocol:
-                        return '%s.download_datafile' % module[1]
-            except AttributeError:
-                pass
-            # Fallback to internal
-            url = urlparse(self.url)
-            # These are internally known protocols
-            if url.scheme in ('', 'http', 'https', 'ftp', 'file'):
-                return 'tardis.tardis_portal.download.download_datafile'
-            return None
+        return self.get_preferred_replica().get_download_url()
+        
+    def get_file(self):
+        return self.get_preferred_replica().get_file()
+        
+    def get_preferred_replica(self):
+        """Get the Datafile replica that is the preferred one for download.
+        This entails fetching all of the Replicas and ordering by their
+        respective Locations' computed priorities.
+        """
 
-        try:
-            return reverse(get_download_view(),
-                           kwargs={'datafile_id': self.id})
-        except:
-            return ''
+        # return max(Replica.objects.filter(datafile=self), 
+        #           key=lambda x: x.location.priority)
+        preferred = None
+        for replica in Replica.objects.filter(datafile=self):
+            if not preferred or \
+                    preferred.location.priority < replica.location.priority:
+                preferred = replica
+        if not preferred:
+            raise ValueError('Dataset_File has no replicas')
+        return preferred
 
-    def get_absolute_filepath(self):
-        url = urlparse(self.url)
-        if url.scheme == '':
-            try:
-                # FILE_STORE_PATH must be set
-                return _os.safe_join(settings.FILE_STORE_PATH, url.path)
-            except AttributeError:
-                return ''
-        if url.scheme == 'file':
-            return url.path
-        # ok, it doesn't look like the file is stored locally
-        else:
-            return ''
-            
     def has_image(self):
         from .parameters import DatafileParameter
         
@@ -269,79 +209,3 @@ class Dataset_File(models.Model):
                   datasets=self.dataset,
                   public_access=Experiment.PUBLIC_ACCESS_FULL).exists()
 
-    def deleteCompletely(self):
-        import os
-        filename = self.get_absolute_filepath()
-        os.remove(filename)
-        self.delete()
-
-    def verify(self, tempfile=None, allowEmptyChecksums=False):
-        '''
-        Verifies this file matches its checksums. It must have at least one
-        checksum hash to verify unless "allowEmptyChecksums" is True.
-
-        If passed a file handle, it will write the file to it instead of
-        discarding data as it's read.
-        '''
-
-        if not (allowEmptyChecksums or self.sha512sum or self.md5sum):
-            return False
-
-        sourcefile = self.get_file(requireVerified=False)
-        if not sourcefile:
-            logger.error("%s content not accessible" % self.url)
-            return False
-        logger.info("Downloading %s for verification" % self.url)
-        md5sum, sha512sum, size, mimetype_buffer = \
-            generate_file_checksums(sourcefile, tempfile)
-
-        if not (self.size and size == int(self.size)):
-            if (self.sha512sum or self.md5sum) and not self.size: 
-                # If the size is missing but we have a checksum to check
-                # the missing size is harmless ... we will fill it in below.
-                logger.warn("%s size is missing" % (self.url))
-            else:
-                logger.error("%s failed size check: %d != %s" %
-                            (self.url, size, self.size))
-                return False
-
-        if self.sha512sum and sha512sum.lower() != self.sha512sum.lower():
-            logger.error("%s failed SHA-512 sum check: %s != %s" %
-                         (self.url, sha512sum, self.sha512sum))
-            return False
-
-        if self.md5sum and md5sum.lower() != self.md5sum.lower():
-            logger.error("%s failed MD5 sum check: %s != %s" %
-                         (self.url, md5sum, self.md5sum))
-            return False
-
-        self.md5sum = md5sum.lower()
-        self.sha512sum = sha512sum.lower()
-        self.size = str(size)
-        if not self.mimetype and len(mimetype_buffer) > 0:
-            self.mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
-        self.verified = True
-        self.save()
-
-        logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
-                    "after successful verification")
-        return True
-
-def generate_file_checksums(sourceFile, tempFile):
-    from contextlib import closing
-    with closing(sourceFile) as f:
-        md5 = hashlib.new('md5')
-        sha512 = hashlib.new('sha512')
-        size = 0
-        mimetype_buffer = ''
-        for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
-            size += len(chunk)
-            if len(mimetype_buffer) < 8096: # Arbitrary memory limit
-                mimetype_buffer += chunk
-            md5.update(chunk)
-            sha512.update(chunk)
-            if tempFile:
-                tempFile.write(chunk)
-    return (md5.hexdigest(), sha512.hexdigest(), 
-            size, mimetype_buffer)
-                    

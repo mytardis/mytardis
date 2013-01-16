@@ -42,6 +42,8 @@ STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
 SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
                                         '../var/test/sync/'))
+SYNC_LOCATION = "sync"
+SYNC_LOCATION_URL = "http://example.com/sync"
 
 STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
@@ -255,6 +257,15 @@ REMOTE_SERVER_CREDENTIALS = [
     # Just one server for tests
     ('http://localhost:4272/', 'username', 'password')
 ]
+
+DEFAULT_LOCATION = "local"
+
+INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
+                      'url': 'file:/' + FILE_STORE_PATH,
+                      'type': 'online'},
+                     {'name': 'staging',
+                      'url': 'file:/' + STAGING_PATH,
+                      'type': 'external'}]
 
 MIGRATION_DESTINATIONS = [{'name': 'test', 
                            'transfer_type': 'http',

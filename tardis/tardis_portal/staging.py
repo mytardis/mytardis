@@ -141,20 +141,29 @@ class StagingHook():
             return
         if not instance.protocol == "staging":
             return
-        stage_file(instance)
+        stage_replica(instance)
 
 
-def stage_file(datafile):
+def stage_replica(replica):
     from django.core.files.uploadedfile import TemporaryUploadedFile
-    with TemporaryUploadedFile(datafile.filename, None, None, None) as tf:
-        if datafile.verify(tempfile=tf.file):
+    with TemporaryUploadedFile(replica.datafile.filename, 
+                               None, None, None) as tf:
+        if replica.verify(tempfile=tf.file):
             tf.file.flush()
-            datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
-            datafile.protocol = ''
-            datafile.save()
+            replica.url = write_uploaded_file_to_dataset(\
+                replica.datafile.dataset, tf)
+            replica.protocol = ''
+            replica.location = Location.get_default_location()
+            replica.save()
             return True
         else:
             return False
+
+def get_sync_location():
+    from tardis.tardis_portal.models import Location
+    return Location.objects.get_or_create(name=settings.SYNC_LOCATION,
+                                          url=settings.SYNC_LOCATION_URL,
+                                          type='online')
 
 def get_sync_root(prefix = ''):
     from uuid import uuid4 as uuid

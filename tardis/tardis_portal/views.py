@@ -79,7 +79,7 @@ from tardis.tardis_portal.staging import get_full_staging_path, \
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset, ExperimentParameterSet, DatasetParameterSet, \
+    Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
@@ -2410,11 +2410,14 @@ def upload(request, dataset_id):
                                                       uploaded_file_post)
             datafile = Dataset_File(dataset=dataset,
                                     filename=uploaded_file_post.name,
-                                    url=filepath,
-                                    size=uploaded_file_post.size,
-                                    protocol='')
-            datafile.verify(allowEmptyChecksums=True)
+                                    size=uploaded_file_post.size)
             datafile.save()
+            replica = Replica(datafile=datafile,
+                              url=filepath,
+                              protocol='',
+                              location=Location.get_default_location())
+            replica.verify(allowEmptyChecksums=True)
+            replica.save()
 
     return HttpResponse('True')
 
@@ -2903,12 +2906,15 @@ def stage_files_to_dataset(request, dataset_id):
     def create_staging_datafile(filepath):
         url, size = get_staging_url_and_size(user.username, filepath)
         datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
                                 filename=path.basename(filepath),
                                 size=size)
-        datafile.verify(allowEmptyChecksums=True)
         datafile.save()
+        replica = Replica(datafile=datafile,
+                          protocol='staging',
+                          url=url,
+                          location=Location.get_default_location())
+        replica.verify(allowEmptyChecksums=True)
+        replica.save()
         return datafile
 
     datafiles = [create_staging_datafile(f) for f in files]

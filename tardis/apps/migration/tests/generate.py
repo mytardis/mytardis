@@ -35,7 +35,8 @@ from tardis.test_settings import FILE_STORE_PATH
 
 def generate_datafile(path, dataset, content=None, size=-1, 
                       verify=True, verified=True):
-    from tardis.tardis_portal.models import Dataset_File
+    '''Generates a datafile AND a replica to hold its contents'''
+    from tardis.tardis_portal.models import Dataset_File, Replica, Location
     datafile = Dataset_File()
     # Normally we use any old string for the datafile path, but some
     # tests require the path to be the same as what 'staging' would use
@@ -55,7 +56,6 @@ def generate_datafile(path, dataset, content=None, size=-1,
         file = open(filepath, 'wb+')
         file.write(content)
         file.close()
-    datafile.url = path
     datafile.mimetype = "application/unspecified"
     datafile.filename = os.path.basename(filepath)
     datafile.dataset_id = dataset.id
@@ -63,12 +63,16 @@ def generate_datafile(path, dataset, content=None, size=-1,
         datafile.size = str(len(content))
     else:
         datafile.size = str(size)
+    datafile.save()
+
+    replica = Replica(datafile=datafile, url=path, protocol='',
+                      location=Location.get_default_location())
     if verify and content:
-        if not datafile.verify(allowEmptyChecksums=True):
+        if not replica.verify(allowEmptyChecksums=True):
             raise RuntimeError('verify failed!?!')
     else:
-        datafile.verified = verified
-    datafile.save()
+        replica.verified = verified
+    replica.save()
     return datafile
 
 def generate_dataset(datafiles=[], experiments=[]):
