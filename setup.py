@@ -20,7 +20,7 @@ setup(
     install_requires=[
         'setuptools',
         'lxml==2.2.7',
-	'pyparsing==1.5.7',
+        'pyparsing==1.5.7',
         'feedparser==5.1.2',
         'elementtree',
         'django==1.4.1',
@@ -36,19 +36,20 @@ setup(
         'beautifulsoup4==4.1.1',
         'south==0.7.6',
         'httplib2==0.7.6',
-        'python-magic==0.4.0dev', # File type detection
+        'python-magic==0.4.0dev',  # File type detection
         'pytz==2012d',         # Timezone library
         'iso8601==0.1.4',      # ISO8601 time formatting
         'pyoai==2.4.4',        # For OAI-PMH provider
         'Wand==0.1.10',    # For image file conversion
-        'django-mustachejs==0.6.0', # For client-side Mustache template helpers
-        'pystache==0.5.2', # For server-side Mustache rendering to aid SEO
+        'django-mustachejs==0.6.0',  # client-side Mustache template helpers
+        'pystache==0.5.2',  # For server-side Mustache rendering to aid SEO
         'rdflib==3.2.1',    # For ANZSRCO parsing for ANZSRC FoR codes
-        'rdfextras==0.2', # For parsing n3 ANZSRCO
+        'rdfextras==0.2',  # For parsing n3 ANZSRCO
         ],
     dependency_links = [
         'https://github.com/dahlia/wand/tarball/warning-bugfix#egg=Wand-0.1.10',
         'https://github.com/UQ-CMM-Mirage/django-celery/tarball/2.5#egg=django-celery-2.5.5',
-        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2'
+        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
+        'https://github.com/russell/python-magic/tarball/master#egg=python-magic-0.4.0dev',
     ]
 )
