@@ -60,6 +60,9 @@ Contents
    changes
    contributing
 
+   pydoc
+
+   legacy
 
 ==================
 Indices and tables
