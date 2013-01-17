@@ -1,1 +1,2 @@
 django-nose
+django-jasmine
