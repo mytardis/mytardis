@@ -46,10 +46,10 @@ class WebDAVTransfer(SimpleHttpTransfer):
     def get_metadata(self, url):
         raise NotImplementedError
     
-    def put_file(self, datafile, url):
+    def put_file(self, replica, url):
         self._check_url(url)
         self._create_parent_collections(url)
-        super(WebDAVTransfer, self).put_file(datafile, url)
+        super(WebDAVTransfer, self).put_file(replica, url)
 
     def _create_parent_collections(self, url):
         path = url[len(self.base_url):].split('/')

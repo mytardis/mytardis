@@ -36,6 +36,7 @@ from django.conf import settings
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.tardis_portal.staging import stage_replica
+from tardis.tardis_portal.util import generate_file_checksums
 
 from tardis.apps.migration import Destination, MigrationError
 
@@ -43,41 +44,50 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def migrate_datafile_by_id(datafile_id, destination,
-                           noRemove=False, noUpdate=False):
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
 
-    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
+def migrate_datafile_by_id(replica_id, destination,
+                          noRemove=False, noUpdate=False):
+    raise Exception('tbd')
+
+def migrate_replica_by_id(replica_id, destination,
+                          noRemove=False, noUpdate=False):
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Replica
+    
+    replica = Replica.objects.select_for_update().get(id=replica_id)
     if not datafile:
-        raise ValueError('No such datafile (%s)' % (datafile_id))
+        raise ValueError('No such replica (%s)' % (replica_id))
     return migrate_datafile(datafile, destination, 
                             noRemove=noRemove, noUpdate=noUpdate)
                                
-def migrate_datafile(datafile, destination, noRemove=False, noUpdate=False):
+def migrate_datafile(replica, destination, noRemove=False, noUpdate=False):
+    raise Exception('tbd')
+
+
+def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
     """
-    Migrate the datafile to a different storage location.  The overall
+    Migrate the replica to a different storage location.  The overall
     effect will be that the datafile will be stored at the new location and 
     removed from the current location, and the datafile metadata will be
     updated to reflect this.
     """
     
-    if not datafile.is_local():
+    if not replica.is_local():
         return False
 
-    if not datafile.verified or destination.trust_length:
+    if not replica.verified or destination.trust_length:
         raise MigrationError('Only verified datafiles can be migrated' \
                                  ' to this destination')
-    target_url = destination.provider.generate_url(datafile)
-    if target_url == datafile.url:
+    target_url = destination.provider.generate_url(replica)
+    if target_url == replica.url:
         # We should get here ...
-        raise MigrationError('Cannot migrate a datafile to its' \
+        raise MigrationError('Cannot migrate a replica to its' \
                                  ' current location')
     
-    destination.provider.put_file(datafile, target_url) 
+    destination.provider.put_file(replica, target_url) 
 
     try:
-        check_file_transferred(datafile, destination, target_url)
+        check_file_transferred(replica, destination, target_url)
     except:
         # FIXME - should we always do this?
         destination.provider.remove_file(target_url)
@@ -86,63 +96,71 @@ def migrate_datafile(datafile, destination, noRemove=False, noUpdate=False):
     if noUpdate:
         return True
 
-    filename = datafile.get_absolute_filepath()
-    datafile.url = target_url
-    datafile.protocol = destination.datafile_protocol
-    datafile.save()
-    logger.info('Migrated file %s for datafile %s' %
-                (filename, datafile.id))
+    filename = replica.get_absolute_filepath()
+    replica.url = target_url
+    replica.protocol = destination.datafile_protocol
+    replica.save()
+    logger.info('Migrated file %s for replica %s' %
+                (filename, replica.id))
     # FIXME - do this more reliably ...
     if not noRemove:
         os.remove(filename)
-        logger.info('Removed local file %s for datafile %s' %
-                    (filename, datafile.id))
+        logger.info('Removed local file %s for replica %s' %
+                    (filename, replica.id))
     return True
 
-def restore_datafile_by_id(datafile_id, noRemove=False):
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
+def restore_datafile_by_id(replica_id, noRemove=False):
+    raise Exception('tbd')
 
-    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
-    if not datafile:
-        raise ValueError('No such datafile (%s)' % (datafile_id))
-    return restore_datafile(datafile, noRemove=noRemove)
+def restore_replica_by_id(replica_id, noRemove=False):
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Replica
+
+    replica = Replica.objects.select_for_update().get(id=replica_id)
+    if not replica:
+        raise ValueError('No such replica (%s)' % (replica_id))
+    return restore_replica(replica, noRemove=noRemove)
                                
-def restore_datafile(datafile, noRemove=False):
+def restore_datafile(replica, noRemove=False):
+    raise Exception('tbd')
+
+def restore_replica(replica, noRemove=False):
     """
     Restore a file that has been migrated
     """
     
     # (Deferred imports to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
+    from tardis.tardis_portal.models import Replica
     from django.db import transaction
     with transaction.commit_on_success():
-        df = Dataset_File.objects.select_for_update().get(id=datafile.id)
-        if df.is_local():
+        rep = Replica.objects.select_for_update().get(id=replica.id)
+        if rep.is_local():
             return False
-        destination = Destination.identify_destination(df.url)
+        destination = Destination.identify_destination(rep.url)
         if not destination:
             raise MigrationError('Cannot identify the migration destination' \
-                                     ' holding %s' % df.url)
-        if not df.verified or destination.trust_length:
-            raise MigrationError('Only verified datafiles can be restored' \
+                                     ' holding %s' % rep.url)
+        if not rep.verified or destination.trust_length:
+            raise MigrationError('Only verified replicas can be restored' \
                                  ' from destination %s' % destination.name)
-        df.verified = False
-        url = df.url
-        if not stage_file(df):
+        rep.verified = False
+        url = rep.url
+        if not stage_replica(rep):
             raise MigrationError('Restoration failed')
-        logger.info('Restored file %s for datafile %s' %
-                    (df.get_absolute_filepath(), df.id))
+        logger.info('Restored file %s for replica %s' %
+                    (rep.get_absolute_filepath(), rep.id))
         if not noRemove:
             destination.provider.remove_file(url)
-            logger.info('Removed remote file %s for datafile %s' % (url, df.id))
+            logger.info('Removed remote file %s for replica %s' % (url, rep.id))
         return True
     
-def check_file_transferred(datafile, destination, target_url):
+def check_file_transferred(replica, destination, target_url):
     """
-    Check that a datafile has been successfully transfered to a remote
+    Check that a replica has been successfully transfered to a remote
     storage location
     """
+
+    datafile = replica.datafile
 
     # If the remote is capable, get it to send us the checksums and / or
     # file length for its copy of the file
@@ -170,9 +188,6 @@ def check_file_transferred(datafile, destination, target_url):
         except NotImplementedError:
             pass
     
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import generate_file_checksums
-
     # Fetch back the remote file and verify it locally.
     f = get_privileged_opener().open(target_url)
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)

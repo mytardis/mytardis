@@ -10,6 +10,8 @@ from django.core.files.storage import default_storage
 from django.utils import _os
 
 from tardis.tardis_portal.util import generate_file_checksums
+from tardis.tardis_portal.fetcher import get_privileged_opener
+
 
 from .location import Location
 
@@ -79,7 +81,7 @@ class Replica(models.Model):
         """
         
         if requireVerified and not self.verified:
-            return None
+            raise ValueError("Replica %s not verified" % self.id)
         if self.is_local():
             theUrl = self.url
             def getter():
@@ -92,14 +94,7 @@ class Replica(models.Model):
             return getter
 
     def get_file(self, requireVerified=True):
-        if requireVerified and not self.verified:
-            print "Not verified"
-            return None
-        try:
-            return self.get_file_getter(requireVerified=requireVerified)()
-        except:
-            print "Error in get_file: ", sys.exc_info()[0]
-            return None
+        return self.get_file_getter(requireVerified=requireVerified)()
 
     def get_download_url(self):
         def get_download_view():
@@ -150,6 +145,7 @@ class Replica(models.Model):
         from .datafile import Dataset_File
         df = Dataset_File.objects.get(pk=self.datafile.pk)
         if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
+            logger.error("Datafile for %s has no checksums" % self.url)
             return False
 
         sourcefile = self.get_file(requireVerified=False)
@@ -186,12 +182,12 @@ class Replica(models.Model):
             mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
         else:
             mimetype = ''
-        if not df.size or not df.md5sum or not df.sha512sum or not df.mimetype:
-            Dataset_File.objects.filter(pk=self.datafile.pk).update( \
-                md5sum = md5sum.lower(),
-                sha512sum = sha512sum.lower(),
-                size = str(size),
-                mimetype = mimetype)
+        if not (df.size and df.md5sum and df.sha512sum and df.mimetype):
+            df.md5sum = md5sum.lower()
+            df.sha512sum = sha512sum.lower()
+            df.size = str(size)
+            df.mimetype = mimetype
+            df.save()
         self.verified = True
         self.save()
 

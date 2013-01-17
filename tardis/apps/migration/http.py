@@ -84,8 +84,8 @@ class SimpleHttpTransfer(TransferProvider):
         response = self.opener.open(self.GetRequest(url))
         return response.read()
     
-    def generate_url(self, datafile):
-        url = urlparse(datafile.url)
+    def generate_url(self, replica):
+        url = urlparse(replica.url)
         if url.scheme == '' or url.scheme == 'file':
             return urljoin(self.base_url, quote(url.path))
         raise MigrationProviderError("Cannot generate a URL from '%s'" \
@@ -94,13 +94,13 @@ class SimpleHttpTransfer(TransferProvider):
     def url_matches(self, url):
         return url.startswith(self.base_url)
     
-    def put_file(self, datafile, url):
+    def put_file(self, replica, url):
         self._check_url(url)
-        with datafile.get_file() as f:
+        with replica.get_file() as f:
             content = f.read()
         request = self.PutRequest(url)
         request.add_header('Content-Length', str(len(content)))
-        request.add_header('Content-Type', datafile.mimetype)
+        request.add_header('Content-Type', replica.datafile.mimetype)
         response = self.opener.open(request, data=content)
     
     def remove_file(self, url):

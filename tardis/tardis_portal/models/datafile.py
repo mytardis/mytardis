@@ -7,8 +7,6 @@ from django.db.models import Q
 from .dataset import Dataset
 from .replica import Replica
 
-from tardis.tardis_portal.fetcher import get_privileged_opener
-
 import logging
 logger = logging.getLogger(__name__)
 

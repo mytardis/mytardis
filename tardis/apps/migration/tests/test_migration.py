@@ -34,12 +34,12 @@ from nose.tools import ok_, eq_
 import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Dataset_File, Replica
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.apps.migration import Destination, TransferProvider, \
     SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
-    MigrationProviderError, migrate_datafile, restore_datafile
+    MigrationProviderError, migrate_replica, restore_replica
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
@@ -109,9 +109,9 @@ class MigrationTestCase(TestCase):
         datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
         replica = datafile.get_preferred_replica()
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
-        url = provider.generate_url(datafile)
+        url = provider.generate_url(replica)
         self.assertEquals(url, base_url + '1/2/3')
-        provider.put_file(datafile, url)
+        provider.put_file(replica, url)
 
         self.assertEqual(provider.get_file(url), "Hi mum")
         with self.assertRaises(MigrationProviderError):
@@ -151,24 +151,24 @@ class MigrationTestCase(TestCase):
         
         datafile = generate_datafile(None, self.dataset, "Hi mum",
                                      verify=False)
+        replica = datafile.get_preferred_replica()
 
         # Attempt to migrate without datafile hashes ... should
         # fail because we can't verify.
         with self.assertRaises(MigrationError):
-            migrate_datafile(datafile, dest)
+            migrate_replica(replica, dest)
 
         # Verify sets hashes ...
-        replica = datafile.get_preferred_replica()
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
-        datafile.save()
+        replica = Replica.objects.get(pk=replica.pk)
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
-        self.assertTrue(migrate_datafile(datafile, dest))
+        self.assertTrue(migrate_replica(replica, dest))
         self.assertFalse(os.path.exists(path))
 
         # Bring it back
         url = datafile.url
-        self.assertTrue(restore_datafile(datafile))
+        self.assertTrue(restore_replica(replica))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
         try:
@@ -180,18 +180,20 @@ class MigrationTestCase(TestCase):
 
         # Refresh the datafile object because it is now stale ...
         datafile = Dataset_File.objects.get(id=datafile.id)
+        replica = datafile.get_preferred_replica()
 
         # Repeat the process with 'noRemove'
-        self.assertTrue(migrate_datafile(datafile, dest, noRemove=True))
+        self.assertTrue(migrate_replica(replica, dest, noRemove=True))
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
-        self.assertTrue(restore_datafile(datafile, noRemove=True))
+        self.assertTrue(restore_replica(replica, noRemove=True))
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
 
     def testMirror(self):
         dest = Destination.get_destination('test')
         datafile = generate_datafile(None, self.dataset, "Hi granny")
+        replica = datafile.get_preferred_replica()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
         url = dest.provider.generate_url(datafile)
@@ -203,7 +205,7 @@ class MigrationTestCase(TestCase):
             if e.code != 404:
                 raise e
 
-        self.assertTrue(migrate_datafile(datafile, dest, noUpdate=True))
+        self.assertTrue(migrate_replica(replica, dest, noUpdate=True))
         datafile = Dataset_File.objects.get(id=datafile.id)
         self.assertTrue(datafile.is_local())
         self.assertEquals(dest.provider.get_length(url), 9)
@@ -214,6 +216,8 @@ class MigrationTestCase(TestCase):
         
         datafile = generate_datafile('1/1/Hi Mum', self.dataset, "Hi mum")
         datafile2 = generate_datafile('1/1/Hi Dad', self.dataset, "Hi dad")
+        replica = datafile.get_preferred_replica()
+        replica2 = datafile2.get_preferred_replica()
 
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
@@ -221,15 +225,15 @@ class MigrationTestCase(TestCase):
         self.assertTrue(os.path.exists(path2))
 
         # Migrate them
-        migrate_datafile(datafile, dest)
+        migrate_replica(replica, dest)
         self.assertFalse(os.path.exists(path))
-        migrate_datafile(datafile2, dest)
+        migrate_replica(replica2, dest)
         self.assertFalse(os.path.exists(path2))
 
         # Bring them back
-        restore_datafile(datafile)
+        restore_replica(replica)
         self.assertTrue(os.path.exists(path))
-        restore_datafile(datafile2)
+        restore_replica(replica2)
         self.assertTrue(os.path.exists(path2))
 
 
@@ -244,7 +248,7 @@ class MigrationTestCase(TestCase):
         datafile.save()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
-        migrate_datafile(datafile, dest)
+        migrate_replica(replica, dest)
         self.assertFalse(os.path.exists(path))
 
 

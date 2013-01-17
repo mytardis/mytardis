@@ -153,7 +153,6 @@ def stage_replica(replica):
             replica.url = write_uploaded_file_to_dataset(\
                 replica.datafile.dataset, tf)
             replica.protocol = ''
-            replica.location = Location.get_default_location()
             replica.save()
             return True
         else:
