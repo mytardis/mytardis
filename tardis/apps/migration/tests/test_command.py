@@ -62,7 +62,7 @@ class MigrateCommandTestCase(TestCase):
     def testMirrorDatafile(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi grandpa")
+        datafile, _ = generate_datafile(None, dataset, "Hi grandpa")
 
         # Dry run ...
         out = StringIO()
@@ -90,10 +90,11 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateDatafile(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset,
-                                     "Hi mum", verify=False, verified=False)
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, replica = generate_datafile(None, dataset,
+                                              "Hi mum", verify=False, 
+                                              verified=False)
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         err = StringIO()
         try:
@@ -106,7 +107,6 @@ class MigrateCommandTestCase(TestCase):
                           'Migration failed for datafile %s : ' \
                           'Only verified datafiles can be migrated ' \
                           'to this destination\n' % datafile.id)
-        replica = datafile.get_preferred_replica()
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         datafile.save()
 
@@ -234,9 +234,9 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateDataset(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         # Dry run
         out = StringIO()
@@ -282,9 +282,9 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateExperiment(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -319,10 +319,10 @@ class MigrateCommandTestCase(TestCase):
         experiment = generate_experiment([dataset], [self.dummy_user])
         dataset2 = generate_dataset()
         experiment2 = generate_experiment([dataset2], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
-        datafile4 = generate_datafile(None, dataset2, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile4, _ = generate_datafile(None, dataset2, "Hi mum")
 
         out = StringIO()
         try:
@@ -357,7 +357,7 @@ class MigrateCommandTestCase(TestCase):
     def testErrors(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
 
         err = StringIO()
         try:
@@ -401,9 +401,9 @@ class MigrateCommandTestCase(TestCase):
     def testScore(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -425,9 +425,9 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateReclaim(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -459,9 +459,9 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateEnsure(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         # Ensuring that there are at least zero bytes of free space
         # is a no-op ... but it tests the logic, and the method that
@@ -516,7 +516,7 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateConfig(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
 
         try:
             saved = settings.DEFAULT_MIGRATION_DESTINATION

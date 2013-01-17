@@ -106,8 +106,7 @@ class MigrationTestCase(TestCase):
     def do_provider(self, dest):
         provider = dest.provider
         base_url = dest.base_url
-        datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
-        replica = datafile.get_preferred_replica()
+        datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         url = provider.generate_url(replica)
         self.assertEquals(url, base_url + '1/2/3')
@@ -148,10 +147,8 @@ class MigrationTestCase(TestCase):
 
     def testMigrateRestore(self):
         dest = Destination.get_destination('test')
-        
-        datafile = generate_datafile(None, self.dataset, "Hi mum",
-                                     verify=False)
-        replica = datafile.get_preferred_replica()
+        datafile, replica = generate_datafile(None, self.dataset, "Hi mum",
+                                              verify=False)
 
         # Attempt to migrate without datafile hashes ... should
         # fail because we can't verify.
@@ -192,8 +189,7 @@ class MigrationTestCase(TestCase):
 
     def testMirror(self):
         dest = Destination.get_destination('test')
-        datafile = generate_datafile(None, self.dataset, "Hi granny")
-        replica = datafile.get_preferred_replica()
+        datafile, replica = generate_datafile(None, self.dataset, "Hi granny")
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
         url = dest.provider.generate_url(datafile)
@@ -214,10 +210,10 @@ class MigrationTestCase(TestCase):
     def testMigrateStoreWithSpaces(self):
         dest = Destination.get_destination('test')
         
-        datafile = generate_datafile('1/1/Hi Mum', self.dataset, "Hi mum")
-        datafile2 = generate_datafile('1/1/Hi Dad', self.dataset, "Hi dad")
-        replica = datafile.get_preferred_replica()
-        replica2 = datafile2.get_preferred_replica()
+        datafile, replica = generate_datafile('1/1/Hi Mum', self.dataset, 
+                                              "Hi mum")
+        datafile2, replica2 = generate_datafile('1/1/Hi Dad', self.dataset, 
+                                                "Hi dad")
 
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
@@ -242,10 +238,8 @@ class MigrationTestCase(TestCase):
         self.server.server.allowQuery = False
         
         dest = Destination.get_destination('test')
-        datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
-        replica = datafile.get_preferred_replica()
+        datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
-        datafile.save()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
         migrate_replica(replica, dest)

@@ -73,7 +73,7 @@ def generate_datafile(path, dataset, content=None, size=-1,
     else:
         replica.verified = verified
     replica.save()
-    return datafile
+    return (datafile, replica)
 
 def generate_dataset(datafiles=[], experiments=[]):
     from tardis.tardis_portal.models import Dataset

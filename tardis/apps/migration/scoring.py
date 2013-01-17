@@ -78,7 +78,7 @@ class MigrationScorer:
         ds_score = self.dataset_score(dataset)
         def score_it(datafile):
             return (datafile, ds_score * self.datafile_score(datafile))
-        datafiles = Dataset_File.objects.filter(dataset=dataset, verified=True)
+        datafiles = Dataset_File.objects.filter(dataset=dataset)
         return self._filter_map_sort(datafiles, score_it)
 
     def score_datafiles_in_experiment(self, experiment):
@@ -87,7 +87,7 @@ class MigrationScorer:
             ds_score = self.dataset_score(datafile.dataset)
             return (datafile, ds_score * self.datafile_score(datafile))
         datafiles = Dataset_File.objects.\
-            filter(dataset__experiments__id=experiment.id, verified=True)
+            filter(dataset__experiments__id=experiment.id)
         return self._filter_map_sort(datafiles, score_it)
 
     def score_all_datafiles(self):
@@ -95,15 +95,18 @@ class MigrationScorer:
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
             return (datafile, ds_score * self.datafile_score(datafile))
-        datafiles = Dataset_File.objects.filter(verified=True)
+        datafiles = Dataset_File.objects.all()
         return self._filter_map_sort(datafiles, score_it)
 
     def _filter_map_sort(self, datafiles, mapper):
         from tardis.tardis_portal.models import Dataset_File
         def get_score(tpl):
-            return tpl[1]        
-        return sorted(map(mapper, filter(Dataset_File.is_local, datafiles)),
-                      None, get_score, True)
+            return tpl[1]
+        def local_and_verified(datafile):
+            replica = datafile.get_preferred_replica()
+            return replica.is_local() and replica.verified
+        filtered = filter(local_and_verified, datafiles);
+        return sorted(map(mapper, filtered), None, get_score, True)
 
     def datafile_score(self, datafile):
         try:
@@ -111,6 +114,7 @@ class MigrationScorer:
                                  self.file_size_threshold,
                                  self.file_size_weighting)
             if self.use_file_timestamps:
+                print 'filepath is %s\n' % datafile.get_absolute_filepath()
                 stat = os.stat(datafile.get_absolute_filepath())
                 # FIXME - it would be better to use creation / access 
                 # times maintained by MyTardis rather that file timestamps.

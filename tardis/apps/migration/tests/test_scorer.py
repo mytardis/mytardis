@@ -37,6 +37,7 @@ from tardis.apps.migration import MigrationScorer
 from tardis.apps.migration.models import get_user_priority
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
+from tardis.tardis_portal.models import Replica
 
 class MigrateScorerTestCase(TestCase):
 
@@ -51,16 +52,16 @@ class MigrateScorerTestCase(TestCase):
         self.ds2 = generate_dataset(experiments=[self.exp1, self.exp2])
         self.ds3 = generate_dataset(experiments=[self.exp3])
         self.ds4 = generate_dataset(experiments=[self.exp4])
-        self.df1 = generate_datafile('1/2/1', self.ds1, size=100)
-        self.df2 = generate_datafile('1/2/2', self.ds1, size=100, 
-                                     verified=False)
-        self.df3 = generate_datafile('http://foo.com/1/2/3', self.ds1, 
-                                     size=1000)
-        self.df4 = generate_datafile('1/2/4', self.ds2, size=1000)
-        self.df5 = generate_datafile('1/2/5', self.ds2, size=10000)
-        self.df6 = generate_datafile('1/2/6', self.ds3, size=100000)
-        self.df7 = generate_datafile('1/2/7', self.ds4, size=0)
-        self.df8 = generate_datafile('1/2/8', self.ds4, size=-1)
+        self.df1, self.rep1 = generate_datafile('1/2/1', self.ds1, size=100)
+        self.df2, self.rep2 = generate_datafile('1/2/2', self.ds1, size=100, 
+                                                verified=False)
+        self.df3, self.rep3 = generate_datafile('http://foo.com/1/2/3', 
+                                                self.ds1, size=1000)
+        self.df4, self.rep4 = generate_datafile('1/2/4', self.ds2, size=1000)
+        self.df5, self.rep5 = generate_datafile('1/2/5', self.ds2, size=10000)
+        self.df6, self.rep6 = generate_datafile('1/2/6', self.ds3, size=100000)
+        self.df7, self.rep7 = generate_datafile('1/2/7', self.ds4, size=0)
+        self.df8, self.rep8 = generate_datafile('1/2/8', self.ds4, size=-1)
 
     def testScoring(self):
         self._setup()
@@ -102,7 +103,9 @@ class MigrateScorerTestCase(TestCase):
      
         f = tempfile.NamedTemporaryFile(dir=settings.FILE_STORE_PATH)
         f.write("Hi Mom!!\n")
-        self.df1.url = f.name
+        rep = Replica.objects.get(pk=self.rep1.pk)
+        rep.url = f.name
+        rep.save()
 
         self.assertEquals(2.0, scorer.datafile_score(self.df1))
         
