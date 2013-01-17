@@ -1,0 +1,80 @@
+#summary A generic search interface, and the ability to add custom search modules
+
+= Introduction =
+
+The current search functionality in MyTARDIS auto-generates forms that allow users to search by schema on experiment and datafile.
+
+Two extensions to the current search functionality are discussed below:
+
+  * Search Box
+  * Modular Search Interface
+
+= Search Box =
+
+ANSTO have requested a "google style" search box that provides:
+
+  * Full Text Search of all text based parameters that are searchable
+  * Parameter (field) based search, including:
+    * Text searches: equals, contains, etc.
+    * Numeric searches: equals, greater than, less than, range, etc.
+    * Date searches: equals, before, after, etc.
+  * Auto-completion of search terms
+    * Note the auto-completion should be on both parameter names and text values.
+
+There is a potential security issue in that auto-completion of terms may allow a user to see terms that are part of a record that they don't have access to.
+
+To remove the security issues, a number of possible solutions are listed below, from most desirable to least desirable:
+
+  * Only auto-complete on terms from experiments that the user has access to (however this is most likely too difficult to implement.
+  * Only auto-complete on public experiments (also probably too difficult).
+  * Only auto-complete on field names.
+  * Disable auto-completion.
+
+These would be controlled by a site-wide configuration flag.
+
+
+Without trying to specify the search syntax, the following examples are intended to clarify the requirements listed above:
+
+  * copper
+    * Returns all experiments the user is authorised to see that contains the word "copper" in any of the experiments text fields, e.g. author, abstract, comments, sample description, etc.
+  * copper brass
+    * Returns all experiments the user is authorised to see that contains the words "copper" and "brass" in any of the experiments text fields, e.g. author, abstract, comments, sample description, etc.
+  * copper AND brass
+    * Synonymous with the previous search
+  * copper OR brass
+    * Returns all experiments the user is authorised to see that contains the words "copper" or "brass" in any of the experiments text fields, e.g. author, abstract, comments, sample description, etc.
+  * author:grant
+    * Returns all experiments the user is authorised to see that contains the word "grant" in the author field of the database.
+  * startdate:17-Apr-2011
+    * Returns all experiments the user is authorised to see that have a start date of 17 Apr 2011.
+  * startdate:=>17-Apr-2011 AND startdate:<=17-May-2011
+    * Returns all experiments the user is authorised to see that have a start date between 17 Apr 2011 and 17 May 2011 (inclusive).
+  * temperature:>100
+    * Returns all experiments the user is authorised to see where the temperature field value is greater than 100.
+  * temperature:>100 AND temperature:<200
+    * Returns all experiments the user is authorised to see where the temperature field value is between 100 and 200 (exclusive).
+
+Text, numeric and date terms may be mixed freely in one search request.
+
+Compound expressions may be created in the usual fashion with brackets ("(", ")"), AND, OR and NOT.
+
+
+= Modular Search Interface =
+
+As proposed by Steve Androulakis:
+
+_To complement the generic search interface above._ A reality of various scientific disciplines is that sometimes users will wish to search in a custom way that isn't easily executable proposed generic interface, nor should be due to its varying nature. Upper limits, numeric ranges, and other interactions (relations) between two or more parameters are all possible search candidates.
+
+Therefore we need pluggable modules for custom search interfaces and logic, to extend the generic one. I envision there be a 'search modules' definition in a settings file. This setting would be iterated and custom search logic for various disciplines would be available to the user.
+
+I propose that users be presented with the Generic Search interface described above as default. At the same time, there should be a set of links to specific search pages, eg "Crystallography Search", "SAXS Search".
+
+*Note:* I don't expect that custom search modules be created by users. The expectation is that the core development team, or other developers create custom search interfaces if consensus amongst a discipline is that certain fields should be searchable in a specific format, via specific logic and that the requested features aren't able to be satisfied by the Generic Search interface.
+
+From Russell Sim:
+
+Having custom search forms that essentially run through the generic search logic is a good way to go. So defining crystallography_search_template.html somewhere that's able to be added as a template module and gives crystallographers a meaningful form to them. The search would then execute the generic search code. This approach is like 'saved' or 'canned' searches.
+
+= Notes =
+
+  * An alternative approach, which has not been adopted, was to create a search query wizard which would assist the user in building complex search queries.  The proposal was to model the wizard after the [http://trac.edgewall.org/query?priority=!high&status=assigned&status=new&status=reopened&severity=!critical&keywords=!~&keywords=!~&group=owner&col=id&col=summary&col=priority&col=status&col=owner&col=type&col=milestone&order=priority Trac Custom Query].

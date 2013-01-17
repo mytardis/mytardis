@@ -1,0 +1,13 @@
+#summary Discusses the pros and cons of the available ingestion options.
+
+= Introduction =
+
+This page is a placeholder to discuss the advantages and disadvantages of the various ingestion options available within TARDIS.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages

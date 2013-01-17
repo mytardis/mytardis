@@ -1,0 +1,268 @@
+#summary Requirements, reasoning and alternative proposed Authorisation Engine design.
+
+= Introduction =
+
+Access to data varies widely across research fields, cultures, traditions, schools, etc. Examples include:
+
+  * Competition between scientists is such that they don't even want it to be known that they are associated with a particular experiment, let alone have any of the data / metadata available.
+  * ILL and ISIS appear to make data publicly available as soon as it is processed ( http://data.isis.rl.ac.uk). 
+
+Thus the Access Controls need to handle the entire range from data being public through to access is only available to authorised users.  Visibility of data should follow the same model as X.500 / LDAP Directories, i.e. if the there is no access allowed, the data is invisible, rather than returning an "access not allowed error".
+
+Access Controls can be applied to Experiments and Datasets, but not Datafiles.
+
+
+= Use Cases =
+
+Most projects about data publication in the research field have come across the problem that while researchers believe in publishing / sharing data in principle, they have lots of reasons not to do it in practice.  This is a much larger problem than can be addressed in one project, so we’ve decided to work around the problem as much as possible by providing access controls within Tardis that support publishing data immediately, restricting access either indefinitely or until criteria are met, or sharing on an individual basis.
+
+The set of use cases that we’re using as the basis of the Access Control design are listed below.
+
+The facility or institution hosting MyTARDIS typically will not want to be involved in the day-to-day management of access rights, thus the Data Owner has the ability to grant and remove access privileges to the data owned.  The Data Owner will typically be the Principle Investigator or a representative of the Institution.
+
+  * Publicly Accessible<br/>The data is made publicly available immediately, e.g. data that will become part of a reference database.
+  * Accessible by the Data Owner and assigned team members<br/>Team members may be assigned individually or as a group.
+  * Access granted by the Data Owner<br/>E.g. as a result of direct contact by another researcher.
+  * Accessible by anyone at a given physical location, typically the instrument
+  * Publicly Accessible after an embargo period, e.g. 3 years
+  * Publicly Accessible after a trigger, e.g. paper is published
+  * Accessible by facility scientist.  Facility scientists typically have access to all data from the instrument they are responsible for.
+
+= Access Control Attributes =
+
+To meet the use cases listed above, a rule based access control engine with the following engine will be designed:
+
+  * Data Owner<br/>Data owners have the ability to grant access to other individuals
+  * User
+  * Group membership
+
+In addition, an API will be created that allows pluggable authorisation.  This will be used to provide access on the following attributes:
+
+  * Date
+  * Location (IP address / subnet)
+  * Publication
+
+By default, a user has access to no data.  Access is then granted either through making the data public (setting the public flag in the Experiment) or by adding ACLs to grant access.  To keep the rules and implementation simple, no DENY capability is being provided.
+
+
+
+= Design =
+The diagram below shows how the authorisation requirements will be supported.
+
+http://mytardis.googlecode.com/svn/attachments/authdesignalt.jpeg
+
+As there is a requirement that Tardis should support a number of authentication mechanisms, those authentication methods will be saved in a separate !UserAuthentication table where the actual supported authentication method and the username used to authenticate will be saved. You can read more about how the different authentication mechanisms is supported on this [AuthenticationEngine wiki page].
+
+There will be a main ACL model called ExperimentACL which will tell if a user has permissions to access an experiment. The AuthService provide a mechanism to query all available auth modules to determine what group memberships a users has. The API of the GroupProvider is designed to separate the group provider from the TARDIS framework. Below is the method stubs of the GroupProvider.
+
+{{{
+class GroupProvider:
+    def getGroups(self, request):
+        """
+        return an interation of the available groups.
+        """
+        raise NotImplemented()
+
+    def getGroupById(self, id):
+        """
+        return the group associated with the id
+        """
+
+    def searchGroups(self, filter):
+        """
+        return a list of groups that match the filter
+        """
+        raise NotImplemented()
+
+    def getGroupsForEntity(self, id):
+        """
+        return a list of groups associated with a particular entity id
+        """
+}}}
+
+When for example an authenticated user requests a protected page the AuthService provider will be called to determine the group memberships. It will subsequently call all activated group providers to get a list of group memberships for a specific user. The AuthService will then merge the resulting groups into a combined list specifying the plugin source and the group name.
+
+{{{
+>>> a = AuthService()
+>>> a.getGroups(request)
+[('vbl', 2,), ('network', 2)]
+}}}
+
+Even though in the example above 2 groups with the same ID are returned they are differentiated within the ExperimentACL table by the pluginname field (which forms a primary key with: pluginid, entityId, experimentid). The way the plugins store it's models and determines group membership is completely controlled by the plugin and it is it's responsibility to ensure that querying and results a delivered in a efficient manner.
+
+== Users ==
+
+User plugins are also described by this API. This allow us to query both users and groups easily using a similar API to the GroupProvider. The exception with users is that they will have to link to a concrete Django user because of the way that users are implemented within the auth middleware. 
+
+ _I am not completely convinced that we need to have a link back to a concrete user if  we override the user Django middle ware the inserts the users into the request.  We will have problems with the experiment table which has a forign key to the users table.._
+
+{{{
+class UserProvider:
+    def getUserById(self, id):
+        """
+        return the user dictionary in the format of::
+
+            {"id": 123,
+            "display": "John Smith",
+            "email": "john@example.com"}
+
+        """
+    def searchUsers(self, request):
+        """
+        return a list of user descriptions from the auth domain.
+
+        each user is in the format of::
+
+            {"id": 123,
+            "display": "John Smith",
+            "email": "john@example.com"}
+
+        """
+        raise NotImplemented()
+
+}}}
+
+
+The auth provider will be represented by a simple function that allows a custom piece of middleware to authenticate the user. 
+{{{
+class AuthProvider:
+    def authenticate(self, request):
+        """
+        from a request authenticate try to authenticate the user. return a user dict if successful.
+        """
+        raise NotImplemented()
+}}}
+
+The AuthSerice API will be responsible for querying the auth plugins and will be the normal mechanism that developers use to access authentication information.
+
+{{{
+class AuthService:
+    def authenticate(self, request):
+        """
+        Try and authenticate the user first using Django auth backends,
+        then try each AuthProvider.
+        """
+
+    def getGroups(self, request): 
+        """
+        return a list of tuples containing pluginname and group id
+        """
+
+    def searchEntities(self, filter):
+        """
+        return a list of users and/or groups
+        """
+
+    def searchUsers(self, filter):
+        """
+        return a list of users and/or groups
+        """
+
+    def searchGroups(self, filter):
+        """
+        return a list of users and/or groups
+        """
+
+    def getUser(self, user_dict):
+        """
+        return a user model based on the user dict.
+
+        This function is responsible for creating the 
+        user within the Django DB and returning the resulting 
+        user model.
+        """
+
+}}}
+
+The ExperimentACL table has the following fields; pluginId, entityId and experimentId form the primary key:
+ * _*pluginId*_ - the name of the auth plugin being used.
+ * _*entityId*_ - Foreign Key to auth plugins.
+ * _*experimentId*_ - the experiment ID
+ * *canRead* - gives the user read access to the experiment
+ * *canWrite* - gives the user write access to the experiment
+ * *canDelete* - gives the user delete permission to the experiment
+ * *owner* - the experiment owner flag.
+ * *effectiveDate* - the date when access to the experiment takes into effect. This can also be the date when the embargo is lifted.
+ * *expiryDate* - the date when access to the experiment ceases.
+ * *aclOwnershipType* - currently holds two enumerated values -- system-owned and user-owned. System-owned ACLs will prevent users from removing or editing ACL entries to a particular experiment they own. User-owned ACLs will allow experiment owners to remove/add/edit ACL entries to the experiments they own. It is important for an ACL entry to be system-owned so that normal users (even if they are experiment owners) cannot restrict read access to beamline scientists on the experiments generated in the beamlines they are managing.
+
+In the case when canWrite or canDelete access is granted, canRead and canWrite access will also typically be granted.
+
+Experiment owners are given the ability to add normal users as owners to the experiments they own. However, groups won't be allowed to become experiment owners. Experiment owners are allowed to give a user or group permissions to read, write, and delete an experiment.
+
+If an experiment owner wants to give a non-existing group access to his/her experiment, he can create the group and assign an administrator to that group. The group admin (which can be the trusted department secretary or office admin) has permissions on adding more users to the group.
+
+To represent the beamline scientists, a special group is created for them by the facility systems administrators. The group automatically gets read permissions when an experiment gets ingested into tardis as long as the experiment is produced by an instrument they manage.
+
+Date based access (Embargo periods) and attribute based access (publication triggers) would be implemented by some external process periodically checking for data that is eligible to be made public and triggering the workflow to set the public flag.  An example of how this would be implemented is to periodically run a cron job that sends out an email to the administrators (experiment owners/facility sys admins/other higher ranking facility officers) to say which experiments from the last time the cron job ran has become eligible to becoming publicly accessible. It becomes the experiment owners', facility sys admins', or some other higher ranking facility officer's job to set the Experiment's public field manually to True.
+
+
+To allow the auth service to differenciate the internal users we will extend the UserProfile within TARDIS to include the pluginId and entityId.
+
+{{{
+class UserProfile(models.Model):
+
+    pluginId = models.CharField()
+    entityId = models.CharField()
+    user = models.ForeignKey(User, unique=True)
+
+    def enumerateGroups(self):
+        """
+        return a iteration of dictionaries containing like::
+
+           {"pluginname": 'ldap',
+           "groupid": '1',
+           "display": 'MyGroup'}
+        """
+
+    def getGroupMemberships(self):
+        """
+        return a list of tuples containing pluginname and groupid.
+        """
+}}}
+
+
+= User Stories =
+
+== User Roles ==
+ * Anonymous User
+ * (Normal) Registered User or Researcher
+ * Experiment Owner (Principal Investigator)
+ * Group Admin
+ * Equipment (Instrument) Scientist
+
+== User Stories ==
+As an Anonymous user...
+ * I'd like to browse all experiments that have been made publicly accessible after the embargo period set on them were lifted.
+ * I'd like to search for public experiments that matches the selection criteria I've provided.
+ * I'd like to search for public datafiles that matches the selection criteria I've provided.
+ * I'd like to download the associated datafiles from the public experiments I'm interested in.
+
+As (Normal) Registered User...
+ * I'd like to edit an experiment/dataset/datafile entry if I have the permissions to write into an experiment.
+ * I'd like to delete an experiment/dataset/datafile entry if I have the  permission to delete entries from an experiment
+ * And member of a group that has permissions to access an experiment, I'd like to perform the tasks I'm allowed to perform on that experiment.
+ * I'd like to browse the experiments shared with me by experiment owners.
+ * I'd like to search for private experiments shared with me by experiment owners that matches the selection criteria I've provided.
+ * I'd like to search for private datafiles shared with me by experiment owners that matches the selection criteria I've provided.
+ * I'd like to download the associated datafiles of experiments shared with me by experiment owners.
+
+As an Experiment owner...
+ * I'd like to add other registered users as owners to an experiment I own.
+ * I'd like to give other registered users permissions to read/delete/write into the experiment I own.
+ * I'd like the system not to allow non-registered and registered users read/delete/write into the experiment I own if I haven't given them permissions to my experiment.
+ * I'd like to have the last say to making my experiment publicly visible if it was flagged to be eligible to becoming public after it passed the embargo period.
+ * I'd like to provide read access to my experiment if the experiment attribute condition I've set on that experiment is met.
+ * I'd like to provide read/write/delete access to a registered group into my experiment.
+ * I'd like to add a non-existent group and set its group owner if I want to provide access to that group to my experiment.
+ * I'd like the group admin to maintain the members of the group once the group has been created.
+ * I'd like the system not to allow higher level permissions (delete/write) to a user who I specifically wanted to only have read permissions even if that user's permission through a group allows him to perform delete or write via that group membership.
+ * I'd like to be able to change (edit/delete) the permissions I've given a user or group to my experiment.
+
+As a Group admin...
+ * I'd like to add members to my group.
+ * I'd like to add other administrators of my group.
+ * I'd like to delete members from my group.
+
+As an Equipment Scientist...
+ * I'd like to have read permissions on all the experiments that were generated by the beamline I'm managing.

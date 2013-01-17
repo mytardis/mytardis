@@ -1,0 +1,28 @@
+# MyTardis Code and Documentation Standards
+
+= Introduction =
+
+This page details the standards adhered to by the MyTardis development community.
+
+Please see DevelopmentCycle for a description of the use of the code repository, code branches, code reviews, etc.
+
+
+= Code =
+
+  * Code layout follows [http://www.python.org/dev/peps/pep-0008/ PEP-8 Style Guide for Python Code]
+    * PythonTidy can be used to auto-format code.
+  * Comments follow [http://www.python.org/dev/peps/pep-0257/ PEP-257 Docstring Conventions]
+  * Function calls are done using named arguments: http://diveintopython.org/power_of_introspection/optional_arguments.html
+{{{
+datafile = Dataset_File(dataset=d, filename=filename, url=url, size=ep.getFileSize(fileid), protocol=protocol)
+}}}
+  * Exception are caught *explicitly* (IOError, AttributeError, ...): http://diveintopython.org/file_handling/index.html 
+{{{
+try:
+    # limit the number of lines here!
+    file = open(filename)
+except IOError: 
+    logger.exception('Exception raised: ') # stack trace will be added
+finally:
+    # do some clean-up stuff here if necessary
+}}}

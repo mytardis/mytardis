@@ -1,0 +1,104 @@
+#summary Multiple parameter sets based on varying/repeating schema
+
+= Introduction =
+
+TARDIS implements a soft-schema capability to allow metadata specific to any research activity to be stored.
+
+The basic requirements are:
+
+  * Parameters may be attached to Experiments, Datasets or Datafiles.
+  * Parameters are grouped together in to ParameterSets, defined by a Schema.
+  * Any number of ParameterSets may be attached to an Experiment, Dataset or Datafile.
+  * ParameterSets may be attached to more than one Dataset or Datafile.
+    * Note that TARDIS has a general principle that Experiments are self-contained, so it is not possible to attach a ParameterSet to more than one Experiment, or to Datasets or Datafiles from multiple Experiments.
+  * Schema may be defined by an System Administrator, and any number of schema may be created.
+
+Examples of the types of schema that may be defined include:
+
+  * Additional Experiment Metadata
+    * Experiment Number
+    * Beamline
+  * Instrument Settings
+  * Equipment Identification (e.g. which detector was used)
+    * Name
+    * URL (link to additional information, e.g. equipment register)
+    * Serial Number
+  * Sample
+    * Name
+    * Preparation
+    * Description
+
+Multiple schema's may be attached to an entry (Experiment, Dataset, Datafile), e.g. Equipment and Instrument Settings.
+
+Multiple pieces of Equipment may be used simultaneously, e.g. a detector and light, thus the need for multiple ParameterSets of the one schema to be attached to an entry.
+
+Samples and Equipment may be common to multiple entries, thus the need for a ParameterSet to be attached to more than one Dataset or Datafile.
+
+== Parameter Inheritance ==
+
+Some parameter types, such as Sample, will be considered to be inherited, e.g. to find the sample associated with a particular Datafile:
+
+  * Look for the Sample ParameterSet attached to the Datafile.  If not found...
+  * Look for the Sample ParameterSet attached to the containing Dataset.  If not found...
+  * Look for the Sample ParameterSet attached to the containing Experiment.
+
+As TARDIS currently doesn't provide any analytical capabilities, but only metadata display and download there is no implementation of inheritance.  This may be added at a future date.
+
+
+----
+= Possible Futures =
+
+== Split Parameter values by Type ==
+
+Parameter values are currently stored in tables with string_value and numerical_value columns.  Binary data is currently base64 encoded and stored as a string.
+
+It may be more efficient to split the Parameter table out in to three or more tables based on the data type being stored, e.g.:
+
+  * String
+  * Numerical
+  * Binary
+  * Date?
+
+
+== Nested ParameterSets ==
+
+The latest instance of TARDIS (currently only the synchrotron codebase) allows one to attach multiple (infinite) xml parameter sets to a single datafile or dataset. For example, an IR datafile can consist of a set of blocks, each with their own parameters and a parent parameter set applicable to all blocks.
+
+  * Datafile
+    * Parameter Set (header)
+      * Parameter Set (block 1)
+      * Parameter Set (block 2)
+      * Parameter Set (block 3)
+      * Parameter Set (block 4)
+
+In this example, the new changes to TARDIS would allow 5 parameter sets to be associated under a data file, 1 of them conforming to 1 schema, and 4 based on another schema.
+
+
+= History =
+
+Initially, all TARDIS sites allowed datasets and datafiles to have a single set of parameters conforming to a single schema. For example, for a datafile:
+
+Metadata Schema Namespace URL: http://www.tardis.edu.au/schemas/trdDatafile/1
+
+Parameter set (in xml)
+{{{
+				<trd:datafile xmlns:trd="http://www.tardis.edu.au/schemas/trdDatafile/1">
+					<trd:exposureTime>3.000000</trd:exposureTime>
+					<trd:detectorSN>457</trd:detectorSN>
+					<trd:xrayWavelength>0.953626</trd:xrayWavelength>
+					<trd:directBeamXPos>105.000000</trd:directBeamXPos>
+					<trd:directBeamYPos>105.000000</trd:directBeamYPos>
+					<trd:detectorDistance>199.995468</trd:detectorDistance>
+					<trd:imageSizeX>2048</trd:imageSizeX>
+					<trd:imageSizeY>2048</trd:imageSizeY>
+					<trd:pixelsizex>0.102400</trd:pixelsizex>
+					<trd:pixelsizey>0.102400</trd:pixelsizey>
+				</trd:datafile>
+}}}
+
+This was the extent of description available.
+
+----
+= References =
+
+  * See the [http://groups.google.com/group/tardis-devel/browse_thread/thread/24ea25b28437b5f8 On Equipment Metadata (and Sample) discussion]

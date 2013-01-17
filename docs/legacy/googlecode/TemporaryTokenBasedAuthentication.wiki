@@ -1,0 +1,55 @@
+#summary Design Document for temporary token-based authentication
+
+= Introduction =
+
+To grant temporary access to an experiment for a user, an experiment owner can grant access to users via a URL which will expire after a time configured in settings.py.
+
+= Details =
+
+== Interface ==
+
+The data owner views an experiment and clicks a link to generate a new token to access the experiment.
+
+  * The user copies the URL and sends it on (through email, IM, letter, etc.) to the intended recipient/s
+
+A user visits a url like /token/login/XCVBDSG23452345/ and becomes logged in as a token user.
+  * they are automatically redirected to the only experiment they have access to
+  * Visiting the URL logs in as the token user even if they are already logged in as another user.
+
+The experiment access page has a section called Token Access listing the tokens (uneditable).
+
+There is a Django admin page to manage tokens.
+
+== Implementation ==
+  * Part of core tardis
+  * You cannot be possible to unify your account with the token account
+  * on login, user's groups (in this case, one group only) is calculated based on the token and cached in their session
+  * groups are created with entityId set to the experiment ID
+  * Expiry dates are set on token creation (and not updated if settings.py changes)
+  * GROUP_PROVIDER named token_group
+  * Group ACL is created lazily when a token user attempts to log in
+  * not listed as an AUTH_PROVIDER
+  * Each token is 30 characters long and consist of alphanumeric characters (uppercase only)
+  * Each token must be unique
+  * Token creation gives up after X attempts to create a unique token.
+
+=== Model ===
+  * One and only one tokenuser exists - username could be 'tokenuser'
+    * use management command createtokenuser
+    * no user profile created for user - must configure TOKEN_USERNAME in settings.py
+  * table linking token (string), experiment, expiry date, author
+
+=== Cleanup ===
+Generating tokens creates records in the database which serve no purpose after a time.
+  * Tokens
+    * Once they expire, they just clutter up the database
+  * ExperimentACL
+    * They serve no purpose if there is no accompanying Token
+
+Use management command cleanuptokens (possibly with a cron job) to get rid of these.
+
+== Out of scope ==
+  * Access to more than one experiment - just create a standard user
+  * Email notifications for generated tokens - it is up to the data owner to send the link to whoever s/he wants to.
+  * manually expiring a token
+  * storing details about tokens e.g. why was a token created?

@@ -1,0 +1,280 @@
+#summary Documentation for installation and maintenance of xTardis
+
+= xTardis Documentation =
+
+----
+
+*Table of Contents*
+
+ * Installation
+ * Custom Metadata Schemas
+ * Adding Apache Support
+
+----
+==Installation==
+
+These instructions should install a working copy of xTardis on a clean install of [http://www.ubuntu.com/ Ubuntu Server 11.04]. Skip any instructions that have already been performed if you are not working on a completely clean install.
+
+===Step 1===
+download subversion then checkout the sourcecode
+(type 'y' when asked if you wish to install the additional packages)
+{{{
+sudo apt-get install subversion
+
+svn co http://mytardis.googlecode.com/svn/branches/xtardis xtardis
+}}}
+
+===Step 2===
+Change into the newly created xtardis directory and run the ubuntu server setup script. This will install required libraries from the ubuntu repositories along with python libraries from pypi. Sudo access is required (type 'y' when asked if you wish to install the additional packages).
+{{{
+cd xtardis
+./ubuntu_server_setup.sh
+}}}
+
+===Step 3===
+Add a password for the postgresql database. The database will not function until this is done.
+{{{
+sudo -u postgres psql postgres
+}}}
+
+Then type this in the postresql commandline:
+
+{{{
+\password postgres
+}}}
+
+You will be requested to enter a password for the admin account, then press Ctrl+D to exit.
+
+===Step 4===
+Create a new database named 'xtardisdb'. Choose between *either* the commandline version (Step 4.1) or a GUI database tool such as pgAdmin III (Step 4.2)
+
+====Step 4.1====
+*NOTE* this will create a db under the admin user, please refer to the [http://www.postgresql.org/docs/8.4/interactive/index.html Postgresql online documentation] for commandline information on creating other users.
+
+{{{
+sudo -u postgres createdb xtardisdb
+}}}
+
+====Step 4.2====
+*NOTE* advice on allowing remote access to a Postgres database can be found [http://www.cyberciti.biz/tips/postgres-allow-remote-access-tcp-connection.html here].
+
+Install pgAdmin III on a desktop computer. The click the 'plug' icon in the top right hand corner to create a connection to the newly installed database server. 
+
+ * Enter any name you wish in the 'Name' section.
+ * Enter the ip address in the 'Host' section.
+ * Enter the port (default 5432) in the 'Port' section.
+ * Enter the password you chose in step 3 into the 'Password' section.
+ * Leave the rest as default and click OK. 
+
+By expanding the tree on the left hand side of the pgAdmin window you should see the name of your database. If there is a red *x* on the icon, right click it and select 'connect'.
+Clicking the *+* next to your database name should show another list containing 'Login Roles'. Right click this item and select 'Create New Login Role...'.
+
+ * Enter 'xtardis' in the 'Role Name' field (or another username of your choosing).
+ * Enter a password twice in both the 'Passowrd' and 'Password (Again)' fields.
+ * Then click OK.
+
+ * Right click on 'Databases' in the left hand list, then click on 'New Database...'
+
+ * Enter 'xtardisdb' as the database name.
+ * Select 'xtardis' (or the username you chose) from the 'Owner' dropdown.
+ * Click OK.
+
+The database should now be created and ready.
+
+===Step 5===
+Create a copy of the template settings and modify to your settings.
+{{{
+cd tardis
+cp settings_changeme.py settings.py
+}}}
+
+*NOTE* vim is used here as an example, but any other text editor is fine.
+{{{
+vim settings.py
+}}}
+
+Find and edit this section:
+{{{
+DATABASES = {
+    'default': {
+        # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # Name of the database to use. For SQLite, it's the full path.
+        'NAME': 'xtardisdb',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
+    }
+}
+}}}
+
+Enter your database username, password, host (127.0.0.1 if running on the same machine as the xtardis installation), and port (by default postgresql uses 5432)
+
+====Step 5.1====
+Configuring the settings for PIDs and DOIs. PIDs and DOIs are obtained from the ANDS server via a compiled java application, the credentials required to communicate with and authenticate against this server are needed.
+
+Find this section at the end of your settings.py file:
+{{{
+#PIDS authenication details from ANDS
+PIDS_APP_ID = ""
+PIDS_IDENTIFIER = ""
+PIDS_AUTHDOMAIN = ""
+PIDS_URL = "" #"test.ands.org.au"
+PIDS_PORT = 8443
+PIDS_PATH = "" #"/pids"
+
+#DOI service details from ANDS
+DOI_APP_ID = ""
+DOI_AUTHDOMAIN = ""
+DOI_URL = ""
+DOI_PATH = ""
+}}}
+
+At the time of writing the PIDs test server URL is test.ands.org.au and the production server is services.ands.org.au with the path of /pids and port number 8443. Your APP_ID, IDENTIFIER, and AUTHDOMAIN are all acquired through communication with ANDS.
+
+todo - add in DOI details
+
+===Step 6===
+Then create the database tables and initial entries.
+*NOTE* You will be asked to create an initial superuser during this process.
+
+{{{
+./manage.py syncdb
+}}}
+
+===Step 7===
+The server should now be ready to test and run with the command:
+{{{
+./manage.py runserver <ip address>:<port>
+}}}
+
+----
+
+==Custom Metadata Schemas==
+Instructions on adding custom metadata records to the repository. These steps will detail how to edit the file:
+
+{{{xtardis/tardis/tardis_portal/fixtures/initial_data.json}}}
+
+which is referenced by the './manage.py syncdb' command in the installation instructions to populate the database with the metadata descriptors. Open the initial_data.json file in any text editor you feel comfortable with. A JSON syntax reference can be found on the [http://en.wikipedia.org/wiki/JSON wikipedia page].
+
+===Step 1===
+Create the schema record as a label for the metadata type.
+
+An example block looks like this:
+
+{{{
+{
+    "fields": {
+        "name": null, 
+        "namespace": "http://www.url.com/name",
+        "subtype": null, 
+        "type": 1
+    }, 
+    "model": "tardis_portal.schema", 
+    "pk": 1
+}
+}}}
+
+The elements of interest are:
+
+*namespace*: a unique url identifier for the metadata
+
+*type*: an integer indicating the type of data this metadata belongs to where:
+
+1 = Experiment
+
+2 = Dataset
+
+3 = Datafile
+
+4 = None
+
+*model*: must be "tardis_portal.schema"
+
+*pk*: is the unique key for the records, increment for each schema record you enter
+
+===Step 2===
+Create a JSON element for each entry in each metadata type.
+
+An example block looks like this:
+
+{{{
+{
+    "fields": {
+        "choices": "",
+        "comparison_type": 1,
+        "data_type": 1,
+        "full_name": "Display Name",
+        "is_searchable": false,
+        "name": "displayname",
+        "schema": 1,
+        "units": ""
+    },
+    "model": "tardis_portal.parametername",
+    "pk": 1
+}
+}}}
+
+The elements of interest are:
+
+*choices*: if present provide a dropdown list for the user to select from. This element must be in the form:
+
+{{{
+"(choice1:choice2), (choice2:choice2), (choice3:choice3)"
+}}}
+
+*comparison_type*: an integer indicating the how this data element is compared when searching where:
+
+1 = EXACT_VALUE_COMPARISON
+
+2 = NOT_EQUAL_COMPARISON
+
+3 = RANGE_COMPARISON
+
+4 = GREATER_THAN_COMPARISON
+
+5 = GREATER_THAN_EQUAL_COMPARISON
+
+6 = LESS_THAN_COMPARISON
+
+7 = LESS_THAN_EQUAL_COMPARISON
+
+8 = CONTAINS_COMPARISON
+
+*data_type*: an integer specifying the type of data this element holds where:
+
+1 = Numeric
+
+2 = String
+
+3 = URL
+
+4 = Link
+
+5 = Filename
+
+6 = Datetime
+
+*full_name*: The name this element is displayed as to the user
+
+*is_searchable*: A boolean value denoting whether or not this data element appears in the search dialog
+
+*name*: the internal name for this data element. By convention it is best to use the display name in all lowercase with no spaces.
+
+*schema*: an integer referencing the primary key of the schema created in step 1 for which this data element is associated with
+
+*units*: the units in which this data element is described. Unicode symbols such as 'µ' are acceptable
+
+
+----
+
+==Adding Apache Support==
+
+Instructions on running the server through Apache rather than the python webserver can be found here:
+
+https://docs.djangoproject.com/en/1.3/howto/deployment/modwsgi/ 
+
+with more detailed instructions here:
+
+http://code.google.com/p/modwsgi/wiki/IntegrationWithDjango
