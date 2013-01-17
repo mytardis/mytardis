@@ -7,7 +7,7 @@ from django.test import TestCase
 from tempfile import NamedTemporaryFile
 
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, \
-    Replica, User, UserProfile
+    Replica, Location, User, UserProfile
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tardis.tardis_portal.tasks import verify_files
@@ -44,17 +44,20 @@ class BackgroundTaskTestCase(TestCase):
         datafile.size = len(content)
         datafile.sha512sum = hashlib.sha512(content).hexdigest()
         datafile.save()
-        write_uploaded_file_to_dataset(self.dataset, cf)
+        replica = Replica(datafile=datafile,
+                          url=write_uploaded_file_to_dataset(self.dataset, cf),
+                          location=Location.get_default_location())
+        replica.save()
 
-        def get_datafile(datafile):
-            return Dataset_File.objects.get(id=datafile.id)
+        def get_replica(datafile):
+            return Replica.objects.get(datafile=datafile)
 
         # Check that it's not currently verified
-        expect(get_datafile(datafile).verified).to_be(False)
+        expect(get_replica(datafile).verified).to_be(False)
 
         # Check it verifies
         verify_files()
-        expect(get_datafile(datafile).verified).to_be(True)
+        expect(get_replica(datafile).verified).to_be(True)
 
 
     def testRemoteFile(self):
@@ -67,7 +70,7 @@ class BackgroundTaskTestCase(TestCase):
                 datafile.sha512sum = hashlib.sha512(content).hexdigest()
                 datafile.save()
                 replica = Replica(datafile=datafile,
-                                  location=Locations.get_default_external(),
+                                  location=Location.get_location('staging'),
                                   url='file://' + path.abspath(f.name))
                 replica.save()
 
@@ -79,7 +82,6 @@ class BackgroundTaskTestCase(TestCase):
                 verify_files()
                 expect(get_replica(replica).verified).to_be(False)
                 expect(get_replica(replica).is_local()).to_be(False)
-
 
                 # Fill in the content
                 f.write(content)

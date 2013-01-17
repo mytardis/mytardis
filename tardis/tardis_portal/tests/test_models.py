@@ -113,39 +113,44 @@ class ModelTestCase(TestCase):
         self.assertTrue(ae3 == authors[1])
 
     def test_datafile(self):
-        from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                approved=True,
-                                created_by=self.user,
-                                public_access=models.Experiment.PUBLIC_ACCESS_NONE,
-                                )
+        from tardis.tardis_portal.models import Experiment, Dataset
+
+        def _build(dataset, filename, url, protocol):
+            from tardis.tardis_portal.models import \
+                Dataset_File, Replica, Location
+            datafile = Dataset_File(dataset=dataset, filename=filename)
+            datafile.save()
+            replica = Replica(datafile=datafile, url=url, 
+                              protocol=protocol,
+                              location=Location.get_default_location())
+            replica.save()
+            return datafile
+
+
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         approved=True,
+                         created_by=self.user,
+                         public_access=Experiment.PUBLIC_ACCESS_NONE)
         exp.save()
 
-        dataset = models.Dataset(description="dataset description...")
+
+        dataset = Dataset(description="dataset description...")
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
 
-        df_file = models.Dataset_File(dataset=dataset,
-                                      filename='file.txt',
-                                      url='path/file.txt',
-                                      )
-        df_file.save()
+        df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
         self.assertEqual(df_file.filename, 'file.txt')
         self.assertEqual(df_file.url, 'path/file.txt')
         self.assertEqual(df_file.protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(), '/test/download/datafile/1/')
+        self.assertEqual(df_file.get_download_url(), 
+                         '/test/download/datafile/1/')
         self.assertTrue(df_file.is_local())
 
-        df_file = models.Dataset_File(dataset=dataset,
-                                      filename='file1.txt',
-                                      url='path/file1.txt',
-                                      protocol='vbl',
-                                      )
-        df_file.save()
+        df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
         self.assertEqual(df_file.filename, 'file1.txt')
         self.assertEqual(df_file.url, 'path/file1.txt')
         self.assertEqual(df_file.protocol, 'vbl')
@@ -155,21 +160,18 @@ class ModelTestCase(TestCase):
                          '/test/vbl/download/datafile/2/')
         self.assertFalse(df_file.is_local())
 
-        df_file = models.Dataset_File(dataset=dataset,
-                                      filename='file1.txt',
-                                      url='http://localhost:8080/filestore/file1.txt',
-                                      protocol='',
-                                      )
-        df_file.save()
-        self.assertEqual(df_file.filename, 'file1.txt')
+        df_file = _build(dataset, 'f.txt',
+                         'http://localhost:8080/filestore/f.txt', '')
+        self.assertEqual(df_file.filename, 'f.txt')
         self.assertEqual(df_file.url,
-                         'http://localhost:8080/filestore/file1.txt')
+                         'http://localhost:8080/filestore/f.txt')
         self.assertEqual(df_file.protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
                          '/test/download/datafile/3/')
         self.assertFalse(df_file.is_local())
+
 
     # check conversion of b64encoded images back into files
     def test_parameter(self):

@@ -262,10 +262,16 @@ DEFAULT_LOCATION = "local"
 
 INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'url': 'file:/' + FILE_STORE_PATH,
-                      'type': 'online'},
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'sync',
+                      'url': 'file:/' + SYNC_TEMP_PATH,
+                      'type': 'external',
+                      'priority': 8},
                      {'name': 'staging',
                       'url': 'file:/' + STAGING_PATH,
-                      'type': 'external'}]
+                      'type': 'external',
+                      'priority': 5}]
 
 MIGRATION_DESTINATIONS = [{'name': 'test', 
                            'transfer_type': 'http',

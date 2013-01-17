@@ -114,6 +114,7 @@ class ProcessExperiment:
     # Yes. Yes it is. - Tim
     def process_simple(self, filename, created_by, eid):
         sync_root = get_sync_root()
+        sync_location = get_sync_location()
 
         f = open(filename)
         e = 0
@@ -333,7 +334,7 @@ class ProcessExperiment:
                     replica = Replica(datafile=dfile,
                                       url=url,
                                       protocol=protocol,
-                                      location=get_sync_location()[0])
+                                      location=sync_location)
                     replica.save()
                     current_df_id = dfile.id
 

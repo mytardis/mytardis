@@ -161,9 +161,7 @@ def stage_replica(replica):
 
 def get_sync_location():
     from tardis.tardis_portal.models import Location
-    return Location.objects.get_or_create(name=settings.SYNC_LOCATION,
-                                          url=settings.SYNC_LOCATION_URL,
-                                          type='online')
+    return Location.get_location('sync')
 
 def get_sync_root(prefix = ''):
     from uuid import uuid4 as uuid
@@ -218,8 +216,8 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
 
     from django.core.files.storage import default_storage
 
-    # Path on disk can contain subdirectories - but if the request gets tricky with "../" or "/var" or something
-    # we strip them out..
+    # Path on disk can contain subdirectories - but if the request gets 
+    # tricky with "../" or "/var" or something we strip them out..
     try:
         copyto = path.join(get_dataset_path(dataset), filename)
         default_storage.path(copyto)

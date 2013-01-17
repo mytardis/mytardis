@@ -176,20 +176,20 @@ class DownloadTestCase(TestCase):
         testfile2 = abspath(join(self.dest2, filename2))
         _generate_test_image(testfile2)
 
-        self.dataset_file1 = _build_datafile( \
+        self.dataset_file1 = self._build_datafile( \
             testfile1, filename1, self.dataset1,
             '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1),
             '')
                           
-        self.dataset_file2 = _build_datafile( \
+        self.dataset_file2 = self._build_datafile( \
             testfile2, filename2, self.dataset2,
             '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2),
             '')
 
-    def _build_datafile(testfile, filename, dataset, url, protocol):
+    def _build_datafile(self, testfile, filename, dataset, url, protocol):
         size, sha512sum = get_size_and_sha512sum(testfile)
-        datafile = Dataset_File(dataset=dataset, filename=filename1,
-                                size=size, sha512sum=sha512sum)
+        datafile = Dataset_File(dataset=dataset, filename=filename,
+                                size=str(size), sha512sum=sha512sum)
         datafile.save()
         replica = Replica(datafile=datafile, protocol=protocol, url=url,
                           location=Location.get_default_location())
@@ -376,8 +376,8 @@ class DownloadTestCase(TestCase):
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
         size, sha512sum = get_size_and_sha512sum(filename)
-        pdf1 = _build_datafile(filename, filename, dataset, 
-                               'file://%s' % filename, 'file') 
+        pdf1 = self._build_datafile(filename, filename, dataset, 
+                                    'file://%s' % filename, 'file') 
 
         try:
             from magic import Magic
@@ -389,8 +389,8 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
         # now check that we can override the physical file meta information
-        pdf2 = _build_datafile(filename, filename, dataset, 
-                               'file://%s' % filename, 'file') 
+        pdf2 = self._build_datafile(filename, filename, dataset, 
+                                    'file://%s' % filename, 'file') 
         pdf2.mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
         pdf2.size = str(0)
         # Empty string always has the same hash

@@ -107,7 +107,8 @@ class MigrationTestCase(TestCase):
         provider = dest.provider
         base_url = dest.base_url
         datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
-        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        replica = datafile.get_preferred_replica()
+        self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         url = provider.generate_url(datafile)
         self.assertEquals(url, base_url + '1/2/3')
         provider.put_file(datafile, url)
@@ -157,7 +158,8 @@ class MigrationTestCase(TestCase):
             migrate_datafile(datafile, dest)
 
         # Verify sets hashes ...
-        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        replica = datafile.get_preferred_replica()
+        self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         datafile.save()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
@@ -237,7 +239,8 @@ class MigrationTestCase(TestCase):
         
         dest = Destination.get_destination('test')
         datafile = generate_datafile("1/2/3", self.dataset, "Hi mum")
-        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        replica = datafile.get_preferred_replica()
+        self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         datafile.save()
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))

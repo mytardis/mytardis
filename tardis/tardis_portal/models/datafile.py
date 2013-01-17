@@ -3,7 +3,6 @@ from os import path
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-from django.utils import _os
 
 from .dataset import Dataset
 from .replica import Replica
@@ -127,22 +126,29 @@ class Dataset_File(models.Model):
     def get_file(self):
         return self.get_preferred_replica().get_file()
         
+    def get_absolute_filepath(self):
+        return self.get_preferred_replica().get_absolute_filepath()
+
+    def get_file_getter(self):
+        return self.get_preferred_replica().get_file_getter()
+        
+    def is_local(self):
+        return self.get_preferred_replica().is_local()
+        
     def get_preferred_replica(self):
         """Get the Datafile replica that is the preferred one for download.
         This entails fetching all of the Replicas and ordering by their
         respective Locations' computed priorities.
         """
 
-        # return max(Replica.objects.filter(datafile=self), 
-        #           key=lambda x: x.location.priority)
-        preferred = None
-        for replica in Replica.objects.filter(datafile=self):
-            if not preferred or \
-                    preferred.location.priority < replica.location.priority:
-                preferred = replica
-        if not preferred:
+        p = None
+        for r in Replica.objects.filter(datafile=self):
+            if not p or \
+                    p.location.get_priority() < r.location.get_priority():
+                p = r
+        if not p:
             raise ValueError('Dataset_File has no replicas')
-        return preferred
+        return p
 
     def has_image(self):
         from .parameters import DatafileParameter

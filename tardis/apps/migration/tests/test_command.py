@@ -106,8 +106,8 @@ class MigrateCommandTestCase(TestCase):
                           'Migration failed for datafile %s : ' \
                           'Only verified datafiles can be migrated ' \
                           'to this destination\n' % datafile.id)
-
-        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
+        replica = datafile.get_preferred_replica()
+        self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         datafile.save()
 
         # (Paths should all be kosher now ...)

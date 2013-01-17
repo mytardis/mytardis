@@ -506,7 +506,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             'datafile should not be none')
         self.assertTrue(datafile.size == '18006000',
             'wrong file size for ment0003.osc')
-        expect(datafile.url).to_equal('file://'+path.join(self.sync_path,
+        replica = datafile.get_preferred_replica()
+        expect(replica.url).to_equal('file://'+path.join(self.sync_path,
                                                         'Images/ment0003.osc'))
 
         datafileParams = models.DatafileParameter.objects.filter(

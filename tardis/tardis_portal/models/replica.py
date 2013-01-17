@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.core.files.storage import default_storage
+from django.utils import _os
 
 from tardis.tardis_portal.util import generate_file_checksums
 
@@ -30,6 +31,8 @@ class Replica(models.Model):
     :attribute location: the foreign key for the Location that holds the
        Replica.  In the case of a Replica that is a member of an archive, the
        Location denoted the container for the archive not the archive itself.
+    :attribute stay_remote: is used (temporarily) to indicate to the ingestion
+       task that a file should not be copied into the mytardis
 
     """
 
@@ -37,6 +40,7 @@ class Replica(models.Model):
     url = models.CharField(max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
     verified = models.BooleanField(default=False)
+    stay_remote = models.BooleanField(default=False)
     location = models.ForeignKey(Location)
 
     class Meta:
@@ -182,7 +186,7 @@ class Replica(models.Model):
             mimetype = Magic(mime=True).from_buffer(mimetype_buffer)
         else:
             mimetype = ''
-        if not df.size or not df.md5sum or not sha512.sum:
+        if not df.size or not df.md5sum or not df.sha512sum or not df.mimetype:
             Dataset_File.objects.filter(pk=self.datafile.pk).update( \
                 md5sum = md5sum.lower(),
                 sha512sum = sha512sum.lower(),
