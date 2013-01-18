@@ -41,5 +41,56 @@ steps are needed:
                        "/apps/awesome-view/view"),]
 
 Currently, the default view is always ``Dataset_File`` metadata. This
-can be changed, for example, by developing a custom ``Dataset`` view.
+can be changed, for example, by developing a custom ``Dataset`` view,
+which is explained in the following chapter.
 
+Dataset Views
+=============
+
+Rationale
+---------
+
+For some specific uses the data available can be presented and/or
+processed in useful ways. The example that this feature was built for
+are single-image and many-image datasets from the Australian
+Synchrotron. Single images can be displayed large and for a many-image
+dataset it is more useful to show a couple of example images taken at
+regular intervals not from the beginning of the set of files.  These
+different datasets can be tagged differently and subsequently
+displayed differently.
+
+User Guide
+----------
+
+Similarly to contextual ``Dataset_File`` views, ``Dataset`` views rely
+on specific schemas attached to ``Dataset`` s.
+
+There are two main differences:
+
+* instead of an AJAX-loaded URL the settings associate a view function
+  with a schema.
+
+  Example:
+
+::
+
+    DATASET_VIEWS = [
+        ("http://synchrotron.org.au/views/dataset/full",
+         "tardis.apps.mx_views.views.view_full_dataset"),
+    ]
+
+
+* there is currently no UI choice of the ``Dataset`` view
+
+Good practice
+-------------
+
+The default and well-tested ``Dataset`` view can be changed minimally
+for specific purposes by extending the default template and overriding
+a template block.
+
+
+Example filter
+==============
+
+Work in progress
