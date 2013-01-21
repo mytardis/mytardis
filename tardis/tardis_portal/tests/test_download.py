@@ -178,25 +178,25 @@ class DownloadTestCase(TestCase):
 
         self.dataset_file1 = self._build_datafile( \
             testfile1, filename1, self.dataset1,
-            '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1),
-            '')
+            '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1))
                           
         self.dataset_file2 = self._build_datafile( \
             testfile2, filename2, self.dataset2,
-            '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2),
-            '')
+            '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2))
 
-    def _build_datafile(self, testfile, filename, dataset, url, protocol):
-        size, sha512sum = get_size_and_sha512sum(testfile)
+    def _build_datafile(self, testfile, filename, dataset, url, 
+                        protocol='', checksum=None, size=None, mimetype=''):
+        filesize, sha512sum = get_size_and_sha512sum(testfile)
         datafile = Dataset_File(dataset=dataset, filename=filename,
-                                size=str(size), sha512sum=sha512sum)
+                                mimetype=mimetype,
+                                size=str(size if size != None else filesize), 
+                                sha512sum=(checksum if checksum else sha512sum))
         datafile.save()
         replica = Replica(datafile=datafile, protocol=protocol, url=url,
                           location=Location.get_default_location())
-        replica.verify()
         replica.save()
-        return datafile
-
+        replica.verify()
+        return Dataset_File.objects.get(pk=datafile.pk)
 
     def tearDown(self):
         self.user.delete()
@@ -369,15 +369,17 @@ class DownloadTestCase(TestCase):
         self.assertEqual(df.size, str(13))
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
-        # now check a JPG file
+        # Now check we can calculate checksums and infer the mime type
+        # for a JPG file.
         filename = abspath(join(dirname(__file__),
                                 '../static/images/ands-logo-hi-res.jpg'))
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
-        size, sha512sum = get_size_and_sha512sum(filename)
-        pdf1 = self._build_datafile(filename, filename, dataset, 
-                                    'file://%s' % filename, 'file') 
+        pdf1 = self._build_datafile(filename, basename(filename), dataset, 
+                                    'file://%s' % filename, protocol='file')
+        self.assertEqual(pdf1.get_preferred_replica().verify(), True)
+        pdf1 = Dataset_File.objects.get(pk=pdf1.pk)        
 
         try:
             from magic import Magic
@@ -388,14 +390,20 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf1.size, str(14232))
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
-        # now check that we can override the physical file meta information
-        pdf2 = self._build_datafile(filename, filename, dataset, 
-                                    'file://%s' % filename, 'file') 
-        pdf2.mimetype = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        pdf2.size = str(0)
-        # Empty string always has the same hash
-        pdf2.sha512sum = 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e'
-        pdf2.save()
+        # Now check that we can override the physical file meta information
+        # We are setting size/checksums that don't match the actual file, so
+        # the 
+        pdf2 = self._build_datafile(
+            filename, filename, dataset,
+            'file://%s' % filename, protocol='file', 
+            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            size=0,
+            # Empty string always has the same hash
+            checksum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
+        self.assertEqual(pdf2.size, str(0))
+        self.assertEqual(pdf2.md5sum, '')
+        self.assertEqual(pdf2.get_preferred_replica().verify(), False)
+        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
         try:
             from magic import Magic
             self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
@@ -407,6 +415,8 @@ class DownloadTestCase(TestCase):
 
         pdf2.mimetype = ''
         pdf2.save()
+        pdf2.get_preferred_replica().save()
+        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
 
         try:
             from magic import Magic

@@ -143,7 +143,7 @@ class UploadTestCase(TestCase):
         self.assertTrue(test_files_db[0].url == '%d/%d/testfile.txt' %
                         (self.dataset.get_first_experiment().id,
                          self.dataset.id))
-        self.assertTrue(test_files_db[0].verified)
+        self.assertTrue(test_files_db[0].get_preferred_replica().verified)
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest

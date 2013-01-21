@@ -63,7 +63,7 @@ class JEOLSEMFilterTestCase(TestCase):
                               location=Location.get_default_location())
             replica.verify()
             replica.save()
-            return datafile
+            return Dataset_File.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
         self.datafiles = [create_datafile(i) for i in (1,2)]
