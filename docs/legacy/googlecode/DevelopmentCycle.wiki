@@ -1,0 +1,83 @@
+#summary Ideal development cycle
+
+= Introduction =
+
+This document describes the idea way we will integrate new features and bug-fixes. This is based heavily on the Divmod development model.
+
+== Summary ==
+
+The briefest summary of the requirements for the development cycle is that every task has 3 absolutely required steps.
+
+ * A task is created in an issue tracker and assigned to a worker.<br/>Each project will use its own task tracking process.  The Issues system in Google Code may be used by Users for submitting bug reports regarding Tardis.
+ * The worker does work, and creates a change-set to be applied to the mainline revision control system. (This can be represented as either a branch or a patch file.)
+ * A reviewer reviews the completed work, and provides feedback: at least one good thing about the work, at least one area that needs improvement, and a judgment as to whether the good qualities ultimately outweigh the bad, i.e. whether the branch should be merged. 
+
+= Principles =
+
+The principles involved are:
+
+ * Most importantly, all work on a task must be reviewed by at least one person.<br/>Especially on small teams, this eliminates the possibility of finger-pointing, and increases the whole team's awareness of the project in general.  This provides an after-the-fact opportunity to verify that public methods are documented, debug prints are removed, and comments actually make sense to someone who wasn't present when the code is being written.<br/>For MeCAT (EIF020 & EIF037) and EIF019, we have agreed that code reviews will be performed cross-project, i.e Sync review Monash code and vice-versa, to minimise or eliminate decisions that might make sense at the time in the microcosm of some problem being solved, but be hard to explain or justify in the context of the larger project.  Code reviews will be requested via e-mail.
+ * All work on a task must be represented as changes to a version control system.<br/>This includes design, documentation and code.
+ * All work on a task must be represented by tickets in a ticket tracker.<br/>If it's not in the tracker, you shouldn't be working on it. This provides a way to manage distractions and continuously re-focus on what's really important. It also means that at a minimum the branchs purpose is explained in a corresponding ticket.  As noted above, the ticket management system is local to each project.
+ * All development is done on branches - no development is done on the trunk. The trunk can be used to see branch differences, run test suites, build distributions, etc., but is not used for development.  Normally a branch will be created for each feature being added, but may be used for larger allocations of work, e.g. a sprint.
+
+
+The lifecycle of a task in development cycle in practice (using Subversion and Google Code) looks something like this, with a developer steve and a reviewer gerson:
+
+    * A ticket is created in the issue tracker.
+    * For features, a specification is attached to the ticket. For defects, reproduction instructions.
+    * The developer who is assigned the task "accepts" the task, by changing its state to "accepted".
+    * A branch is created in Subversion. The branch is named with the convention `<descriptive word>-<issue number>[-<branch number>]`. For the first branch of any feature, the branch number is omitted. (For smaller patches, or work done by non-committer developers, this and the next step can be omitted. The developer can attach a patch to the ticket instead of creating a branch.)
+{{{
+      steve@gallifrey$ svn copy trunk branches/sonic-123
+      steve@gallifrey$ svn commit -m "Creating a private branch of trunk."
+}}}
+    * Development occurs to implement the feature or resolve the defect in the branch.
+    * When the code is deemed ready by the developer, the developer checks in their changes on the branch (not the trunk).
+    * The branch is then assigned to another developer for review. The ticket should be given the keyword "review", assigned to the reviewer and the priority set to "highest".
+    * The reviewer switches to the branch, then merges it locally, to review it in the context of how it will change trunk.
+{{{
+      gerson@earth$ svn co https://mytardis.googlecode.com/svn/trunk
+      gerson@earth$ svn merge https://mytardis.googlecode.com/svn/branches/sonic-123
+      gerson@earth$ svn diff | less
+}}}
+          o (If the patch does not merge cleanly, the reviewer may reassign to the developer to merge forward for review. Branches and patches must always be sufficiently recent that they will apply cleanly to trunk in order to be considered for review).
+    * The reviewer runs all automated tests.
+{{{
+      gerson@earth$ ./bin/django-admin.py test
+}}}
+    * The reviewer verifies that the code makes sense, has unit tests, has documentation, updates any existing documentation that is affected, and actually resolves the issue in question.
+    * If any more work is required, the reviewer reassigns to the developer explaining what else needs to be done in a ticket comment. The reviewer can use svn revert on their trunk if the branch changes are not acceptable, in preparation for a later unbranch. When this process has been repeated enough times that all the tests pass and the reviewer is satisfied, they either re-assign to the developer for merging or the reviewer can merge the branch.
+{{{
+      gerson@earth$ svn ci -m '
+      A brief description of the sonic feature.
+
+      Author: steve
+
+      Reviewer: gerson
+
+      Fixes #123
+
+      A detailed description of the sonic feature.
+      '
+      gerson@earth$ svn rm https://mytardis.googlecode.com/svn/branches/sonic-123
+}}}
+
+    * the "fixes" note in the commit message automatically resolves the ticket with a status of "fixed". Voila! Our feature is implemented and ready in trunk. 
+
+Branch lifetimes should be short. If trunk moves very far from the branch, the branch should be merged forward to pick up bug fixes and feature enhancements which might be useful. Doing this also makes the final merge easier, by keeping conflicts small and bringing them to the developer's attention before they become unmanageable. 
+
+
+= References =
+
+[http://divmod.org/trac/wiki/UltimateQualityDevelopmentSystem Divmod - Ultimate Quality Development System]
+
+= Notes on Code Review =
+
+Before changes are merged into a branch, the following conditions must be met:
+
+  * Branch owner must ensure that all existing tests pass
+  * Branch owner must show new code and demonstrate functionality to a fellow developer (the reviewer)
+  * The reviewer performs a manual inspection and review of the code.
+  * The reviewer must ensure that the branch owner has written appropriate unit tests to cover new functionality
+  * After approval, the code is merged on to the trunk and the automated test suite run, normally by the developer, but the reviewer can by mutual agreement.

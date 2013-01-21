@@ -1,0 +1,14 @@
+#summary Requirements, reasoning and proposed Authentication Engine design
+
+= User Requirements =
+ * Support VBL, LDAP, local DB, and Shibboleth authentication mechanisms
+ * Make the authentication engine as extensible as possible so that other authentication mechanisms not listed above can be easily supported
+ * Allow users to add other supported authentication methods they would like to use to login
+ * Allow new users who doesn't have VBL, LDAP, and Shibb accounts to create a tardis (local DB) account for themselves
+
+= User Authentication Steps =
+ # New users will need to provide the username, password, and the authentication method they want to use to login.
+ # The system will try to authenticate the user by checking the provided username and password against the authentication system. If the username and password are correct, the given username and authentication method is checked against the !UserAuthentication table. If the user is not found in the !UserAuthentication table, a new user account is created for him/her and an entry of the authentication method and username that the user used to successfully log in gets added into the !UserAuthentication table.
+ # The user is presented an option once he successfully logs in, to add other authentication methods he would like to use (as an alternative to his current one) to log into the system. The other authentication methods and their corresponding usernames are entered into the !UserAuthentication table and are linked to the user's entry in the !UserProfile table.
+
+http://mytardis.googlecode.com/svn/attachments/authdesign.jpeg

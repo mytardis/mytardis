@@ -1,0 +1,6 @@
+#summary Information on the Core Scientific Metadata Model
+
+= Links =
+
+ * The CSMD definition at the ICAT Project: http://code.google.com/p/icatproject/wiki/CSMD
+ * Using a Core Scientific Metadata Model in Large-Scale Facilities: http://www.ijdc.net/index.php/ijdc/article/viewFile/149/211

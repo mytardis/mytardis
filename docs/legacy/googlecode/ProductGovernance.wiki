@@ -1,0 +1,10 @@
+#summary Reference to the Product Governance documentation and current Product Management Committee.
+
+The Tardis project is run in accordance with [http://code.google.com/p/mytardis/downloads/detail?name=Tardis%20Product%20Governance.docx&can=2&q= Tardis Product Governance].
+
+The current Project Management Committee is:
+
+ * Ashley Buckle (Chair)
+ * Anthony Beitz
+ * Chris Myers
+ * Alistair Grant

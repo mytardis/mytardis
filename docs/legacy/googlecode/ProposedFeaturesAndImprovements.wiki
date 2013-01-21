@@ -1,0 +1,72 @@
+#labels Featured
+!MyTardis is currently the focus of two independent projects:
+
+  * EIF019 @ MeRC - The Monash eResearch Centre, which initiated MyTardis development
+  * MeCAT - An ANDS funded joint project between the Australian Synchrotron and ANSTO
+
+The roadmap for each project is presented below.
+
+Note that this page should only contain links to items that are either not yet started or are still in progress.  Completed items should be moved to the [Contents Table of Contents].
+
+= MeRC MyTardis Roadmap =
+
+  * Annotations<br>Add support for annotations.  This will need to consider data versioning and derived datasets.
+  * [DataStaging] Ability to stage data (via mount) and define new experiments
+  * [DataUpload] Ability to upload data via a web interface
+  * [DataAnnotate] Ability to annotate data with new parameters via web / edit current parameters
+  * [ParameterSets] Multiple parameter sets based on varying/repeating schema
+  * [ExperimentRelations] Ability to map experiment relations (derived experiments / raw data experiments etc)
+  * [WebServices] Web service access to experiment / dataset / datafile information
+  * [EventDrivenDesign]
+  * [ClassBasedArchitecture] Class-based architecture
+  * [PluginArchitecture] (django project / multiple apps)
+  * [RichParameters] Richer parameter types and multiple parameter sets per object
+  * [RichGroupAccess] Finer-grained access permissions and user groups
+  * [VisualThemes]
+  * [SimpleExperimentParser] Experiment parser rewrite
+  * [CrystallographyDatabaseCleanup] Remove discipline specific models
+  * [SoftwareRobustness] (logging, testing, packaging, configuring)
+  * [GenericSearchWithModules] A generic search interface, and the ability to add custom search modules
+  * Support for themes
+
+
+= MeCAT MyTardis Roadmap =
+
+== Schema Modifications ==
+
+  * Generalise PdbID<br>Support references to domain specific databases other than the Protein Crystallography database.
+  * Generalise Citation to handle both publications the Experiment is dependent on, and publications resulting from the Experiment.
+
+== Authentication ==
+
+  * Ensure that MyTardis can handle multiple simultaneous authentication methods.
+  * Ensure support for Shibboleth, VBL
+
+== Authorisation ==
+
+Extend the authorisation model to handle:
+
+  * Owner
+  * Id
+  * Group
+  * Date
+  * Location
+  * Attribute (e.g. publication link present)
+
+For details, please see AuthorisationEngineAlt (AuthorisationEngine was the original discussion).
+
+== ARDC Harvesting ==
+
+  * Support for [RIFCSoverOAIPMH RIF-CS over OAI-PMH].
+
+== Miscellaneous ==
+
+  * Audit
+    * All modifications should be recorded
+    * Analysis of who is accessing what data
+  * Enhanced searching
+    * Auto-generated search page from schema
+    * Complex search strings, e.g. ANDs and ORs
+    * Trac style advanced search page
+  * Ingestion
+    * Transaction control and rollback

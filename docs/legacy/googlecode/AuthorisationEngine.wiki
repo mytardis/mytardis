@@ -1,0 +1,190 @@
+#summary Original Authorisation Engine Design, now superseeded
+
+*NOTE: THIS PAGE HAS BEEN SUPERSEEDED BY THE AuthorisationEngineAlt page.*
+
+= Introduction =
+
+Access to data varies widely across research fields, cultures, traditions, schools, etc. Examples include:
+
+  * Competition between scientists is such that they don't even want it to be known that they are associated with a particular experiment, let alone have any of the data / metadata available.
+  * ILL and ISIS appear to make data publicly available as soon as it is processed ( http://data.isis.rl.ac.uk). 
+
+Thus the Access Controls need to handle the entire range from data being public through to access is only available to authorised users.  Visibility of data should follow the same model as X.500 / LDAP Directories, i.e. if the there is no access allowed, the data is invisible, rather than returning an "access not allowed error".
+
+Access Controls can be applied to Experiments and Datasets, but not Datafiles.
+
+
+= Use Cases =
+
+Most projects about data publication in the research field have come across the problem that while researchers believe in publishing / sharing data in principle, they have lots of reasons not to do it in practice.  This is a much larger problem than can be addressed in one project, so we’ve decided to work around the problem as much as possible by providing access controls within Tardis that support publishing data immediately, restricting access either indefinitely or until criteria are met, or sharing on an individual basis.
+
+The set of use cases that we’re using as the basis of the Access Control design are listed below.
+
+The facility or institution hosting MyTARDIS typically will not want to be involved in the day-to-day management of access rights, thus the Data Owner has the ability to grant and remove access privileges to the data owned.  The Data Owner will typically be the Principle Investigator or a representative of the Institution.
+
+  * Publicly Accessible<br/>The data is made publicly available immediately, e.g. data that will become part of a reference database.
+  * Accessible by the Data Owner and assigned team members<br/>Team members may be assigned individually or as a group.
+  * Access granted by the Data Owner<br/>E.g. as a result of direct contact by another researcher.
+  * Accessible by anyone at a given physical location, typically the instrument
+  * Publicly Accessible after an embargo period, e.g. 3 years
+  * Publicly Accessible after a trigger, e.g. paper is published
+  * Accessible by facility scientist.  Facility scientists typically have access to all data from the instrument they are responsible for.
+
+= Access Control Attributes =
+
+To meet the use cases listed above, a rule based access control engine with the following engine will be designed:
+
+  * Data Owner<br/>Data owners have the ability to grant access to other individuals
+  * User
+  * Group membership
+  * Date
+  * Location (IP address / subnet)
+  * Metadata attribute present or has particular value, e.g. link to publication provided
+
+By default, a user has access to no data.  Access is then granted either through making the data public (setting the public flag in the Experiment) or by adding ACLs to grant access.  To keep the rules and implementation simple, no DENY capability is being provided.
+
+
+
+= Design =
+
+The diagram below shows how the authorisation requirements will be supported.
+
+http://mytardis.googlecode.com/svn/attachments/authdesign.jpeg
+
+As there is a requirement that Tardis should support a number of authentication mechanisms, those authentication methods will be saved in a separate !UserAuthentication table where the actual supported authentication method and the username used to authenticate will be saved. You can read more about how the different authentication mechanisms is supported on this [AuthenticationEngine wiki page].
+
+There will be a main ACL model called ExperimentACL which will tell if a user has permissions to access an experiment. There is also a SessionAuth table which allows for pluggable authorisation support. For example, location based  access will involve an IP mask and value, e.g. 10.1.0.0 / FF.FF.0.0 will match 10.1.1.1 and 10.1.4.6, but deny 10.2.1.1, 192.168.1.4, etc. The location (IP and netmask combination) access to an experiment will be supported by having this entry in the SessionAuth table.
+
+{{{
+SessionAuth {pluginName='locationPlugin', parameters='10.1.0.0/255.255.0.0'}
+}}}
+
+Whereas if the VBL authorisation mechanism will be supported, the entry to the SessionAuth will look like this:
+
+{{{
+SessionAuth {pluginName='vblPlugin', parameters=''}
+}}}
+
+The ExperimentACL table has the following fields:
+ * canRead - gives the user read access to the experiment
+ * canWrite - gives the user write access to the experiment
+ * canDelete - gives the user delete permission to the experiment
+ * owner - the experiment owner flag.
+ * effectiveDate - the date when access to the experiment takes into effect. This can also be the date when the embargo is lifted.
+ * expiryDate - the date when access to the experiment ceases.
+ * aclOwnershipType - currently holds two enumerated values -- system-owned and user-owned. System-owned ACLs will prevent users from removing or editing ACL entries to a particular experiment they own. User-owned ACLs will allow experiment owners to remove/add/edit ACL entries to the experiments they own. It is important for an ACL entry to be system-owned so that normal users (even if they are experiment owners) cannot restrict read access to beamline scientists on the experiments generated in the beamlines they are managing.
+
+In the case when canWrite or canDelete access is granted, canRead and canWrite access will also typically be granted.
+
+Experiment owners are given the ability to add normal users as owners to the experiments they own. However, groups won't be allowed to become experiment owners. Experiment owners are allowed to give a user or group permissions to read, write, and delete an experiment.
+
+If an experiment owner wants to give a non-existing group access to his/her experiment, he can create the group and assign an administrator to that group. The group admin (which can be the trusted department secretary or office admin) has permissions on adding more users to the group.
+
+To represent the beamline scientists, a special group is created for them by the facility systems administrators. The group automatically gets read permissions when an experiment gets ingested into tardis as long as the experiment is produced by an instrument they manage.
+
+Date based access (Embargo periods) and attribute based access (publication triggers) would be implemented by some external process periodically checking for data that is eligible to be made public and triggering the workflow to set the public flag.  An example of how this would be implemented is to periodically run a cron job that sends out an email to the administrators (experiment owners/facility sys admins/other higher ranking facility officers) to say which experiments from the last time the cron job ran has become eligible to becoming publicly accessible. It becomes the experiment owners', facility sys admins', or some other higher ranking facility officer's job to set the Experiment's public field manually to True.
+
+
+= User Stories =
+
+== User Roles ==
+ * Anonymous User
+ * (Normal) Registered User or Researcher
+ * Experiment Owner (Principal Investigator)
+ * Group Admin
+ * Equipment (Instrument) Scientist
+
+== User Stories ==
+As an Anonymous user...
+ * I'd like to browse all experiments that have been made publicly accessible after the embargo period set on them were lifted.
+ * I'd like to search for public experiments that matches the selection criteria I've provided.
+ * I'd like to search for public datafiles that matches the selection criteria I've provided.
+ * I'd like to download the associated datafiles from the public experiments I'm interested in.
+
+As (Normal) Registered User
+ * I'd like to share my experiment to other registered users.
+ * I'd like to edit an experiment/dataset/datafile entry if I have the permissions to write into an experiment.
+ * I'd like to delete an experiment/dataset/datafile entry if I have the  permission to delete entries from an experiment
+ * And member of a group that has permissions to access an experiment, I'd like to perform the tasks I'm allowed to perform on that experiment.
+ * I'd like to browse the experiments shared with me by experiment owners.
+ * I'd like to search for private experiments shared with me by experiment owners that matches the selection criteria I've provided.
+ * I'd like to search for private datafiles shared with me by experiment owners that matches the selection criteria I've provided.
+ * I'd like to download the associated datafiles of experiments shared with me by experiment owners.
+
+As an Experiment owner...
+ * I'd like to add other registered users as owners to an experiment I own.
+ * I'd like to give other registered users permissions to read/delete/write into the experiment I own.
+ * I'd like the system not to allow non-registered and registered users read/delete/write into the experiment I own if I haven't given them permissions to my experiment.
+ * I'd like to have the last say to making my experiment publicly visible if it was flagged to be eligible to becoming public after it passed the embargo period.
+ * I'd like to provide read access to my experiment if the experiment attribute condition I've set on that experiment is met.
+ * I'd like to provide read/write/delete access to a registered group into my experiment.
+ * I'd like to add a non-existent group and set its group owner if I want to provide access to that group to my experiment.
+ * I'd like the group admin to maintain the members of the group once the group has been created.
+ * I'd like the system not to allow higher level permissions (delete/write) to a user who I specifically wanted to only have read permissions even if that user's permission through a group allows him to perform delete or write via that group membership.
+ * I'd like to be able to change (edit/delete) the permissions I've given a user or group to my experiment.
+
+As a Group admin...
+ * I'd like to add members to my group.
+ * I'd like to add other administrators of my group.
+ * I'd like to delete members from my group.
+
+As an Equipment Scientist...
+ * I'd like to have read permissions on all the experiments that were generated by the beamline I'm managing.
+
+== Pseudo Code ==
+
+Here's are the fields that will map the ExperimentACL to the SessionAuth:
+{{{
+ExperimentACL table:
+	ugs  # Flag indicating foreign key type
+	ugsFK	# Foreign Key to User, Group or SessionAuth
+	...
+
+
+SessionAuth table:
+	pluginName	# Plugin Identifier
+	parameters	# ACL SessionAuth parameter
+}}}
+
+What we are proposing to make the process of finding out if a user has permissions to access a particular experiment is:
+
+# As part of the user logon, Tardis runs all the authorisation plugins to build the list of experiments the user has access to.  This list will be stored in in one of the session dictionary, a SessionAuthCache table or Django's cache (to be determined)
+# When accessing data the list of experiments will be used as part of the selection criteria to determine access.
+
+Say we have vblPlugin and locationPlugin supported, we'll need to run the two processes so an entry in the SessioAuthCache table will be stored.
+{{{
+SessionAuthCache table:
+	sessionID	# my real web session ID
+	userID?
+	expID
+
+for s in <Session Auth ACLs>
+	evaluate plugin
+
+def vblPlugin(request):
+	for expID in request.session['VBL experiments']
+		INSERT INTO SAC
+			(SAC.expID = expID, SAC.userID = user, SAC.sessionID = request.session.id)
+
+
+def LocationPlugin(request):
+	for expID in ExperimentACL.objects.filter(ugs = 'session' and ugsFK.session.pluginName = 'LocationPlugin' AND ugsFK.session.parameters = ipmask(request.IPaddress))
+		INSERT INTO SAC
+			(SAC.expID = expID, SAC.userID = user, SAC.sessionID = request.session.id)
+
+}}}
+
+Once the information we need from the authorisation plugins have been saved in the temporary table, we can then run the following statement to find out if the user has permissions to access the experiment that satisfies his/her search criteria.
+
+{{{
+Search Expression:
+select exp from Experiment, ExpACL, SAC, ...
+WHERE
+	<search criteria match>
+AND
+	((expacl.expID = Experiment.ID AND expacl.ugs = 'user' AND ugsFK = User AND excpacl.read = true)
+	OR
+	(expacl.expID = Experiment.ID AND expacl.ugs = 'group' AND ugsFK.group in User.Groups AND expacl.read = true)
+	OR
+	(SAC.expID = Experiment.ID AND SAC.userID = User))
+}}}

@@ -1,0 +1,103 @@
+#summary Adding support for RIF-CS over OAI-PMH
+
+= Introduction =
+
+This page discusses the issues and proposed solution for supporting harvesting of metadata by ARDC using RIF-CS over OAI-PMH.
+
+
+== RIF-CS Model ==
+
+<img src="http://services.ands.org.au/documentation/rifcs/guidelines/rif-cs-fig1.png" width="600" />
+
+Additional information on RIF-CS is available from the http://www.ands.org.au website, including:
+
+ * [http://www.ands.edu.au/guides/rif-cs-awareness.html RIF-CS and ISO 2146 Awareness]
+ * [http://ands.org.au/guides/content-providers-guide.html Content Providers Guide]
+ * [http://services.ands.org.au/documentation/rifcs/guidelines/rif-cs.html Registry Interchange Format - Collections and Services (RIF-CS)]
+ * [http://ands.org.au/resource/rifcs-provider.html Implementing a RIF-CS OAI-PMH Data Provider]
+
+== RIF-CS Mapping Overview ==
+
+||Party||AS and ANSTO will have Party records for each facility and for relevant permanent staff.  The Investigators home institution will be responsible for creating their own Party records.||
+||Service||Each instrument and beamline at AS and ANSTO will have a service record describing the equipment.||
+||Activity||Activity records are intended to represent major bodies of work, e.g. the entire project associated with a Grant, and not business-as-usual activities.  From the researchers perspective, time at AS or ANSTO is a small portion of the research activity, and from the facilities perspective it is business-as-usual.  As such Activty records  will not normally be created by MyTARDIS.||
+||Collection||A Registry (Collection) mayl be created for each instance of !MyTARDIS (to be determined in conjunction with ANDS).[[BR]]Each Beamline / Instrument Allocation will create at least one Dataset (Collection) (ANDS definition of Dataset, not MyTARDIS).||
+
+Linking Entries:
+
+ * MyTARDIS will ideally create the appropriate relationships between the Datasets (Collections), Parties, Services and Activities.
+ * Links between Collections and 3rd party Parties will be dependent on ANDS providing an appropriate lookup service.
+ * Links between Collections and Activities will be dependent on an appropriate lookup service.
+
+The following relationships will normally be created:
+
+  * isOwnerOf / isOwnedBy:
+    * Collections are owned by the PI or Institution (see above)
+    * Beamlines are owned by the facility (ANSTO).
+  * isCollectorOf / hasCollector
+    * Collections are collected by all the researchers named in the Proposal Database
+  * isManagerOf / isManagedBy:
+    * Collections are managed by ANSTO.
+    * Beamlines are managed by their Principle Scientist
+  * produces / isProducedBy
+    * Collections are produced by the beamline (which is a service in RDA terminology)
+  * isMemberOf:
+    * People are a member of their home institution / facility.
+
+If we are able to find the appropriate Activity for a Collection (unlikely), then we would create the appropriate isOutputOf / hasOutput relationship.
+
+We may also declare MyTARDIS as a Repository in RDA, in which case there would also be isLocatedIn / isLocationFor relationships.  I'll probably leave this to ANDS to decide whether they think this is a good idea.
+
+== Which metadata to make available for harvest? ==
+
+The Tardis authorisation mechanism will be used to determine which experiments / datasets are made public, however it doesn't answer the question of which metadata fields to include in the published description.
+
+The proposed solution is to add support for a number of Publication Profiles in the RIF-CS gateway.  Each Publication Profile will indicate how the data from MeCat is mapped in to RIF-CS, including the fields to be published and the layout of the entry.
+
+== Making Data Available for Harvest ==
+
+Data generated at AS and ANSTO is typically copied from the facility to an institution, either in an ad-hoc manner such as USB drive, or through a more automated process such as TARDIS.  Regardless of the transport mechanism, it is possible, or even likely, that the data will eventually be published in an institutional repository and harvested by ARDC, leading to duplicate entries.
+
+Tardis needs to support rules that determine whether to make data available for harvest based on:
+
+ * Access Controls - is the data public?
+ * Authoritive Source - is the data to be hosted by another institution?
+
+Note that it is possible that the details made available for harvesting may change over time, e.g.:
+
+ 1. Initially the data is completely private
+ 1. Existance of the data, with contact details of the Principle Investigator, is made available
+ 1. The metadata and data is made available for public download
+
+
+== Potential Issues ==
+
+=== Duplicate ARDC Entries ===
+
+As described above (Making Data Available for Harvest), data may be published in multiple locations, leading to the possibility of duplicate entries.
+
+This may not be a bad thing, i.e. if the data is available from two different locations, it may make sense to index both locations.  However, if duplicate entries are acceptable, it should be clear from the ARDC entries that it is the same data simply stored in multiple locations.
+
+Potential solutions to the issue include:
+
+ * Allow multiple entries.[[BR]]As discussed above, it should be clear from the entries that it is the same data being referenced.[[BR]][http://en.wikipedia.org/wiki/Functional_Requirements_for_Bibliographic_Records Functional Requirements for Bibliographic Records] distinguishes between the Work, a number of possible Expressions of the Work, a number of possible Manifestations of the Expressions, and a number of possible Item copies of each Manifestation. In this case, we would be talking about multiple Manifestations, as the local and remote records would not be identical.  This would also allow the institution to add more richness to its local copy if it wished.
+   * Supporting the FRBR model through the use of Handles was investigated in the [http://www.pilin.net.au/Welcome/Welcome.htm PILIN Project].  The support is described in [http://www.pilin.net.au/PILIN_Implementations/About_FRBR.htm PILIN FRBR Tool].
+ * Include a unique identifier in the entries that allows the ARDC harvesting process to detect that duplicate entries exist, and respond appropriately.
+ * Ensure that ARDC only harvests entries from the authorative source.  This would require cooperation between various publishing mechanisms, i.e. TARDIS, MeerKat, etc., and agreement on who the authorative source is, e.g. the Principle Investigator's Institution.
+
+
+=== Finding and linking Party entries ===
+
+Does ARDC provide a lookup mechanism that would allow clients to find Party records based on a unique identifier such as e-mail address?  This would be required to enable automatic linking of entries created by MeCat to the Investigators.
+
+We would want this as a web service.  The web site looks like it has a basic text search, and one that can be limited to a particular entry type (Party, Collection, Activity, Service), but not one that can search particular field types.
+
+=== How are entry modifications delivered? ===
+
+Is the (complete) modified RIF-CS document made available, or is there some form of modification entry just detailing the changes?
+
+== Links ==
+
+ * http://services.ands.org.au/sandbox ARDC Sandbox
+ * http://services.ands.org.au/home/orca/rda/ Research Data Australia
+ * http://trove.nla.gov.au/ NLA Trove
