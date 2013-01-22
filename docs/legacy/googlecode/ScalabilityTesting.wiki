@@ -1,0 +1,246 @@
+#summary Scalability testing requirements.
+
+= Introduction =
+
+This page details the parameters to be used for the architectural review and scalability testing.
+
+
+= Details =
+
+Data from the Australian Synchrotron suggests that Datafiles typically have 10 - 15 parameters associated with them.
+
+Based on sampling at the Australian Synchrotron, experiments typically only contain a few datasets, maybe 6, and may contain up to 20,000 datafiles.
+
+To allow for 10 year growth, and based on the above numbers, scalability testing for TARDIS will assume the following table sizes:
+
+||Table||Record Count||
+||Experiment||20,000||
+||Dataset||60,000||
+||Dataset_File||50,000,000||
+||ExperimentParameterSet||30,000||
+||DatasetParameterSet||80,000||
+||DatafileParameterSet||70,000,000||
+||ExperimentParameter||300,000||
+||DatasetParameter||800,000||
+||DatafileParameter||500,000,000||
+||Schema||100||
+||ParameterName||10,000||
+||ExperimentOwner||100,000||
+||Author||100,000||
+||AuthorExperiment||100,000||
+||UserProfile||60,000||
+
+
+= Method =
+
+
+Our method of testing is based on the following assumptions:
+  * The bottleneck is in processing the vast amount of parameters in the database
+  * There are approximately 700-1200 experiments per year, and an average of 10000  for 10 years
+  * Concurrent usage of the system is not an issue
+
+To test the system, we will pick a representation set of METS (minimum 6) for ingest. Once we have this set, we will do the following:
+
+  # Write a script to take the METS files as input and generate a large amount of parameters in the database. (We can assume that the non-indexed field can just contain repetitive data - to view the index structure of the db, see [MyTardisDBIndexStructure])
+  # Write a script to automate standard operations such as view, edit, download and search for experiments, record the time for each operation in csv format.
+
+There should be 5 iteration cycle, each one with a different (increasing) number of parameters in the database. The numbers should be as follows:
+
+|| Iteration || No. of parameters ||
+|| 1 || 0 ||
+|| 2 || 500,000 ||
+|| 3 || 5 million ||
+|| 4 || 50 million ||
+|| 5 || 500 million ||
+
+We shall automate the tests to run overnight.
+
+= Set Up =
+
+We need the following set up:
+
+  # A CentOS VM to host the myTardis server (see [MyTardisApacheSetup] for details on how to serve up myTardis with Apache)
+  # A real machine to host a postgres database (see [PostgresDBInstructions] for details on how to set up myTardis with a postgres DB)
+  
+The real machine with postgres db has 1TB space
+The server VM has 40GB space
+We use the myTARDIS code from the trunk, SVN revision 2019.
+
+Postgres version: 8.4.7-1
+Apache version: 2.2.3-53
+
+= Implementation =
+
+Here are the different stages of implementation
+
+== Repository Setup ==
+
+We have set up the scalability testing repository in this location:
+
+https://mytardis.googlecode.com/svn/apps/scalability_testing/
+
+Here is a brief outline of the directory structure of this repository:
+
+{{{
+scalability_testing
+  - data
+      + input      <-- this folder should hold sample METS files
+      + output     <-- this folder should hold generated METS files
+  + doc
+  - script   
+     + results     <-- this folder holds the results (including output logs, wget dumps and the recorded times for each wget operation) for each iteration
+     __init__.py
+     generate_data.py <-- this module generates METS files with randomised parameters
+     getallstats.py <-- this script parses through all xml files in /input and get parameters information 
+     ingest.py     <-- this module ingests the randomised METS files
+     main.py       <-- this is the harness script for scalability testing, runs all other scripts
+     operations.py     
+     parse_mets.py
+     randomiser.py
+     util.py
+     README.txt    <-- this is the basic instructions on how the test should be run
+     register.sh   <-- this is the script that ingests METS file
+     sumparams.py  <-- this script does the maths on how many files should be generated for each iteration
+     time_ops.py   <-- this module runs the wget commands and record the time taken
+  __init__.py   
+}}}
+
+== Pre-processing ==
+
+Before we can start running the tests, we need to determine the following
+  * What METS files we want to use
+  * Given the set of METS files, how many files with randomised data do we generate from each of those METS files to make up the number of parameters for each iteration
+
+=== Choose the METS file set ===
+
+We have picked at least 1 METS file from a different Beamline for input, and try registering those files and see if they can be ingested properly. Some have issues of 'None' values in float parameters, we do not use those. 
+
+Here is the list of files we used:
+
+|| filename || size (bytes)|| 
+|| IR_1113.xml || 5828859 ||
+|| IR_1164.xml || 201046 ||
+|| Kowari_689.xml || 196925 ||
+|| mets-1070_SAXS.xml || 5000118 ||
+|| mets-1071_SAXS.xml || 4706934 ||
+|| mets-1115_ir.xml || 115234 ||
+|| mets-1128_SAXS.xml || 1667689 ||
+|| mets-1156_mx.xml || 2771776 ||
+|| mets-1162_SAXS.xml || 11907549 ||
+|| mets-1163_saxs.xml || 11933133 ||
+|| MX_1021.xml || 26112245 ||
+|| MX_1045.xml || 5701893 ||
+|| Platypus_675.xml || 783822 ||
+|| Quokka_673.xml || 4462820 ||
+|| Wombat_687.xml || 141545 ||
+
+Note that we did not use any files from Echidna, because the input METS for Echidna has None for the float parameter `ChemicalAmount`, and thus fails ingestion. 
+
+Once we have this list, we put these files in "/data/input" 
+
+=== Find out how many METS files to generate ===
+
+We now have the necessary input files for generating METS files with randomised parameters, but we need to work out how many do we need to generate for each different METS file.
+
+We use the script "getallstats.py" to get the parameter count for each METS files in the "/data/input" directory. For parameter details of each METS file, please see "/scalability/script/params_stats.txt"
+
+Once we have the numbers (in "params_stats.txt"), we run the script "/scalability/script/sumparams.py" to get the numbers we need for each iteration. Here is the output we got:
+
+{{{
+Total params: 551618
+500,000 params     = 1 file (which makes 551618 params) <-- that's generate 1 file from each MET files in the /input directory
+5,000,000 params   = 9 files (which makes 4964562 params)
+50,000,000 params  = 90 files (which makes 49645620 params)
+500,000,000 params = 906 files (which makes 499765908 params)
+}}}
+
+== Running each iteration cycle ==
+
+For each run, there are 3 phases:
+ # Generate METS files with randomised parameters (output files are stored in "/data/output")
+  # Ingest the METS files generated 
+  # Run the following operations (and record their times in a csv):
+    * ingest 
+    * list experiments
+    * view an experiment
+    * view metadata of an experiment
+    * download METS 
+    * search by title
+    * search by EPN
+    * search by filename (we chose filename searcg on IR datafile)
+    * search by numerical value (we chose "peak from" search on IR datafile)
+    * search by string value (we chose "sampling procedure" search on IR datafile)
+    * (added later) view description tab
+    * (added later) view dataset tab
+    * (added later) view datafile
+    * (added later) view dataset
+    * (added later) view datafile metadata
+    * (added later) view metadata (dataset)
+
+To automate these operations, all apart from "ingest" (we use curl for that, see "/scalability_testing/script/register.sh") we use wget and enables cookie handling. We first do a wget log in, save the cookie, then use the cookie info for the rest of the operations.
+
+On how to run the test harness, please see "scalability_testing/script/README.txt"
+
+== Post-processing ==
+
+Once the script has finished running, you'll get the following artefacts:
+  * \*.html files: these are outputs of the wgets
+  * result_N_params.csv : the recorded times for each wget, N is the number of parameters for that iteration
+
+These files are saved in "scalability_testing/script/results/iterationX", where X is the iteration number, for *non-indexed* db runs, and "scalability_testing/script/results/iterationX_indexed" for *indexed* db runs.
+ 
+You can check the output of each operation run by looking at the corresponding html file (e.g. for the iteration on 500,000 parameters with index, if you want to look at the output 4th run of the search title operation, then see "iteration2_indexed/search_title_4.html")
+
+== Results ==
+
+*First run results:*
+
+||No. of params || Ingest Exp || List Exp || View Exp || View Metadata || Download Exp || Search title || Search EPN || Search Filename || Search Numerical || Search String ||
+||0||127.47314 sec||0.03901 sec||n/a||n/a||n/a||0.22096 sec||0.14870 sec||0.00372 sec||6.54140 sec||0.71611 sec||
+||500,000||128.28417 sec||0.05886 sec||0.11137 sec||0.08104 sec||3.37951 sec||0.22998 sec||0.25583 sec||0.00570 sec||0.04819 sec||0.31942 sec ||
+||5 million||127.15251 sec||0.06651 sec||2.39880 sec||1.19870 sec||42.07138 sec||0.34900 sec||0.21463 sec||15.79082 sec||215.29315 sec||22.76243 sec||
+||50 million||130.14675 sec||0.07268 sec||0.99635 sec||0.46590 sec||41.72872 sec||0.88986 sec||0.25759 sec||n/a (timed-out)||n/a (failed to connect)||n/a (failed to connect)||
+
+After the first run, we decided that the operations need to be run 10 times for comparison purposes, and also that we should include more operations such as view different tabs and exact string match.
+
+*Second run results (with an indexed database):*
+
+The results are in scalability_testing/script/results/all_iterations_results.ods (openoffice format)
+
+== Problems encountered ==
+
+  * Since for 50 million parameters the datafile searches timed out after 20 minutes, we decided to index the datafile's string values, numerical values and date-time values before we proceed any further (and rerun the past iterations with indexed db).
+
+  * After we indexed the database, for iteration 5 (500 million params) whenever we get to datafile searches, there will be this error in the postgres log:
+
+{{{
+STATEMENT:  select count(\*) from tardis_portal_datafileparameter;
+ERROR:  stack depth limit exceeded
+HINT:  Increase the configuration parameter "max_stack_depth", after ensuring the platform's stack depth limit is adequate.
+}}}
+
+Seems like the datafile search query is too 'deep' for postgres to handle with its default stack depth limit.
+
+  * Note that the datafile searches in iteration 4 (indexed) caused the server vm to crash numerous times, and we found out that it is because the vm has an apache patch applied to it which causes apache to chew up all the swap space and RAM very quickly (see http://lwn.net/Articles/456268/).  To fix this and get the datafile searches to not crash the vm, we had to increase swap memory from 512MB to 8G and RAM from 1G to 3G.
+
+  * Note that the server VM kept running out of space when we did ran iteration4 and iteration5, because the var/store directory fills up with datafile related files as we ingest experiments. If they are deleted, then the mets export operation will fail with this error:
+
+{{{
+Traceback (most recent call last):
+  File "/home/devel/mytardis/tardis/tardis_portal/metsexporter.py", line 215, in getTechMDXmlDataForParameterSets
+    b64encode(open(file_path).read())
+IOError: [Errno 2] No such file or directory: u'/var/mytardis/var/store/1/25239a80-a830-4c9f-925d-83dbfeb1fc43'
+}}}
+To free up space however, the mets_upload.xml file in "/var/store/\<exp_id\>/" can be deleted.
+
+  * List experiment operations take more than 20minutes when the list page has the datafile count included for every experiment. This was drastically improved when we took out the datafile count (see "results/iteration4_indexed_run2")
+
+== Analysis of Results ==
+
+  * Ingest Experiment - time taken for this is fairly consistent, range between 120s to 277s.
+  * List Expeirment - takes at most 2.5 for iteration3, and went up drastically for iteration 4. This is due to the datafile count. Once remove the datafile count, it drops to ~8-9s
+  * View Experiment, description tab (ajax call) and dataset tab (ajax call) - taks less than 0.2s consitently
+  * View Datafile, Datafile Metadata and Metadata (all ajax calls) - all pretty quick and under 0.5s.
+  * Search title, search EPN (experiment search) - all fairly consistent, at most 2-3s, but mostly under 1s. 
+  * Search Numerical, search string, and search string exact match - increase as expected from 1 iteration to the next, for iteration4, after the memory problem on the vm was solved (see previous section), string searches (regardless of index) is ~130-140s, and numerical searches range from ~600-900s
+  * Iteration5: datafile searches will not work (see section above).

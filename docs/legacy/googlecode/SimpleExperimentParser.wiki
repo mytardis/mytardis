@@ -1,0 +1,7 @@
+= Introduction =
+
+The simple experiment parser (class ProcessExperiment.py method process_simple()) was extremely hastily written to meet a deadline. It needs a complete rewrite.
+
+= Details =
+
+Open to suggestions of the best way to go (ie. best XML parser and method of reading). I understand that others have been looking into this. Consensus will be reported here.

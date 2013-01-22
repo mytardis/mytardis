@@ -1,0 +1,19 @@
+#summary There are some crystallography-specific database tables that need removal and incorporation into a more generic structure
+
+== Tables for Removal ==
+
+Pdbid (protein databank), Citation
+
+== Proposed Solution ==
+
+Pdbid and citation are simple textual key-value parameters that should be stored alongside an experiment. Currently one can only store parameters associated with a datafile and a dataset. There'll need to be support built for storing parameters at experiment level also.
+
+This would require modification of:
+
+Experiment parser(s)
+Database models
+Database insertion code
+Search code
+Visual Templates
+
+Though this may look painful, it's not a major change.

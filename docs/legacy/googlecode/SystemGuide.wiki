@@ -1,0 +1,37 @@
+#summary System Guide
+
+= Software Architecture =
+
+myTARDIS is built on these technologies:
+  * Apache HTTP
+  * mod_wsgi
+  * Python 2.6
+  * Django 1.1.1
+  * A Django-supported database (Mysql, PostgreSQL, Oracle etc)
+
+And these python modules:
+  * python-ldap
+  * django_extensions
+  * django-registration
+  * suds
+  * lxml
+
+= System Diagrams =
+MyTARDIS is designed to catalog data and metadata from one or multiple scientific instruments at a facility, then pass on that data and the relevant metadata to the institution that has ownership of the experiment. Data flowing out of an instrument and residing at an institution will also be captured and catalogued at the facility. These diagrams describe in some detail how this works.
+
+== Data flows from the instrument to be captured at its home facilty (eg. Australian Synchrotron) ==
+Data collected using a scientific instrument (such as a beamline) automatically goes to a data store at the faciilty. Metadata is collected about the data and its experiment and subsequently sent as XML text via a RESTful web service to myTARDIS to be catalogued locally.
+
+http://tardis.edu.au/site_media/images/mytardis_guide/myTARDIS_data_flow_facility.png
+
+== Data flows from myTARDIS at the facility to the owning institution (eg. Monash University) ==
+Once metadata is catalogued at the facility (see previous diagram), a master list of myTARDIS' deployed at institutions is downloaded and analysed to determine whether a copy of the experiment collected can be forwarded to its home institution. If this is the case, the metadata is forwarded on via web service to the recipient myTARDIS, and a transfer web service (SOAP) is evoked at the facility to transfer that data to the home institution.
+
+http://tardis.edu.au/site_media/images/mytardis_guide/myTARDIS_data_flow_institution.png
+
+== Users downloading data held at the facilty, or the institution ==
+Users wishing to download data straight from the facility can log in and click 'download' on an individual file, group of files or the entire experiment (see user guide). A transfer service is evoked (SOAP) and data can be downloaded to the user's desktop.
+
+Users wishing to download data straight from their home institution can log in and click 'download' on an individual file, group of files or the entire experiment (see user guide). Files can be locally downloaded straight off the web site.
+
+http://tardis.edu.au/site_media/images/mytardis_guide/myTARDIS_data_flow_user.png

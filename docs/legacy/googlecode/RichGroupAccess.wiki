@@ -1,0 +1,49 @@
+= Introduction =
+
+Experiment access is determined by creating groups with labelled with the experiment id. Bad practice and has implications for dataset level / user group access improvements
+
+= Details =
+
+Currently if experiment id 5 is created and ingested, a group called ‘5’ will be created and the experiment owner will be added to that group. Groups can have any name (it’s just a text label) and so shouldn’t be mapping to numeric keys such as experiment_id.
+
+Originally I built this to work with django’s built in groups system, but it’s apparent that TARDIS will need its own model structure and logic for groups once datasets themselves have their own access rules, and the definition of a group of users arises.
+
+To be more clear, it's proposed that access can be controlled to:
+
+  * Experiments
+  * Datasets
+
+(Datafiles was deemed unnecessary and too computationally expensive)
+
+Access should be able to be granted to:
+
+  * Individual users
+  * Groups of users
+
+Django currently has 2 default models:
+  * User
+  * Group
+
+TARDIS has 2 models:
+  * Experiment
+  * Dataset
+
+That need defined access.
+
+So perhaps 4 new models called:
+
+ExperimentUserAccess with the fields:
+  * Experiment
+  * User
+
+DatasetUserAccess with the fields:
+  * Experiment
+  * User
+
+ExperimentGroupAccess with the fields:
+  * Experiment
+  * Group
+
+DatasetGroupAccess with the fields:
+  * Experiment
+  * Group

@@ -1,0 +1,108 @@
+#summary The steps to setting up myTardis with a postgres DB
+
+Here is a step by step guide to building myTardis with a postgres database:
+
+= 0. Pre-requisites =
+
+Please make sure you have these installed:
+
+  * Postgres 8.4
+  * libpq8.4-devel
+
+(You can try it with any version of postgres greater than 8.4, but I don't guarantee that it'll work)
+
+= 1. Change your Settings in myTARDIS =
+
+You can either create a new "settings.py" file, or modify your working copy. *If you create a new one, make sure you point to it in your "buildout-dev.cfg"*
+
+In your settings file, make sure you have the following parameters:
+{{{
+DATABASES['default']['NAME'] = 'tardis_db'
+DATABASES['default']['USER'] = 'tardis'
+DATABASES['default']['PASSWORD'] = 'tardis'
+DATABASES['default']['HOST'] = 'localhost'
+}}}
+
+The value for `DATABASES['default']['HOST']` is 'localhost' *only if* you are installing your db on the same machine as your myTARDIS server. Otherwise, put the IP address of where you have your db for this parameter.
+
+= 2. Create database user =
+
+Run this command (then follow the prompt as below) to create a user:
+{{{
+createuser -P tardis
+Enter password for new role: tardis
+Enter it again: 
+Shall the new role be a superuser? (y/n) n
+Shall the new role be allowed to create databases? (y/n) y
+Shall the new role be allowed to create more new roles? (y/n) n
+}}}
+
+= 3. Create your database =
+
+Create a database called "tardis_db" by running the following commands:
+{{{
+ sudo su - postgres
+ createdb -O tardis tardis_db
+}}}
+
+Now if you run "psql -l", you should see:
+{{{
+   Name    |  Owner   | Encoding |  Collation  |    Ctype    |   Access privileges   
+-----------+----------+----------+-------------+-------------+------------
+ postgres  | postgres | UTF8     | en_US.UTF-8 | en_US.UTF-8 |  
+ tardis_db | tardis   | UTF8     | en_US.UTF-8 | en_US.UTF-8 | 
+}}}
+
+= Optional Step: Change your postgres config =
+
+* You only need to do this if your db and the myTARDIS server is on different machines *
+
+  # Run "sudo su - postgres"
+  # Edit the file "data/postgresql.conf"
+  # Look for this line, uncomment and make this change:
+{{{
+listen_addresses = '*'          # what IP address(es) to listen on;
+}}}
+  # Now edit "data/pg_hba.conf"
+  # Make sure the file has these entries:
+{{{
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+local   tardis_db   tardis                            md5
+local   all         postgres                          md5
+# "local" is for Unix domain socket connections only
+local   all         all                               ident
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          ident
+# IPv6 local connections:
+host    all         all         ::1/128               ident
+host    all         all         <tardis_server_ip_here>/0          md5
+}}}
+  # Restart postgres: "sudo /sbin/service postgresql restart"
+
+= 4. Run buildout =
+
+Go to myTARDIS and run the following command to build the database:
+  # ./bin/buildout
+  # ./bin/django syncdb  (if this throws an error, you may need to install libpq-dev package)
+  # ./bin/django migrate
+
+Now if you run "psql tardis_db", then "\d", you should see something like this:
+
+{{{
+                            List of relations
+ Schema |                    Name                     |   Type   | Owner  
+--------+---------------------------------------------+----------+--------
+ public | auth_group                                  | table    | tardis
+ public | auth_group_id_seq                           | sequence | tardis
+ public | auth_group_permissions                      | table    | tardis
+ public | auth_group_permissions_id_seq               | sequence | tardis
+ public | auth_message                                | table    | tardis
+ public | auth_message_id_seq                         | sequence | tardis
+ public | auth_permission                             | table    | tardis
+ public | auth_permission_id_seq                      | sequence | tardis
+ public | auth_user                                   | table    | tardis
+         :
+         etc.
+}}}
+
+Your database is now fully set up. Now you should create a superuser by doing `./bin/django createsuperuser` and follow the prompt.
