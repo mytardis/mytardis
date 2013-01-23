@@ -147,13 +147,14 @@ class StagingHook():
 def stage_file(datafile):
     from django.core.files.uploadedfile import TemporaryUploadedFile
     with TemporaryUploadedFile(datafile.filename, None, None, None) as tf:
-        if datafile.verify(tempfile=tf.file):
+        if datafile.verify(tempfile=tf.file, allowEmptyChecksums=True):
             tf.file.flush()
             datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
             datafile.protocol = ''
             datafile.save()
             return True
         else:
+            logger.warning("Stage_file failed to verify file %s " % datafile.filename)
             return False
 
 def get_sync_root(prefix = ''):
