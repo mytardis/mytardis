@@ -95,6 +95,12 @@ exclude_trees = ['.build']
 pygments_style = 'sphinx'
 
 
+# API doc generation
+# ------------------
+
+execfile("generate-api-docs.py")
+
+
 # Options for HTML output
 # -----------------------
 

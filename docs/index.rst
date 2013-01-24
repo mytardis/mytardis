@@ -78,7 +78,7 @@ Development
    changes
    contributing
 
-   pydoc/index
+   Source Code Documentation <pydoc/modules>
 
 Indices and tables
 ==================
