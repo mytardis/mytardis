@@ -147,6 +147,7 @@ class MigrationTestCase(TestCase):
 
     def testMigrateRestore(self):
         dest = Destination.get_destination('test')
+        local = Destination.get_destination('local')
         datafile, replica = generate_datafile(None, self.dataset, "Hi mum",
                                               verify=False)
 
@@ -165,7 +166,8 @@ class MigrationTestCase(TestCase):
 
         # Bring it back
         url = datafile.url
-        self.assertTrue(restore_replica(replica))
+        self.assertTrue(migrate_replica(datafile.get_preferred_replica(), 
+                                        local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
         try:

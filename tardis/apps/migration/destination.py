@@ -32,68 +32,58 @@ import urllib2
 from django.conf import settings
 
 from tardis.apps.migration import MigrationError
-
+from tardis.tardis_portal.models import Location
 
 class Destination:
 
-    destinations = None
+    destinations = {}
     
     @classmethod
     def clear_destinations_cache(cls):
-        cls.destinations = None
+        cls.destinations = {}
 
     @classmethod
     def get_destination(cls, name):
         try:
-            return cls._get_destinations()[name]
+            return cls.destinations[name]
         except KeyError:
+            dest = cls._load_destination(name)
+            if dest:
+                cls.destinations[name] = dest
+                return dest
             raise ValueError('Unknown destination %s' % name)
 
     @classmethod
-    def _get_destinations(cls):
-        if cls.destinations == None:
-            if len(settings.MIGRATION_DESTINATIONS) == 0:
-                raise MigrationError("No destinations have been configured")
-            cls.destinations = {}
-            for d in settings.MIGRATION_DESTINATIONS:
-                cls.destinations[d['name']] = Destination(d)
-        return cls.destinations
-
-    @classmethod
-    def identify_destination(cls, url):
-        for d in cls._get_destinations().values():
-            if d.provider.url_matches(url):
-                return d
-        return None
-
-    def __init__(self, descriptor):
-        self.name = descriptor['name']
-        self.base_url = descriptor['base_url']
-        self.trust_length = descriptor.get('trust_length', False)
-        self.datafile_protocol = descriptor.get('datafile_protocol', '')
-        self.metadata_supported = descriptor.get('metadata_supported', False)
-        
-        user = descriptor.get('user')
-        if user:
-            password = descriptor.get('password', '')
-            realm = descriptor.get('realm', None)
-            auth = descriptor.get('auth', 'digest')
+    def _load_destination(cls, name):
+        loc = Location.get_location(name);
+        if not loc:
+            return None
+        dest = Destination()
+        dest.loc_id = loc.id
+        dest.name = loc.name
+        dest.base_url = loc.url
+        dest.trust_length = loc.trust_length
+        dest.metadata_supported = loc.metadata_supported
+        if loc.auth_user:
             password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            password_mgr.add_password(realm, self.base_url, user, password)
-            if auth == 'basic':
+            password_mgr.add_password(loc.auth_realm, dest.base_url, 
+                                      loc.auth_user, loc.auth_password)
+            if loc.auth_scheme == 'basic':
                 handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-            elif auth == 'digest':
+            elif loc.auth_scheme == 'digest':
                 handler = urllib2.HTTPDigestAuthHandler(password_mgr)
             else:
-                raise ValueError('Unknown auth type "%s"' % auth)
-            self.opener = urllib2.build_opener(handler)
+                raise ValueError('Unknown auth type "%s"' % loc.auth_scheme)
+            dest.opener = urllib2.build_opener(handler)
         else:
-            self.opener = urllib2.build_opener()
+            dest.opener = urllib2.build_opener()
 
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
-            'self.provider = ' + \
-            settings.MIGRATION_PROVIDERS[descriptor['transfer_type']] + \
-                '(self.name, self.base_url, self.opener, ' + \
-                'metadata_supported=self.metadata_supported)'
+            'dest.provider = ' + \
+            settings.MIGRATION_PROVIDERS[loc.migration_provider] + \
+                '(loc.name, loc.url, dest.opener, ' + \
+                'metadata_supported=loc.metadata_supported)'
+
+        return dest
 

@@ -33,6 +33,7 @@ from urlparse import urlparse
 import os
 
 from django.conf import settings
+from django.db import transaction
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.tardis_portal.staging import stage_replica
@@ -54,7 +55,7 @@ def migrate_replica_by_id(replica_id, destination,
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Replica
     
-    replica = Replica.objects.select_for_update().get(id=replica_id)
+    replica = Replica.objects.get(id=replica_id)
     if not datafile:
         raise ValueError('No such replica (%s)' % (replica_id))
     return migrate_datafile(datafile, destination, 
@@ -71,43 +72,59 @@ def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
     removed from the current location, and the datafile metadata will be
     updated to reflect this.
     """
-    
-    if not replica.is_local():
-        return False
 
-    if not replica.verified or destination.trust_length:
-        raise MigrationError('Only verified datafiles can be migrated' \
-                                 ' to this destination')
-    target_url = destination.provider.generate_url(replica)
-    if target_url == replica.url:
-        # We should get here ...
-        raise MigrationError('Cannot migrate a replica to its' \
-                                 ' current location')
-    
-    destination.provider.put_file(replica, target_url) 
+    from tardis.tardis_portal.models import Replica, Location
 
-    try:
-        check_file_transferred(replica, destination, target_url)
-    except:
-        # FIXME - should we always do this?
-        destination.provider.remove_file(target_url)
-        raise
+    with transaction.commit_on_success():
+        replica = Replica.objects.select_for_update().get(pk=replica.pk)
+        location = Location.objects.get(pk=destination.loc_id)
+        
+        if not replica.verified or destination.trust_length:
+            raise MigrationError('Only verified datafiles can be migrated' \
+                                     ' to this destination')
+        
+        if Replica.objects.filter(datafile=replica.datafile,
+                                  location__id=destination.loc_id):
+            raise MigrationError('A replica already exists at the destination')
+        
+        target_url = destination.provider.generate_url(replica)
+        if target_url == replica.url:
+            # We should get here ...
+            raise MigrationError('Cannot migrate a replica to its' \
+                                     ' current location')
+        
+        destination.provider.put_file(replica, target_url) 
+        verified = False
+        try:
+            verified = check_file_transferred(replica, destination, target_url)
+        except:
+            # FIXME - should we always do this?
+            destination.provider.remove_file(target_url)
+            raise
 
-    if noUpdate:
-        return True
-
-    filename = replica.get_absolute_filepath()
-    replica.url = target_url
-    replica.protocol = destination.datafile_protocol
-    replica.save()
-    logger.info('Migrated file %s for replica %s' %
-                (filename, replica.id))
-    # FIXME - do this more reliably ...
-    if not noRemove:
-        os.remove(filename)
-        logger.info('Removed local file %s for replica %s' %
+        newreplica = Replica()
+        newreplica.datafile = replica.datafile
+        newreplica.url = target_url
+        newreplica.protocol = ''
+        newreplica.verified = verified
+        newreplica.location = location
+        newreplica.stay_remote = location != Location.get_default_location()
+        newreplica.save()
+        
+        if noUpdate:
+            return True
+        
+        filename = replica.get_absolute_filepath()
+        logger.info('Migrated file %s for replica %s' %
                     (filename, replica.id))
-    return True
+    
+        # FIXME - do this more reliably ...
+        if not noRemove:
+            replica.delete()
+            os.remove(filename)
+            logger.info('Removed local file %s for replica %s' %
+                        (filename, replica.id))
+        return True
 
 def restore_datafile_by_id(replica_id, noRemove=False):
     raise Exception('tbd')
@@ -171,10 +188,11 @@ def check_file_transferred(replica, destination, target_url):
         # Fetch the remote's metadata for the file
         m = destination.provider.get_metadata(target_url)
         if _check_attribute(m, datafile.sha512sum, 'sha512sum') or \
-               _check_attribute(m, datafile.md5sum, 'md5sum') or \
-               (destination.trust_length and \
-                 _check_attribute(m, datafile.length, 'length')) :
-            return
+               _check_attribute(m, datafile.md5sum, 'md5sum'):
+            return True
+        if destination.trust_length and \
+                 _check_attribute(m, datafile.length, 'length') :
+            return False
         raise MigrationError('Not enough metadata for verification')
     except NotImplementedError:
         pass
@@ -187,7 +205,7 @@ def check_file_transferred(replica, destination, target_url):
         try:
             length = destination.provider.get_length(target_url)
             if _check_attribute2(length, datafile.length, 'length'):
-                return
+                return False
         except NotImplementedError:
             pass
     
@@ -196,7 +214,7 @@ def check_file_transferred(replica, destination, target_url):
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
-        return
+        return True
     raise MigrationError('Not enough metadata for file verification')
     
 def _check_attribute(attributes, value, key):

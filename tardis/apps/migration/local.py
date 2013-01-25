@@ -36,23 +36,7 @@ from django.utils import simplejson
 
 from .base import MigrationError, MigrationProviderError, TransferProvider
 
-class SimpleHttpTransfer(TransferProvider):
-    class HeadRequest(Request):
-        def get_method(self):
-            return 'HEAD'
-    
-    class PutRequest(Request):
-        def get_method(self):
-            return 'PUT'
-    
-    class GetRequest(Request):
-        def get_method(self):
-            return 'GET'
-    
-    class DeleteRequest(Request):
-        def get_method(self):
-            return 'DELETE'
-    
+class LocalTransfer(TransferProvider):
     def __init__(self, name, base_url, opener, metadata_supported=False):
         TransferProvider.__init__(self, name)
         if not base_url.endswith('/'):
@@ -62,27 +46,16 @@ class SimpleHttpTransfer(TransferProvider):
         self.opener = opener
 
     def get_length(self, url):
-        self._check_url(url)
-        response = self.opener.open(self.HeadRequest(url))
-        length = response.info().get('Content-length')
-        if length is None:
-            raise MigrationProviderError("No content-length in response")
-        try:
-            return int(length)
-        except TypeError:
-            raise MigrationProviderError("Content-length is not numeric")
+        filename = self._url_to_filename(url)
+        raise Exception('tbd')
         
     def get_metadata(self, url):
-        if not self.metadata_supported:
-            raise NotImplementedError
-        self._check_url(url)
-        response = self.opener.open(self.GetRequest(url + "?metadata"))
-        return simplejson.load(response)
+        filename = self._url_to_filename(url)
+        raise Exception('tbd')
     
     def get_file(self, url):
-        self._check_url(url)
-        response = self.opener.open(self.GetRequest(url))
-        return response.read()
+        filename = self._url_to_filename(url)
+        raise Exception('tbd')
     
     def generate_url(self, replica):
         url = urlparse(replica.url)
@@ -95,20 +68,16 @@ class SimpleHttpTransfer(TransferProvider):
         return url.startswith(self.base_url)
     
     def put_file(self, replica, url):
-        self._check_url(url)
-        with replica.get_file() as f:
-            content = f.read()
-        request = self.PutRequest(url)
-        request.add_header('Content-Length', str(len(content)))
-        request.add_header('Content-Type', replica.datafile.mimetype)
-        response = self.opener.open(request, data=content)
+        filename = self._url_to_filename(url)
+        raise Exception('tbd')
     
     def remove_file(self, url):
-        self._check_url(url)
-        self.opener.open(self.DeleteRequest(url))
+        filename = self._url_to_filename(url)
+        raise Exception('tbd')
 
-    def _check_url(self, url):
+    def _url_to_filename(self, url):
         if not url.startswith(self.base_url):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination') % (url, self.name))
+        return ''
 

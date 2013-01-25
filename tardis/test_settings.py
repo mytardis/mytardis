@@ -271,28 +271,30 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                      {'name': 'staging',
                       'url': 'file:/' + STAGING_PATH,
                       'type': 'external',
-                      'priority': 5}]
-
-MIGRATION_DESTINATIONS = [{'name': 'test', 
-                           'transfer_type': 'http',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'metadata_supported': True,
-                           'base_url': 'http://127.0.0.1:4272/data/'},
-                          {'name': 'test2', 
-                           'transfer_type': 'dav',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'base_url': 'http://127.0.0.1/data/'},
-                          {'name': 'test3', 
-                           'transfer_type': 'dav',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'user' : 'datameister',
-                           'password' : 'geheimnis',
-                           'auth' : 'basic',
-                           'realm' : 'wunderland',
-                           'base_url': 'http://127.0.0.1/data/'}]
+                      'priority': 5},
+                     {'name': 'test', 
+                      'provider': 'http',
+                      'trust_length': False,
+                      'metadata_supported': True,
+                      'url': 'http://127.0.0.1:4272/data/',
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'test2', 
+                      'provider': 'dav',
+                      'trust_length': False,
+                      'url': 'http://127.0.0.1/data/',
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'test3', 
+                      'provider': 'dav',
+                      'trust_length': False,
+                      'user' : 'datameister',
+                      'password' : 'geheimnis',
+                      'auth' : 'basic',
+                      'realm' : 'wunderland',
+                      'url': 'http://127.0.0.1/data/',
+                      'type': 'online',
+                      'priority': 10}]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'
 
@@ -306,4 +308,5 @@ MIGRATION_SCORING_PARAMS = {
     'file_age_weighting': 0.0}
 
 MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
-                       'dav': 'tardis.apps.migration.WebDAVTransfer'}
+                       'dav': 'tardis.apps.migration.WebDAVTransfer',
+                       'local': 'tardis.apps.migration.LocalTransfer'}

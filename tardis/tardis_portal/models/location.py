@@ -26,6 +26,15 @@ class Location(models.Model):
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
+    trust_length = models.BooleanField(default=False)
+    metadata_supported = models.BooleanField(default=False)
+    auth_user = models.CharField(max_length=20, default='')
+    auth_password = models.CharField(max_length=400, default='')
+    auth_realm = models.CharField(max_length=20, default='')
+    auth_scheme = models.CharField(max_length=10, default='digest')
+    migration_provider = models.CharField(max_length=10, default='local')
+
+    initialized = False
 
     class Meta:
         app_label = 'tardis_portal'
@@ -43,21 +52,29 @@ class Location(models.Model):
         return Location.get_location(settings.DEFAULT_LOCATION)
 
     @classmethod
-    def get_location(cls, loc_name, retrying=False):
+    def get_location(cls, loc_name):
         '''Lookup a named location'''
+
+        cls._check_initialized()
         try:
             return Location.objects.get(name=loc_name)
         except Location.DoesNotExist:
-            # Lazy initialization.  We could use a 'fixture' but then
-            # it would be difficult to integrate with other stuff in the 
-            # settings file; e.g. the store and staging directory pathnames.
-            if not retrying and \
-                    (loc_name == settings.DEFAULT_LOCATION or \
-                     not Location.get_location(settings.DEFAULT_LOCATION, \
-                                                   retrying=True)):
-                for desc in settings.INITIAL_LOCATIONS:
-                    Location.objects.get_or_create(name=desc['name'],
-                                                   url=desc['url'],
-                                                   type=desc['type'],
-                                                   priority=desc['priority'])
-                return Location.get_location(loc_name, retrying=True)
+            return None
+
+    @classmethod
+    def _check_initialized(cls):
+        if not cls.initialized:
+            for desc in settings.INITIAL_LOCATIONS:
+                Location.objects.get_or_create(\
+                    name=desc['name'],
+                    url=desc['url'],
+                    type=desc['type'],
+                    priority=desc['priority'],
+                    migration_provider=desc.get('provider', 'local'),
+                    trust_length=desc.get('trust_length', False),
+                    metadata_supported=desc.get('metadata_supported', False),
+                    auth_user=desc.get('user', ''),
+                    auth_password=desc.get('password', ''),
+                    auth_realm=desc.get('realm', ''),
+                    auth_scheme=desc.get('scheme', 'digest'))
+            #cls.initialized = True
