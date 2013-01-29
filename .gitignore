@@ -24,3 +24,4 @@ docs/Makefile
 /static/
 var/
 versions.cfg
+docs/pydoc
