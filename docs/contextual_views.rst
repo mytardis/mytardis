@@ -44,12 +44,3 @@ Currently, the default view is always ``Dataset_File`` metadata. This
 can be changed, for example, by developing a custom ``Dataset`` view,
 which is explained in the following chapter.
 
-Dataset Views
-=============
-
-Rationale
----------
-
-User Guide
-----------
-
