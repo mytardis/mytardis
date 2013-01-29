@@ -135,6 +135,8 @@ json_urls = patterns(
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
+    (r'^datafile_details/(?P<dataset_file_id>\d+)/$',
+     'display_datafile_details'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
         'retrieve_experiment_metadata'),
@@ -276,4 +278,3 @@ if settings.DEBUG:
             'document_root': path.abspath(path.join(path.dirname(__file__),'..',"docs/html/")),
         }),
    )
-
