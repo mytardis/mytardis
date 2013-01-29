@@ -50,10 +50,12 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
+from django.test.utils import override_settings
+
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ExperimentACL, Experiment, Dataset, Dataset_File
+    ExperimentACL, Experiment, Dataset, Dataset_File, Schema, DatafileParameterSet
 
 
 class UploadTestCase(TestCase):
@@ -748,16 +750,66 @@ class ExperimentTestCase(TestCase):
             expect(response.status_code).to_equal(404)
 
 
+class ContextualViewTest(TestCase):
 
+    def setUp(self):
+        """
+        setting up essential objects, copied from tests above
+        """
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)
+        self.userProfile = UserProfile(user=self.user)
+        self.exp = Experiment(title='test exp1',
+                              institution_name='monash', created_by=self.user)
+        self.exp.save()
+        self.acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=self.exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        self.acl.save()
+        self.dataset = Dataset(description='dataset description...')
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp)
+        self.dataset.save()
 
+        self.dataset_file = Dataset_File(dataset=self.dataset)
+        self.dataset_file.save()
 
+        self.testschema = Schema(namespace="http://test.com/test/schema",
+                                 name="Test View",
+                                 type=Schema.DATAFILE,
+                                 hidden=True)
+        self.testschema.save()
+        self.dfps = DatafileParameterSet(dataset_file=self.dataset_file,
+                                         schema=self.testschema)
+        self.dfps.save()
 
-
-
-
-
-
-
-
-
-
+    def tearDown(self):
+        self.user.delete()
+        self.exp.delete()
+        self.dataset.delete()
+        self.dataset_file.delete()
+        self.testschema.delete()
+        self.dfps.delete()
+        self.acl.delete()
+        
+    def testDetailsDisplay(self):
+        """
+        test display of view for an existing schema and no display for an undefined one.
+        """
+        from tardis.tardis_portal.views import display_datafile_details
+        from flexmock import flexmock
+        request = flexmock(user=self.user, groups=[("testgroup",flexmock())])
+        with self.settings(DATAFILE_VIEWS=[("http://test.com/test/schema", "/test/url"),
+                                           ("http://does.not.exist", "/false/url")]):
+            response = display_datafile_details(request, dataset_file_id=self.dataset_file.id)
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue("/ajax/parameters/" in response.content)
+            self.assertTrue("/test/url" in response.content)
+            self.assertFalse("/false/url" in response.content)

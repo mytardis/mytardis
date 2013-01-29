@@ -1028,6 +1028,44 @@ def register_experiment_ws_xmldata(request):
 
 @never_cache
 @authz.datafile_access_required
+def display_datafile_details(request, dataset_file_id):
+    """
+    Displays a box, with a list of interaction options depending on
+    the file type given and displays the one with the highest priority
+    first.
+    Views are set up in settings. Order of list is taken as priority.
+    Given URLs are called with the datafile id appended.
+    """
+    # retrieve valid interactions for file type
+    the_file = Dataset_File.objects.get(id=dataset_file_id)
+    the_schemas = [p.schema.namespace for p in the_file.getParameterSets()]
+    default_view = "Datafile Metadata"
+    apps = [
+        (default_view, '/ajax/parameters'), ]
+    if hasattr(settings, "DATAFILE_VIEWS"):
+        apps += settings.DATAFILE_VIEWS
+
+    views = []
+    for ns, url in apps:
+        if ns == default_view:
+            views.append({"url": "%s/%s" % (url, dataset_file_id),
+                          "name": default_view})
+        elif ns in the_schemas:
+            schema = Schema.objects.get(namespace__exact=ns)
+            views.append({"url": "%s/%s" % (url, dataset_file_id),
+                          "name": schema.name})
+    context = Context({
+        'datafile_id': dataset_file_id,
+        'views': views,
+    })
+    return HttpResponse(render_response_index(
+        request,
+        "tardis_portal/ajax/datafile_details.html",
+        context))
+
+
+@never_cache
+@authz.datafile_access_required
 def retrieve_parameters(request, dataset_file_id):
 
     parametersets = DatafileParameterSet.objects.all()
