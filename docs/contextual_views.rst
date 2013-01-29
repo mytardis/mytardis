@@ -41,6 +41,5 @@ steps are needed:
                        "/apps/awesome-view/view"),]
 
 Currently, the default view is always ``Dataset_File`` metadata. This
-can be changed, for example, by developing a custom ``Dataset`` view,
-which is explained in the following chapter.
+can be changed, for example, by developing a custom ``Dataset`` view.
 
