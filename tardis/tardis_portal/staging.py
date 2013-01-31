@@ -49,8 +49,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 def get_dataset_path(dataset):
-    return path.join(str(dataset.get_first_experiment().id),
-                     str(dataset.id))
+    return dataset.get_path()
 
 def staging_traverse(staging=settings.STAGING_PATH):
     """Recurse through directories and form HTML list tree for jtree

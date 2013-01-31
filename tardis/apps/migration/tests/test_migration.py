@@ -194,7 +194,7 @@ class MigrationTestCase(TestCase):
         datafile, replica = generate_datafile(None, self.dataset, "Hi granny")
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
-        url = dest.provider.generate_url(datafile)
+        url = dest.provider.generate_url(replica)
 
         try:
             dest.provider.get_length(url)
@@ -211,6 +211,7 @@ class MigrationTestCase(TestCase):
 
     def testMigrateStoreWithSpaces(self):
         dest = Destination.get_destination('test')
+        local = Destination.get_destination('local')
         
         datafile, replica = generate_datafile('1/1/Hi Mum', self.dataset, 
                                               "Hi mum")
@@ -229,9 +230,9 @@ class MigrationTestCase(TestCase):
         self.assertFalse(os.path.exists(path2))
 
         # Bring them back
-        restore_replica(replica)
+        migrate_replica(datafile.get_preferred_replica(), local)
         self.assertTrue(os.path.exists(path))
-        restore_replica(replica2)
+        migrate_replica(datafile2.get_preferred_replica(), local)
         self.assertTrue(os.path.exists(path2))
 
 

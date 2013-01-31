@@ -87,28 +87,30 @@ def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
                                   location__id=destination.loc_id):
             raise MigrationError('A replica already exists at the destination')
         
-        target_url = destination.provider.generate_url(replica)
-        if target_url == replica.url:
+        newreplica = Replica()
+        newreplica.location = location
+        newreplica.datafile = replica.datafile
+        newreplica.protocol = ''
+        newreplica.stay_remote = location != Location.get_default_location()
+        newreplica.verified = False
+        url = destination.provider.generate_url(newreplica)
+
+        if newreplica.url == url:
             # We should get here ...
             raise MigrationError('Cannot migrate a replica to its' \
                                      ' current location')
+        newreplica.url = url
         
-        destination.provider.put_file(replica, target_url) 
+        destination.provider.put_file(replica, newreplica) 
         verified = False
         try:
-            verified = check_file_transferred(replica, destination, target_url)
+            verified = check_file_transferred(replica, destination, url)
         except:
             # FIXME - should we always do this?
-            destination.provider.remove_file(target_url)
+            destination.provider.remove_file(url)
             raise
 
-        newreplica = Replica()
-        newreplica.datafile = replica.datafile
-        newreplica.url = target_url
-        newreplica.protocol = ''
         newreplica.verified = verified
-        newreplica.location = location
-        newreplica.stay_remote = location != Location.get_default_location()
         newreplica.save()
         
         if noUpdate:

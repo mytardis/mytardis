@@ -28,11 +28,13 @@
 #
 
 from urllib2 import Request, HTTPError
-from urllib import quote
+from urllib import quote, unquote
 from urlparse import urlparse, urljoin
 import os
 
 from django.utils import simplejson
+from django.conf import settings
+from tardis.tardis_portal.staging import stage_replica
 
 from .base import MigrationError, MigrationProviderError, TransferProvider
 
@@ -47,7 +49,7 @@ class LocalTransfer(TransferProvider):
 
     def get_length(self, url):
         filename = self._url_to_filename(url)
-        raise Exception('tbd')
+        return os.path.getsize(filename)
         
     def get_metadata(self, url):
         filename = self._url_to_filename(url)
@@ -58,26 +60,32 @@ class LocalTransfer(TransferProvider):
         raise Exception('tbd')
     
     def generate_url(self, replica):
-        url = urlparse(replica.url)
-        if url.scheme == '' or url.scheme == 'file':
-            return urljoin(self.base_url, quote(url.path))
-        raise MigrationProviderError("Cannot generate a URL from '%s'" \
-                                         % replica.url)
+        return replica.generate_default_url()
 
     def url_matches(self, url):
         return url.startswith(self.base_url)
     
-    def put_file(self, replica, url):
-        filename = self._url_to_filename(url)
-        raise Exception('tbd')
+    def put_file(self, source_replica, target_replica):
+        target_replica.url = source_replica.url
+        if not stage_replica(target_replica):
+            raise MigrationProviderError(
+                'Staging from url %s to local replica failed' % 
+                source_replica.url)
     
     def remove_file(self, url):
         filename = self._url_to_filename(url)
-        raise Exception('tbd')
+        os.remove(filename)
 
     def _url_to_filename(self, url):
+        print '_url_to_filename: %s %s\n' % (url, self.base_url)
+        # This is crude and possibly fragile.
         if not url.startswith(self.base_url):
             raise MigrationProviderError(('The url (%s) does not belong to' \
-                                ' the %s destination') % (url, self.name))
-        return ''
+                                ' the %s destination (url %s)') % \
+                                             (url, self.name, self.base_url))
+        parts = urlparse(url)
+        if parts.scheme == 'file':
+            return unquote('/%s/%s' % (parts.netloc, parts.path))
+        else:
+            return settings.FILE_STORE_PATH + url[len(base_url):]
 

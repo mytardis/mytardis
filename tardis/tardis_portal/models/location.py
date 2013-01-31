@@ -65,9 +65,12 @@ class Location(models.Model):
     def _check_initialized(cls):
         if not cls.initialized:
             for desc in settings.INITIAL_LOCATIONS:
+                url = desc['url']
+                if not url.endswith('/'):
+                    url = url + '/'
                 Location.objects.get_or_create(\
                     name=desc['name'],
-                    url=desc['url'],
+                    url=url,
                     type=desc['type'],
                     priority=desc['priority'],
                     migration_provider=desc.get('provider', 'local'),

@@ -1,7 +1,7 @@
 from magic import Magic
 from urllib2 import build_opener
-from urlparse import urlparse
-import sys
+from os import path
+import urlparse, sys, urllib
 
 from django.conf import settings
 from django.db import models
@@ -58,7 +58,7 @@ class Replica(models.Model):
                 return False
         except AttributeError:
             pass
-        return urlparse(self.url).scheme == ''
+        return urlparse.urlparse(self.url).scheme == ''
     
     def get_actual_url(self):
         """Return a URL for this replica that should be resolvable within
@@ -70,7 +70,7 @@ class Replica(models.Model):
             # Local file
             return 'file://'+self.get_absolute_filepath()
         # Remote files are also easy
-        url = urlparse(self.url)
+        url = urlparse.urlparse(self.url)
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
@@ -107,7 +107,7 @@ class Replica(models.Model):
             except AttributeError:
                 pass
             # Fallback to internal
-            url = urlparse(self.url)
+            url = urlparse.urlparse(self.url)
             # These are internally known protocols
             if url.scheme in ('', 'http', 'https', 'ftp', 'file'):
                 return 'tardis.tardis_portal.download.download_datafile'
@@ -119,8 +119,19 @@ class Replica(models.Model):
         except:
             return ''
 
+    def generate_default_url(self):
+        """This method provides the default mechanism for generating
+        urls for new replicas; e.g. when migrating.  The result should
+        be an absolute url which is resolveable and fetchable at least
+        by mytardis itself.
+        """
+        file_path = path.join(self.datafile.dataset.get_path(), 
+                              self.datafile.filename)
+        return urlparse.urljoin(self.location.url, 
+                                urllib.quote(file_path))
+
     def get_absolute_filepath(self):
-        url = urlparse(self.url)
+        url = urlparse.urlparse(self.url)
         if url.scheme == '':
             try:
                 # FILE_STORE_PATH must be set
