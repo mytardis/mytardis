@@ -34,7 +34,7 @@ from nose.tools import ok_, eq_
 import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
-from tardis.tardis_portal.models import Dataset_File, Replica
+from tardis.tardis_portal.models import Dataset_File, Replica, Location
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.apps.migration import Destination, TransferProvider, \
@@ -185,7 +185,15 @@ class MigrationTestCase(TestCase):
         self.assertTrue(migrate_replica(replica, dest, noRemove=True))
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
-        self.assertTrue(restore_replica(replica, noRemove=True))
+        # Can't bring it back 'cos there's a local one
+        with self.assertRaises(MigrationError):
+            migrate_replica(datafile.get_preferred_replica(), local,
+                            noRemove=True)
+        # Delete the local one and try again
+        replica.deleteCompletely()
+        self.assertFalse(os.path.exists(path))
+        migrate_replica(datafile.get_preferred_replica(), local,
+                        noRemove=True)
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
 
@@ -194,7 +202,10 @@ class MigrationTestCase(TestCase):
         datafile, replica = generate_datafile(None, self.dataset, "Hi granny")
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
-        url = dest.provider.generate_url(replica)
+        dummy_replica = Replica()
+        dummy_replica.datafile = datafile
+        dummy_replica.location = Location.objects.get(name='test')
+        url = dummy_replica.generate_default_url()
 
         try:
             dest.provider.get_length(url)

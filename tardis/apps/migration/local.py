@@ -35,6 +35,7 @@ import os
 from django.utils import simplejson
 from django.conf import settings
 from tardis.tardis_portal.staging import stage_replica
+from tardis.tardis_portal.util import generate_file_checksums
 
 from .base import MigrationError, MigrationProviderError, TransferProvider
 
@@ -47,23 +48,27 @@ class LocalTransfer(TransferProvider):
         self.metadata_supported = False
         self.opener = opener
 
-    def get_length(self, url):
-        filename = self._url_to_filename(url)
+    def get_length(self, uri):
+        filename = self._uri_to_filename(uri)
         return os.path.getsize(filename)
         
-    def get_metadata(self, url):
-        filename = self._url_to_filename(url)
-        raise Exception('tbd')
+    def get_metadata(self, uri):
+        filename = self._uri_to_filename(uri)
+        with open(filename, 'r') as f:
+            md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
+            return {'md5sum': md5sum,
+                    'sha512sum': sha512sum,
+                    'size': size}
     
-    def get_file(self, url):
-        filename = self._url_to_filename(url)
+    def get_file(self, uri):
+        filename = self._uri_to_filename(uri)
         raise Exception('tbd')
     
     def generate_url(self, replica):
         return replica.generate_default_url()
 
-    def url_matches(self, url):
-        return url.startswith(self.base_url)
+    def url_matches(self, uri):
+        return uri.startswith(self.base_url)
     
     def put_file(self, source_replica, target_replica):
         target_replica.url = source_replica.url
@@ -72,20 +77,21 @@ class LocalTransfer(TransferProvider):
                 'Staging from url %s to local replica failed' % 
                 source_replica.url)
     
-    def remove_file(self, url):
-        filename = self._url_to_filename(url)
+    def remove_file(self, uri):
+        filename = self._uri_to_filename(uri)
         os.remove(filename)
 
-    def _url_to_filename(self, url):
-        print '_url_to_filename: %s %s\n' % (url, self.base_url)
+    def _uri_to_filename(self, uri):
         # This is crude and possibly fragile.
-        if not url.startswith(self.base_url):
+        parts = urlparse(uri)
+        if not parts.scheme:
+            return '%s/%s' % (settings.FILE_STORE_PATH, uri)
+        if not uri.startswith(self.base_url):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination (url %s)') % \
-                                             (url, self.name, self.base_url))
-        parts = urlparse(url)
+                                             (uri, self.name, self.base_url))
         if parts.scheme == 'file':
             return unquote('/%s/%s' % (parts.netloc, parts.path))
         else:
-            return settings.FILE_STORE_PATH + url[len(base_url):]
+            return settings.FILE_STORE_PATH + uri[len(base_url):]
 

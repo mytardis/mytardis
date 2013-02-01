@@ -78,6 +78,7 @@ def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
     with transaction.commit_on_success():
         replica = Replica.objects.select_for_update().get(pk=replica.pk)
         location = Location.objects.get(pk=destination.loc_id)
+        source = Destination.get_destination(replica.location.name)
         
         if not replica.verified or destination.trust_length:
             raise MigrationError('Only verified datafiles can be migrated' \
@@ -122,8 +123,8 @@ def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
     
         # FIXME - do this more reliably ...
         if not noRemove:
+            source.provider.remove_file(replica.url)
             replica.delete()
-            os.remove(filename)
             logger.info('Removed local file %s for replica %s' %
                         (filename, replica.id))
         return True
