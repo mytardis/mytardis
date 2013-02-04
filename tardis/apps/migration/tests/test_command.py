@@ -168,15 +168,16 @@ class MigrateCommandTestCase(TestCase):
         # Real restore, verbose (restores 1, 2 & 3)
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out,
+                         dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p))
@@ -184,8 +185,8 @@ class MigrateCommandTestCase(TestCase):
         # Cannot restore files that are (now) local
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         verbosity=2, stdout=out, dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
@@ -212,15 +213,16 @@ class MigrateCommandTestCase(TestCase):
         # because the staging code won't clobber an existing file.
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out,
+                         dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p, d in [(path, datafile), (path2, datafile2), 
                      (path3, datafile3)]:
@@ -268,15 +270,15 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'dataset', dataset.id, 
-                         verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'dataset', dataset.id, 
+                         verbosity=2, stdout=out, dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
     def testMigrateExperiment(self):
@@ -302,16 +304,16 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'experiment', 
-                         experiment.id, 
+            call_command('migratefiles', 'migrate', 'experiment', 
+                         experiment.id, dest='local', source='test',
                          verbosity=2, stdout=out)
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
  
     def testMigrateAll(self):
@@ -341,16 +343,16 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', all=True,
-                         verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', all=True,
+                         verbosity=2, stdout=out, dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id,  
                            datafile4.id))
 
@@ -388,15 +390,6 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
 
-        err = StringIO()
-        try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         dest='test', stderr=err)
-        except SystemExit:
-            pass
-        err.seek(0)
-        self.assertEquals(err.read(), 'Error: The --dest option cannot '
-                          'be used with the restore subcommand\n')
 
     def testScore(self):
         dataset = generate_dataset()

@@ -47,11 +47,11 @@ logger = logging.getLogger(__name__)
 
 
 def migrate_datafile_by_id(replica_id, destination,
-                          noRemove=False, noUpdate=False):
+                          noRemove=False, mirror=False):
     raise Exception('tbd')
 
 def migrate_replica_by_id(replica_id, destination,
-                          noRemove=False, noUpdate=False):
+                          noRemove=False, mirror=False):
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Replica
     
@@ -59,13 +59,13 @@ def migrate_replica_by_id(replica_id, destination,
     if not datafile:
         raise ValueError('No such replica (%s)' % (replica_id))
     return migrate_datafile(datafile, destination, 
-                            noRemove=noRemove, noUpdate=noUpdate)
+                            noRemove=noRemove, mirror=mirror)
                                
-def migrate_datafile(replica, destination, noRemove=False, noUpdate=False):
+def migrate_datafile(replica, destination, noRemove=False, mirror=False):
     raise Exception('tbd')
 
 
-def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
+def migrate_replica(replica, destination, noRemove=False, mirror=False):
     """
     Migrate the replica to a different storage location.  The overall
     effect will be that the datafile will be stored at the new location and 
@@ -114,17 +114,17 @@ def migrate_replica(replica, destination, noRemove=False, noUpdate=False):
         newreplica.verified = verified
         newreplica.save()
         
-        if noUpdate:
+        if mirror:
             return True
-        
+
         filename = replica.get_absolute_filepath()
         logger.info('Migrated file %s for replica %s' %
                     (filename, replica.id))
     
         # FIXME - do this more reliably ...
+        replica.delete()
         if not noRemove:
             source.provider.remove_file(replica.url)
-            replica.delete()
             logger.info('Removed local file %s for replica %s' %
                         (filename, replica.id))
         return True
@@ -133,46 +133,13 @@ def restore_datafile_by_id(replica_id, noRemove=False):
     raise Exception('tbd')
 
 def restore_replica_by_id(replica_id, noRemove=False):
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Replica
-
-    replica = Replica.objects.select_for_update().get(id=replica_id)
-    if not replica:
-        raise ValueError('No such replica (%s)' % (replica_id))
-    return restore_replica(replica, noRemove=noRemove)
+    raise Exception('deprecated')    
                                
 def restore_datafile(replica, noRemove=False):
-    raise Exception('tbd')
+    raise Exception('deprecated')    
 
 def restore_replica(replica, noRemove=False):
-    """
-    Restore a file that has been migrated
-    """
-    
-    # (Deferred imports to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Replica
-    from django.db import transaction
-    with transaction.commit_on_success():
-        rep = Replica.objects.select_for_update().get(id=replica.id)
-        if rep.is_local():
-            return False
-        destination = Destination.identify_destination(rep.url)
-        if not destination:
-            raise MigrationError('Cannot identify the migration destination' \
-                                     ' holding %s' % rep.url)
-        if not rep.verified or destination.trust_length:
-            raise MigrationError('Only verified replicas can be restored' \
-                                 ' from destination %s' % destination.name)
-        rep.verified = False
-        url = rep.url
-        if not stage_replica(rep):
-            raise MigrationError('Restoration failed')
-        logger.info('Restored file %s for replica %s' %
-                    (rep.get_absolute_filepath(), rep.id))
-        if not noRemove:
-            destination.provider.remove_file(url)
-            logger.info('Removed remote file %s for replica %s' % (url, rep.id))
-        return True
+    raise Exception('deprecated')    
     
 def check_file_transferred(replica, destination, target_url):
     """

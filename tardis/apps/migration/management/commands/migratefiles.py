@@ -39,26 +39,28 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.log import dictConfig
 
 from tardis.tardis_portal.util import get_free_space
+from tardis.tardis_portal.models import Replica
 
 from tardis.apps.migration import Destination, MigrationError, \
     MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
-    restore_datafile_by_id
+    migrate_replica
 from tardis.tardis_portal.logging_middleware import LOGGING
 
 class Command(BaseCommand):
     args = '<subcommand> <arg> ...'
-    help = 'This command performs migrates files for MyTardis Experiments, ' \
-        'Datasets and Datafiles to configured secondary file stores.  Each ' \
-        'individual Datafile is migrated atomically, but there are no ' \
+    help = 'This command migrates file Replicas for MyTardis Experiments, ' \
+        'Datasets and Datafiles from one location to another.  The ' \
+        'individual Replicas are migrated atomically, but there are no ' \
         'guarantees of atomicity at the Dataset or Experiment level.  The ' \
         'following subcommands are supported:\n' \
-        '    migrate [<target> <id> ...] : migrates <target> files to destination \n' \
-        '    restore [<target> <id> ...] : restores <target> files from any destination\n' \
-        '    mirror [<target> <id> ...]  : copies <target> files to destination\n' \
-        '                                  but keeps them local\n' \
-        '    ensure <N>                  : migrate files to ensure N bytes of free space\n' \
-        '    reclaim <N>                 : migrate files to reclaim N bytes\n' \
-        '    score                       : score and list all files\n' \
+        '    migrate [<target> <id> ...] : migrates <target> replicas \n' \
+        '    mirror [<target> <id> ...]  : copies <target> replicas without\n' \
+        '                                  deleting the originals\n' \
+        '    ensure <N>                  : migrates replicas to ensure N \n' \
+        '                                  bytes of free space\n' \
+        '    reclaim <N>                 : migrate replicas to reclaim N \n' \
+        '                                  bytes of space\n' \
+        '    score                       : score and list all datafiles\n' \
         '    destinations                : lists the recognized destinations\n' \
         'where <target> is "datafile", "dataset" or "experiment", and the ' \
         '<id>s are the mytardis numeric ids for the respective objects\n' 
@@ -68,24 +70,30 @@ class Command(BaseCommand):
                     action='store',
                     dest='all',
                     help='Process all datafiles'), 
-        make_option('-d', '--dest',
+        make_option('-s', '--source',
                     action='store',
                     dest='dest',
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
                         settings.DEFAULT_MIGRATION_DESTINATION), 
+        make_option('-d', '--dest',
+                    action='store',
+                    dest='source',
+                    help='The source for the transfer. ' \
+                        'The default source is "local"'), 
         make_option('-n', '--dryRun',
                     action='store',
                     dest='dryRun',
                     default=False,
-                    help='Dry run mode just lists the datafiles that' \
+                    help='Dry-run mode just lists the replicas that' \
                         ' would be migrated / restored'), 
         make_option('--noRemove',
                     action='store',
                     dest='noRemove',
                     default=False,
-                    help='No remove mode migrates / restores without' \
-                        ' removing the local / remote copy of the file') 
+                    help='No-remove mode migrates without removing' \
+                        ' the actual file corresponding to the' \
+                        ' source replica') 
         )
 
     conf = dictConfig(LOGGING)
@@ -108,18 +116,18 @@ class Command(BaseCommand):
             self._score_all_datafiles()
             return
         args = args[1:]
-        self._set_destination(options.get('dest', None))
-        if not self.dest:
+        self.dest = self._get_destination(
+            options.get('dest', None),
+            settings.DEFAULT_MIGRATION_DESTINATION)
+        self.source = self._get_destination(
+            options.get('source', None), 'local')
+        if not self.source or not self.dest:
             return
         if subcommand == 'reclaim':
             self._reclaim(args)
         elif subcommand == 'ensure':
             self._ensure(args)
-        elif subcommand == 'migrate' or subcommand == 'restore' or \
-                subcommand == 'mirror' :
-            if subcommand == 'restore' and options['dest']:
-                raise CommandError("The --dest option cannot be used with "
-                                   "the restore subcommand")
+        elif subcommand == 'migrate' or subcommand == 'mirror' :
             if all:
                 if len(args) != 0:
                     raise CommandError("No target/ids allowed with --all")
@@ -186,18 +194,19 @@ class Command(BaseCommand):
                     (self._verb(subcommand).lower(), id))
             return
         try:
+            replica = Replica.objects.get(datafile_id=id,
+                                          location_id=self.source.loc_id)
             if subcommand == 'migrate':
-                ok = migrate_datafile_by_id(id, self.dest,
-                                            noRemove=self.noRemove)
+                ok = migrate_replica(replica, self.dest,
+                                     noRemove=self.noRemove)
             elif subcommand == 'mirror':
-                ok = migrate_datafile_by_id(id, self.dest, noUpdate=True)
-            elif subcommand == 'restore':
-                ok = restore_datafile_by_id(id, noRemove=self.noRemove)
+                ok = migrate_replica(replica, self.dest, mirror=True)
             if ok and self.verbosity > 1:
                 self.stdout.write('%s datafile %s\n' % \
                                       (self._verb(subcommand), id))
-        except Dataset_File.DoesNotExist:
-            self.stderr.write('Datafile %s does not exist\n' % id)
+        except Replica.DoesNotExist:
+            self.stderr.write('No replica of %s exists at %s\n' % \
+                                  (id, self.source.name))
         except MigrationError as e:              
             self.stderr.write(
                 '%s failed for datafile %s : %s\n' % \
@@ -240,13 +249,14 @@ class Command(BaseCommand):
             self.stderr.write('Experiment %s does not exist\n' % id)
             return []
 
-    def _set_destination(self, destName):
-        if not destName: 
-            if not settings.DEFAULT_MIGRATION_DESTINATION:
+    def _get_destination(self, destName, default):
+        if not destName:
+            if not default:
                 raise CommandError("No default destination configured")
-            destName = settings.DEFAULT_MIGRATION_DESTINATION
+            else:
+                destName = default
         try:
-            self.dest = Destination.get_destination(destName)
+            return Destination.get_destination(destName)
         except MigrationError as e:
             raise CommandError("Migration error: %s" % e.args[0])
         except ValueError:

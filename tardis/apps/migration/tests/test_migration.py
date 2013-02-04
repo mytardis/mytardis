@@ -106,11 +106,15 @@ class MigrationTestCase(TestCase):
     def do_provider(self, dest):
         provider = dest.provider
         base_url = dest.base_url
-        datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
+        datafile, replica = generate_datafile("1/1/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
-        url = provider.generate_url(replica)
-        self.assertEquals(url, base_url + '1/2/3')
-        provider.put_file(replica, url)
+        target_replica = Replica()
+        target_replica.datafile = datafile
+        target_replica.location = Location.objects.get(pk=dest.loc_id)
+        url = provider.generate_url(target_replica)
+        self.assertEquals(url, base_url + '1/1/3')
+        target_replica.url = url
+        provider.put_file(replica, target_replica)
 
         self.assertEqual(provider.get_file(url), "Hi mum")
         with self.assertRaises(MigrationProviderError):
@@ -185,16 +189,13 @@ class MigrationTestCase(TestCase):
         self.assertTrue(migrate_replica(replica, dest, noRemove=True))
         self.assertTrue(os.path.exists(path))
         self.assertEquals(dest.provider.get_length(url), 6)
-        # Can't bring it back 'cos there's a local one
-        with self.assertRaises(MigrationError):
-            migrate_replica(datafile.get_preferred_replica(), local,
-                            noRemove=True)
-        # Delete the local one and try again
-        replica.deleteCompletely()
-        self.assertFalse(os.path.exists(path))
         migrate_replica(datafile.get_preferred_replica(), local,
                         noRemove=True)
+        newpath = datafile.get_absolute_filepath()
+        replica = datafile.get_preferred_replica()
         self.assertTrue(os.path.exists(path))
+        self.assertTrue(os.path.exists(newpath))
+        self.assertNotEqual(path, newpath)
         self.assertEquals(dest.provider.get_length(url), 6)
 
     def testMirror(self):
@@ -214,7 +215,7 @@ class MigrationTestCase(TestCase):
             if e.code != 404:
                 raise e
 
-        self.assertTrue(migrate_replica(replica, dest, noUpdate=True))
+        self.assertTrue(migrate_replica(replica, dest, mirror=True))
         datafile = Dataset_File.objects.get(id=datafile.id)
         self.assertTrue(datafile.is_local())
         self.assertEquals(dest.provider.get_length(url), 9)
