@@ -56,9 +56,9 @@ def migrate_replica_by_id(replica_id, destination,
     from tardis.tardis_portal.models import Replica
     
     replica = Replica.objects.get(id=replica_id)
-    if not datafile:
+    if not replica:
         raise ValueError('No such replica (%s)' % (replica_id))
-    return migrate_datafile(datafile, destination, 
+    return migrate_replica(replica, destination, 
                             noRemove=noRemove, mirror=mirror)
                                
 def migrate_datafile(replica, destination, noRemove=False, mirror=False):
@@ -149,8 +149,6 @@ def check_file_transferred(replica, destination, target_url):
 
     from tardis.tardis_portal.models import Dataset_File
     datafile = Dataset_File.objects.get(pk=replica.datafile.id)
-    print "datafile %s - %s / %s / %s\n" % (datafile.id, datafile.size,
-                                            datafile.md5sum, datafile.sha512sum)
 
     # If the remote is capable, get it to send us the checksums and / or
     # file length for its copy of the file

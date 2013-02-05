@@ -62,6 +62,16 @@ class Location(models.Model):
             return None
 
     @classmethod
+    def get_location_for_url(cls, url):
+        '''Reverse lookup a location from a url'''
+        
+        cls._check_initialized()
+        for location in Location.objects.all():
+            if url.startswith(location.url):
+                return location
+        return None
+
+    @classmethod
     def _check_initialized(cls):
         if not cls.initialized:
             for desc in settings.INITIAL_LOCATIONS:

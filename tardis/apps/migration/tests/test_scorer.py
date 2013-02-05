@@ -37,7 +37,7 @@ from tardis.apps.migration import MigrationScorer
 from tardis.apps.migration.models import get_user_priority
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
-from tardis.tardis_portal.models import Replica
+from tardis.tardis_portal.models import Replica, Location
 
 class MigrateScorerTestCase(TestCase):
 
@@ -55,8 +55,8 @@ class MigrateScorerTestCase(TestCase):
         self.df1, self.rep1 = generate_datafile('1/2/1', self.ds1, size=100)
         self.df2, self.rep2 = generate_datafile('1/2/2', self.ds1, size=100, 
                                                 verified=False)
-        self.df3, self.rep3 = generate_datafile('http://foo.com/1/2/3', 
-                                                self.ds1, size=1000)
+        self.df3, self.rep3 = generate_datafile(
+            'http://127.0.0.1:4272/data/1/2/3', self.ds1, size=1000)
         self.df4, self.rep4 = generate_datafile('1/2/4', self.ds2, size=1000)
         self.df5, self.rep5 = generate_datafile('1/2/5', self.ds2, size=10000)
         self.df6, self.rep6 = generate_datafile('1/2/6', self.ds3, size=100000)
@@ -65,7 +65,7 @@ class MigrateScorerTestCase(TestCase):
 
     def testScoring(self):
         self._setup()
-        scorer = MigrationScorer()
+        scorer = MigrationScorer(Location.get_location('local').id)
         self.assertEquals(2.0, scorer.datafile_score(self.df1))
         self.assertEquals(2, get_user_priority(self.user1))
         self.assertEquals(1, get_user_priority(self.user2))
@@ -74,23 +74,32 @@ class MigrateScorerTestCase(TestCase):
         self.assertEquals(2.0, scorer.experiment_score(self.exp1))
         self.assertEquals(2.0, scorer.dataset_score(self.df1.dataset))
         self.assertEquals(4.0, scorer.score_datafile(self.df1))
-        self.assertEquals([(self.df1, 4.0)], 
+        self.assertEquals([(self.df1, self.rep1, 4.0)], 
                           scorer.score_datafiles_in_dataset(self.ds1))
-        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0), (self.df1, 4.0)],
+        self.assertEquals([(self.df5, self.rep5, 8.0), 
+                           (self.df4, self.rep4, 6.0), 
+                           (self.df1, self.rep1, 4.0)],
                           scorer.score_datafiles_in_experiment(self.exp1))
-        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0)],
+        self.assertEquals([(self.df5, self.rep5, 8.0), 
+                           (self.df4, self.rep4, 6.0)],
                           scorer.score_datafiles_in_experiment(self.exp2))
-        self.assertEquals([(self.df6, 5.0)],
+        self.assertEquals([(self.df6, self.rep6, 5.0)],
                           scorer.score_datafiles_in_experiment(self.exp3))
-        self.assertEquals([(self.df5, 8.0), (self.df4, 6.0), (self.df6, 5.0), 
-                           (self.df1, 4.0), (self.df7, 0.0), (self.df8, 0.0)],
+        self.assertEquals([(self.df5, self.rep5, 8.0), 
+                           (self.df4, self.rep4, 6.0), 
+                           (self.df6, self.rep6, 5.0), 
+                           (self.df1, self.rep1, 4.0), 
+                           (self.df7, self.rep7, 0.0), 
+                           (self.df8, self.rep8, 0.0)],
                           scorer.score_all_datafiles())
-        self.assertEquals([(self.df7, 0.0), (self.df8, 0.0)], 
+        self.assertEquals([(self.df7, self.rep7, 0.0), 
+                           (self.df8, self.rep8, 0.0)], 
                           scorer.score_datafiles_in_dataset(self.ds4))
 
     def testScoringWithTimes(self):
         self._setup()
-        scorer = MigrationScorer({
+        scorer = MigrationScorer(
+            Location.get_location('local').id, {
                 'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
                 'file_size_weighting': 1.0,
                 'file_access_weighting': 1.0,

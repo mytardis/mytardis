@@ -49,6 +49,9 @@ class Replica(models.Model):
         app_label = 'tardis_portal'
         unique_together = ('datafile', 'location')
 
+    def __unicode__(self):
+        return self.url
+
     def is_local(self):
         """Return True if this replica is accessible from the file system.
         """

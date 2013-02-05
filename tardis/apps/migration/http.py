@@ -96,7 +96,6 @@ class SimpleHttpTransfer(TransferProvider):
         request = self.PutRequest(target_replica.url)
         request.add_header('Content-Length', str(len(content)))
         request.add_header('Content-Type', source_replica.datafile.mimetype)
-        print 'request url is %s' % target_replica.url
         response = self.opener.open(request, data=content)
     
     def remove_file(self, url):

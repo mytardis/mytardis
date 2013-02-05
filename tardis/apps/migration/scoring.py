@@ -31,6 +31,9 @@ import math, time, os
 
 import logging
 
+from tardis.tardis_portal.models import Replica
+
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_PARAMS = {
@@ -53,11 +56,12 @@ class MigrationScorer:
     and experiments and datasets.  It is therefore stateful. 
     """
 
-    def __init__(self, params=DEFAULT_PARAMS):
+    def __init__(self, loc_id, params=DEFAULT_PARAMS):
         self.dataset_scores = {}
         self.experiment_scores = {}
         self.user_scores = {}
         self.group_scores = {}
+        self.loc_id = loc_id
         self.now = time.time()
         self.user_priority_weighting = params['user_priority_weighting']
         self.file_size_weighting = params['file_size_weighting']
@@ -77,7 +81,7 @@ class MigrationScorer:
         from tardis.tardis_portal.models import Dataset_File
         ds_score = self.dataset_score(dataset)
         def score_it(datafile):
-            return (datafile, ds_score * self.datafile_score(datafile))
+            return ds_score * self.datafile_score(datafile)
         datafiles = Dataset_File.objects.filter(dataset=dataset)
         return self._filter_map_sort(datafiles, score_it)
 
@@ -85,7 +89,7 @@ class MigrationScorer:
         from tardis.tardis_portal.models import Dataset_File
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
-            return (datafile, ds_score * self.datafile_score(datafile))
+            return ds_score * self.datafile_score(datafile)
         datafiles = Dataset_File.objects.\
             filter(dataset__experiments__id=experiment.id)
         return self._filter_map_sort(datafiles, score_it)
@@ -94,19 +98,28 @@ class MigrationScorer:
         from tardis.tardis_portal.models import Dataset_File
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
-            return (datafile, ds_score * self.datafile_score(datafile))
+            return ds_score * self.datafile_score(datafile)
         datafiles = Dataset_File.objects.all()
         return self._filter_map_sort(datafiles, score_it)
 
-    def _filter_map_sort(self, datafiles, mapper):
+    def _filter_map_sort(self, datafiles, score_it):
         from tardis.tardis_portal.models import Dataset_File
-        def get_score(tpl):
-            return tpl[1]
-        def local_and_verified(datafile):
-            replica = datafile.get_preferred_replica()
-            return replica.is_local() and replica.verified
-        filtered = filter(local_and_verified, datafiles);
-        return sorted(map(mapper, filtered), None, get_score, True)
+        def compare(tpl, tpl2):
+            if tpl[2] != tpl2[2]:
+                return -1 if tpl2[2] - tpl[2] < 0 else +1
+            else:
+                return tpl[0].id - tpl2[0].id
+
+        results = []
+        for datafile in datafiles:
+            try:
+                replica = Replica.objects.get(datafile=datafile,
+                                              location_id=self.loc_id,
+                                              verified=True)
+                results.append((datafile, replica, score_it(datafile)))
+            except Replica.DoesNotExist:
+                pass
+        return sorted(results, compare)
 
     def datafile_score(self, datafile):
         try:

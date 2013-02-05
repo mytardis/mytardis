@@ -108,7 +108,6 @@ class MigrateCommandTestCase(TestCase):
                           'Only verified datafiles can be migrated ' \
                           'to this destination\n' % datafile.id)
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
-        datafile.save()
 
         # (Paths should all be kosher now ...)
         path = datafile.get_absolute_filepath()
@@ -134,7 +133,7 @@ class MigrateCommandTestCase(TestCase):
         out = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
-                         verbosity=2, stdout=out)
+                         verbosity=3, stdout=out)
         except SystemExit:
             pass
         out.seek(0)
@@ -164,6 +163,17 @@ class MigrateCommandTestCase(TestCase):
             pass
         err.seek(0)
         self.assertEquals(err.read(), '') # Should "fail" silently
+
+        # Again but with more verbosity
+        err = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         verbosity=3, stderr=err)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'No replica of %s exists at local\n' % datafile.id)
 
         # Real restore, verbose (restores 1, 2 & 3)
         out = StringIO()
@@ -230,8 +240,6 @@ class MigrateCommandTestCase(TestCase):
             self.assertTrue(os.path.exists(p))
             self.assertTrue(os.path.exists(dd.get_absolute_filepath()))
             self.assertNotEqual(p, dd.get_absolute_filepath())
-            self.assertNotEqual(d.get_absolute_filepath(),
-                                dd.get_absolute_filepath())
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
@@ -421,6 +429,8 @@ class MigrateCommandTestCase(TestCase):
         datafile, _ = generate_datafile(None, dataset, "Hi mum")
         datafile2, _ = generate_datafile(None, dataset, "Hi mum")
         datafile3, _ = generate_datafile(None, dataset, "Hi mum")
+        url = datafile.url
+        url2 = datafile2.url
 
         out = StringIO()
         try:
@@ -433,8 +443,7 @@ class MigrateCommandTestCase(TestCase):
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have reclaimed 12 bytes\n' %
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id))
+                          (url, datafile.id, url2, datafile2.id))
         out = StringIO()
         try:
             call_command('migratefiles', 'reclaim', '11', 
@@ -446,8 +455,7 @@ class MigrateCommandTestCase(TestCase):
                           'Migrating %s / %s saving 6 bytes\n'
                           'Migrating %s / %s saving 6 bytes\n'
                           'Reclaimed 12 bytes\n' %
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id))
+                          (url, datafile.id, url2, datafile2.id))
 
     def testMigrateEnsure(self):
         dataset = generate_dataset()

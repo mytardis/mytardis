@@ -28,10 +28,11 @@
 #
 
 # Utility functions for generating test objects.
-import os
+import os, urlparse
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
+from tardis.tardis_portal.models import Location
 
 def generate_datafile(path, dataset, content=None, size=-1, 
                       verify=True, verified=True):
@@ -65,8 +66,9 @@ def generate_datafile(path, dataset, content=None, size=-1,
         datafile.size = str(size)
     datafile.save()
 
+    location = _infer_location(path)
     replica = Replica(datafile=datafile, url=path, protocol='',
-                      location=Location.get_default_location())
+                      location=location)
     if verify and content:
         if not replica.verify(allowEmptyChecksums=True):
             raise RuntimeError('verify failed!?!')
@@ -74,6 +76,16 @@ def generate_datafile(path, dataset, content=None, size=-1,
         replica.verified = verified
     replica.save()
     return (datafile, replica)
+
+def _infer_location(path):
+    if urlparse.urlparse(path).scheme == '':
+        loc = Location.get_default_location()
+    else:
+        loc = Location.get_location_for_url(path)
+    if loc:
+        return loc
+    else:
+        raise Exception('Cannot infer a location for %s' % path)
 
 def generate_dataset(datafiles=[], experiments=[]):
     from tardis.tardis_portal.models import Dataset

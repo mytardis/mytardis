@@ -105,6 +105,12 @@ class Command(BaseCommand):
         self.verbosity = options.get('verbosity', 1)
         self.noRemove = options.get('noRemove', False)
         self.dryRun = options.get('dryRun', False)
+        self.dest = self._get_destination(
+            options.get('dest', None),
+            settings.DEFAULT_MIGRATION_DESTINATION)
+        self.source = self._get_destination(
+            options.get('source', None), 'local')
+
         all = options.get('all', False)
         if len(args) == 0:
             raise CommandError("Expected a subcommand")
@@ -113,19 +119,19 @@ class Command(BaseCommand):
             self._list_destinations()
             return
         elif subcommand == 'score':
-            self._score_all_datafiles()
+            if self.source:
+                self._score_all_datafiles()
             return
         args = args[1:]
-        self.dest = self._get_destination(
-            options.get('dest', None),
-            settings.DEFAULT_MIGRATION_DESTINATION)
-        self.source = self._get_destination(
-            options.get('source', None), 'local')
         if not self.source or not self.dest:
             return
         if subcommand == 'reclaim':
+            if not self.source.name == 'local':
+                raise CommandError("Can only 'reclaim' for source 'local'")
             self._reclaim(args)
         elif subcommand == 'ensure':
+            if not self.source.name == 'local':
+                raise CommandError("Can only 'ensure' for source 'local'")
             self._ensure(args)
         elif subcommand == 'migrate' or subcommand == 'mirror' :
             if all:
@@ -201,12 +207,17 @@ class Command(BaseCommand):
                                      noRemove=self.noRemove)
             elif subcommand == 'mirror':
                 ok = migrate_replica(replica, self.dest, mirror=True)
-            if ok and self.verbosity > 1:
-                self.stdout.write('%s datafile %s\n' % \
-                                      (self._verb(subcommand), id))
+            if self.verbosity > 1:
+                if ok: 
+                    self.stdout.write('%s datafile %s\n' % \
+                                          (self._verb(subcommand), id))
+                elif self.verbosity > 2:
+                    self.stdout.write('Did not %s datafile %s\n' % \
+                                          (subcommand, id))
         except Replica.DoesNotExist:
-            self.stderr.write('No replica of %s exists at %s\n' % \
-                                  (id, self.source.name))
+            if self.verbosity > 2:
+                self.stderr.write('No replica of %s exists at %s\n' % \
+                                      (id, self.source.name))
         except MigrationError as e:              
             self.stderr.write(
                 '%s failed for datafile %s : %s\n' % \
@@ -272,15 +283,15 @@ class Command(BaseCommand):
         scores = self._do_score_all()
         total = 0
         for entry in scores:
-            datafile = entry[0]
+            datafile, replica, score = entry
             try:
                 total += int(datafile.size)
             except:
                 pass
             self.stdout.write("datafile %s / %s, size = %s, " \
                               "score = %s, total_size = %d\n" % \
-                                  (datafile.url, datafile.id, 
-                                   datafile.size, entry[1], total)) 
+                                  (replica.url, datafile.id, 
+                                   datafile.size, score, total)) 
             
     def _reclaim(self, args):
         required_space = self._parse_amount(args)
@@ -317,25 +328,26 @@ class Command(BaseCommand):
         for entry in scores:
             if total >= required:
                 break
-            datafile = entry[0]
+            datafile, replica, _ = entry
             if self.verbosity > 1:
                 if self.dryRun:
                     self.stdout.write("Would have migrated %s / %s " \
                                           "saving %s bytes\n" % \
-                                          (datafile.url, datafile.id, 
+                                          (replica.url, datafile.id, 
                                            datafile.size))
                 else:
                     self.stdout.write("Migrating %s / %s saving %s bytes\n" % \
-                                          (datafile.url, datafile.id, 
+                                          (replica.url, datafile.id, 
                                            datafile.size))
             total += int(datafile.size) 
             if not self.dryRun:
-                migrate_datafile(datafile, self.dest)
+                migrate_replica(replica, self.dest)
         if self.dryRun:
             self.stdout.write("Would have reclaimed %d bytes\n" % total)
         else:
             self.stdout.write("Reclaimed %d bytes\n" % total)
 
     def _do_score_all(self):
-        scorer = MigrationScorer(settings.MIGRATION_SCORING_PARAMS)
+        scorer = MigrationScorer(self.source.loc_id,
+                                 settings.MIGRATION_SCORING_PARAMS)
         return scorer.score_all_datafiles()
