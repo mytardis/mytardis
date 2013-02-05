@@ -58,11 +58,14 @@ List the migration transfer provider classes.  Currently we only implement one p
 
     MIGRATION_PROVIDERS = {
          'http': 'tardis.apps.migration.SimpleHttpTransfer',
-         'dav': 'tardis.apps.migration.WebDAVTransfer'}
+         'dav': 'tardis.apps.migration.WebDAVTransfer',
+         'local': 'tardis.apps.migration.LocalTransfer'}
 
 The SimpleHttpTransfer provider requires a remote server that can accept GET, PUT, DELETE and HEAD requests.  Optionally, it can send a GET with a query for the remote file metadata (file size and hashes) which it will use to verify that the the file has migrated correctly before deleting the local copy.
 
-The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums. 
+The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums.
+
+The LocalTransfer provider is a stub provider that is for transfering from and to that main MyTardis filestore.  It uses the existing MyTardis "staging" system to transfer files into the store.
 
 Finally, you need to specify the tuning parameters for the "scoring" formula used to decide what files to migrate; for example::
 
@@ -123,9 +126,8 @@ The initial version of the migration app provides the "migratefiles" command to 
 
 Usage
 ~~~~~
-``./bin/django migratefiles migrate [<target> <id> ...]``
-``./bin/django migratefiles restore [<target> <id> ...]``
-``./bin/django migratefiles mirror [<target> <id> ...]``
+``./bin/django migratefiles migrate [<type> <id> ...]``
+``./bin/django migratefiles mirror [<type> <id> ...]``
 ``./bin/django migratefiles ensure <amount>``
 ``./bin/django migratefiles reclaim <amount>``
 ``./bin/django migratefiles score``
@@ -137,11 +139,11 @@ Usage
 .. option:: --noRemove
 .. option:: -a, --all
 
-The 'migrate' subcommand migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<target>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type.  Alternatively, the "--all" option selects all Datafiles for migration.
+The 'migrate' subcommand migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<type>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type.  Alternatively, the "--all" option selects all Datafiles for migration.
+
+Datafiles are migrated from a "source" location to a "destination" location.  The default "source" location is "local" (i.e. the MyTardis primary filestore), and the default "destination" location is site specific.
 
 The migration of a single file is atomic.  If the migration succeeds, the Datafile metadata in MyTardis will have been updated to the new location.  If it fails, the metadata will not be altered.  The migration process also takes steps to ensure that the file has been correctly transferred.  The final step of a migration is to delete the original copy of the file.  This is currently not performed atomically.
-
-The 'restore' subcommand attempts to restore (bring back to local disc) the data associated with the selected DataFiles, DataSets or Experiments.  (The current implementation temporarily marks each Datafile as "not verified" and attempts to "stage" it.)
 
 The 'mirror' subcommand form just copies the files to the destination.  It is equivalent to a 'migrate' without the database update and without the local file removal.
 
@@ -149,17 +151,20 @@ The 'reclaim' subcommand attempts to reclaim "<amount>" bytes of local disc spac
 
 The 'ensure' subcommand is like 'reclaim', but the "<amount>" argument is interpretted as the target amount of free space to maintain on the local file system.
 
+(As currently implemented, "reclaim" and "ensure" only support "local" as the source location.  The issue is that we don't yet have a mechanism for determining how much free space is available on locations other than "local".)
+
 The 'score' subcommand simply scores all of the local files and lists their details in descending score order. 
 
 The 'list' subcommand lists the configured transfer destinations.
 
 The options are as follows:
 
-  * --dest selects the remote location for the migrate, mirror and reclaim subcommands.  (For the restore subcommand, the destination is local, and the remote source location is implied by the Datafile's 'url' attribute.) 
-  * --all used with migrate, resore and mirror to select all Datafiles for the action.
+  * --dest selects the target location for the migrate, mirror and reclaim subcommands.
+  * --source selects the source location for the migrate, mirror and reclaim subcommands.
+  * --all used with migrate and mirror to select all Datafiles for the action.
   * --verbosity determines how much output is produced in the normal django command fashion.
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
-  * --noRemove performs the migrate or restore actions, but does not remove the source file.  (It is implied in the case of mirroring.)
+  * --noRemove used with "migrate" to stop the removal of the file at the source location.  (This is implied in the case of mirroring.)
 
 Architecture
 ============
@@ -169,15 +174,27 @@ TBD
 Implementation
 ==============
 
-Currently, only Datafiles that are local and verified can be migrated.  The reason for the latter is that we depend on the file matching its checksums when we check that the file has been migrated correctly.
+By default, only Datafile replicas that are marked as verified can be migrated.  We depend on the file matching its checksums after copying as a check that the file has been migrated correctly.
 
-When a file is migrated, the Datafile is changed as follows:
+The process for migration is roughly as follows:
 
- * The 'url' field is set to the url of the file at the destination.
- * The 'protocol' field is set to the 'datafile_protocol' attribute in the destination descriptor.  The default is an empty string, which will cause MyTardis to use its built-in file fetching support to pull files back. 
+ * Check that no Replica exists at the target location for the Datafile.
+ * Check that the source Replica exists and is verified.
+ * Prepare a new Replica descriptor:
+   * generate the 'url' using the transfer provider's generate_url method
+   * set 'protocol' to empty
+   * set 'stay_remote' according to where target location is remote
+   * set 'verified' to False.
+ * Use the transfer provider's put_file method to transfer the data.  
+ * Check that the file transferred correctly: see below
+ * Mark the new Replica as verified and save the record
+ * If we are doing a "migrate"
+   * Delete the source Replica record
+   * Use the source transfer provider's remove_file method to remove the
+     file ... unless we are running in 'noRemove' mode.
 
 We currently support two ways of checking that a file has been transferred correctly.  The preferred way is to get the transfer destination to calculate and return the metadata (checksums and length) for its copy of the file.  If that fails (or is not supported), the fallback is to read back the file from the destination and do the checksumming locally.
 
 Normally, we require there to be either an MD5 or SHA512 checksum in the metadata.  However if 'trust_length' is set, we will accept matching file lengths as being sufficient to verify the transfer.  That would normally be a bad idea, but if the transfer process is sufficiently reliable, file length checking may be sufficient.  (In this mode, a transfer provider could get away with sending a HEAD request and using the "Content-length".)
 
-Restoration is performed by re-staging the file.  However, there is a minor gotcha.  If a copy of the file already exists locally (and this is not recorded in the database), then the restored file's filename will be different to the original.  (The existing local copy of the file is not clobbered or renamed ...)
+(Note that migrating and restoring are now symmetric, and there is no longer a distinct 'restore' action.)
