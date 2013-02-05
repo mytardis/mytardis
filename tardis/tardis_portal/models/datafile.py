@@ -51,16 +51,16 @@ class Dataset_File(models.Model):
             
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    url = property(get_url)
+    #url = property(get_url)
     size = models.CharField(blank=True, max_length=400)
-    protocol = property(get_protocol)
+    #protocol = property(get_protocol)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
-    stay_remote = models.BooleanField(default=False)
-    verified = models.BooleanField(default=False)
+    #stay_remote = models.BooleanField(default=False)
+    #verified = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -133,18 +133,24 @@ class Dataset_File(models.Model):
     def is_local(self):
         return self.get_preferred_replica().is_local()
         
-    def get_preferred_replica(self):
+    def get_preferred_replica(self, verified=None):
         """Get the Datafile replica that is the preferred one for download.
         This entails fetching all of the Replicas and ordering by their
-        respective Locations' computed priorities.
+        respective Locations' computed priorities.  The 'verified' parameter
+        allows you to select the preferred verified (or unverified) replica.
         """
 
         p = None
-        for r in Replica.objects.filter(datafile=self):
+        if verified == None:
+            replicas = Replica.objects.filter(datafile=self)
+        else:
+            replicas = Replica.objects.filter(datafile=self, verified=verified)
+        for r in replicas: 
             if not p or \
                     p.location.get_priority() < r.location.get_priority():
                 p = r
-        if not p:
+        # A datafile with no associated replicas is broken.
+        if verified == None and not p:
             raise ValueError('Dataset_File has no replicas')
         return p
 

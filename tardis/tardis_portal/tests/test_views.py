@@ -140,7 +140,8 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
-        self.assertTrue(test_files_db[0].url == '%d/%d/testfile.txt' %
+        url = test_files_db[0].get_preferred_replica().url
+        self.assertTrue(url == '%d/%d/testfile.txt' %
                         (self.dataset.get_first_experiment().id,
                          self.dataset.id))
         self.assertTrue(test_files_db[0].get_preferred_replica().verified)
@@ -535,7 +536,8 @@ class StageFilesTestCase(TestCase):
             expect(dataset.dataset_file_set.count()).to_equal(1)
             datafile = dataset.dataset_file_set.all()[0]
             expect(datafile.filename).to_equal(basename(f.name))
-            expect(urlparse(datafile.url).scheme).to_equal('')
+            url = datafile.get_preferred_replica().url
+            expect(urlparse(url).scheme).to_equal('')
 
 class ExperimentTestCase(TestCase):
 

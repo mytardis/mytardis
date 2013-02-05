@@ -169,9 +169,9 @@ class MigrationTestCase(TestCase):
         self.assertFalse(os.path.exists(path))
 
         # Bring it back
-        url = datafile.url
-        self.assertTrue(migrate_replica(datafile.get_preferred_replica(), 
-                                        local))
+        new_replica = datafile.get_preferred_replica()
+        url = new_replica.url
+        self.assertTrue(migrate_replica(new_replica, local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
         try:

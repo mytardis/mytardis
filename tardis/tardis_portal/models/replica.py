@@ -178,7 +178,7 @@ class Replica(models.Model):
                 logger.warn("%s size is missing" % (self.url))
             else:
                 logger.error("%s failed size check: %d != %s" %
-                            (df.url, size, df.size))
+                            (self.url, size, df.size))
                 return False
 
         if df.sha512sum and sha512sum.lower() != df.sha512sum.lower():

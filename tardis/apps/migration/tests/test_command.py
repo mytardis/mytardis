@@ -402,9 +402,9 @@ class MigrateCommandTestCase(TestCase):
     def testScore(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile, _ = generate_datafile(None, dataset, "Hi mum")
-        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
-        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile, replica = generate_datafile(None, dataset, "Hi mum")
+        datafile2, replica2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3, replica3 = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -419,18 +419,18 @@ class MigrateCommandTestCase(TestCase):
                           'score = 0.778151250384, total_size = 12\n'
                           'datafile %s / %s, size = 6, '
                           'score = 0.778151250384, total_size = 18\n' % 
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id, 
-                           datafile3.url, datafile3.id))
+                          (replica.url, datafile.id, 
+                           replica2.url, datafile2.id, 
+                           replica3.url, datafile3.id))
     
     def testMigrateReclaim(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile, _ = generate_datafile(None, dataset, "Hi mum")
-        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
-        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
-        url = datafile.url
-        url2 = datafile2.url
+        datafile, replica = generate_datafile(None, dataset, "Hi mum")
+        datafile2, replica2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3, replica3 = generate_datafile(None, dataset, "Hi mum")
+        url = replica.url
+        url2 = replica2.url
 
         out = StringIO()
         try:

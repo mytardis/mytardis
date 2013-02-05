@@ -142,8 +142,8 @@ class ModelTestCase(TestCase):
 
         df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
         self.assertEqual(df_file.filename, 'file.txt')
-        self.assertEqual(df_file.url, 'path/file.txt')
-        self.assertEqual(df_file.protocol, '')
+        self.assertEqual(df_file.get_preferred_replica().url, 'path/file.txt')
+        self.assertEqual(df_file.get_preferred_replica().protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(), 
@@ -152,8 +152,8 @@ class ModelTestCase(TestCase):
 
         df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
         self.assertEqual(df_file.filename, 'file1.txt')
-        self.assertEqual(df_file.url, 'path/file1.txt')
-        self.assertEqual(df_file.protocol, 'vbl')
+        self.assertEqual(df_file.get_preferred_replica().url, 'path/file1.txt')
+        self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
@@ -163,9 +163,9 @@ class ModelTestCase(TestCase):
         df_file = _build(dataset, 'f.txt',
                          'http://localhost:8080/filestore/f.txt', '')
         self.assertEqual(df_file.filename, 'f.txt')
-        self.assertEqual(df_file.url,
+        self.assertEqual(df_file.get_preferred_replica().url,
                          'http://localhost:8080/filestore/f.txt')
-        self.assertEqual(df_file.protocol, '')
+        self.assertEqual(df_file.get_preferred_replica().protocol, '')
         self.assertEqual(df_file.dataset, dataset)
         self.assertEqual(df_file.size, '')
         self.assertEqual(df_file.get_download_url(),
@@ -191,7 +191,7 @@ class ModelTestCase(TestCase):
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file.txt',
-                                      url='path/file.txt',
+                                      #url='path/file.txt',
                                       )
         df_file.save()
 

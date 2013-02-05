@@ -9,22 +9,24 @@ import sys
 
 from tardis.tardis_portal.models import \
     Experiment, Dataset, Dataset_File, ExperimentACL, License, UserProfile, \
-    ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, DatafileParameterSet
+    ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
+    DatafileParameterSet, Replica, Location
     
 def _create_test_user():
     user_ = User(username='tom',
-                first_name='Thomas',
-                last_name='Atkins',
-                email='tommy@atkins.net')
+                 first_name='Thomas',
+                 last_name='Atkins',
+                 email='tommy@atkins.net')
     user_.save()
     UserProfile(user=user_).save()
     return user_
 
 def _create_license():
-    license_ = License(name='Creative Commons Attribution-NoDerivs 2.5 Australia',
-                       url='http://creativecommons.org/licenses/by-nd/2.5/au/',
-                       internal_description='CC BY 2.5 AU',
-                       allows_distribution=True)
+    license_ = License(
+        name='Creative Commons Attribution-NoDerivs 2.5 Australia',
+        url='http://creativecommons.org/licenses/by-nd/2.5/au/',
+        internal_description='CC BY 2.5 AU',
+        allows_distribution=True)
     license_.save()
     return license_
 
@@ -42,13 +44,13 @@ def _create_test_experiment(user, license_):
                                             author="Michael Palin",
                                             url="http://nla.gov.au/nla.party-2")
     acl = ExperimentACL(experiment=experiment,
-                    pluginId='django_user',
-                    entityId=str(user.id),
-                    isOwner=True,
-                    canRead=True,
-                    canWrite=True,
-                    canDelete=True,
-                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                        pluginId='django_user',
+                        entityId=str(user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
     acl.save()
     return experiment
 
@@ -56,8 +58,12 @@ def _create_test_dataset(nosDatafiles):
     ds_ = Dataset(description='happy snaps of plumage')
     ds_.save()
     for i in range (0, nosDatafiles) :
-        df_ = Dataset_File(dataset=ds_, url='http://planet-python.org/' + str(_next_id()))
+        df_ = Dataset_File(dataset=ds_)
         df_.save()
+        rep_ = Replica(datafile=df_,
+                       url='http://planet-python.org/' + str(_next_id()),
+                       location=Location.get_default_location())
+        rep_.save()
     ds_.save()
     return ds_
 

@@ -447,10 +447,13 @@ class ProcessExperiment:
 
                     dfile = Dataset_File(dataset=d,
                                          filename=filename,
-                                         url=sync_url,
-                                         size=datafile['size'],
-                                         protocol=proto)
+                                         size=datafile['size'])
                     dfile.save()
+                    replica = Replica(datafile=dfile,
+                                      location=Location.get_default_location(),
+                                      url=sync_url,
+                                      protocol=proto)
+                    replica.save()
 
                     current_df_id = dfile.id
 

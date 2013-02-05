@@ -112,7 +112,10 @@ class MetsExporter():
 
             experimentDiv.add_div(datasetDiv)
 
-            for datafile in dataset.dataset_file_set.filter(verified=True):
+            for datafile in dataset.dataset_file_set.filter():
+                replica = datafile.get_preferred_replica(verified=True)
+                if not replica:
+                    continue
                 # add entry to fileSec
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
@@ -123,12 +126,12 @@ class MetsExporter():
                                  OWNERID=datafile.filename,
                                  ADMID="A-{0}".format(metadataCounter))
 
-                protocol = datafile.protocol
+                protocol = replica.protocol
                 if protocol in replace_protocols:
                     url = datafile.url.replace(protocol,
                                                replace_protocols[protocol])
                 else:
-                    url = datafile.url
+                    url = replica.url
                 _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
                     type_="simple"))
                 _fileGrp.add_file(_file)
