@@ -91,3 +91,7 @@ class Location(models.Model):
                     auth_realm=desc.get('realm', ''),
                     auth_scheme=desc.get('scheme', 'digest'))
             #cls.initialized = True
+
+    def __unicode__(self):
+        return self.name
+

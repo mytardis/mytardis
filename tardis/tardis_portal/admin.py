@@ -67,10 +67,15 @@ class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'dataset__experiment__id']
 
 
+class ReplicaAdmin(admin.ModelAdmin):
+    search_fields = ['url']
+
+class LocationAdmin(admin.ModelAdmin):
+    search_fields = ['name']
+
 class ParameterNameInline(admin.TabularInline):
     model = models.ParameterName
     extra = 0
-
 
 class SchemaAdmin(admin.ModelAdmin):
     search_fields = ['name', 'namespace']
@@ -95,6 +100,8 @@ admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.Dataset_File, DatafileAdmin)
+admin.site.register(models.Replica, ReplicaAdmin)
+admin.site.register(models.Location, LocationAdmin)
 admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)
