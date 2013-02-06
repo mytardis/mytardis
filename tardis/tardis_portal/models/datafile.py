@@ -15,52 +15,35 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') & \
                (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))
 
 class Dataset_File(models.Model):
-    """Class to store meta-data about a physical file
+    """Class to store meta-data about a file.  The physical copies of a
+    file are described by distinct Replica instances. 
 
     :attribute dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
     :attribute filename: the name of the file, excluding the path.
-    :attribute url: the url that the datafile is located at; see below.
     :attribute size: the size of the file.
-    :attribute protocol: the protocol used to access the file.
     :attribute created_time: time the file was added to tardis
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     :attribute md5sum: digest of length 32, containing only hexadecimal digits
     :attribute sha512: digest of length 128, containing only hexadecimal digits
-    :attribute stay_remote: the file should not be pulled into the mytardis
-       managed file store.
-
-    The `protocol` field is only used for rendering the download link, this
-    done by insterting the protocol into the url generated to the download
-    location. If the `protocol` field is blank then the `file` protocol will
-    be used.
-
-    The `url` field is currently a bit schizophrenic.  If the `protocol` field
-    is non-blank, then the contents of the field is up to the protocol handler.
-    If the `protocol` field is blank, then the field may be either a URL
-    (with a "scheme" component) or a relative file pathname.  In the latter
-    case, the `url` field won't be URL encoded.
     """
 
-    def get_url(self):
-        return self.get_preferred_replica().url
-        
-    def get_protocol(self):
-        return self.get_preferred_replica().protocol
-            
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
-    #url = property(get_url)
     size = models.CharField(blank=True, max_length=400)
-    #protocol = property(get_protocol)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
-    #stay_remote = models.BooleanField(default=False)
-    #verified = models.BooleanField(default=False)
+
+    # These fields are to be deleted ... once their contents are
+    # migrated.
+    url = models.CharField(max_length=400)
+    protocol = models.CharField(blank=True, max_length=10)
+    verified = models.BooleanField(default=False)
+    stay_remote = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'tardis_portal'
