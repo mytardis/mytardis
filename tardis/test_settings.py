@@ -5,6 +5,7 @@ import djcelery
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 DEBUG = True
+TESTING = True
 
 DATABASES = {
     'default': {

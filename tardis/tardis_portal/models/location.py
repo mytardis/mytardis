@@ -1,8 +1,7 @@
+import sys
 from django.conf import settings
 from django.db import models
 from django.core.files.storage import default_storage
-
-
 
 import logging
 logger = logging.getLogger(__name__)
@@ -90,7 +89,10 @@ class Location(models.Model):
                     auth_password=desc.get('password', ''),
                     auth_realm=desc.get('realm', ''),
                     auth_scheme=desc.get('scheme', 'digest'))
-            #cls.initialized = True
+            if not settings.TESTING:
+                # When running the unit tests the Location objects don't
+                # stick ... but the initialized flag does.
+                cls.initialized = True
 
     def __unicode__(self):
         return self.name
