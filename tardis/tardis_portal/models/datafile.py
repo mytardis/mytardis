@@ -38,13 +38,6 @@ class Dataset_File(models.Model):
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
 
-    # These fields are to be deleted ... once their contents are
-    # migrated.
-    url = models.CharField(max_length=400)
-    protocol = models.CharField(blank=True, max_length=10)
-    verified = models.BooleanField(default=False)
-    stay_remote = models.BooleanField(default=False)
-
     class Meta:
         app_label = 'tardis_portal'
 
