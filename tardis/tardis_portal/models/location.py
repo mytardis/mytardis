@@ -54,30 +54,38 @@ class Location(models.Model):
     def get_location(cls, loc_name):
         '''Lookup a named location'''
 
-        cls._check_initialized()
         try:
             return Location.objects.get(name=loc_name)
         except Location.DoesNotExist:
-            return None
+            if not cls._check_initialized():
+                return cls.get_location(loc_name)
+            else:
+                return None
 
     @classmethod
     def get_location_for_url(cls, url):
         '''Reverse lookup a location from a url'''
         
-        cls._check_initialized()
         for location in Location.objects.all():
             if url.startswith(location.url):
                 return location
-        return None
+        if not cls._check_initialized():
+            return cls.get_location_for_url(url)
+        else:
+            return None
 
     @classmethod
     def _check_initialized(cls):
-        if not cls.initialized:
-            cls.force_initialize()
+        '''Attempt to initialize if we need to''' 
+        if cls.initialized:
+            return True
+        res = cls.force_initialize()
         cls.initialized = True
+        return res
 
     @classmethod
     def force_initialize(cls):
+        done_init = False
         for desc in settings.INITIAL_LOCATIONS:
             try:
                 Location.objects.get(name=desc['name'])
@@ -98,6 +106,8 @@ class Location(models.Model):
                     auth_realm=desc.get('realm', ''),
                     auth_scheme=desc.get('scheme', 'digest'))
                 location.save()
+                done_init = True
+        return done_init
 
     def __unicode__(self):
         return self.name
