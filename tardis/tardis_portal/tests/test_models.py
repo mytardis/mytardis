@@ -45,10 +45,12 @@ class ModelTestCase(TestCase):
 
     def setUp(self):
         from django.contrib.auth.models import User
+        from tardis.tardis_portal.models import Location
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
+        Location.force_initialize()
 
     def test_experiment(self):
         from tardis.tardis_portal import models

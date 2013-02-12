@@ -42,6 +42,7 @@ from tardis.tardis_portal.models import Replica, Location
 class MigrateScorerTestCase(TestCase):
 
     def _setup(self):
+        Location.force_initialize()
         self.user1 = generate_user('joe', 2)
         self.user2 = generate_user('fred', 1)
         self.exp1 = generate_experiment(users=[self.user1, self.user2])

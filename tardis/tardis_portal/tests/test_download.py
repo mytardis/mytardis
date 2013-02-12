@@ -128,6 +128,8 @@ class DownloadTestCase(TestCase):
                                              email='',
                                              password='secret')
 
+        Location.force_initialize()
+
         # create a public experiment
         self.experiment1 = Experiment(title='Experiment 1',
                                       created_by=self.user,

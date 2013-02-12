@@ -66,6 +66,7 @@ class SearchTestCase(TestCase):
 
         self.client = Client()
         self.experiments = []
+        Location.force_initialize()
 
         try:
             user = User.objects.get(username='test')
@@ -423,6 +424,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         from django.core.management import call_command
         call_command('loaddata', 'as_schemas')
         self.experiment = None
+        Location.force_initialize()
 
         try:
             self.user = User.objects.get(username='test')

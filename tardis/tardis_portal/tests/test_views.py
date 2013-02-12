@@ -53,7 +53,7 @@ from django.contrib.auth.models import User, Group, Permission
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ExperimentACL, Experiment, Dataset, Dataset_File
+    ExperimentACL, Experiment, Dataset, Dataset_File, Location
 
 
 class UploadTestCase(TestCase):
@@ -70,6 +70,8 @@ class UploadTestCase(TestCase):
         self.userProfile = UserProfile(user=self.user)
 
         self.test_dir = mkdtemp()
+
+        Location.force_initialize()
 
         self.exp = Experiment(title='test exp1',
                 institution_name='monash', created_by=self.user)
@@ -424,6 +426,8 @@ class StageFilesTestCase(TestCase):
             makedirs(staging_dir)
         # Ensure that staging dir is set up properly
         expect(get_full_staging_path(username)).to_be_truthy()
+
+        Location.force_initialize()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',

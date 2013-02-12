@@ -16,6 +16,7 @@ class BackgroundTaskTestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
 
     def setUp(self):
+        Location.force_initialize()
         self.dataset = self._create_dataset()
 
     def _create_dataset(self):

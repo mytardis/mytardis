@@ -98,7 +98,7 @@ def _next_id():
 class RmExperimentTestCase(TestCase):
 
     def setUp(self):
-        pass
+        Location.force_initialize()
 
     def testList(self):
         (exp1_, exp2_) = _create_test_data()
@@ -134,6 +134,4 @@ class RmExperimentTestCase(TestCase):
         expect(DatasetParameterSet.objects.all().count()).to_be(0)
         expect(DatafileParameterSet.objects.all().count()).to_be(0)
         
-    def tearDown(self):
-        pass
 

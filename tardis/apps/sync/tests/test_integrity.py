@@ -27,6 +27,7 @@ class IntegrityCheckTestCase(TestCase):
     def setUp(self):
         self.user = User(username='user1', password='password', email='a@a.com')
         self.user.save()
+        Location.force_initialize()
         self.bad_exp = Experiment(
                 approved = True,
                 title = 'title1',

@@ -38,7 +38,7 @@ from django.core.management.base import CommandError
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Dataset_File, Location
 
 from tardis.apps.migration import Destination
 from tardis.apps.migration.management.commands.migratefiles import Command
@@ -54,6 +54,7 @@ class MigrateCommandTestCase(TestCase):
         self.dummy_user = generate_user('joe')
         self.server = SimpleHttpTestServer()
         self.server.start()
+        Location.force_initialize()
 
     def tearDown(self):
         self.dummy_user.delete()

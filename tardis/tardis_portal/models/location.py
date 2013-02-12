@@ -73,26 +73,27 @@ class Location(models.Model):
     @classmethod
     def _check_initialized(cls):
         if not cls.initialized:
-            for desc in settings.INITIAL_LOCATIONS:
-                url = desc['url']
-                if not url.endswith('/'):
-                    url = url + '/'
-                Location.objects.get_or_create(\
-                    name=desc['name'],
-                    url=url,
-                    type=desc['type'],
-                    priority=desc['priority'],
-                    migration_provider=desc.get('provider', 'local'),
-                    trust_length=desc.get('trust_length', False),
-                    metadata_supported=desc.get('metadata_supported', False),
-                    auth_user=desc.get('user', ''),
-                    auth_password=desc.get('password', ''),
-                    auth_realm=desc.get('realm', ''),
-                    auth_scheme=desc.get('scheme', 'digest'))
-            if not settings.TESTING:
-                # When running the unit tests the Location objects don't
-                # stick ... but the initialized flag does.
-                cls.initialized = True
+            cls.force_initialize()
+        cls.initialized = True
+
+    @classmethod
+    def force_initialize(cls):
+        for desc in settings.INITIAL_LOCATIONS:
+            url = desc['url']
+            if not url.endswith('/'):
+                url = url + '/'
+            Location.objects.get_or_create(\
+                name=desc['name'],
+                url=url,
+                type=desc['type'],
+                priority=desc['priority'],
+                migration_provider=desc.get('provider', 'local'),
+                trust_length=desc.get('trust_length', False),
+                metadata_supported=desc.get('metadata_supported', False),
+                auth_user=desc.get('user', ''),
+                auth_password=desc.get('password', ''),
+                auth_realm=desc.get('realm', ''),
+                auth_scheme=desc.get('scheme', 'digest'))
 
     def __unicode__(self):
         return self.name

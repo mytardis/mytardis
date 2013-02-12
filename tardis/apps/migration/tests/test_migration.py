@@ -48,6 +48,7 @@ class MigrationTestCase(TestCase):
 
     def setUp(self):
         self.user = generate_user('fred')
+        Location.force_initialize()
         self.experiment = generate_experiment(users=[self.user])
         self.dataset = generate_dataset(experiments=[self.experiment])
         self.server = SimpleHttpTestServer()

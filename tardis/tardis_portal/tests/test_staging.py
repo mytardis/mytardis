@@ -115,6 +115,8 @@ class TestStagingFiles(TestCase):
         with open(self.file, "w+b") as f:
             f.write(content)
 
+        Location.force_initialize()
+
         # make datafile
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',

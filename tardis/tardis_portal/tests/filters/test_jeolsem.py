@@ -26,6 +26,8 @@ class JEOLSEMFilterTestCase(TestCase):
         profile = UserProfile(user=user, isDjangoAccount=True)
         profile.save()
 
+        Location.force_initialize()
+
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
                                 institution_name='Test Uni',

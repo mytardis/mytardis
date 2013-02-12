@@ -29,6 +29,9 @@ def _create_datafile():
     user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
     user.save()
     UserProfile(user=user).save()
+
+    Location.force_initialize()
+
     full_access = Experiment.PUBLIC_ACCESS_FULL
     experiment = Experiment.objects.create(title="IIIF Test",
                                            created_by=user,

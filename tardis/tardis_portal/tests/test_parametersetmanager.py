@@ -59,6 +59,8 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
+        models.Location.force_initialize()
+
         self.exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
                                 created_by=self.user,
