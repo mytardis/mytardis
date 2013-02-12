@@ -20,8 +20,8 @@ class Location(models.Model):
     ... and other attributes TBD
     '''
 
-    name = models.CharField(max_length=10)
-    url = models.CharField(max_length=400)
+    name = models.CharField(max_length=10, unique=True)
+    url = models.CharField(max_length=400, unique=True)
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
