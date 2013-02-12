@@ -79,21 +79,25 @@ class Location(models.Model):
     @classmethod
     def force_initialize(cls):
         for desc in settings.INITIAL_LOCATIONS:
-            url = desc['url']
-            if not url.endswith('/'):
-                url = url + '/'
-            Location.objects.get_or_create(\
-                name=desc['name'],
-                url=url,
-                type=desc['type'],
-                priority=desc['priority'],
-                migration_provider=desc.get('provider', 'local'),
-                trust_length=desc.get('trust_length', False),
-                metadata_supported=desc.get('metadata_supported', False),
-                auth_user=desc.get('user', ''),
-                auth_password=desc.get('password', ''),
-                auth_realm=desc.get('realm', ''),
-                auth_scheme=desc.get('scheme', 'digest'))
+            try:
+                Location.objects.get(name=desc['name'])
+            except Location.DoesNotExist:
+                url = desc['url']
+                if not url.endswith('/'):
+                    url = url + '/'
+                location = Location(
+                    name=desc['name'],
+                    url=url,
+                    type=desc['type'],
+                    priority=desc['priority'],
+                    migration_provider=desc.get('provider', 'local'),
+                    trust_length=desc.get('trust_length', False),
+                    metadata_supported=desc.get('metadata_supported', False),
+                    auth_user=desc.get('user', ''),
+                    auth_password=desc.get('password', ''),
+                    auth_realm=desc.get('realm', ''),
+                    auth_scheme=desc.get('scheme', 'digest'))
+                location.save()
 
     def __unicode__(self):
         return self.name
