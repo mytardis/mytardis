@@ -27,9 +27,9 @@ class Location(models.Model):
     is_available = models.BooleanField(default=True)
     trust_length = models.BooleanField(default=False)
     metadata_supported = models.BooleanField(default=False)
-    auth_user = models.CharField(max_length=20, default='')
-    auth_password = models.CharField(max_length=400, default='')
-    auth_realm = models.CharField(max_length=20, default='')
+    auth_user = models.CharField(max_length=20, blank=True)
+    auth_password = models.CharField(max_length=400, blank=True)
+    auth_realm = models.CharField(max_length=20, blank=True)
     auth_scheme = models.CharField(max_length=10, default='digest')
     migration_provider = models.CharField(max_length=10, default='local')
 
