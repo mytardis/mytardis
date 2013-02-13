@@ -174,6 +174,13 @@ class ModelTestCase(TestCase):
                          '/test/download/datafile/3/')
         self.assertFalse(df_file.is_local())
 
+    def test_location(self):
+        from tardis.tardis_portal.models import Location
+        self.assertEquals(Location.get_default_location().name,
+                          'local')
+        self.assertEquals(Location.get_location('staging').name,
+                          'staging')
+        self.assertEquals(len(Location.objects.all()), 6)
 
     # check conversion of b64encoded images back into files
     def test_parameter(self):

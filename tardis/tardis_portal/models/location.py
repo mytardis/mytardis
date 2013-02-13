@@ -88,7 +88,9 @@ class Location(models.Model):
         done_init = False
         for desc in settings.INITIAL_LOCATIONS:
             try:
+                logger.debug('Checking location %s' % desc['name'])
                 Location.objects.get(name=desc['name'])
+                logger.debug('Location %s already exists' % desc['name'])
             except Location.DoesNotExist:
                 url = desc['url']
                 if not url.endswith('/'):
@@ -106,6 +108,7 @@ class Location(models.Model):
                     auth_realm=desc.get('realm', ''),
                     auth_scheme=desc.get('scheme', 'digest'))
                 location.save()
+                logger.info('Location %s created' % desc['name'])
                 done_init = True
         return done_init
 
