@@ -477,6 +477,24 @@ class MigrateCommandTestCase(TestCase):
         out.seek(0)
         self.assertEquals(out.read(), '')
 
+    def testMigrateDestinations(self):
+        # Ensuring that there are at least zero bytes of free space
+        # is a no-op ... but it tests the logic, and the method that
+        # enquires how much free disc space there is.
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'destinations', stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'local            : online   : local    : file:///home/scrawley/git/mytardis/var/test/store/\n' +
+                          'sync             : external : local    : file:///home/scrawley/git/mytardis/var/test/sync/\n' +
+                          'staging          : external : local    : file:///home/scrawley/git/mytardis/var/test/staging/\n' +
+                          'test             : online   : http     : http://127.0.0.1:4272/data/\n' +
+                          'test2            : online   : dav      : http://127.0.0.1/data2/\n' +
+                          'test3            : online   : dav      : http://127.0.0.1/data3/\n')
+
     def testParseAmount(self):
         command = Command()
         self.assertEquals(command._parse_amount(['0']), 0)

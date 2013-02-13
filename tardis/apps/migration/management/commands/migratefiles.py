@@ -39,7 +39,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.log import dictConfig
 
 from tardis.tardis_portal.util import get_free_space
-from tardis.tardis_portal.models import Replica
+from tardis.tardis_portal.models import Replica, Location
 
 from tardis.apps.migration import Destination, MigrationError, \
     MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
@@ -274,10 +274,10 @@ class Command(BaseCommand):
             raise CommandError("Destination %s not known" % destName)
 
     def _list_destinations(self):
-        for dest in settings.MIGRATION_DESTINATIONS:
-            self.stdout.write('{0:<16} : {1:} : {2:}\n'.
-                              format(dest['name'], dest['transfer_type'],
-                                     dest['base_url']))
+        for loc in Location.objects.all():
+            self.stdout.write('{0:<16} : {1:<8} : {2:<8} : {3:}\n'.
+                              format(loc.name, loc.type, 
+                                     loc.migration_provider, loc.url))
 
     def _score_all_datafiles(self):
         scores = self._do_score_all()
