@@ -348,15 +348,15 @@ djcelery.setup_loader()
 DEFAULT_LOCATION = "local"
 
 INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
-                      'url': 'file:/' + path.realpath(FILE_STORE_PATH),
+                      'url': 'file://' + path.realpath(FILE_STORE_PATH),
                       'type': 'online',
                       'priority': 10},
 #                     {'name': 'sync',
-#                      'url': 'file:/' + path.realpath(SYNC_PATH),
+#                      'url': 'file://' + path.realpath(SYNC_PATH),
 #                      'type': 'external',
 #                      'priority': 8},
                      {'name': 'staging',
-                      'url': 'file:/' + path.realpath(STAGING_PATH),
+                      'url': 'file://' + path.realpath(STAGING_PATH),
                       'type': 'external',
                       'priority': 5}]
 
