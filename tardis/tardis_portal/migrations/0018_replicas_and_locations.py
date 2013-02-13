@@ -26,8 +26,8 @@ class Migration(SchemaMigration):
         # Adding model 'Location'
         db.create_table('tardis_portal_location', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=10, unique=True)),
-            ('url', self.gf('django.db.models.fields.CharField')(max_length=400, unique=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=10)),
+            ('url', self.gf('django.db.models.fields.CharField')(max_length=400)),
             ('type', self.gf('django.db.models.fields.CharField')(max_length=10)),
             ('priority', self.gf('django.db.models.fields.IntegerField')()),
             ('is_available', self.gf('django.db.models.fields.BooleanField')(default=True)),
