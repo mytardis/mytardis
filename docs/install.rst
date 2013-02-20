@@ -203,6 +203,36 @@ Filters
    http://www.buildout.org
       The Buildout homepage.
 
+Locations
+~~~~~~~~~
+
+A MyTardis instance can be configured to support multiple "Locations" for storing data files.  Each location holds copies ("Replicas") of "Datafiles" that are recorded in the MyTardis database.  MyTardis is aware of the replicas, and can serve the content to the users (in some cases indirectly) from different replicas depending on availability. 
+
+The initial set of Locations is given by the INITIAL_LOCATIONS setting, where the 'name' attribute gives the Location name::
+
+    INITIAL_LOCATIONS = [{'name': 'test', 
+                          'url': 'http://127.0.0.1:4272/data/',
+			  'type': 'online',
+			  'priority': 5,
+                          'provider': 'dav',
+                          'trust_length': False,
+			  'user' : 'username',
+			  'password' : 'secret',
+			  'realm' : 'realmName',
+			  'auth' : 'digest',
+
+The attributes are as follows:
+
+  * The 'name' is the name of the Location.
+  * The 'url' field is a URL that identifies the Location.  This is used by a transfer provider as the base URL for data files.
+  * The 'type' field characterizes the location:
+    * 'online' means that the Location keeps the data files online
+    * 'offline' means that the Location stores 
+  * The 'provider' is the transfer provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
+  * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
+  * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
+  * The 'user', 'password', 'realm' and 'auth' attributes provide optional credentials for the provider to use when talking to the target server.  If 'realm' is omitted (or None) then you are saying to provide the user / password irrespective of the challenge realm.  The 'auth' property can be 'basic' or 'digest', and defaults to 'digest'.
+
 Single Search
 ~~~~~~~~~~~~~
 

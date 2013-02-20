@@ -29,27 +29,6 @@ Add the migration application to the INSTALLED_APPS list in your MyTardis projec
         TARDIS_APP_ROOT + '.migration',
     )
 
-Describe the available destinations for transferring files to.  Each destination is a dictionary in the list, and the 'name' attribute gives its name::
-
-    MIGRATION_DESTINATIONS = [{'name': 'test', 
-                               'transfer_type': 'dav',
-                               'datafile_protocol': '',
-                               'trust_length': False,
-			       'user' : 'username',
-			       'password' : 'secret',
-			       'realm' : 'realmName',
-			       'auth' : 'digest',
-                               'base_url': 'http://127.0.0.1:4272/data/'}]
-
-The attributes are as follows:
-
-  * The 'name' is the name of the transfer destination, as used in the "--dest" option.
-  * The 'transfer_type' is the provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
-  * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
-  * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
-  * The 'base_url' field is used by the provider to form the target URL for the transfer.  The resulting URL will be saved in the Datafile's 'url' file folloing a successful transfer.
-  * The 'user', 'password', 'realm' and 'auth' attributes provide optional credentials for the provider to use when talking to the target server.  If 'realm' is omitted (or None) then you are saying to provide the user / password irrespective of the challenge realm.  The 'auth' property can be 'basic' or 'digest', and defaults to 'digest'.
-
 Specify the default migration destination.  If none is specified, the "--dest" option becomes mandatory for the "migrate" command::
 
     DEFAULT_MIGRATION_DESTINATION = 'test'
