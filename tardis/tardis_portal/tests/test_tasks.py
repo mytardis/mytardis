@@ -19,6 +19,11 @@ class BackgroundTaskTestCase(TestCase):
         Location.force_initialize()
         self.dataset = self._create_dataset()
 
+    def _get_or_create_local_location(self, name, url, type, priority):
+        return Location.objects.get_or_create(
+            name=name, url=url, type=type, priority=priority, 
+            migration_provider='local')[0] 
+
     def _create_dataset(self):
         user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
         user.save()
@@ -70,9 +75,11 @@ class BackgroundTaskTestCase(TestCase):
                 datafile.size = len(content)
                 datafile.sha512sum = hashlib.sha512(content).hexdigest()
                 datafile.save()
-                replica = Replica(datafile=datafile,
-                                  location=Location.get_location('staging'),
-                                  url='file://' + path.abspath(f.name))
+                url = 'file://' + path.abspath(f.name)
+                base_url = 'file://' + path.dirname(path.abspath(f.name))
+                location = self._get_or_create_local_location(
+                    'test-staging-xxx', base_url, 'external', 10)
+                replica = Replica(datafile=datafile, location=location, url=url)
                 replica.save()
 
                 def get_replica(replica):

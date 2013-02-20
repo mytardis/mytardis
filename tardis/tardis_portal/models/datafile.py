@@ -122,6 +122,7 @@ class Dataset_File(models.Model):
         else:
             replicas = Replica.objects.filter(datafile=self, verified=verified)
         for r in replicas: 
+            print 'checking replica %s, location %s\n' % (r, r.location.name)
             if not p or \
                     p.location.get_priority() < r.location.get_priority():
                 p = r

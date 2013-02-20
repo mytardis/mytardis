@@ -86,16 +86,7 @@ class Replica(models.Model):
         
         if requireVerified and not self.verified:
             raise ValueError("Replica %s not verified" % self.id)
-        if self.is_local():
-            theUrl = self.url
-            def getter():
-                return default_storage.open(theUrl)
-            return getter
-        else:
-            theUrl = self.get_actual_url()
-            def getter():
-                return get_privileged_opener().open(theUrl)
-            return getter
+        return Location.get_provider(self.location.id).get_opener(self)
 
     def get_file(self, requireVerified=True):
         return self.get_file_getter(requireVerified=requireVerified)()
@@ -137,8 +128,8 @@ class Replica(models.Model):
         url = urlparse.urlparse(self.url)
         if url.scheme == '':
             try:
-                # FILE_STORE_PATH must be set
-                return _os.safe_join(settings.FILE_STORE_PATH, url.path)
+                base_path = Location.get_provider(self.location.id).base_path
+                return _os.safe_join(base_path, url.path)
             except AttributeError:
                 return ''
         if url.scheme == 'file':

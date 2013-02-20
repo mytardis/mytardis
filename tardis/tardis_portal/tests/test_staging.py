@@ -39,7 +39,6 @@ from os import path
 
 from django.test import TestCase
 
-
 class TraverseTestCase(TestCase):
     dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
     files = [['dir1', 'file1'],
@@ -135,9 +134,12 @@ class TestStagingFiles(TestCase):
         df.save()
 
         # create replica
+        base_url = 'file://' + settings.GET_FULL_STAGING_PATH_TEST
+        location = Location.objects.get_or_create(
+            name='staging-test-yyy', url=base_url, type='external', 
+            priority=10, migration_provider='local')[0] 
         replica = models.Replica(datafile=df, url='file://'+self.file,
-                                 protocol="staging",
-                                 location=Location.get_location("staging"))
+                                 protocol="staging",location=location)
         replica.verify(allowEmptyChecksums=True)
         replica.save()
         self.replica = replica

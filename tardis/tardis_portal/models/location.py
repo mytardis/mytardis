@@ -1,4 +1,4 @@
-import sys
+import sys, urllib2
 from django.conf import settings
 from django.db import models
 from django.core.files.storage import default_storage
@@ -111,6 +111,35 @@ class Location(models.Model):
                 logger.info('Location %s created' % desc['name'])
                 done_init = True
         return done_init
+
+    @classmethod
+    def get_provider(cls, location_id):
+        loc = Location.objects.get(id=location_id)
+        return cls.build_provider(loc)
+
+    @classmethod
+    def build_provider(cls, loc):
+        if loc.auth_user:
+            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(loc.auth_realm, dest.base_url, 
+                                      loc.auth_user, loc.auth_password)
+            if loc.auth_scheme == 'basic':
+                handler = urllib2.HTTPBasicAuthHandler(password_mgr)
+            elif loc.auth_scheme == 'digest':
+                handler = urllib2.HTTPDigestAuthHandler(password_mgr)
+            else:
+                raise ValueError('Unknown auth type "%s"' % loc.auth_scheme)
+            opener = urllib2.build_opener(handler)
+        else:
+            opener = urllib2.build_opener()
+
+        # FIXME - is there a better way to do this?
+        exec 'import tardis\n' + \
+            'provider = ' + \
+            settings.MIGRATION_PROVIDERS[loc.migration_provider] + \
+                '(loc.name, loc.url, opener, ' + \
+                'metadata_supported=loc.metadata_supported)'
+        return provider
 
     def __unicode__(self):
         return self.name

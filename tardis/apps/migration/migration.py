@@ -101,11 +101,10 @@ def migrate_replica(replica, destination, noRemove=False, mirror=False):
             raise MigrationError('Cannot migrate a replica to its' \
                                      ' current location')
         newreplica.url = url
-        
         destination.provider.put_file(replica, newreplica) 
         verified = False
         try:
-            verified = check_file_transferred(replica, destination, url)
+            verified = check_file_transferred(newreplica, destination)
         except:
             # FIXME - should we always do this?
             destination.provider.remove_file(url)
@@ -141,7 +140,7 @@ def restore_datafile(replica, noRemove=False):
 def restore_replica(replica, noRemove=False):
     raise Exception('deprecated')    
     
-def check_file_transferred(replica, destination, target_url):
+def check_file_transferred(replica, destination):
     """
     Check that a replica has been successfully transfered to a remote
     storage location
@@ -154,12 +153,13 @@ def check_file_transferred(replica, destination, target_url):
     # file length for its copy of the file
     try:
         # Fetch the remote's metadata for the file
-        m = destination.provider.get_metadata(target_url)
-        if _check_attribute(m, datafile.sha512sum, 'sha512sum') or \
-               _check_attribute(m, datafile.md5sum, 'md5sum'):
+        m = destination.provider.get_metadata(replica.url)
+        _check_attribute(m, datafile.size, 'length')
+        if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
+               _check_attribute(m, datafile.md5sum, 'md5sum')):
             return True
         if destination.trust_length and \
-                 _check_attribute(m, datafile.length, 'length') :
+                 _check_attribute(m, datafile.size, 'length') :
             return False
         raise MigrationError('Not enough metadata for verification')
     except NotImplementedError:
@@ -171,15 +171,18 @@ def check_file_transferred(replica, destination, target_url):
 
     if destination.trust_length :
         try:
-            length = destination.provider.get_length(target_url)
-            if _check_attribute2(length, datafile.length, 'length'):
+            length = destination.provider.get_length(replica.url)
+            if _check_attribute2(length, datafile.size, 'length'):
                 return False
         except NotImplementedError:
             pass
     
     # Fetch back the remote file and verify it locally.
-    f = get_privileged_opener().open(target_url)
+    f = destination.provider.get_opener(replica)()
+    print 'read back "%s"\n' % f.read()
+    f = destination.provider.get_opener(replica)()
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
+    _check_attribute2(str(size), datafile.size, 'length')
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return True
@@ -191,6 +194,8 @@ def _check_attribute(attributes, value, key):
     try:
        if attributes[key].lower() == value.lower():
           return True
+       logger.debug('incorrect %s: expected %s, got %s', 
+                    key, value, attributes[key])
        raise MigrationError('Transfer check failed: the %s attribute of the' \
                                 ' remote file does not match' % (key))  
     except KeyError:
@@ -201,6 +206,7 @@ def _check_attribute2(attribute, value, key):
         return False
     if value.lower() == attribute.lower():
         return True
+    logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))
 

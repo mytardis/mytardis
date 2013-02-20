@@ -59,10 +59,14 @@ class JEOLSEMFilterTestCase(TestCase):
                                     size=size,
                                     sha512sum=sha512sum)
             datafile.save()
+            base_url = 'file://' + path.abspath(path.dirname(testfile))
+            location = Location.objects.get_or_create(
+                name='test-jeol', url=base_url, type='external',
+                priority=10, migration_provider='local')[0]
             replica = Replica(datafile=datafile,
                               url='file://'+path.abspath(testfile),
                               protocol='file',
-                              location=Location.get_default_location())
+                              location=location)
             replica.verify()
             replica.save()
             return Dataset_File.objects.get(pk=datafile.pk)

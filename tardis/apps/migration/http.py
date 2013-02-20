@@ -84,6 +84,12 @@ class SimpleHttpTransfer(TransferProvider):
         response = self.opener.open(self.GetRequest(url))
         return response.read()
     
+    def get_opener(self, replica):
+        theUrl = replica.url
+        def getter():
+            return self.opener.open(theUrl)
+        return getter
+
     def generate_url(self, replica):
         return replica.generate_default_url()
 
@@ -107,4 +113,3 @@ class SimpleHttpTransfer(TransferProvider):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination (url %s)') % \
                                              (url, self.name, self.base_url))
-

@@ -9,6 +9,11 @@ from ..integrity import IntegrityCheck
 
 
 class IntegrityCheckTestCase(TestCase):
+    def _get_or_create_local_location(self, name, url, type, priority):
+        return Location.objects.get_or_create(
+            name=name, url=url, type=type, priority=priority, 
+            migration_provider='local')[0] 
+
     def _make_dataset(self, exp, filenames):
         dataset = Dataset()
         dataset.save()
@@ -19,9 +24,12 @@ class IntegrityCheckTestCase(TestCase):
             df.save()
             url = 'file://' + path.join(path.dirname(__file__), 'data', 
                                         filename)
+            location = self._get_or_create_local_location(
+                'synctest', 
+                'file://' + path.join(path.dirname(__file__), 'data'),
+                'external', 20)
             replica = Replica(datafile=df, protocol='file',
-                              location=Location.get_default_location(),
-                              url=url)
+                              location=location, url=url)
             replica.save()
 
     def setUp(self):

@@ -2912,7 +2912,7 @@ def stage_files_to_dataset(request, dataset_id):
         replica = Replica(datafile=datafile,
                           protocol='staging',
                           url=url,
-                          location=Location.get_default_location())
+                          location=Location.get_location('staging'))
         replica.verify(allowEmptyChecksums=True)
         replica.save()
         return datafile

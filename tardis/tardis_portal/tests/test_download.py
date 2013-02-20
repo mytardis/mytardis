@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 
 from nose.plugins.skip import SkipTest
 
-import filecmp
+import filecmp, urlparse
 
 from tardis.tardis_portal.download import StreamingFile, StreamableZipFile
 from tardis.tardis_portal.models import \
@@ -148,7 +148,6 @@ class DownloadTestCase(TestCase):
         self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
 
-
         # dataset2 belongs to experiment2
         self.dataset2 = Dataset()
         self.dataset2.save()
@@ -194,8 +193,17 @@ class DownloadTestCase(TestCase):
                                 size=str(size if size != None else filesize), 
                                 sha512sum=(checksum if checksum else sha512sum))
         datafile.save()
+        if urlparse.urlparse(url).scheme == '':
+            location = Location.get_location('local')
+        else:
+            location = Location.get_location_for_url(url)
+            if not location:
+                location = Location.objects.get_or_create(
+                    name=filename, url=urlparse.urljoin(url, '.'), 
+                    type='external', 
+                    priority=10, migration_provider='local')[0]
         replica = Replica(datafile=datafile, protocol=protocol, url=url,
-                          location=Location.get_default_location())
+                          location=location)
         replica.save()
         replica.verify()
         return Dataset_File.objects.get(pk=datafile.pk)

@@ -172,6 +172,8 @@ class MigrationTestCase(TestCase):
         # Bring it back
         new_replica = datafile.get_preferred_replica()
         url = new_replica.url
+        print "url = %s, id = %s, id2 = %s\n" % \
+            (url, new_replica.location.id, local.loc_id)
         self.assertTrue(migrate_replica(new_replica, local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely

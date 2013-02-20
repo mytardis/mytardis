@@ -31,10 +31,15 @@ from urllib2 import Request, HTTPError
 from urllib import quote, unquote
 from urlparse import urlparse, urljoin
 import os
+from os import path
+from contextlib import closing
 
 from django.utils import simplejson
+from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-from tardis.tardis_portal.staging import stage_replica
+from django.core.files.uploadedfile import TemporaryUploadedFile
+from django.core.exceptions import SuspiciousOperation
+
 from tardis.tardis_portal.util import generate_file_checksums
 
 from .base import MigrationError, MigrationProviderError, TransferProvider
@@ -44,9 +49,14 @@ class LocalTransfer(TransferProvider):
         TransferProvider.__init__(self, name)
         if not base_url.endswith('/'):
             base_url = base_url + '/'
-        self.base_url = base_url
+        self.base_url = urljoin(base_url, '.')
+        parts = urlparse(self.base_url)
+        if parts.scheme != 'file':
+            raise ValueError('base_url (%s) should be a "file:" url' % base_url)
+        self.base_path = parts.path
         self.metadata_supported = False
         self.opener = opener
+        self.storage = FileSystemStorage(location=self.base_path)
 
     def get_length(self, uri):
         filename = self._uri_to_filename(uri)
@@ -63,7 +73,13 @@ class LocalTransfer(TransferProvider):
     def get_file(self, uri):
         filename = self._uri_to_filename(uri)
         raise Exception('tbd')
-    
+ 
+    def get_opener(self, replica):
+        path = self._uri_to_filename(replica.url)
+        def getter():
+            return self.storage.open(path)
+        return getter
+   
     def generate_url(self, replica):
         return replica.generate_default_url()
 
@@ -71,18 +87,29 @@ class LocalTransfer(TransferProvider):
         return uri.startswith(self.base_url)
     
     def put_file(self, source_replica, target_replica):
-        target_replica.url = source_replica.url
-        if not stage_replica(target_replica):
-            raise MigrationProviderError(
-                'Staging from url %s to local replica failed' % 
-                source_replica.url)
+        datafile = target_replica.datafile
+        with TemporaryUploadedFile(datafile.filename, 
+                                   None, None, None) as tf:
+            with closing(source_replica.get_file()) as rf:
+                tf.file.write(rf.read())
+            tf.file.flush()
+            dspath = datafile.dataset.get_path()
+            try:
+                copyto = path.join(dspath, tf.name)
+                self.storage.path(copyto)
+            except (SuspiciousOperation, ValueError):
+                copyto = path.join(dspath. path.basename(tf.name))
+            target_replica.url = self.storage.save(copyto, tf)
+            target_replica.verified = False
+            target_replica.protocol = ''
+            target_replica.save()
     
     def remove_file(self, uri):
         filename = self._uri_to_filename(uri)
         os.remove(filename)
 
     def _uri_to_filename(self, uri):
-        # This is crude and possibly fragile.
+        # This is crude and possibly fragile, and definitely insecure
         parts = urlparse(uri)
         if not parts.scheme:
             return '%s/%s' % (settings.FILE_STORE_PATH, uri)
