@@ -109,6 +109,7 @@ class MigrateCommandTestCase(TestCase):
                           'Only verified datafiles can be migrated ' \
                           'to this destination\n' % datafile.id)
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
+        replica.save()
 
         # (Paths should all be kosher now ...)
         path = datafile.get_absolute_filepath()

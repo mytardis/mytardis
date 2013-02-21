@@ -37,6 +37,7 @@ def verify_as_remote(replica_id):
         # Second check after lock (concurrency paranoia)
         if not replica.verified:
             replica.verify()
+            replica.save()
 
 @task(name="tardis_portal.make_local_copy", ignore_result=True)
 def make_local_copy(replica_id):

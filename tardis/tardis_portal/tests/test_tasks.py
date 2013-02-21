@@ -83,7 +83,15 @@ class BackgroundTaskTestCase(TestCase):
                 replica.save()
 
                 def get_replica(replica):
-                    return Replica.objects.get(id=replica.id)
+                    try:
+                        return Replica.objects.get(id=replica.id)
+                    except Replica.DoesNotExist:
+                        return None
+
+                def get_new_replica(datafile):
+                    location = Location.get_default_location()
+                    return Replica.objects.get(datafile=datafile.id,
+                                               location=location)
 
                 # Check that it won't verify as it stands
                 expect(get_replica(replica).verified).to_be(False)
@@ -97,5 +105,6 @@ class BackgroundTaskTestCase(TestCase):
 
                 # Check it now verifies
                 verify_files()
-                expect(get_replica(replica).verified).to_be(True)
-                expect(get_replica(replica).is_local()).to_be(True)
+                expect(get_replica(replica)).to_be(None)
+                expect(get_new_replica(datafile).verified).to_be(True)
+                expect(get_new_replica(datafile).is_local()).to_be(True)

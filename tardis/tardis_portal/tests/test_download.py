@@ -204,8 +204,8 @@ class DownloadTestCase(TestCase):
                     priority=10, migration_provider='local')[0]
         replica = Replica(datafile=datafile, protocol=protocol, url=url,
                           location=location)
-        replica.save()
         replica.verify()
+        replica.save()
         return Dataset_File.objects.get(pk=datafile.pk)
 
     def tearDown(self):

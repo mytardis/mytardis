@@ -145,14 +145,23 @@ class StagingHook():
 
 def stage_replica(replica):
     from django.core.files.uploadedfile import TemporaryUploadedFile
+    from tardis.tardis_portal.models import Replica, Location
+    if not replica.location.type == 'external':
+        raise ValueError('Only external replicas can be staged')
     with TemporaryUploadedFile(replica.datafile.filename, 
                                None, None, None) as tf:
         if replica.verify(tempfile=tf.file):
-            tf.file.flush()
-            replica.url = write_uploaded_file_to_dataset(\
-                replica.datafile.dataset, tf)
-            replica.protocol = ''
-            replica.save()
+            if not replica.stay_remote:
+                tf.file.flush()
+                target_replica = Replica(
+                    datafile=replica.datafile,
+                    url=write_uploaded_file_to_dataset(\
+                        replica.datafile.dataset, tf),
+                    location=Location.get_default_location(),
+                    verified=True,
+                    protocol='')
+                target_replica.save()
+                replica.delete()
             return True
         else:
             return False

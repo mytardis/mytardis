@@ -195,10 +195,9 @@ class Replica(models.Model):
             df.mimetype = mimetype
             df.save()
         self.verified = True
-        self.save()
 
-        logger.info("Saved %s for datafile #%d " % (self.url, self.id) +
-                    "after successful verification")
+        logger.info("Saved %s for datafile #%d after successful verification", 
+                    self.url, self.datafile.id)
         return True
     
     def deleteCompletely(self):
