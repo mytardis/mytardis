@@ -36,7 +36,6 @@ from contextlib import closing
 
 from django.utils import simplejson
 from django.core.files.storage import FileSystemStorage
-from django.conf import settings
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.core.exceptions import SuspiciousOperation
 
@@ -112,7 +111,7 @@ class LocalTransfer(TransferProvider):
         # This is crude and possibly fragile, and definitely insecure
         parts = urlparse(uri)
         if not parts.scheme:
-            return '%s/%s' % (settings.FILE_STORE_PATH, uri)
+            return '%s/%s' % (self.base_path, uri)
         if not uri.startswith(self.base_url):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination (url %s)') % \
@@ -120,5 +119,5 @@ class LocalTransfer(TransferProvider):
         if parts.scheme == 'file':
             return unquote('/%s/%s' % (parts.netloc, parts.path))
         else:
-            return settings.FILE_STORE_PATH + uri[len(base_url):]
+            return self.base_path + uri[len(base_url):]
 
