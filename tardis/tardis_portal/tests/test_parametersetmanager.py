@@ -73,7 +73,8 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset.save()
 
         self.datafile = models.Dataset_File(dataset=self.dataset,
-                                            filename="testfile.txt")
+                                            filename="testfile.txt",
+                                            size="42", md5sum='bogus')
         self.datafile.save()
  
         self.replica = models.Replica(

@@ -26,7 +26,7 @@ class Dataset_File(models.Model):
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     :attribute md5sum: digest of length 32, containing only hexadecimal digits
-    :attribute sha512: digest of length 128, containing only hexadecimal digits
+    :attribute sha512sum: digest of length 128, containing only hexadecimal digits
     """
 
     dataset = models.ForeignKey(Dataset)
@@ -56,6 +56,16 @@ class Dataset_File(models.Model):
         # Filter empty sizes, get array of sizes, then reduce
         return reduce(sum_str, datafiles.exclude(size='')
                                         .values_list('size', flat=True), 0)
+
+    def save(self, *args, **kwargs):
+        if settings.REQUIRE_DATAFILE_CHECKSUMS and \
+                not self.md5sum and not self.sha512sum:
+            raise Exception('Every Datafile requires a checksum')
+        elif settings.REQUIRE_DATAFILE_SIZES and \
+                not self.size:
+            raise Exception('Every Datafile requires a file size')
+        else:
+            super(Dataset_File, self).save(*args, **kwargs)
         
     def get_size(self):
         return self.size
@@ -122,7 +132,6 @@ class Dataset_File(models.Model):
         else:
             replicas = Replica.objects.filter(datafile=self, verified=verified)
         for r in replicas: 
-            print 'checking replica %s, location %s\n' % (r, r.location.name)
             if not p or \
                     p.location.get_priority() < r.location.get_priority():
                 p = r

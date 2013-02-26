@@ -149,7 +149,7 @@ class Replica(models.Model):
         '''
 
         from .datafile import Dataset_File
-        df = Dataset_File.objects.get(pk=self.datafile.pk)
+        df = self.datafile
         if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
             logger.error("Datafile for %s has no checksums" % self.url)
             return False

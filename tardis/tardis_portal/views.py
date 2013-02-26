@@ -2411,12 +2411,13 @@ def upload(request, dataset_id):
             datafile = Dataset_File(dataset=dataset,
                                     filename=uploaded_file_post.name,
                                     size=uploaded_file_post.size)
-            datafile.save()
             replica = Replica(datafile=datafile,
                               url=filepath,
                               protocol='',
                               location=Location.get_default_location())
             replica.verify(allowEmptyChecksums=True)
+            datafile.save()
+            replica.datafile = datafile
             replica.save()
 
     return HttpResponse('True')
@@ -2908,12 +2909,13 @@ def stage_files_to_dataset(request, dataset_id):
         datafile = Dataset_File(dataset=dataset,
                                 filename=path.basename(filepath),
                                 size=size)
-        datafile.save()
         replica = Replica(datafile=datafile,
                           protocol='staging',
                           url=url,
                           location=Location.get_location('staging'))
         replica.verify(allowEmptyChecksums=True)
+        datafile.save()
+        replica.datafile = datafile
         replica.save()
         return datafile
 

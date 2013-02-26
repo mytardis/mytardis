@@ -39,6 +39,10 @@ def generate_datafile(path, dataset, content=None, size=-1,
     '''Generates a datafile AND a replica to hold its contents'''
     from tardis.tardis_portal.models import Dataset_File, Replica, Location
     datafile = Dataset_File()
+    if content:
+        datafile.size = str(len(content))
+    else:
+        datafile.size = str(size)
     # Normally we use any old string for the datafile path, but some
     # tests require the path to be the same as what 'staging' would use
     if path == None:
@@ -60,10 +64,6 @@ def generate_datafile(path, dataset, content=None, size=-1,
     datafile.mimetype = "application/unspecified"
     datafile.filename = os.path.basename(filepath)
     datafile.dataset_id = dataset.id
-    if content:
-        datafile.size = str(len(content))
-    else:
-        datafile.size = str(size)
     datafile.save()
 
     location = _infer_location(path)

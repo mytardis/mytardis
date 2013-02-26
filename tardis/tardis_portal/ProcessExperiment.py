@@ -91,6 +91,9 @@ def getXmlnsFromTechXMLRaw(md):
 
 
 class ProcessExperiment:
+    '''Ingestor for the mytardis legacy XML format.  Note that this format
+       has no provision for datafile checksums, so we have no choice but 
+       to generate them as we ingest.'''
 
     def __init__(self):
         pass
@@ -330,11 +333,17 @@ class ProcessExperiment:
                     dfile = Dataset_File(dataset=d,
                                          filename=filename,
                                          size=datafile['size'])
-                    dfile.save()
+                    #location = Location.get_location_for_url(url)
+                    location = sync_location
+                    if not location:
+                        raise ValueError('Cannot determine location for url "%s"', url)
                     replica = Replica(datafile=dfile,
                                       url=url,
                                       protocol=protocol,
-                                      location=sync_location)
+                                      location=location)
+                    #replica.verify(allowEmptyChecksums=True)
+                    dfile.save()
+                    replica.datafile = dfile
                     replica.save()
                     current_df_id = dfile.id
 

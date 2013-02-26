@@ -128,7 +128,6 @@ class ModelTestCase(TestCase):
             replica.save()
             return datafile
 
-
         exp = Experiment(title='test exp1',
                          institution_name='monash',
                          approved=True,
@@ -136,43 +135,63 @@ class ModelTestCase(TestCase):
                          public_access=Experiment.PUBLIC_ACCESS_NONE)
         exp.save()
 
-
         dataset = Dataset(description="dataset description...")
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
 
-        df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
-        self.assertEqual(df_file.filename, 'file.txt')
-        self.assertEqual(df_file.get_preferred_replica().url, 'path/file.txt')
-        self.assertEqual(df_file.get_preferred_replica().protocol, '')
-        self.assertEqual(df_file.dataset, dataset)
-        self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(), 
-                         '/test/download/datafile/1/')
-        self.assertTrue(df_file.is_local())
-
-        df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
-        self.assertEqual(df_file.filename, 'file1.txt')
-        self.assertEqual(df_file.get_preferred_replica().url, 'path/file1.txt')
-        self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
-        self.assertEqual(df_file.dataset, dataset)
-        self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(),
-                         '/test/vbl/download/datafile/2/')
-        self.assertFalse(df_file.is_local())
-
-        df_file = _build(dataset, 'f.txt',
-                         'http://localhost:8080/filestore/f.txt', '')
-        self.assertEqual(df_file.filename, 'f.txt')
-        self.assertEqual(df_file.get_preferred_replica().url,
-                         'http://localhost:8080/filestore/f.txt')
-        self.assertEqual(df_file.get_preferred_replica().protocol, '')
-        self.assertEqual(df_file.dataset, dataset)
-        self.assertEqual(df_file.size, '')
-        self.assertEqual(df_file.get_download_url(),
-                         '/test/download/datafile/3/')
-        self.assertFalse(df_file.is_local())
+        save1 = settings.REQUIRE_DATAFILE_SIZES
+        save2 = settings.REQUIRE_DATAFILE_CHECKSUMS
+        try:
+            settings.REQUIRE_DATAFILE_SIZES = False
+            settings.REQUIRE_DATAFILE_CHECKSUMS = False
+            df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
+            self.assertEqual(df_file.filename, 'file.txt')
+            self.assertEqual(df_file.get_preferred_replica().url, 
+                             'path/file.txt')
+            self.assertEqual(df_file.get_preferred_replica().protocol, '')
+            self.assertEqual(df_file.dataset, dataset)
+            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.get_download_url(), 
+                             '/test/download/datafile/1/')
+            self.assertTrue(df_file.is_local())
+            
+            df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
+            self.assertEqual(df_file.filename, 'file1.txt')
+            self.assertEqual(df_file.get_preferred_replica().url,
+                             'path/file1.txt')
+            self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
+            self.assertEqual(df_file.dataset, dataset)
+            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.get_download_url(),
+                             '/test/vbl/download/datafile/2/')
+            self.assertFalse(df_file.is_local())
+            
+            df_file = _build(dataset, 'f.txt',
+                             'http://localhost:8080/filestore/f.txt', '')
+            self.assertEqual(df_file.filename, 'f.txt')
+            self.assertEqual(df_file.get_preferred_replica().url,
+                             'http://localhost:8080/filestore/f.txt')
+            self.assertEqual(df_file.get_preferred_replica().protocol, '')
+            self.assertEqual(df_file.dataset, dataset)
+            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.get_download_url(),
+                             '/test/download/datafile/3/')
+            self.assertFalse(df_file.is_local())
+            # Now check the 'REQUIRE' config params
+            with self.assertRaises(Exception):
+                settings.REQUIRE_DATAFILE_SIZES = True
+                settings.REQUIRE_DATAFILE_CHECKSUMS = False
+                Dataset_File(dataset=dataset, filename='foo.txt', md5sum='bad')
+            with self.assertRaises(Exception):
+                settings.REQUIRE_DATAFILE_SIZES = False
+                settings.REQUIRE_DATAFILE_CHECKSUMS = True
+                Dataset_File(dataset=dataset, filename='foo.txt', size='1')
+                
+        finally:
+            settings.REQUIRE_DATAFILE_SIZES = save1
+            settings.REQUIRE_DATAFILE_CHECKSUMS = save2
+            
 
     def test_location(self):
         from tardis.tardis_portal.models import Location
@@ -200,8 +219,8 @@ class ModelTestCase(TestCase):
 
         df_file = models.Dataset_File(dataset=dataset,
                                       filename='file.txt',
-                                      #url='path/file.txt',
-                                      )
+                                      size='42',
+                                      md5sum='bogus')
         df_file.save()
 
         df_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',

@@ -58,7 +58,7 @@ def _create_test_dataset(nosDatafiles):
     ds_ = Dataset(description='happy snaps of plumage')
     ds_.save()
     for i in range (0, nosDatafiles) :
-        df_ = Dataset_File(dataset=ds_)
+        df_ = Dataset_File(dataset=ds_, size='21', sha512sum='bogus')
         df_.save()
         rep_ = Replica(datafile=df_,
                        url='http://planet-python.org/' + str(_next_id()),

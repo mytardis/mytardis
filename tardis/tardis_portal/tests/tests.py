@@ -74,25 +74,36 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
-        files = ['286-notmets.xml',
-                 'Edward-notmets.xml',
-                 'Cookson-notmets.xml']
-        for f in files:
-            filename = path.join(path.abspath(path.dirname(__file__)), f)
-            expid, _ = _registerExperimentDocument(filename=filename,
-                                                   created_by=user,
-                                                   expid=None)
-            experiment = Experiment.objects.get(pk=expid)
-
-            acl = ExperimentACL(pluginId=django_user,
-                                entityId=str(user.id),
-                                experiment=experiment,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True)
-            acl.save()
-            self.experiments += [experiment]
+        Location.objects.get_or_create(name='tardis-xml-test1', url='vbl://',
+                                       type='external', migration_provider='local',
+                                       priority=19)
+        Location.objects.get_or_create(name='unknown', url='unknown',
+                                       type='external', migration_provider='local',
+                                       priority=19)
+        save = settings.REQUIRE_DATAFILE_CHECKSUMS
+        settings.REQUIRE_DATAFILE_CHECKSUMS = False
+        try:
+            files = ['286-notmets.xml',
+                     'Edward-notmets.xml',
+                     'Cookson-notmets.xml']
+            for f in files:
+                filename = path.join(path.abspath(path.dirname(__file__)), f)
+                expid, _ = _registerExperimentDocument(filename=filename,
+                                                       created_by=user,
+                                                       expid=None)
+                experiment = Experiment.objects.get(pk=expid)
+                
+                acl = ExperimentACL(pluginId=django_user,
+                                    entityId=str(user.id),
+                                    experiment=experiment,
+                                    canRead=True,
+                                    canWrite=True,
+                                    canDelete=True,
+                                    isOwner=True)
+                acl.save()
+                self.experiments += [experiment]
+        finally:
+            settings.REQUIRE_DATAFILE_CHECKSUMS = save
 
         schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='io')

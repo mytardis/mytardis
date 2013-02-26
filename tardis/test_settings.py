@@ -310,3 +310,6 @@ MIGRATION_SCORING_PARAMS = {
 MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
                        'dav': 'tardis.apps.migration.WebDAVTransfer',
                        'local': 'tardis.apps.migration.LocalTransfer'}
+REQUIRE_DATAFILE_CHECKSUMS = False
+REQUIRE_DATAFILE_SIZES = True
+REQUIRE_VALIDATION_ON_INGESTION = True
