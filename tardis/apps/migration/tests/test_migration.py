@@ -37,9 +37,9 @@ from urllib2 import HTTPError, URLError, urlopen
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.test_settings import FILE_STORE_PATH
-from tardis.apps.migration import Destination, TransferProvider, \
+from tardis.apps.migration import TransferProvider, \
     SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
-    MigrationProviderError, migrate_replica, restore_replica
+    MigrationProviderError, migrate_replica
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
@@ -60,27 +60,26 @@ class MigrationTestCase(TestCase):
         self.user.delete()
         self.server.stop()
 
-    def testDestination(self):
+    def testProviderInstantiation(self):
         '''
-        Test that Destination instantiation works
+        Test that transfer_provider instantiation works
         '''
-        dest = Destination.get_destination('test')
-        self.assertIsInstance(dest.provider, TransferProvider)
-        self.assertIsInstance(dest.provider, SimpleHttpTransfer)
-        
-        dest = Destination.get_destination('test2')
-        self.assertIsInstance(dest.provider, TransferProvider)
-        self.assertIsInstance(dest.provider, WebDAVTransfer)
-        
-        dest = Destination.get_destination('test3')
-        self.assertIsInstance(dest.provider, TransferProvider)
-        self.assertIsInstance(dest.provider, WebDAVTransfer)
-        
-        dest2 = Destination.get_destination('test3')
-        self.assertEqual(dest, dest2)
 
-        with self.assertRaises(ValueError):
-            dest2 = Destination.get_destination('unknown')
+        provider = Location.get_location('test').provider
+        self.assertIsInstance(provider, TransferProvider)
+        self.assertIsInstance(provider, SimpleHttpTransfer)
+        
+        provider = Location.get_location('test2').provider
+        self.assertIsInstance(provider, TransferProvider)
+        self.assertIsInstance(provider, WebDAVTransfer)
+        
+        provider = Location.get_location('test3').provider
+        self.assertIsInstance(provider, TransferProvider)
+        self.assertIsInstance(provider, WebDAVTransfer)
+        
+        #provider2 = Location.get_location('test3').provider
+        #self.assertEqual(provider, provider2)
+
 
     def testWebDAVProvider(self):
         self.do_ext_provider('test2')
@@ -89,29 +88,29 @@ class MigrationTestCase(TestCase):
         self.do_ext_provider('test3')
 
     def testSimpleHttpProvider(self):
-        self.do_provider(Destination.get_destination('test'))
+        self.do_provider(Location.get_location('test'))
 
-    def do_ext_provider(self, dest_name):
+    def do_ext_provider(self, loc_name):
         # This test requires an external test server configured
         # as per the 'dest_name' destination.  We skip the test is the 
         # server doesn't respond.
         try:
-            dest = Destination.get_destination(dest_name)
-            dest.opener.open(dest.base_url)
+            loc = Location.get_location(loc_name)
+            provider = Location.get_provider(loc.id).opener.open(loc.url)
         except URLError:
             print 'SKIPPING TEST - %s server on %s not responding\n' % \
-                (dest_name, dest.base_url)
+                (loc_name, loc.url)
             return
-        self.do_provider(dest)
+        self.do_provider(loc)
 
-    def do_provider(self, dest):
-        provider = dest.provider
-        base_url = dest.base_url
+    def do_provider(self, loc):
+        provider = loc.provider
+        base_url = loc.url
         datafile, replica = generate_datafile("1/1/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         target_replica = Replica()
         target_replica.datafile = datafile
-        target_replica.location = Location.objects.get(pk=dest.loc_id)
+        target_replica.location = loc
         url = provider.generate_url(target_replica)
         self.assertEquals(url, base_url + '1/1/3')
         target_replica.url = url
@@ -151,8 +150,8 @@ class MigrationTestCase(TestCase):
             provider.remove_file(url)
 
     def testMigrateRestore(self):
-        dest = Destination.get_destination('test')
-        local = Destination.get_destination('local')
+        dest = Location.get_location('test')
+        local = Location.get_location('local')
         datafile, replica = generate_datafile(None, self.dataset, "Hi mum",
                                               verify=False)
 
@@ -172,8 +171,6 @@ class MigrationTestCase(TestCase):
         # Bring it back
         new_replica = datafile.get_preferred_replica()
         url = new_replica.url
-        print "url = %s, id = %s, id2 = %s\n" % \
-            (url, new_replica.location.id, local.loc_id)
         self.assertTrue(migrate_replica(new_replica, local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
@@ -202,7 +199,7 @@ class MigrationTestCase(TestCase):
         self.assertEquals(dest.provider.get_length(url), 6)
 
     def testMirror(self):
-        dest = Destination.get_destination('test')
+        dest = Location.get_location('test')
         datafile, replica = generate_datafile(None, self.dataset, "Hi granny")
         path = datafile.get_absolute_filepath()
         self.assertTrue(os.path.exists(path))
@@ -225,8 +222,8 @@ class MigrationTestCase(TestCase):
 
 
     def testMigrateStoreWithSpaces(self):
-        dest = Destination.get_destination('test')
-        local = Destination.get_destination('local')
+        dest = Location.get_location('test')
+        local = Location.get_location('local')
         
         datafile, replica = generate_datafile('1/1/Hi Mum', self.dataset, 
                                               "Hi mum")
@@ -255,7 +252,7 @@ class MigrationTestCase(TestCase):
         # Tweak the server to turn off the '?metadata' query
         self.server.server.allowQuery = False
         
-        dest = Destination.get_destination('test')
+        dest = Location.get_location('test')
         datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         path = datafile.get_absolute_filepath()

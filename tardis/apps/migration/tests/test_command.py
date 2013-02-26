@@ -40,7 +40,6 @@ from tardis.test_settings import FILE_STORE_PATH
 
 from tardis.tardis_portal.models import Dataset_File, Location
 
-from tardis.apps.migration import Destination
 from tardis.apps.migration.management.commands.migratefiles import Command
 from tardis.apps.migration.tests import SimpleHttpTestServer
 from tardis.apps.migration.tests.generate import \

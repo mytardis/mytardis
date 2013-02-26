@@ -41,9 +41,8 @@ from django.utils.log import dictConfig
 from tardis.tardis_portal.util import get_free_space
 from tardis.tardis_portal.models import Replica, Location
 
-from tardis.apps.migration import Destination, MigrationError, \
-    MigrationScorer, migrate_datafile, migrate_datafile_by_id, \
-    migrate_replica
+from tardis.apps.migration import MigrationError, \
+    MigrationScorer, migrate_replica
 from tardis.tardis_portal.logging_middleware import LOGGING
 
 class Command(BaseCommand):
@@ -201,7 +200,7 @@ class Command(BaseCommand):
             return
         try:
             replica = Replica.objects.get(datafile_id=id,
-                                          location_id=self.source.loc_id)
+                                          location=self.source)
             if subcommand == 'migrate':
                 ok = migrate_replica(replica, self.dest,
                                      noRemove=self.noRemove)
@@ -267,11 +266,12 @@ class Command(BaseCommand):
             else:
                 destName = default
         try:
-            return Destination.get_destination(destName)
+            dest = Location.get_location(destName)
+            if not dest:
+                raise CommandError("Destination %s not known" % destName)
+            return dest
         except MigrationError as e:
             raise CommandError("Migration error: %s" % e.args[0])
-        except ValueError:
-            raise CommandError("Destination %s not known" % destName)
 
     def _list_destinations(self):
         for loc in Location.objects.all():
@@ -348,6 +348,6 @@ class Command(BaseCommand):
             self.stdout.write("Reclaimed %d bytes\n" % total)
 
     def _do_score_all(self):
-        scorer = MigrationScorer(self.source.loc_id,
+        scorer = MigrationScorer(self.source.id,
                                  settings.MIGRATION_SCORING_PARAMS)
         return scorer.score_all_datafiles()

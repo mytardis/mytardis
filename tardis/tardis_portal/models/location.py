@@ -38,6 +38,17 @@ class Location(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+    def __init__(self, *args, **kwargs):
+        super(Location, self).__init__(*args, **kwargs)
+        self._provider = None
+
+    def _get_provider(self):
+        if not self._provider:
+            self._provider = Location.build_provider(self)
+        return self._provider
+
+    provider = property(_get_provider)
+
     def get_priority(self):
         '''Return the location's priority, or -1 if it is not available'''
         if self.is_available:
@@ -121,7 +132,7 @@ class Location(models.Model):
     def build_provider(cls, loc):
         if loc.auth_user:
             password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            password_mgr.add_password(loc.auth_realm, dest.base_url, 
+            password_mgr.add_password(loc.auth_realm, loc.url, 
                                       loc.auth_user, loc.auth_password)
             if loc.auth_scheme == 'basic':
                 handler = urllib2.HTTPBasicAuthHandler(password_mgr)
