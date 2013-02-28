@@ -22,6 +22,8 @@ NSMAP = { None: 'http://library.stanford.edu/iiif/image-api/ns/' }
 ALLOWED_MIMETYPES = ['image/jpeg', 'image/png', 'image/tiff',
                      'image/gif', 'image/jp2', 'application/pdf']
 
+mimetypes.add_type('image/jp2', '.jp2')
+
 def compliance_header(f):
     def wrap(*args, **kwargs):
         response = f(*args, **kwargs)
@@ -105,7 +107,8 @@ def compute_etag(request, datafile_id, *args, **kwargs):
 
 @etag(compute_etag)
 @compliance_header
-def download_image(request, datafile_id, region, size, rotation, quality, format=None): #@ReservedAssignment
+def download_image(request, datafile_id, region, size, rotation, 
+                   quality, format=None): #@ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
         datafile = Dataset_File.objects.get(pk=datafile_id)
