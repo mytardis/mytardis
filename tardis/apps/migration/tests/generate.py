@@ -38,44 +38,50 @@ def generate_datafile(path, dataset, content=None, size=-1,
                       verify=True, verified=True):
     '''Generates a datafile AND a replica to hold its contents'''
     from tardis.tardis_portal.models import Dataset_File, Replica, Location
-    datafile = Dataset_File()
-    if content:
-        datafile.size = str(len(content))
-    else:
-        datafile.size = str(size)
-    # Normally we use any old string for the datafile path, but some
-    # tests require the path to be the same as what 'staging' would use
-    if path == None:
+
+    saved = settings.REQUIRE_DATAFILE_CHECKSUMS 
+    settings.REQUIRE_DATAFILE_CHECKSUMS = False
+    try:
+        datafile = Dataset_File()
+        if content:
+            datafile.size = str(len(content))
+        else:
+            datafile.size = str(size)
+        # Normally we use any old string for the datafile path, but some
+        # tests require the path to be the same as what 'staging' would use
+        if path == None:
+            datafile.dataset_id = dataset.id
+            datafile.save()
+            path = "%s/%s/%s" % (dataset.get_first_experiment().id,
+                                 dataset.id, datafile.id)
+
+        filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
+        if content:
+            try:
+                os.makedirs(os.path.dirname(filepath))
+                os.remove(filepath)
+            except:
+                pass
+            file = open(filepath, 'wb+')
+            file.write(content)
+            file.close()
+        datafile.mimetype = "application/unspecified"
+        datafile.filename = os.path.basename(filepath)
         datafile.dataset_id = dataset.id
         datafile.save()
-        path = "%s/%s/%s" % (dataset.get_first_experiment().id,
-                             dataset.id, datafile.id)
 
-    filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
-    if content:
-        try:
-            os.makedirs(os.path.dirname(filepath))
-            os.remove(filepath)
-        except:
-            pass
-        file = open(filepath, 'wb+')
-        file.write(content)
-        file.close()
-    datafile.mimetype = "application/unspecified"
-    datafile.filename = os.path.basename(filepath)
-    datafile.dataset_id = dataset.id
-    datafile.save()
-
-    location = _infer_location(path)
-    replica = Replica(datafile=datafile, url=path, protocol='',
-                      location=location)
-    if verify and content:
-        if not replica.verify(allowEmptyChecksums=True):
-            raise RuntimeError('verify failed!?!')
-    else:
-        replica.verified = verified
-    replica.save()
-    return (datafile, replica)
+        location = _infer_location(path)
+        replica = Replica(datafile=datafile, url=path, protocol='',
+                          location=location)
+        if verify and content:
+            if not replica.verify(allowEmptyChecksums=True):
+                raise RuntimeError('verify failed!?!')
+        else:
+            replica.verified = verified
+        replica.save()
+        return (datafile, replica)
+    finally:
+        settings.REQUIRE_DATAFILE_CHECKSUMS = saved
 
 def _infer_location(path):
     if urlparse.urlparse(path).scheme == '':

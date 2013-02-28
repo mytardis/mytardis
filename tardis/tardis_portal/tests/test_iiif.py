@@ -59,11 +59,12 @@ def _create_datafile():
     datafile = Dataset_File(dataset=dataset,
                             size=os.path.getsize(tempfile.file.name),
                             filename='iiif_named_file')
-    datafile.save()
     replica = Replica(datafile=datafile, 
                       url=write_uploaded_file_to_dataset(dataset, tempfile),
                       location=Location.get_default_location())
     replica.verify(allowEmptyChecksums=True)
+    datafile.save()
+    replica.datafile = datafile
     replica.save()
     return datafile
 

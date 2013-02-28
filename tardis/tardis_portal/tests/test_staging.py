@@ -130,7 +130,8 @@ class TestStagingFiles(TestCase):
 
         # create datafile
         df = models.Dataset_File(dataset=dataset, size = len(content),
-                                 filename = path.basename(self.file))
+                                 filename = path.basename(self.file),
+                                 md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
         df.save()
 
         # create replica
@@ -140,7 +141,7 @@ class TestStagingFiles(TestCase):
             priority=10, migration_provider='local')[0] 
         replica = models.Replica(datafile=df, url='file://'+self.file,
                                  protocol="staging",location=location)
-        replica.verify(allowEmptyChecksums=True)
+        replica.verify()
         replica.save()
         self.replica = replica
 

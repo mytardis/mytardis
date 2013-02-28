@@ -20,7 +20,8 @@ class IntegrityCheckTestCase(TestCase):
         dataset.experiments.add(exp)
         dataset.save()
         for filename in filenames:
-            df = Dataset_File(dataset=dataset, size=41, filename=filename)
+            df = Dataset_File(dataset=dataset, size=41, filename=filename,
+                              md5sum='dummy')
             df.save()
             url = 'file://' + path.join(path.dirname(__file__), 'data', 
                                         filename)
@@ -33,7 +34,8 @@ class IntegrityCheckTestCase(TestCase):
             replica.save()
 
     def setUp(self):
-        self.user = User(username='user1', password='password', email='a@a.com')
+        self.user = User(username='user1', password='password', 
+                         email='a@a.com')
         self.user.save()
         Location.force_initialize()
         self.bad_exp = Experiment(
