@@ -86,7 +86,7 @@ class Replica(models.Model):
         
         if requireVerified and not self.verified:
             raise ValueError("Replica %s not verified" % self.id)
-        return Location.get_provider(self.location.id).get_opener(self)
+        return self.location.provider.get_opener(self)
 
     def get_file(self, requireVerified=True):
         return self.get_file_getter(requireVerified=requireVerified)()
@@ -128,7 +128,7 @@ class Replica(models.Model):
         url = urlparse.urlparse(self.url)
         if url.scheme == '':
             try:
-                base_path = Location.get_provider(self.location.id).base_path
+                base_path = self.location.provider.base_path
                 return _os.safe_join(base_path, url.path)
             except AttributeError:
                 return ''

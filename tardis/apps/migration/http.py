@@ -27,7 +27,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-from urllib2 import Request, HTTPError
+from urllib2 import Request, HTTPError, build_opener, \
+    HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, \
+    HTTPDigestAuthHandler
 from urllib import quote
 from urlparse import urlparse, urljoin
 import os
@@ -53,13 +55,33 @@ class SimpleHttpTransfer(TransferProvider):
         def get_method(self):
             return 'DELETE'
     
-    def __init__(self, name, base_url, opener, metadata_supported=False):
+    def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name)
         if not base_url.endswith('/'):
             base_url = base_url + '/'
         self.base_url = base_url
         self.metadata_supported = False
-        self.opener = opener
+        self.trust_length = getattr(
+            params, 'trust_length', 'False') == 'True'
+        self.opener = self._build_opener(params, base_url)
+
+    def _build_opener(self, params, base_url):
+        user = params.get('user', '')
+        if user:
+            realm = params.get('realm', '')
+            password = params.get('password', '')
+            scheme = params.get('scheme', 'digest')
+            password_mgr = HTTPPasswordMgrWithDefaultRealm()
+            password_mgr.add_password(realm, base_url, user, password) 
+            if scheme == 'basic':
+                handler = HTTPBasicAuthHandler(password_mgr)
+            elif scheme == 'digest':
+                handler = HTTPDigestAuthHandler(password_mgr)
+            else:
+                raise ValueError('Unknown auth type "%s"' % scheme)
+            return build_opener(handler)
+        else:
+            return build_opener()
 
     def get_length(self, url):
         self._check_url(url)

@@ -25,12 +25,12 @@ class Location(models.Model):
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    trust_length = models.BooleanField(default=False)
-    metadata_supported = models.BooleanField(default=False)
-    auth_user = models.CharField(max_length=20, blank=True)
-    auth_password = models.CharField(max_length=400, blank=True)
-    auth_realm = models.CharField(max_length=20, blank=True)
-    auth_scheme = models.CharField(max_length=10, default='digest')
+    #trust_length = models.BooleanField(default=False)
+    #metadata_supported = models.BooleanField(default=False)
+    #auth_user = models.CharField(max_length=20, blank=True)
+    #auth_password = models.CharField(max_length=400, blank=True)
+    #auth_realm = models.CharField(max_length=20, blank=True)
+    #auth_scheme = models.CharField(max_length=10, default='digest')
     migration_provider = models.CharField(max_length=10, default='local')
 
     initialized = False
@@ -111,47 +111,44 @@ class Location(models.Model):
                     url=url,
                     type=desc['type'],
                     priority=desc['priority'],
-                    migration_provider=desc.get('provider', 'local'),
-                    trust_length=desc.get('trust_length', False),
-                    metadata_supported=desc.get('metadata_supported', False),
-                    auth_user=desc.get('user', ''),
-                    auth_password=desc.get('password', ''),
-                    auth_realm=desc.get('realm', ''),
-                    auth_scheme=desc.get('scheme', 'digest'))
+                    migration_provider=desc.get('provider', 'local'))
                 location.save()
+                for (name, value) in desc.get('params', {}).items():
+                    param = ProviderParameter(location=location, 
+                                              name=name, value=value)
+                    param.save()
                 logger.info('Location %s created' % desc['name'])
                 done_init = True
         return done_init
 
     @classmethod
-    def get_provider(cls, location_id):
-        loc = Location.objects.get(id=location_id)
-        return cls.build_provider(loc)
-
-    @classmethod
     def build_provider(cls, loc):
-        if loc.auth_user:
-            password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            password_mgr.add_password(loc.auth_realm, loc.url, 
-                                      loc.auth_user, loc.auth_password)
-            if loc.auth_scheme == 'basic':
-                handler = urllib2.HTTPBasicAuthHandler(password_mgr)
-            elif loc.auth_scheme == 'digest':
-                handler = urllib2.HTTPDigestAuthHandler(password_mgr)
-            else:
-                raise ValueError('Unknown auth type "%s"' % loc.auth_scheme)
-            opener = urllib2.build_opener(handler)
-        else:
-            opener = urllib2.build_opener()
 
+        params = {}
+        for p in ProviderParameter.objects.filter(location_id=loc.id):
+            params[p.name] = p.value
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
             'provider = ' + \
             settings.MIGRATION_PROVIDERS[loc.migration_provider] + \
-                '(loc.name, loc.url, opener, ' + \
-                'metadata_supported=loc.metadata_supported)'
+                '(loc.name, loc.url, params)'
         return provider
 
     def __unicode__(self):
         return self.name
 
+class ProviderParameter(models.Model):
+    '''This class represents a "parameter" that is passed when
+    instantiating a location's provider object.'''
+
+    location = models.ForeignKey(Location)
+    name = models.CharField(max_length=10)
+    value = models.CharField(max_length=80, blank=True)
+
+    class Meta:
+        app_label = 'tardis_portal'
+        unique_together = ('location', 'name')
+
+    def __unicode__(self):
+        return '%s: %s' % (self.name, self.value)
+    

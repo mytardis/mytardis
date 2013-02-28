@@ -71,7 +71,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         replica = Replica.objects.select_for_update().get(pk=replica.pk)
         source = Location.get_location(replica.location.name)
         
-        if not replica.verified or location.trust_length:
+        if not replica.verified or location.provider.trust_length:
             raise MigrationError('Only verified datafiles can be migrated' \
                                      ' to this destination')
         
@@ -148,7 +148,7 @@ def check_file_transferred(replica, location):
         if e.code != 400:
             raise
 
-    if location.trust_length :
+    if location.provider.trust_length :
         try:
             length = location.provider.get_length(replica.url)
             if _check_attribute2(length, datafile.size, 'length'):

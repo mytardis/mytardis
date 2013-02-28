@@ -44,7 +44,7 @@ from tardis.tardis_portal.util import generate_file_checksums
 from .base import MigrationError, MigrationProviderError, TransferProvider
 
 class LocalTransfer(TransferProvider):
-    def __init__(self, name, base_url, opener, metadata_supported=False):
+    def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name)
         if not base_url.endswith('/'):
             base_url = base_url + '/'
@@ -52,9 +52,10 @@ class LocalTransfer(TransferProvider):
         parts = urlparse(self.base_url)
         if parts.scheme != 'file':
             raise ValueError('base_url (%s) should be a "file:" url' % base_url)
+        self.trust_length = getattr(
+            params, 'trust_length', 'False') == 'True'
         self.base_path = parts.path
         self.metadata_supported = False
-        self.opener = opener
         self.storage = FileSystemStorage(location=self.base_path)
 
     def get_length(self, uri):

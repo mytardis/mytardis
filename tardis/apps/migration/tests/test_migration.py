@@ -72,14 +72,12 @@ class MigrationTestCase(TestCase):
         provider = Location.get_location('test2').provider
         self.assertIsInstance(provider, TransferProvider)
         self.assertIsInstance(provider, WebDAVTransfer)
+        self.assertFalse(401 in provider.opener.handle_error['http'])
         
         provider = Location.get_location('test3').provider
         self.assertIsInstance(provider, TransferProvider)
         self.assertIsInstance(provider, WebDAVTransfer)
-        
-        #provider2 = Location.get_location('test3').provider
-        #self.assertEqual(provider, provider2)
-
+        self.assertTrue(401 in provider.opener.handle_error['http'])
 
     def testWebDAVProvider(self):
         self.do_ext_provider('test2')
@@ -96,7 +94,7 @@ class MigrationTestCase(TestCase):
         # server doesn't respond.
         try:
             loc = Location.get_location(loc_name)
-            provider = Location.get_provider(loc.id).opener.open(loc.url)
+            provider = loc.provider.opener.open(loc.url)
         except URLError:
             print 'SKIPPING TEST - %s server on %s not responding\n' % \
                 (loc_name, loc.url)
