@@ -25,12 +25,6 @@ class Location(models.Model):
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    #trust_length = models.BooleanField(default=False)
-    #metadata_supported = models.BooleanField(default=False)
-    #auth_user = models.CharField(max_length=20, blank=True)
-    #auth_password = models.CharField(max_length=400, blank=True)
-    #auth_realm = models.CharField(max_length=20, blank=True)
-    #auth_scheme = models.CharField(max_length=10, default='digest')
     migration_provider = models.CharField(max_length=10, default='local')
 
     initialized = False
@@ -103,35 +97,40 @@ class Location(models.Model):
                 Location.objects.get(name=desc['name'])
                 logger.debug('Location %s already exists' % desc['name'])
             except Location.DoesNotExist:
-                url = desc['url']
-                if not url.endswith('/'):
-                    url = url + '/'
-                location = Location(
-                    name=desc['name'],
-                    url=url,
-                    type=desc['type'],
-                    priority=desc['priority'],
-                    migration_provider=desc.get('provider', 'local'))
-                location.save()
-                for (name, value) in desc.get('params', {}).items():
-                    param = ProviderParameter(location=location, 
-                                              name=name, value=value)
-                    param.save()
-                logger.info('Location %s created' % desc['name'])
+                Location.load_location(desc)
+                logger.info('Location %s loaded' % desc['name'])
                 done_init = True
         return done_init
 
     @classmethod
-    def build_provider(cls, loc):
+    def load_location(cls, desc, noslash=False):
+        url = desc['url']
+        if not noslash and not url.endswith('/'):
+            url = url + '/'
+        location = Location(name=desc['name'], url=url, type=desc['type'],
+                            priority=desc['priority'],
+                            migration_provider=desc.get('provider', 'local'))
+        location.save()
+        for (name, value) in desc.get('params', {}).items():
+            param = ProviderParameter(location=location, 
+                                      name=name, value=value)
+            param.save()
 
+
+    @classmethod
+    def build_provider(cls, loc):
         params = {}
         for p in ProviderParameter.objects.filter(location_id=loc.id):
             params[p.name] = p.value
+
+        try:
+            p_class = settings.MIGRATION_PROVIDERS[loc.migration_provider]
+        except KeyError:
+            p_class = loc.migration_provider
+
         # FIXME - is there a better way to do this?
         exec 'import tardis\n' + \
-            'provider = ' + \
-            settings.MIGRATION_PROVIDERS[loc.migration_provider] + \
-                '(loc.name, loc.url, params)'
+            'provider = ' + p_class + '(loc.name, loc.url, params)'
         return provider
 
     def __unicode__(self):

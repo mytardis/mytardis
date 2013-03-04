@@ -43,20 +43,15 @@ from tardis.tardis_portal.util import generate_file_checksums
 
 from .base import MigrationError, MigrationProviderError, TransferProvider
 
-class LocalTransfer(TransferProvider):
+class BaseLocalTransfer(TransferProvider):
     def __init__(self, name, base_url, params):
-        TransferProvider.__init__(self, name)
-        if not base_url.endswith('/'):
-            base_url = base_url + '/'
-        self.base_url = urljoin(base_url, '.')
-        parts = urlparse(self.base_url)
-        if parts.scheme != 'file':
-            raise ValueError('base_url (%s) should be a "file:" url' % base_url)
-        self.trust_length = getattr(
-            params, 'trust_length', 'False') == 'True'
-        self.base_path = parts.path
+        TransferProvider.__init__(self, name, base_url)
+        self.trust_length = params.get('trust_length', 'False') == 'True'
         self.metadata_supported = False
-        self.storage = FileSystemStorage(location=self.base_path)
+
+        # Subclasses need to set these appropriately
+        self.storage = None
+        self.base_path = None
 
     def get_length(self, uri):
         filename = self._uri_to_filename(uri)
@@ -117,8 +112,31 @@ class LocalTransfer(TransferProvider):
             raise MigrationProviderError(('The url (%s) does not belong to' \
                                 ' the %s destination (url %s)') % \
                                              (uri, self.name, self.base_url))
-        if parts.scheme == 'file':
-            return unquote('/%s/%s' % (parts.netloc, parts.path))
-        else:
-            return self.base_path + uri[len(base_url):]
+        return unquote('/%s/%s' % (parts.netloc, parts.path))
+
+
+class LocalTransfer(BaseLocalTransfer):
+    def __init__(self, name, base_url, params):
+        BaseLocalTransfer.__init__(self, name, base_url, params)
+        parts = urlparse(self.base_url)
+        if parts.scheme != 'file':
+            raise ValueError('base_url (%s) should be a "file:" url' % base_url)
+        self.base_path = parts.path
+        self.storage = FileSystemStorage(location=self.base_path)
+
+
+class CustomTransfer(BaseLocalTransfer):
+    def __init__(self, name, base_url, params):
+        BaseLocalTransfer.__init__(self, name, base_url, params)
+        self.base_path = params['base_path']
+        self.storage = FileSystemStorage(location=self.base_path)
+
+    def _uri_to_filename(self, uri):
+        # This is crude and possibly fragile, and definitely insecure
+        parts = urlparse(uri)
+        if not uri.startswith(self.base_url):
+            raise MigrationProviderError(('The url (%s) does not belong to' \
+                                ' the %s destination (url %s)') % \
+                                             (uri, self.name, self.base_url))
+        return self.base_path + '/' + uri[len(self.base_url):]
 

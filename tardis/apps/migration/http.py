@@ -56,13 +56,9 @@ class SimpleHttpTransfer(TransferProvider):
             return 'DELETE'
     
     def __init__(self, name, base_url, params):
-        TransferProvider.__init__(self, name)
-        if not base_url.endswith('/'):
-            base_url = base_url + '/'
-        self.base_url = base_url
+        TransferProvider.__init__(self, name, base_url)
         self.metadata_supported = False
-        self.trust_length = getattr(
-            params, 'trust_length', 'False') == 'True'
+        self.trust_length = params.get('trust_length', 'False') == 'True'
         self.opener = self._build_opener(params, base_url)
 
     def _build_opener(self, params, base_url):

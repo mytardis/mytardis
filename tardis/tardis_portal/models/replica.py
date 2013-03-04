@@ -151,14 +151,14 @@ class Replica(models.Model):
         from .datafile import Dataset_File
         df = self.datafile
         if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
-            logger.error("Datafile for %s has no checksums" % self.url)
+            logger.error("Datafile for %s has no checksums", self.url)
             return False
 
         sourcefile = self.get_file(requireVerified=False)
         if not sourcefile:
-            logger.error("%s content not accessible" % self.url)
+            logger.error("%s content not accessible", self.url)
             return False
-        logger.info("Downloading %s for verification" % self.url)
+        logger.info("Downloading %s for verification", self.url)
         md5sum, sha512sum, size, mimetype_buffer = \
             generate_file_checksums(sourcefile, tempfile)
 
@@ -168,18 +168,18 @@ class Replica(models.Model):
                 # the missing size is harmless ... we will fill it in below.
                 logger.warn("%s size is missing" % (self.url))
             else:
-                logger.error("%s failed size check: %d != %s" %
-                            (self.url, size, df.size))
+                logger.error("%s failed size check: %d != %s",
+                             self.url, size, df.size)
                 return False
 
         if df.sha512sum and sha512sum.lower() != df.sha512sum.lower():
-            logger.error("%s failed SHA-512 sum check: %s != %s" %
-                         (self.url, sha512sum, df.sha512sum))
+            logger.error("%s failed SHA-512 sum check: %s != %s",
+                         self.url, sha512sum, df.sha512sum)
             return False
 
         if df.md5sum and md5sum.lower() != df.md5sum.lower():
-            logger.error("%s failed MD5 sum check: %s != %s" %
-                         (self.url, md5sum, df.md5sum))
+            logger.error("%s failed MD5 sum check: %s != %s",
+                         self.url, md5sum, df.md5sum)
             return False
 
         if df.mimetype:
@@ -195,9 +195,6 @@ class Replica(models.Model):
             df.mimetype = mimetype
             df.save()
         self.verified = True
-
-        logger.info("Saved %s for datafile #%d after successful verification", 
-                    self.url, self.datafile.id)
         return True
     
     def deleteCompletely(self):

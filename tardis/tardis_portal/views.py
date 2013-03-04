@@ -63,7 +63,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
 from tardis.urls import getTardisApps
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
@@ -884,16 +883,8 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
-    sync_root = ''
-    if firstline.startswith('<experiment'):
-        logger.debug('processing simple xml')
-        processExperiment = ProcessExperiment()
-        eid, sync_root = processExperiment.process_simple(filename,
-                                                          created_by,
-                                                          expid)
-    else:
-        logger.debug('processing METS')
-        eid, sync_root = parseMets(filename, created_by, expid)
+    logger.debug('processing METS')
+    eid, sync_root = parseMets(filename, created_by, expid)
 
     auth_key = ''
     try:

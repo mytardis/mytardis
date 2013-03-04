@@ -56,6 +56,7 @@ from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
+from tardis.apps.migration import TransferProvider
 
 class SearchTestCase(TestCase):
 
@@ -74,36 +75,24 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
-        Location.objects.get_or_create(name='tardis-xml-test1', url='vbl://',
-                                       type='external', migration_provider='local',
-                                       priority=19)
-        Location.objects.get_or_create(name='unknown', url='unknown',
-                                       type='external', migration_provider='local',
-                                       priority=19)
-        save = settings.REQUIRE_DATAFILE_CHECKSUMS
-        settings.REQUIRE_DATAFILE_CHECKSUMS = False
-        try:
-            files = ['286-notmets.xml',
-                     'Edward-notmets.xml',
-                     'Cookson-notmets.xml']
-            for f in files:
-                filename = path.join(path.abspath(path.dirname(__file__)), f)
-                expid, _ = _registerExperimentDocument(filename=filename,
-                                                       created_by=user,
-                                                       expid=None)
-                experiment = Experiment.objects.get(pk=expid)
-                
-                acl = ExperimentACL(pluginId=django_user,
-                                    entityId=str(user.id),
-                                    experiment=experiment,
-                                    canRead=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    isOwner=True)
-                acl.save()
-                self.experiments += [experiment]
-        finally:
-            settings.REQUIRE_DATAFILE_CHECKSUMS = save
+        base_path = path.abspath(path.dirname(__file__))
+        files = ['METS_test.xml']
+        for f in files:
+            filename = path.join(base_path, f)
+            expid, _ = _registerExperimentDocument(filename=filename,
+                                                   created_by=user,
+                                                   expid=None)
+            experiment = Experiment.objects.get(pk=expid)
+            
+            acl = ExperimentACL(pluginId=django_user,
+                                entityId=str(user.id),
+                                experiment=experiment,
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True)
+            acl.save()
+            self.experiments += [experiment]
 
         schema = Schema.objects.get(type=Schema.DATAFILE, subtype='saxs')
         parameter = ParameterName.objects.get(schema=schema, name='io')
@@ -157,7 +146,8 @@ class SearchTestCase(TestCase):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
         response = self.client.get('/datafile/search/',
-                                   {'type': 'saxs', 'filename': 'air_0_001.tif', })
+                                   {'type': 'saxs', 
+                                    'filename': 'ment0005.osc', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -197,7 +187,7 @@ class SearchTestCase(TestCase):
         # check if searching for nothing would result to returning everything
         response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
-        self.assertEqual(len(response.context['datafiles']), 129)
+        self.assertEqual(len(response.context['datafiles']), 5)
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs',  self.io_param_name: '123', })
@@ -205,7 +195,7 @@ class SearchTestCase(TestCase):
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs', self.frqimn_param_name: '0.0450647', })
-        self.assertEqual(len(response.context['datafiles']), 125)
+        self.assertEqual(len(response.context['datafiles']), 5)
         self.client.logout()
 
     def testSearchExperimentForm(self):
@@ -229,7 +219,7 @@ class SearchTestCase(TestCase):
     def testSearchExperimentResults(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/experiment/search/',
-            {'title': 'cookson'})
+            {'title': 'SAXS Test'})
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['experiments'] is not None)
@@ -240,8 +230,7 @@ class SearchTestCase(TestCase):
         self.assertTemplateUsed(response,
             'tardis_portal/search_experiment_results.html')
 
-        self.assertTrue(
-            len(response.context['experiments']) == 1)
+        self.assertEqual(len(response.context['experiments']), 1)
 
         from tardis.tardis_portal.models import Experiment
 
@@ -258,7 +247,7 @@ class SearchTestCase(TestCase):
         # check if searching for nothing would result to returning everything
         response = self.client.get('/experiment/search/',
             {'title': '', })
-        self.assertEqual(len(response.context['experiments']), 3)
+        self.assertEqual(len(response.context['experiments']), 1)
 
         self.client.logout()
 

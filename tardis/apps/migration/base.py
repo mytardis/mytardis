@@ -34,5 +34,8 @@ class MigrationProviderError(MigrationError):
     pass
 
 class TransferProvider(object):
-    def __init__(self, name):
+    def __init__(self, name, base_url):
         self.name = name
+        if not base_url.endswith('/'):
+            base_url = base_url + '/'
+        self.base_url = base_url
