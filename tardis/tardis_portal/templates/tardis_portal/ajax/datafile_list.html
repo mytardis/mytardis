@@ -110,12 +110,26 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
       {% if thumbnail and datafile.has_image %}
-      <a  class="filelink"
-        href="{{ image }}"
-        title="View"
-        target="_blank">
-          <img src="{{ thumbnail }}" onerror="$(this).hide()"/>
-      </a>
+
+	<a href="#">
+	    <img class="imgIcon"
+            alt="Preview image for Datafile #{{ datafile.id }}"
+	    src="{{ thumbnail }}"
+	    title = "view"
+	    target = "_blank"
+            data-fileSize = "{{datafile.size|filesizeformat}}"
+            data-fullRes = "{{ image }}"
+            data-createdTime = '{{ datafile.created_time|time:"H:i" }}'
+            data-createdDate = '{{ datafile.created_time|date:"d-m-Y" }}'
+            data-imgId = "{{ datafile.id }}"
+            data-fileName = "{{ datafile.filename }}"
+            data-imgAmount = "{{ datafiles.object_list|length }}"
+		    style="display: block; margin-left: 0; margin-right: 0;"
+		    onerror="$(this).hide()"
+            id= "imgIcon-{{ forloop.counter }}"
+           />
+        </a>
+
       {% endif %}
     {% endif %}
 
@@ -145,6 +159,11 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
   </td>
 </tr>
 {% endfor %}
+
+
+<script>
+    encodeLiveAction('imgIcon');
+</script>
 </tbody>
 </table>
 {# this appears to break things? Why is it here? -steve #}
