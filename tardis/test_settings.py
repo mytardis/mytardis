@@ -307,7 +307,7 @@ MIGRATION_SCORING_PARAMS = {
     'file_age_threshold': 0,
     'file_age_weighting': 0.0}
 
-MIGRATION_PROVIDERS = {
+TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}

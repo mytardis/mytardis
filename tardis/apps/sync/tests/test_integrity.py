@@ -10,9 +10,9 @@ from ..integrity import IntegrityCheck
 
 class IntegrityCheckTestCase(TestCase):
     def _get_or_create_local_location(self, name, url, type, priority):
-        return Location.objects.get_or_create(
-            name=name, url=url, type=type, priority=priority, 
-            migration_provider='local')[0] 
+        return Location.load_location({'name': name, 'url': url, 
+                                       'type': type, 'priority': priority, 
+                                       'transfer_provider': 'local'}) 
 
     def _make_dataset(self, exp, filenames):
         dataset = Dataset()

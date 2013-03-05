@@ -25,7 +25,7 @@ class Location(models.Model):
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
-    migration_provider = models.CharField(max_length=10, default='local')
+    transfer_provider = models.CharField(max_length=10, default='local')
 
     initialized = False
 
@@ -97,24 +97,30 @@ class Location(models.Model):
                 Location.objects.get(name=desc['name'])
                 logger.debug('Location %s already exists' % desc['name'])
             except Location.DoesNotExist:
-                Location.load_location(desc)
+                Location.load_location(desc, check=False)
                 logger.info('Location %s loaded' % desc['name'])
                 done_init = True
         return done_init
 
     @classmethod
-    def load_location(cls, desc, noslash=False):
+    def load_location(cls, desc, noslash=False, check=True):
+        if check:
+            try:
+                return Location.objects.get(name=desc['name'])
+            except Location.DoesNotExist:
+                pass
         url = desc['url']
         if not noslash and not url.endswith('/'):
             url = url + '/'
         location = Location(name=desc['name'], url=url, type=desc['type'],
                             priority=desc['priority'],
-                            migration_provider=desc.get('provider', 'local'))
+                            transfer_provider=desc.get('provider', 'local'))
         location.save()
         for (name, value) in desc.get('params', {}).items():
             param = ProviderParameter(location=location, 
                                       name=name, value=value)
             param.save()
+        return location;
 
 
     @classmethod
@@ -124,9 +130,10 @@ class Location(models.Model):
             params[p.name] = p.value
 
         try:
-            p_class = settings.MIGRATION_PROVIDERS[loc.migration_provider]
+            p_class = settings.TRANSFER_PROVIDERS[loc.transfer_provider]
         except KeyError:
-            p_class = loc.migration_provider
+            # Try interpretting it as a class name ...
+            p_class = loc.transfer_provider
 
         # FIXME - is there a better way to do this?
         parts = p_class.split('.')

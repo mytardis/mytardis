@@ -60,9 +60,9 @@ class JEOLSEMFilterTestCase(TestCase):
                                     sha512sum=sha512sum)
             datafile.save()
             base_url = 'file://' + path.abspath(path.dirname(testfile))
-            location = Location.objects.get_or_create(
-                name='test-jeol', url=base_url, type='external',
-                priority=10, migration_provider='local')[0]
+            location = Location.load_location({
+                'name': 'test-jeol', 'url': base_url, 'type': 'external',
+                'priority': 10, 'transfer_provider': 'local'})
             replica = Replica(datafile=datafile,
                               url='file://'+path.abspath(testfile),
                               protocol='file',

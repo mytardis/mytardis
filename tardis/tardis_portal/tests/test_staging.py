@@ -136,9 +136,9 @@ class TestStagingFiles(TestCase):
 
         # create replica
         base_url = 'file://' + settings.GET_FULL_STAGING_PATH_TEST
-        location = Location.objects.get_or_create(
-            name='staging-test-yyy', url=base_url, type='external', 
-            priority=10, migration_provider='local')[0] 
+        location = Location.load_location({
+            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external', 
+            'priority': 10, 'transfer_provider': 'local'}) 
         replica = models.Replica(datafile=df, url='file://'+self.file,
                                  protocol="staging",location=location)
         replica.verify()

@@ -487,13 +487,20 @@ class MigrateCommandTestCase(TestCase):
         except SystemExit:
             pass
         out.seek(0)
-        self.assertEquals(out.read(), 
-                          'local            : online   : local    : file:///home/scrawley/git/mytardis/var/test/store/\n' +
-                          'sync             : external : local    : file:///home/scrawley/git/mytardis/var/test/sync/\n' +
-                          'staging          : external : local    : file:///home/scrawley/git/mytardis/var/test/staging/\n' +
-                          'test             : online   : http     : http://127.0.0.1:4272/data/\n' +
-                          'test2            : online   : dav      : http://127.0.0.1/data2/\n' +
-                          'test3            : online   : dav      : http://127.0.0.1/data3/\n')
+        self.assertEquals(
+            out.read(), 
+            'local            : online   : local    :' +
+            ' file:///home/scrawley/git/mytardis/var/test/store/\n' +
+            'sync             : external : local    :' +
+            ' file:///home/scrawley/git/mytardis/var/test/sync/\n' +
+            'staging          : external : local    :' +
+            ' file:///home/scrawley/git/mytardis/var/test/staging/\n' +
+            'test             : online   : http     :' +
+            ' http://127.0.0.1:4272/data/\n' +
+            'test2            : online   : dav      :' +
+            ' http://127.0.0.1/data2/\n' +
+            'test3            : online   : dav      :' +
+            ' http://127.0.0.1/data3/\n')
 
     def testParseAmount(self):
         command = Command()

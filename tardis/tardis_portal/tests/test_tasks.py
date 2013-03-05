@@ -20,9 +20,9 @@ class BackgroundTaskTestCase(TestCase):
         self.dataset = self._create_dataset()
 
     def _get_or_create_local_location(self, name, url, type, priority):
-        return Location.objects.get_or_create(
-            name=name, url=url, type=type, priority=priority, 
-            migration_provider='local')[0] 
+        return Location.load_location({
+            'name': name, 'url': url, 'type': type, 'priority': priority, 
+            'transfer_provider': 'local'}) 
 
     def _create_dataset(self):
         user = User.objects.create_user('testuser', 'user@email.test', 'pwd')

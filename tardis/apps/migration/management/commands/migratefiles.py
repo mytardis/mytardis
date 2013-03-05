@@ -277,7 +277,7 @@ class Command(BaseCommand):
         for loc in Location.objects.all():
             self.stdout.write('{0:<16} : {1:<8} : {2:<8} : {3:}\n'.
                               format(loc.name, loc.type, 
-                                     loc.migration_provider, loc.url))
+                                     loc.transfer_provider, loc.url))
 
     def _score_all_datafiles(self):
         scores = self._do_score_all()

@@ -198,10 +198,10 @@ class DownloadTestCase(TestCase):
         else:
             location = Location.get_location_for_url(url)
             if not location:
-                location = Location.objects.get_or_create(
-                    name=filename, url=urlparse.urljoin(url, '.'), 
-                    type='external', 
-                    priority=10, migration_provider='local')[0]
+                location = Location.load_location({
+                    'name': filename, 'url': urlparse.urljoin(url, '.'), 
+                    'type': 'external', 
+                    'priority': 10, 'transfer_provider': 'local'})
         replica = Replica(datafile=datafile, protocol=protocol, url=url,
                           location=location)
         replica.verify()
