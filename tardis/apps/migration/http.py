@@ -103,14 +103,23 @@ class SimpleHttpTransfer(TransferProvider):
     def get_metadata(self, replica):
         if not self.metadata_supported:
             raise NotImplementedError
-        response = self.opener.open(self.GetRequest(replica.url + "?metadata"))
-        return simplejson.load(response)
+        try:
+            response = self.opener.open(
+                self.GetRequest(replica.url + "?metadata"))
+            return simplejson.load(response)
+        except HTTPError as e:
+            raise MigrationProviderError(e.reason)
     
     def get_opener(self, replica):
         url = replica.url
         self._check_url(url)
+
         def getter():
-            return self.opener.open(url)
+            try:
+                return self.opener.open(url)
+            except HTTPError as e:
+                raise MigrationProviderError(e.reason)
+
         return getter
 
     def generate_url(self, replica):
@@ -118,19 +127,22 @@ class SimpleHttpTransfer(TransferProvider):
 
     def put_file(self, source_replica, target_replica):
         self._check_url(target_replica.url)
-        with source_replica.get_file() as f:
-            content = f.read()
-        request = self.PutRequest(target_replica.url)
-        request.add_header('Content-Length', str(len(content)))
-        request.add_header('Content-Type', source_replica.datafile.mimetype)
-        response = self.opener.open(request, data=content)
-    
+        try:
+            with source_replica.get_file() as f:
+                content = f.read()
+            request = self.PutRequest(target_replica.url)
+            request.add_header('Content-Length', str(len(content)))
+            request.add_header('Content-Type', source_replica.datafile.mimetype)
+            response = self.opener.open(request, data=content)
+        except HTTPError as e:
+            raise MigrationProviderError(e.reason)
+
     def remove_file(self, replica):
         self._check_url(replica.url)
         try:
             self.opener.open(self.DeleteRequest(replica.url))
         except HTTPError as e:
-            raise MigrationProviderError(e.reason);
+            raise MigrationProviderError(e.reason)
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):

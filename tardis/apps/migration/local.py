@@ -30,7 +30,6 @@
 from urllib2 import Request, HTTPError
 from urllib import quote, unquote
 from urlparse import urlparse, urljoin
-import os
 from os import path
 from contextlib import closing
 
@@ -59,14 +58,17 @@ class BaseLocalTransfer(TransferProvider):
     def get_length(self, replica):
         filename = self._uri_to_filename(replica.url)
         try:
-            return os.path.getsize(filename)
+            return self.storage.size(filename)
         except OSError as e:
             raise MigrationProviderError(e.strerror)
         
     def get_metadata(self, replica):
         filename = self._uri_to_filename(replica.url)
-        with open(filename, 'r') as f:
-            md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
+        with self.storage.open(filename, 'r') as f:
+            try:
+                md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
+            except OSError as e:
+                raise MigrationProviderError(e.strerror)
             return {'md5sum': md5sum,
                     'sha512sum': sha512sum,
                     'length': str(size)}
@@ -74,7 +76,10 @@ class BaseLocalTransfer(TransferProvider):
     def get_opener(self, replica):
         path = self._uri_to_filename(replica.url)
         def getter():
-            return self.storage.open(path)
+            try:
+                return self.storage.open(path)
+            except OSError as e:
+                raise MigrationProviderError(e.strerror)
         return getter
    
     def generate_url(self, replica):
@@ -93,15 +98,18 @@ class BaseLocalTransfer(TransferProvider):
                 self.storage.path(copyto)
             except (SuspiciousOperation, ValueError):
                 copyto = path.join(dspath. path.basename(tf.name))
-            target_replica.url = self.storage.save(copyto, tf)
+            try:
+                target_replica.url = self.storage.save(copyto, tf)
+            except OSError as e:
+                raise MigrationProviderError(e.strerror)
             target_replica.verified = False
             target_replica.protocol = ''
             target_replica.save()
     
     def remove_file(self, replica):
-        filename = self._uri_to_filename(replica.url)
+        path = self._uri_to_filename(replica.url)
         try:
-            os.remove(filename)
+            self.storage.delete(path)
         except OSError as e:
             raise MigrationProviderError(e.strerror)
 

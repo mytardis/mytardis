@@ -139,8 +139,6 @@ class MigrationTestCase(TestCase):
         provider.remove_file(target_replica)
         with self.assertRaises(MigrationProviderError):
             provider.get_length(target_replica)
-        with self.assertRaises(MigrationProviderError):
-            provider.remove_file(target_replica)
 
     def testMigrateRestore(self):
         dest = Location.get_location('test')
