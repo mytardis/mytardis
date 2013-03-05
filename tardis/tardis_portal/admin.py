@@ -44,34 +44,36 @@ class ExperimentParameterInline(admin.TabularInline):
       django.db.models.TextField: {'widget': TextInput},
     }
 
-
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
-
 
 class ExperimentACLInline(admin.TabularInline):
     model = models.ExperimentACL
     extra = 0
 
-
 class ExperimentAdmin(admin.ModelAdmin):
     search_fields = ['title', 'id']
     inlines = [ExperimentACLInline]
 
-
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'experiment__id']
-
 
 class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'dataset__experiment__id']
 
-
 class ReplicaAdmin(admin.ModelAdmin):
     search_fields = ['url']
 
+class ProviderParameterNameInline(admin.TabularInline):
+    model = models.ProviderParameter
+    extra = 0
+
 class LocationAdmin(admin.ModelAdmin):
     search_fields = ['name']
+    inlines = [ProviderParameterNameInline]
+
+class ProviderParameterAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'location']
 
 class ParameterNameInline(admin.TabularInline):
     model = models.ParameterName
@@ -81,10 +83,8 @@ class SchemaAdmin(admin.ModelAdmin):
     search_fields = ['name', 'namespace']
     inlines = [ParameterNameInline]
 
-
 class ParameterNameAdmin(admin.ModelAdmin):
     search_fields = ['name', 'schema__id']
-
 
 class ExperimentAclAdmin(admin.ModelAdmin):
     search_fields = ['experiment__id']
@@ -102,6 +102,7 @@ admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.Dataset_File, DatafileAdmin)
 admin.site.register(models.Replica, ReplicaAdmin)
 admin.site.register(models.Location, LocationAdmin)
+admin.site.register(models.ProviderParameter, ProviderParameterAdmin)
 admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)

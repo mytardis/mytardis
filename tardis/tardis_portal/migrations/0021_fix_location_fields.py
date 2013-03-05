@@ -8,6 +8,44 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'ProviderParameter'
+        db.create_table('tardis_portal_providerparameter', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('location', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Location'])),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=10)),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=80, blank=True)),
+        ))
+        db.send_create_signal('tardis_portal', ['ProviderParameter'])
+
+        # Adding unique constraint on 'ProviderParameter', fields ['location', 'name']
+        db.create_unique('tardis_portal_providerparameter', ['location_id', 'name'])
+
+        # Deleting field 'Location.auth_scheme'
+        db.delete_column('tardis_portal_location', 'auth_scheme')
+
+        # Deleting field 'Location.auth_realm'
+        db.delete_column('tardis_portal_location', 'auth_realm')
+
+        # Deleting field 'Location.trust_length'
+        db.delete_column('tardis_portal_location', 'trust_length')
+
+        # Deleting field 'Location.auth_password'
+        db.delete_column('tardis_portal_location', 'auth_password')
+
+        # Deleting field 'Location.migration_provider'
+        db.delete_column('tardis_portal_location', 'migration_provider')
+
+        # Deleting field 'Location.auth_user'
+        db.delete_column('tardis_portal_location', 'auth_user')
+
+        # Deleting field 'Location.metadata_supported'
+        db.delete_column('tardis_portal_location', 'metadata_supported')
+
+        # Adding field 'Location.transfer_provider'
+        db.add_column('tardis_portal_location', 'transfer_provider',
+                      self.gf('django.db.models.fields.CharField')(default='local', max_length=10),
+                      keep_default=False)
+
         # Adding unique constraint on 'Location', fields ['name']
         db.create_unique('tardis_portal_location', ['name'])
 
@@ -21,6 +59,50 @@ class Migration(SchemaMigration):
 
         # Removing unique constraint on 'Location', fields ['name']
         db.delete_unique('tardis_portal_location', ['name'])
+
+        # Removing unique constraint on 'ProviderParameter', fields ['location', 'name']
+        db.delete_unique('tardis_portal_providerparameter', ['location_id', 'name'])
+
+        # Deleting model 'ProviderParameter'
+        db.delete_table('tardis_portal_providerparameter')
+
+        # Adding field 'Location.auth_scheme'
+        db.add_column('tardis_portal_location', 'auth_scheme',
+                      self.gf('django.db.models.fields.CharField')(default='digest', max_length=10),
+                      keep_default=False)
+
+        # Adding field 'Location.auth_realm'
+        db.add_column('tardis_portal_location', 'auth_realm',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=20),
+                      keep_default=False)
+
+        # Adding field 'Location.trust_length'
+        db.add_column('tardis_portal_location', 'trust_length',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Adding field 'Location.auth_password'
+        db.add_column('tardis_portal_location', 'auth_password',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=400),
+                      keep_default=False)
+
+        # Adding field 'Location.migration_provider'
+        db.add_column('tardis_portal_location', 'migration_provider',
+                      self.gf('django.db.models.fields.CharField')(default='local', max_length=10),
+                      keep_default=False)
+
+        # Adding field 'Location.auth_user'
+        db.add_column('tardis_portal_location', 'auth_user',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=20),
+                      keep_default=False)
+
+        # Adding field 'Location.metadata_supported'
+        db.add_column('tardis_portal_location', 'metadata_supported',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
+
+        # Deleting field 'Location.transfer_provider'
+        db.delete_column('tardis_portal_location', 'transfer_provider')
 
 
     models = {
@@ -187,17 +269,11 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.location': {
             'Meta': {'object_name': 'Location'},
-            'auth_password': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
-            'auth_realm': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
-            'auth_scheme': ('django.db.models.fields.CharField', [], {'default': "'digest'", 'max_length': '10'}),
-            'auth_user': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_available': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'metadata_supported': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'migration_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '10'}),
             'priority': ('django.db.models.fields.IntegerField', [], {}),
-            'trust_length': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'transfer_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
             'url': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'})
         },
@@ -214,6 +290,13 @@ class Migration(SchemaMigration):
             'order': ('django.db.models.fields.PositiveIntegerField', [], {'default': '9999', 'null': 'True', 'blank': 'True'}),
             'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
             'units': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'})
+        },
+        'tardis_portal.providerparameter': {
+            'Meta': {'unique_together': "(('location', 'name'),)", 'object_name': 'ProviderParameter'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'location': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Location']"}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'})
         },
         'tardis_portal.replica': {
             'Meta': {'unique_together': "(('datafile', 'location'),)", 'object_name': 'Replica'},
@@ -238,7 +321,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 15, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 4, 4, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
