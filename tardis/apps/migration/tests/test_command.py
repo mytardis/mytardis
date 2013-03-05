@@ -39,12 +39,12 @@ from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
 from tardis.tardis_portal.models import Dataset_File, Location
-
-from tardis.apps.migration.management.commands.migratefiles import Command
-from tardis.apps.migration.tests import SimpleHttpTestServer
-from tardis.apps.migration.tests.generate import \
+from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
+from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
     generate_user
+
+from tardis.apps.migration.management.commands.migratefiles import Command
 
 
 class MigrateCommandTestCase(TestCase):

@@ -56,7 +56,7 @@ from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
-from tardis.apps.migration import TransferProvider
+from tardis.tardis_portal.transfer import TransferProvider
 
 class SearchTestCase(TestCase):
 

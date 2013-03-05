@@ -35,7 +35,8 @@ from django.conf import settings
 
 from tardis.apps.migration import MigrationScorer
 from tardis.apps.migration.models import get_user_priority
-from tardis.apps.migration.tests.generate import \
+
+from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
 from tardis.tardis_portal.models import Replica, Location
 

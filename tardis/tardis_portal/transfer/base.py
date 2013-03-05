@@ -27,6 +27,15 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-class MigrationError(Exception):
+class TransferError(Exception):
     pass
 
+class TransferProvider(object):
+    def __init__(self, name, base_url):
+        self.name = name
+        if not base_url.endswith('/'):
+            base_url = base_url + '/'
+        self.base_url = base_url
+
+    def get_file(self, replica):
+        return self.get_opener(replica)()

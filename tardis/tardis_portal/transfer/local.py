@@ -40,7 +40,7 @@ from django.core.exceptions import SuspiciousOperation
 
 from tardis.tardis_portal.util import generate_file_checksums
 
-from .base import MigrationError, MigrationProviderError, TransferProvider
+from .base import TransferError, TransferProvider
 
 class BaseLocalTransfer(TransferProvider):
     def __init__(self, name, base_url, params):
@@ -60,7 +60,7 @@ class BaseLocalTransfer(TransferProvider):
         try:
             return self.storage.size(filename)
         except OSError as e:
-            raise MigrationProviderError(e.strerror)
+            raise TransferError(e.strerror)
         
     def get_metadata(self, replica):
         filename = self._uri_to_filename(replica.url)
@@ -68,7 +68,7 @@ class BaseLocalTransfer(TransferProvider):
             try:
                 md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
             except OSError as e:
-                raise MigrationProviderError(e.strerror)
+                raise TransferError(e.strerror)
             return {'md5sum': md5sum,
                     'sha512sum': sha512sum,
                     'length': str(size)}
@@ -79,7 +79,7 @@ class BaseLocalTransfer(TransferProvider):
             try:
                 return self.storage.open(path)
             except OSError as e:
-                raise MigrationProviderError(e.strerror)
+                raise TransferError(e.strerror)
         return getter
    
     def generate_url(self, replica):
@@ -101,7 +101,7 @@ class BaseLocalTransfer(TransferProvider):
             try:
                 target_replica.url = self.storage.save(copyto, tf)
             except OSError as e:
-                raise MigrationProviderError(e.strerror)
+                raise TransferError(e.strerror)
             target_replica.verified = False
             target_replica.protocol = ''
             target_replica.save()
@@ -111,7 +111,7 @@ class BaseLocalTransfer(TransferProvider):
         try:
             self.storage.delete(path)
         except OSError as e:
-            raise MigrationProviderError(e.strerror)
+            raise TransferError(e.strerror)
 
     def _uri_to_filename(self, uri):
         # This is crude and possibly fragile, and definitely insecure
@@ -119,9 +119,9 @@ class BaseLocalTransfer(TransferProvider):
         if not parts.scheme:
             return '%s/%s' % (self.base_path, uri)
         if not uri.startswith(self.base_url):
-            raise MigrationProviderError(('The url (%s) does not belong to' \
-                                ' the %s destination (url %s)') % \
-                                             (uri, self.name, self.base_url))
+            raise TransferError(
+                'Url %s does not belong to the %s destination (url %s)' % \
+                    (uri, self.name, self.base_url))
         return unquote('/%s/%s' % (parts.netloc, parts.path))
 
 
@@ -130,7 +130,8 @@ class LocalTransfer(BaseLocalTransfer):
         BaseLocalTransfer.__init__(self, name, base_url, params)
         parts = urlparse(self.base_url)
         if parts.scheme != 'file':
-            raise ValueError('base_url (%s) should be a "file:" url' % base_url)
+            raise ValueError(
+                'base_url (%s) should be a "file:" url' % base_url)
         self.base_path = parts.path
         self.storage = FileSystemStorage(location=self.base_path)
 
@@ -145,8 +146,8 @@ class CustomTransfer(BaseLocalTransfer):
         # This is crude and possibly fragile, and definitely insecure
         parts = urlparse(uri)
         if not uri.startswith(self.base_url):
-            raise MigrationProviderError(('The url (%s) does not belong to' \
-                                ' the %s destination (url %s)') % \
-                                             (uri, self.name, self.base_url))
+            raise TransferError(
+                'Url %s does not belong to the %s destination (url %s)' % \
+                    (uri, self.name, self.base_url))
         return self.base_path + '/' + uri[len(self.base_url):]
 

@@ -37,7 +37,7 @@ import os
 
 from django.utils import simplejson
 
-from .base import MigrationError, MigrationProviderError, TransferProvider
+from .base import TransferError, TransferProvider
 
 class SimpleHttpTransfer(TransferProvider):
     class HeadRequest(Request):
@@ -91,14 +91,14 @@ class SimpleHttpTransfer(TransferProvider):
         try:
             response = self.opener.open(self.HeadRequest(replica.url))
         except HTTPError as e:
-            raise MigrationProviderError(e.reason);
+            raise TransferError(e.reason);
         length = response.info().get('Content-length')
         if length is None:
-            raise MigrationProviderError("No content-length in response")
+            raise TransferError("No content-length in response")
         try:
             return int(length)
         except TypeError:
-            raise MigrationProviderError("Content-length is not numeric")
+            raise TransferError("Content-length is not numeric")
         
     def get_metadata(self, replica):
         if not self.metadata_supported:
@@ -108,7 +108,7 @@ class SimpleHttpTransfer(TransferProvider):
                 self.GetRequest(replica.url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
-            raise MigrationProviderError(e.reason)
+            raise TransferError(e.reason)
     
     def get_opener(self, replica):
         url = replica.url
@@ -118,7 +118,7 @@ class SimpleHttpTransfer(TransferProvider):
             try:
                 return self.opener.open(url)
             except HTTPError as e:
-                raise MigrationProviderError(e.reason)
+                raise TransferError(e.reason)
 
         return getter
 
@@ -135,17 +135,17 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Type', source_replica.datafile.mimetype)
             response = self.opener.open(request, data=content)
         except HTTPError as e:
-            raise MigrationProviderError(e.reason)
+            raise TransferError(e.reason)
 
     def remove_file(self, replica):
         self._check_url(replica.url)
         try:
             self.opener.open(self.DeleteRequest(replica.url))
         except HTTPError as e:
-            raise MigrationProviderError(e.reason)
+            raise TransferError(e.reason)
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):
-            raise MigrationProviderError(\
+            raise TransferError(
                 'url %s does not belong to the %s destination (url %s)' % \
                     (url, self.name, self.base_url))

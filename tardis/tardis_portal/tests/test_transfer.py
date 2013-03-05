@@ -35,11 +35,10 @@ import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
-from tardis.apps.migration import TransferProvider, \
-    SimpleHttpTransfer, WebDAVTransfer, MigrationError, \
-    MigrationProviderError
-from tardis.apps.migration.tests import SimpleHttpTestServer
-from tardis.apps.migration.tests.generate import \
+from tardis.tardis_portal.transfer import TransferProvider, \
+    SimpleHttpTransfer, WebDAVTransfer, TransferError
+from .transfer import SimpleHttpTestServer
+from .transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
 
 class TransferProviderTestCase(TestCase):
@@ -135,6 +134,6 @@ class TransferProviderTestCase(TestCase):
             pass
             
         provider.remove_file(target_replica)
-        with self.assertRaises(MigrationProviderError):
+        with self.assertRaises(TransferError):
             provider.get_length(target_replica)
 

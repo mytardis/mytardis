@@ -129,12 +129,18 @@ class Location(models.Model):
             p_class = loc.migration_provider
 
         # FIXME - is there a better way to do this?
-        exec 'import tardis\n' + \
-            'provider = ' + p_class + '(loc.name, loc.url, params)'
+        parts = p_class.split('.')
+        module = ''
+        for p in parts[0:(len(parts) - 1)]:
+            module += p
+            globals()[p] = __import__(module, globals(), locals(), [], -1)
+            module += '.'
+        exec 'provider = ' + p_class + '(loc.name, loc.url, params)'
         return provider
 
     def __unicode__(self):
         return self.name
+
 
 class ProviderParameter(models.Model):
     '''This class represents a "parameter" that is passed when

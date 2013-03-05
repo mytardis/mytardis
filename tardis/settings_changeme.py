@@ -368,7 +368,8 @@ MIGRATION_DESTINATIONS = []
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
 
-MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
-                       'dav': 'tardis.apps.migration.WebDAVTransfer',
-                       'local': 'tardis.apps.migration.LocalTransfer'}
+MIGRATION_PROVIDERS = {
+    'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
+    'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
+    'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
 

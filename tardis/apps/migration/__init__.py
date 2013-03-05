@@ -28,9 +28,6 @@
 #
 
 
-from .base import MigrationError, MigrationProviderError, TransferProvider
-from .http import SimpleHttpTransfer
-from .webdav import WebDAVTransfer
-from .local import BaseLocalTransfer, LocalTransfer, CustomTransfer
+from .base import MigrationError
 from .migration import migrate_replica, migrate_replica_by_id
 from .scoring import MigrationScorer

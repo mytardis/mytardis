@@ -35,11 +35,13 @@ import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
-from tardis.apps.migration import \
-    MigrationError, MigrationProviderError, migrate_replica
-from tardis.apps.migration.tests import SimpleHttpTestServer
-from tardis.apps.migration.tests.generate import \
+from tardis.tardis_portal.transfer import TransferError
+from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
+from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
+
+
+from tardis.apps.migration import MigrationError, migrate_replica
 
 class MigrationTestCase(TestCase):
 
@@ -82,7 +84,7 @@ class MigrationTestCase(TestCase):
         self.assertTrue(migrate_replica(new_replica, local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
-        with self.assertRaises(MigrationProviderError):
+        with self.assertRaises(TransferError):
             dest.provider.get_length(new_replica)
 
         # Refresh the datafile object because it is now stale ...
@@ -112,7 +114,7 @@ class MigrationTestCase(TestCase):
         dummy_replica.location = Location.objects.get(name='test')
         dummy_replica.url = dummy_replica.generate_default_url()
 
-        with self.assertRaises(MigrationProviderError):
+        with self.assertRaises(TransferError):
             dest.provider.get_length(dummy_replica)
 
         self.assertTrue(migrate_replica(replica, dest, mirror=True))

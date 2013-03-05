@@ -30,7 +30,7 @@
 from urllib2 import Request, urlopen, HTTPError
 from urlparse import urlparse
 
-from tardis.apps.migration import TransferProvider, MigrationProviderError, \
+from tardis.tardis_portal.transfer import TransferProvider, TransferError, \
     SimpleHttpTransfer
 
 

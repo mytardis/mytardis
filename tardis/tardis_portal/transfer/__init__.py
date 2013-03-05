@@ -27,6 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-class MigrationError(Exception):
-    pass
-
+from .base import TransferProvider, TransferError
+from .http import SimpleHttpTransfer
+from .webdav import WebDAVTransfer
+from .local import BaseLocalTransfer, LocalTransfer, CustomTransfer
