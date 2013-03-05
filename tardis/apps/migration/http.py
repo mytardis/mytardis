@@ -31,6 +31,7 @@ from urllib2 import Request, HTTPError, build_opener, \
     HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, \
     HTTPDigestAuthHandler
 from urllib import quote
+from urllib2 import URLError
 from urlparse import urlparse, urljoin
 import os
 
@@ -79,9 +80,18 @@ class SimpleHttpTransfer(TransferProvider):
         else:
             return build_opener()
 
-    def get_length(self, url):
-        self._check_url(url)
-        response = self.opener.open(self.HeadRequest(url))
+    def alive(self):
+        try:
+            self.opener.open(self.base_url)
+            return True
+        except URLError:
+            return False
+
+    def get_length(self, replica):
+        try:
+            response = self.opener.open(self.HeadRequest(replica.url))
+        except HTTPError as e:
+            raise MigrationProviderError(e.reason);
         length = response.info().get('Content-length')
         if length is None:
             raise MigrationProviderError("No content-length in response")
@@ -90,31 +100,24 @@ class SimpleHttpTransfer(TransferProvider):
         except TypeError:
             raise MigrationProviderError("Content-length is not numeric")
         
-    def get_metadata(self, url):
+    def get_metadata(self, replica):
         if not self.metadata_supported:
             raise NotImplementedError
-        self._check_url(url)
-        response = self.opener.open(self.GetRequest(url + "?metadata"))
+        response = self.opener.open(self.GetRequest(replica.url + "?metadata"))
         return simplejson.load(response)
     
-    def get_file(self, url):
-        self._check_url(url)
-        response = self.opener.open(self.GetRequest(url))
-        return response.read()
-    
     def get_opener(self, replica):
-        theUrl = replica.url
+        url = replica.url
+        self._check_url(url)
         def getter():
-            return self.opener.open(theUrl)
+            return self.opener.open(url)
         return getter
 
     def generate_url(self, replica):
         return replica.generate_default_url()
 
-    def url_matches(self, url):
-        return url.startswith(self.base_url)
-    
     def put_file(self, source_replica, target_replica):
+        self._check_url(target_replica.url)
         with source_replica.get_file() as f:
             content = f.read()
         request = self.PutRequest(target_replica.url)
@@ -122,12 +125,15 @@ class SimpleHttpTransfer(TransferProvider):
         request.add_header('Content-Type', source_replica.datafile.mimetype)
         response = self.opener.open(request, data=content)
     
-    def remove_file(self, url):
-        self._check_url(url)
-        self.opener.open(self.DeleteRequest(url))
+    def remove_file(self, replica):
+        self._check_url(replica.url)
+        try:
+            self.opener.open(self.DeleteRequest(replica.url))
+        except HTTPError as e:
+            raise MigrationProviderError(e.reason);
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):
-            raise MigrationProviderError(('The url (%s) does not belong to' \
-                                ' the %s destination (url %s)') % \
-                                             (url, self.name, self.base_url))
+            raise MigrationProviderError(\
+                'url %s does not belong to the %s destination (url %s)' % \
+                    (url, self.name, self.base_url))

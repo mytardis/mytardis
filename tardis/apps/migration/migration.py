@@ -98,7 +98,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             verified = check_file_transferred(newreplica, location)
         except:
             # FIXME - should we always do this?
-            location.provider.remove_file(url)
+            location.provider.remove_file(newreplica)
             raise
 
         newreplica.verified = verified
@@ -114,7 +114,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         # FIXME - do this more reliably ...
         replica.delete()
         if not noRemove:
-            source.provider.remove_file(replica.url)
+            source.provider.remove_file(replica)
             logger.info('Removed local file %s for replica %s' %
                         (filename, replica.id))
         return True
@@ -132,7 +132,7 @@ def check_file_transferred(replica, location):
     # file length for its copy of the file
     try:
         # Fetch the remote's metadata for the file
-        m = location.provider.get_metadata(replica.url)
+        m = location.provider.get_metadata(replica)
         _check_attribute(m, datafile.size, 'length')
         if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
                _check_attribute(m, datafile.md5sum, 'md5sum')):
@@ -150,7 +150,7 @@ def check_file_transferred(replica, location):
 
     if location.provider.trust_length :
         try:
-            length = location.provider.get_length(replica.url)
+            length = location.provider.get_length(replica)
             if _check_attribute2(length, datafile.size, 'length'):
                 return False
         except NotImplementedError:

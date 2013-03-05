@@ -53,22 +53,24 @@ class BaseLocalTransfer(TransferProvider):
         self.storage = None
         self.base_path = None
 
-    def get_length(self, uri):
-        filename = self._uri_to_filename(uri)
-        return os.path.getsize(filename)
+    def alive(self):
+        return True
+
+    def get_length(self, replica):
+        filename = self._uri_to_filename(replica.url)
+        try:
+            return os.path.getsize(filename)
+        except OSError as e:
+            raise MigrationProviderError(e.strerror)
         
-    def get_metadata(self, uri):
-        filename = self._uri_to_filename(uri)
+    def get_metadata(self, replica):
+        filename = self._uri_to_filename(replica.url)
         with open(filename, 'r') as f:
             md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
             return {'md5sum': md5sum,
                     'sha512sum': sha512sum,
-                    'size': size}
+                    'length': str(size)}
     
-    def get_file(self, uri):
-        filename = self._uri_to_filename(uri)
-        raise Exception('tbd')
- 
     def get_opener(self, replica):
         path = self._uri_to_filename(replica.url)
         def getter():
@@ -77,9 +79,6 @@ class BaseLocalTransfer(TransferProvider):
    
     def generate_url(self, replica):
         return replica.generate_default_url()
-
-    def url_matches(self, uri):
-        return uri.startswith(self.base_url)
     
     def put_file(self, source_replica, target_replica):
         datafile = target_replica.datafile
@@ -99,9 +98,12 @@ class BaseLocalTransfer(TransferProvider):
             target_replica.protocol = ''
             target_replica.save()
     
-    def remove_file(self, uri):
-        filename = self._uri_to_filename(uri)
-        os.remove(filename)
+    def remove_file(self, replica):
+        filename = self._uri_to_filename(replica.url)
+        try:
+            os.remove(filename)
+        except OSError as e:
+            raise MigrationProviderError(e.strerror)
 
     def _uri_to_filename(self, uri):
         # This is crude and possibly fragile, and definitely insecure

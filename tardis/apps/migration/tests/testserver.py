@@ -99,7 +99,7 @@ class SimpleHttpTestServer:
             md5 = m.hexdigest()
             return simplejson.dumps({'sha512sum' : sha512, 
                                      'md5sum' : md5,
-                                     'length' : len(data)})
+                                     'length' : size(len(data))})
 
     class ThreadedTCPServer(SocketServer.ThreadingMixIn, \
                             BaseHTTPServer.HTTPServer):

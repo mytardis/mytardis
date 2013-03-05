@@ -39,3 +39,6 @@ class TransferProvider(object):
         if not base_url.endswith('/'):
             base_url = base_url + '/'
         self.base_url = base_url
+
+    def get_file(self, replica):
+        return self.get_opener(replica)()

@@ -68,16 +68,22 @@ class MigrationTestCase(TestCase):
         provider = Location.get_location('test').provider
         self.assertIsInstance(provider, TransferProvider)
         self.assertIsInstance(provider, SimpleHttpTransfer)
+        self.assertEqual(provider.base_url, 'http://127.0.0.1:4272/data/')
         
         provider = Location.get_location('test2').provider
         self.assertIsInstance(provider, TransferProvider)
         self.assertIsInstance(provider, WebDAVTransfer)
         self.assertFalse(401 in provider.opener.handle_error['http'])
+        self.assertEqual(provider.base_url, 'http://127.0.0.1/data2/')
         
         provider = Location.get_location('test3').provider
         self.assertIsInstance(provider, TransferProvider)
         self.assertIsInstance(provider, WebDAVTransfer)
         self.assertTrue(401 in provider.opener.handle_error['http'])
+        self.assertEqual(provider.base_url, 'http://127.0.0.1/data3/')
+
+    def testLocalProvider(self):
+        self.do_ext_provider('sync')
 
     def testWebDAVProvider(self):
         self.do_ext_provider('test2')
@@ -92,14 +98,12 @@ class MigrationTestCase(TestCase):
         # This test requires an external test server configured
         # as per the 'dest_name' destination.  We skip the test is the 
         # server doesn't respond.
-        try:
-            loc = Location.get_location(loc_name)
-            provider = loc.provider.opener.open(loc.url)
-        except URLError:
-            print 'SKIPPING TEST - %s server on %s not responding\n' % \
+        loc = Location.get_location(loc_name)
+        if loc.provider.alive():
+            self.do_provider(loc)
+        else:
+            print 'SKIPPING TEST - %s server on %s is not responding\n' % \
                 (loc_name, loc.url)
-            return
-        self.do_provider(loc)
 
     def do_provider(self, loc):
         provider = loc.provider
@@ -114,38 +118,29 @@ class MigrationTestCase(TestCase):
         target_replica.url = url
         provider.put_file(replica, target_replica)
 
-        self.assertEqual(provider.get_file(url), "Hi mum")
-        with self.assertRaises(MigrationProviderError):
-            provider.get_file('http://foo/data/1/2/4')
-        with self.assertRaises(HTTPError):
-            provider.get_file(base_url + '1/2/4')
+        self.assertEqual(replica.location.provider.get_file(replica).read(), 
+                         "Hi mum")
+        self.assertEqual(provider.get_file(target_replica).read(), "Hi mum")
 
-        self.assertEqual(provider.get_length(url), 6)
-        with self.assertRaises(MigrationProviderError):
-            provider.get_length('http://foo/data/1/2/4')
-        with self.assertRaises(HTTPError):
-            provider.get_length(base_url + '1/2/4')
+        self.assertEqual(provider.get_length(target_replica), 6)
 
         try:
-            self.assertEqual(provider.get_metadata(url),
+            self.maxDiff = None
+            self.assertEqual(provider.get_metadata(target_replica),
                              {'sha512sum' : '2274cc8c16503e3d182ffaa835c543b' +
                               'ce278bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e' +
                               '5abea29bc05f7f0ea662cb4b0e805e56bbce97f00f94e' +
                               'a6e6498', 
                               'md5sum' : '3b6b51114c3d0ad347e20b8e79765951',
-                              'length' : 6})
-            with self.assertRaises(MigrationProviderError):
-                provider.get_metadata('http:/foo/data/1/2/4')
-                with self.assertRaises(HTTPError):
-                    provider.get_metadata(base_url + '1/2/4')
+                              'length' : '6'})
         except NotImplementedError:
             pass
             
-        provider.remove_file(url)
+        provider.remove_file(target_replica)
         with self.assertRaises(MigrationProviderError):
-            provider.get_length('http://foo/data/1/2/4')
-        with self.assertRaises(HTTPError):
-            provider.remove_file(url)
+            provider.get_length(target_replica)
+        with self.assertRaises(MigrationProviderError):
+            provider.remove_file(target_replica)
 
     def testMigrateRestore(self):
         dest = Location.get_location('test')
@@ -172,12 +167,8 @@ class MigrationTestCase(TestCase):
         self.assertTrue(migrate_replica(new_replica, local))
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
-        try:
-            dest.provider.get_length(url)
-            assertFail()
-        except HTTPError as e:
-            if e.code != 404:
-                raise e
+        with self.assertRaises(MigrationProviderError):
+            dest.provider.get_length(new_replica)
 
         # Refresh the datafile object because it is now stale ...
         datafile = Dataset_File.objects.get(id=datafile.id)
@@ -185,16 +176,16 @@ class MigrationTestCase(TestCase):
 
         # Repeat the process with 'noRemove'
         self.assertTrue(migrate_replica(replica, dest, noRemove=True))
+        new_replica = datafile.get_preferred_replica()
         self.assertTrue(os.path.exists(path))
-        self.assertEquals(dest.provider.get_length(url), 6)
-        migrate_replica(datafile.get_preferred_replica(), local,
-                        noRemove=True)
+        self.assertEquals(dest.provider.get_length(new_replica), 6)
+        migrate_replica(new_replica, local, noRemove=True)
         newpath = datafile.get_absolute_filepath()
         replica = datafile.get_preferred_replica()
         self.assertTrue(os.path.exists(path))
         self.assertTrue(os.path.exists(newpath))
         self.assertNotEqual(path, newpath)
-        self.assertEquals(dest.provider.get_length(url), 6)
+        self.assertEquals(dest.provider.get_length(new_replica), 6)
 
     def testMirror(self):
         dest = Location.get_location('test')
@@ -204,19 +195,15 @@ class MigrationTestCase(TestCase):
         dummy_replica = Replica()
         dummy_replica.datafile = datafile
         dummy_replica.location = Location.objects.get(name='test')
-        url = dummy_replica.generate_default_url()
+        dummy_replica.url = dummy_replica.generate_default_url()
 
-        try:
-            dest.provider.get_length(url)
-            assertFail()
-        except HTTPError as e:
-            if e.code != 404:
-                raise e
+        with self.assertRaises(MigrationProviderError):
+            dest.provider.get_length(dummy_replica)
 
         self.assertTrue(migrate_replica(replica, dest, mirror=True))
         datafile = Dataset_File.objects.get(id=datafile.id)
         self.assertTrue(datafile.is_local())
-        self.assertEquals(dest.provider.get_length(url), 9)
+        self.assertEquals(dest.provider.get_length(dummy_replica), 9)
 
 
     def testMigrateStoreWithSpaces(self):
