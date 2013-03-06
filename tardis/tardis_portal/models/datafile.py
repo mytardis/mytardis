@@ -3,6 +3,7 @@ from os import path
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.core.urlresolvers import reverse
 
 from .dataset import Dataset
 from .replica import Replica

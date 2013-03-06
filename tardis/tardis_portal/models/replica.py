@@ -6,7 +6,6 @@ import urlparse, sys, urllib
 from django.conf import settings
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.core.files.storage import default_storage
 from django.utils import _os
 
 from tardis.tardis_portal.util import generate_file_checksums
