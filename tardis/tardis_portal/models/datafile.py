@@ -137,7 +137,10 @@ class Dataset_File(models.Model):
                 p = r
         # A datafile with no associated replicas is broken.
         if verified == None and not p:
-            raise ValueError('Dataset_File has no replicas')
+            logger.error('Ooops! - Dataset_File %s has no replicas: %s', 
+                         self.id, self)            
+            if hasattr(settings, 'DEBUG') and settings.DEBUG:
+                raise ValueError('Dataset_File has no replicas')
         return p
 
     def has_image(self):
