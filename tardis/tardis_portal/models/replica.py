@@ -109,7 +109,7 @@ class Replica(models.Model):
 
         try:
             return reverse(get_download_view(),
-                           kwargs={'datafile_id': self.id})
+                           kwargs={'datafile_id': self.datafile.id})
         except:
             return ''
 
