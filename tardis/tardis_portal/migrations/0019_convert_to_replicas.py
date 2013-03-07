@@ -10,37 +10,34 @@ class Migration(DataMigration):
         import urlparse
         from django.conf import settings
 
-        # Note: Remember to use orm['appname.ModelName'] rather than "from appname.models..."
+        # Note: Remember to use orm['appname.ModelName'] rather than 
+        # "from appname.models..."
+        self.locations = []
         for desc in settings.INITIAL_LOCATIONS:
-            if desc['name'] == settings.DEFAULT_LOCATION:
-                # Ugly copy-and-paste code ...
-                url = desc['url']
-                if not url.endswith('/'):
-                    url = url + '/'
-                l = orm['tardis_portal.Location'].objects.get_or_create(
-                    name=desc['name'],
-                    url=url,
-                    type=desc['type'],
-                    priority=desc['priority'],
-                    migration_provider=desc.get('provider', 'local'),
-                    trust_length=desc.get('trust_length', False),
-                    metadata_supported=desc.get('metadata_supported', False),
-                    auth_user=desc.get('user', ''),
-                    auth_password=desc.get('password', ''),
-                    auth_realm=desc.get('realm', ''),
-                    auth_scheme=desc.get('scheme', 'digest'))
-                location = l[0]
+            # Ugly copy-and-paste code.  Note that we are using the "old"
+            # version of the Location model with provider-specific fields.
+            url = desc['url']
+            if not url.endswith('/'):
+                url = url + '/'
+            l = orm['tardis_portal.Location'].objects.get_or_create(
+                name=desc['name'],
+                url=url,
+                type=desc['type'],
+                priority=desc['priority'],
+                migration_provider=desc.get('provider', 'local'),
+                trust_length=desc.get('trust_length', False),
+                metadata_supported=desc.get('metadata_supported', False),
+                auth_user=desc.get('user', ''),
+                auth_password=desc.get('password', ''),
+                auth_realm=desc.get('realm', ''),
+                auth_scheme=desc.get('scheme', 'digest'))
+            self.locations = self.locations + [l]
         
-        if location.migration_provider != 'local':
-            raise RuntimeError('Expected the default location to be local')
-        
-        # Check that the data is suitable for migration
+        # Check that the data is suitable for migration.  We need to be able
+        # to 'map' all of the datafile URLs to locations.
         for datafile in orm.Dataset_File.objects.all():
-            if not datafile.url:
-                continue
-            parsed = urlparse.urlparse(datafile.url)
-            if parsed.scheme and not datafile.url.startsWith(location.url):
-                raise RuntimeError('Found a Datafile url that does not match')
+            if datafile.url:
+                self.mapToLocation(datafile.url)
 
         # Perform the migration
         for datafile in orm.Dataset_File.objects.all():
@@ -48,7 +45,7 @@ class Migration(DataMigration):
                 continue
             replica = orm.Replica()
             replica.datafile = datafile
-            replica.location = location
+            replica.location = self.mapToLocation(datafile.url)
             replica.protocol = datafile.protocol
             replica.url = datafile.url
             replica.verified = datafile.verified
@@ -58,6 +55,25 @@ class Migration(DataMigration):
             datafile.protocol = ''
             datafile.verified = False
             datafile.save()
+
+    # We assume that any 'url' without a scheme belongs to the
+    # default location 
+    def mapToLocation(self, url):
+        parsed = urlparse.urlparse(url)
+        if parsed.scheme:
+            for location in locations:
+                if url.startswith(location.url):
+                    return location
+            raise RuntimeError('Found a Datafile url (%s) that does '
+                               'not match any Location url' % url)
+        else:
+            for location in locations:
+                if location.name == settings.DEFAULT_LOCATION:
+                    if location.migration_provider != 'local':
+                        raise RuntimeError('Expected the default '
+                                           'location to be local')
+                    return location
+            raise raise RuntimeError('No default location configured')
 
     def backwards(self, orm):
         raise RuntimeError('Cannot reverse this migration.')
