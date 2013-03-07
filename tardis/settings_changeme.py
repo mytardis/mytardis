@@ -364,12 +364,9 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'type': 'external',
                       'priority': 5}]
 
-MIGRATION_DESTINATIONS = []
-
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
 
 TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
-
