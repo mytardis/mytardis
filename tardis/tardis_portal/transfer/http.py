@@ -65,6 +65,7 @@ class SimpleHttpTransfer(TransferProvider):
         self.metadata_supported = False
         self.trust_length = params.get('trust_length', 'False') == 'True'
         self.opener = self._build_opener(params, base_url)
+        self.aliveErrors = [404]
 
     def _build_opener(self, params, base_url):
         user = params.get('user', '')
@@ -89,7 +90,7 @@ class SimpleHttpTransfer(TransferProvider):
             self.opener.open(self.base_url)
             return True
         except HTTPError as e:
-            if e.code == 404:
+            if e.code in self.aliveErrors:
                 return True
             logger.info('Aliveness test failed for %s (url %s): %s', 
                         self.name, self.base_url, e)

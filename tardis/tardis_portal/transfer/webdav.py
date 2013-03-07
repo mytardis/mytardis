@@ -42,6 +42,7 @@ class WebDAVTransfer(SimpleHttpTransfer):
     
     def __init__(self, name, base_url, opener, metadata_supported=False):
         SimpleHttpTransfer.__init__(self, name, base_url, opener)
+        self.aliveErrors = [403, 404]
 
     def get_metadata(self, url):
         raise NotImplementedError
