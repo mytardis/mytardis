@@ -39,6 +39,10 @@ from django.utils import simplejson
 
 from .base import TransferError, TransferProvider
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 class SimpleHttpTransfer(TransferProvider):
     class HeadRequest(Request):
         def get_method(self):
@@ -84,8 +88,18 @@ class SimpleHttpTransfer(TransferProvider):
         try:
             self.opener.open(self.base_url)
             return True
-        except URLError:
+        except HTTPError as e:
+            if e.code == 404:
+                return True
+            logger.info('Aliveness test failed for '
+                        '%s (url %s): status %s - %s', 
+                        self.name, self.base_url, e.code, e.reason)
             return False
+        except URLError as e:
+            logger.info('Aliveness test failed for %s (url %s): %s', 
+                        self.name, self.base_url, e.reason)
+            return False
+            
 
     def get_length(self, replica):
         try:

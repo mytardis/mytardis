@@ -134,7 +134,7 @@ class MigrateCommandTestCase(TestCase):
         out = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
-                         verbosity=3, stdout=out)
+                         verbosity=3, stdout=out, stderr=StringIO())
         except SystemExit:
             pass
         out.seek(0)
@@ -174,6 +174,7 @@ class MigrateCommandTestCase(TestCase):
             pass
         err.seek(0)
         self.assertEquals(err.read(), 
+                          'Source local destination test\n'
                           'No replica of %s exists at local\n' % datafile.id)
 
         # Real restore, verbose (restores 1, 2 & 3)

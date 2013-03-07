@@ -101,7 +101,7 @@ class Command(BaseCommand):
         from tardis.tardis_portal.models import \
             Dataset_File, Dataset, Experiment
 
-        self.verbosity = options.get('verbosity', 1)
+        self.verbosity = int(options.get('verbosity', 1))
         self.noRemove = options.get('noRemove', False)
         self.dryRun = options.get('dryRun', False)
         self.dest = self._get_destination(
@@ -124,9 +124,13 @@ class Command(BaseCommand):
         args = args[1:]
         if not self.source or not self.dest:
             return
-        if self.verbosity > 3:
+        if self.verbosity > 2:
             self.stderr.write('Source %s destination %s\n' % \
                                   (self.source.name, self.dest.name))
+        sourceAlive = self._ping(self.source, 'Source')
+        destAlive = self._ping(self.dest, 'Destination')
+        if not self.dryRun and (not sourceAlive or not destAlive):
+            return
         if subcommand == 'reclaim':
             if not self.source.name == 'local':
                 raise CommandError("Can only 'reclaim' for source 'local'")
@@ -185,14 +189,15 @@ class Command(BaseCommand):
             ids.extend(self._ids_for_experiment(id))
         self._process_selected_datafiles(args, ids, subcommand)
 
-    def _process_selected_datafiles(self, args, ids, subcommand):
+    def _process_selected_datafiles(self, args, ids, 
+                                    subcommand, explicit=False):
         if len(args) == 0:
             raise CommandError("Expected one or more ids")
         elif len(ids) == 0:
             raise CommandError("No Datafiles selected")
 
         for id in ids:
-            self._process_datafile(id, subcommand)
+            self._process_datafile(id, subcommand, explicit=explicit)
 
     def _process_datafile(self, id, subcommand, explicit=False):
         from tardis.tardis_portal.models import Dataset_File
@@ -224,6 +229,15 @@ class Command(BaseCommand):
             self.stderr.write(
                 '%s failed for datafile %s : %s\n' % \
                     (self._noun(subcommand), id, e.args[0]))
+
+    def _ping(self, location, label):
+        if not location.provider.alive():
+            self.stderr.write(
+                '%s location %s is not responding: giving up\n' % \
+                    (label, location.name))
+            return False
+        else:
+            return True
 
     def _verb(self, subcommand):
         if (subcommand == 'migrate'):
