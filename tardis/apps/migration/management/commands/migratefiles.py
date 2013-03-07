@@ -66,28 +66,28 @@ class Command(BaseCommand):
 
     option_list = BaseCommand.option_list + (
         make_option('-a', '--all',
-                    action='store',
+                    action='store_true',
                     dest='all',
                     help='Process all datafiles'), 
         make_option('-s', '--source',
                     action='store',
-                    dest='dest',
+                    dest='source',
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
                         settings.DEFAULT_MIGRATION_DESTINATION), 
         make_option('-d', '--dest',
                     action='store',
-                    dest='source',
+                    dest='dest',
                     help='The source for the transfer. ' \
                         'The default source is "local"'), 
         make_option('-n', '--dryRun',
-                    action='store',
+                    action='store_true',
                     dest='dryRun',
                     default=False,
                     help='Dry-run mode just lists the replicas that' \
                         ' would be migrated / restored'), 
         make_option('--noRemove',
-                    action='store',
+                    action='store_true',
                     dest='noRemove',
                     default=False,
                     help='No-remove mode migrates without removing' \
@@ -124,6 +124,9 @@ class Command(BaseCommand):
         args = args[1:]
         if not self.source or not self.dest:
             return
+        if self.verbosity > 3:
+            self.stderr.write('Source %s destination %s\n' % \
+                                  (self.source.name, self.dest.name))
         if subcommand == 'reclaim':
             if not self.source.name == 'local':
                 raise CommandError("Can only 'reclaim' for source 'local'")
