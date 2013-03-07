@@ -171,7 +171,7 @@ class Command(BaseCommand):
                 ids.append(id)
             except Dataset_File.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
-        self._process_selected_datafiles(args, ids, subcommand)
+        self._process_selected_datafiles(args, ids, subcommand, explicit=True)
 
     def _datasets(self, args, subcommand):
         ids = []
@@ -194,7 +194,7 @@ class Command(BaseCommand):
         for id in ids:
             self._process_datafile(id, subcommand)
 
-    def _process_datafile(self, id, subcommand):
+    def _process_datafile(self, id, subcommand, explicit=False):
         from tardis.tardis_portal.models import Dataset_File
         if self.dryRun:
             self.stdout.write( \
@@ -217,7 +217,7 @@ class Command(BaseCommand):
                     self.stdout.write('Did not %s datafile %s\n' % \
                                           (subcommand, id))
         except Replica.DoesNotExist:
-            if self.verbosity > 2:
+            if explicit and self.verbosity > 2:
                 self.stderr.write('No replica of %s exists at %s\n' % \
                                       (id, self.source.name))
         except MigrationError as e:              
