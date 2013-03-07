@@ -158,8 +158,6 @@ def check_file_transferred(replica, location):
     
     # Fetch back the remote file and verify it locally.
     f = location.provider.get_opener(replica)()
-    print 'read back "%s"\n' % f.read()
-    f = location.provider.get_opener(replica)()
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
     _check_attribute2(str(size), datafile.size, 'length')
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
