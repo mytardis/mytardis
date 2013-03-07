@@ -91,13 +91,12 @@ class SimpleHttpTransfer(TransferProvider):
         except HTTPError as e:
             if e.code == 404:
                 return True
-            logger.info('Aliveness test failed for '
-                        '%s (url %s): status %s - %s', 
-                        self.name, self.base_url, e.code, e.reason)
+            logger.info('Aliveness test failed for %s (url %s): %s', 
+                        self.name, self.base_url, e)
             return False
         except URLError as e:
             logger.info('Aliveness test failed for %s (url %s): %s', 
-                        self.name, self.base_url, e.reason)
+                        self.name, self.base_url, e)
             return False
             
 
