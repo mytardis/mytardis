@@ -84,7 +84,7 @@ class Migration(DataMigration):
         else:
             for location in self.locations:
                 if location.name == settings.DEFAULT_LOCATION:
-                    if location.migration_provider != 'local':
+                    if location.transfer_provider != 'local':
                         raise RuntimeError('Expected the default '
                                            'location to be local')
                     return location
