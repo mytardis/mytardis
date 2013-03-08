@@ -76,13 +76,13 @@ class Migration(DataMigration):
         import urlparse
         parsed = urlparse.urlparse(url)
         if parsed.scheme:
-            for location in locations:
+            for location in self.locations:
                 if url.startswith(location.url):
                     return location
             raise RuntimeError('Found a Datafile url (%s) that does '
                                'not match any Location url' % url)
         else:
-            for location in locations:
+            for location in self.locations:
                 if location.name == settings.DEFAULT_LOCATION:
                     if location.migration_provider != 'local':
                         raise RuntimeError('Expected the default '
