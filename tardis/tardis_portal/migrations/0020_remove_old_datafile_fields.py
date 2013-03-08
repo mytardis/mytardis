@@ -37,11 +37,9 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.BooleanField')(default=False),
                       keep_default=False)
 
-        # Adding field 'Dataset_File.url'
-        db.add_column('tardis_portal_dataset_file', 'url',
-                      self.gf('django.db.models.fields.CharField')(default='', max_length=400),
-                      keep_default=False)
 
+        # User chose to not deal with backwards NULL issues for 'Dataset_File.url'
+        raise RuntimeError("Cannot reverse this migration. 'Dataset_File.url' and its values cannot be restored.")
 
     models = {
         'auth.group': {
@@ -207,19 +205,13 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.location': {
             'Meta': {'object_name': 'Location'},
-            'auth_password': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '400'}),
-            'auth_realm': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '20'}),
-            'auth_scheme': ('django.db.models.fields.CharField', [], {'default': "'digest'", 'max_length': '10'}),
-            'auth_user': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '20'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_available': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'metadata_supported': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'migration_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '10'}),
             'priority': ('django.db.models.fields.IntegerField', [], {}),
-            'trust_length': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'transfer_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
-            'url': ('django.db.models.fields.CharField', [], {'max_length': '400'})
+            'url': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'})
         },
         'tardis_portal.parametername': {
             'Meta': {'ordering': "('order', 'name')", 'unique_together': "(('schema', 'name'),)", 'object_name': 'ParameterName'},
@@ -234,6 +226,13 @@ class Migration(SchemaMigration):
             'order': ('django.db.models.fields.PositiveIntegerField', [], {'default': '9999', 'null': 'True', 'blank': 'True'}),
             'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
             'units': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'})
+        },
+        'tardis_portal.providerparameter': {
+            'Meta': {'unique_together': "(('location', 'name'),)", 'object_name': 'ProviderParameter'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'location': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Location']"}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'})
         },
         'tardis_portal.replica': {
             'Meta': {'unique_together': "(('datafile', 'location'),)", 'object_name': 'Replica'},
@@ -258,7 +257,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 8, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 4, 7, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})

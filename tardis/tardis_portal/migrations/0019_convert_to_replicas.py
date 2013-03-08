@@ -7,32 +7,45 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
-        import urlparse
-        from django.conf import settings
+        """Migrate the Datafile urls, protocols and flags to new Replica 
+         objects, and populate the Locations from the INITIAL_LOCATIONS
+         setting.  
+
+         In order for this to work properly, your must have
+         defined a location (in INITIAL_LOCATIONS) to match any Datafile
+         URLs with a scheme, and there must be a DEFAULT_LOCATION for
+         any urls that don't have a scheme.  The migration checks this
+         before messing with the Datafile records.  However, it doesn't
+         back out the Location (etc) records created, and if you rerun
+         the migration, it won't update the Locations it created 
+         previously."""
 
         # Note: Remember to use orm['appname.ModelName'] rather than 
         # "from appname.models..."
+        from django.conf import settings
+
         self.locations = []
         for desc in settings.INITIAL_LOCATIONS:
-            # Ugly copy-and-paste code.  Note that we are using the "old"
-            # version of the Location model with provider-specific fields.
-            url = desc['url']
-            if not url.endswith('/'):
-                url = url + '/'
-            l = orm['tardis_portal.Location'].objects.get_or_create(
-                name=desc['name'],
-                url=url,
-                type=desc['type'],
-                priority=desc['priority'],
-                migration_provider=desc.get('provider', 'local'),
-                trust_length=desc.get('trust_length', False),
-                metadata_supported=desc.get('metadata_supported', False),
-                auth_user=desc.get('user', ''),
-                auth_password=desc.get('password', ''),
-                auth_realm=desc.get('realm', ''),
-                auth_scheme=desc.get('scheme', 'digest'))
-            self.locations = self.locations + [l]
-        
+            # Ugly copy-and-paste from "location.py".  Note that this
+            # is kind of forced on us by the need to use "orm"
+            try:
+                location = orm.Location.objects.get(name=desc['name'])
+            except orm.Location.DoesNotExist:
+                url = desc['url']
+                if not url.endswith('/'):
+                    url = url + '/'
+                location = orm.Location(
+                    name=desc['name'], url=url, 
+                    type=desc['type'],
+                    priority=desc['priority'],
+                    transfer_provider=desc.get('provider', 'local'))
+                location.save()
+                for (name, value) in desc.get('params', {}).items():
+                    param = orm.ProviderParameter(location=location, 
+                                                  name=name, value=value)
+                    param.save()
+            self.locations = self.locations + [location]
+
         # Check that the data is suitable for migration.  We need to be able
         # to 'map' all of the datafile URLs to locations.
         for datafile in orm.Dataset_File.objects.all():
@@ -59,6 +72,8 @@ class Migration(DataMigration):
     # We assume that any 'url' without a scheme belongs to the
     # default location 
     def mapToLocation(self, url):
+        from django.conf import settings
+        import urlparse
         parsed = urlparse.urlparse(url)
         if parsed.scheme:
             for location in locations:
@@ -73,9 +88,14 @@ class Migration(DataMigration):
                         raise RuntimeError('Expected the default '
                                            'location to be local')
                     return location
-            raise raise RuntimeError('No default location configured')
+            raise RuntimeError('No default location configured')
 
     def backwards(self, orm):
+        """No reverse is implemented.  It would be theorically possible to
+        put the information in the Replicas back into the Datafile fields,
+        PROVIDED that there is only one Replica for each Datafile.  However,
+        I don't see the value in implementing this."""
+
         raise RuntimeError('Cannot reverse this migration.')
 
     models = {
@@ -246,19 +266,13 @@ class Migration(DataMigration):
         },
         'tardis_portal.location': {
             'Meta': {'object_name': 'Location'},
-            'auth_password': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '400'}),
-            'auth_realm': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '20'}),
-            'auth_scheme': ('django.db.models.fields.CharField', [], {'default': "'digest'", 'max_length': '10'}),
-            'auth_user': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '20'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_available': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'metadata_supported': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'migration_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '10'}),
             'priority': ('django.db.models.fields.IntegerField', [], {}),
-            'trust_length': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'transfer_provider': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '10'}),
             'type': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
-            'url': ('django.db.models.fields.CharField', [], {'max_length': '400'})
+            'url': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'})
         },
         'tardis_portal.parametername': {
             'Meta': {'ordering': "('order', 'name')", 'unique_together': "(('schema', 'name'),)", 'object_name': 'ParameterName'},
@@ -273,6 +287,13 @@ class Migration(DataMigration):
             'order': ('django.db.models.fields.PositiveIntegerField', [], {'default': '9999', 'null': 'True', 'blank': 'True'}),
             'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
             'units': ('django.db.models.fields.CharField', [], {'max_length': '60', 'blank': 'True'})
+        },
+        'tardis_portal.providerparameter': {
+            'Meta': {'unique_together': "(('location', 'name'),)", 'object_name': 'ProviderParameter'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'location': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Location']"}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'})
         },
         'tardis_portal.replica': {
             'Meta': {'unique_together': "(('datafile', 'location'),)", 'object_name': 'Replica'},
@@ -297,7 +318,7 @@ class Migration(DataMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 8, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 4, 7, 0, 0)'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
