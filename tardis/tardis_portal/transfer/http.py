@@ -105,7 +105,7 @@ class SimpleHttpTransfer(TransferProvider):
         try:
             response = self.opener.open(self.HeadRequest(replica.url))
         except HTTPError as e:
-            raise TransferError(e.reason);
+            raise TransferError(e.msg);
         length = response.info().get('Content-length')
         if length is None:
             raise TransferError("No content-length in response")
@@ -122,7 +122,7 @@ class SimpleHttpTransfer(TransferProvider):
                 self.GetRequest(replica.url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
-            raise TransferError(e.reason)
+            raise TransferError(e.msg)
     
     def get_opener(self, replica):
         url = replica.url
@@ -132,7 +132,7 @@ class SimpleHttpTransfer(TransferProvider):
             try:
                 return self.opener.open(url)
             except HTTPError as e:
-                raise TransferError(e.reason)
+                raise TransferError(e.msg)
 
         return getter
 
@@ -149,14 +149,14 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Type', source_replica.datafile.mimetype)
             response = self.opener.open(request, data=content)
         except HTTPError as e:
-            raise TransferError(e.reason)
+            raise TransferError(e.msg)
 
     def remove_file(self, replica):
         self._check_url(replica.url)
         try:
             self.opener.open(self.DeleteRequest(replica.url))
         except HTTPError as e:
-            raise TransferError(e.reason)
+            raise TransferError(e.msg)
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):
