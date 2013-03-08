@@ -491,11 +491,11 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(
             out.read(), 
             'local            : online   : local    :' +
-            ' file:///home/scrawley/git/mytardis/var/test/store/\n' +
+            ' file://' + settings.FILE_STORE_PATH + '/\n' +
             'sync             : external : local    :' +
-            ' file:///home/scrawley/git/mytardis/var/test/sync/\n' +
+            ' file://' + settings.SYNC_TEMP_PATH + '/\n' +
             'staging          : external : local    :' +
-            ' file:///home/scrawley/git/mytardis/var/test/staging/\n' +
+            ' file://' + settings.STAGING_PATH + '/\n' +
             'test             : online   : http     :' +
             ' http://127.0.0.1:4272/data/\n' +
             'test2            : online   : dav      :' +
