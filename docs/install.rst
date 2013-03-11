@@ -168,7 +168,7 @@ Repository
    Location list will be added.  Locations can also be added or updated
    via the django admin web interface.
 
-   The default list defines 'local', 'staging' and 'sync' Locations. 
+   The default list defines the 'local' and 'staging' Locations. 
 
    Locations are required for any configured external source of data, and 
    for secondary MyTardis storage servers.
