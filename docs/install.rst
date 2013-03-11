@@ -73,7 +73,7 @@ Building
 
 Run the Buildout bootstrap script to initialise Buildout::
 
-   python bootstrap.py
+   python bootstrap.py -v 1.7.0
 
 Download and build django and all dependencies::
 
@@ -159,6 +159,46 @@ Repository
 
    The path to the staging path. This is where new files to be
    included in datasets will be sourced.
+
+.. attribute:: tardis.settings_changeme.INITIAL_LOCATIONS
+
+   An initial list of the Locations where Datafiles may be held.  This list 
+   is used to bootstrap the contents of the Locations table when MyTardis
+   starts for the first time.  On a restart, any new entries in the list
+   Location list will be added.  Locations can also be added or updated
+   via the django admin web interface.
+
+   The default list defines 'local', 'staging' and 'sync' Locations. 
+
+   Locations are required for any configured external source of data, and 
+   for secondary MyTardis storage servers.
+
+.. attribute:: tardis.settings_changeme.DEFAULT_LOCATION
+
+   The name of the Location that Datafiles will initially be ingested to.
+
+.. attribute:: tardis.settings_changeme.TRANSFER_PROVIDERS
+
+   This maps Datafile transfer provider names to implementation classes.
+
+.. attribute:: tardis.settings_changeme.REQUIRE_DATAFILE_CHECKSUMS
+
+   If True, a Datafile requires an MD5 or SHA-512 checksum from the time 
+   it is first recorded in the MyTardis database.  This enables a model-level
+   constraint check each time a Datafile record is saved.  Defaults to True.
+   Datafile record is saved.
+
+.. attribute:: tardis.settings_changeme.REQUIRE_DATAFILE_SIZES
+
+   If True, a Datafile require a size from the time it is first recorded in
+   the MyTardis database.  This enables a model-level
+   constraint check each time a Datafile record is saved.  Defaults to True.
+
+.. attribute:: tardis.settings_changeme.REQUIRE_VALIDATION_ON_INGESTION
+
+   If True, ingestion of a Datafile is only permitted if the Datafile
+   matches its supplied size and/or checksums.  Defaults to True.
+
 
 Access Rights & Licensing
 ~~~~~~~~~~~~~~~~~~~~~~~~~

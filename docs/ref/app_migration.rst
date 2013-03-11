@@ -29,22 +29,9 @@ Add the migration application to the INSTALLED_APPS list in your MyTardis projec
         TARDIS_APP_ROOT + '.migration',
     )
 
-Specify the default migration destination.  If none is specified, the "--dest" option becomes mandatory for the "migrate" command::
+Specify the default migration destination.  This should be the name of a Location.  If none is specified, the "--dest" option becomes mandatory for the "migrate" command::
 
-    DEFAULT_MIGRATION_DESTINATION = 'test'
-
-List the migration transfer provider classes.  Currently we only implement one provider, but adding custom providers should not be difficult::
-
-    MIGRATION_PROVIDERS = {
-         'http': 'tardis.apps.migration.SimpleHttpTransfer',
-         'dav': 'tardis.apps.migration.WebDAVTransfer',
-         'local': 'tardis.apps.migration.LocalTransfer'}
-
-The SimpleHttpTransfer provider requires a remote server that can accept GET, PUT, DELETE and HEAD requests.  Optionally, it can send a GET with a query for the remote file metadata (file size and hashes) which it will use to verify that the the file has migrated correctly before deleting the local copy.
-
-The WebDAVTransfer provider works with a vanilla WebDAV implementation, and used MKCOL to create the "collections" to mirror the filepath structure of the files being migrarted.  (I'm using Apache Httpd's standard WebDAV modules.)  Verification is done by fetching the file back and comparing checksums.
-
-The LocalTransfer provider is a stub provider that is for transfering from and to that main MyTardis filestore.  It uses the existing MyTardis "staging" system to transfer files into the store.
+    DEFAULT_DESTINATION = 'test'
 
 Finally, you need to specify the tuning parameters for the "scoring" formula used to decide what files to migrate; for example::
 
@@ -134,16 +121,17 @@ The 'ensure' subcommand is like 'reclaim', but the "<amount>" argument is interp
 
 The 'score' subcommand simply scores all of the local files and lists their details in descending score order. 
 
-The 'list' subcommand lists the configured transfer destinations.
+The 'destinations' subcommand lists the configured transfer destinations.
 
 The options are as follows:
 
-  * --dest selects the target location for the migrate, mirror and reclaim subcommands.
-  * --source selects the source location for the migrate, mirror and reclaim subcommands.
+  * -d, --dest=Location selects the target location for the migrate, mirror and reclaim subcommands.
+  * -s, --source=Location selects the source location for the migrate, mirror and reclaim subcommands.  The default is "local".
   * --all used with migrate and mirror to select all Datafiles for the action.
-  * --verbosity determines how much output is produced in the normal django command fashion.
+  * -v, --verbosity=0,1,2,3 controls how much output the command produces.
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
   * --noRemove used with "migrate" to stop the removal of the file at the source location.  (This is implied in the case of mirroring.)
+  * --help prints 'migratefiles' command help.
 
 Architecture
 ============
