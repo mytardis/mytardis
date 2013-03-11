@@ -142,8 +142,11 @@ class SimpleHttpTransfer(TransferProvider):
     def put_file(self, source_replica, target_replica):
         self._check_url(target_replica.url)
         try:
-            with source_replica.get_file() as f:
+            try:
+                f = source_replica.get_file()
                 content = f.read()
+            finally:
+                f.close()
             request = self.PutRequest(target_replica.url)
             request.add_header('Content-Length', str(len(content)))
             request.add_header('Content-Type', source_replica.datafile.mimetype)
