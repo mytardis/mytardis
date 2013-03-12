@@ -75,42 +75,47 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             raise MigrationError('Only verified datafiles can be migrated' \
                                      ' to this destination')
         
-        if Replica.objects.filter(datafile=replica.datafile,
-                                  location=location):
-            raise MigrationError('A replica already exists at the destination')
-        
-        newreplica = Replica()
-        newreplica.location = location
-        newreplica.datafile = replica.datafile
-        newreplica.protocol = ''
-        newreplica.stay_remote = location != Location.get_default_location()
-        newreplica.verified = False
-        url = location.provider.generate_url(newreplica)
-
-        if newreplica.url == url:
-            # We should get here ...
-            raise MigrationError('Cannot migrate a replica to its' \
-                                     ' current location')
-        newreplica.url = url
-        location.provider.put_file(replica, newreplica) 
-        verified = False
+        filename = replica.get_absolute_filepath()
         try:
-            verified = check_file_transferred(newreplica, location)
-        except:
-            # FIXME - should we always do this?
-            location.provider.remove_file(newreplica)
-            raise
-
-        newreplica.verified = verified
-        newreplica.save()
+            newreplica = Replica.objects.get(datafile=replica.datafile,
+                                             location=location)
+            # We've most likely mirrored this file previously.  But since
+            # we are about to delete the source Replica, we need to check
+            # that the target Replica still verifies.
+            if not check_file_transferred(newreplica, location):
+                raise MigrationError('Previously mirrored / migrated Replica' \
+                                         ' no longer verifies locally!')
+        except Replica.DoesNotExist:
+            newreplica = Replica()
+            newreplica.location = location
+            newreplica.datafile = replica.datafile
+            newreplica.protocol = ''
+            newreplica.stay_remote = location != Location.get_default_location()
+            newreplica.verified = False
+            url = location.provider.generate_url(newreplica)
+            
+            if newreplica.url == url:
+                # We should get here ...
+                raise MigrationError('Cannot migrate a replica to its' \
+                                         ' current location')
+            newreplica.url = url
+            location.provider.put_file(replica, newreplica) 
+            verified = False
+            try:
+                verified = check_file_transferred(newreplica, location)
+            except:
+                # FIXME - should we always do this?
+                location.provider.remove_file(newreplica)
+                raise
+            
+            newreplica.verified = verified
+            newreplica.save()
+            logger.info('Transferred file %s for replica %s' %
+                        (filename, replica.id))
         
         if mirror:
             return True
 
-        filename = replica.get_absolute_filepath()
-        logger.info('Migrated file %s for replica %s' %
-                    (filename, replica.id))
-    
         # FIXME - do this more reliably ...
         replica.delete()
         if not noRemove:
