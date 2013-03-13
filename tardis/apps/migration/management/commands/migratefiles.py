@@ -39,7 +39,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.log import dictConfig
 
 from tardis.tardis_portal.util import get_free_space
-from tardis.tardis_portal.models import Replica, Location
+from tardis.tardis_portal.models import Replica, Location, Dataset, \
+    Dataset_File, Experiment
 
 from tardis.apps.migration import MigrationError, \
     MigrationScorer, migrate_replica
@@ -98,9 +99,6 @@ class Command(BaseCommand):
     conf = dictConfig(LOGGING)
 
     def handle(self, *args, **options):
-        from tardis.tardis_portal.models import \
-            Dataset_File, Dataset, Experiment
-
         self.verbosity = int(options.get('verbosity', 1))
         self.noRemove = options.get('noRemove', False)
         self.dryRun = options.get('dryRun', False)
@@ -162,12 +160,13 @@ class Command(BaseCommand):
             raise CommandError("Unrecognized subcommand: %s" % subcommand)
 
     def _all_datafiles(self, subcommand):
-        from tardis.tardis_portal.models import Dataset_File
-        for id in Dataset_File.objects.all().values_list('id', flat=True):
-            self._process_datafile(id, subcommand)
+        # To make things faster, filter out any datafiles that don't have
+        # a replica for the 'source' location.
+        for row in Replica.objects.filter(location__id=self.source.id). \
+                values('datafile__id').distinct().all():
+            self._process_datafile(row['datafile__id'], subcommand)
 
     def _datafiles(self, args, subcommand):
-        from tardis.tardis_portal.models import Dataset_File
         ids = []
         for id in args:
             try:
@@ -200,15 +199,14 @@ class Command(BaseCommand):
             self._process_datafile(id, subcommand, explicit=explicit)
 
     def _process_datafile(self, id, subcommand, explicit=False):
-        from tardis.tardis_portal.models import Dataset_File
         if self.dryRun:
             self.stdout.write( \
                 'Would have %s datafile %s\n' % \
                     (self._verb(subcommand).lower(), id))
             return
         try:
-            replica = Replica.objects.get(datafile_id=id,
-                                          location=self.source)
+            replica = Replica.objects.get(datafile__id=id,
+                                          location__id=self.source.id)
             if subcommand == 'migrate':
                 ok = migrate_replica(replica, self.dest,
                                      noRemove=self.noRemove)
@@ -256,7 +254,6 @@ class Command(BaseCommand):
             return 'Mirroring'
         
     def _ids_for_dataset(self, id):
-        from tardis.tardis_portal.models import Dataset, Dataset_File
         try:
             dataset = Dataset.objects.get(id=id)
             return Dataset_File.objects.filter(dataset=id).\
@@ -266,7 +263,6 @@ class Command(BaseCommand):
             return []
 
     def _ids_for_experiment(self, id):
-        from tardis.tardis_portal.models import Dataset_File, Experiment
         try:
             experiment = Experiment.objects.get(id=id)
             return Dataset_File.objects.\
