@@ -142,17 +142,14 @@ class SimpleHttpTransfer(TransferProvider):
     def put_file(self, source_replica, target_replica):
         self._check_url(target_replica.url)
         try:
-            try:
-                f = source_replica.get_file()
-                content = f.read()
-            finally:
-                f.close()
+            f = source_replica.get_file()
             request = self.PutRequest(target_replica.url)
-            request.add_header('Content-Length', str(len(content)))
             request.add_header('Content-Type', source_replica.datafile.mimetype)
-            response = self.opener.open(request, data=content)
+            response = self.opener.open(request, data=f)
         except HTTPError as e:
             raise TransferError(e.msg)
+        finally:
+            f.close()
 
     def remove_file(self, replica):
         self._check_url(replica.url)
