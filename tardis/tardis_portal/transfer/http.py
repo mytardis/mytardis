@@ -33,6 +33,7 @@ from urllib2 import Request, HTTPError, build_opener, \
 from urllib import quote
 from urllib2 import URLError
 from urlparse import urlparse, urljoin
+import poster.streaminghttp
 import os
 
 from django.utils import simplejson
@@ -68,6 +69,7 @@ class SimpleHttpTransfer(TransferProvider):
         self.aliveErrors = [404]
 
     def _build_opener(self, params, base_url):
+        handlers = poster.streaminghttp.get_handlers()
         user = params.get('user', '')
         if user:
             realm = params.get('realm', '')
@@ -81,9 +83,8 @@ class SimpleHttpTransfer(TransferProvider):
                 handler = HTTPDigestAuthHandler(password_mgr)
             else:
                 raise ValueError('Unknown auth type "%s"' % scheme)
-            return build_opener(handler)
-        else:
-            return build_opener()
+            handlers = handlers + [handler]
+        return build_opener(*handlers)
 
     def alive(self):
         try:
@@ -145,6 +146,7 @@ class SimpleHttpTransfer(TransferProvider):
             f = source_replica.get_file()
             request = self.PutRequest(target_replica.url)
             request.add_header('Content-Type', source_replica.datafile.mimetype)
+            request.add_header('Content-Length', source_replica.datafile.size)
             response = self.opener.open(request, data=f)
         except HTTPError as e:
             raise TransferError(e.msg)
