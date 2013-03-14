@@ -56,24 +56,24 @@ class ExperimentAdmin(admin.ModelAdmin):
     inlines = [ExperimentACLInline]
 
 class DatasetAdmin(admin.ModelAdmin):
-    search_fields = ['description', 'experiment__id']
+    search_fields = ['description', 'id']
 
 class DatafileAdmin(admin.ModelAdmin):
-    search_fields = ['filename', 'dataset__experiment__id']
+    search_fields = ['filename', 'id']
 
 class ReplicaAdmin(admin.ModelAdmin):
-    search_fields = ['url']
+    search_fields = ['url', 'id']
 
 class ProviderParameterNameInline(admin.TabularInline):
     model = models.ProviderParameter
     extra = 0
 
 class LocationAdmin(admin.ModelAdmin):
-    search_fields = ['name']
+    search_fields = ['name', 'id']
     inlines = [ProviderParameterNameInline]
 
 class ProviderParameterAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'location']
+    search_fields = ['name', 'location__name', 'location__id']
 
 class ParameterNameInline(admin.TabularInline):
     model = models.ParameterName
