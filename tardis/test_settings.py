@@ -42,6 +42,8 @@ STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
                                       "../var/test/staging/"))
 SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
                                         '../var/test/sync/'))
+SYNC_LOCATION = "sync"
+SYNC_LOCATION_URL = "http://example.com/sync"
 
 STAGING_PROTOCOL = 'localdb'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
@@ -256,26 +258,43 @@ REMOTE_SERVER_CREDENTIALS = [
     ('http://localhost:4272/', 'username', 'password')
 ]
 
-MIGRATION_DESTINATIONS = [{'name': 'test', 
-                           'transfer_type': 'http',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'metadata_supported': True,
-                           'base_url': 'http://127.0.0.1:4272/data/'},
-                          {'name': 'test2', 
-                           'transfer_type': 'dav',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'base_url': 'http://127.0.0.1/data/'},
-                          {'name': 'test3', 
-                           'transfer_type': 'dav',
-                           'datafile_protocol': '',
-                           'trust_length': False,
-                           'user' : 'datameister',
-                           'password' : 'geheimnis',
-                           'auth' : 'basic',
-                           'realm' : 'wunderland',
-                           'base_url': 'http://127.0.0.1/data/'}]
+DEFAULT_LOCATION = "local"
+
+INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
+                      'url': 'file://' + path.realpath(FILE_STORE_PATH),
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'sync',
+                      'url': 'file://' + path.realpath(SYNC_TEMP_PATH),
+                      'type': 'external',
+                      'priority': 8},
+                     {'name': 'staging',
+                      'url': 'file://' + path.realpath(STAGING_PATH),
+                      'type': 'external',
+                      'priority': 5},
+                     {'name': 'test', 
+                      'provider': 'http',
+                      'params': {'trust_length': False,
+                                 'metadata_supported': True},
+                      'url': 'http://127.0.0.1:4272/data/',
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'test2', 
+                      'provider': 'dav',
+                      'params': {'trust_length': False},
+                      'url': 'http://127.0.0.1/data2/',
+                      'type': 'online',
+                      'priority': 10},
+                     {'name': 'test3', 
+                      'provider': 'dav',
+                      'params': {'trust_length': False,
+                                 'user' : 'datameister',
+                                 'password' : 'geheimnis',
+                                 'auth' : 'basic',
+                                 'realm' : 'wunderland'},
+                      'url': 'http://127.0.0.1/data3/',
+                      'type': 'online',
+                      'priority': 10}]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'
 
@@ -288,5 +307,10 @@ MIGRATION_SCORING_PARAMS = {
     'file_age_threshold': 0,
     'file_age_weighting': 0.0}
 
-MIGRATION_PROVIDERS = {'http': 'tardis.apps.migration.SimpleHttpTransfer',
-                       'dav': 'tardis.apps.migration.WebDAVTransfer'}
+TRANSFER_PROVIDERS = {
+    'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
+    'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
+    'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
+REQUIRE_DATAFILE_CHECKSUMS = True
+REQUIRE_DATAFILE_SIZES = True
+REQUIRE_VALIDATION_ON_INGESTION = True

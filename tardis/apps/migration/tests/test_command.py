@@ -33,17 +33,18 @@ from StringIO import StringIO
 from django.test import TestCase
 from django.test.client import Client
 from django.core.management import call_command
+from django.core.management.base import CommandError
 
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
-from tardis.tardis_portal.models import Dataset_File
-
-from tardis.apps.migration import Destination
-from tardis.apps.migration.tests import SimpleHttpTestServer
-from tardis.apps.migration.tests.generate import \
+from tardis.tardis_portal.models import Dataset_File, Location
+from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
+from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
     generate_user
+
+from tardis.apps.migration.management.commands.migratefiles import Command
 
 
 class MigrateCommandTestCase(TestCase):
@@ -52,6 +53,7 @@ class MigrateCommandTestCase(TestCase):
         self.dummy_user = generate_user('joe')
         self.server = SimpleHttpTestServer()
         self.server.start()
+        Location.force_initialize()
 
     def tearDown(self):
         self.dummy_user.delete()
@@ -60,7 +62,7 @@ class MigrateCommandTestCase(TestCase):
     def testMirrorDatafile(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi grandpa")
+        datafile, _ = generate_datafile(None, dataset, "Hi grandpa")
 
         # Dry run ...
         out = StringIO()
@@ -88,10 +90,11 @@ class MigrateCommandTestCase(TestCase):
     def testMigrateDatafile(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset,
-                                     "Hi mum", verify=False, verified=False)
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, replica = generate_datafile(None, dataset,
+                                              "Hi mum", verify=False, 
+                                              verified=False)
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         err = StringIO()
         try:
@@ -104,9 +107,8 @@ class MigrateCommandTestCase(TestCase):
                           'Migration failed for datafile %s : ' \
                           'Only verified datafiles can be migrated ' \
                           'to this destination\n' % datafile.id)
-
-        self.assertEquals(datafile.verify(allowEmptyChecksums=True), True)
-        datafile.save()
+        self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
+        replica.save()
 
         # (Paths should all be kosher now ...)
         path = datafile.get_absolute_filepath()
@@ -132,7 +134,7 @@ class MigrateCommandTestCase(TestCase):
         out = StringIO()
         try:
             call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
-                         verbosity=2, stdout=out)
+                         verbosity=3, stdout=out, stderr=StringIO())
         except SystemExit:
             pass
         out.seek(0)
@@ -163,18 +165,31 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), '') # Should "fail" silently
 
+        # Again but with more verbosity
+        err = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         verbosity=3, stderr=err)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'Source local destination test\n'
+                          'No replica of %s exists at local\n' % datafile.id)
+
         # Real restore, verbose (restores 1, 2 & 3)
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out,
+                         dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p))
@@ -182,8 +197,8 @@ class MigrateCommandTestCase(TestCase):
         # Cannot restore files that are (now) local
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         verbosity=2, stdout=out, dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
@@ -210,15 +225,16 @@ class MigrateCommandTestCase(TestCase):
         # because the staging code won't clobber an existing file.
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         datafile2.id, datafile3.id, verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'datafile', datafile.id, 
+                         datafile2.id, datafile3.id, verbosity=2, stdout=out,
+                         dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p, d in [(path, datafile), (path2, datafile2), 
                      (path3, datafile3)]:
@@ -226,15 +242,13 @@ class MigrateCommandTestCase(TestCase):
             self.assertTrue(os.path.exists(p))
             self.assertTrue(os.path.exists(dd.get_absolute_filepath()))
             self.assertNotEqual(p, dd.get_absolute_filepath())
-            self.assertNotEqual(d.get_absolute_filepath(),
-                                dd.get_absolute_filepath())
                  
     def testMigrateDataset(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         # Dry run
         out = StringIO()
@@ -266,23 +280,23 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'dataset', dataset.id, 
-                         verbosity=2, stdout=out)
+            call_command('migratefiles', 'migrate', 'dataset', dataset.id, 
+                         verbosity=2, stdout=out, dest='local', source='test')
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
     def testMigrateExperiment(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -300,22 +314,62 @@ class MigrateCommandTestCase(TestCase):
 
         out = StringIO()
         try:
-            call_command('migratefiles', 'restore', 'experiment', 
-                         experiment.id, 
+            call_command('migratefiles', 'migrate', 'experiment', 
+                         experiment.id, dest='local', source='test',
                          verbosity=2, stdout=out)
         except SystemExit:
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n'
-                          'Restored datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
+ 
+    def testMigrateAll(self):
+        dataset = generate_dataset()
+        experiment = generate_experiment([dataset], [self.dummy_user])
+        dataset2 = generate_dataset()
+        experiment2 = generate_experiment([dataset2], [self.dummy_user])
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile4, _ = generate_datafile(None, dataset2, "Hi mum")
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', all=True,
+                         verbosity=2, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id, 
+                           datafile4.id))
+
+        out = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', all=True,
+                         verbosity=2, stdout=out, dest='local', source='test')
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), 
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n'
+                          'Migrated datafile %s\n' % 
+                          (datafile.id, datafile2.id, datafile3.id,  
+                           datafile4.id))
 
     def testErrors(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
 
         err = StringIO()
         try:
@@ -327,6 +381,15 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(err.read(), 
                           'Datafile 999 does not exist\n'
                           'Error: No Datafiles selected\n')
+        err = StringIO()
+        try:
+            call_command('migratefiles', 'migrate', 'datafile', 
+                         999, stderr=err, all=True)
+        except SystemExit:
+            pass
+        err.seek(0)
+        self.assertEquals(err.read(), 
+                          'Error: No target/ids allowed with --all\n')
 
         err = StringIO()
         try:
@@ -337,22 +400,13 @@ class MigrateCommandTestCase(TestCase):
         err.seek(0)
         self.assertEquals(err.read(), 'Error: Destination nowhere not known\n')
 
-        err = StringIO()
-        try:
-            call_command('migratefiles', 'restore', 'datafile', datafile.id, 
-                         dest='test', stderr=err)
-        except SystemExit:
-            pass
-        err.seek(0)
-        self.assertEquals(err.read(), 'Error: The --dest option cannot '
-                          'be used with the restore subcommand\n')
 
     def testScore(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, replica = generate_datafile(None, dataset, "Hi mum")
+        datafile2, replica2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3, replica3 = generate_datafile(None, dataset, "Hi mum")
 
         out = StringIO()
         try:
@@ -367,16 +421,18 @@ class MigrateCommandTestCase(TestCase):
                           'score = 0.778151250384, total_size = 12\n'
                           'datafile %s / %s, size = 6, '
                           'score = 0.778151250384, total_size = 18\n' % 
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id, 
-                           datafile3.url, datafile3.id))
+                          (replica.url, datafile.id, 
+                           replica2.url, datafile2.id, 
+                           replica3.url, datafile3.id))
     
     def testMigrateReclaim(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
-        datafile2 = generate_datafile(None, dataset, "Hi mum")
-        datafile3 = generate_datafile(None, dataset, "Hi mum")
+        datafile, replica = generate_datafile(None, dataset, "Hi mum")
+        datafile2, replica2 = generate_datafile(None, dataset, "Hi mum")
+        datafile3, replica3 = generate_datafile(None, dataset, "Hi mum")
+        url = replica.url
+        url2 = replica2.url
 
         out = StringIO()
         try:
@@ -389,8 +445,7 @@ class MigrateCommandTestCase(TestCase):
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have reclaimed 12 bytes\n' %
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id))
+                          (url, datafile.id, url2, datafile2.id))
         out = StringIO()
         try:
             call_command('migratefiles', 'reclaim', '11', 
@@ -402,43 +457,87 @@ class MigrateCommandTestCase(TestCase):
                           'Migrating %s / %s saving 6 bytes\n'
                           'Migrating %s / %s saving 6 bytes\n'
                           'Reclaimed 12 bytes\n' %
-                          (datafile.url, datafile.id, 
-                           datafile2.url, datafile2.id))
+                          (url, datafile.id, url2, datafile2.id))
 
-    def testMigrateConfig(self):
+    def testMigrateEnsure(self):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
-        datafile = generate_datafile(None, dataset, "Hi mum")
+        datafile, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile2, _ = generate_datafile(None, dataset, "Hi mum")
+        datafile3, _ = generate_datafile(None, dataset, "Hi mum")
 
+        # Ensuring that there are at least zero bytes of free space
+        # is a no-op ... but it tests the logic, and the method that
+        # enquires how much free disc space there is.
+        out = StringIO()
         try:
-            saved = settings.DEFAULT_MIGRATION_DESTINATION
-            settings.DEFAULT_MIGRATION_DESTINATION = ''
-            err = StringIO()
-            try:
-                call_command('migratefiles', 'migrate', 'datafile', 
-                             datafile.id, stderr=err)
-            except SystemExit:
-                pass
-            err.seek(0)
-            self.assertEquals(err.read(), 
-                              'Error: No default destination configured\n')
-        finally:
-            settings.DEFAULT_MIGRATION_DESTINATION = saved
+            call_command('migratefiles', 'ensure', '0', 
+                         stdout=out, verbosity=2, dryRun=True)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(out.read(), '')
 
+    def testMigrateDestinations(self):
+        # Ensuring that there are at least zero bytes of free space
+        # is a no-op ... but it tests the logic, and the method that
+        # enquires how much free disc space there is.
+        out = StringIO()
         try:
-            saved = settings.MIGRATION_DESTINATIONS
-            settings.MIGRATION_DESTINATIONS = []
-            Destination.clear_destinations_cache()
-            err = StringIO()
-            try:
-                call_command('migratefiles', 'migrate', 'datafile', 
-                             datafile.id, stderr=err)
-            except SystemExit:
-                pass
-            err.seek(0)
-            self.assertEquals(err.read(), 
-                              'Error: Migration error: No destinations ' 
-                              'have been configured\n')
-        finally:
-            settings.MIGRATION_DESTINATIONS = saved
+            call_command('migratefiles', 'destinations', stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'local            : online   : local    :' +
+            ' file://' + settings.FILE_STORE_PATH + '/\n' +
+            'sync             : external : local    :' +
+            ' file://' + settings.SYNC_TEMP_PATH + '/\n' +
+            'staging          : external : local    :' +
+            ' file://' + settings.STAGING_PATH + '/\n' +
+            'test             : online   : http     :' +
+            ' http://127.0.0.1:4272/data/\n' +
+            'test2            : online   : dav      :' +
+            ' http://127.0.0.1/data2/\n' +
+            'test3            : online   : dav      :' +
+            ' http://127.0.0.1/data3/\n')
+
+    def testParseAmount(self):
+        command = Command()
+        self.assertEquals(command._parse_amount(['0']), 0)
+        self.assertEquals(command._parse_amount(['1.0']), 1)
+        self.assertEquals(command._parse_amount(['1.999']), 1)
+        self.assertEquals(command._parse_amount(['1k']), 1024)
+        self.assertEquals(command._parse_amount(['1K']), 1024)
+        self.assertEquals(command._parse_amount(['1m']), 1024 * 1024)
+        self.assertEquals(command._parse_amount(['1g']), 1024 * 1024 * 1024)
+        self.assertEquals(command._parse_amount(['1000t']), 
+                          1024 * 1024 * 1024 * 1024 * 1000)
+        self.assertEquals(command._parse_amount(['1.1k']), 1024 + 102)
+
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount([])
+        self.assertEquals(str(cm.exception), 'missing <amount> argument')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1', '2'])
+        self.assertEquals(str(cm.exception), 'multiple <amount> arguments')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['abc'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(abc\).*')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['-1'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(-1\).*')
+        
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1z'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(1z\).*')
+             
+        with self.assertRaises(CommandError) as cm:
+            command._parse_amount(['1.'])
+        self.assertRegexpMatches(str(cm.exception), r'.*\(1\.\).*')
+             
 

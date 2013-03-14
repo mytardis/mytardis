@@ -27,6 +27,43 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-class MigrationError(Exception):
-    pass
+from urllib2 import Request, urlopen, HTTPError
+from urlparse import urlparse
 
+from tardis.tardis_portal.transfer import TransferProvider, TransferError, \
+    SimpleHttpTransfer
+
+
+class WebDAVTransfer(SimpleHttpTransfer):
+    
+    class MkcolRequest(Request):
+        def get_method(self):
+            return 'MKCOL'
+    
+    def __init__(self, name, base_url, opener, metadata_supported=False):
+        SimpleHttpTransfer.__init__(self, name, base_url, opener)
+        self.aliveErrors = [403, 404]
+
+    def get_metadata(self, url):
+        raise NotImplementedError
+    
+    def put_file(self, source_replica, target_replica):
+        self._create_parent_collections(target_replica.url)
+        super(WebDAVTransfer, self).put_file(source_replica, target_replica)
+
+    def _create_parent_collections(self, url):
+        path = url[len(self.base_url):].split('/')
+        if len(path) > 1:
+            partial = self.base_url
+            for part in path[0:len(path) - 1]:
+                partial += part
+                try:
+                    request = self.MkcolRequest(partial)
+                    response = self.opener.open(request)
+                except HTTPError as e:
+                    if e.code == 405 or e.code == 301:
+                        pass
+                    else:
+                        raise TransferError(e.msg)
+                partial += '/'
+        

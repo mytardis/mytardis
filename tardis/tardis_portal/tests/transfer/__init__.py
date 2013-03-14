@@ -27,6 +27,4 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-class MigrationError(Exception):
-    pass
-
+from .testserver import SimpleHttpTestServer 
