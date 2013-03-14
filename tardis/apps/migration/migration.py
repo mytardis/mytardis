@@ -33,127 +33,118 @@ from urlparse import urlparse
 import os
 
 from django.conf import settings
+from django.db import transaction
 
 from tardis.tardis_portal.fetcher import get_privileged_opener
-from tardis.tardis_portal.staging import stage_file
+from tardis.tardis_portal.staging import stage_replica
+from tardis.tardis_portal.util import generate_file_checksums
 
-from tardis.apps.migration import Destination, MigrationError
+from tardis.apps.migration import MigrationError
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-def migrate_datafile_by_id(datafile_id, destination,
-                           noRemove=False, noUpdate=False):
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
 
-    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
-    if not datafile:
-        raise ValueError('No such datafile (%s)' % (datafile_id))
-    return migrate_datafile(datafile, destination, 
-                            noRemove=noRemove, noUpdate=noUpdate)
+def migrate_replica_by_id(replica_id, location,
+                          noRemove=False, mirror=False):
+    # (Deferred import to avoid prematurely triggering DB init)
+    from tardis.tardis_portal.models import Replica
+    
+    replica = Replica.objects.get(id=replica_id)
+    if not replica:
+        raise ValueError('No such replica (%s)' % (replica_id))
+    return migrate_replica(replica, location, 
+                            noRemove=noRemove, mirror=mirror)
                                
-def migrate_datafile(datafile, destination, noRemove=False, noUpdate=False):
+def migrate_replica(replica, location, noRemove=False, mirror=False):
     """
-    Migrate the datafile to a different storage location.  The overall
+    Migrate the replica to a different storage location.  The overall
     effect will be that the datafile will be stored at the new location and 
     removed from the current location, and the datafile metadata will be
     updated to reflect this.
     """
-    
-    if not datafile.is_local():
-        return False
 
-    if not datafile.verified or destination.trust_length:
-        raise MigrationError('Only verified datafiles can be migrated' \
-                                 ' to this destination')
-    target_url = destination.provider.generate_url(datafile)
-    if target_url == datafile.url:
-        # We should get here ...
-        raise MigrationError('Cannot migrate a datafile to its' \
-                                 ' current location')
-    
-    destination.provider.put_file(datafile, target_url) 
+    from tardis.tardis_portal.models import Replica, Location
 
-    try:
-        check_file_transferred(datafile, destination, target_url)
-    except:
-        # FIXME - should we always do this?
-        destination.provider.remove_file(target_url)
-        raise
-
-    if noUpdate:
-        return True
-
-    filename = datafile.get_absolute_filepath()
-    datafile.url = target_url
-    datafile.protocol = destination.datafile_protocol
-    datafile.save()
-    logger.info('Migrated file %s for datafile %s' %
-                (filename, datafile.id))
-    # FIXME - do this more reliably ...
-    if not noRemove:
-        os.remove(filename)
-        logger.info('Removed local file %s for datafile %s' %
-                    (filename, datafile.id))
-    return True
-
-def restore_datafile_by_id(datafile_id, noRemove=False):
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
-
-    datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
-    if not datafile:
-        raise ValueError('No such datafile (%s)' % (datafile_id))
-    return restore_datafile(datafile, noRemove=noRemove)
-                               
-def restore_datafile(datafile, noRemove=False):
-    """
-    Restore a file that has been migrated
-    """
-    
-    # (Deferred imports to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import Dataset_File
-    from django.db import transaction
     with transaction.commit_on_success():
-        df = Dataset_File.objects.select_for_update().get(id=datafile.id)
-        if df.is_local():
-            return False
-        destination = Destination.identify_destination(df.url)
-        if not destination:
-            raise MigrationError('Cannot identify the migration destination' \
-                                     ' holding %s' % df.url)
-        if not df.verified or destination.trust_length:
-            raise MigrationError('Only verified datafiles can be restored' \
-                                 ' from destination %s' % destination.name)
-        df.verified = False
-        url = df.url
-        if not stage_file(df):
-            raise MigrationError('Restoration failed')
-        logger.info('Restored file %s for datafile %s' %
-                    (df.get_absolute_filepath(), df.id))
+        replica = Replica.objects.select_for_update().get(pk=replica.pk)
+        source = Location.get_location(replica.location.name)
+        
+        if not replica.verified or location.provider.trust_length:
+            raise MigrationError('Only verified datafiles can be migrated' \
+                                     ' to this destination')
+        
+        filename = replica.get_absolute_filepath()
+        try:
+            newreplica = Replica.objects.get(datafile=replica.datafile,
+                                             location=location)
+            # We've most likely mirrored this file previously.  But since
+            # we are about to delete the source Replica, we need to check
+            # that the target Replica still verifies.
+            if not check_file_transferred(newreplica, location):
+                raise MigrationError('Previously mirrored / migrated Replica' \
+                                         ' no longer verifies locally!')
+        except Replica.DoesNotExist:
+            newreplica = Replica()
+            newreplica.location = location
+            newreplica.datafile = replica.datafile
+            newreplica.protocol = ''
+            newreplica.stay_remote = location != Location.get_default_location()
+            newreplica.verified = False
+            url = location.provider.generate_url(newreplica)
+            
+            if newreplica.url == url:
+                # We should get here ...
+                raise MigrationError('Cannot migrate a replica to its' \
+                                         ' current location')
+            newreplica.url = url
+            location.provider.put_file(replica, newreplica) 
+            verified = False
+            try:
+                verified = check_file_transferred(newreplica, location)
+            except:
+                # FIXME - should we always do this?
+                location.provider.remove_file(newreplica)
+                raise
+            
+            newreplica.verified = verified
+            newreplica.save()
+            logger.info('Transferred file %s for replica %s' %
+                        (filename, replica.id))
+        
+        if mirror:
+            return True
+
+        # FIXME - do this more reliably ...
+        replica.delete()
         if not noRemove:
-            destination.provider.remove_file(url)
-            logger.info('Removed remote file %s for datafile %s' % (url, df.id))
+            source.provider.remove_file(replica)
+            logger.info('Removed local file %s for replica %s' %
+                        (filename, replica.id))
         return True
-    
-def check_file_transferred(datafile, destination, target_url):
+
+def check_file_transferred(replica, location):
     """
-    Check that a datafile has been successfully transfered to a remote
+    Check that a replica has been successfully transfered to a remote
     storage location
     """
+
+    from tardis.tardis_portal.models import Dataset_File
+    datafile = Dataset_File.objects.get(pk=replica.datafile.id)
 
     # If the remote is capable, get it to send us the checksums and / or
     # file length for its copy of the file
     try:
         # Fetch the remote's metadata for the file
-        m = destination.provider.get_metadata(target_url)
-        if _check_attribute(m, datafile.sha512sum, 'sha512sum') or \
-               _check_attribute(m, datafile.md5sum, 'md5sum') or \
-               (destination.trust_length and \
-                 _check_attribute(m, datafile.length, 'length')) :
-            return
+        m = location.provider.get_metadata(replica)
+        _check_attribute(m, datafile.size, 'length')
+        if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
+               _check_attribute(m, datafile.md5sum, 'md5sum')):
+            return True
+        if location.trust_length and \
+                 _check_attribute(m, datafile.size, 'length') :
+            return False
         raise MigrationError('Not enough metadata for verification')
     except NotImplementedError:
         pass
@@ -162,23 +153,21 @@ def check_file_transferred(datafile, destination, target_url):
         if e.code != 400:
             raise
 
-    if destination.trust_length :
+    if location.provider.trust_length :
         try:
-            length = destination.provider.get_length(target_url)
-            if _check_attribute2(length, datafile.length, 'length'):
-                return
+            length = location.provider.get_length(replica)
+            if _check_attribute2(length, datafile.size, 'length'):
+                return False
         except NotImplementedError:
             pass
     
-    # (Deferred import to avoid prematurely triggering DB init)
-    from tardis.tardis_portal.models import generate_file_checksums
-
     # Fetch back the remote file and verify it locally.
-    f = get_privileged_opener().open(target_url)
+    f = location.provider.get_opener(replica)()
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
+    _check_attribute2(str(size), datafile.size, 'length')
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
-        return
+        return True
     raise MigrationError('Not enough metadata for file verification')
     
 def _check_attribute(attributes, value, key):
@@ -187,6 +176,8 @@ def _check_attribute(attributes, value, key):
     try:
        if attributes[key].lower() == value.lower():
           return True
+       logger.debug('incorrect %s: expected %s, got %s', 
+                    key, value, attributes[key])
        raise MigrationError('Transfer check failed: the %s attribute of the' \
                                 ' remote file does not match' % (key))  
     except KeyError:
@@ -197,6 +188,7 @@ def _check_attribute2(attribute, value, key):
         return False
     if value.lower() == attribute.lower():
         return True
+    logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))
 

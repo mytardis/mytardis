@@ -2,26 +2,42 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from os import path
 
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import \
+    Experiment, Dataset, Dataset_File, Replica, Location
 
 from ..integrity import IntegrityCheck
 
 
 class IntegrityCheckTestCase(TestCase):
+    def _get_or_create_local_location(self, name, url, type, priority):
+        return Location.load_location({'name': name, 'url': url, 
+                                       'type': type, 'priority': priority, 
+                                       'transfer_provider': 'local'}) 
+
     def _make_dataset(self, exp, filenames):
         dataset = Dataset()
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
         for filename in filenames:
-            df = Dataset_File(dataset=dataset, size=41, protocol='file')
-            df.filename = filename
-            df.url = 'file://' + path.join(path.dirname(__file__), 'data', df.filename)
+            df = Dataset_File(dataset=dataset, size=41, filename=filename,
+                              md5sum='dummy')
             df.save()
+            url = 'file://' + path.join(path.dirname(__file__), 'data', 
+                                        filename)
+            location = self._get_or_create_local_location(
+                'synctest', 
+                'file://' + path.join(path.dirname(__file__), 'data'),
+                'external', 20)
+            replica = Replica(datafile=df, protocol='file',
+                              location=location, url=url)
+            replica.save()
 
     def setUp(self):
-        self.user = User(username='user1', password='password', email='a@a.com')
+        self.user = User(username='user1', password='password', 
+                         email='a@a.com')
         self.user.save()
+        Location.force_initialize()
         self.bad_exp = Experiment(
                 approved = True,
                 title = 'title1',

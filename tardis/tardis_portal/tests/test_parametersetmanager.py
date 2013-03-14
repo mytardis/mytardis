@@ -59,6 +59,8 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
+        models.Location.force_initialize()
+
         self.exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
                                 created_by=self.user,
@@ -70,51 +72,51 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.datafile = models.Dataset_File(dataset=self.dataset,\
-            filename="testfile.txt", url="file://1/testfile.txt")
-
+        self.datafile = models.Dataset_File(dataset=self.dataset,
+                                            filename="testfile.txt",
+                                            size="42", md5sum='bogus')
         self.datafile.save()
+ 
+        self.replica = models.Replica(
+            datafile=self.datafile,
+            url="file://1/testfile.txt",
+            location=models.Location.get_default_location())
+        self.replica.save()
 
-        self.schema = models.Schema(namespace="http://localhost/psmtest/df/",
+        self.schema = models.Schema(
+            namespace="http://localhost/psmtest/df/",
             name="Parameter Set Manager", type=3)
-
         self.schema.save()
 
         self.parametername1 = models.ParameterName(
             schema=self.schema, name="parameter1",
             full_name="Parameter 1")
-
         self.parametername1.save()
 
         self.parametername2 = models.ParameterName(
             schema=self.schema, name="parameter2",
             full_name="Parameter 2",
             data_type=models.ParameterName.NUMERIC)
-
         self.parametername2.save()
 
         self.parametername3 = models.ParameterName(
             schema=self.schema, name="parameter3",
             full_name="Parameter 3",
             data_type=models.ParameterName.DATETIME)
-
         self.parametername3.save()
 
         self.datafileparameterset = models.DatafileParameterSet(
             schema=self.schema, dataset_file=self.datafile)
-
         self.datafileparameterset.save()
 
         self.datafileparameter1 = models.DatafileParameter(
             parameterset=self.datafileparameterset,
             name=self.parametername1, string_value="test1")
-
         self.datafileparameter1.save()
 
         self.datafileparameter2 = models.DatafileParameter(
             parameterset=self.datafileparameterset,
             name=self.parametername2, numerical_value=2)
-
         self.datafileparameter2.save()
 
     def tearDown(self):

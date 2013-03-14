@@ -32,6 +32,7 @@ from django.http import HttpResponse, HttpResponseRedirect, \
 from django.conf import settings
 
 from tardis.tardis_portal.models import *
+from tardis.tardis_portal.util import get_free_space
 from tardis.tardis_portal.auth.decorators import *
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, render_error_message
@@ -310,22 +311,10 @@ def _estimate_archive_size(rootdir, datafiles, comptype):
     return estimate
 
 def _get_free_temp_space():
-    """ Return free space on the file system holding the temporary directory (in bytes)
+    """ Return free space on the file system holding the temporary 
+    directory (in bytes)
     """
-    sys_type = platform.system()
-    if sys_type == 'Windows':
-        free_bytes = ctypes.c_ulonglong(0)
-        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(gettempdir()), 
-                                                   None, None, ctypes.pointer(free_bytes))
-        return free_bytes.value
-    elif sys_type == 'Darwin' or sys_type == 'DragonFly' or 'BSD' in sys_type:
-        st = os.statvfs(gettempdir())
-        return st.f_bfree * st.f_frsize
-    elif sys_type == 'Linux':
-        st = os.statvfs(gettempdir())
-        return st.f_bfree * st.f_bsize
-    else:
-        raise RuntimeError('Unsupported / unexpected platform type: %s' % sys_type)
+    return get_free_space(gettempdir())
 
 def _check_download_limits(rootdir, datafiles, comptype):
     estimate = _estimate_archive_size(rootdir, datafiles, comptype)

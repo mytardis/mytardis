@@ -49,8 +49,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 def get_dataset_path(dataset):
-    return path.join(str(dataset.get_first_experiment().id),
-                     str(dataset.id))
+    return dataset.get_path()
 
 def staging_traverse(staging=settings.STAGING_PATH):
     """Recurse through directories and form HTML list tree for jtree
@@ -141,20 +140,35 @@ class StagingHook():
             return
         if not instance.protocol == "staging":
             return
-        stage_file(instance)
+        stage_replica(instance)
 
 
-def stage_file(datafile):
+def stage_replica(replica):
     from django.core.files.uploadedfile import TemporaryUploadedFile
-    with TemporaryUploadedFile(datafile.filename, None, None, None) as tf:
-        if datafile.verify(tempfile=tf.file):
-            tf.file.flush()
-            datafile.url = write_uploaded_file_to_dataset(datafile.dataset, tf)
-            datafile.protocol = ''
-            datafile.save()
+    from tardis.tardis_portal.models import Replica, Location
+    if not replica.location.type == 'external':
+        raise ValueError('Only external replicas can be staged')
+    with TemporaryUploadedFile(replica.datafile.filename, 
+                               None, None, None) as tf:
+        if replica.verify(tempfile=tf.file):
+            if not replica.stay_remote:
+                tf.file.flush()
+                target_replica = Replica(
+                    datafile=replica.datafile,
+                    url=write_uploaded_file_to_dataset(\
+                        replica.datafile.dataset, tf),
+                    location=Location.get_default_location(),
+                    verified=True,
+                    protocol='')
+                target_replica.save()
+                replica.delete()
             return True
         else:
             return False
+
+def get_sync_location():
+    from tardis.tardis_portal.models import Location
+    return Location.get_location('sync')
 
 def get_sync_root(prefix = ''):
     from uuid import uuid4 as uuid
@@ -209,8 +223,8 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
 
     from django.core.files.storage import default_storage
 
-    # Path on disk can contain subdirectories - but if the request gets tricky with "../" or "/var" or something
-    # we strip them out..
+    # Path on disk can contain subdirectories - but if the request gets 
+    # tricky with "../" or "/var" or something we strip them out..
     try:
         copyto = path.join(get_dataset_path(dataset), filename)
         default_storage.path(copyto)
