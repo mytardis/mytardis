@@ -39,435 +39,6 @@
 {#{% block image_view %}#}
 <script>
 
-//TODO:
-//Known Bugs:
-// - If you click "next image" in the imageView, then escape, and click an image again, width is not recognised by script.
-// - Window does not scale appropriately, and no existing resize event.
-// - Need to stop the que's from stackin with "next image" etc.
-// - Need to put into the super script block, so all JS is together.
-// - Add extra picture containers to pre-load further images - could reduce lag.
-// - Add a preview speed bar.
-// - Add a super control for when play is on --> With a constantly changing interface, hard to click on "stop".
-
-var picViewOn = false;
-var playSpeed = 2000;
-var defaultFadeTime = 300;
-
-//Play and Stop Functions:
-
-    window.setVariableInterval = function(timing) {
-        //Timer Object replicated from:
-        // http://stackoverflow.com/questions/1280263/changing-the-interval-of-setinterval-while-its-running
-        var variableInterval = {
-            interval:timing,
-//            updateSpeed : mySpeedFunction,
-            playing: false,
-            runLoop: function() {
-                if (variableInterval.playing) {
-                    if (typeof playSpeed == 'number' && playSpeed != 0) {
-//                      var newSpeed = variableInterval.updateSpeed.call(variableInterval);
-                        variableInterval.nxtImg();
-                        variableInterval.interval = playSpeed;
-                    }
-                }
-                variableInterval.setTimeout();
-            },
-            setTimeout: function() {
-                this.timeout = window.setTimeout(this.runLoop,this.interval);
-            },
-            start: function() {
-                this.playing = true;
-                variableInterval.setTimeout();
-            },
-            nxtImg: function() {
-                var img=$("#imageView");
-                var currentId = parseInt(img.attr("data-imgContainerId"));
-                var imgAmount = img.attr("data-imgAmount");
-                if (currentId == imgAmount) {
-                    backPic(imgAmount-1, 1);
-                } else {
-                    nextPic(1, 1);
-                }
-            },
-            stop: function() {
-                this.playing = false;
-                window.clearTimeout(this.timeout);
-            }
-        };
-
-        return variableInterval;
-    };
-
-//    function play() {
-//        var img=$("#imageView");
-//        var currentId = parseInt(img.attr("data-imgContainerId"));
-//        var imgAmount = img.attr("data-imgAmount");
-//        if (currentId == imgAmount) {
-//            backPic(imgAmount-1, 0);
-//        } else {
-//            nextPic(1, 0);
-//        }
-//        return playSpeed;
-//    }
-
-    var timer = window.setVariableInterval(playSpeed);
-
-
-//Functionality for Switching between Images:
-
-    function nextPic(jumpSize ,fadeTime) {
-        var img = $('#imageView');
-        var imgClass = img.attr("data-imgClass");
-        var amountOfImages = img.attr("data-imgAmount");
-        var currentId = parseInt(img.attr("data-imgContainerId"));
-        if ((currentId >= 1)) {
-            if ((currentId <= amountOfImages-jumpSize)) {
-                evalNextButtons(currentId+jumpSize,amountOfImages);
-                img.fadeOut(fadeTime);
-                setTimeout( function() {
-                    var thumbImg = $('.'+imgClass+'#' + imgClass + "-" + (currentId + jumpSize));
-
-                    var winWidth = window.innerWidth;
-                    var winHeight = window.innerHeight;
-
-                    var dimensions = getMaxDimensions(winWidth,winHeight);
-                    var aspectRatio = [thumbImg.width(),thumbImg.height()];
-                    var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
-
-                    var imgWidth = aspectDimensions[0];
-                    var imgHeight = aspectDimensions[1];
-
-                    var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
-                    updateImg(urls[0],currentId+jumpSize,imgWidth,imgHeight);
-                    updateContainer(winWidth, winHeight, imgWidth, imgHeight);
-                    updateText(thumbImg,urls[1],urls[2],currentId+jumpSize);
-                }, fadeTime);
-                img.fadeIn(fadeTime);
-                evalBackButtons(currentId+jumpSize);
-            } else {
-                nextPic(amountOfImages-currentId, fadeTime);
-            }
-        } else {
-            nextPic(1-currentId, fadeTime);
-
-        }
-    }
-
-    function backPic(jumpSize, fadeTime) {
-        var img = $('#imageView');
-        var imgClass = img.attr("data-imgClass");
-        var amountOfImages = img.attr("data-imgAmount");
-        var currentId = parseInt(img.attr("data-imgContainerId"));
-        if ((currentId <= amountOfImages)) {
-            if ((currentId > jumpSize)) {
-                evalBackButtons(currentId-jumpSize);
-                img.fadeOut(fadeTime);
-                setTimeout( function() {
-                    var thumbImg = $('.'+imgClass+'#' + imgClass + "-" + (currentId - jumpSize));
-
-                    var winWidth = window.innerWidth;
-                    var winHeight = window.innerHeight;
-
-                    var dimensions = getMaxDimensions(winWidth,winHeight);
-                    var aspectRatio = [thumbImg.width(),thumbImg.height()];
-                    var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
-
-                    var imgWidth = aspectDimensions[0];
-                    var imgHeight = aspectDimensions[1];
-
-                    var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
-                    updateImg(urls[0],currentId-jumpSize,imgWidth,imgHeight);
-                    updateContainer(winWidth,winHeight, imgWidth, imgHeight);
-                    updateText(thumbImg,urls[1],urls[2],currentId-jumpSize);
-                },fadeTime);
-                img.fadeIn(fadeTime);
-                evalNextButtons(currentId-jumpSize,amountOfImages);
-            } else {
-                backPic(currentId-1, fadeTime);
-            }
-        } else {
-            backPic(currentId-amountOfImages, fadeTime);
-        }
-    }
-
-//Updates to widgets:
-
-    $(function() {
-        $( "#slider" ).slider();
-    });
-
-    function DisableScrolls()  {
-        document.body.scroll = "no";
-        document.documentElement.style.overflow = 'hidden';
-        picViewOn=true;
-    }
-
-    function EnableScrolls() {
-        document.body.scroll = "yes";
-        document.documentElement.style.overflow = 'auto';
-        picViewOn=false;
-    }
-
-    function evalNextButtons(currentId, totalImages) {
-
-        //Disables or enables the "next" button.
-        if (totalImages - currentId <= 0) {
-            $('#nxtImg').attr("disabled","disabled");
-            $('#skip10').attr("disabled","disabled");
-            $('#skip50').attr("disabled","disabled");
-        } else if ($('#nxtImg').attr("disabled")) {
-            $("#nxtImg").removeAttr("disabled");
-            $("#skip10").removeAttr("disabled");
-            $("#skip50").removeAttr("disabled");
-        }
-    }
-
-    function evalBackButtons(currentId) {
-        if (currentId<=1) {
-            $('#prevImg').attr("disabled","disabled");
-            $('#return10').attr("disabled","disabled");
-            $('#return50').attr("disabled","disabled");
-        } else if ($('#prevImg').attr("disabled")) {
-            $("#prevImg").removeAttr("disabled");
-            $("#return10").removeAttr("disabled");
-            $("#return50").removeAttr("disabled");
-        }
-    }
-
-    function updateImg(thumbUrl,id,width, height) {
-        var img = $('#imageView');
-        img.attr("src",thumbUrl);
-        img.attr("data-imgContainerId", id);
-        img.attr({
-            "width" : Math.round(width),
-            "height" : Math.round(height)
-        });
-    }
-
-    function updateContainer(width,height, imgWidth, imgHeight) {
-        var rWidth = width - height*2/12 - imgWidth;
-        var rHeight = height*10/12 - imgHeight;
-        var maxContainerWidth = width*2/5;
-
-        var img = $('#imageView');
-        if (rWidth > maxContainerWidth) {
-            img.css({
-                "left" : height/12 + maxContainerWidth + (rWidth-maxContainerWidth)/2,
-                "top" : rHeight/2+height/12
-            });
-            $("#imageText").css({
-                "top":height/12,
-                "left":height/12 + (rWidth-maxContainerWidth)/2,
-                "width":maxContainerWidth,
-                "height":height*10/12
-            });
-        } else {
-            img.css({
-                "left" : rWidth+height/12,
-                "top" : rHeight/2+height/12
-            });
-            $("#picViewer").attr({
-                "width":width,
-                "height":height
-            });
-            $("#imageText").css({
-                "top":height/12,
-                "left":height/12,
-                "width":rWidth, //As 1/12 left of Text, and 1/12 right of Image, remaining is 10/12 or rWidth.
-                "height":height*    10/12
-            });
-        }
-    }
-
-    function updateText(thumbImg, fullUrl, downloadUrl,id) {
-        var img = $('#imageView');
-
-        $(".imageDetails#title").html(thumbImg.attr("data-fileName"));
-        $(".btn#fullscreenLink").attr('href',fullUrl);
-
-        if (thumbImg.attr("data-createdTime") || thumbImg.attr("data-createdDate")) {
-            $(".imageDetails#timeStamp").html("" +
-                    "<font size=1><b>Date&Time Created:</b></font>" +
-                    "<div>Date: <a>"+ thumbImg.attr("data-createdDate") +"</a><br>" +
-                    "Time: <a>" + thumbImg.attr("data-createdTime")+"</a></div>");
-        } else {
-            $(".imageDetails#timeStamp").html("");
-        }
-
-        if (thumbImg.attr("data-fileSize")) {
-            $(".imageDetails#fileSize").html("" +
-                    "<font size=1><b>File Size:</b></font>" + " <div>" + thumbImg.attr("data-fileSize") + "</div>"
-            );
-        } else {
-            $(".imageDetails#fileSize").html("");
-        }
-
-        $(".imageDetails#imgNumber").html(id);
-        $(".imageDetails#width").html(img.width());
-        $(".imageDetails#height").html(img.height());
-
-        $(".btn#downloadLink").attr("href",downloadUrl);
-}
-
-//Functions to get/calculate Properties:
-
-    function getMaxDimensions(windowWidth,windowHeight) {
-        var minContainerWidth = '300'; //Pixels
-        var minContainerHeight = '400'; //Pixels
-        var buffHeight = 2*windowHeight/12;
-        var width = windowWidth - buffHeight - minContainerWidth;
-        var height = windowHeight - buffHeight;
-
-        return [width,height];
-    }
-
-    function applyAspectRatio(maxDimensions,aspectRatio){
-        var width = maxDimensions[0];
-        var height = maxDimensions[1];
-        var aspectWidth;
-        var aspectHeight;
-
-        if (width/aspectRatio[0] >= height/aspectRatio[1]){
-            //Height has prominence
-            aspectHeight = height;
-            aspectWidth = aspectRatio[0]*(height/aspectRatio[1]);
-        } else {
-            //Width has prominence
-            aspectWidth = width;
-            aspectHeight = aspectRatio[1]*(width/aspectRatio[0]);
-        }
-        return [aspectWidth,aspectHeight];
-    }
-
-    function getImgUrls(thumbImg,width,height) {
-        var imgId = thumbImg.attr("data-imgId");
-        var thumbUrl = "/datafile/iiif/"+ imgId +"/full/!"+width+","+height+"/0/native.jpg";
-        var fullUrl = "/datafile/iiif/"+ imgId +"/full/full/0/native.jpg";
-        var downloadUrl = "/datafile/view/" + imgId +"/";
-        return [thumbUrl,fullUrl,downloadUrl]
-    }
-
-//Element Bindings:
-
-    $('.btn#play').live("click", function(){
-       timer.start();
-    });
-
-    $('.btn#stop').live("click", function(){
-        timer.stop();
-    });
-
-    function encodeLiveAction(className) {
-        //This function is required to set up every different class that has it's own image set.
-
-        $('.'+className).live("click",function() { //Need to respecify the class name if using for another place.
-            DisableScrolls();
-
-            var winWidth = window.innerWidth;
-            var winHeight = window.innerHeight;
-            var thumbImg = $(this);
-
-            var dimensions = getMaxDimensions(winWidth,winHeight);
-            var aspectRatio = [thumbImg.width(),thumbImg.height()];
-            var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
-
-            var imgWidth = aspectDimensions[0];
-            var imgHeight = aspectDimensions[1];
-
-            var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
-            var thumbUrl = urls[0];
-            var fullUrl = urls[1];
-            var downloadUrl = urls[2];
-
-            var img = $('#imageView');
-            img.attr("data-imgClass" , className); //Need to specify the class of images if reusing function.
-            var imagesInSet = thumbImg.attr("data-imgAmount");
-            $(".imageDetails#imgAmount").html(imagesInSet);
-            img.attr("data-imgAmount",imagesInSet);
-
-            var id = parseInt(thumbImg.attr("id").split("-")[1]);
-            updateImg(thumbUrl,id,imgWidth,imgHeight);
-            updateContainer(winWidth, winHeight, imgWidth, imgHeight);
-            updateText(thumbImg,fullUrl,downloadUrl,id);
-
-            evalBackButtons(id);
-            evalNextButtons(id,imagesInSet);
-
-            $(".visDisplay").fadeIn(800).children().fadeIn(800);
-        });
-}
-
-    $('.visDisplay#backgroundBuff').live("click",function() {
-        stop();
-        EnableScrolls();
-        $('.visDisplay').fadeOut(500).children().fadeOut(500);
-    });
-
-    $('#prevImg').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            backPic(1, defaultFadeTime)
-        }
-    });
-
-    $('#nxtImg').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            nextPic(1, defaultFadeTime)
-        }
-    });
-
-    $('#skip10').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            nextPic(10, defaultFadeTime)
-        }
-    });
-
-    $('#skip50').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            nextPic(50, defaultFadeTime)
-        }
-    });
-
-    $('#return10').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            backPic(10, defaultFadeTime)
-        }
-    });
-
-    $('#return50').live("click", function() {
-        if (!$(this).attr('disabled')) {
-            backPic(50, defaultFadeTime)
-        }
-    });
-
-//    $('#play').live("click", function() {
-//        if (!isPlaying) {
-//            play();
-//        }
-//    });
-//    $("#stop").live("click", stop());
-
-    encodeLiveAction('triggerThumb');
-
-$(document).keyup(function(event) {
-    ///Programs the key functions of the window viewer. ///
-    if(event.which == 27) {
-        timer.stop();
-        $('.visDisplay').fadeOut(1000).children().fadeOut(1000);
-        EnableScrolls();
-    }
-    if (picViewOn == true) {
-        if (event.which == 39 && !($('#nxtImg').attr("disabled"))) {
-            nextPic(1, defaultFadeTime);
-        }
-        if (event.which == 37 && !($('#prevImg').attr("disabled"))) {
-            backPic(1, defaultFadeTime);
-        }
-        if (event.which == (33 || 34 || 40 || 38) ) {
-            event.preventDefault();
-        }
-    }
-});
-
 </script>
 
 <div class="visDisplay" id="backgroundBuff" style ="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: #000000;
@@ -480,7 +51,7 @@ $(document).keyup(function(event) {
         <!--<i class="icon-remove-circle icon-large" style="z-index: 100001; font-size: 20px"></i>-->
         <!--</div>-->
         <div id="border" style="position:absolute; top:15px;left: 15px; right: 15px; bottom: 15px">
-            <div style="position:absolute; top:0;left:0; bottom:90px; width: 100%;">
+            <div style="position:absolute; top:0;left:0; bottom:135px; width: 100%;">
                 <h2 style="padding-bottom: 15px">Full-screen view of '<span class="imageDetails" id="title" style="color: #0088cc"></span>'.</h2>
                 <div style="overflow-x: hidden; overflow-y: auto">
                     <div class="row-fluid">
@@ -523,8 +94,9 @@ $(document).keyup(function(event) {
                     </div>
                 </div>
             </div>
-            <div>
-                <div id="slider"></div>
+            <div class="row-fluid" id="scrollSpeed" style="bottom:100px; height:35px; width:100%; position:absolute">
+                <div style="height:10px; min-height: 10px">Play Speed:</div><br>
+                <div style="min-height:10px; height:10px" id="slider"></div>
             </div>
             <div class="btn-toolbar" style="position:absolute; width:100%; ; bottom:20px; height:60px; text-align: center">
                 <div class="btn-group">
@@ -613,6 +185,457 @@ $(document).keyup(function(event) {
 {% block finalscript %}
 {{ block.super }}
 <script type="text/javascript">
+
+//TODO:
+//Known Bugs:
+// - If you click "next image" in the imageView, then escape, and click an image again, width is not recognised by script.
+// - Window does not scale appropriately, and no existing resize event.
+// - Need to stop the event que's from stacking with "next image" etc - jquery effects continue past the amount of possible items.
+// - Need to put into the super script block, so all JS is together.
+// - Add extra picture containers to pre-load further images - could reduce lag.
+// - Add a preview speed bar.
+// - Add a super control for when play is on --> With a constantly changing interface, hard to click on "stop".
+// - Download URL doesn't work for all files - Standard was taken from existing datasets on site, which it works fine for,
+//      but new images added won't apply download.
+// - Consider creating a "Preload" image for the +5,+`10 etc buttons, including 'play'. This means you could switch between img widgets that
+//      have already loaded and not attain any loading/lag.
+
+var picViewOn = false;
+var playSpeed = 2000;
+var defaultFadeTime = 300;
+var largestViewedImgWidth=0;
+
+//Play and Stop Functions:
+
+window.setVariableInterval = function(timing) {
+    //Timer Object replicated from:
+    // http://stackoverflow.com/questions/1280263/changing-the-interval-of-setinterval-while-its-running
+    var variableInterval = {
+        interval:timing,
+        playing: false,
+        runLoop: function() {
+            if (variableInterval.playing) {
+                if (typeof playSpeed == 'number' && playSpeed != 0) {
+//                      var newSpeed = variableInterval.updateSpeed.call(variableInterval);
+                    variableInterval.nxtImg();
+                    variableInterval.interval = playSpeed;
+                }
+            }
+            variableInterval.setTimeout();
+        },
+        setTimeout: function() {
+            this.timeout = window.setTimeout(this.runLoop,this.interval);
+        },
+        start: function() {
+            this.playing = true;
+            variableInterval.setTimeout();
+        },
+        nxtImg: function() {
+            var img=$("#imageView");
+            var currentId = parseInt(img.attr("data-imgContainerId"));
+            var imgAmount = img.attr("data-imgAmount");
+            if (currentId == imgAmount) {
+                backPic(imgAmount-1, 1);
+            } else {
+                nextPic(1, 1);
+            }
+        },
+        stop: function() {
+            this.playing = false;
+            window.clearTimeout(this.timeout);
+        }
+    };
+
+    return variableInterval;
+};
+
+//    function play() {
+//        var img=$("#imageView");
+//        var currentId = parseInt(img.attr("data-imgContainerId"));
+//        var imgAmount = img.attr("data-imgAmount");
+//        if (currentId == imgAmount) {
+//            backPic(imgAmount-1, 0);
+//        } else {
+//            nextPic(1, 0);
+//        }
+//        return playSpeed;
+//    }
+
+var timer = window.setVariableInterval(playSpeed);
+
+
+//Functionality for Switching between Images:
+
+function nextPic(jumpSize ,fadeTime) {
+    var img = $('#imageView');
+    var imgClass = img.attr("data-imgClass");
+    var amountOfImages = img.attr("data-imgAmount");
+    var currentId = parseInt(img.attr("data-imgContainerId"));
+    if ((currentId >= 1)) {
+        if ((currentId <= amountOfImages-jumpSize)) {
+            evalNextButtons(currentId+jumpSize,amountOfImages);
+            img.fadeOut(fadeTime);
+            setTimeout( function() {
+                var thumbImg = $('.'+imgClass+'#' + imgClass + "-" + (currentId + jumpSize));
+
+                var winWidth = window.innerWidth;
+                var winHeight = window.innerHeight;
+
+                var dimensions = getMaxDimensions(winWidth,winHeight);
+                var aspectRatio = [thumbImg.width(),thumbImg.height()];
+                var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
+
+                var imgWidth = aspectDimensions[0];
+                var imgHeight = aspectDimensions[1];
+
+                var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
+                updateImg(urls[0],currentId+jumpSize,imgWidth,imgHeight);
+                updateContainer(winWidth, winHeight, imgWidth, imgHeight);
+                updateText(thumbImg,urls[1],urls[2],currentId+jumpSize);
+            }, fadeTime);
+            img.fadeIn(fadeTime);
+            evalBackButtons(currentId+jumpSize);
+        } else {
+            nextPic(amountOfImages-currentId, fadeTime);
+        }
+    } else {
+        nextPic(1-currentId, fadeTime);
+
+    }
+}
+
+function backPic(jumpSize, fadeTime) {
+    var img = $('#imageView');
+    var imgClass = img.attr("data-imgClass");
+    var amountOfImages = img.attr("data-imgAmount");
+    var currentId = parseInt(img.attr("data-imgContainerId"));
+    if ((currentId <= amountOfImages)) {
+        if ((currentId > jumpSize)) {
+            evalBackButtons(currentId-jumpSize);
+            img.fadeOut(fadeTime);
+            setTimeout( function() {
+                var thumbImg = $('.'+imgClass+'#' + imgClass + "-" + (currentId - jumpSize));
+
+                var winWidth = window.innerWidth;
+                var winHeight = window.innerHeight;
+
+                var dimensions = getMaxDimensions(winWidth,winHeight);
+                var aspectRatio = [thumbImg.width(),thumbImg.height()];
+                var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
+
+                var imgWidth = aspectDimensions[0];
+                var imgHeight = aspectDimensions[1];
+
+                var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
+                updateImg(urls[0],currentId-jumpSize,imgWidth,imgHeight);
+                updateContainer(winWidth,winHeight, imgWidth, imgHeight);
+                updateText(thumbImg,urls[1],urls[2],currentId-jumpSize);
+            },fadeTime);
+            img.fadeIn(fadeTime);
+            evalNextButtons(currentId-jumpSize,amountOfImages);
+        } else {
+            backPic(currentId-1, fadeTime);
+        }
+    } else {
+        backPic(currentId-amountOfImages, fadeTime);
+    }
+}
+
+//Updates to widgets:
+
+$(function() {
+    var slider = $( "#slider" );
+    slider.slider({
+        min:200,
+        max:4000,
+        value: playSpeed,
+        change:function(event, ui) {
+            playSpeed=$("#slider").slider("option","value");
+        }
+    });
+
+});
+
+function DisableScrolls()  {
+    document.body.scroll = "no";
+    document.documentElement.style.overflow = 'hidden';
+    picViewOn=true;
+}
+
+function EnableScrolls() {
+    document.body.scroll = "yes";
+    document.documentElement.style.overflow = 'auto';
+    picViewOn=false;
+}
+
+function evalNextButtons(currentId, totalImages) {
+
+    //Disables or enables the "next" button.
+    if (totalImages - currentId <= 0) {
+        $('#nxtImg').attr("disabled","disabled");
+        $('#skip10').attr("disabled","disabled");
+        $('#skip50').attr("disabled","disabled");
+    } else if ($('#nxtImg').attr("disabled")) {
+        $("#nxtImg").removeAttr("disabled");
+        $("#skip10").removeAttr("disabled");
+        $("#skip50").removeAttr("disabled");
+    }
+}
+
+function evalBackButtons(currentId) {
+    if (currentId<=1) {
+        $('#prevImg').attr("disabled","disabled");
+        $('#return10').attr("disabled","disabled");
+        $('#return50').attr("disabled","disabled");
+    } else if ($('#prevImg').attr("disabled")) {
+        $("#prevImg").removeAttr("disabled");
+        $("#return10").removeAttr("disabled");
+        $("#return50").removeAttr("disabled");
+    }
+}
+
+function updateImg(thumbUrl,id,width, height) {
+    var img = $('#imageView');
+    img.attr("src",thumbUrl);
+    img.attr("data-imgContainerId", id);
+    img.attr({
+        "width" : Math.round(width),
+        "height" : Math.round(height)
+    });
+}
+
+function updateContainer(width,height, imgWidth, imgHeight) {
+    if (largestViewedImgWidth<imgWidth || !timer.playing) {
+        largestViewedImgWidth = imgWidth;
+        var rWidth = width - height*2/12 - imgWidth;
+        var rHeight = height*10/12 - imgHeight;
+        var maxContainerWidth = width*2/5;
+
+        var img = $('#imageView');
+        if (rWidth > maxContainerWidth) {
+            img.css({
+                "left" : height/12 + maxContainerWidth + (rWidth-maxContainerWidth)/2,
+                "top" : rHeight/2+height/12
+            });
+            $("#imageText").css({
+                "top":height/12,
+                "left":height/12 + (rWidth-maxContainerWidth)/2,
+                "width":maxContainerWidth,
+                "height":height*10/12
+            });
+        } else {
+            img.css({
+                "left" : rWidth+height/12,
+                "top" : rHeight/2+height/12
+            });
+            $("#picViewer").attr({
+                "width":width,
+                "height":height
+            });
+            $("#imageText").css({
+                "top":height/12,
+                "left":height/12,
+                "width":rWidth, //As 1/12 left of Text, and 1/12 right of Image, remaining is 10/12 or rWidth.
+                "height":height*    10/12
+            });
+        }
+    } else {
+        var img = $('#imageView');
+        var rWidth = width - height*2/12 - largestViewedImgWidth;
+        var rHeight = height*10/12 - imgHeight;
+        var maxContainerWidth = width*2/5;
+        img.css({
+            "left" : rWidth+height/12+(largestViewedImgWidth-imgWidth)/2,
+            "top" : rHeight/2+height/12
+        });
+        $("#picViewer").attr({
+            "width":width,
+            "height":height
+        });
+    }
+}
+
+function updateText(thumbImg, fullUrl, downloadUrl,id) {
+    var img = $('#imageView');
+
+    $(".imageDetails#title").html(thumbImg.attr("data-fileName"));
+    $(".btn#fullscreenLink").attr('href',fullUrl);
+
+    if (thumbImg.attr("data-createdTime") || thumbImg.attr("data-createdDate")) {
+        $(".imageDetails#timeStamp").html("" +
+                "<font size=1><b>Date&Time Created:</b></font>" +
+                "<div>Date: <a>"+ thumbImg.attr("data-createdDate") +"</a><br>" +
+                "Time: <a>" + thumbImg.attr("data-createdTime")+"</a></div>");
+    } else {
+        $(".imageDetails#timeStamp").html("");
+    }
+
+    if (thumbImg.attr("data-fileSize")) {
+        $(".imageDetails#fileSize").html("" +
+                "<font size=1><b>File Size:</b></font>" + " <div>" + thumbImg.attr("data-fileSize") + "</div>"
+        );
+    } else {
+        $(".imageDetails#fileSize").html("");
+    }
+
+    $(".imageDetails#imgNumber").html(id);
+    $(".imageDetails#width").html(img.width());
+    $(".imageDetails#height").html(img.height());
+
+    $(".btn#downloadLink").attr("href",downloadUrl);
+}
+
+//Functions to get/calculate Properties:
+
+function getMaxDimensions(windowWidth,windowHeight) {
+    var minContainerWidth = '300'; //Pixels
+    var minContainerHeight = '400'; //Pixels
+    var buffHeight = 2*windowHeight/12;
+    var width = windowWidth - buffHeight - minContainerWidth;
+    var height = windowHeight - buffHeight;
+
+    return [width,height];
+}
+
+function applyAspectRatio(maxDimensions,aspectRatio){
+    var width = maxDimensions[0];
+    var height = maxDimensions[1];
+    var aspectWidth;
+    var aspectHeight;
+
+    if (width/aspectRatio[0] >= height/aspectRatio[1]){
+        //Height has prominence
+        aspectHeight = height;
+        aspectWidth = aspectRatio[0]*(height/aspectRatio[1]);
+    } else {
+        //Width has prominence
+        aspectWidth = width;
+        aspectHeight = aspectRatio[1]*(width/aspectRatio[0]);
+    }
+    return [aspectWidth,aspectHeight];
+}
+
+function getImgUrls(thumbImg,width,height) {
+    var imgId = thumbImg.attr("data-imgId");
+    var thumbUrl = "/datafile/iiif/"+ imgId +"/full/!"+width+","+height+"/0/native.jpg";
+    var fullUrl = "/datafile/iiif/"+ imgId +"/full/full/0/native.jpg";
+    var downloadUrl = "/datafile/view/" + imgId +"/";
+    return [thumbUrl,fullUrl,downloadUrl]
+}
+
+//Element Bindings:
+
+$('.btn#play').live("click", function(){
+    timer.start();
+});
+
+$('.btn#stop').live("click", function(){
+    timer.stop();
+});
+
+function encodeLiveAction(className) {
+    //This function is required to set up every different class that has it's own image set.
+
+    $('.'+className).live("click",function() { //Need to respecify the class name if using for another place.
+        DisableScrolls();
+
+        var winWidth = window.innerWidth;
+        var winHeight = window.innerHeight;
+        var thumbImg = $(this);
+
+        var dimensions = getMaxDimensions(winWidth,winHeight);
+        var aspectRatio = [thumbImg.width(),thumbImg.height()];
+        var aspectDimensions = applyAspectRatio(dimensions,aspectRatio);
+
+        var imgWidth = aspectDimensions[0];
+        var imgHeight = aspectDimensions[1];
+
+        var urls = getImgUrls(thumbImg,imgWidth,imgHeight);
+        var thumbUrl = urls[0];
+        var fullUrl = urls[1];
+        var downloadUrl = urls[2];
+
+        var img = $('#imageView');
+        img.attr("data-imgClass" , className); //Need to specify the class of images if reusing function.
+        var imagesInSet = thumbImg.attr("data-imgAmount");
+        $(".imageDetails#imgAmount").html(imagesInSet);
+        img.attr("data-imgAmount",imagesInSet);
+
+        var id = parseInt(thumbImg.attr("id").split("-")[1]);
+        updateImg(thumbUrl,id,imgWidth,imgHeight);
+        updateContainer(winWidth, winHeight, imgWidth, imgHeight);
+        updateText(thumbImg,fullUrl,downloadUrl,id);
+
+        evalBackButtons(id);
+        evalNextButtons(id,imagesInSet);
+
+        $(".visDisplay").fadeIn(800).children().fadeIn(800);
+    });
+}
+
+$('.visDisplay#backgroundBuff').live("click",function() {
+    stop();
+    EnableScrolls();
+    $('.visDisplay').fadeOut(500).children().fadeOut(500);
+});
+
+$('#prevImg').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        backPic(1, defaultFadeTime)
+    }
+});
+
+$('#nxtImg').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        nextPic(1, defaultFadeTime)
+    }
+});
+
+$('#skip10').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        nextPic(10, defaultFadeTime)
+    }
+});
+
+$('#skip50').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        nextPic(50, defaultFadeTime)
+    }
+});
+
+$('#return10').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        backPic(10, defaultFadeTime)
+    }
+});
+
+$('#return50').live("click", function() {
+    if (!$(this).attr('disabled')) {
+        backPic(50, defaultFadeTime)
+    }
+});
+
+encodeLiveAction('triggerThumb');
+
+$(document).keyup(function(event) {
+    ///Programs the key functions of the window viewer. ///
+    if(event.which == 27) {
+        timer.stop();
+        $('.visDisplay').fadeOut(1000).children().fadeOut(1000);
+        EnableScrolls();
+    }
+    if (picViewOn == true) {
+        if (event.which == (33 || 34 || 40 || 38) ) {
+            event.preventDefault();
+        } else if (event.which == 39 && !(want$('#nxtImg').attr("disabled"))) {
+            nextPic(1, defaultFadeTime);
+        } else if (event.which == 37 && !($('#prevImg').attr("disabled"))) {
+            backPic(1, defaultFadeTime);
+        }
+    }
+});
+
+encodeLiveAction('imgIcon'); //TODO: Really shouldn't be bound here. This function call should be specified within "datafile_list.html", where html tags exist.
 
 </script>
 {% endblock finalscript %}

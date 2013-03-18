@@ -110,7 +110,10 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
       {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
       {% if thumbnail and datafile.has_image %}
-
+	
+	{# TODO: Should include a function call to 'encodeLiveAction('imgIcon');' as images need to be bound for functionality. #}
+	{# Calling in this file does not work with code in 'view_full_dataset.html'. Stopped working when code in file #}
+	{# was placed in Django Inheritance blocks ("finalscript"); worked fine when defined out of that block. #}
 	<a href="#">
 	    <img class="imgIcon"
             alt="Preview image for Datafile #{{ datafile.id }}"
@@ -160,12 +163,9 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 </tr>
 {% endfor %}
 
-
-<script>
-    encodeLiveAction('imgIcon');
-</script>
 </tbody>
 </table>
+
 {# this appears to break things? Why is it here? -steve #}
 {# <script type="text/javascript"> #}
 {# (function() { #}
