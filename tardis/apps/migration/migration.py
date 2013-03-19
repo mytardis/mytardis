@@ -79,9 +79,12 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         try:
             newreplica = Replica.objects.get(datafile=replica.datafile,
                                              location=location)
-            # We've most likely mirrored this file previously.  But since
-            # we are about to delete the source Replica, we need to check
-            # that the target Replica still verifies.
+            if mirror:
+                # It appears to be mirrored already ... don't check
+                return True
+                
+            # Since we are about to delete the source Replica, we need 
+            # to check that the target Replica (still) verifies.
             if not check_file_transferred(newreplica, location):
                 raise MigrationError('Previously mirrored / migrated Replica' \
                                          ' no longer verifies locally!')
