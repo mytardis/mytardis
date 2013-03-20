@@ -791,8 +791,10 @@ class ContextualViewTest(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.dataset_file = Dataset_File(dataset=self.dataset)
-        self.dataset_file.save()
+        with self.settings(REQUIRE_DATAFILE_CHECKSUMS=False,
+                           REQUIRE_DATAFILE_SIZES=False):
+            self.dataset_file = Dataset_File(dataset=self.dataset)
+            self.dataset_file.save()
 
         self.testschema = Schema(namespace="http://test.com/test/schema",
                                  name="Test View",

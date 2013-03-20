@@ -40,62 +40,17 @@ from os import path
 from django.test import TestCase
 
 
-class TraverseTestCase(TestCase):
-    dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
-    files = [['dir1', 'file1'],
-             ['dir2', 'file2'],
-             ['dir2', 'file3'],
-             ['dir2', 'subdir', 'file4']]
-    username = "tardis_user1"
-
-    def setUp(self):
-        from django.conf import settings
-        staging = settings.GET_FULL_STAGING_PATH_TEST
-        import os
-        from os import path
-        for dir in self.dirs:
-            os.mkdir(path.join(staging, dir))
-        for file in self.files:
-            f = open(path.join(staging, *file), 'w')
-            f.close()
-
-    def tearDown(self):
-        from django.conf import settings
-        staging = settings.GET_FULL_STAGING_PATH_TEST
-        import os
-        from os import path
-        for file in self.files:
-            os.remove(path.join(staging, *file))
-        self.dirs.reverse()
-        for dir in self.dirs:
-            import shutil
-            shutil.rmtree(path.join(staging, dir))
-
-    def test_traversal(self):
-        from tardis.tardis_portal.staging import staging_traverse
-        from django.conf import settings
-        result = staging_traverse(settings.GET_FULL_STAGING_PATH_TEST)
-        self.assertTrue('dir1' in result)
-        self.assertTrue('dir1/file1' in result)
-        self.assertTrue('dir2' in result)
-        self.assertTrue('dir2/file2' in result)
-        self.assertTrue('dir2/file3' in result)
-        self.assertTrue('dir2/subdir/file4' in result)
-        self.assertTrue('dir3' in result)
-
-
 class TestStagingFiles(TestCase):
     def setUp(self):
         from tardis.tardis_portal import models
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
-        from os import path
         import os
 
         # Disconnect post_save signal
         from django.db.models.signals import post_save
         from tardis.tardis_portal.models import \
-            staging_hook, Dataset_File, Replica, Location
+            staging_hook, Replica, Location
         post_save.disconnect(staging_hook, sender=Replica)
 
         from django.contrib.auth.models import User
@@ -130,18 +85,18 @@ class TestStagingFiles(TestCase):
         dataset.save()
 
         # create datafile
-        df = models.Dataset_File(dataset=dataset, size = len(content),
-                                 filename = path.basename(self.file),
+        df = models.Dataset_File(dataset=dataset, size=len(content),
+                                 filename=path.basename(self.file),
                                  md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
         df.save()
 
         # create replica
         base_url = 'file://' + settings.GET_FULL_STAGING_PATH_TEST
         location = Location.load_location({
-            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external', 
-            'priority': 10, 'transfer_provider': 'local'}) 
-        replica = models.Replica(datafile=df, url='file://'+self.file,
-                                 protocol="staging",location=location)
+            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external',
+            'priority': 10, 'transfer_provider': 'local'})
+        replica = models.Replica(datafile=df, url='file://' + self.file,
+                                 protocol="staging", location=location)
         replica.verify()
         replica.save()
         self.replica = replica
@@ -149,10 +104,8 @@ class TestStagingFiles(TestCase):
     def tearDown(self):
         # reconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import \
-                                     staging_hook, Dataset_File, Replica
+        from tardis.tardis_portal.models import staging_hook, Replica
         post_save.connect(staging_hook, sender=Replica)
-
 
     def test_stage_replica(self):
         from tardis.tardis_portal import staging

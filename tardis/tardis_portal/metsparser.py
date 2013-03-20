@@ -612,15 +612,18 @@ class MetsMetadataInfoHandler(ContentHandler):
                         self.modelDatafile = models.Dataset_File(
                             dataset=thisFilesDataset,
                             filename=df.name,
-                            url=sync_url,
                             size=size,
                             md5sum=checksum(df, 'MD5'),
-                            sha512sum=checksum(df,
-                                               'SHA-512'),
-                            protocol=proto)
-                
+                            sha512sum=checksum(df, 'SHA-512'))
+                        self.modelDatafile.save()
+                        replica = models.Replica(
+                            datafile=self.modelDatafile,
+                            url=sync_url,
+                            protocol=proto,
+                            location=self.syncLocation)
+                        replica.save()
+
                         logger.info('=== saving datafile: %s' % df.name)
-                        self.modelDatafile.save()            
 
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = False
@@ -767,7 +770,6 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 self.modelDatafile = models.Dataset_File(
                                     dataset=thisFilesDataset,
                                     filename=self.metsObject.name,
-                                    url=sync_url,
                                     size=size,
                                     md5sum=checksum(self.metsObject, 'MD5'),
                                     sha512sum=checksum(self.metsObject,
