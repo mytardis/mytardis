@@ -4,7 +4,9 @@ from os import path
 from django.db import transaction
 from django.contrib.auth.models import User
 
-from tardis.tardis_portal.staging import stage_file
+from tardis.tardis_portal.staging import stage_replica
+from tardis.tardis_portal.models import Replica
+from tardis.tardis_portal.models import Location
 from tardis.tardis_portal.models import Dataset_File, Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
@@ -27,39 +29,41 @@ except Exception:
 
 @task(name="tardis_portal.verify_files", ignore_result=True)
 def verify_files():
-    for datafile in Dataset_File.objects.filter(verified=False).exclude(protocol='staging'):
-        if datafile.stay_remote or datafile.is_local():
-            verify_as_remote.delay(datafile.id)
+    for replica in Replica.objects.filter(verified=False):
+        if replica.stay_remote or replica.is_local():
+            verify_as_remote.delay(replica.id)
         else:
-            make_local_copy.delay(datafile.id)
+            make_local_copy.delay(replica.id)
 
 @task(name="tardis_portal.verify_as_remote", ignore_result=True)
-def verify_as_remote(datafile_id):
-    datafile = Dataset_File.objects.get(id=datafile_id)
+def verify_as_remote(replica_id):
+    replica = Replica.objects.get(id=replica_id)
     # Check that we still need to verify - it might have been done already
-    if datafile.verified:
+    if replica.verified:
         return
     # Use a transaction for safety
     with transaction.commit_on_success():
-        # Get datafile locked for write (to prevent concurrent actions)
-        datafile = Dataset_File.objects.select_for_update().get(id=datafile.id)
+        # Get replica locked for write (to prevent concurrent actions)
+        replica = Replica.objects.select_for_update().get(id=replica.id)
         # Second check after lock (concurrency paranoia)
-        if not datafile.verified:
-            datafile.verify()
+        if not replica.verified:
+            replica.verify()
+            replica.save()
 
 @task(name="tardis_portal.make_local_copy", ignore_result=True)
-def make_local_copy(datafile_id):
-    datafile = Dataset_File.objects.get(id=datafile_id)
+def make_local_copy(replica_id):
+    replica = Replica.objects.get(id=replica_id)
     # Check that we still need to verify - it might have been done already
-    if datafile.is_local():
+    if replica.is_local():
         return
     # Use a transaction for safety
     with transaction.commit_on_success():
-        # Get datafile locked for write (to prevent concurrent actions)
-        datafile = Dataset_File.objects.select_for_update().get(id=datafile_id)
+        # Get replica locked for write (to prevent concurrent actions)
+        replica = Replica.objects.select_for_update().get(id=replica_id)
         # Second check after lock (concurrency paranoia)
-        if not datafile.is_local():
-            stage_file(datafile)
+        if not replica.is_local():
+            stage_replica(replica)
+
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)
 def create_staging_datafiles(files, user_id, dataset_id, is_secure):
@@ -123,19 +127,24 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
 
     email_user_task.delay(subject, 'import_staging_success', context, user)
 
+
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
 def create_staging_datafile(filepath, username, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
 
     url, size = get_staging_url_and_size(username, filepath)
     datafile = Dataset_File(dataset=dataset,
-                            protocol='staging',
-                            url=url,
                             filename=path.basename(filepath),
                             size=size)
-    datafile.verify(allowEmptyChecksums=True)
+    replica = Replica(datafile=datafile,
+                      protocol='staging',
+                      url=url,
+                      location=Location.get_location('staging'))
+    replica.verify(allowEmptyChecksums=True)
     datafile.save()
-    
+    replica.datafile = datafile
+    replica.save()
+
 
 @task(name="tardis_portal.email_user_task", ignore_result=True)
 def email_user_task(subject, template_name, context, user):

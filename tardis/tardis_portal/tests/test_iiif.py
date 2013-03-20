@@ -12,7 +12,7 @@ from django.test.client import Client
 from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.models import User, UserProfile, \
-    Experiment, ExperimentACL, Dataset, Dataset_File
+    Experiment, ExperimentACL, Dataset, Dataset_File, Replica, Location
 
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -29,6 +29,9 @@ def _create_datafile():
     user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
     user.save()
     UserProfile(user=user).save()
+
+    Location.force_initialize()
+
     full_access = Experiment.PUBLIC_ACCESS_FULL
     experiment = Experiment.objects.create(title="IIIF Test",
                                            created_by=user,
@@ -53,13 +56,16 @@ def _create_datafile():
             img.format = 'tiff'
             img.save(file=tempfile.file)
             tempfile.file.flush()
-    datafile = Dataset_File(dataset=dataset)
-    datafile.size = os.path.getsize(tempfile.file.name)
-    #os.remove(tempfilename)
-    datafile.filename = 'iiif_named_file'
-    datafile.url = write_uploaded_file_to_dataset(dataset, tempfile)
-    datafile.verify(allowEmptyChecksums=True)
+    datafile = Dataset_File(dataset=dataset,
+                            size=os.path.getsize(tempfile.file.name),
+                            filename='iiif_named_file')
+    replica = Replica(datafile=datafile, 
+                      url=write_uploaded_file_to_dataset(dataset, tempfile),
+                      location=Location.get_default_location())
+    replica.verify(allowEmptyChecksums=True)
     datafile.save()
+    replica.datafile = datafile
+    replica.save()
     return datafile
 
 

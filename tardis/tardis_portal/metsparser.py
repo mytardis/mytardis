@@ -92,10 +92,9 @@ from tardis.tardis_portal import metsstruct
 from tardis.tardis_portal import models
 from tardis.tardis_portal.metshandler import store_metadata_value
 from tardis.tardis_portal.staging import \
-    get_sync_root, get_sync_url_and_protocol
+    get_sync_root, get_sync_location, get_sync_url_and_protocol
 
 from django.conf import settings
-
 
 logger = logging.getLogger(__name__)
 
@@ -314,11 +313,13 @@ class MetsMetadataInfoHandler(ContentHandler):
 
     '''
 
-    def __init__(self, holder, tardisExpId, createdBy, syncRootDir):
+    def __init__(self, holder, tardisExpId, createdBy,
+                 syncRootDir, syncLocation):
         self.holder = holder
         self.tardisExpId = tardisExpId
         self.createdBy = createdBy
         self.syncRootDir = syncRootDir
+        self.syncLocation = syncLocation
 
         self.inDmdSec = False
         self.inName = False
@@ -770,11 +771,16 @@ class MetsMetadataInfoHandler(ContentHandler):
                                     size=size,
                                     md5sum=checksum(self.metsObject, 'MD5'),
                                     sha512sum=checksum(self.metsObject,
-                                                       'SHA-512'),
-                                    protocol=proto)
-
+                                                       'SHA-512'))
                                 logger.info('=== saving datafile: %s' % self.metsObject.name)
                                 self.modelDatafile.save()
+                                replica = models.Replica(
+                                    datafile=self.modelDatafile,
+                                    url=sync_url,
+                                    protocol=proto,
+                                    location=self.syncLocation)
+                                replica.save()
+                                
                             else:
                                 self.modelDatafile = thisFilesDataset.dataset_file_set.get(
                                     filename=self.metsObject.name, size=self.metsObject.size)
@@ -803,7 +809,6 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterName, parameterValues,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
-
 
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested ' +
@@ -940,7 +945,8 @@ def parseMets(filename, createdBy, expId=None):
     # on the second pass, we'll parse the document so that we can tie
     # the metadata info with the experiment/dataset/datafile objects
     parser.setContentHandler(
-        MetsMetadataInfoHandler(dataHolder, expId, createdBy, sync_root))
+        MetsMetadataInfoHandler(dataHolder, expId, createdBy, 
+                                sync_root, get_sync_location()))
     parser.parse(filename)
 
     endParseTime = time.time()

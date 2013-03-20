@@ -115,12 +115,15 @@ class MetsExporter():
 
             experimentDiv.add_div(datasetDiv)
 
-            for datafile in dataset.dataset_file_set.filter(verified=True):
+            for datafile in dataset.dataset_file_set.filter():
+                replica = datafile.get_preferred_replica(verified=True)
+                if not replica:
+                    continue
                 # add entry to fileSec
                 parameterSets = DatafileParameterSet.objects.filter(
                     dataset_file=datafile)
 
-		if not parameterSets:
+                if not parameterSets:
                     ADMID_val = None
                 else:
                     ADMID_val = "A-{0}".format(metadataCounter)
@@ -134,13 +137,13 @@ class MetsExporter():
                                  OWNERID=datafile.filename,
                                  ADMID=ADMID_val)
 
-                protocol = datafile.protocol
+                protocol = replica.protocol
 
                 if protocol in replace_protocols:
                     url = datafile.url.replace(protocol,
                                                replace_protocols[protocol])
                 else:
-                    url = datafile.url
+                    url = replica.url
 
                 if force_http_urls:
 
@@ -154,6 +157,8 @@ class MetsExporter():
 
                 # add entry to structMap
                 datasetDiv.add_fptr(fptr(FILEID="F-{0}".format(fileCounter)))
+                parameterSets = DatafileParameterSet.objects.filter(
+                    dataset_file=datafile)
 
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")

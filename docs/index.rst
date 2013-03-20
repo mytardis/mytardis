@@ -65,6 +65,7 @@ Administration
    ref/auth_framework
    ref/filters
    ref/app_oaipmh
+   ref/app_migration
 
 Development
 -----------
