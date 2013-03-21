@@ -63,7 +63,6 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.cache import never_cache
 
 from tardis.urls import getTardisApps
-from tardis.tardis_portal.ProcessExperiment import ProcessExperiment
 from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
     createSearchDatafileForm, createSearchDatafileSelectionForm, \
     LoginForm, RegisterExperimentForm, createSearchExperimentForm, \
@@ -79,7 +78,7 @@ from tardis.tardis_portal.staging import get_full_staging_path, \
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset, ExperimentParameterSet, DatasetParameterSet, \
+    Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
@@ -884,16 +883,8 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     firstline = f.readline()
     f.close()
 
-    sync_root = ''
-    if firstline.startswith('<experiment'):
-        logger.debug('processing simple xml')
-        processExperiment = ProcessExperiment()
-        eid, sync_root = processExperiment.process_simple(filename,
-                                                          created_by,
-                                                          expid)
-    else:
-        logger.debug('processing METS')
-        eid, sync_root = parseMets(filename, created_by, expid)
+    logger.debug('processing METS')
+    eid, sync_root = parseMets(filename, created_by, expid)
 
     auth_key = ''
     try:
@@ -2410,11 +2401,15 @@ def upload(request, dataset_id):
                                                       uploaded_file_post)
             datafile = Dataset_File(dataset=dataset,
                                     filename=uploaded_file_post.name,
-                                    url=filepath,
-                                    size=uploaded_file_post.size,
-                                    protocol='')
-            datafile.verify(allowEmptyChecksums=True)
+                                    size=uploaded_file_post.size)
+            replica = Replica(datafile=datafile,
+                              url=filepath,
+                              protocol='',
+                              location=Location.get_default_location())
+            replica.verify(allowEmptyChecksums=True)
             datafile.save()
+            replica.datafile = datafile
+            replica.save()
 
     return HttpResponse('True')
 
@@ -2903,12 +2898,16 @@ def stage_files_to_dataset(request, dataset_id):
     def create_staging_datafile(filepath):
         url, size = get_staging_url_and_size(user.username, filepath)
         datafile = Dataset_File(dataset=dataset,
-                                protocol='staging',
-                                url=url,
                                 filename=path.basename(filepath),
                                 size=size)
-        datafile.verify(allowEmptyChecksums=True)
+        replica = Replica(datafile=datafile,
+                          protocol='staging',
+                          url=url,
+                          location=Location.get_location('staging'))
+        replica.verify(allowEmptyChecksums=True)
         datafile.save()
+        replica.datafile = datafile
+        replica.save()
         return datafile
 
     datafiles = [create_staging_datafile(f) for f in files]

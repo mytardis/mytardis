@@ -35,6 +35,8 @@ models/__init__.py
 .. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
+.. moduleauthor:: Tim Dettrick <t.dettrick@uq.edu.au>
+.. moduleauthor:: Stephen Crawley <s.crawley@uq.edu.au>
 
 """
 
@@ -43,7 +45,9 @@ from django.contrib.auth.models import User, Group
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .experiment import Experiment, ExperimentACL, Author_Experiment
 from .dataset import Dataset
-from .datafile import Dataset_File, generate_file_checksums
+from .datafile import Dataset_File
+from .replica import Replica
+from .location import Location, ProviderParameter
 from .license import License
 from .hooks import staging_hook
 from .parameters import DatafileParameter, DatafileParameterSet, \

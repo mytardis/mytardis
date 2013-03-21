@@ -15,10 +15,11 @@ from django.contrib.auth.models import User
 
 from nose.plugins.skip import SkipTest
 
-import filecmp
+import filecmp, urlparse
 
 from tardis.tardis_portal.download import StreamingFile, StreamableZipFile
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import \
+    Experiment, Dataset, Dataset_File, Location, Replica
 
 from tempfile import NamedTemporaryFile, mkstemp
 
@@ -127,6 +128,8 @@ class DownloadTestCase(TestCase):
                                              email='',
                                              password='secret')
 
+        Location.force_initialize()
+
         # create a public experiment
         self.experiment1 = Experiment(title='Experiment 1',
                                       created_by=self.user,
@@ -144,7 +147,6 @@ class DownloadTestCase(TestCase):
         self.dataset1.save()
         self.dataset1.experiments.add(self.experiment1)
         self.dataset1.save()
-
 
         # dataset2 belongs to experiment2
         self.dataset2 = Dataset()
@@ -175,31 +177,36 @@ class DownloadTestCase(TestCase):
         testfile2 = abspath(join(self.dest2, filename2))
         _generate_test_image(testfile2)
 
-        size, sha512sum = get_size_and_sha512sum(testfile1)
-        self.dataset_file1 = Dataset_File(dataset=self.dataset1,
-                                          filename=filename1,
-                                          protocol='',
-                                          size=size,
-                                          sha512sum=sha512sum,
-                                          url='%d/%d/%s'
-                                              % (self.experiment1.id,
-                                                 self.dataset1.id,
-                                                 filename1))
-        self.dataset_file1.verify()
-        self.dataset_file1.save()
+        self.dataset_file1 = self._build_datafile( \
+            testfile1, filename1, self.dataset1,
+            '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1))
+                          
+        self.dataset_file2 = self._build_datafile( \
+            testfile2, filename2, self.dataset2,
+            '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2))
 
-        size, sha512sum = get_size_and_sha512sum(testfile2)
-        self.dataset_file2 = Dataset_File(dataset=self.dataset2,
-                                          filename=basename(filename2),
-                                          protocol='',
-                                          size=size,
-                                          sha512sum=sha512sum,
-                                          url='%d/%d/%s'
-                                            % (self.experiment2.id,
-                                               self.dataset2.id,
-                                               filename2))
-        self.dataset_file2.verify()
-        self.dataset_file2.save()
+    def _build_datafile(self, testfile, filename, dataset, url, 
+                        protocol='', checksum=None, size=None, mimetype=''):
+        filesize, sha512sum = get_size_and_sha512sum(testfile)
+        datafile = Dataset_File(dataset=dataset, filename=filename,
+                                mimetype=mimetype,
+                                size=str(size if size != None else filesize), 
+                                sha512sum=(checksum if checksum else sha512sum))
+        datafile.save()
+        if urlparse.urlparse(url).scheme == '':
+            location = Location.get_location('local')
+        else:
+            location = Location.get_location_for_url(url)
+            if not location:
+                location = Location.load_location({
+                    'name': filename, 'url': urlparse.urljoin(url, '.'), 
+                    'type': 'external', 
+                    'priority': 10, 'transfer_provider': 'local'})
+        replica = Replica(datafile=datafile, protocol=protocol, url=url,
+                          location=location)
+        replica.verify()
+        replica.save()
+        return Dataset_File.objects.get(pk=datafile.pk)
 
     def tearDown(self):
         self.user.delete()
@@ -372,21 +379,18 @@ class DownloadTestCase(TestCase):
         self.assertEqual(df.size, str(13))
         self.assertEqual(df.md5sum, '8ddd8be4b179a529afa5f2ffae4b9858')
 
-        # now check a JPG file
+        # Now check we can calculate checksums and infer the mime type
+        # for a JPG file.
         filename = abspath(join(dirname(__file__),
                                 '../static/images/ands-logo-hi-res.jpg'))
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
-        size, sha512sum = get_size_and_sha512sum(filename)
-        pdf1 = Dataset_File(dataset=dataset,
-                            filename=basename(filename),
-                            size=str(size),
-                            sha512sum=sha512sum,
-                            url='file://%s' % filename,
-                            protocol='file')
-        pdf1.verify()
-        pdf1.save()
+        pdf1 = self._build_datafile(filename, basename(filename), dataset, 
+                                    'file://%s' % filename, protocol='file')
+        self.assertEqual(pdf1.get_preferred_replica().verify(), True)
+        pdf1 = Dataset_File.objects.get(pk=pdf1.pk)        
+
         try:
             from magic import Magic
             self.assertEqual(pdf1.mimetype, 'image/jpeg')
@@ -396,16 +400,20 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf1.size, str(14232))
         self.assertEqual(pdf1.md5sum, 'c450d5126ffe3d14643815204daf1bfb')
 
-        # now check that we can override the physical file meta information
-        pdf2 = Dataset_File(dataset=dataset,
-                            filename=basename(filename),
-                            url='file://%s' % filename,
-                            protocol='file',
-                            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                            size=str(0),
-                            # Empty string always has the same hash
-                            sha512sum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
-        pdf2.save()
+        # Now check that we can override the physical file meta information
+        # We are setting size/checksums that don't match the actual file, so
+        # the 
+        pdf2 = self._build_datafile(
+            filename, filename, dataset,
+            'file://%s' % filename, protocol='file', 
+            mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            size=0,
+            # Empty string always has the same hash
+            checksum='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e')
+        self.assertEqual(pdf2.size, str(0))
+        self.assertEqual(pdf2.md5sum, '')
+        self.assertEqual(pdf2.get_preferred_replica().verify(), False)
+        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
         try:
             from magic import Magic
             self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
@@ -417,6 +425,8 @@ class DownloadTestCase(TestCase):
 
         pdf2.mimetype = ''
         pdf2.save()
+        pdf2.get_preferred_replica().save()
+        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
 
         try:
             from magic import Magic
