@@ -67,4 +67,4 @@ def view_full_dataset(request, dataset_id):
         'files':dataset.dataset_file_set,
     })
     return HttpResponse(render_response_index(
-        request, 'matt_views/view_full_dataset.html', c))
+        request, 'slideshow_view/view_full_dataset.html', c))
