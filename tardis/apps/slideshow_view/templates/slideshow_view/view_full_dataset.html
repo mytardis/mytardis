@@ -75,27 +75,29 @@
                                 <p style="padding-top: 5px; text-align: center">
                                     <a class="btn" id="fullscreenLink" style="width:80%; right:0;">
                                         <i class="icon-zoom-in icon-large" ></i> Full Size
-                                    </a><br>
+                                    </a>
+{% if has_download_permissions %}<br>
                                     <a class="btn" id="downloadLink" style="width:80%; right:0;">
                                         <i class="icon-download-alt icon-large" ></i> Download
                                     </a>
+{% endif %}
                                 </p>
                                 <!--</div>-->
                             </div>
                         </div>
                     </div>
-                    <div>
+{% comment %}                    <div>
                         <div class="infoBox">
                             <h4>Comments:</h4>
                             <div>
                                 <p>This is a comment.</p>
                             </div>
                         </div>
-                    </div>
+                    </div> {% endcomment %}	
                 </div>
             </div>
             <div class="row-fluid" id="scrollSpeed" style="bottom:100px; height:35px; width:100%; position:absolute">
-                <div style="height:10px; min-height: 10px">Play Speed:</div><br>
+                <div style="height:10px; min-height: 10px">Interval:</div><br>
                 <div style="min-height:10px; height:10px" id="slider"></div>
             </div>
             <div class="btn-toolbar" style="position:absolute; width:100%; ; bottom:20px; height:60px; text-align: center">
@@ -191,12 +193,7 @@
 // - If you click "next image" in the imageView, then escape, and click an image again, width is not recognised by script.
 // - Window does not scale appropriately, and no existing resize event.
 // - Need to stop the event que's from stacking with "next image" etc - jquery effects continue past the amount of possible items.
-// - Need to put into the super script block, so all JS is together.
 // - Add extra picture containers to pre-load further images - could reduce lag.
-// - Add a preview speed bar.
-// - Add a super control for when play is on --> With a constantly changing interface, hard to click on "stop".
-// - Download URL doesn't work for all files - Standard was taken from existing datasets on site, which it works fine for,
-//      but new images added won't apply download.
 // - Consider creating a "Preload" image for the +5,+`10 etc buttons, including 'play'. This means you could switch between img widgets that
 //      have already loaded and not attain any loading/lag.
 
@@ -482,7 +479,9 @@ function updateText(thumbImg, fullUrl, downloadUrl,id) {
     $(".imageDetails#width").html(img.width());
     $(".imageDetails#height").html(img.height());
 
+{% if has_download_permissions %}
     $(".btn#downloadLink").attr("href",downloadUrl);
+{% endif %}
 }
 
 //Functions to get/calculate Properties:
@@ -519,7 +518,7 @@ function getImgUrls(thumbImg,width,height) {
     var imgId = thumbImg.attr("data-imgId");
     var thumbUrl = "/datafile/iiif/"+ imgId +"/full/!"+width+","+height+"/0/native.jpg";
     var fullUrl = "/datafile/iiif/"+ imgId +"/full/full/0/native.jpg";
-    var downloadUrl = "/datafile/view/" + imgId +"/";
+    var downloadUrl = "/download/datafile/" + imgId +"/";
     return [thumbUrl,fullUrl,downloadUrl]
 }
 
@@ -627,7 +626,7 @@ $(document).keyup(function(event) {
     if (picViewOn == true) {
         if (event.which == (33 || 34 || 40 || 38) ) {
             event.preventDefault();
-        } else if (event.which == 39 && !(want$('#nxtImg').attr("disabled"))) {
+        } else if (event.which == 39 && !($('#nxtImg').attr("disabled"))) {
             nextPic(1, defaultFadeTime);
         } else if (event.which == 37 && !($('#prevImg').attr("disabled"))) {
             backPic(1, defaultFadeTime);
