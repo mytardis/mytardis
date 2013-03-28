@@ -49,12 +49,13 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+
 def get_dataset_path(dataset):
     return dataset.get_path()
 
 
 def staging_list(pathname=settings.STAGING_PATH,
-    dirname=settings.STAGING_PATH, root=False):
+                 dirname=settings.STAGING_PATH, root=False):
     from django.utils import _os
     from django.core.files.storage import default_storage
     """Traverse a path and return an alphabetically by filename
@@ -85,18 +86,18 @@ def staging_list(pathname=settings.STAGING_PATH,
 
     filelist = listdir(pathname)
     filelist.sort()
-    for f in filelist:    
+    for f in filelist:
         if path.isdir(_os.safe_join(pathname, f)):
             li = '<li class="jstree-closed" id="%s"><a>%s</a>' \
-            % (path.relpath(_os.safe_join(pathname, f), dirname),
-                                         path.basename(f))
-            directory_listing = directory_listing + li + '<ul></ul></li>'                                        
+                 % (path.relpath(_os.safe_join(pathname, f), dirname),
+                    path.basename(f))
+            directory_listing = directory_listing + li + '<ul></ul></li>'
         else:
             if not posixpath.basename(f).startswith('.'):
                 li = '<li class="fileicon" id="%s"><a>%s</a>' \
-                % (path.relpath(_os.safe_join(pathname, f), dirname),
-                                            path.basename(f))
-                directory_listing = directory_listing + li + '</li>'                                        
+                     % (path.relpath(_os.safe_join(pathname, f), dirname),
+                        path.basename(f))
+                directory_listing = directory_listing + li + '</li>'
 
     if root:
     # root call
@@ -171,12 +172,16 @@ def get_sync_location():
     from tardis.tardis_portal.models import Location
     return Location.get_location('sync')
 
-def get_sync_root(prefix = ''):
+def get_sync_root(prefix=''):
     from uuid import uuid4 as uuid
+
     def get_candidate_path():
         return path.join(settings.SYNC_TEMP_PATH, prefix + str(uuid()))
-    root = (p for p in iter(get_candidate_path,'') if not path.exists(p)).next()
+    root = (p for p in iter(get_candidate_path, '')
+            if not path.exists(p)).next()
+    oldmask = os.umask(0o002)
     makedirs(root)
+    os.umask(oldmask)
     return root
 
 
@@ -247,7 +252,8 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
 
 
 def get_full_staging_path(username):
-    # check if the user is authenticated using the deployment's staging protocol
+    # check if the user is authenticated using the deployment's
+    # staging protocol
     try:
         from tardis.tardis_portal.models import UserAuthentication
         userAuth = UserAuthentication.objects.get(
