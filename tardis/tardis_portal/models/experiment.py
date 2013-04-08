@@ -126,11 +126,15 @@ class Experiment(models.Model):
         from .datafile import Dataset_File
         return Dataset_File.objects.filter(dataset__experiments=self)
 
+    def get_replicas(self):
+        from .replica import Replica
+        return Replica.objects.filter(datafile__dataset__experiments=self)
+
     def get_download_urls(self):
         from .datafile import Dataset_File
         urls = {}
         params = (('experiment_id', self.id),)
-        protocols = frozenset(self.get_datafiles()\
+        protocols = frozenset(self.get_replicas()\
                                   .values_list('protocol', flat=True)\
                                   .distinct())
         # Get built-in download links

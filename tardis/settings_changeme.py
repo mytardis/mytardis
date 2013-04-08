@@ -143,6 +143,10 @@ STAGING_PROTOCOL = 'ldap'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 STAGING_MOUNT_USER_SUFFIX_ENABLE = False
 
+REQUIRE_DATAFILE_CHECKSUMS = True
+REQUIRE_DATAFILE_SIZES = True
+REQUIRE_VALIDATION_ON_INGESTION = True
+
 DEFAULT_FILE_STORAGE = 'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
 
 # Absolute path to the directory that holds media.
@@ -344,3 +348,28 @@ CELERYBEAT_SCHEDULE = {
     }
 
 djcelery.setup_loader()
+
+DEFAULT_LOCATION = "local"
+
+INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
+                      'url': 'file://' + path.realpath(FILE_STORE_PATH),
+                      'provider': 'local',
+                      'type': 'online',
+                      'priority': 10},
+#                     {'name': 'sync',
+#                      'url': 'file://' + path.realpath(SYNC_PATH),
+#                      'provider': 'local',
+#                      'type': 'external',
+#                      'priority': 8},
+                     {'name': 'staging',
+                      'provider': 'local',
+                      'url': 'file://' + path.realpath(STAGING_PATH),
+                      'type': 'external',
+                      'priority': 5}]
+
+DEFAULT_MIGRATION_DESTINATION = 'unknown'
+
+TRANSFER_PROVIDERS = {
+    'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
+    'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
+    'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
