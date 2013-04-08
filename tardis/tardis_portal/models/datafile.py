@@ -284,7 +284,6 @@ class Dataset_File(models.Model):
             return False
 
         def read_file(sf, tf):
-            logger.info("Downloading %s for verification" % self.url)
             from contextlib import closing
             with closing(sf) as f:
                 md5 = hashlib.new('md5')
@@ -307,6 +306,7 @@ class Dataset_File(models.Model):
         sourcefile = self._get_file()
         if not sourcefile:
             return False
+        logger.info("Downloading %s for verification" % self.url)
         md5sum, sha512sum, size, mimetype_buffer = read_file(sourcefile,
                                                              tempfile)
 
