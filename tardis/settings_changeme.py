@@ -382,3 +382,10 @@ commercial uploader.
 To use filepicker, please also get an API key at http://filepicker.io
 '''
 #FILEPICKER_API_KEY = "YOUR KEY"
+
+DEEP_DATASET_STORAGE = False
+'''
+Set to true if you want to preserve folder structure on "stage_file" ingest,
+eg. via the METS importer.
+Currently, only tested for the METS importer.
+'''

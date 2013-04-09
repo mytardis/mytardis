@@ -40,6 +40,7 @@ staging.py
 import logging
 import shutil
 from urllib2 import build_opener
+import os
 from os import path, makedirs, listdir, rmdir
 import posixpath
 
@@ -141,6 +142,12 @@ def stage_replica(replica):
     from tardis.tardis_portal.models import Replica, Location
     if not replica.location.type == 'external':
         raise ValueError('Only external replicas can be staged')
+    if getattr(settings, "DEEP_DATASET_STORAGE", False):
+        relurl = path.relpath(replica.url[7:], settings.SYNC_TEMP_PATH)
+        spliturl = relurl.split(os.sep)[1:]
+        subdir = path.dirname(path.join(*spliturl))
+    else:
+        subdir = None
     with TemporaryUploadedFile(replica.datafile.filename, 
                                None, None, None) as tf:
         if replica.verify(tempfile=tf.file):
@@ -148,8 +155,9 @@ def stage_replica(replica):
                 tf.file.flush()
                 target_replica = Replica(
                     datafile=replica.datafile,
-                    url=write_uploaded_file_to_dataset(\
-                        replica.datafile.dataset, tf),
+                    url=write_uploaded_file_to_dataset(
+                        replica.datafile.dataset, tf,
+                        subdir=subdir),
                     location=Location.get_default_location(),
                     verified=True,
                     protocol='')
@@ -201,7 +209,8 @@ def get_staging_path():
     return settings.STAGING_PATH
 
 
-def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
+def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
+                                   subdir=None):
     """
     Writes file POST data to the dataset directory in the file store
 
@@ -213,11 +222,14 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post):
     """
 
     filename = uploaded_file_post.name
+    if subdir is not None:
+        filename = path.join(subdir, filename)
 
     from django.core.files.storage import default_storage
 
-    # Path on disk can contain subdirectories - but if the request gets 
-    # tricky with "../" or "/var" or something we strip them out..
+    # Path on disk can contain subdirectories - but if the request
+    # gets tricky with "../" or "/var" or something we strip them
+    # out..
     try:
         copyto = path.join(get_dataset_path(dataset), filename)
         default_storage.path(copyto)

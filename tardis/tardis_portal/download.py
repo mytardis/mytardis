@@ -209,17 +209,27 @@ def view_datafile(request, datafile_id):
 def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
-def _get_filename(rootdir, df):
-    return os.path.join(rootdir, str(df.dataset.id), df.filename)
 
-def _get_datafile_details_for_archive(rootdir, datafiles):
-    # It would be simplest to do this lazily.  But if we do that, we implicitly
-    # passing the database context to the thread that will write the archive, and
-    # that is a bit dodgy.  (It breaks in unit tests!)  Instead, we populate the
-    # list eagerly, but with a file getter rather than the file itself.  If we
-    # populate with actual File objects, we risk running out of file descriptors.
-    return [(df.get_file_getter(), _get_filename(rootdir, df)) \
+def _get_filename(rootdir, df, expid=None):
+    if rootdir != 'datasets':
+        return df.url
+    elif expid is not None:
+        return os.path.join(rootdir,
+                            os.path.relpath(df.url, expid))
+    else:
+        raise Exception
+
+
+def _get_datafile_details_for_archive(rootdir, datafiles, expid=None):
+    # It would be simplest to do this lazily.  But if we do that, we
+    # implicitly passing the database context to the thread that will
+    # write the archive, and that is a bit dodgy.  (It breaks in unit
+    # tests!)  Instead, we populate the list eagerly, but with a file
+    # getter rather than the file itself.  If we populate with actual
+    # File objects, we risk running out of file descriptors.
+    return [(df.get_file_getter(), _get_filename(rootdir, df, expid)) \
              for df in datafiles]
+
 
 def _write_files_to_archive(write_func, files):
     for fileGetter, name in files:
@@ -243,11 +253,13 @@ def _write_files_to_archive(write_func, files):
             finally:
                 fileObj.close()
 
-def _write_tar_func(rootdir, datafiles):
+
+def _write_tar_func(rootdir, datafiles, expid=None):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
-    files = _get_datafile_details_for_archive(rootdir, datafiles)
+    files = _get_datafile_details_for_archive(rootdir, datafiles, expid)
     # Define the function
+
     def write_tar(filename):
         from tarfile import TarFile
         try:
@@ -264,10 +276,10 @@ def _write_tar_func(rootdir, datafiles):
     # Returns the function to do the actual writing
     return write_tar
 
-def _write_zip_func(rootdir, datafiles):
+def _write_zip_func(rootdir, datafiles, expid=None):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
-    files = _get_datafile_details_for_archive(rootdir, datafiles)
+    files = _get_datafile_details_for_archive(rootdir, datafiles, expid)
     # Define the function
     def write_zip(filename):
         try:
@@ -284,7 +296,7 @@ def _write_zip_func(rootdir, datafiles):
     # Returns the function to do the actual writing
     return write_zip
 
-def _estimate_archive_size(rootdir, datafiles, comptype):
+def _estimate_archive_size(rootdir, datafiles, comptype, expid=None):
     """
     produces an estimate of the size of the uncompressed file archive.  This is
     made based on the information we have to hand (i.e. the names and the notional file 
@@ -299,7 +311,7 @@ def _estimate_archive_size(rootdir, datafiles, comptype):
             # File header + file size with padding to 512
             estimate += 512 + ((int(df.get_size()) + 511) / 512) * 512
         elif comptype == "zip":
-            name_length = len(_get_filename(rootdir, df))
+            name_length = len(_get_filename(rootdir, df, expid))
             # local header + content + DD + file header
             estimate += (20 + name_length) + int(df.get_size()) + 8 + (46 + name_length) 
     if comptype == "tar":
@@ -316,8 +328,9 @@ def _get_free_temp_space():
     """
     return get_free_space(gettempdir())
 
-def _check_download_limits(rootdir, datafiles, comptype):
-    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
+
+def _check_download_limits(rootdir, datafiles, comptype, expid=None):
+    estimate = _estimate_archive_size(rootdir, datafiles, comptype, expid)
     available = _get_free_temp_space()
     logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
     if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
@@ -435,25 +448,26 @@ def download_datafiles(request):
                                     'selected Datasets or Datafiles ', status=403)
     
     rootdir = 'datasets'
-    msg = _check_download_limits(rootdir, df_set, comptype)
-    if msg:
-        return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
-
     # Handle missing experiment ID - only need it for naming
     try:
         expid = request.POST['expid']
     except KeyError:
         expid = iter(df_set).next().dataset.get_first_experiment().id
 
+    msg = _check_download_limits(rootdir, df_set, comptype, expid)
+    if msg:
+        return render_error_message(
+            request, 'Requested download is too large: %s' % msg, status=403)
+
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(rootdir, df_set),
+        reader = StreamingFile(_write_tar_func(rootdir, df_set, expid),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(rootdir, df_set),
+        reader = StreamingFile(_write_zip_func(rootdir, df_set, expid),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')    
