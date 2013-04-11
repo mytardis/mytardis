@@ -1,0 +1,26 @@
+<script type="text/javascript" >
+// begin init, taken from filepicker.io website
+(function(a){if(window.filepicker){return}var b=a.createElement("script");b.type="text/javascript";b.async=!0;b.src=("https:"===a.location.protocol?"https:":"http:")+"//api.filepicker.io/v1/filepicker.js";var c=a.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c);var d={};d._queue=[];var e="pick,pickMultiple,pickAndStore,read,write,writeUrl,export,convert,store,storeUrl,remove,stat,setKey,constructWidget,makeDropPane".split(",");var f=function(a,b){return function(){b.push([a,arguments])}};for(var g=0;g<e.length;g++){d[e[g]]=f(e[g],d._queue)}window.filepicker=d})(document);
+// end init
+filepicker.setKey('{{ filepicker_api_key }}');
+
+$('.upload_files_link').live('click', function(evt) {
+    filepicker.pickMultiple({container: 'modal'}, function(fpfiles){
+	console.log("successful pick");
+	$.ajax({
+	    type: "POST",
+	    url: '{% url tardis.apps.filepicker.views.fpupload dataset_id %}',
+	    data: {files: fpfiles},
+	    dataType: "json",
+	    error: function(data, vars) {
+		console.log(data);
+		console.log(vars);
+	    },
+	    success: function(data, vars){
+		console.log("upload successful");
+		$('#datafiles-pane').load('{% url tardis.tardis_portal.views.retrieve_datafile_list dataset_id %}');
+	    }
+	});
+    });
+});
+</script>
