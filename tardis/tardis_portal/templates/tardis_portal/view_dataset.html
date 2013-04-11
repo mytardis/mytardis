@@ -269,25 +269,6 @@
       $(this).parents('.datafile_list').load("/ajax/datafile_list/" + dataset_id + "/");
   });
 
-  $('.upload_files_link').live('click', function(evt) {
-      var dataset_id = $(this).attr('data-dataset_id');
-      var modal = $('#modal-upload-files');
-
-
-      // clear the upload files container
-      modal.find('.modal-body').html('');
-      modal.find('.loading-placeholder').show();
-      modal.modal('show');
-
-      modal.find('.modal-body')
-           .load("/ajax/upload_files/" + dataset_id + "/", function() {
-              modal.find('.loading-placeholder').hide();
-              modal.find('#uploadify').on('allUploadsComplete', function(data) {
-                modal.modal('hide');
-              })
-            });
-  });
-
   $('.import_staging_files_link').live('click', function(evt) {
       var dataset_id = $(this).attr('data-dataset_id');
       var modal = $('#modal-upload-files');
@@ -306,6 +287,8 @@
 {% endblock %}
 
 {% block content %}
+
+<div id="upload_button_code" style="display: none"></div>
 
 <script type="text/javascript">
 $('#modal-metadata .submit-button').live('click', function() {
@@ -502,9 +485,7 @@ $('#modal-metadata .submit-button').live('click', function() {
           {% endif %}
         </div>
       </div>
-      <div id="datafiles-pane">
-        {% include 'tardis_portal/ajax/datafile_list.html' %}
-      </div>
+      <div id="datafiles-pane"></div>
     </form>
   </div>
 </div>
@@ -520,6 +501,9 @@ $(document).ready(function(){
         $('#datafile-info').load(prev_file_select.find('.datafile-info-toggle').attr('href'));
     }
   });
+
+  // load datafiles on page load
+  $('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
 
   // Create a reload event handler
   $('#datafiles-pane').on('reload', function() {
@@ -540,6 +524,30 @@ $(document).ready(function(){
   // Set carousel size
   $('#preview, #preview .carousel-inner').css('width', '320')
                                          .css('height', '240');
+
+{% if upload_method == "uploadify" %}
+  $('.upload_files_link').live('click', function(evt) {
+      var dataset_id = $(this).attr('data-dataset_id');
+      var modal = $('#modal-upload-files');
+
+
+      // clear the upload files container
+      modal.find('.modal-body').html('');
+      modal.find('.loading-placeholder').show();
+      modal.modal('show');
+
+      modal.find('.modal-body')
+           .load("/ajax/upload_files/" + dataset_id + "/", function() {
+              modal.find('.loading-placeholder').hide();
+              modal.find('#uploadify').on('allUploadsComplete', function(data) {
+                modal.modal('hide');
+              })
+            });
+  });
+{% else %}
+  $("#upload_button_code").load('{% url upload_method dataset.id %}');
+{% endif %}
+
 });
 </script>
 
