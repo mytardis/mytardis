@@ -33,24 +33,38 @@ Management command to (re-)run the ingestion filters by hand.
 
 import sys
 import traceback
+import logging
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.contrib.auth.models import User
 from django.db import transaction, DEFAULT_DB_ALIAS
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.importlib import import_module
 
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     args = '[<filter-no>] ...'
     help = 'Run selected ingestion filters on all Datafiles.'
     option_list = BaseCommand.option_list + (
+        make_option('--dryRun', '-n',
+                    action='store_true',
+                    dest='dryRun',
+                    default=False,
+                    help="Don't commit the results of running the " \
+                        "filters to the database.  Warning: does not " \
+                        "handle non-database changes made by a filter!"),
+        ) + (
         make_option('--list', '-l',
                     action='store_true',
                     dest='list',
                     default=False,
-                    help="List the filters configured in"
+                    help="List the ingestion filters configured in "
                          "settings.POST_SAVE_FILTERS"),
         ) + (
         make_option('--all', '-a',
@@ -62,28 +76,31 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         filterIds = []
+        self.availableFilters = settings.POST_SAVE_FILTERS
+        print 'Filters = %s\n' % self.availableFilters
         if options.get('list'):
             pass
         elif options.get('all'):
-            filterIds = range(1, len(settings.POST_SAVE_FILTERS))
+            filterIds = range(0, len(self.availableFilters))
         else:
             for arg in args:
                 try:
-                    no = int(arg)
+                    id = int(arg) - 1
                 except:
                     raise CommandError("Invalid filter-no: '%s'" % arg)
-                if no <= 0 or no > len(settings.POST_SAVE_FILTERS):
+                if id < 0 or id >= len(self.availableFilters):
                     raise CommandError("Invalid filter-no: '%s'" % arg)
-                filterIds = filterIds + [no]
+                filterIds = filterIds + [id]
         if len(filterIds):
-            self.runFilters(instantiateFilters(filterIds))
+            self.runFilters(self.instantiateFilters(filterIds), 
+                            dryRun=options['dryRun'])
         else:
             self.listFilters()
 
     def instantiateFilters(self, filterIds):
         filters = []
         for id in filterIds:
-            f = settings.POST_SAVE_FILTERS[id - 1]
+            f = self.availableFilters[id]
             if f and len(f):
                 cls = f[0]
                 args = []
@@ -98,7 +115,7 @@ class Command(BaseCommand):
                     filters += [self._safe_import(cls, args, kw)]
                 except ImproperlyConfigured as e:
                     print "Skipping improperly configured filter %s : %s" %\
-                        (id, e)
+                        (id + 1, e)
         return filters
 
     def _safe_import(self, path, args, kw):
@@ -121,54 +138,42 @@ class Command(BaseCommand):
         filter_instance = filter_class(*args, **kw)
         return filter_instance
             
-
-    def runFilters(self, filters):
-        pass
+    def runFilters(self, filters, dryRun=False):
+        using = DEFAULT_DB_ALIAS
+        transaction.enter_transaction_management(using=using)
+        try:
+            for datafile in Dataset_File.objects.all():
+                # Use a transaction to process each Datafile
+                transaction.managed(True, using=using)
+                try:
+                    for filter in filters:
+                        filter(sender=Dataset_File, instance=datafile, 
+                               created=False, using='default')
+                    if options.get('dryRun'):
+                        transaction.rollback(using=using)
+                    else:
+                        transaction.commit(using=using)
+                except Exception:
+                    transaction.rollback(using=using)
+                    exc_class, exc, tb = sys.exc_info()
+                    new_exc = CommandError("Exception %s has occurred: "
+                                           "rolled back transaction" % \
+                                               (exc or exc_class))
+                    raise new_exc.__class__, new_exc, tb
+        finally:
+            transaction.leave_transaction_management(using=using)
 
     def listFilters(self):
-        for i in range(1, len(settings.POST_SAVE_FILTERS)):
-            filter = settings.POST_SAVE_FILTERS[i - 1]
-            if len(filter) == 1:
-                print '%d - %s\n' % (i, filter[0])
-            elif len(filter) == 2:
-                print '%d - %s, %s\n' % (i, filter[0], filter[1])
-            elif len(filter) >= 3:
-                print '%d - %s, %s, %s\n' % (i, filter[0], 
-                                             filter[1], filter[2])
+        if len(self.availableFilters): 
+            print 'The following filters are available\n'
+            for i in range(0, len(self.availableFilters)):
+                filter = self.availableFilters[i]
+                if len(filter) == 1:
+                    print '%d - %s\n' % (i + 1, filter[0])
+                elif len(filter) == 2:
+                    print '%d - %s, %s\n' % (i + 1, filter[0], filter[1])
+                elif len(filter) >= 3:
+                    print '%d - %s, %s, %s\n' % (i + 1, filter[0], 
+                                                 filter[1], filter[2])
         else:
-            ids = []
-            for arg in args[1:]:
-                try:
-                    id = int(arg)
-                    experiment = Experiment.objects.get(id=id)
-                    if currentOwner and experiment.created_by != currentOwner:
-                        raise CommandError("Experiment %s is not currently "
-                                           "owned by %s" % (id, forUser))
-                    ids.append(id)
-                except Experiment.DoesNotExist:
-                    raise CommandError("Experiment %s does not exist" % id)
-                except ValueError:
-                    raise CommandError("Experiment id (%s) not a number" % arg)
-                
-        using = options.get('database', DEFAULT_DB_ALIAS)
-        transaction.commit_unless_managed(using=using)
-        transaction.enter_transaction_management(using=using)
-        transaction.managed(True, using=using)
-
-        try:
-            for id in ids:
-                experiment = Experiment.objects.get(id=id)
-                experiment.created_by = newOwner
-                experiment.save()
-            if options.get('dryRun'):
-                transaction.rollback(using=using)
-            else:
-                transaction.commit(using=using)
-            transaction.leave_transaction_management(using=using)
-        except Exception:
-            transaction.rollback(using=using)
-            exc_class, exc, tb = sys.exc_info()
-            new_exc = CommandError("Exception %s has occurred: rolled back "
-                                   "transaction" % (exc or exc_class))
-            raise new_exc.__class__, new_exc, tb
-
+            print 'No filters are available\n'
