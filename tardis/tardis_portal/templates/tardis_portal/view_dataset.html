@@ -502,9 +502,7 @@ $('#modal-metadata .submit-button').live('click', function() {
           {% endif %}
         </div>
       </div>
-      <div id="datafiles-pane">
-        {% include 'tardis_portal/ajax/datafile_list.html' %}
-      </div>
+      <div id="datafiles-pane"></div>
     </form>
   </div>
 </div>
@@ -520,6 +518,9 @@ $(document).ready(function(){
         $('#datafile-info').load(prev_file_select.find('.datafile-info-toggle').attr('href'));
     }
   });
+
+  // load datafiles on page load
+  $('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset.id %}');
 
   // Create a reload event handler
   $('#datafiles-pane').on('reload', function() {
