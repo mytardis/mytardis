@@ -50,7 +50,11 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     args = '[<filter-no>] ...'
-    help = 'Run selected ingestion filters on all Datafiles.'
+    help = """Run selected ingestion filters on all Datafiles.  
+Note that a typical ingestion filter sets a 'flag' parameter in its 
+Datafile's parameter set to avoid adding multiple copies of the ingested 
+metadata parameters.  This command cannot override that flag to force 
+metadata to be reingested."""
     option_list = BaseCommand.option_list + (
         make_option('--dryRun', '-n',
                     action='store_true',
@@ -77,7 +81,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         filterIds = []
         self.availableFilters = settings.POST_SAVE_FILTERS
-        print 'Filters = %s\n' % self.availableFilters
         if options.get('list'):
             pass
         elif options.get('all'):
@@ -149,7 +152,7 @@ class Command(BaseCommand):
                     for filter in filters:
                         filter(sender=Dataset_File, instance=datafile, 
                                created=False, using='default')
-                    if options.get('dryRun'):
+                    if dryRun:
                         transaction.rollback(using=using)
                     else:
                         transaction.commit(using=using)
