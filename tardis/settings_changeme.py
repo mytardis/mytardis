@@ -344,3 +344,10 @@ CELERYBEAT_SCHEDULE = {
     }
 
 djcelery.setup_loader()
+
+UPLOAD_METHOD = "uploadify"
+'''
+can be changed to an app that provides an upload_button function,
+eg. "tardis.apps.filepicker.view.upload_button" to use a fancy
+commercial uploader
+'''

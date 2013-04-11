@@ -505,7 +505,6 @@ class SearchQueryString():
 def view_dataset(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
 
-
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
         # need to fix.
@@ -525,6 +524,7 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
+    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
 
     c = Context({
         'dataset': dataset,
@@ -535,10 +535,11 @@ def view_dataset(request, dataset_id):
             authz.has_dataset_download_access(request, dataset_id),
         'has_write_permissions':
             authz.has_dataset_write(request, dataset_id),
-        'from_experiment': \
+        'from_experiment':
             get_experiment_referer(request, dataset_id),
-        'other_experiments': \
-            authz.get_accessible_experiments_for_dataset(request, dataset_id)
+        'other_experiments':
+            authz.get_accessible_experiments_for_dataset(request, dataset_id),
+        'upload_method': upload_method,
     })
     return HttpResponse(render_response_index(request,
                     'tardis_portal/view_dataset.html', c))
