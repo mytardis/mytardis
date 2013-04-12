@@ -605,23 +605,29 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 return ''
                             # Should be valid checksum of given type
                             return checksum
-                
+
                         sync_url, proto = get_sync_url_and_protocol(
-                                            get_sync_root(),
-                                            df.url)
-                
+                                                    get_sync_root(),
+                                                    df.url)
+
                         self.modelDatafile = models.Dataset_File(
                             dataset=thisFilesDataset,
                             filename=df.name,
-                            url=sync_url,
                             size=size,
                             md5sum=checksum(df, 'MD5'),
                             sha512sum=checksum(df,
-                                               'SHA-512'),
-                            protocol=proto)
-                
+                                           'SHA-512'))
+
                         logger.info('=== saving datafile: %s' % df.name)
-                        self.modelDatafile.save()            
+                        self.modelDatafile.save() 
+
+                        replica = models.Replica(
+                            datafile=self.modelDatafile,
+                            url=sync_url,
+                            protocol=proto,
+                            location=self.syncLocation)
+                        replica.save()
+
 
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = False
