@@ -8,7 +8,7 @@ from django.test.client import Client
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
 from tardis.tardis_portal.models import User, UserProfile, \
-    ExperimentACL, Experiment, Dataset, Dataset_File
+    ExperimentACL, Experiment, Dataset, Dataset_File, Replica, Location
 from tardis.tardis_portal.models.parameters import DatasetParameterSet
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
@@ -25,6 +25,8 @@ class JEOLSEMFilterTestCase(TestCase):
         user = User.objects.create_user(username, email, password)
         profile = UserProfile(user=user, isDjangoAccount=True)
         profile.save()
+
+        Location.force_initialize()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -54,13 +56,20 @@ class JEOLSEMFilterTestCase(TestCase):
 
             datafile = Dataset_File(dataset=dataset,
                                     filename=path.basename(testfile),
-                                    url='file://'+path.abspath(testfile),
-                                    protocol='file',
                                     size=size,
                                     sha512sum=sha512sum)
-            datafile.verify()
             datafile.save()
-            return datafile
+            base_url = 'file://' + path.abspath(path.dirname(testfile))
+            location = Location.load_location({
+                'name': 'test-jeol', 'url': base_url, 'type': 'external',
+                'priority': 10, 'transfer_provider': 'local'})
+            replica = Replica(datafile=datafile,
+                              url='file://'+path.abspath(testfile),
+                              protocol='file',
+                              location=location)
+            replica.verify()
+            replica.save()
+            return Dataset_File.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
         self.datafiles = [create_datafile(i) for i in (1,2)]

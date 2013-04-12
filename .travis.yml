@@ -14,4 +14,3 @@ after_failure: "cat tardis-test.log"
 branches:
   except:
     - doc-cleanup
-

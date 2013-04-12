@@ -56,6 +56,7 @@ from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
 from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 
+from tardis.tardis_portal.transfer import TransferProvider
 
 class SearchTestCase(TestCase):
 
@@ -66,6 +67,7 @@ class SearchTestCase(TestCase):
 
         self.client = Client()
         self.experiments = []
+        Location.force_initialize()
 
         try:
             user = User.objects.get(username='test')
@@ -73,16 +75,15 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
-        files = ['286-notmets.xml',
-                 'Edward-notmets.xml',
-                 'Cookson-notmets.xml']
+        base_path = path.abspath(path.dirname(__file__))
+        files = ['METS_test.xml']
         for f in files:
-            filename = path.join(path.abspath(path.dirname(__file__)), f)
+            filename = path.join(base_path, f)
             expid, _ = _registerExperimentDocument(filename=filename,
                                                    created_by=user,
                                                    expid=None)
             experiment = Experiment.objects.get(pk=expid)
-
+            
             acl = ExperimentACL(pluginId=django_user,
                                 entityId=str(user.id),
                                 experiment=experiment,
@@ -145,7 +146,8 @@ class SearchTestCase(TestCase):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
         response = self.client.get('/datafile/search/',
-                                   {'type': 'saxs', 'filename': 'air_0_001.tif', })
+                                   {'type': 'saxs', 
+                                    'filename': 'ment0005.osc', })
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['datafiles'] is not None)
@@ -185,7 +187,7 @@ class SearchTestCase(TestCase):
         # check if searching for nothing would result to returning everything
         response = self.client.get('/datafile/search/',
                                    {'type': 'saxs', 'filename': '', })
-        self.assertEqual(len(response.context['datafiles']), 129)
+        self.assertEqual(len(response.context['datafiles']), 5)
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs',  self.io_param_name: '123', })
@@ -193,7 +195,7 @@ class SearchTestCase(TestCase):
 
         response = self.client.get('/datafile/search/',
             {'type': 'saxs', self.frqimn_param_name: '0.0450647', })
-        self.assertEqual(len(response.context['datafiles']), 125)
+        self.assertEqual(len(response.context['datafiles']), 5)
         self.client.logout()
 
     def testSearchExperimentForm(self):
@@ -217,7 +219,7 @@ class SearchTestCase(TestCase):
     def testSearchExperimentResults(self):
         self.client.login(username='test', password='test')
         response = self.client.get('/experiment/search/',
-            {'title': 'cookson'})
+            {'title': 'SAXS Test'})
 
         # check for the existence of the contexts..
         self.assertTrue(response.context['experiments'] is not None)
@@ -228,8 +230,7 @@ class SearchTestCase(TestCase):
         self.assertTemplateUsed(response,
             'tardis_portal/search_experiment_results.html')
 
-        self.assertTrue(
-            len(response.context['experiments']) == 1)
+        self.assertEqual(len(response.context['experiments']), 1)
 
         from tardis.tardis_portal.models import Experiment
 
@@ -246,7 +247,7 @@ class SearchTestCase(TestCase):
         # check if searching for nothing would result to returning everything
         response = self.client.get('/experiment/search/',
             {'title': '', })
-        self.assertEqual(len(response.context['experiments']), 3)
+        self.assertEqual(len(response.context['experiments']), 1)
 
         self.client.logout()
 
@@ -423,6 +424,7 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         from django.core.management import call_command
         call_command('loaddata', 'as_schemas')
         self.experiment = None
+        Location.force_initialize()
 
         try:
             self.user = User.objects.get(username='test')
@@ -506,7 +508,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
             'datafile should not be none')
         self.assertTrue(datafile.size == '18006000',
             'wrong file size for ment0003.osc')
-        expect(datafile.url).to_equal('file://'+path.join(self.sync_path,
+        replica = datafile.get_preferred_replica()
+        expect(replica.url).to_equal('file://'+path.join(self.sync_path,
                                                         'Images/ment0003.osc'))
 
         datafileParams = models.DatafileParameter.objects.filter(

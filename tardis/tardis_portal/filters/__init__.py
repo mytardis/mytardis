@@ -49,26 +49,45 @@ logger = logging.getLogger(__name__)
 
 
 class FilterInitMiddleware(object):
-    def __init__(self):
-        from tardis.tardis_portal.models import Dataset_File
-        for f in settings.POST_SAVE_FILTERS:
+    def __init__(self, filters=None):
+        from tardis.tardis_portal.models import Dataset_File, Replica
+        if not filters:
+            filters = getattr(settings, 'POST_SAVE_FILTERS', [])
+        for f in filters:
             cls = f[0]
             args = []
             kw = {}
 
-            if len(f) == 2:
+            if len(f) >= 2:
                 args = f[1]
 
-            if len(f) == 3:
+            if len(f) >= 3:
                 kw = f[2]
 
-            hook = self._safe_import(cls, args, kw)
+            # This hook dispatches a datafile save to a datafile filter
+            datafile_hook = self._safe_import(cls, args, kw)
+
+            # This dispatches a replica save to a datafile filter if the
+            # replica is now in 'verified' state.
+            def make_replica_hook(dfh):
+                def replica_hook(**kw):
+                    replica = kw.get('instance')
+                    if replica.verified:
+                        kw['instance'] = replica.datafile
+                        kw['replica'] = replica
+                        kw['sender'] = Dataset_File
+                        dfh(**kw)
+                return replica_hook
+                
             # XXX seems to requre a strong ref else it won't fire,
             # could be because some hooks are classes not functions.
             # Need to use dispatch_uid to avoid expensive duplicate signals.
             #https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals
-            post_save.connect(hook, sender=Dataset_File, weak=False,dispatch_uid=cls)
-            logger.debug('Initialised postsave hook %s' % post_save.receivers)
+            post_save.connect(datafile_hook, sender=Dataset_File, 
+                              weak=False, dispatch_uid=cls + ".datafile")
+            post_save.connect(make_replica_hook(datafile_hook), sender=Replica,
+                              weak=False, dispatch_uid=cls + ".replica")
+            logger.debug('Initialised postsave hooks %s' % post_save.receivers)
 
         # disable middleware
         raise MiddlewareNotUsed()

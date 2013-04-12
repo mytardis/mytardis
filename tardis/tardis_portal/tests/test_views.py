@@ -55,8 +55,8 @@ from django.test.utils import override_settings
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ExperimentACL, Experiment, Dataset, Dataset_File, Schema, DatafileParameterSet
-
+    ExperimentACL, Experiment, Dataset, Dataset_File, Schema, \
+    DatafileParameterSet, Location
 
 class UploadTestCase(TestCase):
 
@@ -72,6 +72,8 @@ class UploadTestCase(TestCase):
         self.userProfile = UserProfile(user=self.user)
 
         self.test_dir = mkdtemp()
+
+        Location.force_initialize()
 
         self.exp = Experiment(title='test exp1',
                 institution_name='monash', created_by=self.user)
@@ -142,10 +144,11 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
-        self.assertTrue(test_files_db[0].url == '%d/%d/testfile.txt' %
+        url = test_files_db[0].get_preferred_replica().url
+        self.assertTrue(url == '%d/%d/testfile.txt' %
                         (self.dataset.get_first_experiment().id,
                          self.dataset.id))
-        self.assertTrue(test_files_db[0].verified)
+        self.assertTrue(test_files_db[0].get_preferred_replica().verified)
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
@@ -426,6 +429,8 @@ class StageFilesTestCase(TestCase):
         # Ensure that staging dir is set up properly
         expect(get_full_staging_path(username)).to_be_truthy()
 
+        Location.force_initialize()
+
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
                                 institution_name='Test Uni',
@@ -537,7 +542,8 @@ class StageFilesTestCase(TestCase):
             expect(dataset.dataset_file_set.count()).to_equal(1)
             datafile = dataset.dataset_file_set.all()[0]
             expect(datafile.filename).to_equal(basename(f.name))
-            expect(urlparse(datafile.url).scheme).to_equal('')
+            url = datafile.get_preferred_replica().url
+            expect(urlparse(url).scheme).to_equal('')
 
 class ExperimentTestCase(TestCase):
 

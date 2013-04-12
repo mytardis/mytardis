@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from tardis.tardis_portal.staging import StagingHook
 
 from .experiment import Experiment, Author_Experiment
-from .datafile import Dataset_File
+from .replica import Replica
 from .parameters import ExperimentParameter, ExperimentParameterSet
 
 import logging
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 ### Staging hook ###
 
 staging_hook = StagingHook()
-post_save.connect(staging_hook, sender=Dataset_File)
+post_save.connect(staging_hook, sender=Replica)
 
 ### RIF-CS hooks ###
 
