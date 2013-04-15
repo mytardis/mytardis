@@ -1,0 +1,58 @@
+{% extends "tardis_portal/view_dataset.html" %}
+{% load url from future %}
+
+{% block style %}
+{{ block.super }}
+<style type="text/css">
+.display_images {
+    margin: 0 auto
+}
+.display_images div.row-fluid {
+    margin-bottom: 10px;
+}
+.display_images h4 {
+    text-align: center;
+}
+</style>
+{% endblock style %}
+
+{% block dataset_content_preview %}
+<div class="row-fluid" style="margin-bottom: 20px;">
+  <h3>A few diffractions from your dataset</h3>
+  <div class="info-box">   
+    {% if display_images|length > 0 %}
+    <div class="display_images">
+      {% for datafile in display_images %}
+	{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!350,350' rotation=0 quality='native' format='jpg' as thumbnail %}
+        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}	
+	{% cycle "<div class='row-fluid'>" "" %}
+	<div class="span6">    
+	<a href="{{ image }}">
+	      <img alt="Preview image for Datafile #{{ datafile.id }}"
+		   src="{{ thumbnail }}"
+		   style="display: block; margin-left: auto; margin-right: auto;"
+		   onerror="$(this).parents('.item').remove();"/>
+	    </a>
+	    <h4>{{ datafile.filename }}</h4>
+	</div>
+	  {% if forloop.last %}
+	    </div>
+	  {% else %}
+	    {% cycle "" "</div>" %}
+	  {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+      <div class="alert">No previews available</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block finalscript %}
+{{ block.super }}
+<script type="text/javascript">
+$(document).ready(function(){
+});
+</script>
+{% endblock finalscript %}

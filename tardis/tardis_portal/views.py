@@ -139,7 +139,18 @@ def get_dataset_info(dataset, include_thumbnail=False):
             obj['thumbnail'] = get_thumbnail_url(dataset.image)
         except AttributeError:
             pass
+
+    if hasattr(settings, "DATASET_VIEWS"):
+        schemas = {}
+        for ps in dataset.getParameterSets():
+            schemas[ps.schema.namespace] = ps.schema
+        for ns, view_fn in settings.DATASET_VIEWS:
+            if ns in schemas:
+                obj["datasettype"] = schemas[ns].name
+                break
+    
     return obj
+
 
 class HttpResponseMethodNotAllowed(HttpResponse):
     status_code=303
@@ -501,9 +512,36 @@ class SearchQueryString():
     def query_string(self):
         return self.__unicode__()
 
+
 @authz.dataset_access_required
 def view_dataset(request, dataset_id):
+    """Displays a Dataset and associated information.
+
+    Shows a dataset its metadata and a list of associated files with
+    the option to show metadata of each file and ways to download those files.
+    With write permission this page also allows uploading and metadata
+    editing.
+    Optionally, if set up in settings.py, datasets of a certain type can
+    override the default view.
+    Settings example:
+    DATASET_VIEWS = [("http://dataset.example/schema",
+                      "tardis.apps.custom_views_app.views.my_view_dataset"),]
+    """
     dataset = Dataset.objects.get(id=dataset_id)
+
+    if hasattr(settings, "DATASET_VIEWS"):
+        namespaces = [ps.schema.namespace
+                      for ps in dataset.getParameterSets()]
+        for ns, view_fn in settings.DATASET_VIEWS:
+            if ns in namespaces:
+                x = view_fn.split(".")
+                mod_name, fn_name = (".".join(x[:-1]), x[-1])
+                try:
+                    module = __import__(mod_name, fromlist=[fn_name])
+                    fn = getattr(module, fn_name)
+                    return fn(request, dataset_id=dataset_id)
+                except (ImportError, AttributeError):
+                    continue
 
     def get_datafiles_page():
         # pagination was removed by someone in the interface but not here.
@@ -541,8 +579,9 @@ def view_dataset(request, dataset_id):
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method,
     })
-    return HttpResponse(render_response_index(request,
-                    'tardis_portal/view_dataset.html', c))
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/view_dataset.html', c))
+
 
 @never_cache
 @authz.experiment_access_required
