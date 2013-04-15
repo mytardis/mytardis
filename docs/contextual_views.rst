@@ -65,6 +65,10 @@ User Guide
 Similarly to contextual ``Dataset_File`` views, ``Dataset`` views rely
 on specific schemas attached to ``Dataset`` s.
 
+The schema for each view either needs to be created and attached to a
+Dataset, or the view can be set up for Dataset schemas that are
+already in use.
+
 There are two main differences:
 
 * instead of an AJAX-loaded URL the settings associate a view function
@@ -75,7 +79,7 @@ There are two main differences:
 ::
 
     DATASET_VIEWS = [
-        ("http://synchrotron.org.au/views/dataset/full",
+        ("http://example.org/awesome_data/1",
          "tardis.apps.mx_views.views.view_full_dataset"),
     ]
 
