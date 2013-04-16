@@ -573,7 +573,7 @@ function encodeLiveAction(className) {
 }
 
 $('.visDisplay#backgroundBuff').live("click",function() {
-    stop();
+    timer.stop();
     EnableScrolls();
     $('.visDisplay').fadeOut(500).children().fadeOut(500);
 });
