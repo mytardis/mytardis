@@ -784,7 +784,9 @@ class ContextualViewTest(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.dataset_file = Dataset_File(dataset=self.dataset)
+        self.dataset_file = Dataset_File(dataset=self.dataset,
+                                         size=42, filename="foo",
+                                         md5sum="junk")
         self.dataset_file.save()
 
         self.testschema = Schema(namespace="http://test.com/test/schema",
