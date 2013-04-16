@@ -58,6 +58,7 @@ class Dataset_File(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
+        ordering = ['filename']
 
     @classmethod
     def sum_sizes(cls, datafiles):
