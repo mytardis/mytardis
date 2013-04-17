@@ -31,6 +31,7 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
@@ -370,6 +371,8 @@ def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs['dataset_id']
         if not has_dataset_write(request, dataset_id):
+            if request.is_ajax():
+                return HttpResponse("")
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
