@@ -401,7 +401,15 @@ def view_experiment(request, experiment_id,
     if  'load' in request.GET:
         c['load'] = request.GET['load']
 
+<<<<<<< HEAD
     _add_protocols_and_organizations(request, experiment, c)
+=======
+    # Download protocols
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
+>>>>>>> 8577e82... Initial checkpoint
 
     import sys
     appnames = []
@@ -422,22 +430,26 @@ def view_experiment(request, experiment_id,
 
 def _add_protocols_and_organizations(request, experiment, c):
     """Add the protocol, format and organization details for 
-    archive requests."""
+    archive requests.  Since the MacOSX archiver can't cope with 
+    streaming ZIP, the best way to avoid 'user disappointment' 
+    is to not offer ZIP."""
+
+    mac = getattr(request, 'browser_data', {}).get('platform') == 'MacOSX'
 
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
     for key, value in download_urls.iteritems():
+        if mac and key == 'zip':
+            continue
         c['protocol'] += [[key, value]]
-    # For now, just use the most preferred format as default
-    c['default_format'] = getattr(settings, 
-                                  'DEFAULT_ARCHIVE_FORMATS', 
-                                  ['zip', 'tar'])[0]
+
+    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
+    c['default_format'] = filter(lambda x: mac and x == 'zip', formats)[0]
 
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = ['classic'] + get_download_organizations()
-    c['default_organization'] = getattr(settings, 
-                                        'DEFAULT_ARCHIVE_ORGANIZATION', 
-                                        'classic')
+    c['default_organization'] = getattr(
+        settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
 
 @authz.experiment_access_required
 def experiment_description(request, experiment_id):
