@@ -533,17 +533,11 @@ class StageFilesTestCase(TestCase):
 
             # Expect 201 Created
             expect(response.status_code).to_equal(201)
-            # Expect to get a list of URLs back
-            urls = json.loads(response.content)
-            expect(len(urls)).to_equal(1)
-
-            # Should have single staging file
-            dataset = Dataset.objects.get(id=self.dataset.id)
-            expect(dataset.dataset_file_set.count()).to_equal(1)
-            datafile = dataset.dataset_file_set.all()[0]
-            expect(datafile.filename).to_equal(basename(f.name))
-            url = datafile.get_preferred_replica().url
-            expect(urlparse(url).scheme).to_equal('')
+            # Expect to get the email address of
+            # staging user back
+            # Can't test for async file staging
+            emails = json.loads(response.content)
+            expect(len(emails)).to_equal(1)
 
 class ExperimentTestCase(TestCase):
 
