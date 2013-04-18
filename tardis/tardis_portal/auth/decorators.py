@@ -403,8 +403,13 @@ def upload_auth(f):
             session_id = request.COOKIES[settings.SESSION_COOKIE_NAME]
         s = Session.objects.get(pk=session_id)
         if s.expire_date > datetime.now():
-            request.user = User.objects.get(
-                pk=s.get_decoded()['_auth_user_id'])
+            try:
+                request.user = User.objects.get(
+                    pk=s.get_decoded()['_auth_user_id'])
+            except:
+                if request.is_ajax():
+                    return HttpResponse("")
+                raise
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__
