@@ -1,0 +1,16 @@
+{% load url from future %}
+{% for group in groups %}
+<div class="row-fluid group">
+  <h2>
+    <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist' group.id %}" class="members-hidden member_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
+      <i class="icon-folder-close"></i>
+      {{ group.name }}
+    </a>
+  </h2>
+  <div class="access_list" style="display:none;"></div>
+</div>
+{% empty %}
+<p>
+There are no groups under your control.
+</p>
+{% endfor %}

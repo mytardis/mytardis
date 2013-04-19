@@ -74,7 +74,7 @@
       {% block experiment_owners %}
       {% if experiment.get_owners %}
       <dl>
-        <dt>Experiment Administrators</dt>
+        <dt>Administrators</dt>
         {% for owner in experiment.get_owners %}
           <dd>
           {% capture as owner_text %}
@@ -101,9 +101,10 @@
   {% block downloads %}
   {% if has_download_permissions %}
   <dl class="download_entire_experiment">
+    <dt>Download All</dt>
     <dd>
     {% for p in protocol %}
-      <a class="btn" href="{{p.1}}"
+      <a class="btn btn-primary btn-mini" href="{{p.1}}"
          title="Download Entire Experiment as {{p.0|upper}}">
         <i class="icon-download-alt"></i>
         {{p.0|upper}}

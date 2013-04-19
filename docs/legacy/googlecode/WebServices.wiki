@@ -1,0 +1,9 @@
+#summary Web Services allow people to write software that interacts with a server. Web Services for TARDIS means that others can develop apps that send and receive information from TARDIS.
+
+= Details =
+
+Due to REST simply being an architectural style, RESTful web services are easily done within Django due to its flexibility with URLs.
+
+As for SOAP web services, unfortunately Django is lacking for SOAP support. It seems the common way to go now is to use python's soaplib and working it into the framework of Django. An example of such a method is here:
+
+[http://djangosnippets.org/snippets/979/]

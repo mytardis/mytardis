@@ -1,0 +1,63 @@
+#summary Description of the current issues with the monolithic architecture of MyTARDIS and proposed solutions
+
+= Introduction =
+
+myTARDIS’ views.py is 1220 lines. views.py was created by Django to correspond to each page loaded. That said, much of the code in myTARDIS’ views.py should be shifted to their own files/classes and divorced from the page functionality.
+
+Furthermore, some functions such as get_accessible_experiments have no page associated with them and hence have no place in views.py.
+
+== Class Views in Django ==
+
+Reference: http://stackoverflow.com/questions/742/class-views-in-django
+
+Since many pages in TARDIS exist purely to display a database object's metadata (eg. experiment) and their children (eg. dataset datafile), it makes sense to create 'class views' in TARDIS. That is, a class that interfaces with a particular model object and provides accessor methods for security, query and display.
+
+One benefit of this design is base object view classes can be inherited by new classes if a model needs to be processed and/or displayed in a different way, but using some of the same accessors.
+
+= Example View Classes =
+
+  * BaseView
+  * ExperimentView
+  * DatasetView
+  * DatafileView
+  * ParameterSetView
+
+Examples of some functions that can reside in their appropriate view classes are:
+
+  * add_access_experiment
+  * remove_access_experiment
+  * retrieve_access_list (to be changed to retrieve_experiment_access_list to reflect finer grained permissions)
+
+=== Object Accessors ===
+
+The following functions in views.py are used to retrieve owned/accessible objects (experiments/datasets/datafiles).
+
+  * get_accessible_experiments
+  * get_accessible_datafiles_for_user
+  * get_owned_experiments
+
+Either these functions can reside within class views for the applicable model, or perhaps be part of a custom model manager (ie. functions within the model definitions themselves see: http://www.djangoproject.com/documentation/models/custom_managers/)
+
+=== Security Decorators ===
+
+A decorator is a special annotation in Django that sits above a view function. Typical decorator use is restricting access to certain pages to certain users. There is the default decorator login_required, but developers can create custom decorators.
+
+See http://docs.djangoproject.com/en/dev/topics/auth/#django.contrib.auth.decorators.login_required for an example.
+
+MyTARDIS currently uses 4 decorators:
+
+  * experiment_ownership_required
+  * experiment_access_required
+  * dataset_access_required
+  * datafile_access_required
+
+and a set of functions used by these as such
+
+  * has_experiment_access
+  * has_dataset_access
+  * has_datafile_access
+  * in_group
+
+They currently live in views.py. Perhaps a *SecurityDecorators.py* file should be created to house these. I'm not sure if it's good practice to encapsulate custom decorators within a class.
+
+=== 

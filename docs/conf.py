@@ -45,7 +45,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'MyTardis'
-copyright = u'2010, Steve Androulakis'
+copyright = u'2013, MyTardis Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -93,6 +93,12 @@ exclude_trees = ['.build']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+
+# API doc generation
+# ------------------
+
+execfile("generate-api-docs.py")
 
 
 # Options for HTML output

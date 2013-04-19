@@ -1,0 +1,23 @@
+#summary Support for Embargo Periods within TARDIS
+
+= Introduction =
+
+*NOTE:* This functionality is still in the proposal stage, so while partly written as if it has been decided and implemented, it is still being discussed (saves time reformatting later on).
+
+A number of institutions have a policy of making data from government funded research publicly available, either after a pre-defined period of time or after a trigger event occurs, typically a publication based on the research.
+
+Institutional policy will also vary as to the actual process for making the data public once the embargo finishes, i.e. it may be automatically made public, or may require some workflow process with approvals to be followed.
+
+Several factors affect the design and implementation of support for embargo periods, including:
+
+  * Whether the embargo period is time based or triggered (e.g. by publication)
+  * Whether an approval process is required as part of making data public
+  * Whether to use any existing workflow infrastructure within the facility
+
+To allow for a wide variation on data release processes, support for embargo periods is not part of the core TARDIS functionality, but externalized in to a separate process.
+
+The MeCAT project is planning to implement the following embargo period processes:
+
+  * Automatic publication (without approval) after a fixed period
+  * Publication, with approval, after a fixed period
+  * Publication based on the Macrocrystallography publication process

@@ -23,3 +23,5 @@ docs/Makefile
 .pydevproject
 /static/
 var/
+versions.cfg
+docs/pydoc

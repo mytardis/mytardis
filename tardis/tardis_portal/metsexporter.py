@@ -22,7 +22,8 @@ prefix = 'tardis'
 
 class MetsExporter():
 
-    def export(self, experimentId, replace_protocols={}, filename=None, export_images=True):
+    def export(self, experimentId, replace_protocols={}, filename=None,
+               export_images=True, force_http_urls=False):
         self.export_images = export_images
         # initialise the metadata counter
         metadataCounter = 1
@@ -117,6 +118,14 @@ class MetsExporter():
                 if not replica:
                     continue
                 # add entry to fileSec
+                parameterSets = DatafileParameterSet.objects.filter(
+                    dataset_file=datafile)
+
+		if not parameterSets:
+                    ADMID_val = None
+                else:
+                    ADMID_val = "A-{0}".format(metadataCounter)
+
                 _file = fileType(
                                  ID="F-{0}".format(fileCounter),
                                  MIMETYPE=datafile.mimetype,
@@ -124,22 +133,30 @@ class MetsExporter():
                                  CHECKSUM=datafile.sha512sum,
                                  CHECKSUMTYPE="SHA-512",
                                  OWNERID=datafile.filename,
-                                 ADMID="A-{0}".format(metadataCounter))
+                                 ADMID=ADMID_val)
+
 
                 protocol = replica.protocol
+
                 if protocol in replace_protocols:
                     url = datafile.url.replace(protocol,
                                                replace_protocols[protocol])
                 else:
+
                     url = replica.url
+
+                if force_http_urls:
+
+                    import urlparse
+                    url = urlparse.urljoin(force_http_urls,
+                                           replica.get_download_url())
+
                 _file.add_FLocat(FLocat(LOCTYPE="URL", href=url,
                     type_="simple"))
                 _fileGrp.add_file(_file)
 
                 # add entry to structMap
                 datasetDiv.add_fptr(fptr(FILEID="F-{0}".format(fileCounter)))
-                parameterSets = DatafileParameterSet.objects.filter(
-                    dataset_file=datafile)
 
                 datafileMdWrap = mdWrap(MDTYPE="OTHER",
                     OTHERMDTYPE="TARDISDATAFILE")
@@ -171,6 +188,7 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
+
 	# Use experiment directory, or temporary directory if unavailable
         dirname = experiment.get_or_create_directory()
         if dirname is None:
@@ -183,6 +201,7 @@ class MetsExporter():
             filename = 'mets_expid_%i.xml' % experiment.id
 
         filepath = join(dirname, filename)
+
         outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
         outfile.close()
@@ -220,7 +239,7 @@ class MetsExporter():
                     file_path = abspath(join(experiment.get_or_create_directory(), parameter.string_value))
                     try:
                         store_metadata_value(metadataDict, parameter.name.name,
-                                     b64encode(open(file_path).read()))
+                                  b64encode(open(file_path).read()))
                     except:
                         logger.exception('b64encoding failed: %s' % file_path)
                 else:

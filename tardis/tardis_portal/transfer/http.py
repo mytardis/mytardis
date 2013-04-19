@@ -142,16 +142,11 @@ class SimpleHttpTransfer(TransferProvider):
 
     def put_file(self, source_replica, target_replica):
         self._check_url(target_replica.url)
-        # (You can't always trust the source_replica.size to match the actual 
-        # file length.  If it is less than the actual length, the transfer 
-        # is liable to lock up and eventually fail with a timeout.  So 
-        # transfer the number of bytes reported by the source's provider.)
-        length = source_replica.location.provider.get_length(source_replica)
         try:
             f = source_replica.get_file()
             request = self.PutRequest(target_replica.url)
             request.add_header('Content-Type', source_replica.datafile.mimetype)
-            request.add_header('Content-Length', str(length))
+            request.add_header('Content-Length', source_replica.datafile.size)
             response = self.opener.open(request, data=f)
         except HTTPError as e:
             raise TransferError(e.msg)

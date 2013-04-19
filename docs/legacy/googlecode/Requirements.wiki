@@ -1,0 +1,20 @@
+#summary Installation Requirements
+
+=Requirements=
+
+==Software==
+
+  * Python 2.5
+  * A django-supported database: (tested with Postgresql + psycopg2 adapter, mysql)
+
+==Python modules==
+
+  * Django 1.1.0
+  * Django-extensions 0.4.1
+  * Django-registration 0.8
+  * lxml (libxml2, libxslt c libraries also)
+  * feedparser
+
+==For Apache==
+ 
+  * mod_wsgi

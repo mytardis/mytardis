@@ -1,0 +1,83 @@
+#summary The Index Structure of the MyTardis Database
+
+Once you have successfully set up the Postgres database (see [PostgresDBInstructions]), you can look at what's being indexed by running "psql tardis_db" then "\di".
+
+You'll get the following output:
+
+{{{
+                                                      List of relations
+ Schema |                              Name                               | Type  | Owner  |                Table                 
+--------+-----------------------------------------------------------------+-------+--------+--------------------------------------
+ public | auth_group_name_key                                             | index | tardis | auth_group
+ public | auth_group_permissions_group_id                                 | index | tardis | auth_group_permissions
+ public | auth_group_permissions_group_id_key                             | index | tardis | auth_group_permissions
+ public | auth_group_permissions_permission_id                            | index | tardis | auth_group_permissions
+ public | auth_group_permissions_pkey                                     | index | tardis | auth_group_permissions
+ public | auth_group_pkey                                                 | index | tardis | auth_group
+ public | auth_message_pkey                                               | index | tardis | auth_message
+ public | auth_message_user_id                                            | index | tardis | auth_message
+ public | auth_permission_content_type_id                                 | index | tardis | auth_permission
+ public | auth_permission_content_type_id_key                             | index | tardis | auth_permission
+ public | auth_permission_pkey                                            | index | tardis | auth_permission
+ public | auth_user_groups_group_id                                       | index | tardis | auth_user_groups
+ public | auth_user_groups_pkey                                           | index | tardis | auth_user_groups
+ public | auth_user_groups_user_id                                        | index | tardis | auth_user_groups
+ public | auth_user_groups_user_id_key                                    | index | tardis | auth_user_groups
+ public | auth_user_pkey                                                  | index | tardis | auth_user
+ public | auth_user_user_permissions_permission_id                        | index | tardis | auth_user_user_permissions
+ public | auth_user_user_permissions_pkey                                 | index | tardis | auth_user_user_permissions
+ public | auth_user_user_permissions_user_id                              | index | tardis | auth_user_user_permissions
+ public | auth_user_user_permissions_user_id_key                          | index | tardis | auth_user_user_permissions
+ public | auth_user_username_key                                          | index | tardis | auth_user
+ public | django_admin_log_content_type_id                                | index | tardis | django_admin_log
+ public | django_admin_log_pkey                                           | index | tardis | django_admin_log
+ public | django_admin_log_user_id                                        | index | tardis | django_admin_log
+ public | django_content_type_app_label_key                               | index | tardis | django_content_type
+ public | django_content_type_pkey                                        | index | tardis | django_content_type
+ public | django_session_expire_date                                      | index | tardis | django_session
+ public | django_session_pkey                                             | index | tardis | django_session
+ public | django_site_pkey                                                | index | tardis | django_site
+ public | registration_registrationprofile_pkey                           | index | tardis | registration_registrationprofile
+ public | registration_registrationprofile_user_id_key                    | index | tardis | registration_registrationprofile
+ public | south_migrationhistory_pkey                                     | index | tardis | south_migrationhistory
+ public | tardis_portal_author_experim_experiment_id_ff9b74b37c94f30_uniq | index | tardis | tardis_portal_author_experiment
+ public | tardis_portal_author_experiment_experiment_id                   | index | tardis | tardis_portal_author_experiment
+ public | tardis_portal_author_experiment_pkey                            | index | tardis | tardis_portal_author_experiment
+ public | tardis_portal_datafileparameter_name_id                         | index | tardis | tardis_portal_datafileparameter
+ public | tardis_portal_datafileparameter_parameterset_id                 | index | tardis | tardis_portal_datafileparameter
+ public | tardis_portal_datafileparameter_pkey                            | index | tardis | tardis_portal_datafileparameter
+ public | tardis_portal_datafileparameterset_dataset_file_id              | index | tardis | tardis_portal_datafileparameterset
+ public | tardis_portal_datafileparameterset_pkey                         | index | tardis | tardis_portal_datafileparameterset
+ public | tardis_portal_datafileparameterset_schema_id                    | index | tardis | tardis_portal_datafileparameterset
+ public | tardis_portal_dataset_experiment_id                             | index | tardis | tardis_portal_dataset
+ public | tardis_portal_dataset_file_dataset_id                           | index | tardis | tardis_portal_dataset_file
+ public | tardis_portal_dataset_file_pkey                                 | index | tardis | tardis_portal_dataset_file
+ public | tardis_portal_dataset_pkey                                      | index | tardis | tardis_portal_dataset
+ public | tardis_portal_datasetparameter_name_id                          | index | tardis | tardis_portal_datasetparameter
+ public | tardis_portal_datasetparameter_parameterset_id                  | index | tardis | tardis_portal_datasetparameter
+ public | tardis_portal_datasetparameter_pkey                             | index | tardis | tardis_portal_datasetparameter
+ public | tardis_portal_datasetparameterset_dataset_id                    | index | tardis | tardis_portal_datasetparameterset
+ public | tardis_portal_datasetparameterset_pkey                          | index | tardis | tardis_portal_datasetparameterset
+ public | tardis_portal_datasetparameterset_schema_id                     | index | tardis | tardis_portal_datasetparameterset
+ public | tardis_portal_experiment_created_by_id                          | index | tardis | tardis_portal_experiment
+ public | tardis_portal_experiment_pkey                                   | index | tardis | tardis_portal_experiment
+ public | tardis_portal_experimentacl_experiment_id                       | index | tardis | tardis_portal_experimentacl
+ public | tardis_portal_experimentacl_pkey                                | index | tardis | tardis_portal_experimentacl
+ public | tardis_portal_experimentparameter_name_id                       | index | tardis | tardis_portal_experimentparameter
+ public | tardis_portal_experimentparameterset_experiment_id              | index | tardis | tardis_portal_experimentparameterset
+ public | tardis_portal_experimentparameterset_pkey                       | index | tardis | tardis_portal_experimentparameterset
+ public | tardis_portal_experimentparameterset_schema_id                  | index | tardis | tardis_portal_experimentparameterset
+ public | tardis_portal_groupadmin_group_id                               | index | tardis | tardis_portal_groupadmin
+ public | tardis_portal_groupadmin_pkey                                   | index | tardis | tardis_portal_groupadmin
+ public | tardis_portal_groupadmin_user_id                                | index | tardis | tardis_portal_groupadmin
+ public | tardis_portal_parametername_pkey                                | index | tardis | tardis_portal_parametername
+ public | tardis_portal_parametername_schema_id                           | index | tardis | tardis_portal_parametername
+ public | tardis_portal_parametername_schema_id_1ea77f8382ff9947_uniq     | index | tardis | tardis_portal_parametername
+ public | tardis_portal_schema_namespace_key                              | index | tardis | tardis_portal_schema
+ public | tardis_portal_schema_pkey                                       | index | tardis | tardis_portal_schema
+ public | tardis_portal_userauthentication_pkey                           | index | tardis | tardis_portal_userauthentication
+ public | tardis_portal_userauthentication_userProfile_id                 | index | tardis | tardis_portal_userauthentication
+ public | tardis_portal_userprofile_pkey                                  | index | tardis | tardis_portal_userprofile
+ public | tardis_portal_userprofile_user_id_key                           | index | tardis | tardis_portal_userprofile
+(73 rows)
+}}}

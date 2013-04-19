@@ -7,51 +7,106 @@
 {% include "tardis_portal/javascript_libraries.html" %}
 
 <script type="text/javascript">
-$("form.add-user-form").live('submit', function(evt) {
-    evt.preventDefault();
-    var form = $(this);
-    var authMethod = form.find("[name=authMethod]").val();
-    var usersuggest = form.find("[name=adduser]").val();
-    var group_id = form.find("[name=group_id]").val();
-    var users_div = form.parents('.access_list').children('.users');
-    var isAdmin = form.find("[name=admin]").is(':checked');
-    var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
-    $.ajax({
-      type: "GET",
-      url: action,
-      success: function(data) {
-        if (_(data).startsWith("<div class=", true) == true) {
-         users_div.hide().append(data).fadeIn();
-        } else {
-         alert(data);
-        }
-      },
-      error: function(data) {
-         alert('Error adding user');
-      }
-    });
-});
-$(".remove_user").live('click', function(evt) {
-    evt.preventDefault();
 
-    var access_list = $(this).parents('.access_list_user');
-
-    $.ajax({
-      'url': $(this).attr('href'),
-      'success': function (data) {
-        if (data === "OK") {
-          access_list.fadeOut(500);
-        } else {
-          alert(data);
-        }
-      }
-    });
-});
 $(document).ready(function() {
 
-    var loadingHTML = '<img src="{% static 'images/ajax-loader.gif' %}"/>;
+    $('.create_group_link').live('click', function(evt) {
+        var experiment_id = $(this).attr('data-experiment_id');
+        var modal = $('#modal-create-group');
 
-    $(".member_list_user_toggle").click(function(evt){
+        modal.find('.modal-body').html('');
+        modal.find('.loading-placeholder').show();
+        modal.modal('show');
+
+        modal.find('.modal-body')
+             .load("/experiment/control_panel/create/group/", function() {
+                modal.find('.loading-placeholder').hide();
+
+                var users = null;
+
+                $("#group.form_submit").unbind('click');
+                $("#group.form_submit").click(function(event) {
+                  event.preventDefault();
+
+                  var group = $(this).parents('.group_create').find("#id_addgroup").val();
+                  var admin = $(this).parents('.group_create').find("#id_adduser").val();
+                  var authMethod = $(this).parents('.group_create').find("#id_authMethod").val();
+
+                  get_vars = '?group=' + group + '&admin=' + admin + '&authMethod=' + authMethod
+                  action = '/experiment/control_panel/create/group/' + get_vars;
+
+                  $.ajax({
+                    'async': false,
+                    'global': true,
+                    type: "GET",
+                    url: action,
+                    success: function(data) {
+                        modal.modal('hide');
+                    },
+                    error: function(data) { alert('Error adding group!'); }
+                  });
+                  return false;
+                });
+
+            });
+
+    });
+
+
+    $('#modal-create-group').bind('hidden', function () {
+        var $target_group_list = $("#grouplist");
+        $target_group_list.html(loadingHTML + "</br>");
+        var href = "/ajax/group_list_by_user/"
+        $target_group_list.load(href);
+    });
+
+
+    $("form.add-user-form").live('submit', function(evt) {
+        evt.preventDefault();
+        var form = $(this);
+        var authMethod = form.find("[name=authMethod]").val();
+        var usersuggest = form.find("[name=adduser]").val();
+        var group_id = form.find("[name=group_id]").val();
+        var users_div = form.parents('.access_list').children('.users');
+        var isAdmin = form.find("[name=admin]").is(':checked');
+        var action = '/group/' + group_id + '/add/' + usersuggest + '/?isAdmin=' + isAdmin + '&authMethod=' + authMethod;
+        $.ajax({
+          type: "GET",
+          url: action,
+          success: function(data) {
+             users_div.hide().append(data).fadeIn();
+          },
+          error: function(data) {
+             alert('Error adding user');
+          }
+        });
+    });
+    $(".remove_user").live('click', function(evt) {
+        evt.preventDefault();
+
+        var access_list = $(this).parents('.access_list_user');
+
+        $.ajax({
+          'url': $(this).attr('href'),
+          'success': function (data) {
+            if (data === "OK") {
+              access_list.fadeOut(500);
+            } else {
+              alert(data);
+            }
+          }
+        });
+    });
+    // 
+    // // grouplist
+      var $target_group_list = $("#grouplist");
+      $target_group_list.html(loadingHTML + "</br>");
+      var href = "/ajax/group_list_by_user/"
+      $target_group_list.load(href);    
+
+    var loadingHTML = "<img src=\"{% static 'images/ajax-loader.gif' %}\"/>";
+
+    $(".member_list_user_toggle").live('click', function(evt){
         evt.preventDefault()
 
         var icon = $(this).find('i');
@@ -85,29 +140,146 @@ $(document).ready(function() {
           });
         }).show();
     });
+    
+    // add user
+    $('.create_user_link').live('click', function(evt) {
+        var experiment_id = $(this).attr('data-experiment_id');
+        var modal = $('#modal-create-user');
+
+        modal.find('.modal-body').html('');
+        modal.find('.loading-placeholder').show();
+        modal.modal('show');
+
+        modal.find('.modal-body')
+             .load("/experiment/control_panel/create/user/", function() {
+                modal.find('.loading-placeholder').hide();
+
+                var users = null;
+
+                $("#user.form_submit").unbind('click');
+                $("#user.form_submit").click(function(event) {
+                  event.preventDefault();
+
+                  var username = $(this).parents('.user_create').find("#id_username").val();
+                  var email = $(this).parents('.user_create').find("#id_email").val();
+                  var password1 = $(this).parents('.user_create').find("#id_password1").val();
+                  var password2 = $(this).parents('.user_create').find("#id_password2").val(); 
+                  var authMethod = $(this).parents('.user_create').find("#id_authMethod").val();                                    
+
+                  post_vars = 'user=' + username + '&email=' + email + '&authMethod=' + authMethod + '&password=' + password1
+                  action = '/experiment/control_panel/create/user/'
+                  
+                  // returns 0 on fail
+                  var passwordMatch = password1.localeCompare(password2);
+
+                  if (!passwordMatch)
+                  {
+
+                      $.ajax({
+                        'async': false,
+                        'global': true,
+                        type: "POST",
+                        url: action,
+                        data: post_vars,
+                        success: function(data) {
+                            $("#success-message").html(data);
+                            $("#success-message").parents(".alert-success").attr('style', 'display: block;');
+                            modal.modal('hide');
+                        },
+                        error: function(data) { alert(data.responseText || 'An error has occurred'); }
+                      });
+                      return false;
+
+                }
+                else
+                {
+                    alert('Passwords do not match!');
+                }
+                
+                }); // end form submit event
+
+            });
+
+    });
+
+
+    $('#modal-create-group').bind('hidden', function () {
+        var $target_group_list = $("#grouplist");
+        $target_group_list.html(loadingHTML + "</br>");
+        var href = "/ajax/group_list_by_user/"
+        $target_group_list.load(href);
+    });    
+    
+    
 });
 </script>
 {% endblock %}
 
 {% block content %}
 
+<!-- create group !-->
+<div class="modal hide fade" id="modal-create-group">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Create Group</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+</div>
+
+<!-- create user !-->
+<div class="modal hide fade" id="modal-create-user">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h1 class="title">Create User</h1>
+  </div>
+
+  <div class="loading-placeholder" style="display: none">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+  </div>
+
+  <div class="modal-body"></div>
+
+</div>
+
+<div class="alert alert-success" style="display:none">
+  <a class="close" data-dismiss="alert">×</a>
+  <strong>Success!</strong>
+  <div id="success-message"></div>
+</div>
+
 <div class="page-header">
   <h1>Manage Group Members</h1>
 </div>
-{% for group in groups %}
-<div class="row-fluid group">
-  <h2>
-    <a href="{% url 'tardis.tardis_portal.views.retrieve_group_userlist' group.id %}" class="members-hidden member_list_user_toggle fg-button small fg-button-icon-solo ui-corner-all">
-      <i class="icon-folder-close"></i>
-      {{ group.name }}
-    </a>
-  </h2>
-  <div class="access_list" style="display:none;"></div>
+
+{% if perms.auth.add_group %}
+<div class="pull-right">
+<a style="margin-left: 10px;" class="create_group_link btn btn-warning" title="Create Group">
+  <i class="icon-plus"></i>
+  Create Group
+</a>
 </div>
-{% empty %}
-<p>
-There are no groups under your control.
-</p>
-{% endfor %}
+{% endif %}
+{% if perms.auth.add_user %}
+<div class="pull-right">
+<a class="create_user_link btn btn-warning" title="Create User">
+  <i class="icon-plus"></i>
+  Create User
+</a>
+</div>
+{% endif %}
+
+{% if perms.auth.change_group %}
+<div id="grouplist"/>
+
+<br/>
+{% else %}
+    <em>You aren't able to view or change groups.</em>
+{% endif %}
 
 {% endblock %}

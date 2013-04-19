@@ -35,14 +35,28 @@
     <script type="text/javascript">
     // Set active nav button
     $(function() {
+        var data = false;
+	if(window.location.pathname.match("^\/experiment")
+          || window.location.pathname.match("^\/dataset"))
+	{
+	    data = true;
+	}
+
         $('.nav a').each(function(i,v) {
-            if ($(v).attr('href') == window.location.pathname) {
+            if ($(v).attr('href') == window.location.pathname
+	    || ($(v).attr('href').match("^\/experiment/view/") &&
+                data)) {
                   $(v).parent().addClass('active');
             }
         });
     });
     </script>
-
+    
+    <script type="text/javascript">
+    // Define canvas HTML   
+    canvas = '<canvas style="width: 100px"></canvas>';
+    </script>
+    
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -75,7 +89,7 @@
             <span class="icon-bar"></span>
           </a>
           {% block site_brand %}
-          <span class="brand visible-desktop"><a href="{% url 'tardis.tardis_portal.views.index' %}">{{ site_title|default:'MyTardis' }}</a></span>
+          <span class="brand"><a href="{% url 'tardis.tardis_portal.views.index' %}">{{ site_title|default:'MyTardis' }}</a></span>
           {% endblock %}
           <div class="nav-collapse">
             <ul class="nav">
@@ -116,17 +130,17 @@
                     </a>
                   </li>
                   {% endif %}
-                  {% if perms.tardis_portal.change_experimentacl or perms.tardis_portal.change_group %}
+                  {% if perms.tardis_portal.change_experimentacl or perms.auth.change_group %}
                   <li class="divider"></li>
-                  {% if perms.tardis_portal.change_experimentacl %}
+                  <!-- {% if perms.tardis_portal.change_experimentacl %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
                       <i class="icon-user"></i>
                       Experiment Access
                     </a>
                   </li>
-                  {% endif %}
-                  {% if perms.tardis_portal.change_group %}
+                  {% endif %} -->
+                  {% if perms.auth.change_group or perms.auth.change_user %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_groups' %}">
                       <i class="icon-user" style="text-shadow: 2px -2px #666666"></i>

@@ -1,0 +1,17 @@
+#summary Data in TARDIS is currently read-only to all users, this describes how data editing and annotation could take place
+
+= Details =
+
+There are two types of metadata in TARDIS: Basic and key/value parameters.
+
+Basic metadata includes fields such as an experiment's title/abstract/authors, and a dataset's description. key/value parameters are able to be defined via xml schema as described in [RichParameters].
+
+An experiment/dataset's basic information should be editable by owners via web forms.
+
+For xml-based key/value parameters, it's unclear whether new parameters should be able to be added, or just edited. Adding new parameters to a parameter set would imply that the system was aware of an entire xml schema's structure, which is not currently the case.
+
+Another consideration is that the initial ingested xml file is saved by the system. This is so there's a record of the initial ingest and is passed on to any other (MyTARDIS), whether for local caching purposes or publishing data. Due to the need to use xml metadata past the initial ingest, an update of metadata should also result in an updated XML file. This would be further complicated by [TwoIngestSchema].
+
+=== Partial XML File Ingest (Experiment Updates) ===
+
+Another idea that could be useful is partial XML ingest. For instance, if some data associated with an already existing experiment has finished processing, then sending that dataset and its files (or just the files) and the id of which experiment it should be added. Also has implications for XML file record saving (see paragraph above).
