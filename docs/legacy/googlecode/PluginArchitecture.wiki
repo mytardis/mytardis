@@ -1,0 +1,17 @@
+#summary Proposed plugin architecture
+
+= Introduction =
+
+To allow modification to the Tardis functionality without needing to fork the project a modular design will be adopted. This document describes proposed method. Some examples of proposed modularity are including extra information in sections of views and functionality hidden in extra tabs.
+
+
+= Details =
+
+Django application required configuration to be contained within a settings.py file that describes how the database is connected and associated plugin configuration.
+
+Each plugin will be responsible for conforming to Django best practice for creating reusable apps.
+
+= References =
+
+ * [http://djangosnippets.org/snippets/573/ Automagically import settings from installed applications]
+ * [http://code.google.com/p/django-app-plugins/ django-app-plugins]

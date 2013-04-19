@@ -1,0 +1,67 @@
+#summary Parameter handling and storage in TARDIS can be expanded to hold more types, and multiple parameter sets per object
+
+=== Current parameter handling and storage process ===
+Different metadata schema (xml) are handled in TARDIS by pre-defining them in the database. An administrator can define a custom schema in the database by namespace (eg. schema name = DublinCore, namespace = http://purl.org/dc/elements/1.1/) and each parameter (eg. parameter name = creator, type = text). From then on (in this example), when dublincore metadata is ingested, the schema type is able to be handled and the dc:creator element is expected and added to the database along with all other defined metadata. Currently rudimentary nesting is handled by the use of '/' in the database parameter definitions. For instance, in my made up xml document there is:
+
+<person xmlns="http://www.steveandroulakis.com/person/1.0">
+  <name>Joe Citizen</name>
+  <address>
+    <streetname>200 Collins St</streetname>
+    <suburb>Melbourne</suburb>
+    <state>VIC</state>
+    <postcode>3000</postcode>
+  </address>
+</person>
+
+The postcode parameter would be defined in the database as 'person/address/postcode' and from then on be expected by the system.
+
+=== Proposed parameter handling and storage process ===
+
+  * Instead of the is_numeric field in the ParameterName model which implies only the handling of strings/numbers, this could be expanded to data_type where the options are:
+
+	DATA_TYPES = (
+	    ('numeric', 'Numeric'),
+	    ('text', 'Text'),
+	    ('bigtext', 'BigText'),
+	    ('link', 'Link'),
+		('email', 'Email'),	
+	    ('image', 'Image'),	
+	    ('file', 'File'),	
+	)	
+	
+	data_type = models.CharField(max_length=60, choices=DATA_TYPES)
+
+  * A 'required' field could be introduced
+
+  * Currently, parameter display is not schema aware (it will display all parameters in a flat list regardless of derived schema. There's been a need identified for multiple schema support, and repeating schema support. Therefore I propose a 'parameterset' table that defines a 'set' of parameters relating to a schema. Then a parameter would store what ParameterName (the definition) it is, and also what set it is from. A simplified example of this is as follows:
+
+{{{ 
+Schema:
+Name: FruitBasket
+Name: Fruit
+
+  * ParameterName:
+  * Width (schema FruitBasket)
+  * Length (schema FruitBasket)
+  * Depth (schema FruitBasket)
+  * Name (schema Fruit)
+  * Colour (schema Fruit)
+
+ParameterSet
+  * id 1
+  * id 2
+  * id 3
+
+ObjectParameter:
+  * Object = 1, ParameterName = Width, Value = 30cm, ParameterSet = 1
+  * Object = 1, ParameterName = Length, Value = 45cm, ParameterSet = 1
+  * Object = 1, ParameterName = Depth, Value = 15cm, ParameterSet = 1
+  * Object = 1, ParameterName = Name, Value = Banana, ParameterSet = 2
+  * Object = 1, ParameterName = Colour, Value = Yellow, ParameterSet = 2
+  * Object = 1, ParameterName = Name, Value = Apple, ParameterSet = 3
+  * Object = 1, ParameterName = Colour, Value = Green, ParameterSet = 3
+}}}
+
+This would mean that object 1 could have 3 separate parameter sets conforming to 2 different schemas. Furthermore, while 2 of the parameter sets share the same schema and parameter names, the banana being yellow and the apple being green are paired due to the parameterset definition.
+
+This change has direct benefits to IR beamline data where a file will have general metadata and a series of blocks that have different metadata values but the same parameters.

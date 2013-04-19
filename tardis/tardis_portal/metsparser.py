@@ -96,6 +96,7 @@ from tardis.tardis_portal.staging import \
 
 from django.conf import settings
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,6 +112,7 @@ class MetsDataHolder():
 
     metadataMap = None
     metsStructMap = None
+    datafilesNoMd = {}
 
 
 class MetsExperimentStructCreator(ContentHandler):
@@ -136,6 +138,7 @@ class MetsExperimentStructCreator(ContentHandler):
         # is done.
         self.metadataMap = {}
         self.metsStructMap = {}
+        self.datafilesNoMd = {}
 
     def startElementNS(self, name, qname, attrs):
 
@@ -156,6 +159,9 @@ class MetsExperimentStructCreator(ContentHandler):
             fileChecksumType = _getAttrValueByQName(attrs, 'CHECKSUMTYPE')
             fileChecksum = _getAttrValueByQName(attrs, 'CHECKSUM')
 
+            if fileMetadataIds == None:
+                fileMetadataIds = 'NOMD-' + str(fileId)
+
             # instantiate the datafile
             self.datafile = metsstruct.Datafile(
                 fileId, fileName, fileSize, fileMetadataIds is not None and
@@ -164,12 +170,15 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # add an entry for this datafile in the metadataMap so we can
             # easily look it up later on when we do our second parse
-            if fileMetadataIds is not None:
-                for fileMetadataId in fileMetadataIds.split():
-                    if fileMetadataId in self.metadataMap:
-                        self.metadataMap[fileMetadataId].append(self.datafile)
-                    else:
-                        self.metadataMap[fileMetadataId] = [self.datafile]
+            logger.info('=== found datafile xml: %s' % fileName)
+            logger.info('=== found datafile ids: %s' % fileMetadataIds)
+
+            for fileMetadataId in fileMetadataIds.split():
+                if fileMetadataId in self.metadataMap:
+                    self.metadataMap[fileMetadataId].append(self.datafile)
+                else:
+                    self.metadataMap[fileMetadataId] = [self.datafile]
+
 
         elif elName == 'FLocat' and self.inFileGrp and \
                 _getAttrValueByQName(attrs, 'LOCTYPE') == 'URL':
@@ -270,6 +279,7 @@ class MetsExperimentStructCreator(ContentHandler):
             # technically, we've finished doing our first pass here.
             # at this point we can assume that we already have the experiment
             # structure available that we can use on our second pass
+
             self.holder.metsStructMap = self.metsStructMap
             self.holder.metadataMap = self.metadataMap
 
@@ -553,11 +563,71 @@ class MetsMetadataInfoHandler(ContentHandler):
             self.inInstitution = False
 
         elif elName == 'amdSec':
+
             # we're done processing the metadata entries
             self.inAmdSec = False
 
             # let's reset the cached experiment model object
             self.modelExperiment = None
+
+            logger.info(self.holder.metadataMap)
+            for mdId in self.holder.metadataMap:
+                if mdId.startswith('NOMD-'):
+                    df = self.holder.metadataMap[mdId][0]
+
+                    if df.dataset.id in self.datasetLookupDict:
+                        # look up the dataset this file belongs to
+                        thisFilesDataset = self.datasetLookupDict[
+                            df.dataset.id]
+
+                        size = df.size
+
+                        if not df.size:
+                            size = 0
+
+                        def checksum(obj, type_):
+                            # Check if the checksum is of type
+                            if obj.checksumType != type_:
+                                return ''
+                            checksum = obj.checksum.lower()
+                            # Ensure the checksum is hexdecimal
+                            if not re.match('[0-9a-f]+$', checksum):
+                                return ''
+                            # Get algorithm
+                            try:
+                                name = type_.replace('-','').lower()
+                                alg = getattr(hashlib, name)
+                            except:
+                                return ''
+                            # Check checksum is the correct length
+                            hex_length = alg('').digest_size * 2
+                            if hex_length != len(checksum):
+                                return ''
+                            # Should be valid checksum of given type
+                            return checksum
+
+                        sync_url, proto = get_sync_url_and_protocol(
+                                                    get_sync_root(),
+                                                    df.url)
+
+                        self.modelDatafile = models.Dataset_File(
+                            dataset=thisFilesDataset,
+                            filename=df.name,
+                            size=size,
+                            md5sum=checksum(df, 'MD5'),
+                            sha512sum=checksum(df,
+                                           'SHA-512'))
+
+                        logger.info('=== saving datafile: %s' % df.name)
+                        self.modelDatafile.save() 
+
+                        replica = models.Replica(
+                            datafile=self.modelDatafile,
+                            url=sync_url,
+                            protocol=proto,
+                            location=self.syncLocation)
+                        replica.save()
+
 
         elif elName == 'techMD' and self.inAmdSec:
             self.inTechMd = False
@@ -658,6 +728,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                             # when we start adding "soft" metadata
                             # parameters to it, we already have an
                             # entry for it in the DB
+                            logger.info('=== found datafile: %s' % self.metsObject.name)
 
                             # look up the dataset this file belongs to
                             thisFilesDataset = self.datasetLookupDict[
@@ -666,6 +737,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                             # also check if the file already exists
                             datafile = thisFilesDataset.dataset_file_set.filter(
                                 filename=self.metsObject.name, size=self.metsObject.size)
+
 
                             if datafile.count() == 0:
                                 size = self.metsObject.size
@@ -706,6 +778,8 @@ class MetsMetadataInfoHandler(ContentHandler):
                                     md5sum=checksum(self.metsObject, 'MD5'),
                                     sha512sum=checksum(self.metsObject,
                                                        'SHA-512'))
+
+                                logger.info('=== saving datafile: %s' % self.metsObject.name)
                                 self.modelDatafile.save()
                                 replica = models.Replica(
                                     datafile=self.modelDatafile,
@@ -742,6 +816,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                 parameterName, parameterValues,
                                                 datafileParameterSet)
                                 createParamSetFlag['datafile'] = False
+
 
             except models.Schema.DoesNotExist:
                 logger.warning('unsupported schema being ingested ' +

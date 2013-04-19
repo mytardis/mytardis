@@ -1,0 +1,15 @@
+#summary A themes system based on overrides
+
+= Introduction =
+
+Different disciplines will have different data to display in different ways. There also may be pre-defined queries in search pages that deals with expected parameters. It's proposed that we use fairly common template architecture described below.
+
+= Details =
+
+Often in web apps with visual templates, there's a default one and a 'themes' directory that contains different themes. One configures which theme to use (either via database or settings file, either app-wide or group/person specific) and that directory's html/css/images/javascript is loaded.
+
+An inheritance structure ie. if a particular style sheet is being looked for in a specific theme's directory and isn't found, then a default is used could be useful.
+
+While there doesn't seem to be a django extension for the specific purpose, this guide may prove useful:
+
+http://elpenia.wordpress.com/2009/04/03/using-dynamic-themes-in-django/

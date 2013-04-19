@@ -1,0 +1,42 @@
+#summary software robustness achieved through logging and testing.
+
+= Software Robustness =
+
+== Logging ==
+
+Logging should be configured as a global step and probably setup within the [http://stackoverflow.com/questions/342434/python-logging-in-django settings.py] file. The actual [http://docs.python.org/release/2.6.2/library/logging.html#configuring-logging configuration] of the logging could happen within either the settings.py or from an external configuration file
+
+== Testing ==
+
+Stub
+
+== Packaging/Deployment ==
+
+=== eggs ===
+Pros
+ * Dependency Management
+ * Platform independent
+
+Cons
+ * Don't integrate with OS package management.
+
+=== tarball ===
+Pros
+ * Platform independent
+ * Simple
+
+Cons
+ * No dependency management 
+
+=== Buildout ===
+Pros
+ * Dependency Management
+ * Platform independent
+ * uses config files.
+ * installs python dependencies out of system python path
+
+Cons
+ * Another tool, another layer.
+
+== References ==
+ * [http://www.justanothercodemonkey.com/2009/08/deploying-django-with-buildout.html Django Buildout]

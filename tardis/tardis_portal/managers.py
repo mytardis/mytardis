@@ -232,6 +232,39 @@ class ExperimentManager(OracleSafeManager):
 
         return Group.objects.filter(pk__in=[ str(a.entityId) for a in acl ])
 
+
+    def group_acls_user_owned(self, request, experiment_id):
+        """
+        Returns a list of ACL rules associated with this experiment.
+
+        :param request: a HTTP Request instance
+        :type request: :py:class:`django.http.HttpRequest`
+        :param experiment_id: the ID of the experiment
+        :type experiment_id: string
+
+        """
+        from tardis.tardis_portal.models import ExperimentACL
+        return ExperimentACL.objects.filter(pluginId=django_group,
+                                   experiment__id=experiment_id,
+                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+
+
+    def group_acls_system_owned(self, request, experiment_id):
+       """
+       Returns a list of ACL rules associated with this experiment.
+    
+       :param request: a HTTP Request instance
+       :type request: :py:class:`django.http.HttpRequest`
+       :param experiment_id: the ID of the experiment
+       :type experiment_id: string
+    
+       """
+       from tardis.tardis_portal.models import ExperimentACL
+       return ExperimentACL.objects.filter(pluginId=django_group,
+                                  experiment__id=experiment_id,
+                                  aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+
+
     def system_owned_groups(self, request, experiment_id):
         """
         returns a list of sytem-owned groups which have ACL rules

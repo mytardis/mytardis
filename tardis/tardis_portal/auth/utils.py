@@ -47,7 +47,7 @@ def create_user(auth_method, user_id, email=''):
                                     password=password,
                                     email=email)
     user.save()
-    configure_user(user)
+    userProfile = configure_user(user)
     userAuth = UserAuthentication(userProfile=userProfile,
         username=user_id, authenticationMethod=auth_method)
     userAuth.save()
@@ -68,3 +68,4 @@ def configure_user(user):
             pass
     userProfile = UserProfile(user=user, isDjangoAccount=False)
     userProfile.save()
+    return userProfile

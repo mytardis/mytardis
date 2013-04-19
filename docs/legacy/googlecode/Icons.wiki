@@ -1,0 +1,28 @@
+#summary How to use jQuery UI icons for links
+
+= How To =
+
+== Basic ==
+
+  # Pick the class of the icon you want to use [http://jqueryui.com/themeroller/#icons]
+  # Setup your HTML as follows
+{{{
+<a title="some_title" href="some_url" class="fg-button small ui-state-default fg-button-icon-solo ui-corner-all">
+  <span class="ui-icon ui-icon-the-icon-you-chose-before"></span>
+</a>
+}}}
+
+== Toggling ==
+
+  # Pick the classes you wish to use
+  # Setup your HTML exactly the same as before, with the initial icon you wish to use
+  # in a click() handler (or similar) use
+{{{
+  $('icon_selector').toggleClass('first_icon_class scond_icon_class');
+}}}
+
+= Tips =
+  * Use a jQuery UI theme that you like (update javascript_libraries.html accordingly)
+  * Make sure you include a title attribute to describe the action that the link performs
+  * see default.css for classes
+  * see [http://www.filamentgroup.com/lab/styling_buttons_and_toolbars_with_the_jquery_ui_css_framework/] for original implementation

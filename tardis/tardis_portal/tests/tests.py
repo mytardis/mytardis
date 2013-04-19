@@ -374,8 +374,8 @@ class MetsExperimentStructCreatorTestCase(TestCase):
             'metsStructMap size should be 2')
 
     def testMetsMetadataMapContents(self):
-        self.assertTrue(len(self.dataHolder.metadataMap) == 7,
-            'metadataMap size should be 7')
+        self.assertTrue(len(self.dataHolder.metadataMap) == 10,
+            'metadataMap size should be 10')
         self.assertTrue(self.dataHolder.metadataMap['A-2'][0].id == 'J-2',
             'id for metadata A-2 should be J-2')
         self.assertTrue(len(self.dataHolder.metadataMap['A-2'][0].datafiles) == 8,
@@ -501,8 +501,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         from tardis.tardis_portal import models
         dataset = models.Dataset.objects.get(description='Bluebird')
         datafiles = dataset.dataset_file_set.all()
-        self.assertTrue(len(datafiles) == 5,
-            'there should be 5 datafiles for the given dataset')
+        self.assertTrue(len(datafiles) == 8,
+            'there should be 8 datafiles for the given dataset')
         datafile = datafiles.get(filename='ment0003.osc')
         self.assertTrue(datafile is not None,
             'datafile should not be none')

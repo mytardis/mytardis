@@ -1,0 +1,84 @@
+#summary User guide
+#labels Featured
+
+= Browsing & Downloading Data =
+
+  # Click 'Log In'. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2014.png
+  # Enter your username and password. *NOTE:* Usually one is able to use their institutional username and password combination. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2015.png
+  # Click 'Data' on the top right menu. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2016.png
+  # A list of experiments the user has access to is listed. Click the title of an experiment to view its information. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2017.png
+  # The 'Description' view shows basic information about the experiment such as Authors, Title and the total dataset size. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2018.png
+  # Click the 'Datasets' tab to view all datasets contained within an experiment. http://i.imgur.com/nwMkW.png 
+  # Click the 'Dataset Metadata' show/hide button to view all dataset metadata contained within the dataset. http://i.imgur.com/JLwon.png
+  # Click the rightmost button next to 'Data Files'  to show/hide all data files within a given dataset. http://i.imgur.com/mLgCf.png
+  # MyTardis can generate preview images for recognised file types Contact merc@monash.edu to get your kind of data supported. http://i.imgur.com/P8xrD.png
+  # Download all experiment data by clicking 'Download Entire Experiment', or click 'Show' to view individual file information. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2020.png
+  # Click the button next to a datafile to display its associated metadata.
+  # Click the filename to download individual files. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2021.png
+  # Click on the checkboxes next to files and then the 'Download Selected Files' button to download a combination of files. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2022.png
+
+= Granting Experiment Access =
+
+  # Click 'Log In'. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2014.png
+  # Enter your username and password. *NOTE:* Usually one is able to use their institutional username and password combination. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2015.png
+  # Click 'Data' on the top right menu. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2016.png
+  # Under the 'Controls' menu on the right, click Control Panel
+  # To control user access to individual experiments, click Show under an experiment. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2024.png
+  # A list of users with access appears. To remove a user, click x http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2025.png
+  # To add a user, start typing their name in the Add User box. Click submit when done. http://tardis.edu.au/site_media/images/mytardis_guide/Picture%2026.png
+*NOTE:* Those using their insitution's account (authcate, etc) need to login first before others can give them access to experiments.
+
+*NOTE:* Users granted access to an experiment can't grant other users access.
+
+
+= Register with ANDS =
+
+ANDS is the Australian National Data Service (www.ands.org.au; funded to June 2013) which publishes metadata (descriptions of datasets) to encourage reuse and sharing of data in Australia and internationally. Metadata which can be added in myTardis includes: 
+  * Name of the collection
+  * Description of the collection
+  * Related documents of the collection
+  * Originating source of the collection
+  * Licence of the collection
+  * Digitial Object Identifier "DOI" for the collection
+  * Domain specific profiles
+
+Metadata allows facilitates machine understanding of understanding for discovery, access and reuse powerful search tools can find and use your experiment data.
+
+*Registration workflow*
+ 
+ # Navigate to an experiment you wish to register with ANDS/RDA and then select the 'ANDS Register' tab. 
+http://i.imgur.com/EU0Eo.png
+ # Click on the 'Choose licence page to set it' hyperlink to select a licence. The 'Choose Licence' page will be displayed. http://i.imgur.com/sjw24.png
+ # Select the appropriate licence and jurisdiction. Note: Before you may register your data collection in RDA it is necessary to select a licence that will determine how the public may use your data. The current recommendation of the university is to choose a Creative Commons Licence. For more details on the Creative Commons Licence structure see: http://creativecommons.org.au/. If you have any concerns around licensing or public sharing of your data we recommend you seek legal advice. 
+ # Click on the 'Choose Licence' button. http://i.imgur.com/sjw24.png
+ # The Licence Chosen page will now be displayed. http://i.imgur.com/O1cjg.png
+ # Click on the 'Go back to your experiment' hyperlink.
+ # The ANDS Registration page is displayed showing the chosen licence. http://i.imgur.com/JGJTK.png
+ # Enter any custom descriptions as required.
+ # Select your relationship with the experiment. Note: You can opt out of being listed as a researcher for the experiment.
+ # Add any additional Researchers for this experiment. Note they have to be included in the Monash Research Master. 
+ # Select any projects which are related to the selected experiment.
+ # There is an option to create a Digital Object Identifier "DOI" which is a persistent unique identifier for the experiment.
+ # There is an option to select a domain specific profile. Select 'default' if unsure.
+ # Click on 'Register Experiment'
+ # The experiment will now be registered with ANDS
+Note: There is a review step that a new data collection goes through before being publicly searchable on RDA. This may take anything from less than an hour to a number of weeks. Once it has passed review the collection may be located by searching in RDA via the following link:
+
+http://services.ands.org.au/home/orca/rda/
+
+= Publishing an Experiment =
+  # Navigate to an experiment you wish to publish.
+  # Located in the 'Description' tab, select the 'Choose Licence' hyperlink in the bottom right corner. 
+  # The 'Choose Licence' Screen will be displayed.
+  # Select the appropriate licence and jurisdiction. 
+  # Click on the 'Choose Licence' button. 
+http://i.imgur.com/sjw24.png
+  # The Licence Chosen page will now be displayed.
+http://i.imgur.com/O1cjg.png
+  # Click on the 'Go back to your experiment' hyperlink.
+  # Click on 'Publish Experiment'. 
+  # The Publish Experiment - ANDS Registration page will be displayed. You can opt out of the ANDS registration by selecting the 'I do not wish to register my data first with Research Data Australia' checkbox. http://i.imgur.com/kHMvf.png
+  # To publish data without registering with ANDS, select the opt out checkbox. The page will be extended to include the licence and the legal agreement.  
+http://i.imgur.com/L8UkO.png
+  # Select the 'I agree to the above terms and wish to make my data publicly available' checkbox and then the Publish Experiment Button.
+  # The experiment will now be publicly available.

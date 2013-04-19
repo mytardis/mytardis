@@ -1,0 +1,11 @@
+#summary Currently experiments have no concept of relation to other experiments
+
+= Details =
+
+This is born from an idea that raw datasets should be read-only as a record of something that came off an instrument. Derived (processed) files, including results should form their own experiment and point back to the original.
+
+The process above would require two changes
+  * Categorisation of experiments, likely from a pre-defined list (ie. raw/processed/results)
+  * A pointer to the id of a linked experiment, and the relation (parent?/child?/derived from?)
+
+Perhaps child experiments could store a link to their parent, and a bi-directional link could be obtained via model query.

@@ -1,0 +1,20 @@
+#summary Event driven design that will help TARDIS manage time consuming tasks like ingestion
+
+= Introduction =
+
+For website to provide a responsive and reliable experience it need to return a response to the user before a time consuming task completes. To allow the tasks to be run in the background we will adopt an event driven architecture based around AMQP.
+
+http://lh5.ggpht.com/_P2Y3oCRW-Z4/TIQuDzGdRhI/AAAAAAAAAGs/aAmmfmTf3Hk/tardis.png
+
+Current ingestion workflow.
+
+= Possible Solutions =
+
+== Carrot ==
+
+Carrot seems like the most likely python client to adopt, it even comes with a [http://packages.python.org/carrot/reference/carrot.connection.html#carrot.connection.DjangoBrokerConnection DjangoBrokerConnection] factory that uses the settings.py to store the connection information.
+
+= Refrences =
+
+ * [http://packages.python.org/carrot/index.html Carrot]
+ * [http://wiki.secondlife.com/wiki/Message_Queue_Evaluation_Notes Message Queue Evaluation]

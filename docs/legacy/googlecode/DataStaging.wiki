@@ -1,0 +1,9 @@
+#summary Description of the proposed data staging interface for MyTARDIS
+
+= Introduction =
+
+The Data Staging interface will consist of read-only, mountable 'dropbox' storage for transferring data to be managed by the system. A web interface will be available within MyTARDIS to detect newly staged data and give the user the ability to describe this data as a new experiment.
+
+= Details =
+
+tba

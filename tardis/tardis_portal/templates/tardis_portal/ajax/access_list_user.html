@@ -1,3 +1,4 @@
+<div class="access_list1">
 <div class="users">
 <h3>Current User Permissions</h3>
 {% for user_acl in user_acls %}
@@ -11,22 +12,31 @@
   <br/>
   {% for field in addUserPermissionsForm %}
 	  {% if field.label == "Authentication Method" %}
-	      {{ field.label }}: {{ field }}
-		<br/>
-	  {% else %}
-		  {% if field.label == "User" %}
-			Username:
-		     {{ field }}
-      <br/>
-      <a class="form_submit btn btn-primary" id="user" href="">
-        <i class="icon-plus"></i>
-        Add User
-      </a>
-		  {% else %}
-		     {{ field }} {{ field.label }}
-		  {% endif %}
-    {% endif %}
-	  <br/>
+	      <br/><span id="id_authMethod_label">{{ field.label }}:<br/><br/></span> {{ field }}
+          <br/>Permissions: 
+          <br/>
+              <select id="id_permission">
+              <option value="read">View Only</option>
+              <option value="edit">View and Edit</option>
+              <option value="owner">Full Owner</option>
+          </select>
+          <p><em>Owners have the ability to change access controls and share experiments with others.</em></p>	     
+	  {% endif %}
+	  
+	  {% if field.label == "User" %}
+		Username:<br/>
+	    {{ field }}
+     {% else %}
+        {% if not field.label == "Read access" and not field.label == "Edit access" and not field.label == "Authentication Method" %}
+         {{ field }} {{ field.label }}
+        {% endif %}
+      {% endif %}	      
   {% endfor %}
+  <br/>
+  <a class="form_submit btn btn-primary" id="user" href="">
+    <i class="icon-plus"></i>
+    Add User
+  </a>
   <input type="hidden" name="experiment_id" class="experiment_id" value="{{experiment_id}}">
 </p>
+</div>
