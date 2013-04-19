@@ -1,0 +1,35 @@
+#summary Instrument Table Design
+
+= Introduction =
+
+This page documents the design considerations to fullfil the requirement to store basic information about the experiment setup which was used to collected the actual data. 
+
+= Details =
+
+The table is supposed to store mainly information about the used hardware which might not change very often. In most cases this will refer to some sort of detectors. To express the fact that the table could hold any kind of information about the experiment setup, it will be called 'Equipment'.
+
+The table consists only of a coupe of fields reflecting the description of a classical detector. Any other information which can't be clearly categorized into any of this fields should go into the general description field. This includes computing resources and information about software packages which were used to produce the dataset.
+ 
+The table should be directly linked to the dataset table allowing many-to-many relationships. This wil account for the fact that more than one instruments could be involved in the data taking.
+
+
+http://mytardis.googlecode.com/svn/attachments/instrument_table.png
+
+= Conclusion =
+
+The following fields will be provided within the equipment table:
+  * key (pk)
+  * dataset (many-to-many field)
+  * description
+  * make
+  * model 
+  * type
+  * serial number
+  * commissioning date
+  * decommissioning date 
+  * url
+
+= References =
+
+http://groups.google.com/group/tardis-devel/browse_thread/thread/9f30d35db10375cd
+http://mecat.synchrotron.org.au:8008/mecat/ticket/100#

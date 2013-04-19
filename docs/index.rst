@@ -27,24 +27,36 @@ important, which can be summarised as:
    archives are typically volatile).
 
 Homepage
---------
+========
 
 You can get a copy of MyTardis from http://github.com/mytardis/mytardis
 
+The latest documentation can be found on http://mytardis.readthedocs.org
+
 For installation instructions see :doc:`install`.
 
-========
 Contents
 ========
+
+User Documentation
+------------------
 
 .. toctree::
    :maxdepth: 2
 
+   overview
+
    userguide
+
    searching
    tabs
 
-   overview
+Administration
+--------------
+
+.. toctree::
+   :maxdepth: 2
+
    install
    admin
    schemaparamsets
@@ -55,14 +67,22 @@ Contents
    ref/app_oaipmh
    ref/app_migration
 
+Development
+-----------
+
+.. toctree::
+   :maxdepth: 2
+
    architecture
    data
+
+   contextual_views
 
    changes
    contributing
 
+   Source Code Documentation <pydoc/modules>
 
-==================
 Indices and tables
 ==================
 

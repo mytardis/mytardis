@@ -1,27 +1,28 @@
+<div class="access_list3">
 {% load url from future %}
 <div class="tokens table table-condensed">
   <div class="access_list_tokens">
     {% if not tokens %}
       <p>No tokens defined </p>
     {% else %}
-        <table>
-          <thead>
+    <table class="table table-striped span12">
             <tr>
-                <th>
-                    Expiry Date
+                <th style="width: 40%;">
+                    Temporary Link
                 </th>
                 <th>
+                    Expiry
+                </th>
+                <th colspan="2">
                     Granted By
-                </th>
-                <th>
-                    URL
-                </th>
-
+                </th>                               
             </tr>
-          </thead>
-          <tbody>
             {% for token in tokens %}
             <tr>
+                <td>
+                    <a href="{{ token.url }}"
+                    style="font-weight: bold;">Right click.. copy link</a>    
+                </td>                
                 <td align="center">
                     {{ token.expiry_date }}
                 </td>
@@ -29,9 +30,7 @@
                     {{ token.user }}
                 </td>
                 <td>
-                    <a href="{{ token.url }}" class="token_url">{{ token.url }}</a>
-                </td>
-                <td>
+                {% if is_owner %}
                   <a title="Delete Token"
                     href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
                     class="token_delete btn btn-danger btn-mini"
@@ -39,11 +38,12 @@
                     <i class="icon-remove"></i>
                     Delete
                   </a>
+                {% endif %}
                 </td>
             </tr>
             {% endfor %}
-          </tbody>
         </table>
     {% endif %}
   </div> <!-- access_list_tokens -->
 </div> <!-- tokens -->
+</div>

@@ -1,0 +1,20 @@
+#summary A Monash University / VeRSI Collaboration to strengthen the data workflow and federated aspects of TARDIS
+
+= Project Phases =
+
+==Phase 1==
+  * Strengthening the feedback and logging of TARDIS data ingest process (internally for system and admins)
+  * Increasing the feedback on an experiments' ingest state for display to the user (ie. transfer pending)
+  * Incorporating feedback on experiments' ingest state of federated nodes into Australian Synchrotron systems
+  * Implementing notifications (ie. email) for both admins and users on experiment success and failure
+
+==Phase 2==
+
+  * The ability to retry failed workflow components (perhaps with a message bus)
+  * Eliminating the need for the central index of federated nodes to be in a single point of failure
+  * Refactoring the django architecture for better skinning/database access/visual templating/applications
+  * Reports for all levels of users (researcher / admin / product owner)
+
+==Phase 3==
+  * Federated search sophistication: the ability to seamlessly search across federated nodes from tardis.edu.au
+  * A metadata definition host server so federated nodes can subscribe to it and receive new and updated metadata definitions across the federation

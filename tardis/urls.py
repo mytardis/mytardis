@@ -61,14 +61,20 @@ experiment_urls = patterns(
      '(?P<username>[\w\.]+)/$', 'change_user_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/$',
      'retrieve_access_list_user'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/user/readonly/$',
+      'retrieve_access_list_user_readonly'),     
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/group/'
-     '(?P<groupname>[\w\s\.]+)/$', 'add_experiment_access_group'),
+     '(?P<groupname>.+)/$', 'add_experiment_access_group'),   
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/remove/group/'
      '(?P<group_id>\d+)/$', 'remove_experiment_access_group'),
+    (r'^control_panel/create/group/$', 'create_group'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/change/group/'
      '(?P<group_id>\d+)/$', 'change_group_permissions'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/$',
      'retrieve_access_list_group'),
+    (r'^control_panel/(?P<experiment_id>\d+)/access_list/group/readonly/$',
+      'retrieve_access_list_group_readonly'),
+    (r'^control_panel/create/user/$', 'create_user'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/external/$',
      'retrieve_access_list_external'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/tokens/$',
@@ -76,6 +82,7 @@ experiment_urls = patterns(
     (r'^control_panel/$', 'control_panel'),
     (r'^view/(?P<experiment_id>\d+)/create_token/$', 'create_token'),
     (r'^view/(?P<experiment_id>\d+)/rifcs/$', 'view_rifcs'),
+    (r'^view/(?P<experiment_id>\d+)/public_access_badge/$', 'experiment_public_access_badge'),
     (r'^(?P<experiment_id>\d+)/add-dataset$', 'add_dataset'),
     )
 
@@ -128,15 +135,19 @@ json_urls = patterns(
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
+    (r'^datafile_details/(?P<dataset_file_id>\d+)/$',
+     'display_datafile_details'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
         'retrieve_experiment_metadata'),
     (r'^datafile_list/(?P<dataset_id>\d+)/$', 'retrieve_datafile_list'),
     (r'^user_list/$', 'retrieve_user_list'),
     (r'^group_list/$', 'retrieve_group_list'),
+    (r'^group_list_by_user/$', 'retrieve_group_list_by_user'),    
     (r'^upload_complete/$', 'upload_complete'),
     (r'^upload_files/(?P<dataset_id>\d+)/$', 'upload_files'),
     (r'^import_staging_files/(?P<dataset_id>\d+)/$', 'import_staging_files'),
+    (r'^list_staging_files/(?P<dataset_id>\d+)/$', 'list_staging_files'),
     (r'^experiment/(?P<experiment_id>\d+)/description$',
      'experiment_description'),
     (r'^experiment/(?P<experiment_id>\d+)/datasets$', 'experiment_datasets'),
@@ -154,6 +165,7 @@ ajax_urls = patterns(
         'add_experiment_par'),
     (r'^parameter_field_list/$', 'retrieve_field_list'),
     (r'^experiment/(?P<experiment_id>\d+)/rights$', 'choose_rights'),
+    (r'^experiment/(?P<experiment_id>\d+)/share$', 'share'),    
     (r'^experiment/(?P<experiment_id>\d+)/dataset-transfer$', 'experiment_dataset_transfer'),
     (r'^license/list$', 'retrieve_licenses'),
     (r'^json/', include(json_urls))
@@ -170,6 +182,7 @@ download_urls = patterns(
 group_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^(?P<group_id>\d+)/$', 'retrieve_group_userlist'),
+    (r'^(?P<group_id>\d+)/readonly$', 'retrieve_group_userlist_readonly'),
     (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
@@ -256,3 +269,12 @@ urlpatterns = patterns(
 
 # Handle static files from /static
 urlpatterns += staticfiles_urlpatterns()
+
+# Show compiled documentation to developers. Production instances can be enabled to show on readthedocs.org
+if settings.DEBUG:
+    from os import path
+    urlpatterns += patterns('',
+        url(r'^docs/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root': path.abspath(path.join(path.dirname(__file__),'..',"docs/html/")),
+        }),
+   )

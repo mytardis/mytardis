@@ -1,0 +1,16 @@
+#summary Listing, conventions and explanation of schema names/URIs
+
+= Introduction =
+
+This page contains a list of schema names currently in use, conventions agree upon and explanations when necessary.
+
+= List =
+
+MrTardis schemas
+  * http://localhost/task
+
+= Conventions =
+
+must be a string
+
+= Further explanations =

@@ -1,0 +1,20 @@
+#summary How to incorporate pluggable tab-apps for the view experiment tabs
+
+= Introduction =
+
+I am working on an app that will process data. I decided to make it modular and developed some infrastructure so people can write their own and plug it in like I did.
+
+Here is a description of the requirements such apps have to fulfill to work.
+
+
+= Details =
+
+Required settings:
+Inside the app directory a `settings.py` file that defines the variable NAME, which will be used as tab name, and `import settings` in the `__init__.py` of the app, so that they are accessible.
+
+Required functionality:
+An embeddable view reachable via _appdir_`.views.index` and a corresponding url defined in an app's `urls.py` file.
+This view needs to accept the experiment id as single argument.
+
+= Installation =
+The app's name and the general app directory must be registered in the settings.py file with the parameters TARDIS_APPS and TARDIS_APP_ROOT for the app names and the directory respectively.

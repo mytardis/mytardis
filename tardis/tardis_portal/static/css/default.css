@@ -26,9 +26,13 @@
 }
 
 .abstract-clickable {
-  cursor: pointer;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+#abstract-toggle {
+    margin-bottom: -7px;
+    display: none;
 }
 
 .truncated-text {
@@ -48,7 +52,67 @@
 form .dataset-download-box {
 	display: block;
 	margin-left: auto;
-	margin-right: auto
+	margin-right: auto;
 }
 
+div.copylink {
+    font-weight:bold;
+    padding: 7px;    
+    margin: 5px;
+    border: 1px solid #CCCCCC;
+    border-radius: 3px 3px 3px 3px;
+    word-wrap: break-word;
+}
 
+.download-selected {
+    font-weight: bold;
+    margin: 3% 0 2% 0;
+}
+
+/*override for bootstrap nav pills*/
+.nav-pills > .active > a, .nav-pills > .active > a:hover {
+    background-color: #D3DFE6;
+    font-weight: bold;
+    color: #0088CC;
+}
+
+.dataset-link {
+    font-weight: bold;
+    font-size: 110%;
+}
+
+.datafile_name {
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.info-box {
+    border: 1px solid #DDDDDD;
+    padding: 5px 10px 5px 10px;
+    margin: 5px 20px 25px 10px;
+}
+
+.file-select {
+    background-color: #D3DFE6;
+}
+
+.table tbody tr.file-select:hover td, .table tbody tr.file-select:hover th {
+    background-color: #D3DFE6;
+}
+
+.pagination {
+    height: auto;
+}
+
+.parameter_name {
+    width: 203px;
+}
+
+.parameter_value {
+    width: 400px;
+}
+
+.brand a:hover {
+    color: white;
+    text-decoration: none;
+}

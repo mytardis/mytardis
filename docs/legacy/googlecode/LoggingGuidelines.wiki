@@ -1,0 +1,90 @@
+#summary Logging Guidelines (TBC)
+
+
+
+== What should we log? ==
+
+On Application Level (Tardis):
+
+  * All errors and (unexpected) exceptions which occur during database access.
+  * System access: Users logging in and out, backends used for authentication. Group memberships obtained.
+  * Database access: All database transactions (inserting, retrieving) should be logged on experiment level.
+
+On Framework Level (Django):
+  * All server requests and all 5XX and 4XX responses.
+  * Every SQL statement executed.
+  * Unhandled Exceptions
+
+Ideally, the logging messages will contain:
+
+  * Timestamp
+  * URL requested (or alternatively module and function name)
+  * Username
+  * IP Address
+  * module/view
+  * MESSAGE
+
+
+== What logging level should be used? ==
+
+=== FATAL ===
+
+This should only be used to record a failure which prevents Tardis to start or to continue.  An email should be sent to the admins in addition.
+
+
+=== ERROR ===
+
+Records that something went wrong and the system was not able to recover or was able to recover and some information was lost because some requested actions could not be completed. Therefore most of all caught exceptions should use this logging level and include the backtrace.
+
+=== WARN ===
+
+WARN priority messages record that something happened during a request which was not expected. This covers probably all the remaining caught exceptions.
+
+=== INFO ===
+
+A INFO messages shows you what is going on in the system. Basically all successful user interactions (system and database access) fall into this area. 
+
+
+=== DEBUG ===
+
+The debug messages are intended to spot a problem (the code works but doesn't do what it is supposed to do) in a running system by showing which functions are executed. SQL statements executed should be logged here.
+
+
+== Implementation == 
+
+The above ideas could be realised be setting up 2 separate loggers. 
+
+The 'system' logger will log *all* server requests and responses. In debug mode, it will also log the SQL statements which were executed to render a view. Depending on the status code of the server response, the appropriate logging level will be chosen. In addition, all uncaught expeptions will be dumped. This functionality could be easily implemented by a logging middleware class. This way, all information will be collected and dumped automatically on each request. Nothing would need to be modified in the view functions. The 'SYSTEM' log will then contain all the access history which can be evaluated for auditing purposes. Also, when running in DEBUG mode, it can be used for performance studies.
+
+Some of the functionality requires Django 1.3 but could be back-ported if necessary. However, the final release is expected to be released end of [http://www.djangoproject.com/weblog/2011/feb/02/django-1_3-release-schedule-update-3/ Feb2011]. 
+
+A prototype of the logging middleware relying on Django 1.3-beta-1 is available in the [http://code.google.com/p/mytardis/source/browse/branches/Django-1.3-beta1/tardis/tardis_portal/logging_middleware.py?spec=svn792&r=792 SVN]. 
+
+It produces the following output:
+{{{
+[07/Feb/2011 17:57:46] INFO    127.0.0.1       testclient POST /login/ 302
+[07/Feb/2011 17:57:46] INFO    127.0.0.1       AnonymousUser GET /logout/ 302
+[07/Feb/2011 17:57:46] INFO    127.0.0.1       AnonymousUser POST /password_reset/ 302
+}}}
+
+--
+
+The 'module' logger will log all messages send by the Tardis modules, mainly the views. The idea is to give you an overall idea what is going on in the system and provide help for debugging. 
+
+The module-level based logger will have the following or similar output:
+
+{{{
+[07/Feb/2011 18:07:06] INFO    views search_datafile: searchQueryType saxs
+}}}
+
+Everybody who writes code for view functions or middleware classed will be responsible of adding helpful logging output to their function. The logging messages can be already implemented using the existing tardis logger {{{tardis.tardis_portal.logger}}} and will be moved to the Django logger once we switch to Django 1.3.
+
+The following user-based actions should be send to module logger:
+
+  * Account creation
+  * Users logging in and out, middleware used for authentication, group memberships
+  * Data ingested, edited and published
+  * ACL/Group creation and modification
+  * Unexpected exceptions caught (UserProfile not found for example...)
+
+The logging information processed should not slow down the program execution significantly when logging on INFO level. 

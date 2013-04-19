@@ -39,6 +39,13 @@ provided by the sphinx buildout recipe::
 
    ./bin/sphinxbuilder
 
+If ``DEBUG = True`` in ``settings.py``, the documentation can be viewed through the local server, eg. ``runserver``, under doclink_.
+
+.. _doclink: http://localhost/docs/html/index.html
+
+This can be useful when writing new documentation or to look at documentation that is not yet available on readthedocs_.
+
+.. _readthedocs: http://mytardis.readthedocs.org
 
 Hudson
 ------

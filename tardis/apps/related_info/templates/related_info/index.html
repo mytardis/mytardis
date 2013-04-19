@@ -17,7 +17,7 @@
   </div>
 </div>
 
-<button class="add-related-info btn btn-primary pull-right">
+<button class="add-related-info btn pull-right">
   <i class="icon-plus"></i>
   Add new
 </button>
@@ -97,7 +97,7 @@
       type: {
         title: '&nbsp;',
         type: ToggleButtonEditor,
-        editorClass: 'span3',
+        editorClass: 'span12',
         options: [
           {val: 'publication', label: '<i class="icon-file"></i> Publication'},
           {val: 'website', label: '<i class="icon-pushpin"></i> Website'}
@@ -105,11 +105,11 @@
       },
       identifier: {
         title: 'URL',
-        editorClass: 'span3',
+        editorClass: 'span12',
         validators: ['required', 'url']
       },
-      title: {type: 'Text', editorClass: 'span3'},
-      notes: {type: 'TextArea', editorClass: 'span3', editorAttrs: {'rows': 8}}
+      title: {type: 'Text', editorClass: 'span12'},
+      notes: {type: 'TextArea', editorClass: 'span12', editorAttrs: {'rows': 8}}
     }
   });
 

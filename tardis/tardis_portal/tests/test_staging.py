@@ -39,49 +39,6 @@ from os import path
 
 from django.test import TestCase
 
-class TraverseTestCase(TestCase):
-    dirs = ['dir1', 'dir2', path.join('dir2', 'subdir'), 'dir3']
-    files = [['dir1', 'file1'],
-             ['dir2', 'file2'],
-             ['dir2', 'file3'],
-             ['dir2', 'subdir', 'file4']]
-    username = "tardis_user1"
-
-    def setUp(self):
-        from django.conf import settings
-        staging = settings.GET_FULL_STAGING_PATH_TEST
-        import os
-        from os import path
-        for dir in self.dirs:
-            os.mkdir(path.join(staging, dir))
-        for file in self.files:
-            f = open(path.join(staging, *file), 'w')
-            f.close()
-
-    def tearDown(self):
-        from django.conf import settings
-        staging = settings.GET_FULL_STAGING_PATH_TEST
-        import os
-        from os import path
-        for file in self.files:
-            os.remove(path.join(staging, *file))
-        self.dirs.reverse()
-        for dir in self.dirs:
-            import shutil
-            shutil.rmtree(path.join(staging, dir))
-
-    def test_traversal(self):
-        from tardis.tardis_portal.staging import staging_traverse
-        from django.conf import settings
-        result = staging_traverse(settings.GET_FULL_STAGING_PATH_TEST)
-        self.assertTrue('dir1' in result)
-        self.assertTrue('dir1/file1' in result)
-        self.assertTrue('dir2' in result)
-        self.assertTrue('dir2/file2' in result)
-        self.assertTrue('dir2/file3' in result)
-        self.assertTrue('dir2/subdir/file4' in result)
-        self.assertTrue('dir3' in result)
-
 
 class TestStagingFiles(TestCase):
     def setUp(self):

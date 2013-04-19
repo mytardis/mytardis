@@ -15,8 +15,10 @@
 {% mustachejs "tardis_portal/dataset_tile" %}
 {% mustachejs "tardis_portal/badges/experiment_count" %}
 {% mustachejs "tardis_portal/badges/datafile_count" %}
+{% mustachejs "tardis_portal/badges/size" %}
 
 <script type="text/javascript">
+
     var toggle_files = function(loadCallback) {
         var $this = $(this);
         var $datafile_info_container = $this.parents('.dataset_datafiles').find('.datafile_list');
@@ -119,13 +121,22 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        $.post(href, form.serialize(), function(data) {
-            contentContainer.html(data);
-            if (contentContainer.find('form').length > 0) {
-              contentContainer.parents('.modal').find('.modal-footer').show();
-            }
+        
+        $.ajax({
+          type: 'POST',
+          url: href,
+          data: form.serialize(),
+          success: function(data) {
+                  contentContainer.html(data);
+                  if (contentContainer.find('form').length == 0) {
+                    contentContainer.parents('.modal').find('.modal-footer').hide();
+                }
+            },
+          async:false
         });
-        // Hide the form buttons
+        
+        refreshMetadataDisplay();        
+        
         form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
@@ -133,13 +144,22 @@
         e.preventDefault();
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
-
-        $.post(form.attr('action'), form.serialize(), function(data) {
-        	contentContainer.html(data);
-          if (contentContainer.find('form').length > 0) {
-        	  contentContainer.parents('.modal').find('.modal-footer').show();
-          }
+        
+        $.ajax({
+          type: 'POST',
+          url: form.attr('action'),
+          data: form.serialize(),
+          success: function(data) {
+                  	contentContainer.html(data);
+                    if (contentContainer.find('form').length == 0) {
+                  	  contentContainer.parents('.modal').find('.modal-footer').hide();       	  
+                }
+            },
+          async:false
         });
+        
+        refreshMetadataDisplay();
+
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
         return false;
@@ -205,18 +225,18 @@
 
 <script type="text/javascript">
 $('#modal-metadata .submit-button').click(function() {
-	$('#modal-metadata .modal-body form').submit();
+    $('#modal-metadata .modal-body form').submit();
 });
-$('#modal-metadata .close').click(refreshMetadataDisplay);
 </script>
 
 <div class="page-header">
+  <h4>Experiment</h4>
   {% if has_write_permissions and not experiment.public %}
   <div class="pull-right">
-    <a class="btn btn-warning" title="Edit Experiment"
+    <a class="btn btn-mini btn-warning" title="Edit Experiment"
        href="{{ experiment.get_edit_url }}">
       <i class="icon-pencil"></i>
-      Edit
+      Edit Experiment
     </a>
   </div>
   {% endif %}
@@ -245,23 +265,28 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     {{ experiment|experiment_datafiles_badge }}&nbsp;
     {{ experiment|experiment_size_badge }}&nbsp;
     {{ experiment|experiment_last_updated_badge }}&nbsp;
-    {{ experiment|experiment_public_access_badge }}&nbsp;
+    <span id="experiment-public-access-badge">{{ experiment|experiment_public_access_badge }}</span>&nbsp;
   </p>
 </div>
 
-<p class="abstract well" property="dc:abstract">
-  {{ experiment.description|safe }}
-</p>
 <div class="row-fluid" >
-  <div class="span6">
+  <div class="span7">   
+  <div align="center" style="margin-bottom: -20px">
+  <div id="abstractHolder" style="display: none">{{ experiment.description|safe|linebreaksbr }}</div>
+  <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
+     Toggle Full Description
+  </a>          
+  </div>           
+  <p class="abstract well info-box" property="dc:abstract">    
+      <span id="abstractText">
+      </span>
+  </p>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
       <li><a data-toggle="tab" title="Description" href="{% url 'tardis.tardis_portal.views.experiment_description' experiment.id %}">Description</a></li>
       <li><a data-toggle="tab" title="Metadata" href="{% url 'tardis.tardis_portal.views.retrieve_experiment_metadata' experiment.id %}">Metadata</a></li>
-      {% if is_owner %}
-        <li><a data-toggle="tab" title="Public Access and Licensing" href="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}">Public Access / Licensing</a></li>
+        <li><a data-toggle="tab" title="Sharing" href="{% url 'tardis.tardis_portal.views.share' experiment.id %}">Sharing</a></li>
         <li><a data-toggle="tab" title="Transfer Datasets" href="{% url 'tardis.tardis_portal.views.experiment_dataset_transfer' experiment.id %}">Transfer Datasets</a></li>
-      {% endif %}
       <!-- {{ apps }} -->
       {% for appurl, appname in apps %}
         <li><a data-toggle="tab" href="{% dynurl appurl experiment.id %}">{{ appname }}</a></li>
@@ -274,7 +299,7 @@ $('#modal-metadata .close').click(refreshMetadataDisplay);
     </div>
   </div>
   <hr class="visible-phone"/>
-  <div id="datasets-pane" class="span6">
+  <div id="datasets-pane" class="span5">
     {% include "tardis_portal/ajax/experiment_datasets.html" %}
   </div>
 </div>
@@ -369,14 +394,45 @@ $(document).ready(function() {
     'placement': 'top',
     'selector': 'span.badge'
   });
+
   // Abbreviate abstract
-  $('.abstract').each(function(i, v) {
-    var span = $('<span/>').addClass('truncated-text').text($(v).text());
-    $(v).empty().append(span);
-    $(v).addClass('abstract-clickable');
-    $(v).tooltip({'title': 'Click to toggle full text'});
-    $(v).click(function(evt) { span.toggleClass('truncated-text'); });
-  });
+  var hideAbstract = false;
+  var spanhtml = $('#abstractHolder').html();
+  var spantext = $('#abstractHolder').text();
+
+    if(spanhtml.length > 100)
+    {
+	hideAbstract = true;
+        $('#abstractText').parent().attr('style', 'padding-top: 25px;');
+        $('#abstract-toggle').attr('style', 'display: inline;');
+
+        span = $('#abstractText').addClass('truncated-text');
+
+        $('#abstractText').empty().html(spantext);
+        $('#abstractText').parent().addClass('abstract-clickable');
+
+        $('#abstract-toggle').click(function(evt) {
+           if(!hideAbstract)
+           {
+             span.addClass('truncated-text');
+             $('#abstractText').empty().html(spantext);
+             hideAbstract = true;
+	     $('#abstract-toggle').text('Show Description');
+           }
+           else
+           {
+             span.removeClass('truncated-text');
+             $('#abstractText').empty().html(spanhtml);
+             hideAbstract = false;
+             $('#abstract-toggle').text('Hide Description');
+           }
+      }); 
+    }
+    else
+    {
+	$('#abstractText').html(spanhtml);
+    }
+  
 });
 
 </script>

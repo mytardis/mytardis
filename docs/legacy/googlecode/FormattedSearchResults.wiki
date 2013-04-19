@@ -1,0 +1,29 @@
+#summary A proposal for more user friendly search results.
+
+= Introduction =
+
+Search results are currently (22 Mar 2011) returned as a flat list including the Filename, Dataset and Experiment.  If a large number of files match the search criteria this quickly becomes an unwieldy list to try and interpret.
+
+Discussions with beamline scientists at the Australian Synchrotron have highlighted two use cases that should be supported:
+
+  # Users searching for particular datafiles, knowing appropriate search criteria.
+  # Users searching for datafiles from an experiment.  They know search criteria that will match the experiment, but won't necessarily match the actual datafiles they are looking for.
+
+
+= Details =
+
+A more useful format would be to return the list of matching Experiments.  This would be displayed in the same format as the current Data page, i.e.
+
+{{{
+Experiment Title
+From [source], deposited [date], last modified [date]
+[start date] - [end date]
+[x] datasets, containing [x] files
+}}}
+
+Clicking on any experiment would take you to a page similar to the current view experiment page, i.e. it would contain the same tabs at the top, "Description", "Datasets".  The Description page would be the same as view experiment.
+
+The Datasets page would be similar to the current view experiment page, but would have a toggle button that modified the display allowing the user to choose between:
+
+  * Displaying only those datasets and datafiles that match the search criteria (first use case above)
+  * Display all datasets and datafiles and highlighting those that match the search criteria, e.g. by displaying with a different background colour (highlighting method to be determined) (second use case above).

@@ -1,0 +1,5 @@
+#summary For the uploading of smaller and fewer files, a web form upload interface is recommended
+
+= Details =
+
+An 'upload files' form could be used to both add files to an existing dataset, or create a new dataset from existing files. Due to HTTP transfer limitations, number of files uploaded at one time could be capped (ie. at 10 files) and the size also capped (ie. 100mb total size).

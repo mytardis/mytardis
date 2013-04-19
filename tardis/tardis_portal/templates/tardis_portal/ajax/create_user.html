@@ -1,0 +1,15 @@
+{% if not user_created %}
+<div class="user_create">
+    <p>
+      {% for field in createUserPermissionsForm %}
+    		<p>{{ field.label }}:<br/> {{ field }}</p>
+      {% endfor %}
+      <a class="form_submit btn btn-primary" id="user" href="">
+        <i class="icon-plus"></i>
+        Create User
+      </a>
+    </p>
+</div>
+{% else %}
+Created user: {{user_created}}
+{% endif %}

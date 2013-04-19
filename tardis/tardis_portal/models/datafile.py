@@ -59,10 +59,10 @@ class Dataset_File(models.Model):
                                         .values_list('size', flat=True), 0)
 
     def save(self, *args, **kwargs):
-        if getattr(settings, 'REQUIRE_DATAFILE_CHECKSUMS', True) and \
+        if settings.REQUIRE_DATAFILE_CHECKSUMS and \
                 not self.md5sum and not self.sha512sum:
             raise Exception('Every Datafile requires a checksum')
-        elif getattr(settings, 'REQUIRE_DATAFILE_SIZES', True) and \
+        elif settings.REQUIRE_DATAFILE_SIZES and \
                 not self.size:
             raise Exception('Every Datafile requires a file size')
         else:
