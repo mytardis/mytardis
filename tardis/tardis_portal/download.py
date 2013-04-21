@@ -215,7 +215,7 @@ def _get_filename(rootdir, df, expid=None):
         return df.url
     elif expid is not None:
         return os.path.join(rootdir,
-                            os.path.relpath(df.url, expid))
+                            os.path.relpath(df.url, str(expid)))
     else:
         raise Exception
 
