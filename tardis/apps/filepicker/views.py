@@ -4,7 +4,6 @@ Filepicker.io button view and upload handler
 import json
 import logging
 
-from django.conf import settings
 from django.http import HttpResponse
 from django.template import Context
 
@@ -13,6 +12,8 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
+
+import tardis.apps.filepicker.filepicker_settings as filepicker_settings
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ def upload_button(request, dataset_id):
     '''
     renders the filepicker button/widget via an ajax call
     '''
-    filepicker_api_key = getattr(settings, 'FILEPICKER_API_KEY', "")
+    filepicker_api_key = filepicker_settings.filepicker_api_key
 
     c = Context({'filepicker_api_key': filepicker_api_key,
                  'dataset_id': dataset_id, })
