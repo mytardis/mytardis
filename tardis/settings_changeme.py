@@ -377,6 +377,8 @@ TRANSFER_PROVIDERS = {
 UPLOAD_METHOD = "uploadify"
 '''
 can be changed to an app that provides an upload_button function,
-eg. "tardis.apps.filepicker.view.upload_button" to use a fancy
-commercial uploader
+eg. "tardis.apps.filepicker.views.upload_button" to use a fancy
+commercial uploader.
+To use filepicker, please also get an API key at http://filepicker.io
 '''
+#FILEPICKER_API_KEY = "YOUR KEY"
