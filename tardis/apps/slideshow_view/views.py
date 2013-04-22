@@ -1,6 +1,7 @@
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from django.http import HttpResponse
 from django.template import Context
+from django.conf import settings
 
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.models import Dataset
@@ -44,6 +45,8 @@ def view_full_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
+    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
+
     display_images = dataset.get_images()
     image_count = len(display_images)
     if image_count >= 3:
@@ -65,6 +68,7 @@ def view_full_dataset(request, dataset_id):
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'display_images': display_images,
         'files':dataset.dataset_file_set,
+        'upload_method': upload_method,
     })
     return HttpResponse(render_response_index(
         request, 'slideshow_view/view_full_dataset.html', c))

@@ -14,6 +14,7 @@ from tardis.tardis_portal.shortcuts import render_response_index
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 import tardis.apps.filepicker.filepicker_settings as filepicker_settings
+from tardis.apps.filepicker.utils import FilepickerFile
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,6 @@ def fpupload(request, dataset_id):
 
     if request.method == 'POST':
         logger.debug('got POST')
-        from django_filepicker.utils import FilepickerFile
         for key, val in request.POST.items():
             splits = val.split(",")
             for url in splits:
