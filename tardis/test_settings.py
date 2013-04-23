@@ -319,3 +319,9 @@ TRANSFER_PROVIDERS = {
 REQUIRE_DATAFILE_CHECKSUMS = True
 REQUIRE_DATAFILE_SIZES = True
 REQUIRE_VALIDATION_ON_INGESTION = True
+
+ARCHIVE_FILE_MAPPERS = {
+    'test': ('tardis.tardis_portal.tests.test_download.MyMapper',),
+    'test2': ('tardis.tardis_portal.tests.test_download.MyMapper',
+              {'exclude' : '.txt'})
+}

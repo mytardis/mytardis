@@ -30,6 +30,8 @@ from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.conf import settings
+from django.utils.importlib import import_module
+from django.core.exceptions import ImproperlyConfigured
 
 from tardis.tardis_portal.models import *
 from tardis.tardis_portal.util import get_free_space
@@ -209,17 +211,81 @@ def view_datafile(request, datafile_id):
 def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
-def _get_filename(rootdir, df):
-    return os.path.join(rootdir, str(df.dataset.id), df.filename)
+__mapper_makers = None
 
-def _get_datafile_details_for_archive(rootdir, datafiles):
+def get_download_organizations():
+    return _get_mapper_makers().keys()
+
+def _get_mapper_makers():
+    global __mapper_makers
+    if not __mapper_makers:
+        __mapper_makers = {}
+        mappers = getattr(settings, 'ARCHIVE_FILE_MAPPERS', [])
+        for (organization, mapper_desc) in mappers.items():
+            mapper_fn = _safe_import(mapper_desc[0])
+            if len(mapper_desc) >= 2:
+                kwarg = mapper_desc[1]
+            else:
+                kwarg = {}
+
+            def mapper_maker_maker(kwarg) :
+                def mapper_maker(rootdir):
+                    myKwarg = dict(kwarg)
+                    myKwarg['rootdir'] = rootdir
+                    def mapper(datafile):
+                        return mapper_fn(datafile, **myKwarg)
+                    return mapper
+                return mapper_maker
+            __mapper_makers[organization] = mapper_maker_maker(kwarg) 
+    return __mapper_makers
+
+def _safe_import(path):
+    try:
+        dot = path.rindex('.')
+    except ValueError:
+        raise ImproperlyConfigured('%s isn\'t an archive mapper' % path)
+    mapper_module, mapper_fname = path[:dot], path[dot + 1:]
+    try:
+        mod = import_module(mapper_module)
+    except ImportError, e:
+        raise ImproperlyConfigured('Error importing mapper %s: "%s"' %
+                                   (mapper_module, e))
+    try:
+        return getattr(mod, mapper_fname)
+    except AttributeError:
+        raise ImproperlyConfigured(
+            'Mapper module "%s" does not define a "%s" function' %
+            (mapper_module, mapper_fname))
+
+def _make_mapper(organization, rootdir):
+    if organization == 'classic':
+        return classic_mapper(rootdir)
+    else:
+        mapper_makers = _get_mapper_makers()
+        mapper_maker = mapper_makers.get(organization)
+        if mapper_maker:
+            return mapper_maker(rootdir)
+        else:
+            return None
+
+def classic_mapper(rootdir):
+    def _get_filename(df):
+        return os.path.join(rootdir, str(df.dataset.id), df.filename)
+    return _get_filename
+
+def _get_datafile_details_for_archive(mapper, datafiles):
     # It would be simplest to do this lazily.  But if we do that, we implicitly
-    # passing the database context to the thread that will write the archive, and
-    # that is a bit dodgy.  (It breaks in unit tests!)  Instead, we populate the
-    # list eagerly, but with a file getter rather than the file itself.  If we
-    # populate with actual File objects, we risk running out of file descriptors.
-    return [(df.get_file_getter(), _get_filename(rootdir, df)) \
-             for df in datafiles]
+    # passing the database context to the thread that will write the archive, 
+    # and that is a bit dodgy.  (It breaks in unit tests!)  Instead, we 
+    # populate the list eagerly, but with a file getter rather than the file 
+    # itself.  If we populate with actual File objects, we risk running out 
+    # of file descriptors.
+    res = []
+    for df in datafiles:
+        mapped_pathname = mapper(df)
+        if mapped_pathname:
+            res.append((df.get_file_getter(), mapper(df)))
+    return res
 
 def _write_files_to_archive(write_func, files):
     for fileGetter, name in files:
@@ -243,10 +309,10 @@ def _write_files_to_archive(write_func, files):
             finally:
                 fileObj.close()
 
-def _write_tar_func(rootdir, datafiles):
+def _write_tar_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
-    files = _get_datafile_details_for_archive(rootdir, datafiles)
+    files = _get_datafile_details_for_archive(mapper, datafiles)
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile
@@ -264,10 +330,10 @@ def _write_tar_func(rootdir, datafiles):
     # Returns the function to do the actual writing
     return write_tar
 
-def _write_zip_func(rootdir, datafiles):
+def _write_zip_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
-    files = _get_datafile_details_for_archive(rootdir, datafiles)
+    files = _get_datafile_details_for_archive(mapper, datafiles)
     # Define the function
     def write_zip(filename):
         try:
@@ -284,31 +350,38 @@ def _write_zip_func(rootdir, datafiles):
     # Returns the function to do the actual writing
     return write_zip
 
-def _estimate_archive_size(rootdir, datafiles, comptype):
+def _estimate_archive_size(mapper, datafiles, comptype):
     """
-    produces an estimate of the size of the uncompressed file archive.  This is
-    made based on the information we have to hand (i.e. the names and the notional file 
-    sizes from the database.  We don't try to access the files themselves, as this
-    potentially increases temporary disc space usage which is the resource we
-    are primarily trying to protect at this point.
+    produces an estimate of the size of the uncompressed file archive.  
+    This is made based on the information we have to hand (i.e. the names
+    and the notional file sizes from the database.  We don't try to access 
+    the files themselves, as this potentially increases temporary disc 
+    space usage which is the resource we are primarily trying to protect 
+    at this point.
     """
     # TODO - include the implied entries for directories in the estimates.
     estimate = 0
+    count = 0
     for df in datafiles:
+        file_name = mapper(df)
+        if not file_name:
+            continue
+        count += 1
         if comptype == "tar":
             # File header + file size with padding to 512
             estimate += 512 + ((int(df.get_size()) + 511) / 512) * 512
         elif comptype == "zip":
-            name_length = len(_get_filename(rootdir, df))
+            name_length = len(file_name)
             # local header + content + DD + file header
-            estimate += (20 + name_length) + int(df.get_size()) + 8 + (46 + name_length) 
+            estimate += (20 + name_length) + int(df.get_size()) + \
+                8 + (46 + name_length) 
     if comptype == "tar":
          # Two records of zeros at the end.
          estimate += 1024
     elif comptype == "zip":
         # Central directory overheads
         estimate += 100 
-    return estimate
+    return (count, estimate)
 
 def _get_free_temp_space():
     """ Return free space on the file system holding the temporary 
@@ -316,20 +389,27 @@ def _get_free_temp_space():
     """
     return get_free_space(gettempdir())
 
-def _check_download_limits(rootdir, datafiles, comptype):
-    estimate = _estimate_archive_size(rootdir, datafiles, comptype)
+def _check_download_limits(mapper, datafiles, comptype):
+    (count, estimate) = _estimate_archive_size(mapper, datafiles, comptype)
     available = _get_free_temp_space()
-    logger.debug('Estimated archive size: %i, available tempfile space %i' % (estimate, available))
-    if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
-        return 'Download archive size exceeds the allowed limit: try a smaller download'
+    logger.debug('File count %i, estimated archive size: %i, '
+                 'available space %i' % (count, estimate, available))
+    if settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT > 0 and \
+            estimate > settings.DOWNLOAD_ARCHIVE_SIZE_LIMIT:
+        return 'Download archive size exceeds the allowed limit: ' \
+            'try a smaller download'
     elif estimate > available + settings.DOWNLOAD_SPACE_SAFETY_MARGIN:
-        return 'Insufficient temp file space available to create the archive:' \
-                ' try a smaller download, or try again later'
+        return 'Insufficient temp file space available to create' \
+            ' the archive: try a smaller download, or try again later'
+    elif count == 0:
+        return 'None of the requested files are currently available' \
+            ' for download'
     else:
         return None
 
 @experiment_download_required
-def download_experiment(request, experiment_id, comptype):
+def download_experiment(request, experiment_id, comptype, 
+                        organization='classic'):
     """
     takes string parameter "comptype" for compression method.
     Currently implemented: "zip" and "tar"
@@ -337,13 +417,20 @@ def download_experiment(request, experiment_id, comptype):
     # TODO: intelligent selection of temp file versus in-memory buffering.
     datafiles = Dataset_File.objects\
         .filter(dataset__experiments__id=experiment_id)
+    
     rootdir = str(experiment_id)
-    msg = _check_download_limits(rootdir, datafiles, comptype)
+    mapper = _make_mapper(organization, rootdir)
+    if not mapper:
+        return render_error_message(
+            request, 'Unknown download organization: %s' % organization, 
+            status=400)
+    msg = _check_download_limits(mapper, datafiles, comptype)
     if msg:
-        return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
+        return render_error_message(
+            request, 'Cannot download: %s' % msg, status=400)
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(rootdir, datafiles),
+        reader = StreamingFile(_write_tar_func(mapper, datafiles),
                                asynchronous_file_creation=True)
 
         response = HttpResponse(FileWrapper(reader),
@@ -351,7 +438,7 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + rootdir + '-complete.tar"'
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(rootdir, datafiles),
+        reader = StreamingFile(_write_zip_func(mapper, datafiles),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
@@ -359,7 +446,8 @@ def download_experiment(request, experiment_id, comptype):
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + rootdir + '-complete.zip"'
     else:
-        response = render_error_message(request, 'Unsupported download format: %s' % comptype, status=404)
+        response = render_error_message(
+            request, 'Unsupported download format: %s' % comptype, status=404)
     return response
 
 
@@ -367,9 +455,10 @@ def download_datafiles(request):
     """
     takes string parameter "comptype" for compression method.
     Currently implemented: "zip" and "tar"
-    The datafiles to be downloaded are selected using "datafile", "dataset" or "url" parameters.
-    An "expid" parameter may be supplied for use in the download archive name.  If "url" is used,
-    the "expid" parameter is also used to limit the datafiles to be downloaded to a given experiment.
+    The datafiles to be downloaded are selected using "datafile", "dataset" 
+    or "url" parameters.  An "expid" parameter may be supplied for use in 
+    the download archive name.  If "url" is used, the "expid" parameter 
+    is also used to limit the datafiles to be downloaded to a given experiment.
     """
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
@@ -377,8 +466,11 @@ def download_datafiles(request):
     
     logger.error('In download_datafiles !!')
     comptype = "zip"
+    organization = "classic"
     if 'comptype' in request.POST:
         comptype = request.POST['comptype']
+    if 'organization' in request.POST:
+        organization = request.POST['organization']
 
     if 'datafile' in request.POST or 'dataset' in request.POST:
         if (len(request.POST.getlist('datafile')) > 0 \
@@ -407,13 +499,17 @@ def download_datafiles(request):
                                chain.from_iterable(map(get_datafile,
                                                        datafiles))))
         else:
-            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
-                                        status=404)
+            return render_error_message(
+                request, 
+                'No Datasets or Datafiles were selected for downloaded',
+                status=404)
 
     elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
-            return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
-                                        status=404)
+            return render_error_message(
+                request, 
+                'No Datasets or Datafiles were selected for downloaded',
+                status=404)
         
         for url in request.POST.getlist('url'):
             url = urllib.unquote(url)
@@ -425,19 +521,29 @@ def download_datafiles(request):
                                             dataset_file_id=datafile.id):
                 df_set = set([datafile])
     else:
-        return render_error_message(request, 'No Datasets or Datafiles were selected for downloaded',
-                                    status=404)
+        return render_error_message(
+            request, 'No Datasets or Datafiles were selected for downloaded',
+            status=404)
 
     logger.info('Files for archive command: %s' % df_set)
     
     if len(df_set) == 0:
-        return render_error_message(request, 'You do not have download access for any of the '
-                                    'selected Datasets or Datafiles ', status=403)
+        return render_error_message(
+            request, 
+            'You do not have download access for any of the '
+            'selected Datasets or Datafiles ', 
+            status=403)
     
     rootdir = 'datasets'
-    msg = _check_download_limits(rootdir, df_set, comptype)
+    mapper = _make_mapper(organization, rootdir)
+    if not mapper:
+        return render_error_message(
+            request, 'Unknown download organization: %s' % organization, 
+            status=400)
+    msg = _check_download_limits(mapper, df_set, comptype)
     if msg:
-        return render_error_message(request, 'Requested download is too large: %s' % msg, status=403)
+        return render_error_message(
+            request, 'Requested download is too large: %s' % msg, status=403)
 
     # Handle missing experiment ID - only need it for naming
     try:
@@ -446,21 +552,22 @@ def download_datafiles(request):
         expid = iter(df_set).next().dataset.get_first_experiment().id
 
     if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(rootdir, df_set),
+        reader = StreamingFile(_write_tar_func(mapper, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(rootdir, df_set),
+        reader = StreamingFile(_write_zip_func(mapper, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')    
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
     else:
-        response = render_error_message(request, 'Unsupported download format: %s' % comptype, status=404)
+        response = render_error_message(
+            request, 'Unsupported download format: %s' % comptype, status=404)
     return response
 
         

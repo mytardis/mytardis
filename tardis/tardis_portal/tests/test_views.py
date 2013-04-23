@@ -42,6 +42,7 @@ import json
 from urlparse import urlparse
 
 from compare import expect, ensure
+from flexmock import flexmock
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse
@@ -806,7 +807,6 @@ class ContextualViewTest(TestCase):
         test display of view for an existing schema and no display for an undefined one.
         """
         from tardis.tardis_portal.views import display_datafile_details
-        from flexmock import flexmock
         request = flexmock(user=self.user, groups=[("testgroup",flexmock())])
         with self.settings(DATAFILE_VIEWS=[("http://test.com/test/schema", "/test/url"),
                                            ("http://does.not.exist", "/false/url")]):
@@ -815,3 +815,103 @@ class ContextualViewTest(TestCase):
             self.assertTrue("/ajax/parameters/" in response.content)
             self.assertTrue("/test/url" in response.content)
             self.assertFalse("/false/url" in response.content)
+
+class ViewTemplateContextsTest(TestCase):
+
+    def setUp(self):
+        """
+        setting up essential objects, copied from tests above
+        """
+        user = 'tardis_user1'
+        pwd = 'secret'
+        email = ''
+        self.user = User.objects.create_user(user, email, pwd)
+        self.userProfile = UserProfile(user=self.user)
+        self.exp = Experiment(title='test exp1',
+                              institution_name='monash', created_by=self.user)
+        self.exp.save()
+        self.acl = ExperimentACL(
+            pluginId=django_user,
+            entityId=str(self.user.id),
+            experiment=self.exp,
+            canRead=True,
+            isOwner=True,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            )
+        self.acl.save()
+        self.dataset = Dataset(description='dataset description...')
+        self.dataset.save()
+        self.dataset.experiments.add(self.exp)
+        self.dataset.save()
+
+        self.dataset_file = Dataset_File(dataset=self.dataset,
+                                         size=42, filename="foo",
+                                         md5sum="junk")
+        self.dataset_file.save()
+
+    def tearDown(self):
+        self.user.delete()
+        self.exp.delete()
+        self.dataset.delete()
+        self.dataset_file.delete()
+        self.acl.delete()
+        
+    def testExperimentView(self):
+        """
+        test some template context parameters for an experiment view
+        """
+        from tardis.tardis_portal.views import view_experiment
+        from tardis.tardis_portal.shortcuts import render_response_index
+        from django.http import HttpRequest
+        from django.template import Context
+        import sys
+
+        views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
+        request = HttpRequest()
+        request.user=self.user
+        request.groups=[]
+        context = {'organization': ['classic', 'test', 'test2'],
+                   'default_organization': 'classic', 
+                   'default_format': 'zip', 
+                   'protocol': []}
+        views_module.should_call('render_response_index'). \
+            with_args(_AnyMatcher(), "tardis_portal/view_experiment.html", 
+                      _ContextMatcher(context)) 
+        response = view_experiment(request, experiment_id=self.exp.id)
+        self.assertEqual(response.status_code, 200)
+
+    def testDatasetView(self):
+        """
+        test some context parameters for a dataset view
+        """
+        from tardis.tardis_portal.views import view_dataset
+        from tardis.tardis_portal.shortcuts import render_response_index
+        from django.http import HttpRequest
+        from django.template import Context
+        import sys
+
+        views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
+        request = HttpRequest()
+        request.user=self.user
+        request.groups=[]
+        context = {'default_organization': 'classic', 
+                   'default_format': 'zip'}
+        views_module.should_call('render_response_index'). \
+            with_args(_AnyMatcher(), "tardis_portal/view_dataset.html", 
+                      _ContextMatcher(context)) 
+        response = view_dataset(request, dataset_id=self.dataset.id)
+        self.assertEqual(response.status_code, 200)
+
+
+class _ContextMatcher(object):
+    def __init__(self, template):
+        self.template = template
+    def __eq__(self, other):
+        for (key, value) in self.template.items():
+            if not key in other or other[key] != value:
+                return False
+        return True
+
+class _AnyMatcher(object):
+    def __eq__(self, other):
+        return True
