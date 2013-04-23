@@ -373,3 +373,12 @@ TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
+
+UPLOAD_METHOD = "uploadify"
+'''
+can be changed to an app that provides an upload_button function,
+eg. "tardis.apps.filepicker.views.upload_button" to use a fancy
+commercial uploader.
+To use filepicker, please also get an API key at http://filepicker.io
+'''
+#FILEPICKER_API_KEY = "YOUR KEY"
