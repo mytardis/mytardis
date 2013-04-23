@@ -15,12 +15,15 @@ $('.upload_files_link').live('click', function(evt) {
 	    error: function(data, vars) {
 		console.log(data);
 		console.log(vars);
-	    },
+		showMsg.error('There was a problem with your file upload. Please contact the system administrator.');
+            },
 	    success: function(data, vars){
 		console.log("upload successful");
 		$('#datafiles-pane').load('{% url tardis.tardis_portal.views.retrieve_datafile_list dataset_id %}');
+		showMsg.success('Your file(s) have been added.');
 	    }
 	});
+	showMsg.info('Your files are being added in the background. Please wait or return at a later time.');
     });
 });
 </script>
