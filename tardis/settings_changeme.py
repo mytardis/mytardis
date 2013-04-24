@@ -389,3 +389,30 @@ Set to true if you want to preserve folder structure on "stage_file" ingest,
 eg. via the METS importer.
 Currently, only tested for the METS importer.
 '''
+
+
+# Get version from git to be displayed on About page.
+def get_git_version():
+    repo_dir = path.dirname(path.dirname(path.abspath(__file__)))
+
+    def run_git(args):
+        import subprocess
+        process = subprocess.Popen('git %s' % args,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=repo_dir,
+                                   universal_newlines=True)
+        return process.communicate()[0]
+
+    try:
+        info = [run_git("log -1 --format='Commit: %H'"),
+                run_git("log -1 --format='Date: %cd' --date=rfc"),
+                "Branch: %s" % run_git("rev-parse --abbrev-ref HEAD"),
+                "Tag: %s" % run_git("describe --abbrev=0 --tags"),
+                ]
+    except Exception:
+        return ["unavailable"]
+    return info
+
+MYTARDIS_VERSION = get_git_version()

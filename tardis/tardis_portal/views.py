@@ -302,7 +302,9 @@ def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}]})
+                 'nav': [{'name': 'About', 'link': '/about/'}],
+                 'version': "<br/>".join(settings.MYTARDIS_VERSION),
+             })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
