@@ -78,10 +78,15 @@ AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 AUTH_PROVIDERS = (('localdb', 'Local DB',
                   'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
                   ('vbl', 'VBL',
-                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'),
-                  ('ldap', 'LDAP',
-                   'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),
-)
+                   'tardis.tardis_portal.tests.mock_vbl_auth.MockBackend'))
+
+#if (optional) ldap doesn't exist then don't enable ldap auth
+try:
+    import ldap
+    AUTH_PROVIDERS += (('ldap', 'LDAP',
+                        'tardis.tardis_portal.auth.ldap_auth.ldap_auth'),)
+except ImportError:
+    pass
 
 NEW_USER_INITIAL_GROUPS = ['test-group']
 
