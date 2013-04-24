@@ -193,6 +193,33 @@
       <!-- Subtitle: {{ subtitle }} -->
       {% endif %}
 
+      <script type="text/javascript">
+	var showMsg = {
+	    type: "",
+	    showAlert: function(text) {
+		$('#message-container').html(
+		    '<div class="alert ' +
+			this.type +
+			'"><a class="close" data-dismiss="alert">×</a><span>' +
+			text +
+			'</span></div>');
+	    },
+	    success: function(text) {
+		this.type = "alert-success";
+		this.showAlert(text);
+	    },
+	    info: function(text) {
+		this.type = "alert-info";
+		this.showAlert(text);
+	    },
+	    error: function(text) {
+		this.type = "alert-error";
+		this.showAlert(text);
+	    }
+	};
+      </script>
+
+      <div id="message-container" ></div>
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-error{% endif %}"
            style="display: none">

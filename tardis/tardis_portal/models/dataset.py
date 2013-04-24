@@ -25,6 +25,7 @@ class Dataset(models.Model):
 
     class Meta:
         app_label = 'tardis_portal'
+        ordering = ['-id']
 
     def getParameterSets(self, schemaType=None):
         """Return the dataset parametersets associated with this
@@ -62,8 +63,7 @@ class Dataset(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        images = self.dataset_file_set.order_by('-modification_time',
-                                               '-created_time')\
+        images = self.dataset_file_set.order_by('filename')\
                                       .filter(IMAGE_FILTER)
         return images
 

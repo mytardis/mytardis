@@ -31,8 +31,10 @@
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.db.models import Q
+from django.conf import settings
 
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
@@ -369,6 +371,8 @@ def dataset_write_permissions_required(f):
     def wrap(request, *args, **kwargs):
         dataset_id = kwargs['dataset_id']
         if not has_dataset_write(request, dataset_id):
+            if request.is_ajax():
+                return HttpResponse("")
             return return_response_error(request)
         return f(request, *args, **kwargs)
 
@@ -389,13 +393,23 @@ def delete_permissions_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+
 def upload_auth(f):
     def wrap(request, *args, **kwargs):
         from datetime import datetime
-        session_id = request.POST['session_id']
+        try:
+            session_id = request.POST['session_id']
+        except:
+            session_id = request.COOKIES[settings.SESSION_COOKIE_NAME]
         s = Session.objects.get(pk=session_id)
         if s.expire_date > datetime.now():
-            request.user = User.objects.get(pk=s.get_decoded()['_auth_user_id'])
+            try:
+                request.user = User.objects.get(
+                    pk=s.get_decoded()['_auth_user_id'])
+            except:
+                if request.is_ajax():
+                    return HttpResponse("")
+                raise
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__
