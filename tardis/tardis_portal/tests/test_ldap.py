@@ -6,7 +6,14 @@ from django.test import TestCase
 from nose.plugins.skip import SkipTest
 server = None
 
+from django.utils.unittest import skipIf
+from django.conf import settings
 
+ldap_auth_provider = ('ldap', 'LDAP',
+                   'tardis.tardis_portal.auth.ldap_auth.ldap_auth')
+
+@skipIf(ldap_auth_provider not in settings.AUTH_PROVIDERS,
+        'ldap_auth is not enabled, skipping tests')
 class LDAPErrorTest(TestCase):
 
     def test_search(self):
@@ -15,6 +22,8 @@ class LDAPErrorTest(TestCase):
         self.assertEqual(l._query('', '', ''), None)
 
 
+@skipIf(ldap_auth_provider not in settings.AUTH_PROVIDERS, 
+        'ldap_auth is not enabled, skipping tests')
 class LDAPTest(TestCase):
     def setUp(self):
         from tardis.tardis_portal.tests.ldap_ldif import test_ldif
