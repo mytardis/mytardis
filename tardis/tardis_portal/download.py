@@ -543,7 +543,7 @@ def download_datafiles(request):
     msg = _check_download_limits(mapper, df_set, comptype)
     if msg:
         return render_error_message(
-            request, 'Requested download is too large: %s' % msg, status=403)
+            request, 'Cannot download: %s' % msg, status=400)
 
     # Handle missing experiment ID - only need it for naming
     try:
