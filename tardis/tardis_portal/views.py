@@ -401,11 +401,7 @@ def view_experiment(request, experiment_id,
     if  'load' in request.GET:
         c['load'] = request.GET['load']
 
-    # Download protocols
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
+    _add_protocols_and_organizations(request, experiment, c)
 
     import sys
     appnames = []
@@ -424,6 +420,24 @@ def view_experiment(request, experiment_id,
 
     return HttpResponse(render_response_index(request, template_name, c))
 
+def _add_protocols_and_organizations(request, experiment, c):
+    """Add the protocol, format and organization details for 
+    archive requests."""
+
+    c['protocol'] = []
+    download_urls = experiment.get_download_urls()
+    for key, value in download_urls.iteritems():
+        c['protocol'] += [[key, value]]
+    # For now, just use the most preferred format as default
+    c['default_format'] = getattr(settings, 
+                                  'DEFAULT_ARCHIVE_FORMATS', 
+                                  ['zip', 'tar'])[0]
+
+    from tardis.tardis_portal.download import get_download_organizations
+    c['organization'] = ['classic'] + get_download_organizations()
+    c['default_organization'] = getattr(settings, 
+                                        'DEFAULT_ARCHIVE_ORGANIZATION', 
+                                        'classic')
 
 @authz.experiment_access_required
 def experiment_description(request, experiment_id):
@@ -473,10 +487,7 @@ def experiment_description(request, experiment_id):
     if request.user.is_authenticated():
         c['is_owner'] = authz.has_experiment_ownership(request, experiment_id)
 
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
+    _add_protocols_and_organizations(request, experiment, c)
 
     if 'status' in request.GET:
         c['status'] = request.GET['status']
@@ -577,6 +588,10 @@ def view_dataset(request, dataset_id):
         'other_experiments':
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method,
+        'default_organization':
+            getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
+        'default_format':
+            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])[0]
     })
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
@@ -2630,16 +2645,26 @@ def upload(request, dataset_id):
             uploaded_file_post = request.FILES['Filedata']
             filepath = write_uploaded_file_to_dataset(dataset,
                                                       uploaded_file_post)
+            logger.debug('done upload')
             datafile = Dataset_File(dataset=dataset,
                                     filename=uploaded_file_post.name,
                                     size=uploaded_file_post.size)
+            logger.debug('created file')
             replica = Replica(datafile=datafile,
                               url=filepath,
                               protocol='',
                               location=Location.get_default_location())
-            replica.verify(allowEmptyChecksums=True)
+            logger.debug('created replica')
+            try:
+                replica.verify(allowEmptyChecksums=True)
+            except Exception as e:
+                logger.error(e, exc_info=True)
+                raise e
+            logger.debug('verified')
             datafile.save()
+            logger.debug('saved datafile')
             replica.datafile = datafile
+            logger.debug('saved replica')
             replica.save()
 
     return HttpResponse('True')

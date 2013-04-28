@@ -243,6 +243,54 @@ Filters
    http://www.buildout.org
       The Buildout homepage.
 
+Archive Organizations
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attribute:: tardis.settings_changeme.DEFAULT_ARCHIVE_FORMATS.
+
+   This is a prioritized list of download archive formats to be used 
+   in contexts where only one choice is offered to the user; e.g. the 
+   "download selected" buttons.  (The list allows for using different
+   archive formats depending on the user's platform.)
+
+.. attribute:: tardis.settings_changeme.DEFAULT_ARCHIVE_ORGANIZATION.
+
+   This gives the default archive "organization" to be used.
+   Organizations are defined via the next attribute.
+
+.. attribute:: tardis.settings_changeme.ARCHIVE_FILE_MAPPERS.
+
+   This is a hash that maps archive organization names to Datafile filename
+   mapper functions.  These functions are reponsible for generating the
+   archive pathnames used for files written to "tar" amd "zip" archives
+   by the downloads module.
+
+   The **ARCHIVE_FILE_MAPPERS** variable is specified like::
+
+       ARCHIVE_FILE_MAPPERS = {
+           'test': ('tardis.apps.example.ExampleMapper',),
+           'test2': ('tardis.apps.example.ExampleMapper', {'foo': 1})
+       }
+
+   The key for each entry is the logical name for the organization, and
+   the value is a tuple consisting of the function's pathname and a set
+   of optional keyword arguments to be passed to the function.  At runtime,
+   the function is called with each Datafile as a positional argument, and
+   an additional 'rootdir' keyword argument.  The function should compute
+   and return a (unique) pathname based on the Datafile and associated 
+   objects.  If the function returns **None**, this tells the archive builder
+   to leave out the file.
+
+   By default, the archive builder uses the built-in "classic" mapper which
+   gives pathnames that look like::
+
+       <rootdir>/<experiment-id>/<dataset-id>/<datafile-name>    
+
+   (For a real-life example of a mapper, got to the GitHub UQ-CMM-Mirage / 
+   mytardis-app-datagrabber repository, and look in the "organizations.py" 
+   file.  The "source_path" mapper function maps names based on a setting 
+   in DatafileParameterSet, and does some further rewriting and filtering.)
+
 Locations
 ~~~~~~~~~
 
