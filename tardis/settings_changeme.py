@@ -86,7 +86,8 @@ MIDDLEWARE_CLASSES = (
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
     'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.transaction.TransactionMiddleware')
+    'django.middleware.transaction.TransactionMiddleware',
+    'smartagent.middleware.UserAgentDetectorMiddleware')
 
 ROOT_URLCONF = 'tardis.urls'
 
@@ -199,6 +200,7 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
+    'smartagent',
     )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
