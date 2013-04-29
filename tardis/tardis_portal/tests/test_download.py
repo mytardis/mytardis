@@ -2,10 +2,11 @@
 
 from compare import expect
 from os import makedirs, unlink, close, stat
-from os.path import abspath, basename, dirname, join, exists
+from os.path import abspath, basename, dirname, join, exists, getsize
 from shutil import rmtree
 from tempfile import mkstemp
 from zipfile import is_zipfile, ZipFile
+from tarfile import is_tarfile, TarFile
 
 from django.test import TestCase
 from django.test.client import Client
@@ -177,11 +178,11 @@ class DownloadTestCase(TestCase):
         testfile2 = abspath(join(self.dest2, filename2))
         _generate_test_image(testfile2)
 
-        self.dataset_file1 = self._build_datafile( \
+        self.datafile1 = self._build_datafile( \
             testfile1, filename1, self.dataset1,
             '%d/%d/%s' % (self.experiment1.id, self.dataset1.id, filename1))
                           
-        self.dataset_file2 = self._build_datafile( \
+        self.datafile2 = self._build_datafile( \
             testfile2, filename2, self.dataset2,
             '%d/%d/%s' % (self.experiment2.id, self.dataset2.id, filename2))
 
@@ -219,23 +220,23 @@ class DownloadTestCase(TestCase):
         client = Client()
 
         # check view of file1
-        response = client.get('/datafile/view/%i/' % self.dataset_file1.id)
+        response = client.get('/datafile/view/%i/' % self.datafile1.id)
 
         self.assertEqual(response['Content-Disposition'],
                          'inline; filename="%s"'
-                         % self.dataset_file1.filename)
+                         % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'Hello World!\n')
 
         # check view of file2
-        response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
+        response = client.get('/datafile/view/%i/' % self.datafile2.id)
         # Should be forbidden
         self.assertEqual(response.status_code, 403)
 
         self.experiment2.public_access=Experiment.PUBLIC_ACCESS_FULL
         self.experiment2.save()
         # check view of file2 again
-        response = client.get('/datafile/view/%i/' % self.dataset_file2.id)
+        response = client.get('/datafile/view/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
 
         # The following behaviour relies on ImageMagick
@@ -243,7 +244,7 @@ class DownloadTestCase(TestCase):
             # file2 should have a ".png" filename
             self.assertEqual(response['Content-Disposition'],
                              'inline; filename="%s"'
-                             % (self.dataset_file2.filename+'.png'))
+                             % (self.datafile2.filename+'.png'))
             # file2 should be a PNG
             self.assertEqual(response['Content-Type'], 'image/png')
             png_signature = "\x89PNG\r\n\x1a\n"
@@ -252,69 +253,98 @@ class DownloadTestCase(TestCase):
             # file2 should have a ".tiff" filename
             self.assertEqual(response['Content-Disposition'],
                              'inline; filename="%s"'
-                             % (self.dataset_file2.filename))
+                             % (self.datafile2.filename))
             # file2 should be a TIFF
             self.assertEqual(response['Content-Type'], 'image/tiff')
             tiff_signature = "II\x2a\x00"
             self.assertEqual(response.content[0:4], tiff_signature)
 
-    def _check_tar_file(self, content, rootdir, datafiles):
-        # It should be a zip file
+    def _check_tar_file(self, content, rootdir, datafiles,
+                        simpleNames=False, noTxt=False):
         with NamedTemporaryFile('w') as tempfile:
             tempfile.write(content)
             tempfile.flush()
-            with open(tempfile.name, 'r') as zipread:
-                # It should be a zip file (all of which start with "PK")
-                expect(zipread.read(2)).to_equal('PK')
-            expect(is_zipfile(tempfile.name)).to_be_truthy()
-            with ZipFile(tempfile.name, 'r') as zf:
-                expect(len(zf.namelist())).to_equal(len(datafiles))
-                for df in datafiles:
-                    filename = join(rootdir, str(df.dataset.id), df.filename)
-                    expect(filename in zf.namelist()).to_be_truthy()
+            if getsize(tempfile.name) > 0:
+                expect(is_tarfile(tempfile.name)).to_be_truthy()
+                try:
+                    tf = TarFile(tempfile.name, 'r')
+                    self._check_names(datafiles, tf.getnames(), 
+                                      rootdir, simpleNames, noTxt)
+                finally:
+                    tf.close()
+            else:
+                self._check_names(datafiles, [], 
+                                  rootdir, simpleNames, noTxt)
 
-    def _check_zip_file(self, content, rootdir, datafiles):
-        # It should be a zip file
+    def _check_zip_file(self, content, rootdir, datafiles, 
+                        simpleNames=False, noTxt=False):
         with NamedTemporaryFile('w') as tempfile:
             tempfile.write(content)
             tempfile.flush()
-            with open(tempfile.name, 'r') as zipread:
-                # It should be a zip file (all of which start with "PK")
-                expect(zipread.read(2)).to_equal('PK')
+            # It should be a zip file
             expect(is_zipfile(tempfile.name)).to_be_truthy()
-            zf = ZipFile(tempfile.name, 'r')
-            expect(len(zf.namelist())).to_equal(len(datafiles))
-            for df in datafiles:
-                filename = join(rootdir, str(df.dataset.id), df.filename)
-                expect(filename in zf.namelist()).to_be_truthy()
-            zf.close()
+            try:
+                zf = ZipFile(tempfile.name, 'r')
+                self._check_names(datafiles, zf.namelist(), 
+                                  rootdir, simpleNames, noTxt)
+            finally:
+                zf.close()
 
+    def _check_names(self, datafiles, names, rootdir, simpleNames, noTxt):
+        # SimpleNames says if we expect basenames or pathnames
+        # NoTxt says if we expect '.txt' files to be filtered out
+        if not noTxt:
+            expect(len(names)).to_equal(len(datafiles))
+        for df in datafiles:
+            if simpleNames:
+                filename = df.filename
+            else:
+                filename = join(rootdir, str(df.dataset.id), 
+                                df.filename)
+            expect(filename in names).to_be(
+                not (noTxt and filename.endswith('.txt')))
+        
 
     def testDownload(self):
         client = Client()
 
         # check download for experiment1
-        response = client.get('/download/experiment/%i/zip/' % self.experiment1.id)
+        response = client.get('/download/experiment/%i/zip/' % \
+                                  self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="experiment%s-complete.zip"'
                          % self.experiment1.id)
         self.assertEqual(response.status_code, 200)
-        self._check_zip_file(response.content, str(self.experiment1.id),
-                             reduce(lambda x, y: x + y,
-                                    [ds.dataset_file_set.all() \
-                                     for ds in self.experiment1.datasets.all()]))
-
+        self._check_zip_file(
+            response.content, str(self.experiment1.id),
+            reduce(lambda x, y: x + y,
+                   [ds.dataset_file_set.all() \
+                        for ds in self.experiment1.datasets.all()]))
+                   
+        # check download for experiment1 as tar
+        response = client.get('/download/experiment/%i/tar/' % \
+                                  self.experiment1.id)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="experiment%s-complete.tar"'
+                         % self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(
+            response.content, str(self.experiment1.id),
+            reduce(lambda x, y: x + y,
+                   [ds.dataset_file_set.all() \
+                        for ds in self.experiment1.datasets.all()]))
+                   
         # check download of file1
-        response = client.get('/download/datafile/%i/' % self.dataset_file1.id)
+        response = client.get('/download/datafile/%i/' % self.datafile1.id)
 
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s"'
-                         % self.dataset_file1.filename)
+                         % self.datafile1.filename)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, 'Hello World!\n')
 
         # requesting file2 should be forbidden...
-        response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
+        response = client.get('/download/datafile/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 403)
 
         # check dataset1 download
@@ -324,6 +354,16 @@ class DownloadTestCase(TestCase):
                                 'datafile': []})
         self.assertEqual(response.status_code, 200)
         self._check_zip_file(response.content, 'datasets',
+                             self.dataset1.dataset_file_set.all())
+
+        # check dataset1 download as tar
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment1.id,
+                                'dataset': [self.dataset1.id],
+                                'datafile': [],
+                                'comptype': 'tar'})
+        self.assertEqual(response.status_code, 200)
+        self._check_tar_file(response.content, 'datasets',
                              self.dataset1.dataset_file_set.all())
 
         # check dataset2 download
@@ -337,38 +377,97 @@ class DownloadTestCase(TestCase):
         response = client.post('/download/datafiles/',
                                {'expid': self.experiment1.id,
                                 'dataset': [],
-                                'datafile': [self.dataset_file1.id]})
+                                'datafile': [self.datafile1.id]})
         self.assertEqual(response.status_code, 200)
-        self._check_zip_file(response.content, 'datasets', [self.dataset_file1])
+        self._check_zip_file(response.content, 'datasets', [self.datafile1])
 
         # check datafile2 download via POST
         response = client.post('/download/datafiles/',
                                {'expid': self.experiment2.id,
                                 'dataset': [],
-                                'datafile': [self.dataset_file2.id]})
+                                'datafile': [self.datafile2.id]})
         self.assertEqual(response.status_code, 403)
 
         # Check datafile2 download with second experiment to "metadata only"
         self.experiment2.public_access=Experiment.PUBLIC_ACCESS_METADATA
         self.experiment2.save()
-        response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
+        response = client.get('/download/datafile/%i/' % self.datafile2.id)
         # Metadata-only means "no file access"!
         self.assertEqual(response.status_code, 403)
 
         # Check datafile2 download with second experiment to public
         self.experiment2.public_access=Experiment.PUBLIC_ACCESS_FULL
         self.experiment2.save()
-        response = client.get('/download/datafile/%i/' % self.dataset_file2.id)
+        response = client.get('/download/datafile/%i/' % self.datafile2.id)
         self.assertEqual(response.status_code, 200)
         # This should be a TIFF (which often starts with "II\x2a\x00")
         self.assertEqual(response['Content-Type'], 'image/tiff')
         self.assertEqual(response.content[0:4], "II\x2a\x00")
 
+        # check experiment zip download with alternative organization
+        response = client.get('/download/experiment/%i/zip/test/' % \
+                                  self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="experiment%s-complete.zip"'
+                         % self.experiment1.id)
+        self._check_zip_file(
+            response.content, str(self.experiment1.id),
+            reduce(lambda x, y: x + y,
+                   [ds.dataset_file_set.all() \
+                        for ds in self.experiment1.datasets.all()]),
+            simpleNames=True)
+
+        # check experiment tar download with alternative organization
+        response = client.get('/download/experiment/%i/tar/test/' % \
+                                  self.experiment1.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="experiment%s-complete.tar"'
+                         % self.experiment1.id)
+        self._check_tar_file(
+            response.content, str(self.experiment1.id),
+            reduce(lambda x, y: x + y,
+                   [ds.dataset_file_set.all() \
+                        for ds in self.experiment1.datasets.all()]),
+            simpleNames=True)
+
+        # check experiment1 download with '.txt' filtered out (none left)
+        response = client.get('/download/experiment/%i/tar/test2/' % \
+                                  self.experiment1.id)
+        self.assertEqual(response.status_code, 400)
+
+        # check experiment2 download with '.txt' filtered out
+        response = client.get('/download/experiment/%i/tar/test2/' % \
+                                  self.experiment2.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Disposition'],
+                         'attachment; filename="experiment%s-complete.tar"'
+                         % self.experiment2.id)
+        self._check_tar_file(
+            response.content, str(self.experiment2.id),
+            reduce(lambda x, y: x + y,
+                   [ds.dataset_file_set.all() \
+                        for ds in self.experiment2.datasets.all()]),
+            simpleNames=True, noTxt=True)
+
+        # check dataset1 download
+        response = client.post('/download/datafiles/',
+                               {'expid': self.experiment1.id,
+                                'dataset': [self.dataset1.id],
+                                'datafile': [],
+                                'comptype': 'zip',
+                                'organization': 'test'})
+        self.assertEqual(response.status_code, 200)
+        self._check_zip_file(response.content, 'datasets',
+                             self.dataset1.dataset_file_set.all(),
+                             simpleNames=True)
+
 
     def testDatasetFile(self):
 
         # check registered text file for physical file meta information
-        df = Dataset_File.objects.get(pk=self.dataset_file1.id)
+        df = Dataset_File.objects.get(pk=self.datafile1.id)
 
         try:
             from magic import Magic
@@ -434,3 +533,9 @@ class DownloadTestCase(TestCase):
         except:
             # XXX Test disabled because lib magic can't be loaded
             pass
+
+def MyMapper(datafile, **kwargs):
+    exclude = kwargs.get('exclude', None)
+    if exclude and datafile.filename.endswith(exclude):
+        return None
+    return datafile.filename

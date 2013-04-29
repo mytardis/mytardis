@@ -176,6 +176,8 @@ download_urls = patterns(
     (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
     (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
      'download_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+     'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
     )
 

@@ -103,14 +103,30 @@
   <dl class="download_entire_experiment">
     <dt>Download All</dt>
     <dd>
-    {% for p in protocol %}
-      <a class="btn btn-primary btn-mini" href="{{p.1}}"
-         title="Download Entire Experiment as {{p.0|upper}}">
-        <i class="icon-download-alt"></i>
-        {{p.0|upper}}
-      </a>
-    {% endfor %}
-      </dd>
+    {% if organization|length > 1 %}
+      {% for p in protocol %}
+        {% for o in organization %}
+          <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
+             title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
+            <i class="icon-download-alt"></i>
+            {% if o == default_organization %}
+            {{p.0|upper}}
+            {% else %}
+            {{p.0|upper}} - {{o}}
+	    {% endif %}
+          </a>
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for p in protocol %}
+        <a class="btn btn-primary btn-mini" href="{{p.1}}"
+           title="Download Entire Experiment as {{p.0|upper}}">
+          <i class="icon-download-alt"></i>
+          {{p.0|upper}}
+        </a>
+      {% endfor %}
+    {% endif %}
+    </dd>
   </dl>
   {% endif %}
   {% endblock downloads %}

@@ -484,6 +484,8 @@ $('#modal-metadata .submit-button').live('click', function() {
               <i class="icon-download-alt"></i>
               Download Selected Files
             </button>
+	    <input type="hidden" name="comptype" value="{{default_format}}"/>
+	    <input type="hidden" name="organization" value="{{default_organization}}"/>
           {% endif %}
         </div>
       </div>
