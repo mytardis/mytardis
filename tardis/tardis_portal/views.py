@@ -401,15 +401,7 @@ def view_experiment(request, experiment_id,
     if  'load' in request.GET:
         c['load'] = request.GET['load']
 
-<<<<<<< HEAD
     _add_protocols_and_organizations(request, experiment, c)
-=======
-    # Download protocols
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
->>>>>>> 8577e82... Initial checkpoint
 
     import sys
     appnames = []
