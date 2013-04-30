@@ -147,7 +147,7 @@ def get_dataset_info(dataset, include_thumbnail=False):
             if ns in schemas:
                 obj["datasettype"] = schemas[ns].name
                 break
-    
+
     return obj
 
 
@@ -850,7 +850,10 @@ def edit_experiment(request, experiment_id,
 
 # todo complete....
 def login(request):
-    from tardis.tardis_portal.auth import login, auth_service
+    '''
+    handler for login page
+    '''
+    from tardis.tardis_portal.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -860,7 +863,7 @@ def login(request):
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
-        authMethod = request.POST['authMethod']
+        authMethod = request.POST.get('authMethod', None)
 
         if 'next' not in request.GET:
             next = '/'
@@ -3201,5 +3204,3 @@ def stage_files_to_dataset(request, dataset_id):
 
     email = {'email': user.email}
     return HttpResponse(json.dumps(email), status=201)
-
-
