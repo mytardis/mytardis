@@ -145,7 +145,7 @@ class AuthService():
 
         user = None
 
-        if authMethod is None:
+        if authMethod is None or authMethod == "None":
             authMethods = self._authentication_backends
         else:
             authMethods = [authMethod]

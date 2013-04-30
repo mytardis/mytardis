@@ -89,7 +89,7 @@ class LoginForm(AuthenticationForm):
                              label="Username",
                              max_length=75)
 
-        authMethods = (("Any", None)) + getAuthMethodChoices()
+        authMethods = ((None, "Any"),) + getAuthMethodChoices()
         self.fields['authMethod'] = \
             forms.CharField(required=True,
                             widget=forms.Select(choices=authMethods),
