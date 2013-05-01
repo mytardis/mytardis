@@ -337,7 +337,8 @@ class RegisterExperimentForm(forms.Form):
 
     username = forms.CharField(max_length=400, required=True)
     password = forms.CharField(max_length=400, required=True)
-    xmldata = forms.FileField()
+    xmldata = forms.FileField(required=False)
+    xml_filename = forms.CharField(max_length=400, required=False)
     experiment_owner = forms.CharField(max_length=400, required=False)
     originid = forms.CharField(max_length=400, required=False)
     from_url = forms.CharField(max_length=400, required=False)

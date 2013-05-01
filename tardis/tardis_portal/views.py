@@ -991,16 +991,13 @@ def register_experiment_ws_xmldata(request):
 
     status = ''
     if request.method == 'POST':  # If the form has been submitted...
-
         # A form bound to the POST data
-        form = RegisterExperimentForm(request.POST, request.FILES)
+        if getattr(request, 'FILES', False):
+            form = RegisterExperimentForm(request.POST, request.FILES)
+        else:
+            form = RegisterExperimentForm(request.POST)
         if form.is_valid():  # All validation rules pass
-
-            xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
-            origin_id = form.cleaned_data['originid']
-            from_url = form.cleaned_data['from_url']
-
             user = auth_service.authenticate(request=request,
                                              authMethod=localdb_auth_key)
             if user:
@@ -1009,20 +1006,29 @@ def register_experiment_ws_xmldata(request):
             else:
                 return return_response_error(request)
 
+            origin_id = form.cleaned_data['originid']
+            from_url = form.cleaned_data['from_url']
+
             e = Experiment(
                 title='Placeholder Title',
                 approved=True,
                 created_by=user,
-                )
+            )
             e.save()
             local_id = e.id
 
-            filename = path.join(e.get_or_create_directory(),
-                                 'mets_upload.xml')
-            f = open(filename, 'wb+')
-            for chunk in xmldata.chunks():
-                f.write(chunk)
-            f.close()
+            if getattr(request, 'FILES', False):
+                xmldata = request.FILES['xmldata']
+                filename = path.join(e.get_or_create_directory(),
+                                     'mets_upload.xml')
+                f = open(filename, 'wb+')
+                for chunk in xmldata.chunks():
+                    f.write(chunk)
+                f.close()
+            else:
+                xml_filename = form.cleaned_data['xml_filename']
+                staging = get_full_staging_path(request.user.username)
+                filename = path.join(staging, xml_filename)
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
@@ -1034,7 +1040,8 @@ def register_experiment_ws_xmldata(request):
                                                            username=username)
                 logger.info('=== processing experiment %s: DONE' % local_id)
             except:
-                logger.exception('=== processing experiment %s: FAILED!' % local_id)
+                logger.exception('=== processing experiment %s: FAILED!' %
+                                 local_id)
                 return return_response_error(request)
 
             if from_url:
