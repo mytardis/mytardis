@@ -211,6 +211,7 @@ def view_datafile(request, datafile_id):
 def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
+
 __mapper_makers = None
 
 def get_download_organizations():
@@ -268,6 +269,7 @@ def _make_mapper(organization, rootdir):
         else:
             return None
 
+
 def classic_mapper(rootdir):
     def _get_filename(df):
         return os.path.join(rootdir, str(df.dataset.id), df.filename)
@@ -286,6 +288,7 @@ def _get_datafile_details_for_archive(mapper, datafiles):
         if mapped_pathname:
             res.append((df.get_file_getter(), mapper(df)))
     return res
+
 
 def _write_files_to_archive(write_func, files):
     for fileGetter, name in files:
@@ -309,10 +312,12 @@ def _write_files_to_archive(write_func, files):
             finally:
                 fileObj.close()
 
+
 def _write_tar_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(mapper, datafiles)
+
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile

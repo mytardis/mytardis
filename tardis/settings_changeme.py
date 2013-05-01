@@ -384,12 +384,46 @@ To use filepicker, please also get an API key at http://filepicker.io
 #FILEPICKER_API_KEY = "YOUR KEY"
 
 ARCHIVE_FILE_MAPPERS = {
-#    'test': ('tardis.apps.example.ExampleMapper',),
-#    'test2': ('tardis.apps.example.ExampleMapper', {'foo': 1})
+    'deep-storage': (
+        'tardis.apps.deep_storage_download_mapper.deep_storage_mapper',),
     }
 
 # Site's default archive organization (i.e. path structure)
-DEFAULT_ARCHIVE_ORGANIZATION = 'classic'
+DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
 
 # Site's preferred archive types, with the most preferred first
 DEFAULT_ARCHIVE_FORMATS = ['zip', 'tar']
+
+DEEP_DATASET_STORAGE = True
+'''
+Set to true if you want to preserve folder structure on "stage_file" ingest,
+eg. via the METS importer.
+Currently, only tested for the METS importer.
+'''
+
+
+# Get version from git to be displayed on About page.
+def get_git_version():
+    repo_dir = path.dirname(path.dirname(path.abspath(__file__)))
+
+    def run_git(args):
+        import subprocess
+        process = subprocess.Popen('git %s' % args,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=repo_dir,
+                                   universal_newlines=True)
+        return process.communicate()[0]
+
+    try:
+        info = [run_git("log -1 --format='Commit: %H'"),
+                run_git("log -1 --format='Date: %cd' --date=rfc"),
+                "Branch: %s" % run_git("rev-parse --abbrev-ref HEAD"),
+                "Tag: %s" % run_git("describe --abbrev=0 --tags"),
+                ]
+    except Exception:
+        return ["unavailable"]
+    return info
+
+MYTARDIS_VERSION = get_git_version()

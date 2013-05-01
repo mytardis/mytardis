@@ -89,9 +89,10 @@ class LoginForm(AuthenticationForm):
                              label="Username",
                              max_length=75)
 
+        authMethods = ((None, "Any"),) + getAuthMethodChoices()
         self.fields['authMethod'] = \
             forms.CharField(required=True,
-                            widget=forms.Select(choices=getAuthMethodChoices()),
+                            widget=forms.Select(choices=authMethods),
                             label='Authentication Method')
 
 
@@ -477,12 +478,12 @@ class ExperimentForm(forms.ModelForm):
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data['authors']
-        
+
         # fix up experiment form
         if self.instance:
             authors = self.instance.author_experiment_set.all()
             for author in authors:
-                author.delete()        
+                author.delete()
 
         experiment = super(ExperimentForm, self).save(commit)
 
@@ -966,4 +967,3 @@ class ManageAccountForm(ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
-
