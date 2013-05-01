@@ -155,14 +155,14 @@ var MyTardis = (function(){
     },
 
     _buildTile: function(tiles, model) {
-      view = new MyTardis.DatasetTile({ 'model': model });
-      view.render();
-      tiles[view.model.id] = view;
-      view.on('tile:copy', _.bind(function(tile, destTiles) {
-        $(tile.el).detach();
-        this.render();
-      }, this));
-      return tiles;
+      // view = new MyTardis.DatasetTile({ 'model': model });
+      // view.render();
+      // tiles[view.model.id] = view;
+      // view.on('tile:copy', _.bind(function(tile, destTiles) {
+      //   $(tile.el).detach();
+      //   this.render();
+      // }, this));
+      // return tiles;
     },
 
     buildTiles: function() {
