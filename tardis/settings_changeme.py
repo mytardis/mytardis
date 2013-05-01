@@ -385,8 +385,9 @@ To use filepicker, please also get an API key at http://filepicker.io
 
 ARCHIVE_FILE_MAPPERS = {
     'deep-storage': (
-        'tardis.apps.deep_storage_download_mapper.deep_storage_mapper',),
-    }
+        'tardis.apps.deep_storage_download_mapper.mapper.deep_storage_mapper',
+    ),
+}
 
 # Site's default archive organization (i.e. path structure)
 DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
