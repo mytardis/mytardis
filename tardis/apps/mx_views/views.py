@@ -50,6 +50,8 @@ def view_full_dataset(request, dataset_id):
         # take 4 evenly spaced images from the set
         display_images = display_images[0::image_count / 4][:4]
 
+    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
+
     c = Context({
         'dataset': dataset,
         'datafiles': get_datafiles_page(),
@@ -64,6 +66,11 @@ def view_full_dataset(request, dataset_id):
         'other_experiments': \
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'display_images': display_images,
+        'upload_method': upload_method,
+        'default_organization':
+            getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
+        'default_format':
+            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])[0]
     })
     return HttpResponse(render_response_index(
         request, 'mx_views/view_full_dataset.html', c))
