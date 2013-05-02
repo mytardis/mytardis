@@ -619,7 +619,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                            'SHA-512'))
 
                         logger.info('=== saving datafile: %s' % df.name)
-                        self.modelDatafile.save() 
+                        self.modelDatafile.save()
 
                         replica = models.Replica(
                             datafile=self.modelDatafile,
@@ -787,7 +787,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                     protocol=proto,
                                     location=self.syncLocation)
                                 replica.save()
-                                
+
                             else:
                                 self.modelDatafile = thisFilesDataset.dataset_file_set.get(
                                     filename=self.metsObject.name, size=self.metsObject.size)
@@ -916,7 +916,7 @@ def _getAttrValueByQName(attrs, attrName):
         return None
 
 
-def parseMets(filename, createdBy, expId=None):
+def parseMets(filename, createdBy, expId=None, sync_root=None):
     '''Parse the METS document using the SAX Parser classes provided in the
     metsparser module.
 
@@ -944,16 +944,17 @@ def parseMets(filename, createdBy, expId=None):
     parser.setContentHandler(MetsExperimentStructCreator(dataHolder))
     parser.parse(filename)
 
-    # Get the destination directory
-    if expId:
-        sync_root = get_sync_root(prefix="%d-" % expId)
-    else:
-        sync_root = get_sync_root()
+    # Get the destination directory if it isn't given
+    if sync_root is None:
+        if expId:
+            sync_root = get_sync_root(prefix="%d-" % expId)
+        else:
+            sync_root = get_sync_root()
 
     # on the second pass, we'll parse the document so that we can tie
     # the metadata info with the experiment/dataset/datafile objects
     parser.setContentHandler(
-        MetsMetadataInfoHandler(dataHolder, expId, createdBy, 
+        MetsMetadataInfoHandler(dataHolder, expId, createdBy,
                                 sync_root, get_sync_location()))
     parser.parse(filename)
 

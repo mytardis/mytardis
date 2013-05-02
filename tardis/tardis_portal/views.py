@@ -48,6 +48,8 @@ import logging
 import json
 from operator import itemgetter
 
+from celery.task import task
+
 from django.template import Context
 from django.conf import settings
 from django.db import transaction
@@ -82,8 +84,7 @@ from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 
 from tardis.tardis_portal.staging import get_full_staging_path, \
     write_uploaded_file_to_dataset, get_staging_url_and_size, \
-    staging_list
-
+    staging_list, get_sync_root
 from tardis.tardis_portal.tasks import create_staging_datafiles,\
     create_staging_datafile
 
@@ -929,9 +930,11 @@ def manage_auth_methods(request):
 
 
 # TODO removed username from arguments
+@task(name="tardis_portal._registerExperimentDocument")
 @transaction.commit_on_success
 def _registerExperimentDocument(filename, created_by, expid=None,
-                                owners=[], username=None):
+                                owners=[], username=None,
+                                sync_root=None):
     '''
     Register the experiment document and return the experiment id.
 
@@ -954,7 +957,8 @@ def _registerExperimentDocument(filename, created_by, expid=None,
     f.close()
 
     logger.debug('processing METS')
-    eid, sync_root = parseMets(filename, created_by, expid)
+    eid, sync_root = parseMets(filename, created_by, expid,
+                               sync_root=sync_root)
 
     auth_key = ''
     try:
@@ -1006,16 +1010,13 @@ def register_experiment_ws_xmldata(request):
 
     status = ''
     if request.method == 'POST':  # If the form has been submitted...
-
         # A form bound to the POST data
-        form = RegisterExperimentForm(request.POST, request.FILES)
+        if getattr(request, 'FILES', False):
+            form = RegisterExperimentForm(request.POST, request.FILES)
+        else:
+            form = RegisterExperimentForm(request.POST)
         if form.is_valid():  # All validation rules pass
-
-            xmldata = request.FILES['xmldata']
             username = form.cleaned_data['username']
-            origin_id = form.cleaned_data['originid']
-            from_url = form.cleaned_data['from_url']
-
             user = auth_service.authenticate(request=request,
                                              authMethod=localdb_auth_key)
             if user:
@@ -1024,34 +1025,40 @@ def register_experiment_ws_xmldata(request):
             else:
                 return return_response_error(request)
 
+            origin_id = form.cleaned_data['originid']
+            from_url = form.cleaned_data['from_url']
+
             e = Experiment(
                 title='Placeholder Title',
                 approved=True,
                 created_by=user,
-                )
+            )
             e.save()
             local_id = e.id
 
-            filename = path.join(e.get_or_create_directory(),
-                                 'mets_upload.xml')
-            f = open(filename, 'wb+')
-            for chunk in xmldata.chunks():
-                f.write(chunk)
-            f.close()
+            if getattr(request, 'FILES', False):
+                xmldata = request.FILES['xmldata']
+                filename = path.join(e.get_or_create_directory(),
+                                     'mets_upload.xml')
+                f = open(filename, 'wb+')
+                for chunk in xmldata.chunks():
+                    f.write(chunk)
+                f.close()
+            else:
+                xml_filename = form.cleaned_data['xml_filename']
+                filename = xml_filename
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
-            try:
-                _, sync_path = _registerExperimentDocument(filename=filename,
-                                                           created_by=user,
-                                                           expid=local_id,
-                                                           owners=owners,
-                                                           username=username)
-                logger.info('=== processing experiment %s: DONE' % local_id)
-            except:
-                logger.exception('=== processing experiment %s: FAILED!' % local_id)
-                return return_response_error(request)
-
+            sync_path = get_sync_root(prefix="%d-" % local_id)
+            taskout = _registerExperimentDocument.delay(filename=filename,
+                                                        created_by=user,
+                                                        expid=local_id,
+                                                        owners=owners,
+                                                        username=username,
+                                                        sync_path=sync_path)
+            logger.info('=== processing experiment %s: on delay' % local_id)
+            logger.info('=== task: %s' % str(taskout))
             if from_url:
                 logger.info('Sending received_remote signal')
                 from tardis.tardis_portal.signals import received_remote
