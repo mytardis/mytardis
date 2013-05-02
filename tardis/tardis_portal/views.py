@@ -1031,8 +1031,7 @@ def register_experiment_ws_xmldata(request):
                 f.close()
             else:
                 xml_filename = form.cleaned_data['xml_filename']
-                staging = get_full_staging_path(request.user.username)
-                filename = path.join(staging, xml_filename)
+                filename = xml_filename
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
