@@ -347,6 +347,8 @@ CELERYBEAT_SCHEDULE = {
       },
     }
 
+CELERY_IMPORTS = ('tardis.tardis_portal.views',)
+
 djcelery.setup_loader()
 
 DEFAULT_LOCATION = "local"

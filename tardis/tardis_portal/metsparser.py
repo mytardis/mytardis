@@ -170,8 +170,8 @@ class MetsExperimentStructCreator(ContentHandler):
 
             # add an entry for this datafile in the metadataMap so we can
             # easily look it up later on when we do our second parse
-            logger.info('=== found datafile xml: %s' % fileName)
-            logger.info('=== found datafile ids: %s' % fileMetadataIds)
+            logger.debug('=== found datafile xml: %s' % fileName)
+            logger.debug('=== found datafile ids: %s' % fileMetadataIds)
 
             for fileMetadataId in fileMetadataIds.split():
                 if fileMetadataId in self.metadataMap:
@@ -607,7 +607,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                             return checksum
 
                         sync_url, proto = get_sync_url_and_protocol(
-                                                    get_sync_root(),
+                                                    self.syncRootDir,
                                                     df.url)
 
                         self.modelDatafile = models.Dataset_File(

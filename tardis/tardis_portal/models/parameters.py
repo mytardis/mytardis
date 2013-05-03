@@ -399,12 +399,15 @@ def pre_save_parameter(sender, **kwargs):
             and parameter.name.data_type == ParameterName.FILENAME:
         if parameter.string_value:
             from base64 import b64decode
-            from os import mkdir
+            from os import makedirs
             from os.path import exists, join
             from uuid import uuid4 as uuid
 
-            dirname = settings.FILE_STORE_PATH
+            dirname = join(settings.FILE_STORE_PATH, "metadata-cache")
             filename = str(uuid())
+            subdir1 = filename[0:2]
+            subdir2 = filename[2:4]
+            dirname = join(dirname, subdir1, subdir2)
             filepath = join(dirname, filename)
 
             b64 = parameter.string_value
@@ -412,8 +415,8 @@ def pre_save_parameter(sender, **kwargs):
             if modulo:
                 b64 += (4 - modulo) * '='
 
-            if not exists(dirname):
-                mkdir(dirname)
+            if not exists(directory):
+                makedirs(directory)
             f = open(filepath, 'w')
             try:
                 f.write(b64decode(b64))

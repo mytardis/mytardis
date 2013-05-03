@@ -424,7 +424,7 @@ def view_experiment(request, experiment_id,
     return HttpResponse(render_response_index(request, template_name, c))
 
 def _add_protocols_and_organizations(request, experiment, c):
-    """Add the protocol, format and organization details for 
+    """Add the protocol, format and organization details for
     archive requests."""
 
     c['protocol'] = []
@@ -432,14 +432,14 @@ def _add_protocols_and_organizations(request, experiment, c):
     for key, value in download_urls.iteritems():
         c['protocol'] += [[key, value]]
     # For now, just use the most preferred format as default
-    c['default_format'] = getattr(settings, 
-                                  'DEFAULT_ARCHIVE_FORMATS', 
+    c['default_format'] = getattr(settings,
+                                  'DEFAULT_ARCHIVE_FORMATS',
                                   ['zip', 'tar'])[0]
 
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = ['classic'] + get_download_organizations()
-    c['default_organization'] = getattr(settings, 
-                                        'DEFAULT_ARCHIVE_ORGANIZATION', 
+    c['default_organization'] = getattr(settings,
+                                        'DEFAULT_ARCHIVE_ORGANIZATION',
                                         'classic')
 
 @authz.experiment_access_required
@@ -1045,28 +1045,28 @@ def register_experiment_ws_xmldata(request):
                     f.write(chunk)
                 f.close()
             else:
-                xml_filename = form.cleaned_data['xml_filename']
-                filename = xml_filename
+                filename = form.cleaned_data['xml_filename']
 
             logger.info('=== processing experiment: START')
             owners = request.POST.getlist('experiment_owner')
             sync_path = get_sync_root(prefix="%d-" % local_id)
-            taskout = _registerExperimentDocument.delay(filename=filename,
-                                                        created_by=user,
-                                                        expid=local_id,
-                                                        owners=owners,
-                                                        username=username,
-                                                        sync_path=sync_path)
+            taskout = _registerExperimentDocument.delay(
+                filename=filename,
+                created_by=user,
+                expid=local_id,
+                owners=owners,
+                username=username,
+                sync_root=sync_path)
             logger.info('=== processing experiment %s: on delay' % local_id)
             logger.info('=== task: %s' % str(taskout))
             if from_url:
                 logger.info('Sending received_remote signal')
                 from tardis.tardis_portal.signals import received_remote
                 received_remote.send(sender=Experiment,
-                        instance=e,
-                        uid=origin_id,
-                        from_url=from_url,
-                        sync_path=sync_path)
+                                     instance=e,
+                                     uid=origin_id,
+                                     from_url=from_url,
+                                     sync_path=sync_path)
 
             response = HttpResponse(str(sync_path), status=200)
             response['Location'] = request.build_absolute_uri(
