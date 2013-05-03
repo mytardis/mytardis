@@ -426,19 +426,23 @@ def _add_protocols_and_organizations(request, experiment, c):
     streaming ZIP, the best way to avoid 'user disappointment' 
     is to not offer ZIP."""
 
-    logger.error('browser_data is %s' % getattr(request, 'browser_data', {}))
-    mac = getattr(request, 'browser_data', {}).get('platform') == 'MacOSX'
+    if getattr(settings, 'USER_AGENT_SENSING', False) and \
+            request.user_agent:
+        logger.debug('user_agent.os.family: %s' % request.user_agent.os.family)
+        cannot_do_zip = request.user_agent.os.family == 'Macintosh'
+    else:
+        cannot_do_zip = False
 
     c['protocol'] = []
     download_urls = experiment.get_download_urls()
     for key, value in download_urls.iteritems():
-        if mac and key == 'zip':
+        if cannot_do_zip and key == 'zip':
             continue
         c['protocol'] += [[key, value]]
 
     formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
     c['default_format'] = filter(
-        lambda x: not (mac and x == 'zip'), formats)[0]
+        lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = ['classic'] + get_download_organizations()
