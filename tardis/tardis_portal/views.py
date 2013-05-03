@@ -429,7 +429,8 @@ def _add_protocols_and_organizations(request, experiment, c):
     if getattr(settings, 'USER_AGENT_SENSING', False) and \
             request.user_agent:
         logger.debug('user_agent.os.family: %s' % request.user_agent.os.family)
-        cannot_do_zip = request.user_agent.os.family == 'Macintosh'
+        cannot_do_zip = request.user_agent.os.family in ['Macintosh', 
+                                                         'Mac OS X']
     else:
         cannot_do_zip = False
 
