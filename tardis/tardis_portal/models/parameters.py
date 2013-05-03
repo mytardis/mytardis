@@ -415,8 +415,8 @@ def pre_save_parameter(sender, **kwargs):
             if modulo:
                 b64 += (4 - modulo) * '='
 
-            if not exists(directory):
-                makedirs(directory)
+            if not exists(dirname):
+                makedirs(dirname)
             f = open(filepath, 'w')
             try:
                 f.write(b64decode(b64))
