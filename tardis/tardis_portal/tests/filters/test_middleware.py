@@ -126,13 +126,9 @@ class FilterInitTestCase(TestCase):
 
             self.datafiles[1].save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[1])
-            expect(t[0][1]).to_be_none()
+            expect(len(t)).to_equal(0)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
-            expect(t[0][0]).to_equal(self.datafiles[1])
-            expect(t[0][1]).to_be_none()
+            expect(len(t)).to_equal(0)
 
             self.datafiles[0].get_preferred_replica().save()
             t = Filter1.getTuples()

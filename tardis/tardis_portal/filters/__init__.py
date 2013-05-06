@@ -64,8 +64,16 @@ class FilterInitMiddleware(object):
             if len(f) >= 3:
                 kw = f[2]
 
-            # This hook dispatches a datafile save to a datafile filter
-            datafile_hook = self._safe_import(cls, args, kw)
+            # This hook dispatches a datafile save to a datafile filter.
+            # We only dispatch to the filter if the datafile's preferred
+            # replica is verified.
+            def make_datafile_hook(dfh):
+                def datafile_hook(**kw):
+                    datafile = kw.get('instance')
+                    if datafile.get_preferred_replica(verified=True):
+                        dfh(**kw)
+                return datafile_hook
+            datafile_hook = make_datafile_hook(self._safe_import(cls, args, kw))
 
             # This dispatches a replica save to a datafile filter if the
             # replica is now in 'verified' state.
