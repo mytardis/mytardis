@@ -45,7 +45,6 @@ setup(
         'pystache==0.5.2',  # For server-side Mustache rendering to aid SEO
         'rdflib==3.2.1',    # For ANZSRCO parsing for ANZSRC FoR codes
         'rdfextras==0.2',  # For parsing n3 ANZSRCO
-        'djangorestframework',
     ],
     dependency_links = [
         'https://github.com/dahlia/wand/tarball/warning-bugfix#egg=Wand-0.1.10',
