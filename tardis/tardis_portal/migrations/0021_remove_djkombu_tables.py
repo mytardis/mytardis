@@ -5,12 +5,14 @@ from south.v2 import SchemaMigration
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        conn = db._get_connection()
+        tables = conn.introspection.table_names()
 
-        # Deleting model 'Queue'
-        db.delete_table('djkombu_queue')
-
-        # Deleting model 'Message'
-        db.delete_table('djkombu_message')
+        for label, model in orm.models.items():
+            if label.split('.')[0] != self.complete_apps[0]:
+                continue
+            if model._meta.db_table in tables:
+                db.delete_table(model._meta.db_table)
 
     def backwards(self, orm):
         pass
