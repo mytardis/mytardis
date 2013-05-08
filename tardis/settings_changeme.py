@@ -196,7 +196,7 @@ INSTALLED_APPS = (
     'south',
     'django_jasmine',
     'djcelery',
-    'djkombu',
+    'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
     )
