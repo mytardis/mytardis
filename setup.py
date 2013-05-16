@@ -49,11 +49,12 @@ setup(
         'user-agents==0.1.1',
         'ua-parser==0.3.2',
         'PyYAML==3.10',
-        ],
-    dependency_links = [
-        'https://github.com/dahlia/wand/tarball/warning-bugfix#egg=Wand-0.1.10',
-        'https://github.com/UQ-CMM-Mirage/django-celery/tarball/2.5#egg=django-celery-2.5.5',
-        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
-        'https://github.com/russell/python-magic/tarball/master#egg=python-magic-0.4.0dev',
+        'django-tastypie',
+    ],
+    dependency_links=[
+        'https://github.com/dahlia/wand/tarball/warning-bugfix#egg=Wand-0.1.10',  # noqa
+        'https://github.com/UQ-CMM-Mirage/django-celery/tarball/2.5#egg=django-celery-2.5.5',  # noqa
+        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',  # noqa
+        'https://github.com/russell/python-magic/tarball/master#egg=python-magic-0.4.0dev',  # noqa
     ]
 )
