@@ -15,6 +15,7 @@ from .datafile import Dataset_File
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Schema(models.Model):
 
     EXPERIMENT = 1
@@ -304,7 +305,10 @@ class ExperimentParameterSet(models.Model):
     experiment = models.ForeignKey(Experiment)
 
     def __unicode__(self):
-        return '%s / %s' % (self.schema.namespace, self.experiment.title)
+        try:
+            return '%s / %s' % (self.schema.namespace, self.experiment.title)
+        except Exception:
+            return "Empty ExperimentParameterSet"
 
     class Meta:
         app_label = 'tardis_portal'
@@ -370,7 +374,10 @@ class ExperimentParameter(models.Model):
         return _getParameter(self)
 
     def __unicode__(self):
-        return 'Experiment Param: %s=%s' % (self.name.name, self.get())
+        try:
+            return 'Experiment Param: %s=%s' % (self.name.name, self.get())
+        except:
+            return 'Nameless and/or valueless parameter'
 
     class Meta:
         app_label = 'tardis_portal'
