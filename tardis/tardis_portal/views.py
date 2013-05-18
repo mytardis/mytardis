@@ -434,12 +434,13 @@ def _add_protocols_and_organizations(request, experiment, c):
     else:
         cannot_do_zip = False
 
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        if cannot_do_zip and key == 'zip':
-            continue
-        c['protocol'] += [[key, value]]
+    if experiment:
+        c['protocol'] = []
+        download_urls = experiment.get_download_urls()
+        for key, value in download_urls.iteritems():
+            if cannot_do_zip and key == 'zip':
+                continue
+            c['protocol'] += [[key, value]]
 
     formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
     c['default_format'] = filter(
@@ -598,12 +599,9 @@ def view_dataset(request, dataset_id):
             get_experiment_referer(request, dataset_id),
         'other_experiments':
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
-        'upload_method': upload_method,
-        'default_organization':
-            getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
-        'default_format':
-            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])[0]
+        'upload_method': upload_method
     })
+    _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
 
