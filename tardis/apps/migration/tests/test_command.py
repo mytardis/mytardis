@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -84,7 +84,8 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Mirrored datafile %s\n' % datafile.id)
+                          'Mirrored datafile %s\n'
+                          'Transferred 1 datafiles with 0 errors\n' % datafile.id)
 
 
     def testMigrateDatafile(self):
@@ -139,7 +140,8 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(), 
-                          'Migrated datafile %s\n' % datafile.id)
+                          'Migrated datafile %s\n'
+                          'Transferred 1 datafiles with 0 errors\n' % datafile.id)
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p) == (p != path))
 
@@ -151,7 +153,8 @@ class MigrateCommandTestCase(TestCase):
         except SystemExit:
             pass
         out.seek(0)
-        self.assertEquals(out.read(), '') 
+        self.assertEquals(out.read(), 
+                          'Transferred 2 datafiles with 0 errors\n') 
         for p in [path, path2, path3]:
             self.assertFalse(os.path.exists(p))
 
@@ -189,7 +192,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p))
@@ -202,7 +206,8 @@ class MigrateCommandTestCase(TestCase):
         except SystemExit:
             pass
         out.seek(0)
-        self.assertEquals(out.read(), '') # Fail quietly ... not remote
+        self.assertEquals(out.read(), # Fail quietly ... not remote
+                          'Transferred 0 datafiles with 0 errors\n') 
 
         # Now try migrating with 'no remove'
         out = StringIO()
@@ -216,7 +221,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p in [path, path2, path3]:
             self.assertTrue(os.path.exists(p))
@@ -234,7 +240,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
         for p, d in [(path, datafile), (path2, datafile2), 
                      (path3, datafile3)]:
@@ -275,7 +282,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
         out = StringIO()
@@ -288,7 +296,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
     def testMigrateExperiment(self):
@@ -309,7 +318,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
 
         out = StringIO()
@@ -323,7 +333,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 3 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id))
  
     def testMigrateAll(self):
@@ -347,7 +358,8 @@ class MigrateCommandTestCase(TestCase):
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 4 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id, 
                            datafile4.id))
 
@@ -362,7 +374,8 @@ class MigrateCommandTestCase(TestCase):
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
                           'Migrated datafile %s\n'
-                          'Migrated datafile %s\n' % 
+                          'Migrated datafile %s\n'
+                          'Transferred 4 datafiles with 0 errors\n' % 
                           (datafile.id, datafile2.id, datafile3.id,  
                            datafile4.id))
 
@@ -456,7 +469,8 @@ class MigrateCommandTestCase(TestCase):
         self.assertEquals(out.read(),
                           'Migrating %s / %s saving 6 bytes\n'
                           'Migrating %s / %s saving 6 bytes\n'
-                          'Reclaimed 12 bytes\n' %
+                          'Reclaimed 12 bytes\n'
+                          'Transferred 2 datafiles with 0 errors\n' %
                           (url, datafile.id, url2, datafile2.id))
 
     def testMigrateEnsure(self):
