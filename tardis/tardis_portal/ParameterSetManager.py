@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
+from django.utils.timezone import is_aware, make_aware
 
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
@@ -166,22 +166,8 @@ class ParameterSetManager(object):
             param = self.blank_param()
             param.parameterset = self.parameterset
             param.name = self._get_create_parname(parname, fullparname,
-                example_value=example_value)
-            #param.string_value = value
-            #param.save()
-        if param.name.isNumeric():
-            param.numerical_value = float(value)
-        elif param.name.isDateTime():
-            if settings.USE_TZ:
-                if (is_naive(value)):
-                    value = make_aware(value, LOCAL_TZ)
-                param.datetime_value = value
-            else:
-                if (is_aware(value)):
-                    value = make_naive(value, LOCAL_TZ)
-                param.datetime_value = value
-        else:
-            param.string_value = unicode(value)
+                                                  example_value=example_value)
+        param.set_value(value)
         param.save()
         return param.id
 
@@ -191,19 +177,7 @@ class ParameterSetManager(object):
         param.name = self._get_create_parname(parname, fullparname)
         param.string_value = value
         param.save()
-        if param.name.isNumeric():
-            param.numerical_value = float(value)
-        elif param.name.isDateTime():
-            if settings.USE_TZ:
-                if (is_naive(value)):
-                    value = make_aware(value, LOCAL_TZ)
-                param.datetime_value = value
-            else:
-                if (is_aware(value)):
-                    value = make_naive(value, LOCAL_TZ)
-                param.datetime_value = value
-        else:
-            param.string_value = unicode(value)
+        param.set_value(value)
         param.save()
         return param.id
 

@@ -4,6 +4,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.safestring import mark_safe
+from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.managers import OracleSafeManager,\
@@ -15,6 +16,9 @@ from .datafile import Dataset_File
 
 import logging
 import operator
+import pytz
+
+LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
 
 
@@ -346,6 +350,18 @@ class Parameter(models.Model):
                                         self.name.name, self.get())
         except:
             return 'Unitialised %sParameter' % self.parameter_type
+
+    def set_value(self, value):
+        if self.name.isNumeric():
+            self.numerical_value = float(value)
+        elif self.name.isDateTime():
+            if settings.USE_TZ and is_naive(value):
+                value = make_aware(value, LOCAL_TZ)
+            elif not settings.USE_TZ and is_aware(value):
+                value = make_naive(value, LOCAL_TZ)
+            self.datetime_value = value
+        else:
+            self.string_value = unicode(value)
 
 
 class DatafileParameter(Parameter):

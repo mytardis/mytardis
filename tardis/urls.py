@@ -211,6 +211,12 @@ display_urls = patterns(
 )
 
 ## API SECTION
+from tardis.tardis_portal.api import DatasetParameterSetResource
+from tardis.tardis_portal.api import DatasetParameterResource
+from tardis.tardis_portal.api import DatasetResource
+from tardis.tardis_portal.api import Dataset_FileResource
+from tardis.tardis_portal.api import DatafileParameterSetResource
+from tardis.tardis_portal.api import DatafileParameterResource
 from tardis.tardis_portal.api import ExperimentParameterResource
 from tardis.tardis_portal.api import ExperimentParameterSetResource
 from tardis.tardis_portal.api import ExperimentResource
@@ -219,6 +225,12 @@ from tardis.tardis_portal.api import SchemaResource
 from tardis.tardis_portal.api import UserResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
+v1_api.register(DatasetParameterSetResource())
+v1_api.register(DatasetParameterResource())
+v1_api.register(DatasetResource())
+v1_api.register(Dataset_FileResource())
+v1_api.register(DatafileParameterSetResource())
+v1_api.register(DatafileParameterResource())
 v1_api.register(ExperimentParameterResource())
 v1_api.register(ExperimentParameterSetResource())
 v1_api.register(ExperimentResource())

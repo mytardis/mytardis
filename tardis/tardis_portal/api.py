@@ -11,7 +11,13 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ExperimentACL
+from tardis.tardis_portal.models.datafile import Dataset_File
+from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
+from tardis.tardis_portal.models.parameters import DatafileParameter
+from tardis.tardis_portal.models.parameters import DatafileParameterSet
+from tardis.tardis_portal.models.parameters import DatasetParameter
+from tardis.tardis_portal.models.parameters import DatasetParameterSet
 from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
@@ -20,6 +26,7 @@ from tardis.tardis_portal.models.parameters import Schema
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication, MultiAuthentication
 from tastypie.authorization import Authorization
+from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.resources import ModelResource
 
@@ -69,13 +76,17 @@ class ACLAuthorization(Authorization):
             # allow all authenticated users to read user list
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == ExperimentParameterSet:
-            return True # has_experiment_access(
+            return True  # has_experiment_access(
 #                bundle.request, bundle.obj.experiment.id)
         elif type(bundle.obj) == Schema:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == ParameterName:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == ExperimentParameter:
+            return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == Dataset:
+            return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == DatasetParameter:
             return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
@@ -87,11 +98,17 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         elif type(bundle.obj) == ExperimentParameterSet:
             return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment') # and \
-#                has_write_permissions(bundle.request, bundle.obj.experiment.id)
+                'tardis_portal.change_experiment')  # and \
+#             has_write_permissions(bundle.request, bundle.obj.experiment.id)
         elif type(bundle.obj) == ExperimentParameter:
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment')
+        elif type(bundle.obj) == Dataset:
+            return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == DatasetParameterSet:
+            return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == DatasetParameter:
+            return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -113,11 +130,13 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == ExperimentParameterSet:
             return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')# and \
-          #      has_write_permissions(bundle.request, bundle.obj.experiment.id)
+                'tardis_portal.change_experiment')  # and \
+        #      has_write_permissions(bundle.request, bundle.obj.experiment.id)
         elif type(bundle.obj) == ExperimentParameter:
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment')
+        elif type(bundle.obj) == DatasetParameter:
+            return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
     def delete_list(self, object_list, bundle):
@@ -168,71 +187,88 @@ class MyTardisModelResource(ModelResource):
         serializer = default_serializer
 
 
-class SchemaResource(ModelResource):
+class SchemaResource(MyTardisModelResource):
 
     def lookup_kwargs_with_identifiers(self, bundle, kwargs):
         return lookup_by_unique_id_only(SchemaResource)(self, bundle, kwargs)
 
-    class Meta:
+    class Meta(MyTardisModelResource.Meta):
         queryset = Schema.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        serializer = default_serializer
 
 
-class ParameterNameResource(ModelResource):
+class ParameterNameResource(MyTardisModelResource):
     schema = fields.ForeignKey(SchemaResource, 'schema')
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(ParameterNameResource)(
-            self, bundle, kwargs)
-
-    class Meta:
+    class Meta(MyTardisModelResource.Meta):
         queryset = ParameterName.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        serializer = default_serializer
 
 
-class ExperimentParameterSetResource(ModelResource):
+class ParameterResource(MyTardisModelResource):
+    name = fields.ForeignKey(ParameterNameResource, 'name')
+    value = fields.CharField(blank=True)
+
+    def hydrate(self, bundle):
+        '''
+        sets the parametername by uri or name
+        if untyped value is given, set value via parameter method,
+        otherwise use modelresource automatisms
+        '''
+        try:
+            parname = ParameterNameResource.get_via_uri(
+                ParameterNameResource(),
+                bundle.data['name'], bundle.request)
+        except NotFound:
+            parname = bundle.related_obj._get_create_parname(
+                bundle.data['name'])
+        del(bundle.data['name'])
+        bundle.obj.name = parname
+        if 'value' in bundle.data:
+            bundle.obj.set_value(bundle.data['value'])
+            del(bundle.data['value'])
+        return bundle
+
+
+class ParameterSetResource(MyTardisModelResource):
+    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
+
+    def hydrate_schema(self, bundle):
+        try:
+            schema = SchemaResource.get_via_uri(SchemaResource(),
+                                                bundle.data['schema'],
+                                                bundle.request)
+        except NotFound:
+            try:
+                schema = Schema.objects.get(namespace=bundle.data['schema'])
+            except Schema.DoesNotExist:
+                raise
+        bundle.obj.schema = schema
+        del(bundle.data['schema'])
+        return bundle
+
+
+class ExperimentParameterSetResource(ParameterSetResource):
     '''API for ExperimentParameterSets
     '''
     experiment = fields.ForeignKey(
         'tardis.tardis_portal.api.ExperimentResource', 'experiment')
-    schema = fields.ForeignKey(SchemaResource, 'schema', full=True)
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.ExperimentParameterResource',
         'experimentparameter_set',
         related_name='parameterset', full=True)
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(ExperimentParameterSetResource)(
-            self, bundle, kwargs)
-
-    class Meta:
+    class Meta(ParameterSetResource.Meta):
         queryset = ExperimentParameterSet.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        serializer = default_serializer
 
 
-class ExperimentParameterResource(ModelResource):
-    name = fields.ForeignKey(ParameterNameResource, 'name')
+class ExperimentParameterResource(ParameterResource):
     parameterset = fields.ForeignKey(ExperimentParameterSetResource,
                                      'parameterset')
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(ExperimentParameterResource)(
-            self, bundle, kwargs)
-
-    class Meta:
+    class Meta(ParameterResource.Meta):
         queryset = ExperimentParameter.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        serializer = default_serializer
 
 
-class ExperimentResource(ModelResource):
+class ExperimentResource(MyTardisModelResource):
     '''API for Experiments
     also creates a default ACL and allows ExperimentParameterSets to be read
     and written.
@@ -246,15 +282,8 @@ class ExperimentResource(ModelResource):
         related_name='experiment',
         full=True, null=True)
 
-    def lookup_kwargs_with_identifiers(self, bundle, kwargs):
-        return lookup_by_unique_id_only(ExperimentResource)(
-            self, bundle, kwargs)
-
-    class Meta:
+    class Meta(MyTardisModelResource.Meta):
         queryset = Experiment.objects.all()
-        authentication = default_authentication
-        authorization = ACLAuthorization()
-        serializer = default_serializer
 
     def obj_create(self, bundle, **kwargs):
         '''experiments need at least one ACL to be available through the
@@ -279,3 +308,65 @@ class ExperimentResource(ModelResource):
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
         return bundle
+
+
+class DatasetParameterSetResource(ParameterSetResource):
+    dataset = fields.ForeignKey(
+        'tardis.tardis_portal.api.DatasetResource', 'dataset')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.DatasetParameterResource',
+        'datasetparameter_set',
+        related_name='parameterset', full=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = DatasetParameterSet.objects.all()
+
+
+class DatasetParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(DatasetParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = DatasetParameter.objects.all()
+
+
+class DatasetResource(MyTardisModelResource):
+    experiments = fields.ToManyField(
+        ExperimentResource, 'experiments', related_name='datasets')
+    parameter_sets = fields.ToManyField(
+        DatasetParameterSetResource,
+        'datasetparameterset_set',
+        related_name='dataset',
+        full=True, null=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Dataset.objects.all()
+
+
+class Dataset_FileResource(MyTardisModelResource):
+    dataset = fields.ForeignKey(DatasetResource, 'dataset')
+    url = fields.CharField()
+    location = fields.CharField(blank=True)
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Dataset_File.objects.all()
+
+
+class DatafileParameterSetResource(ParameterSetResource):
+    dataset_file = fields.ForeignKey(
+        'tardis.tardis_portal.api.Dataset_FileResource', 'dataset_file')
+    parameters = fields.ToManyField(
+        'tardis.tardis_portal.api.DatafileParameterResource',
+        'datafileparameter_set',
+        related_name='parameterset', full=True)
+
+    class Meta(ParameterSetResource.Meta):
+        queryset = DatafileParameterSet.objects.all()
+
+
+class DatafileParameterResource(ParameterResource):
+    parameterset = fields.ForeignKey(DatafileParameterSetResource,
+                                     'parameterset')
+
+    class Meta(ParameterResource.Meta):
+        queryset = DatafileParameter.objects.all()
