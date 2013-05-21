@@ -129,6 +129,8 @@ class Command(BaseCommand):
         destAlive = self._ping(self.dest, 'Destination')
         if not self.dryRun and (not sourceAlive or not destAlive):
             return
+        self.transfer_count = 0
+        self.error_count = 0
         if subcommand == 'reclaim':
             if not self.source.name == 'local':
                 raise CommandError("Can only 'reclaim' for source 'local'")
@@ -157,7 +159,13 @@ class Command(BaseCommand):
             else:
                 raise CommandError("Unknown target: %s" % target)
         else:
-            raise CommandError("Unrecognized subcommand: %s" % subcommand)
+            raise CommandError("Unrecognized subcommand: %s" % subcommand)    
+        self._stats()
+
+    def _stats(self):
+        if not self.dryRun and self.verbosity > 0:
+            self.stdout.write("Transferred %s datafiles with %s errors\n" %
+                              (self.transfer_count, self.error_count))
 
     def _all_datafiles(self, subcommand):
         # To make things faster, filter out any datafiles that don't have
@@ -219,6 +227,8 @@ class Command(BaseCommand):
                 elif self.verbosity > 2:
                     self.stdout.write('Did not %s datafile %s\n' % \
                                           (subcommand, id))
+            if ok:
+                self.transfer_count += 1
         except Replica.DoesNotExist:
             if explicit and self.verbosity > 2:
                 self.stderr.write('No replica of %s exists at %s\n' % \
@@ -227,6 +237,7 @@ class Command(BaseCommand):
             self.stderr.write(
                 '%s failed for datafile %s : %s\n' % \
                     (self._noun(subcommand), id, e.args[0]))
+            self.error_count += 1
 
     def _ping(self, location, label):
         if not location.provider.alive():
@@ -352,9 +363,18 @@ class Command(BaseCommand):
                     self.stdout.write("Migrating %s / %s saving %s bytes\n" % \
                                           (replica.url, datafile.id, 
                                            datafile.size))
-            total += int(datafile.size) 
-            if not self.dryRun:
-                migrate_replica(replica, self.dest)
+            if self.dryRun:
+                total += int(datafile.size) 
+            else:
+                try:
+                    if migrate_replica(replica, self.dest):
+                        total += int(datafile.size) 
+                        self.transfer_count += 1
+                except MigrationError as e:              
+                    self.stderr.write(
+                        '%s failed for datafile %s : %s\n' % \
+                            (self._noun(subcommand), id, e.args[0]))
+                    self.error_count += 1
         if self.dryRun:
             self.stdout.write("Would have reclaimed %d bytes\n" % total)
         else:
