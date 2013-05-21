@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -79,10 +79,11 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         try:
             newreplica = Replica.objects.get(datafile=replica.datafile,
                                              location=location)
-            # We've most likely mirrored this file previously.  But since
+            created_replica = False
+            # We've most likely mirrored this file previously.  But if
             # we are about to delete the source Replica, we need to check
             # that the target Replica still verifies.
-            if not check_file_transferred(newreplica, location):
+            if not mirror and not check_file_transferred(newreplica, location):
                 raise MigrationError('Previously mirrored / migrated Replica' \
                                          ' no longer verifies locally!')
         except Replica.DoesNotExist:
@@ -112,9 +113,10 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             newreplica.save()
             logger.info('Transferred file %s for replica %s' %
                         (filename, replica.id))
+            created_replica = True
         
         if mirror:
-            return True
+            return created_replica
 
         # FIXME - do this more reliably ...
         replica.delete()
