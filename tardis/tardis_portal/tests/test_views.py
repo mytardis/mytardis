@@ -57,7 +57,7 @@ from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ExperimentACL, Experiment, Dataset, Dataset_File, Schema, \
-    DatafileParameterSet, Location
+    DatafileParameterSet, Replica, Location
 
 class UploadTestCase(TestCase):
 
@@ -822,6 +822,9 @@ class ViewTemplateContextsTest(TestCase):
         """
         setting up essential objects, copied from tests above
         """
+        Location.force_initialize()
+        self.location = Location.get_location('local')
+
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
@@ -848,6 +851,11 @@ class ViewTemplateContextsTest(TestCase):
                                          size=42, filename="foo",
                                          md5sum="junk")
         self.dataset_file.save()
+        self.replica = Replica(datafile=self.dataset_file,
+                               url="http://foo",
+                               location=self.location,
+                               verified=False)
+        self.replica.save()
 
     def tearDown(self):
         self.user.delete()
@@ -866,6 +874,7 @@ class ViewTemplateContextsTest(TestCase):
         from django.template import Context
         import sys
 
+        # Default behavior
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
         request.user=self.user
@@ -873,12 +882,38 @@ class ViewTemplateContextsTest(TestCase):
         context = {'organization': ['classic', 'test', 'test2'],
                    'default_organization': 'classic', 
                    'default_format': 'zip', 
-                   'protocol': []}
+                   'protocol': [['zip', '/download/experiment/1/zip/'], 
+                                ['tar', '/download/experiment/1/tar/']]}
         views_module.should_call('render_response_index'). \
             with_args(_AnyMatcher(), "tardis_portal/view_experiment.html", 
                       _ContextMatcher(context)) 
         response = view_experiment(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
+
+        # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
+        saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
+        try:
+            setattr(settings, "USER_AGENT_SENSING", True)
+            request = HttpRequest()
+            request.user=self.user
+            request.groups=[]
+            mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
+            setattr(request, 'user_agent', mock_agent);
+            context = {'organization': ['classic', 'test', 'test2'],
+                       'default_organization': 'classic', 
+                       'default_format': 'tar', 
+                       'protocol': [['tar', '/download/experiment/1/tar/']]}
+            views_module.should_call('render_response_index'). \
+                with_args(_AnyMatcher(), "tardis_portal/view_experiment.html", 
+                          _ContextMatcher(context)) 
+            response = view_experiment(request, experiment_id=self.exp.id)
+            self.assertEqual(response.status_code, 200)
+        finally:
+            if saved_setting != None:
+                setattr(settings, "USER_AGENT_SENSING", saved_setting)
+            else:
+                delattr(settings, "USER_AGENT_SENSING")
+            
 
     def testDatasetView(self):
         """
@@ -902,6 +937,28 @@ class ViewTemplateContextsTest(TestCase):
         response = view_dataset(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
 
+        # Behavior with USER_AGENT_SENSING enabled and a request.user_agent
+        saved_setting = getattr(settings, "USER_AGENT_SENSING", None)
+        try:
+            setattr(settings, "USER_AGENT_SENSING", True)
+            request = HttpRequest()
+            request.user=self.user
+            request.groups=[]
+            mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
+            setattr(request, 'user_agent', mock_agent);
+            context = {'default_organization': 'classic', 
+                       'default_format': 'tar'}
+            views_module.should_call('render_response_index'). \
+                with_args(_AnyMatcher(), "tardis_portal/view_dataset.html", 
+                          _ContextMatcher(context)) 
+            response = view_dataset(request, dataset_id=self.dataset.id)
+            self.assertEqual(response.status_code, 200)
+        finally:
+            if saved_setting != None:
+                setattr(settings, "USER_AGENT_SENSING", saved_setting)
+            else:
+                delattr(settings, "USER_AGENT_SENSING")
+
 
 class _ContextMatcher(object):
     def __init__(self, template):
@@ -915,3 +972,9 @@ class _ContextMatcher(object):
 class _AnyMatcher(object):
     def __eq__(self, other):
         return True
+
+class _MiniMock(object):
+    def __new__(cls, **attrs):
+        result = object.__new__(cls)
+        result.__dict__ = attrs
+        return result
