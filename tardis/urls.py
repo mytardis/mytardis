@@ -220,7 +220,9 @@ from tardis.tardis_portal.api import DatafileParameterResource
 from tardis.tardis_portal.api import ExperimentParameterResource
 from tardis.tardis_portal.api import ExperimentParameterSetResource
 from tardis.tardis_portal.api import ExperimentResource
+from tardis.tardis_portal.api import LocationResource
 from tardis.tardis_portal.api import ParameterNameResource
+from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
 from tardis.tardis_portal.api import UserResource
 from tastypie.api import Api
@@ -234,7 +236,9 @@ v1_api.register(DatafileParameterResource())
 v1_api.register(ExperimentParameterResource())
 v1_api.register(ExperimentParameterSetResource())
 v1_api.register(ExperimentResource())
+v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
+v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
 v1_api.register(UserResource())
 api_urls = patterns(

@@ -4,8 +4,13 @@ Implemented with Tastypie.
 
 Author: Grischa Meyer
 '''
+import json as simplejson
+import os
+
+from django.core.serializers import json
 from django.contrib.auth.models import User
 
+from tardis.tardis_portal.auth.decorators import has_dataset_write
 from tardis.tardis_portal.auth.decorators import has_delete_permissions
 from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
@@ -14,6 +19,7 @@ from tardis.tardis_portal.models import ExperimentACL
 from tardis.tardis_portal.models.datafile import Dataset_File
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
+from tardis.tardis_portal.models.location import Location
 from tardis.tardis_portal.models.parameters import DatafileParameter
 from tardis.tardis_portal.models.parameters import DatafileParameterSet
 from tardis.tardis_portal.models.parameters import DatasetParameter
@@ -22,6 +28,9 @@ from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
+from tardis.tardis_portal.models.replica import Replica
+from tardis.tardis_portal.staging import get_sync_root
+from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication, MultiAuthentication
@@ -29,9 +38,6 @@ from tastypie.authorization import Authorization
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.resources import ModelResource
-
-import json as simplejson
-from django.core.serializers import json
 from tastypie.serializers import Serializer
 
 
@@ -88,27 +94,79 @@ class ACLAuthorization(Authorization):
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == DatasetParameter:
             return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == Location:
+            return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
     def create_list(self, object_list, bundle):
         raise NotImplementedError(type(bundle.obj))
 
     def create_detail(self, object_list, bundle):
+        if not bundle.request.user.is_authenticated():
+            return False
         if type(bundle.obj) == Experiment:
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
-        elif type(bundle.obj) == ExperimentParameterSet:
+        elif type(bundle.obj) in (ExperimentParameterSet,):
             return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')  # and \
-#             has_write_permissions(bundle.request, bundle.obj.experiment.id)
-        elif type(bundle.obj) == ExperimentParameter:
+                'tardis_portal.change_experiment') and \
+                has_write_permissions(bundle.request, bundle.obj.experiment.id)
+        elif type(bundle.obj) in (ExperimentParameter,):
             return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment')
+                'tardis_portal.change_experiment') and \
+                has_write_permissions(bundle.request,
+                                      bundle.obj.parameterset.experiment.id)
         elif type(bundle.obj) == Dataset:
-            return bundle.request.user.is_authenticated()
-        elif type(bundle.obj) == DatasetParameterSet:
-            return bundle.request.user.is_authenticated()
-        elif type(bundle.obj) == DatasetParameter:
-            return bundle.request.user.is_authenticated()
+            if not bundle.request.user.has_perm(
+                    'tardis_portal.change_dataset'):
+                return False
+            perm = False
+            for exp_uri in bundle.data.get('experiments', []):
+                try:
+                    this_exp = ExperimentResource.get_via_uri(
+                        ExperimentResource(), exp_uri, bundle.request)
+                except:
+                    return False
+                if has_write_permissions(bundle.request, this_exp.id):
+                    perm = True
+                else:
+                    return False
+            return perm
+        elif type(bundle.obj) in (DatasetParameterSet,):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_dataset') and \
+                has_dataset_write(bundle.request, bundle.obj.dataset.id)
+        elif type(bundle.obj) in (DatasetParameter,):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_dataset') and \
+                has_dataset_write(bundle.request,
+                                  bundle.obj.parameterset.dataset.id)
+        elif type(bundle.obj) == Dataset_File:
+            dataset = DatasetResource.get_via_uri(DatasetResource(),
+                                                  bundle.data['dataset'],
+                                                  bundle.request)
+            return all([
+                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                has_dataset_write(bundle.request, dataset.id),
+            ])
+        elif type(bundle.obj) == Replica:
+            return all([
+                bundle.request.user.has_perm('tardis_portal.change_dataset'),
+                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                has_dataset_write(bundle.request,
+                                  bundle.obj.datafile.dataset.id),
+            ])
+        elif type(bundle.obj) in (DatafileParameterSet,):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_dataset') and \
+                has_dataset_write(bundle.request,
+                                  bundle.obj.dataset_file.dataset.id)
+        elif type(bundle.obj) in (DatafileParameter,):
+            return bundle.request.user.has_perm(
+                'tardis_portal.change_dataset') and \
+                has_dataset_write(
+                    bundle.request,
+                    bundle.obj.parameterset.dataset_file.dataset.id)
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -285,15 +343,11 @@ class ExperimentResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
         queryset = Experiment.objects.all()
 
-    def obj_create(self, bundle, **kwargs):
-        '''experiments need at least one ACL to be available through the
-        ExperimentManager (Experiment.safe)
-        Currently not tested for failed db transactions as sqlite does not
-        enforce limits.
+    def hydrate_m2m(self, bundle):
         '''
-        user = bundle.request.user
-        bundle.data['created_by'] = user
-        bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
+        create ACL before any related objects are created in order to use
+        ACL permissions for those objects.
+        '''
         if getattr(bundle.obj, 'id', False):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
@@ -307,6 +361,17 @@ class ExperimentResource(MyTardisModelResource):
                                 isOwner=True,
                                 aclOwnershipType=ExperimentACL.OWNER_OWNED)
             acl.save()
+        return super(ExperimentResource, self).hydrate_m2m(bundle)
+
+    def obj_create(self, bundle, **kwargs):
+        '''experiments need at least one ACL to be available through the
+        ExperimentManager (Experiment.safe)
+        Currently not tested for failed db transactions as sqlite does not
+        enforce limits.
+        '''
+        user = bundle.request.user
+        bundle.data['created_by'] = user
+        bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
         return bundle
 
 
@@ -345,16 +410,92 @@ class DatasetResource(MyTardisModelResource):
 
 class Dataset_FileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
-    url = fields.CharField()
-    location = fields.CharField(blank=True)
+    parameter_sets = fields.ToManyField(
+        'tardis.tardis_portal.api.DatafileParameterSetResource',
+        'datafileparameterset_set',
+        related_name='dataset_file',
+        full=True, null=True)
+    datafile = fields.FileField()
+    #location = fields.CharField(blank=True)
+    replicas = fields.ToManyField(
+        'tardis.tardis_portal.api.ReplicaResource',
+        'replica_set',
+        related_name='datafile', full=True)
+    temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset_File.objects.all()
 
+    def hydrate(self, bundle):
+        dataset = DatasetResource.get_via_uri(DatasetResource(),
+                                              bundle.data['dataset'],
+                                              bundle.request)
+        if 'attached_file' in bundle.data:
+            # have POSTed file
+            newfile = bundle.data['attached_file'][0]
+            file_path = write_uploaded_file_to_dataset(dataset,
+                                                       newfile)
+            location_name = 'local'
+            del(bundle.data['attached_file'])
+        elif 'replica' not in bundle.data:
+            # no replica specified: return upload path and create replica for
+            # new path
+            location_name = 'sync_temp'
+            url = get_sync_root(prefix="%d-" %
+                                dataset.get_first_experiment().id)
+            # TODO make sure filename isn't duplicate
+            file_path = os.path.join(url, bundle.data['filename'])
+            self.temp_url = file_path
+            file_path = "file://" + file_path
+        newreplica = {
+            'url': file_path,
+            'protocol': 'file',
+            'location': location_name,
+        }
+        bundle.data['replicas'] = [newreplica]
+        return bundle
+
+    def post_list(self, request, **kwargs):
+        response = super(Dataset_FileResource, self).post_list(request,
+                                                               **kwargs)
+        if self.temp_url is not None:
+            response.content = self.temp_url
+        return response
+
+    def deserialize(self, request, data, format=None):
+        '''
+        from https://github.com/toastdriven/django-tastypie/issues/42
+        modified to deserialize json sent via POST. Would fail if data is sent
+        in a different format.
+        uses a hack to get back pure json from request.POST
+        '''
+        if not format:
+            format = request.META.get('CONTENT_TYPE', 'application/json')
+        if format == 'application/x-www-form-urlencoded':
+            return request.POST
+        if format.startswith('multipart'):
+            jsondata = request.POST.keys()[0]
+            data = super(Dataset_FileResource, self).deserialize(
+                request, jsondata, format='application/json')
+            data.update(request.FILES)
+            return data
+        return super(Dataset_FileResource, self).deserialize(request,
+                                                             data, format)
+
+    def put_detail(self, request, **kwargs):
+        '''
+        from https://github.com/toastdriven/django-tastypie/issues/42
+        '''
+        if request.META.get('CONTENT_TYPE').startswith('multipart') and \
+                not hasattr(request, '_body'):
+            request._body = ''
+
+        return super(Dataset_FileResource, self).put_detail(request, **kwargs)
+
 
 class DatafileParameterSetResource(ParameterSetResource):
     dataset_file = fields.ForeignKey(
-        'tardis.tardis_portal.api.Dataset_FileResource', 'dataset_file')
+        Dataset_FileResource, 'dataset_file')
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterResource',
         'datafileparameter_set',
@@ -370,3 +511,30 @@ class DatafileParameterResource(ParameterResource):
 
     class Meta(ParameterResource.Meta):
         queryset = DatafileParameter.objects.all()
+
+
+class LocationResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Location.objects.all()
+
+
+class ReplicaResource(MyTardisModelResource):
+    datafile = fields.ForeignKey(Dataset_FileResource, 'datafile')
+    location = fields.ForeignKey(LocationResource, 'location')
+
+    class Meta(MyTardisModelResource.Meta):
+        queryset = Replica.objects.all()
+
+    def hydrate_location(self, bundle):
+        try:
+            location = LocationResource.get_via_uri(LocationResource(),
+                                                    bundle.data['location'],
+                                                    bundle.request)
+        except NotFound:
+            try:
+                location = Location.objects.get(name=bundle.data['location'])
+            except Location.DoesNotExist:
+                raise
+        bundle.obj.location = location
+        del(bundle.data['location'])
+        return bundle
