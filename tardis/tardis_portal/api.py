@@ -2,7 +2,7 @@
 RESTful API for MyTardis models and data.
 Implemented with Tastypie.
 
-Author: Grischa Meyer
+.. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
 import os
@@ -33,7 +33,9 @@ from tardis.tardis_portal.staging import get_sync_root
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tastypie import fields
-from tastypie.authentication import BasicAuthentication, MultiAuthentication
+from tastypie.authentication import BasicAuthentication
+from tastypie.authentication import MultiAuthentication
+from tastypie.authentication import SessionAuthentication
 from tastypie.authorization import Authorization
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
@@ -57,7 +59,8 @@ if settings.DEBUG:
 else:
     default_serializer = Serializer()
 
-default_authentication = MultiAuthentication(BasicAuthentication())
+default_authentication = MultiAuthentication(BasicAuthentication(),
+                                             SessionAuthentication())
 
 
 class ACLAuthorization(Authorization):
