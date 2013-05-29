@@ -7,8 +7,11 @@ Implemented with Tastypie.
 import json as simplejson
 import os
 
-from django.core.serializers import json
+from django.conf.urls.defaults import url
 from django.contrib.auth.models import User
+from django.core.serializers import json
+from django.core.servers.basehttp import FileWrapper
+from django.http import HttpResponse
 
 from tardis.tardis_portal.auth.decorators import has_dataset_write
 from tardis.tardis_portal.auth.decorators import has_delete_permissions
@@ -41,6 +44,7 @@ from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
+from tastypie.utils import trailing_slash
 
 
 class PrettyJSONSerializer(Serializer):
@@ -94,6 +98,8 @@ class ACLAuthorization(Authorization):
         elif type(bundle.obj) == ExperimentParameter:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == Dataset:
+            return bundle.request.user.is_authenticated()
+        elif type(bundle.obj) == Dataset_File:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == DatasetParameter:
             return bundle.request.user.is_authenticated()
@@ -429,6 +435,19 @@ class Dataset_FileResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset_File.objects.all()
 
+    def download_file(self, request, **kwargs):
+        '''
+        curl needs the -J switch to get the filename right
+        '''
+        file_record = self._meta.queryset.get(pk=kwargs['pk'])
+        file_object = file_record.get_file()
+        wrapper = FileWrapper(file_object)
+        response = HttpResponse(wrapper, content_type=file_record.mimetype)
+        response['Content-Length'] = file_record.size
+        response['Content-Disposition'] = 'attachment; filename="%s"' % \
+                                          file_record.filename
+        return response
+
     def hydrate(self, bundle):
         dataset = DatasetResource.get_via_uri(DatasetResource(),
                                               bundle.data['dataset'],
@@ -444,10 +463,10 @@ class Dataset_FileResource(MyTardisModelResource):
             # no replica specified: return upload path and create replica for
             # new path
             location_name = 'sync_temp'
-            url = get_sync_root(prefix="%d-" %
-                                dataset.get_first_experiment().id)
+            stage_url = get_sync_root(prefix="%d-" %
+                                      dataset.get_first_experiment().id)
             # TODO make sure filename isn't duplicate
-            file_path = os.path.join(url, bundle.data['filename'])
+            file_path = os.path.join(stage_url, bundle.data['filename'])
             self.temp_url = file_path
             file_path = "file://" + file_path
         newreplica = {
@@ -465,6 +484,13 @@ class Dataset_FileResource(MyTardisModelResource):
             response.content = self.temp_url
         return response
 
+    def prepend_urls(self):
+        return [
+            url(r"^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/download%s$" %
+                (self._meta.resource_name, trailing_slash()),
+                self.wrap_view('download_file'), name="api_download_file"),
+        ]
+
     def deserialize(self, request, data, format=None):
         '''
         from https://github.com/toastdriven/django-tastypie/issues/42
@@ -477,7 +503,7 @@ class Dataset_FileResource(MyTardisModelResource):
         if format == 'application/x-www-form-urlencoded':
             return request.POST
         if format.startswith('multipart'):
-            jsondata = request.POST.keys()[0]
+            jsondata = request.POST['json_data']
             data = super(Dataset_FileResource, self).deserialize(
                 request, jsondata, format='application/json')
             data.update(request.FILES)
