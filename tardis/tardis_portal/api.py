@@ -439,13 +439,22 @@ class Dataset_FileResource(MyTardisModelResource):
         '''
         curl needs the -J switch to get the filename right
         '''
+        #import ipdb; ipdb.set_trace()
+        self.method_check(request, allowed=['get'])
+        self.is_authenticated(request)
+        self.throttle_check(request)
+
         file_record = self._meta.queryset.get(pk=kwargs['pk'])
+        self.authorized_read_detail(
+            [file_record],
+            self.build_bundle(obj=file_record, request=request))
         file_object = file_record.get_file()
         wrapper = FileWrapper(file_object)
         response = HttpResponse(wrapper, content_type=file_record.mimetype)
         response['Content-Length'] = file_record.size
         response['Content-Disposition'] = 'attachment; filename="%s"' % \
                                           file_record.filename
+        self.log_throttled_access(request)
         return response
 
     def hydrate(self, bundle):
