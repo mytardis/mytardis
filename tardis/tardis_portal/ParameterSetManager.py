@@ -1,15 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
+from django.utils.timezone import is_aware, make_aware
 
-from tardis.tardis_portal.models import DatasetParameterSet
-from tardis.tardis_portal.models import DatafileParameterSet
-from tardis.tardis_portal.models import ExperimentParameterSet
-from tardis.tardis_portal.models import ParameterName
-from tardis.tardis_portal.models import DatasetParameter
-from tardis.tardis_portal.models import DatafileParameter
-from tardis.tardis_portal.models import ExperimentParameter
-from tardis.tardis_portal.models import Schema
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
@@ -17,6 +9,7 @@ from tardis.tardis_portal.models import Dataset_File
 import pytz
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
+
 
 class ParameterSetManager(object):
 
@@ -49,26 +42,35 @@ class ParameterSetManager(object):
         :param schema: Schema namespace
         :type schema: string
         """
+        from tardis.tardis_portal.models import DatasetParameterSet
+        from tardis.tardis_portal.models import DatafileParameterSet
+        from tardis.tardis_portal.models import ExperimentParameterSet
+        from tardis.tardis_portal.models import DatasetParameter
+        from tardis.tardis_portal.models import DatafileParameter
+        from tardis.tardis_portal.models import ExperimentParameter
+        from tardis.tardis_portal.models.parameters import ParameterSet
 
-        if parameterset:
+        if issubclass(type(self), ParameterSet):
+            pass
+        elif parameterset:
             self.parameterset = parameterset
             self.schema = self.parameterset.schema
             self.namespace = self.schema.namespace
 
             if isinstance(self.parameterset, DatafileParameterSet):
-                self.parameters = DatafileParameter.objects.filter(\
+                self.parameters = DatafileParameter.objects.filter(
                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatafileParameter
 
             elif isinstance(self.parameterset, DatasetParameterSet):
-                self.parameters = DatasetParameter.objects.filter(\
+                self.parameters = DatasetParameter.objects.filter(
                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = DatasetParameter
 
             elif isinstance(self.parameterset, ExperimentParameterSet):
-                self.parameters = ExperimentParameter.objects.filter(\
+                self.parameters = ExperimentParameter.objects.filter(
                    parameterset=self.parameterset).order_by('name__full_name')
 
                 self.blank_param = ExperimentParameter
@@ -121,6 +123,7 @@ class ParameterSetManager(object):
             raise TypeError("Missing arguments")
 
     def get_schema(self):
+        from tardis.tardis_portal.models import Schema
         try:
             schema = Schema.objects.get(
                 namespace=self.namespace)
@@ -163,22 +166,8 @@ class ParameterSetManager(object):
             param = self.blank_param()
             param.parameterset = self.parameterset
             param.name = self._get_create_parname(parname, fullparname,
-                example_value=example_value)
-            #param.string_value = value
-            #param.save()
-        if param.name.isNumeric():
-            param.numerical_value = float(value)
-        elif param.name.isDateTime():
-            if settings.USE_TZ:
-                if (is_naive(value)):
-                    value = make_aware(value, LOCAL_TZ)
-                param.datetime_value = value
-            else:
-                if (is_aware(value)):
-                    value = make_naive(value, LOCAL_TZ)
-                param.datetime_value = value
-        else:
-            param.string_value = unicode(value)
+                                                  example_value=example_value)
+        param.set_value(value)
         param.save()
         return param.id
 
@@ -188,19 +177,7 @@ class ParameterSetManager(object):
         param.name = self._get_create_parname(parname, fullparname)
         param.string_value = value
         param.save()
-        if param.name.isNumeric():
-            param.numerical_value = float(value)
-        elif param.name.isDateTime():
-            if settings.USE_TZ:
-                if (is_naive(value)):
-                    value = make_aware(value, LOCAL_TZ)
-                param.datetime_value = value
-            else:
-                if (is_aware(value)):
-                    value = make_naive(value, LOCAL_TZ)
-                param.datetime_value = value
-        else:
-            param.string_value = unicode(value)
+        param.set_value(value)
         param.save()
         return param.id
 
@@ -208,7 +185,7 @@ class ParameterSetManager(object):
     def set_param_list(self, parname, value_list, fullparname=None):
         self.delete_params(parname)
         for value in value_list:
-            if value != None:
+            if value is not None:
                 self.new_param(parname, value, fullparname)
 
     def set_params_from_dict(self, dict):
@@ -216,7 +193,7 @@ class ParameterSetManager(object):
             if type(value) is list:
                 self.set_param_list(key, value)
             else:
-                if value != None:
+                if value is not None:
                     self.delete_params(key)
                     self.set_param(key, value)
 
@@ -231,6 +208,7 @@ class ParameterSetManager(object):
 
     def _get_create_parname(self, parname,
                             fullparname=None, example_value=None):
+        from tardis.tardis_portal.models import ParameterName
         try:
             paramName = ParameterName.objects.get(name=parname,
                                schema__id=self.get_schema().id)

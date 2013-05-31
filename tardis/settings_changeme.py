@@ -200,7 +200,8 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
-    )
+    'tastypie',
+)
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
