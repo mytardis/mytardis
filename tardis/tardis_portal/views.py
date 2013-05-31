@@ -427,20 +427,30 @@ def _add_protocols_and_organizations(request, experiment, c):
     """Add the protocol, format and organization details for
     archive requests."""
 
-    c['protocol'] = []
-    download_urls = experiment.get_download_urls()
-    for key, value in download_urls.iteritems():
-        c['protocol'] += [[key, value]]
-    # For now, just use the most preferred format as default
-    c['default_format'] = getattr(settings,
-                                  'DEFAULT_ARCHIVE_FORMATS',
-                                  ['zip', 'tar'])[0]
+    if getattr(settings, 'USER_AGENT_SENSING', False) and \
+            request.user_agent:
+        logger.debug('user_agent.os.family: %s' % request.user_agent.os.family)
+        cannot_do_zip = request.user_agent.os.family in ['Macintosh', 
+                                                         'Mac OS X']
+    else:
+        cannot_do_zip = False
+
+    if experiment:
+        c['protocol'] = []
+        download_urls = experiment.get_download_urls()
+        for key, value in download_urls.iteritems():
+            if cannot_do_zip and key == 'zip':
+                continue
+            c['protocol'] += [[key, value]]
+
+    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
+    c['default_format'] = filter(
+        lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 
     from tardis.tardis_portal.download import get_download_organizations
     c['organization'] = ['classic'] + get_download_organizations()
-    c['default_organization'] = getattr(settings,
-                                        'DEFAULT_ARCHIVE_ORGANIZATION',
-                                        'classic')
+    c['default_organization'] = getattr(
+        settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
 
 @authz.experiment_access_required
 def experiment_description(request, experiment_id):
@@ -590,12 +600,9 @@ def view_dataset(request, dataset_id):
             get_experiment_referer(request, dataset_id),
         'other_experiments':
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
-        'upload_method': upload_method,
-        'default_organization':
-            getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
-        'default_format':
-            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])[0]
+        'upload_method': upload_method
     })
+    _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
 
@@ -869,7 +876,7 @@ def login(request):
     '''
     handler for login page
     '''
-    from tardis.tardis_portal.auth import login
+    from tardis.tardis_portal.auth import login, auth_service
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
