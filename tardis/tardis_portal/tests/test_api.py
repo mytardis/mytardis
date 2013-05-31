@@ -4,6 +4,8 @@ Testing the tastypie-based mytardis api
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json
+import os
+import tempfile
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
@@ -226,10 +228,10 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
         self.django_client = Client()
         self.django_client.login(username=self.username,
                                  password=self.password)
-        testds = Dataset()
-        testds.description = "test dataset"
-        testds.save()
-        testds.experiments.add(self.testexp)
+        self.testds = Dataset()
+        self.testds.description = "test dataset"
+        self.testds.save()
+        self.testds.experiments.add(self.testexp)
         df_schema_name = "http://datafileshop.com/"
         self.test_schema = Schema(namespace=df_schema_name,
                                   type=Schema.DATAFILE)
@@ -263,8 +265,7 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
     }]
 }"""
 
-        import tempfile
-        post_file = tempfile.TemporaryFile()
+        post_file = tempfile.NamedTemporaryFile()
         file_content = "123test\n"
         post_file.write(file_content)
         post_file.flush()
@@ -273,7 +274,7 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
         replica_count = Replica.objects.count()
         self.assertHttpCreated(self.django_client.post(
             '/api/v1/dataset_file/',
-            data={post_data: "", "attached_file": post_file}))
+            data={"json_data": post_data, "attached_file": post_file}))
         self.assertEqual(datafile_count + 1, Dataset_File.objects.count())
         self.assertEqual(replica_count + 1, Replica.objects.count())
         # fake-verify Replica, so we can access the file:
@@ -285,6 +286,73 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
 
     def test_shared_fs_single_file(self):
         pass
+
+    def test_shared_fs_many_files(self):
+        '''
+        tests sending many files with known permanent location
+        (useful for Australian Synchrotron ingestions)
+        '''
+        files = [{'content': 'test123\n'},
+                 {'content': 'test246\n'}]
+        from django.conf import settings
+        for file_dict in files:
+            post_file = tempfile.NamedTemporaryFile(
+                dir=settings.FILE_STORE_PATH)
+            file_dict['filename'] = os.path.basename(post_file.name)
+            file_dict['full_path'] = post_file.name
+            post_file.write(file_dict['content'])
+            post_file.flush()
+            post_file.seek(0)
+            file_dict['object'] = post_file
+
+        def clumsily_build_uri(res_type, dataset):
+            return '/api/v1/%s/%d/' % (res_type, dataset.id)
+
+        def md5sum(filename):
+            import hashlib
+            md5 = hashlib.md5()
+            with open(filename, 'rb') as f:
+                for chunk in iter(lambda: f.read(128*md5.block_size), b''):
+                    md5.update(chunk)
+            return md5.hexdigest()
+
+        def guess_mime(filename):
+            import magic
+            mime = magic.Magic(mime=True)
+            return mime.from_file(filename)
+
+        json_data = {"objects": []}
+        #from nose.tools import set_trace; set_trace()
+        for file_dict in files:
+            file_json = {
+                'dataset': clumsily_build_uri('dataset', self.testds),
+                'filename': os.path.basename(file_dict['filename']),
+                'md5sum': md5sum(file_dict['full_path']),
+                'size': os.path.getsize(file_dict['full_path']),
+                'mimetype': guess_mime(file_dict['full_path']),
+                'replicas': [{
+                    'url': file_dict['filename'],
+                    'location': 'local',
+                    'protocol': 'file',
+                }],
+            }
+            json_data['objects'].append(file_json)
+
+        datafile_count = Dataset_File.objects.count()
+        replica_count = Replica.objects.count()
+        self.assertHttpAccepted(self.api_client.patch(
+            '/api/v1/dataset_file/',
+            data=json_data,
+            authentication=self.get_credentials()))
+        self.assertEqual(datafile_count + 2, Dataset_File.objects.count())
+        self.assertEqual(replica_count + 2, Replica.objects.count())
+        # fake-verify Replica, so we can access the file:
+        for newrep in Replica.objects.order_by('-pk')[0:2]:
+            newrep.verified = True
+            newrep.save()
+        for sent_file, new_file in zip(
+                reversed(files), Dataset_File.objects.order_by('-pk')[0:2]):
+            self.assertEqual(sent_file['content'], new_file.get_file().read())
 
 
 class DatafileParameterSetResourceTest(MyTardisResourceTestCase):

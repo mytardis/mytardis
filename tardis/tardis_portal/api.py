@@ -248,6 +248,9 @@ class MyTardisModelResource(ModelResource):
         return lookup_by_unique_id_only(MyTardisModelResource)(
             self, bundle, kwargs)
 
+    def patch_list(self, request, **kwargs):
+        return super(MyTardisModelResource, self).patch_list(request, **kwargs)
+
     class Meta:
         authentication = default_authentication
         authorization = ACLAuthorization()
@@ -425,7 +428,6 @@ class Dataset_FileResource(MyTardisModelResource):
         related_name='dataset_file',
         full=True, null=True)
     datafile = fields.FileField()
-    #location = fields.CharField(blank=True)
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
         'replica_set',
@@ -438,8 +440,8 @@ class Dataset_FileResource(MyTardisModelResource):
     def download_file(self, request, **kwargs):
         '''
         curl needs the -J switch to get the filename right
+        auth needs to be added manually here
         '''
-        #import ipdb; ipdb.set_trace()
         self.method_check(request, allowed=['get'])
         self.is_authenticated(request)
         self.throttle_check(request)
@@ -468,16 +470,18 @@ class Dataset_FileResource(MyTardisModelResource):
                                                        newfile)
             location_name = 'local'
             del(bundle.data['attached_file'])
-        elif 'replica' not in bundle.data:
+        elif 'replicas' not in bundle.data:
             # no replica specified: return upload path and create replica for
             # new path
-            location_name = 'sync_temp'
+            location_name = 'staging'
             stage_url = get_sync_root(prefix="%d-" %
                                       dataset.get_first_experiment().id)
             # TODO make sure filename isn't duplicate
             file_path = os.path.join(stage_url, bundle.data['filename'])
             self.temp_url = file_path
             file_path = "file://" + file_path
+        else:
+            return bundle
         newreplica = {
             'url': file_path,
             'protocol': 'file',
