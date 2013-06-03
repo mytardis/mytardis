@@ -7,12 +7,17 @@ Implemented with Tastypie.
 import json as simplejson
 import os
 
+from django.conf import settings
 from django.conf.urls.defaults import url
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
 
+from tardis.tardis_portal.auth.decorators import \
+    get_accessible_datafiles_for_user
+from tardis.tardis_portal.auth.decorators import has_dataset_access
 from tardis.tardis_portal.auth.decorators import has_dataset_write
 from tardis.tardis_portal.auth.decorators import has_delete_permissions
 from tardis.tardis_portal.auth.decorators import has_experiment_access
@@ -36,8 +41,8 @@ from tardis.tardis_portal.staging import get_sync_root
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tastypie import fields
+from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authentication import BasicAuthentication
-from tastypie.authentication import MultiAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authorization import Authorization
 from tastypie.exceptions import NotFound
@@ -57,32 +62,84 @@ class PrettyJSONSerializer(Serializer):
                                 sort_keys=True, ensure_ascii=False,
                                 indent=self.json_indent) + "\n"
 
-from django.conf import settings
 if settings.DEBUG:
     default_serializer = PrettyJSONSerializer()
 else:
     default_serializer = Serializer()
 
-default_authentication = MultiAuthentication(BasicAuthentication(),
-                                             SessionAuthentication())
+
+class MyTardisAuthentication(object):
+    '''
+    custom tastypie authentication that works with both anonymous use and
+    a number of available auth mechanisms.
+    '''
+    def __init__(self, *args, **kwargs):
+        self.backends = (BasicAuthentication,
+                         SessionAuthentication)
+
+    def is_authenticated(self, request, **kwargs):
+        from tastypie.http import HttpUnauthorized
+        if BasicAuthentication in self.backends:
+            basic_auth = BasicAuthentication()
+            check = basic_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    if 'HTTP_AUTHORIZATION' in request.META:
+                        return False
+                else:
+                    request._authentication_backend = basic_auth
+                    return check
+        if SessionAuthentication in self.backends:
+            session_auth = SessionAuthentication()
+            check = session_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return False
+                else:
+                    request._authentication_backend = session_auth
+                    return check
+
+        request.user = AnonymousUser()
+        return True
+
+    def get_identifier(self, request):
+        try:
+            return request._authentication_backend.get_identifier(request)
+        except AttributeError:
+            return 'nouser'
+
+default_authentication = MyTardisAuthentication()
 
 
 class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
-    Currently works for:
-      - Experiments
-    In the future, either rename this to ExperimentAuth and create many
-    classes or make this one the master-auth class.
-
-    Listed are all methods. The unused ones raise NotImplementedError.
     '''
     def read_list(self, object_list, bundle):
+        #import ipdb; ipdb.set_trace()
         if type(bundle.obj) == Experiment:
             return type(bundle.obj).safe.all(bundle.request)
+        if type(bundle.obj) == ExperimentParameterSet:
+            experiments = Experiment.safe.all(bundle.request)
+            eps_list = []
+            for eps in ExperimentParameterSet.objects.all():
+                exp = eps.experiment
+                if exp in experiments:
+                    eps_list.append(eps)
+            print len(eps_list)
+            return eps_list
+        elif type(bundle.obj) == Dataset:
+            datasets = []
+            for ds in Dataset.objects.all():
+                if has_dataset_access(bundle.request, ds.id):
+                    datasets.append(ds)
+            return datasets
+        elif type(bundle.obj) == Dataset_File:
+            return get_accessible_datafiles_for_user(bundle.request)
         else:
-            return object_list
+            return []
 
     def read_detail(self, object_list, bundle):
+        import ipdb; ipdb.set_trace()
         if type(bundle.obj) == Experiment:
             return has_experiment_access(bundle.request, bundle.obj.id)
         elif type(bundle.obj) == User:
@@ -207,7 +264,6 @@ class ACLAuthorization(Authorization):
         raise NotImplementedError(type(bundle.obj))
 
     def delete_list(self, object_list, bundle):
-        # Sorry user, no deletes for you!
         raise Unauthorized("Sorry, no deletes.")
 
     def delete_detail(self, object_list, bundle):
