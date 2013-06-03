@@ -45,7 +45,7 @@ def get_accessible_experiments(request):
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
     experiments = Experiment.safe.all(request)
-    
+
     # probably a much cleverer way of writing this with safe
     experiment_dataset_access = []
     for experiment in experiments:
@@ -101,11 +101,11 @@ def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
 
 def has_experiment_download_access(request, experiment_id):
-    
+
     if Experiment.safe.owned_and_shared(request) \
                       .filter(id=experiment_id) \
                       .exists():
-                      
+
         return True
     else:
         exp = Experiment.objects.get(id=experiment_id)
@@ -397,19 +397,19 @@ def delete_permissions_required(f):
 def upload_auth(f):
     def wrap(request, *args, **kwargs):
         from datetime import datetime
-        try:
-            session_id = request.POST['session_id']
-        except:
-            session_id = request.COOKIES[settings.SESSION_COOKIE_NAME]
-        s = Session.objects.get(pk=session_id)
-        if s.expire_date > datetime.now():
+        session_id = request.POST.get('session_id',
+                                      request.COOKIES.get(
+                                          settings.SESSION_COOKIE_NAME,
+                                          None))
+        sessions = Session.objects.filter(pk=session_id)
+        if len(sessions) != 0 and sessions[0].expire_date > datetime.now():
             try:
                 request.user = User.objects.get(
-                    pk=s.get_decoded()['_auth_user_id'])
+                    pk=sessions[0].get_decoded()['_auth_user_id'])
             except:
                 if request.is_ajax():
                     return HttpResponse("")
-                raise
+                return return_response_error(request)
         return f(request, *args, **kwargs)
 
     wrap.__doc__ = f.__doc__
