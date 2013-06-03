@@ -253,7 +253,8 @@ var MyTardis = (function(){
       }
     },
     render: function() {
-      // Wrap data with helper functions #steve
+      // This makes the rendering of badge data asynchronous
+      // A temporary fix to be changed when bootstrap.js is removed entirely..
       var el = $(this.el);
         $.ajax({
           url: '/ajax/json/dataset/' + this.model.id,
