@@ -501,6 +501,23 @@ class ExperimentResource(MyTardisModelResource):
         bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
         return bundle
 
+    def obj_get_list(self, bundle, **kwargs):
+        '''
+        responds to EPN query for Australian Synchrotron
+        '''
+        if hasattr(bundle.request, 'GET') and 'EPN' in bundle.request.GET:
+            epn = bundle.request.GET['EPN']
+            exp_schema = Schema.objects.get(
+                namespace=
+                'http://www.tardis.edu.au/schemas/as/experiment/2010/09/21')
+            epn_pn = ParameterName.objects.get(schema=exp_schema, name='EPN')
+            parameter = ExperimentParameter.objects.get(name=epn_pn,
+                                                        string_value=epn)
+            experiment_id = parameter.parameterset.experiment.id
+            return Experiment.objects.filter(pk=experiment_id)
+        return super(ExperimentResource, self).obj_get_list(bundle,
+                                                            **kwargs)
+
 
 class DatasetParameterSetResource(ParameterSetResource):
     dataset = fields.ForeignKey(
