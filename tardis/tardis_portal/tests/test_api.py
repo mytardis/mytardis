@@ -101,6 +101,22 @@ class MyTardisResourceTestCase(ResourceTestCase):
                                  password=self.password)
 
 
+class MyTardisAuthenticationTest(MyTardisResourceTestCase):
+    def test_bad_credentials(self):
+        self.assertHttpOK(self.api_client.get(
+            '/api/v1/experiment/'))
+        good_credentials = self.create_basic(username=self.username,
+                                             password=self.password)
+        bad_credentials = self.create_basic(username=self.username,
+                                            password="wrong pw, dude!")
+        self.assertHttpOK(self.api_client.get(
+            '/api/v1/experiment/',
+            authentication=good_credentials))
+        self.assertHttpUnauthorized(self.api_client.get(
+            '/api/v1/experiment/',
+            authentication=bad_credentials))
+
+
 class SchemaResourceTest(MyTardisResourceTestCase):
     def setUp(self):
         super(SchemaResourceTest, self).setUp()
