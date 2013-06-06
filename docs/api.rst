@@ -23,6 +23,55 @@ Accessible Models
 - DatafileParameterSet
 - DatafileParameter
 
+Authentication
+==============
+
+Currently implemented are Basic Auth, to be used via HTTPS only, and
+SessionAuth which queries Django sessions.
+
+Due to our desire to provide information to users without any log ing, eg. for
+public data, the Basic Auth mechanism is slightly non-standard.
+
+The standard sends an anonymous request, awaits a WWW-Authenticate header,
+then sends authentication credentials. This API sends public data for all
+anonymous requests.
+
+Using ``curl`` or the ``requests`` library this poses no problem. However,
+using ``urllib2`` or web browser without a Django session is not going to work
+out of the box.
+
+Here is a snippet found on the web that makes urllib2 work, should you want to
+use this library::
+
+    class PreemptiveBasicAuthHandler(urllib2.BaseHandler):
+
+            def __init__(self, password_mgr=None):
+                    if password_mgr is None:
+                        password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
+                    self.passwd = password_mgr
+                    self.add_password = self.passwd.add_password
+
+            def http_request(self, req):
+                    uri = req.get_full_url()
+                    user, pw = self.passwd.find_user_password(None, uri)
+                    if pw is None:
+                        return req
+
+                    raw = "%s:%s" % (user, pw)
+                    auth = 'Basic %s' % base64.b64encode(raw).strip()
+                    req.add_unredirected_header('Authorization', auth)
+                    return req
+
+    auth_handler = PreemptiveBasicAuthHandler()
+    auth_handler.add_password(realm=None,
+                              uri=url,
+                              user='mytardis',
+                              passwd='mytardis')
+    opener = urllib2.build_opener(auth_handler)
+    # ...and install it globally so it can be used with urlopen.
+    urllib2.install_opener(opener)
+
+
 Creating objects, adding files (POST)
 =====================================
 
