@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
@@ -324,7 +325,7 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
             namespace = operator.attrgetter('schema.namespace')(self)
             label = operator.attrgetter(labelattribute)(self)
             return '%s / %s' % (namespace, label)
-        except AttributeError:
+        except (AttributeError, ObjectDoesNotExist):
             return 'Uninitialised %sParameterSet' % default
 
 

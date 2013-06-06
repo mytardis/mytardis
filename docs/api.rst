@@ -40,8 +40,9 @@ Using ``curl`` or the ``requests`` library this poses no problem. However,
 using ``urllib2`` or web browser without a Django session is not going to work
 out of the box.
 
-Here is a snippet found on the web that makes urllib2 work, should you want to
-use this library::
+Here is a snippet (found here:
+http://stackoverflow.com/questions/4628610/does-urllib2-support-preemptive-authentication-authentication)
+that makes urllib2 work, should you want to use this library::
 
     class PreemptiveBasicAuthHandler(urllib2.BaseHandler):
 
