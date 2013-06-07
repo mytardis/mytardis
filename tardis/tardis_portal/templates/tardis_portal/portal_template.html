@@ -51,12 +51,12 @@
         });
     });
     </script>
-    
+
     <script type="text/javascript">
-    // Define canvas HTML   
+    // Define canvas HTML
     canvas = '<canvas style="width: 100px"></canvas>';
     </script>
-    
+
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -231,7 +231,13 @@
             $('#status-alert .message').text('Experiment Created');
           } else if(window.location.hash == '#saved') {
               $('#status-alert .message').text('Experiment Saved');
-          }
+          } else if(window.location.hash.indexOf('#error:') == 0) {
+	      showMsg.error(decodeURIComponent(window.location.hash.substr(7)));
+	      window.location.hash = "";
+	      var scrollV, scrollH, loc = window.location;
+	      if ("pushState" in history)
+		  history.pushState("", document.title, loc.pathname + loc.search);
+	  }
           if ($('#status-alert .message').text().trim() != "") {
             $('#status-alert').css('display', '');
           }
