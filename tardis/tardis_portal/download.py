@@ -213,6 +213,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
                      verified. Verification is an automated background process.
                      Please try again later or contact the system
                      administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
         redirect = redirect + '#error:' + message
         return HttpResponseRedirect(redirect)
 
