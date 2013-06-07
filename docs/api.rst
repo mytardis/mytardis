@@ -14,11 +14,11 @@ Accessible Models
 - Experiment
 - ExperimentParameterSet
 - ExperimentParameter
--
+- -
 - Dataset
 - DatasetParameterSet
 - DatasetParameter
--
+- -
 - Dataset_File
 - DatafileParameterSet
 - DatafileParameter
@@ -42,7 +42,9 @@ out of the box.
 
 Here is a snippet (found here:
 http://stackoverflow.com/questions/4628610/does-urllib2-support-preemptive-authentication-authentication)
-that makes urllib2 work, should you want to use this library::
+that makes urllib2 work, should you want to use this library:
+
+.. code-block:: python
 
     class PreemptiveBasicAuthHandler(urllib2.BaseHandler):
 
@@ -91,7 +93,9 @@ header of the response.
 
 Experiments
 -----------
-Example JSON input::
+Example JSON input
+
+.. code-block:: javascript
 
   {
     "title": "API-created Experiment #1",
@@ -135,7 +139,9 @@ is discouraged.
 
 Datasets
 --------
-Example JSON input::
+Example JSON input:
+
+.. code-block:: javascript
 
   {
     "description": "API-created Dataset",
@@ -186,7 +192,9 @@ To use requests you need to install it first, eg. ``pip install requests``.
 Also, for this to work, the POST data needs to be sent with the JSON string
 called ``'json_data'`` and the file called ``'attached_file'``.
 
-Example JSON input::
+Example JSON input:
+
+.. code-block:: javascript
 
   {
       "dataset": "/api/v1/dataset/1/",
@@ -207,7 +215,9 @@ Example JSON input::
       }]
   }
 
-Example requests script::
+Example requests script:
+
+.. code-block:: python
 
     import requests
     from requests.auth import HTTPBasicAuth
@@ -232,7 +242,9 @@ location managed by MyTardis.
 The full file path that you should copy/move the file to is returned as the
 content of the response.
 
-Example JSON input::
+Example JSON input:
+
+.. code-block:: javascript
 
   {
       "dataset": "/api/v1/dataset/1/",
@@ -264,7 +276,9 @@ MyTardis and you. The registered file will remain in this location.
 For this to work you need to get a ``Location`` (internal MyTardis settings)
 name to submit with your metadata.
 
-Examples JSON::
+Examples JSON:
+
+.. code-block:: javascript
 
   {
      "dataset": "/api/v1/dataset/1/",
@@ -297,7 +311,7 @@ Replace ``MODEL`` with
 one of the available model names in lower case. ``data`` is the JSON as a
 string.
 
-::
+.. code-block:: python
 
     import urllib2
     url = "http://localhost:8000/api/v1/MODEL/"
