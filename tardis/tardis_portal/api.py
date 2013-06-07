@@ -214,9 +214,15 @@ class ACLAuthorization(Authorization):
         if type(bundle.obj) == Experiment:
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         elif type(bundle.obj) in (ExperimentParameterSet,):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_experiment') and \
-                has_write_permissions(bundle.request, bundle.obj.experiment.id)
+            if not bundle.request.user.has_perm(
+                    'tardis_portal.change_experiment'):
+                return False
+            experiment_uri = bundle.data.get('experiment', None)
+            if experiment_uri is not None:
+                experiment = ExperimentResource.get_via_uri(
+                    ExperimentResource(), experiment_uri, bundle.request)
+                return has_write_permissions(bundle.request, experiment.id)
+            return False
         elif type(bundle.obj) in (ExperimentParameter,):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_experiment') and \
@@ -439,7 +445,7 @@ class ExperimentParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.ExperimentParameterResource',
         'experimentparameter_set',
-        related_name='parameterset', full=True)
+        related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
         queryset = ExperimentParameterSet.objects.all()
@@ -501,6 +507,26 @@ class ExperimentResource(MyTardisModelResource):
         bundle = super(ExperimentResource, self).obj_create(bundle, **kwargs)
         return bundle
 
+    def obj_get_list(self, bundle, **kwargs):
+        '''
+        responds to EPN query for Australian Synchrotron
+        '''
+        if hasattr(bundle.request, 'GET') and 'EPN' in bundle.request.GET:
+            epn = bundle.request.GET['EPN']
+            exp_schema = Schema.objects.get(
+                namespace=
+                'http://www.tardis.edu.au/schemas/as/experiment/2010/09/21')
+            epn_pn = ParameterName.objects.get(schema=exp_schema, name='EPN')
+            parameter = ExperimentParameter.objects.get(name=epn_pn,
+                                                        string_value=epn)
+            experiment_id = parameter.parameterset.experiment.id
+            experiment = Experiment.objects.filter(pk=experiment_id)
+            if experiment[0] in Experiment.safe.all(bundle.request):
+                return experiment
+
+        return super(ExperimentResource, self).obj_get_list(bundle,
+                                                            **kwargs)
+
 
 class DatasetParameterSetResource(ParameterSetResource):
     dataset = fields.ForeignKey(
@@ -508,7 +534,7 @@ class DatasetParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatasetParameterResource',
         'datasetparameter_set',
-        related_name='parameterset', full=True)
+        related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
         queryset = DatasetParameterSet.objects.all()
@@ -656,7 +682,7 @@ class DatafileParameterSetResource(ParameterSetResource):
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterResource',
         'datafileparameter_set',
-        related_name='parameterset', full=True)
+        related_name='parameterset', full=True, null=True)
 
     class Meta(ParameterSetResource.Meta):
         queryset = DatafileParameterSet.objects.all()

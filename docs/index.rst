@@ -78,6 +78,8 @@ Development
 
    contextual_views
 
+   api
+
    changes
    contributing
 
@@ -89,4 +91,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
