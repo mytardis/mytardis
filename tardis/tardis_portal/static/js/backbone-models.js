@@ -228,19 +228,8 @@ var MyTardis = (function(){
     initialize: function(options) {
       // Render on change
       this.render = _.bind(this.render, this);
-      this.model.bind('change', this.render);
       this.model.bind('sync', this.render);
-      
-      $.ajax({
-        url: '/ajax/json/dataset/' + this.model.id,
-        async: false,
-        dataType: 'json',
-        success: function (dsdata) {
-            var dsdatafiles = dsdata['datafiles'];
-            dfcount = dsdatafiles.length;
-            dssize = dsdata['size_human_readable'];            
-        }
-      });
+      //this.model.bind('change', this.render);
 
     },
     templateWrapper: {
@@ -249,9 +238,6 @@ var MyTardis = (function(){
         return Mustache.to_html(
             Mustache.TEMPLATES['tardis_portal/badges/datafile_count'],
             {
-              'title': _.sprintf("Contains %s file%s",
-                                 dfcount, dfcount == 1 ? '' : 's'),
-              'count': dfcount,             
             },
             Mustache.TEMPLATES
         );
@@ -261,15 +247,31 @@ var MyTardis = (function(){
         return Mustache.to_html(
             Mustache.TEMPLATES['tardis_portal/badges/size'],
             {
-              'title': _.sprintf("Dataset size is ", dssize),
-              'label': dssize,
             },
             Mustache.TEMPLATES
         );
       }
     },
     render: function() {
-      // Wrap data with helper functions #steve
+      // This makes the rendering of badge data asynchronous
+      // A temporary fix to be changed when bootstrap.js is removed entirely..
+      var el = $(this.el);
+        $.ajax({
+          url: '/ajax/json/dataset/' + this.model.id,
+          async: true,
+          dataType: 'json',
+          success: function (dsdata) {
+            var dsdatafiles = dsdata['datafiles'];
+              dfcount = dsdatafiles.length;
+              dssize = dsdata['size_human_readable'];
+
+              el.find('span.badge-inverse').first().html('<i class="icon-file"></i> ' + dfcount);
+              el.find('span.badge-inverse').first().attr('title', 'Contains ' + dfcount + ' files');
+              el.find('span.badge-inverse').last().html(dssize);
+              el.find('span.badge-inverse').last().attr('title', 'Dataset size is ' + dssize);
+          }
+        });
+
       var data = _.defaults(_.clone(this.templateWrapper),
                             this.model.attributes);
       // Render
