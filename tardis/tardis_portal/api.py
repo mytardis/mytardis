@@ -222,6 +222,9 @@ class ACLAuthorization(Authorization):
                 experiment = ExperimentResource.get_via_uri(
                     ExperimentResource(), experiment_uri, bundle.request)
                 return has_write_permissions(bundle.request, experiment.id)
+            elif getattr(bundle.obj.experiment, 'id', False):
+                return has_write_permissions(bundle.request,
+                                             bundle.obj.experiment.id)
             return False
         elif type(bundle.obj) in (ExperimentParameter,):
             return bundle.request.user.has_perm(
