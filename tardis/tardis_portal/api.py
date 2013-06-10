@@ -248,9 +248,18 @@ class ACLAuthorization(Authorization):
                     return False
             return perm
         elif type(bundle.obj) in (DatasetParameterSet,):
-            return bundle.request.user.has_perm(
-                'tardis_portal.change_dataset') and \
-                has_dataset_write(bundle.request, bundle.obj.dataset.id)
+            if not bundle.request.user.has_perm(
+                    'tardis_portal.change_dataset'):
+                return False
+            dataset_uri = bundle.data.get('dataset', None)
+            if dataset_uri is not None:
+                dataset = DatasetResource.get_via_uri(
+                    DatasetResource(), dataset_uri, bundle.request)
+                return has_dataset_write(bundle.request, dataset.id)
+            elif getattr(bundle.obj.dataset, 'id', False):
+                return has_dataset_write(bundle.request,
+                                         bundle.obj.dataset.id)
+            return False
         elif type(bundle.obj) in (DatasetParameter,):
             return bundle.request.user.has_perm(
                 'tardis_portal.change_dataset') and \
@@ -639,6 +648,7 @@ class Dataset_FileResource(MyTardisModelResource):
                                                                **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
+            self.temp_url = None
         return response
 
     def prepend_urls(self):
