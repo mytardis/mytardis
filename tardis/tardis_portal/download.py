@@ -19,7 +19,7 @@ try:
 except ImportError:
     zlib = None
     crc32 = binascii.crc32
-    
+
 from itertools import chain
 from tempfile import mkstemp, gettempdir, NamedTemporaryFile
 from threading import Thread
@@ -44,9 +44,9 @@ logger = logging.getLogger(__name__)
 class StreamingFile:
 
     def __init__(self, writer_callable, asynchronous_file_creation=False):
-        # Caution, only use 'asynchronous_file_creation=True' if the 
+        # Caution, only use 'asynchronous_file_creation=True' if the
         # writer_callable outputs the file strictly sequentially.  If it seeks
-        # backwards to back-fill details (like ZipFile does!), this can cause 
+        # backwards to back-fill details (like ZipFile does!), this can cause
         # a data race and can result in a corrupted download.
         _, self.name = mkstemp()
         self.asynchronous = asynchronous_file_creation
@@ -83,15 +83,15 @@ class StreamingFile:
     def close(self):
         self.reader.close()
         os.unlink(self.name)
-        
+
 class StreamableZipFile(ZipFile):
     def __init__(self, file, mode="r", compression=ZIP_STORED, allowZip64=False):
         ZipFile.__init__(self, file, mode, compression, allowZip64)
-    
+
     def write(self, filename, arcname=None, compress_type=None):
         """Put the bytes from filename into the archive under the name
         arcname.  The file is written in strictly sequential fashion - no seeking."""
-        
+
         # This code is a tweaked version of ZipFile.write ...
         # TODO: add an alternative version that works with a stream rather than a filename.
         if not self.fp:
@@ -118,7 +118,7 @@ class StreamableZipFile(ZipFile):
             zinfo.compress_type = compress_type
 
         zinfo.file_size = st.st_size
-        zinfo.flag_bits = 0x08                  # Use trailing data descriptor for file sizes and CRC 
+        zinfo.flag_bits = 0x08                  # Use trailing data descriptor for file sizes and CRC
         zinfo.header_offset = self.fp.tell()    # Start of header bytes
 
         self._writecheck(zinfo)
@@ -168,8 +168,9 @@ class StreamableZipFile(ZipFile):
               zinfo.file_size))
         self.filelist.append(zinfo)
         self.NameToInfo[zinfo.filename] = zinfo
-        
+
 def _create_download_response(request, datafile_id, disposition='attachment'):
+    #import ipdb; ipdb.set_trace()
     # Get datafile (and return 404 if absent)
     try:
         datafile = Dataset_File.objects.get(pk=datafile_id)
@@ -204,6 +205,18 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
     except IOError:
         # If we can't read the file, return not found
         return return_response_not_found(request)
+    except ValueError:  # raised when replica not verified TODO: custom excptn
+        redirect = request.META.get('HTTP_REFERER',
+                                    'http://%s/' %
+                                    request.META.get('HTTP_HOST'))
+        message = """The file you are trying to access has not yet been
+                     verified. Verification is an automated background process.
+                     Please try again later or contact the system
+                     administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
+        redirect = redirect + '#error:' + message
+        return HttpResponseRedirect(redirect)
+
 
 def view_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id, 'inline')
@@ -237,7 +250,7 @@ def _get_mapper_makers():
                         return mapper_fn(datafile, **myKwarg)
                     return mapper
                 return mapper_maker
-            __mapper_makers[organization] = mapper_maker_maker(kwarg) 
+            __mapper_makers[organization] = mapper_maker_maker(kwarg)
     return __mapper_makers
 
 def _safe_import(path):
@@ -277,10 +290,10 @@ def classic_mapper(rootdir):
 
 def _get_datafile_details_for_archive(mapper, datafiles):
     # It would be simplest to do this lazily.  But if we do that, we implicitly
-    # passing the database context to the thread that will write the archive, 
-    # and that is a bit dodgy.  (It breaks in unit tests!)  Instead, we 
-    # populate the list eagerly, but with a file getter rather than the file 
-    # itself.  If we populate with actual File objects, we risk running out 
+    # passing the database context to the thread that will write the archive,
+    # and that is a bit dodgy.  (It breaks in unit tests!)  Instead, we
+    # populate the list eagerly, but with a file getter rather than the file
+    # itself.  If we populate with actual File objects, we risk running out
     # of file descriptors.
     res = []
     for df in datafiles:
@@ -357,11 +370,11 @@ def _write_zip_func(mapper, datafiles):
 
 def _estimate_archive_size(mapper, datafiles, comptype):
     """
-    produces an estimate of the size of the uncompressed file archive.  
+    produces an estimate of the size of the uncompressed file archive.
     This is made based on the information we have to hand (i.e. the names
-    and the notional file sizes from the database.  We don't try to access 
-    the files themselves, as this potentially increases temporary disc 
-    space usage which is the resource we are primarily trying to protect 
+    and the notional file sizes from the database.  We don't try to access
+    the files themselves, as this potentially increases temporary disc
+    space usage which is the resource we are primarily trying to protect
     at this point.
     """
     # TODO - include the implied entries for directories in the estimates.
@@ -379,17 +392,17 @@ def _estimate_archive_size(mapper, datafiles, comptype):
             name_length = len(file_name)
             # local header + content + DD + file header
             estimate += (20 + name_length) + int(df.get_size()) + \
-                8 + (46 + name_length) 
+                8 + (46 + name_length)
     if comptype == "tar":
          # Two records of zeros at the end.
          estimate += 1024
     elif comptype == "zip":
         # Central directory overheads
-        estimate += 100 
+        estimate += 100
     return (count, estimate)
 
 def _get_free_temp_space():
-    """ Return free space on the file system holding the temporary 
+    """ Return free space on the file system holding the temporary
     directory (in bytes)
     """
     return get_free_space(gettempdir())
@@ -413,7 +426,7 @@ def _check_download_limits(mapper, datafiles, comptype):
         return None
 
 @experiment_download_required
-def download_experiment(request, experiment_id, comptype, 
+def download_experiment(request, experiment_id, comptype,
                         organization='classic'):
     """
     takes string parameter "comptype" for compression method.
@@ -422,12 +435,12 @@ def download_experiment(request, experiment_id, comptype,
     # TODO: intelligent selection of temp file versus in-memory buffering.
     datafiles = Dataset_File.objects\
         .filter(dataset__experiments__id=experiment_id)
-    
+
     rootdir = str(experiment_id)
     mapper = _make_mapper(organization, rootdir)
     if not mapper:
         return render_error_message(
-            request, 'Unknown download organization: %s' % organization, 
+            request, 'Unknown download organization: %s' % organization,
             status=400)
     msg = _check_download_limits(mapper, datafiles, comptype)
     if msg:
@@ -460,15 +473,15 @@ def download_datafiles(request):
     """
     takes string parameter "comptype" for compression method.
     Currently implemented: "zip" and "tar"
-    The datafiles to be downloaded are selected using "datafile", "dataset" 
-    or "url" parameters.  An "expid" parameter may be supplied for use in 
-    the download archive name.  If "url" is used, the "expid" parameter 
+    The datafiles to be downloaded are selected using "datafile", "dataset"
+    or "url" parameters.  An "expid" parameter may be supplied for use in
+    the download archive name.  If "url" is used, the "expid" parameter
     is also used to limit the datafiles to be downloaded to a given experiment.
     """
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # TODO: intelligent selection of temp file versus in-memory buffering.
-    
+
     logger.error('In download_datafiles !!')
     comptype = "zip"
     organization = "classic"
@@ -505,17 +518,17 @@ def download_datafiles(request):
                                                        datafiles))))
         else:
             return render_error_message(
-                request, 
+                request,
                 'No Datasets or Datafiles were selected for downloaded',
                 status=404)
 
     elif 'url' in request.POST:
         if not len(request.POST.getlist('url')) == 0:
             return render_error_message(
-                request, 
+                request,
                 'No Datasets or Datafiles were selected for downloaded',
                 status=404)
-        
+
         for url in request.POST.getlist('url'):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
@@ -531,19 +544,19 @@ def download_datafiles(request):
             status=404)
 
     logger.info('Files for archive command: %s' % df_set)
-    
+
     if len(df_set) == 0:
         return render_error_message(
-            request, 
+            request,
             'You do not have download access for any of the '
-            'selected Datasets or Datafiles ', 
+            'selected Datasets or Datafiles ',
             status=403)
-    
+
     rootdir = 'datasets'
     mapper = _make_mapper(organization, rootdir)
     if not mapper:
         return render_error_message(
-            request, 'Unknown download organization: %s' % organization, 
+            request, 'Unknown download organization: %s' % organization,
             status=400)
     msg = _check_download_limits(mapper, df_set, comptype)
     if msg:
@@ -567,12 +580,10 @@ def download_datafiles(request):
         reader = StreamingFile(_write_zip_func(mapper, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
-                                mimetype='application/zip')    
+                                mimetype='application/zip')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
     else:
         response = render_error_message(
             request, 'Unsupported download format: %s' % comptype, status=404)
     return response
-
-        
