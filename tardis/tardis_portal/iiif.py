@@ -107,7 +107,7 @@ def compute_etag(request, datafile_id, *args, **kwargs):
 
 @etag(compute_etag)
 @compliance_header
-def download_image(request, datafile_id, region, size, rotation, 
+def download_image(request, datafile_id, region, size, rotation,
                    quality, format=None): #@ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
@@ -125,7 +125,7 @@ def download_image(request, datafile_id, region, size, rotation,
     buf = StringIO()
     try:
         file_obj = datafile.get_image_data()
-        if file_obj == None:
+        if file_obj is None:
             return HttpResponseNotFound()
         from contextlib import closing
         with closing(file_obj) as f:
@@ -175,6 +175,9 @@ def download_image(request, datafile_id, region, size, rotation,
         if format:
             return _invalid_media_response()
         return HttpResponseNotFound()
+    except ValueError:
+        return HttpResponseNotFound()
+
 
 @etag(compute_etag)
 @compliance_header
