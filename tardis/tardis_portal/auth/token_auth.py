@@ -13,7 +13,8 @@ TOKEN_EXPERIMENT = '_token_experiment'
 def _ensure_acl_exists(experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
 
-    ExperimentACL.objects.get_or_create(pluginId=TokenGroupProvider.name,
+    ExperimentACL.objects.get_or_create(
+        pluginId=TokenGroupProvider.name,
         entityId=str(experiment.id), canRead=True, experiment=experiment,
         aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
@@ -37,19 +38,36 @@ def authenticate(request, token_string):
     return user
 
 
-class TokenGroupProvider(GroupProvider):
-    name = u'token_group'
+# class TokenGroupProvider(GroupProvider):
+#     name = u'token_group'
 
-    def getGroups(self, request):
-        if request.user.is_authenticated() and \
-                TOKEN_EXPERIMENT in request.session:
-            return [str(request.session[TOKEN_EXPERIMENT])]
-        else:
-            return []
+#     def getGroups(self, request):
+#         if request.user.is_authenticated() and \
+#                 TOKEN_EXPERIMENT in request.session:
+#             return [str(request.session[TOKEN_EXPERIMENT])]
+#         else:
+#             return []
 
-    def searchGroups(self, **kwargs):
-        """
-            return nothing because these are not groups in
-            the standard sense
-        """
-        return []
+#     def searchGroups(self, **kwargs):
+#         """
+#             return nothing because these are not groups in
+#             the standard sense
+#         """
+#         return []
+
+
+class TokenAuthMiddleware(object):
+    '''
+    adds tokens to the user object and the session from a GET query
+    '''
+
+    def process_request(self, request):
+        if 'token' in request.GET:
+            all_tokens = set()
+            all_tokens.add(request.GET['token'])
+            all_tokens.update(getattr(request.user, 'allowed_tokens', []))
+            all_tokens.update(request.session.get('allowed_tokens', []))
+            all_tokens = list(all_tokens)
+            request.user.allowed_tokens = all_tokens
+            request.session['allowed_tokens'] = all_tokens
+        return None

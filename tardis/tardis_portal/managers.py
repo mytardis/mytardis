@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import django_user
 
 
 class OracleSafeManager(models.Manager):
@@ -41,70 +41,69 @@ class ExperimentManager(OracleSafeManager):
 
     To make this work, the request must be passed to all class
     functions. The username and the group memberships are then
-    resolved via the request.groups and request.user objects.
+    resolved via the user.ext_groups and user objects.
 
     The :py:mod:`tardis.tardis_portal.auth.AuthService` is responsible for
     filling the request.groups object.
 
     """
 
-    def all(self, request): #@ReservedAssignment
+    def all(self, user):  # @ReservedAssignment
         """
         Returns all experiments a user - either authenticated or
         anonymous - is allowed to see and search
 
-        :param request: a HTTP Request instance
+        :param user: a User instance
         :type request: :py:class:`django.http.HttpRequest`
         """
 
-        query = self._query_all_public() | self._query_owned_and_shared(request)
+        query = self._query_all_public() |\
+            self._query_owned_and_shared(user)
 
         return super(ExperimentManager, self).get_query_set().filter(
             query).distinct()
 
-    def owned_and_shared(self, request):
+    def owned_and_shared(self, user):
         return super(ExperimentManager, self).get_query_set().filter(
-            self._query_owned_and_shared(request)).distinct()
+            self._query_owned_and_shared(user)).distinct()
 
-    def _query_owned_and_shared(self, request):
+    def _query_owned_and_shared(self, user):
         # if the user is not authenticated, nothing should be returned
-        if not request.user.is_authenticated():
+        if not user.is_authenticated():
             return Q(id=None)
 
         # for which experiments does the user have read access
         # based on USER permissions?
         query = Q(experimentacl__pluginId=django_user,
-                  experimentacl__entityId=str(request.user.id),
-                  experimentacl__canRead=True)\
-                  & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                     | Q(experimentacl__effectiveDate__isnull=True))\
-                  & (Q(experimentacl__expiryDate__gte=datetime.today())
-                     | Q(experimentacl__expiryDate__isnull=True))
+                  experimentacl__entityId=str(user.id),
+                  experimentacl__canRead=True) &\
+            (Q(experimentacl__effectiveDate__lte=datetime.today())
+             | Q(experimentacl__effectiveDate__isnull=True)) &\
+            (Q(experimentacl__expiryDate__gte=datetime.today())
+             | Q(experimentacl__expiryDate__isnull=True))
 
         # for which does experiments does the user have read access
         # based on GROUP permissions
-        for name, group in request.groups:
+        for name, group in user.ext_groups:
             query |= Q(experimentacl__pluginId=name,
-                experimentacl__entityId=str(group),
-                experimentacl__canRead=True)\
-                & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                | Q(experimentacl__effectiveDate__isnull=True))\
-                & (Q(experimentacl__expiryDate__gte=datetime.today())
-                | Q(experimentacl__expiryDate__isnull=True))
+                       experimentacl__entityId=str(group),
+                       experimentacl__canRead=True) &\
+                (Q(experimentacl__effectiveDate__lte=datetime.today())
+                 | Q(experimentacl__effectiveDate__isnull=True)) &\
+                (Q(experimentacl__expiryDate__gte=datetime.today())
+                 | Q(experimentacl__expiryDate__isnull=True))
         return query
-
 
     def _query_all_public(self):
         from tardis.tardis_portal.models import Experiment
         return ~Q(public_access=Experiment.PUBLIC_ACCESS_NONE)
 
-    def get(self, request, experiment_id):
+    def get(self, user, experiment_id):
         """
         Returns an experiment under the consideration of the ACL rules
         Raises PermissionDenied if the user does not have access.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
+        :param user: a User instance
         :param experiment_id: the ID of the experiment to be edited
         :type experiment_id: string
 
@@ -117,29 +116,29 @@ class ExperimentManager(OracleSafeManager):
             return experiment
 
         # if not, is the user logged in at all?
-        if not request.user.is_authenticated():
+        if not user.is_authenticated():
             raise PermissionDenied
 
         # check if there is a user based authorisation role
         query = Q(experiment=experiment,
                   pluginId=django_user,
-                  entityId=str(request.user.id),
-                  canRead=True)\
-                  & (Q(effectiveDate__lte=datetime.today())
-                     | Q(effectiveDate__isnull=True))\
-                  & (Q(expiryDate__gte=datetime.today())
-                     | Q(expiryDate__isnull=True))
+                  entityId=str(user.id),
+                  canRead=True) &\
+            (Q(effectiveDate__lte=datetime.today())
+             | Q(effectiveDate__isnull=True)) &\
+            (Q(expiryDate__gte=datetime.today())
+             | Q(expiryDate__isnull=True))
 
         # and finally check all the group based authorisation roles
-        for name, group in request.groups:
+        for name, group in user.ext_groups:
             query |= Q(pluginId=name,
                        entityId=str(group),
                        experiment=experiment,
-                       canRead=True)\
-                       & (Q(effectiveDate__lte=datetime.today())
-                          | Q(effectiveDate__isnull=True))\
-                       & (Q(expiryDate__gte=datetime.today())
-                          | Q(expiryDate__isnull=True))
+                       canRead=True) &\
+                (Q(effectiveDate__lte=datetime.today())
+                 | Q(effectiveDate__isnull=True)) &\
+                (Q(expiryDate__gte=datetime.today())
+                 | Q(expiryDate__isnull=True))
 
         # is there at least one ACL rule which satisfies the rules?
         from tardis.tardis_portal.models import ExperimentACL
@@ -149,7 +148,7 @@ class ExperimentManager(OracleSafeManager):
         else:
             return experiment
 
-    def owned(self, request):
+    def owned(self, user):
         """
         Return all experiments which are owned by a particular user
 
@@ -159,10 +158,10 @@ class ExperimentManager(OracleSafeManager):
         """
 
         # the user must be authenticated
-        if not request.user.is_authenticated():
+        if not user.is_authenticated():
             return super(ExperimentManager, self).get_empty_query_set()
 
-        return self.owned_by_user_id(request.user.id)
+        return self.owned_by_user_id(user.id)
 
     def owned_by_user_id(self, userId):
         """
@@ -175,121 +174,107 @@ class ExperimentManager(OracleSafeManager):
         # build the query to filter the ACL table
         query = Q(experimentacl__pluginId=django_user,
                   experimentacl__entityId=str(userId),
-                  experimentacl__isOwner=True)\
-                  & (Q(experimentacl__effectiveDate__lte=datetime.today())
-                     | Q(experimentacl__effectiveDate__isnull=True))\
-                  & (Q(experimentacl__expiryDate__gte=datetime.today())
-                     | Q(experimentacl__expiryDate__isnull=True))
+                  experimentacl__isOwner=True) &\
+            (Q(experimentacl__effectiveDate__lte=datetime.today())
+             | Q(experimentacl__effectiveDate__isnull=True)) &\
+            (Q(experimentacl__expiryDate__gte=datetime.today())
+             | Q(experimentacl__expiryDate__isnull=True))
 
         return super(ExperimentManager, self).get_query_set().filter(query)
 
-
-    def user_acls(self, request, experiment_id):
+    def user_acls(self, experiment_id):
         """
         Returns a list of ACL rules associated with this experiment.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment
         :type experiment_id: string
 
         """
         from tardis.tardis_portal.models import ExperimentACL
-        return ExperimentACL.objects.filter(pluginId=django_user,
-                                   experiment__id=experiment_id,
-                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        return ExperimentACL.objects.filter(
+            pluginId=django_user,
+            experiment__id=experiment_id,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
-    def users(self, request, experiment_id):
+    def users(self, experiment_id):
         """
         Returns a list of users who have ACL rules associated with this
         experiment.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment
         :type experiment_id: string
 
         """
-        acl = self.user_acls(request, experiment_id)
-        return User.objects.filter(pk__in=[ int(a.entityId) for a in acl ])
+        acl = self.user_acls(experiment_id)
+        return User.objects.filter(pk__in=[int(a.entityId) for a in acl])
 
-    def user_owned_groups(self, request, experiment_id):
+    def user_owned_groups(self, experiment_id):
         """
         returns a list of user owned-groups which have ACL rules
         associated with this experiment
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment to be edited
         :type experiment_id: string
 
         """
 
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(pluginId=django_group,
-                                   experiment__id=experiment_id,
-                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ExperimentACL.objects.filter(
+            pluginId='django_group',
+            experiment__id=experiment_id,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
-        return Group.objects.filter(pk__in=[ str(a.entityId) for a in acl ])
+        return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-
-    def group_acls_user_owned(self, request, experiment_id):
+    def group_acls_user_owned(self, experiment_id):
         """
         Returns a list of ACL rules associated with this experiment.
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment
         :type experiment_id: string
 
         """
         from tardis.tardis_portal.models import ExperimentACL
-        return ExperimentACL.objects.filter(pluginId=django_group,
-                                   experiment__id=experiment_id,
-                                   aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        return ExperimentACL.objects.filter(
+            pluginId='django_group',
+            experiment__id=experiment_id,
+            aclOwnershipType=ExperimentACL.OWNER_OWNED)
 
+    def group_acls_system_owned(self, experiment_id):
+        """
+        Returns a list of ACL rules associated with this experiment.
 
-    def group_acls_system_owned(self, request, experiment_id):
-       """
-       Returns a list of ACL rules associated with this experiment.
-    
-       :param request: a HTTP Request instance
-       :type request: :py:class:`django.http.HttpRequest`
-       :param experiment_id: the ID of the experiment
-       :type experiment_id: string
-    
-       """
-       from tardis.tardis_portal.models import ExperimentACL
-       return ExperimentACL.objects.filter(pluginId=django_group,
-                                  experiment__id=experiment_id,
-                                  aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+        :param experiment_id: the ID of the experiment
+        :type experiment_id: string
 
+        """
+        from tardis.tardis_portal.models import ExperimentACL
+        return ExperimentACL.objects.filter(
+            pluginId='django_group',
+            experiment__id=experiment_id,
+            aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
 
-    def system_owned_groups(self, request, experiment_id):
+    def system_owned_groups(self, experiment_id):
         """
         returns a list of sytem-owned groups which have ACL rules
         associated with this experiment
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment to be edited
         :type experiment_id: string
 
         """
-
         from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(pluginId=django_group,
-                                   experiment__id=experiment_id,
-                                   aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+        acl = ExperimentACL.objects.filter(
+            pluginId='django_group',
+            experiment__id=experiment_id,
+            aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
 
-        return Group.objects.filter(pk__in=[ str(a.entityId) for a in acl ])
+        return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
-    def external_users(self, request, experiment_id):
+    def external_users(self, experiment_id):
         """
         returns a list of groups which have external ACL rules
 
-        :param request: a HTTP Request instance
-        :type request: :py:class:`django.http.HttpRequest`
         :param experiment_id: the ID of the experiment to be edited
         :type experiment_id: string
 
@@ -297,7 +282,7 @@ class ExperimentManager(OracleSafeManager):
 
         from tardis.tardis_portal.models import ExperimentACL
         acl = ExperimentACL.objects.exclude(pluginId=django_user)
-        acl = acl.exclude(pluginId=django_group)
+        acl = acl.exclude(pluginId='django_group')
         acl = acl.filter(experiment__id=experiment_id)
 
         if not acl:

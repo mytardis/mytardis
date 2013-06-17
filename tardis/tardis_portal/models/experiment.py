@@ -1,17 +1,98 @@
 from os import path
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import Q
 from django.utils.safestring import SafeUnicode
 
+from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
 
 from .license import License
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+class ExperimentACL(models.Model):
+    """The ExperimentACL table is the core of the `Tardis
+    Authorisation framework
+    <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
+
+    :attribute pluginId: the the name of the auth plugin being used
+    :attribute entityId: a foreign key to auth plugins
+    :attribute experimentId: a forign key to the
+       :class:`tardis.tardis_portal.models.Experiment`
+    :attribute canRead: gives the user read access
+    :attribute canWrite: gives the user write access
+    :attribute canDelete: gives the user delete permission
+    :attribute isOwner: the experiment owner flag.
+    :attribute effectiveDate: the date when access takes into effect
+    :attribute expiryDate: the date when access ceases
+    :attribute aclOwnershipType: system-owned or user-owned.
+
+    System-owned ACLs will prevent users from removing or
+    editing ACL entries to a particular experiment they
+    own. User-owned ACLs will allow experiment owners to
+    remove/add/edit ACL entries to the experiments they own.
+
+    """
+
+    OWNER_OWNED = 1
+    SYSTEM_OWNED = 2
+    __COMPARISON_CHOICES = (
+        (OWNER_OWNED, 'Owner-owned'),
+        (SYSTEM_OWNED, 'System-owned'),
+    )
+
+    pluginId = models.CharField(null=False, blank=False, max_length=30)
+    entityId = models.CharField(null=False, blank=False, max_length=320)
+    experiment = models.ForeignKey('Experiment')
+    canRead = models.BooleanField(default=False)
+    canWrite = models.BooleanField(default=False)
+    canDelete = models.BooleanField(default=False)
+    isOwner = models.BooleanField(default=False)
+    effectiveDate = models.DateField(null=True, blank=True)
+    expiryDate = models.DateField(null=True, blank=True)
+    aclOwnershipType = models.IntegerField(
+        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+
+    def get_related_object(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_user':
+            return User.objects.get(pk=self.entityId)
+        return None
+
+    def get_related_object_group(self):
+        """
+        If possible, resolve the pluginId/entityId combination to a user or
+        group object.
+        """
+        if self.pluginId == 'django_group':
+            return Group.objects.get(pk=self.entityId)
+        return None
+
+    def __unicode__(self):
+        return '%i | %s' % (self.experiment.id, self.experiment.title)
+
+    class Meta:
+        app_label = 'tardis_portal'
+        ordering = ['experiment__id']
+
+    @classmethod
+    def get_effective_query(cls):
+        acl_effective_query = (Q(effectiveDate__lte=datetime.today()) |
+                               Q(effectiveDate__isnull=True)) &\
+            (Q(expiryDate__gte=datetime.today()) |
+             Q(expiryDate__isnull=True))
+        return acl_effective_query
+
 
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
@@ -183,76 +264,50 @@ class Experiment(models.Model):
                                             isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
+    def has_change_perm(self, user_obj):
+        if self.locked:
+            return False
 
-class ExperimentACL(models.Model):
-    """The ExperimentACL table is the core of the `Tardis
-    Authorisation framework
-    <http://code.google.com/p/mytardis/wiki/AuthorisationEngineAlt>`_
+        # does the user own this experiment
+        query = Q(experiment=self, pluginId=django_user,
+                  entityId=str(user_obj.id), isOwner=True)
 
-    :attribute pluginId: the the name of the auth plugin being used
-    :attribute entityId: a foreign key to auth plugins
-    :attribute experimentId: a forign key to the
-       :class:`tardis.tardis_portal.models.Experiment`
-    :attribute canRead: gives the user read access
-    :attribute canWrite: gives the user write access
-    :attribute canDelete: gives the user delete permission
-    :attribute isOwner: the experiment owner flag.
-    :attribute effectiveDate: the date when access takes into effect
-    :attribute expiryDate: the date when access ceases
-    :attribute aclOwnershipType: system-owned or user-owned.
+        # check if there is a user based authorisation role
+        query |= Q(experiment=self, pluginId=django_user,
+                   entityId=str(user_obj.id), canWrite=True)
 
-    System-owned ACLs will prevent users from removing or
-    editing ACL entries to a particular experiment they
-    own. User-owned ACLs will allow experiment owners to
-    remove/add/edit ACL entries to the experiments they own.
+        # and finally check all the group based authorisation roles
+        for name, group in user_obj.ext_groups:
+            query |= Q(pluginId=name, entityId=str(group),
+                       experiment=self, canWrite=True)
 
-    """
+        # is there at least one ACL rule which satisfies the rules?
+        acl = ExperimentACL.objects.filter(query).filter(
+            ExperimentACL.get_effective_query())
+        return acl.count() != 0
 
-    OWNER_OWNED = 1
-    SYSTEM_OWNED = 2
-    __COMPARISON_CHOICES = (
-        (OWNER_OWNED, 'Owner-owned'),
-        (SYSTEM_OWNED, 'System-owned'),
-    )
+    def has_delete_perm(self, user_obj):
+        # does the user own this experiment
+        query = Q(experiment=self, pluginId=django_user,
+                  entityId=str(user_obj.id), isOwner=True)
 
-    pluginId = models.CharField(null=False, blank=False, max_length=30)
-    entityId = models.CharField(null=False, blank=False, max_length=320)
-    experiment = models.ForeignKey(Experiment)
-    canRead = models.BooleanField(default=False)
-    canWrite = models.BooleanField(default=False)
-    canDelete = models.BooleanField(default=False)
-    isOwner = models.BooleanField(default=False)
-    effectiveDate = models.DateField(null=True, blank=True)
-    expiryDate = models.DateField(null=True, blank=True)
-    aclOwnershipType = models.IntegerField(
-        choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+        # check if there is a user based authorisation role
+        query |= Q(experiment=self,
+                   pluginId=django_user,
+                   entityId=str(user_obj.id),
+                   canDelete=True)
 
-    def get_related_object(self):
-        """
-        If possible, resolve the pluginId/entityId combination to a user or
-        group object.
-        """
-        if self.pluginId == 'django_user':
-            return User.objects.get(pk=self.entityId)
-        return None
+        # and finally check all the group based authorisation roles
+        for name, group in user_obj.ext_groups:
+            query |= Q(pluginId=name,
+                       entityId=str(group),
+                       experiment=self,
+                       canDelete=True)
 
-
-    def get_related_object_group(self):
-        """
-        If possible, resolve the pluginId/entityId combination to a user or
-        group object.
-        """
-        if self.pluginId == 'django_group':
-            return Group.objects.get(pk=self.entityId)
-        return None
-
-
-    def __unicode__(self):
-        return '%i | %s' % (self.experiment.id, self.experiment.title)
-
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['experiment__id']
+        # is there at least one ACL rule which satisfies the rules?
+        acl = ExperimentACL.objects.filter(query).filter(
+            ExperimentACL.get_effective_query())
+        return acl.count() != 0
 
 
 class Author_Experiment(models.Model):
@@ -282,4 +337,3 @@ class Author_Experiment(models.Model):
         app_label = 'tardis_portal'
         ordering = ['order']
         unique_together = (('experiment', 'author'),)
-

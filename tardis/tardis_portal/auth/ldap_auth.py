@@ -223,14 +223,14 @@ class LDAPBackend(AuthProvider, UserProvider, GroupProvider):
     #
     # Group Provider
     #
-    def getGroups(self, request):
+    def getGroups(self, user):
         """return an iteration of the available groups.
         """
         try:
             # check if a user exists that can authenticate using the VBL
             # auth method
             userAuth = UserAuthentication.objects.get(
-                userProfile__user=request.user,
+                userProfile__user=user,
                 authenticationMethod=self.name)
         except UserAuthentication.DoesNotExist:
             return

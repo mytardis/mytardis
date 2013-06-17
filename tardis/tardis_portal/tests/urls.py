@@ -4,15 +4,15 @@ from django.http import HttpResponse
 from django.template import Template, RequestContext
 
 
-def groups_view(request):
-    "Dummy view for remote user tests"
-    t = Template("Groups are {% for p, g in groups %}({{ p }},{{ g }}) {% endfor %}.")
-    c = RequestContext(request, {'groups': request.groups})
-    return HttpResponse(t.render(c))
+# def groups_view(request):
+#     "Dummy view for remote user tests"
+#     t = Template("Groups are {% for p, g in groups %}({{ p }},{{ g }}) {% endfor %}.")
+#     c = RequestContext(request, {'groups': request.groups})
+#     return HttpResponse(t.render(c))
 
 # special urls for auth test cases
 urlpatterns += patterns('',
-                        (r'^test/groups/$', groups_view),
+                        # (r'^test/groups/$', groups_view),
                         (r'^test/experiment/view/(?P<experiment_id>\d+)/$',
                          'tardis.tardis_portal.views.view_experiment'),
                         (r'^test/download/datafile/(?P<datafile_id>\d+)/$',

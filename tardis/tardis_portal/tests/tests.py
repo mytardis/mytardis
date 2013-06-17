@@ -54,7 +54,7 @@ from tardis.tardis_portal.models import *
 from tardis.tardis_portal.views import _registerExperimentDocument
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import django_user
 
 from tardis.tardis_portal.transfer import TransferProvider
 
@@ -83,7 +83,7 @@ class SearchTestCase(TestCase):
                                                    created_by=user,
                                                    expid=None)
             experiment = Experiment.objects.get(pk=expid)
-            
+
             acl = ExperimentACL(pluginId=django_user,
                                 entityId=str(user.id),
                                 experiment=experiment,
@@ -146,7 +146,7 @@ class SearchTestCase(TestCase):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
         response = self.client.get('/datafile/search/',
-                                   {'type': 'saxs', 
+                                   {'type': 'saxs',
                                     'filename': 'ment0005.osc', })
 
         # check for the existence of the contexts..
