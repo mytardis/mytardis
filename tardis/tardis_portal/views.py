@@ -1910,7 +1910,7 @@ def retrieve_field_list(request):
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    user_acls = Experiment.safe.user_acls(request.user, experiment_id)
+    user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id,
                  'addUserPermissionsForm': AddUserPermissionsForm() })
@@ -1921,7 +1921,7 @@ def retrieve_access_list_user(request, experiment_id):
 @never_cache
 def retrieve_access_list_user_readonly(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    user_acls = Experiment.safe.user_acls(request.user, experiment_id)
+    user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
     return HttpResponse(render_response_index(request,
@@ -1935,10 +1935,10 @@ def retrieve_access_list_group(request, experiment_id):
     from tardis.tardis_portal.forms import AddGroupPermissionsForm
 
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
-        request.user, experiment_id)
+        experiment_id)
 
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
-        request.user, experiment_id)
+        experiment_id)
 
     c = Context({'group_acls_user_owned': group_acls_user_owned,
                  'group_acls_system_owned': group_acls_system_owned,
@@ -1952,10 +1952,10 @@ def retrieve_access_list_group(request, experiment_id):
 def retrieve_access_list_group_readonly(request, experiment_id):
 
     group_acls_system_owned = Experiment.safe.group_acls_system_owned(
-        request.user, experiment_id)
+        experiment_id)
 
     group_acls_user_owned = Experiment.safe.group_acls_user_owned(
-        request.user, experiment_id)
+        experiment_id)
 
     c = Context({'experiment_id': experiment_id,
                  'group_acls_system_owned': group_acls_system_owned,
@@ -1968,7 +1968,7 @@ def retrieve_access_list_group_readonly(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
-    groups = Experiment.safe.external_users(request.user, experiment_id)
+    groups = Experiment.safe.external_users(experiment_id)
     c = Context({'groups': groups, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))
@@ -1996,6 +1996,8 @@ def retrieve_access_list_tokens(request, experiment_id):
                'url': request.build_absolute_uri(token_url(token)),
                'id': token.id,
                'experiment_id': experiment_id,
+               'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
+                                                 token.experiment),
                } for token in tokens]
     c = Context({'tokens': tokens})
     return HttpResponse(render_response_index(

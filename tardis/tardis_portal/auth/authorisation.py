@@ -40,7 +40,9 @@ class ACLAwareBackend(object):
         main method, calls other methods based on permission type queried
         '''
         if not user_obj.is_authenticated():
+            allowed_tokens = user_obj.allowed_tokens
             user_obj = AnonymousUser()
+            user_obj.allowed_tokens = allowed_tokens
 
         if obj is None:
             return False

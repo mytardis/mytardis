@@ -201,7 +201,7 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
-    )
+)
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
@@ -209,12 +209,13 @@ JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'jasmine'))
 
 
-USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
+USER_PROVIDERS = (
+    'tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
 
 GROUP_PROVIDERS = (
     'tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
-    # 'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
+    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
 )
 
 # AUTH_PROVIDERS entry format:
@@ -225,7 +226,8 @@ GROUP_PROVIDERS = (
 # We will assume that localdb will always be a default AUTH_PROVIDERS entry
 
 AUTH_PROVIDERS = (
-    ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('localdb', 'Local DB',
+     'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
 # default authentication module for experiment ownership user during
