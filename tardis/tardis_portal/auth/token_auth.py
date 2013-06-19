@@ -4,7 +4,7 @@ token authentication module
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from tardis.tardis_portal.models import Token, ExperimentACL, Experiment
+from tardis.tardis_portal.models import Token, ObjectACL, Experiment
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 
 TOKEN_EXPERIMENT = '_token_experiment'
@@ -13,10 +13,11 @@ TOKEN_EXPERIMENT = '_token_experiment'
 def _ensure_acl_exists(experiment_id):
     experiment = Experiment.objects.get(pk=experiment_id)
 
-    ExperimentACL.objects.get_or_create(
+    ObjectACL.objects.get_or_create(
         pluginId=TokenGroupProvider.name,
-        entityId=str(experiment.id), canRead=True, experiment=experiment,
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        entityId=str(experiment.id), canRead=True,
+        content_object=experiment,
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
 
 def authenticate(request, token_string):
@@ -38,22 +39,25 @@ def authenticate(request, token_string):
     return user
 
 
-# class TokenGroupProvider(GroupProvider):
-#     name = u'token_group'
+class TokenGroupProvider(GroupProvider):
+    '''
+    TODO: defunct, needs to be removed
+    '''
+    name = u'token_group'
 
-#     def getGroups(self, request):
-#         if request.user.is_authenticated() and \
-#                 TOKEN_EXPERIMENT in request.session:
-#             return [str(request.session[TOKEN_EXPERIMENT])]
-#         else:
-#             return []
+    def getGroups(self, request):
+        if request.user.is_authenticated() and \
+                TOKEN_EXPERIMENT in request.session:
+            return [str(request.session[TOKEN_EXPERIMENT])]
+        else:
+            return []
 
-#     def searchGroups(self, **kwargs):
-#         """
-#             return nothing because these are not groups in
-#             the standard sense
-#         """
-#         return []
+    def searchGroups(self, **kwargs):
+        """
+            return nothing because these are not groups in
+            the standard sense
+        """
+        return []
 
 
 class TokenAuthMiddleware(object):

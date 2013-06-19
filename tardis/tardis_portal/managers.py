@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
+from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.auth.localdb_auth import django_user
 
 
@@ -74,24 +75,24 @@ class ExperimentManager(OracleSafeManager):
 
         # for which experiments does the user have read access
         # based on USER permissions?
-        query = Q(experimentacl__pluginId=django_user,
-                  experimentacl__entityId=str(user.id),
-                  experimentacl__canRead=True) &\
-            (Q(experimentacl__effectiveDate__lte=datetime.today())
-             | Q(experimentacl__effectiveDate__isnull=True)) &\
-            (Q(experimentacl__expiryDate__gte=datetime.today())
-             | Q(experimentacl__expiryDate__isnull=True))
+        query = Q(objectacls__pluginId=django_user,
+                  objectacls__entityId=str(user.id),
+                  objectacls__canRead=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
 
         # for which does experiments does the user have read access
         # based on GROUP permissions
         for name, group in user.ext_groups:
-            query |= Q(experimentacl__pluginId=name,
-                       experimentacl__entityId=str(group),
-                       experimentacl__canRead=True) &\
-                (Q(experimentacl__effectiveDate__lte=datetime.today())
-                 | Q(experimentacl__effectiveDate__isnull=True)) &\
-                (Q(experimentacl__expiryDate__gte=datetime.today())
-                 | Q(experimentacl__expiryDate__isnull=True))
+            query |= Q(objectacls__pluginId=name,
+                       objectacls__entityId=str(group),
+                       objectacls__canRead=True) &\
+                (Q(objectacls__effectiveDate__lte=datetime.today())
+                 | Q(objectacls__effectiveDate__isnull=True)) &\
+                (Q(objectacls__expiryDate__gte=datetime.today())
+                 | Q(objectacls__expiryDate__isnull=True))
         return query
 
     def _query_all_public(self):
@@ -111,42 +112,10 @@ class ExperimentManager(OracleSafeManager):
         experiment = \
             super(ExperimentManager, self).get(pk=experiment_id)
 
-        # if the experiment is public, return it right away
-        if experiment.public_access != experiment.PUBLIC_ACCESS_NONE:
+        if user.has_perm('tardis_acls.view_experiment', experiment):
             return experiment
-
-        # if not, is the user logged in at all?
-        if not user.is_authenticated():
-            raise PermissionDenied
-
-        # check if there is a user based authorisation role
-        query = Q(experiment=experiment,
-                  pluginId=django_user,
-                  entityId=str(user.id),
-                  canRead=True) &\
-            (Q(effectiveDate__lte=datetime.today())
-             | Q(effectiveDate__isnull=True)) &\
-            (Q(expiryDate__gte=datetime.today())
-             | Q(expiryDate__isnull=True))
-
-        # and finally check all the group based authorisation roles
-        for name, group in user.ext_groups:
-            query |= Q(pluginId=name,
-                       entityId=str(group),
-                       experiment=experiment,
-                       canRead=True) &\
-                (Q(effectiveDate__lte=datetime.today())
-                 | Q(effectiveDate__isnull=True)) &\
-                (Q(expiryDate__gte=datetime.today())
-                 | Q(expiryDate__isnull=True))
-
-        # is there at least one ACL rule which satisfies the rules?
-        from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(query)
-        if acl.count() == 0:
-            raise PermissionDenied
         else:
-            return experiment
+            raise PermissionDenied
 
     def owned(self, user):
         """
@@ -172,13 +141,13 @@ class ExperimentManager(OracleSafeManager):
 
         """
         # build the query to filter the ACL table
-        query = Q(experimentacl__pluginId=django_user,
-                  experimentacl__entityId=str(userId),
-                  experimentacl__isOwner=True) &\
-            (Q(experimentacl__effectiveDate__lte=datetime.today())
-             | Q(experimentacl__effectiveDate__isnull=True)) &\
-            (Q(experimentacl__expiryDate__gte=datetime.today())
-             | Q(experimentacl__expiryDate__isnull=True))
+        query = Q(objectacls__pluginId=django_user,
+                  objectacls__entityId=str(userId),
+                  objectacls__isOwner=True) &\
+            (Q(objectacls__effectiveDate__lte=datetime.today())
+             | Q(objectacls__effectiveDate__isnull=True)) &\
+            (Q(objectacls__expiryDate__gte=datetime.today())
+             | Q(objectacls__expiryDate__isnull=True))
 
         return super(ExperimentManager, self).get_query_set().filter(query)
 
@@ -190,11 +159,14 @@ class ExperimentManager(OracleSafeManager):
         :type experiment_id: string
 
         """
-        from tardis.tardis_portal.models import ExperimentACL
-        return ExperimentACL.objects.filter(
+        experiment = \
+            super(ExperimentManager, self).get(pk=experiment_id)
+
+        return ObjectACL.objects.filter(
             pluginId=django_user,
-            experiment__id=experiment_id,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            content_type=experiment.get_ct(),
+            object_id=experiment_id,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     def users(self, experiment_id):
         """
@@ -218,11 +190,11 @@ class ExperimentManager(OracleSafeManager):
 
         """
 
-        from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(
+        acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            experiment__id=experiment_id,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            content_type__name='Experiment',
+            object_id=experiment_id,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
 
         return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
@@ -234,11 +206,11 @@ class ExperimentManager(OracleSafeManager):
         :type experiment_id: string
 
         """
-        from tardis.tardis_portal.models import ExperimentACL
-        return ExperimentACL.objects.filter(
+        return ObjectACL.objects.filter(
             pluginId='django_group',
-            experiment__id=experiment_id,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            content_type__name='Experiment',
+            object_id=experiment_id,
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     def group_acls_system_owned(self, experiment_id):
         """
@@ -248,11 +220,11 @@ class ExperimentManager(OracleSafeManager):
         :type experiment_id: string
 
         """
-        from tardis.tardis_portal.models import ExperimentACL
-        return ExperimentACL.objects.filter(
+        return ObjectACL.objects.filter(
             pluginId='django_group',
-            experiment__id=experiment_id,
-            aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            content_type__name='Experiment',
+            object_id=experiment_id,
+            aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
     def system_owned_groups(self, experiment_id):
         """
@@ -263,11 +235,12 @@ class ExperimentManager(OracleSafeManager):
         :type experiment_id: string
 
         """
-        from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.filter(
+        from tardis.tardis_portal.models import ObjectACL
+        acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            experiment__id=experiment_id,
-            aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            content_type__name='Experiment',
+            object_id=experiment_id,
+            aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
         return Group.objects.filter(pk__in=[str(a.entityId) for a in acl])
 
@@ -280,10 +253,11 @@ class ExperimentManager(OracleSafeManager):
 
         """
 
-        from tardis.tardis_portal.models import ExperimentACL
-        acl = ExperimentACL.objects.exclude(pluginId=django_user)
+        from tardis.tardis_portal.models import ObjectACL
+        acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(experiment__id=experiment_id)
+        acl = acl.filter(content_type__name='Experiment',
+                         object_id=experiment_id)
 
         if not acl:
             return None

@@ -84,13 +84,13 @@ class SearchTestCase(TestCase):
                                                    expid=None)
             experiment = Experiment.objects.get(pk=expid)
 
-            acl = ExperimentACL(pluginId=django_user,
-                                entityId=str(user.id),
-                                experiment=experiment,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True)
+            acl = ObjectACL(pluginId=django_user,
+                            entityId=str(user.id),
+                            content_object=experiment,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True)
             acl.save()
             self.experiments += [experiment]
 
@@ -289,13 +289,13 @@ class UserInterfaceTestCase(TestCase):
                                                public_access= \
                                                  Experiment.PUBLIC_ACCESS_FULL)
         experiment.save()
-        acl = ExperimentACL(pluginId=django_user,
-                            entityId=str(user.id),
-                            experiment=experiment,
-                            canRead=True,
-                            canWrite=True,
-                            canDelete=True,
-                            isOwner=True)
+        acl = ObjectACL(pluginId=django_user,
+                        entityId=str(user.id),
+                        content_object=experiment,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        isOwner=True)
         acl.save()
         dataset = Dataset(description="test dataset")
         dataset.save()

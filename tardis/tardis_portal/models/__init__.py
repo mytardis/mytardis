@@ -43,7 +43,8 @@ models/__init__.py
 from django.contrib.auth.models import User, Group
 
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
-from .experiment import Experiment, ExperimentACL, Author_Experiment
+from .access_control import ObjectACL
+from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
 from .datafile import Dataset_File
 from .replica import Replica

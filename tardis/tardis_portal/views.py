@@ -88,7 +88,7 @@ from tardis.tardis_portal.tasks import create_staging_datafiles,\
     create_staging_datafile
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
-    DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
+    DatafileParameter, DatasetParameter, ObjectACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
@@ -778,14 +778,14 @@ def create_experiment(request,
             full_experiment.save_m2m()
 
             # add defaul ACL
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId=django_user,
-                                entityId=str(request.user.id),
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True,
-                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl = ObjectACL(content_object=experiment,
+                            pluginId=django_user,
+                            entityId=str(request.user.id),
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
@@ -996,14 +996,15 @@ def _registerExperimentDocument(filename, created_by, expid=None,
                 logger.debug('registering owner: ' + owner)
                 e = Experiment.objects.get(pk=eid)
 
-                acl = ExperimentACL(experiment=e,
-                                    pluginId=django_user,
-                                    entityId=str(owner_user.id),
-                                    canRead=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl = ObjectACL(content_object=e.get_ct(),
+                                object_id=e.id,
+                                pluginId=django_user,
+                                entityId=str(owner_user.id),
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
 
     return (eid, sync_root)
@@ -2159,21 +2160,22 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse('Experiment (id=%d) does not exist.'
             % (experiment.id))
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId=django_user,
         entityId=str(user.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 0:
-        acl = ExperimentACL(experiment=experiment,
-                            pluginId=django_user,
-                            entityId=str(user.id),
-                            canRead=canRead,
-                            canWrite=canWrite,
-                            canDelete=canDelete,
-                            isOwner=isOwner,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ObjectACL(content_object=experiment,
+                        pluginId=django_user,
+                        entityId=str(user.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        isOwner=isOwner,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
         acl.save()
         c = Context({'authMethod': authMethod,
@@ -2201,11 +2203,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId=django_user,
         entityId=str(user.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 1:
         if int(acl[0].entityId) == request.user.id:
@@ -2235,12 +2238,13 @@ def change_user_permissions(request, experiment_id, username):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(
-            experiment=experiment,
+        acl = ObjectACL.objects.get(
+            content_type=experiment.get_ct(),
+            object_id=experiment.id,
             pluginId=django_user,
             entityId=str(user.id),
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    except ExperimentACL.DoesNotExist:
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+    except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
     if request.method == 'POST':
@@ -2276,12 +2280,13 @@ def change_group_permissions(request, experiment_id, group_id):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(
-            experiment=experiment,
+        acl = ObjectACL.objects.get(
+            content_type=experiment.get_ct(),
+            object_id=experiment.id,
             pluginId='django_group',
             entityId=str(group.id),
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    except ExperimentACL.DoesNotExist:
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+    except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
     if request.method == 'POST':
@@ -2431,11 +2436,12 @@ def add_experiment_access_group(request, experiment_id, groupname):
         transaction.rollback()
         return HttpResponse('Group %s does not exist' % (groupname))
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId='django_group',
         entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
@@ -2443,14 +2449,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return HttpResponse('Could not create group %s ' \
             '(It is likely that it already exists)' % (groupname))
 
-    acl = ExperimentACL(experiment=experiment,
-                        pluginId='django_group',
-                        entityId=str(group.id),
-                        canRead=canRead,
-                        canWrite=canWrite,
-                        canDelete=canDelete,
-                        isOwner=isOwner,
-                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ObjectACL(content_object=experiment,
+                    pluginId='django_group',
+                    entityId=str(group.id),
+                    canRead=canRead,
+                    canWrite=canWrite,
+                    canDelete=canDelete,
+                    isOwner=isOwner,
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
 
     c = Context({'group': group,
@@ -2476,11 +2482,12 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId='django_group',
         entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 1:
         acl[0].delete()

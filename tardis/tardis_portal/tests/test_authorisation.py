@@ -7,10 +7,10 @@ from django.contrib.auth.models import User, Group, Permission, AnonymousUser
 
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
-from tardis.tardis_portal.models import ExperimentACL, Experiment, UserProfile
+from tardis.tardis_portal.models import ObjectACL, Experiment, UserProfile
 
 
-class ExperimentACLTestCase(TestCase):
+class ObjectACLTestCase(TestCase):
     urls = 'tardis.urls'
 
     def setUp(self):
@@ -27,7 +27,7 @@ class ExperimentACLTestCase(TestCase):
             user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
             user.user_permissions.add(Permission.objects.get(codename='change_group'))
             user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
-            user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
+            user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
 
         self.userProfile1 = UserProfile(user=self.user1)
         self.userProfile2 = UserProfile(user=self.user2)
@@ -82,35 +82,35 @@ class ExperimentACLTestCase(TestCase):
         self.experiment4.save()
 
         # user1 owns experiment1
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user1.id),
-            experiment=self.experiment1,
+            content_object=self.experiment1,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
         acl.save()
 
         # user2 owns experiment2
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user2.id),
-            experiment=self.experiment2,
+            content_object=self.experiment2,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
             )
         acl.save()
 
         # experiment4 is accessible via location
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId='ip_address',
             entityId='127.0.0.1',
-            experiment=self.experiment4,
+            content_object=self.experiment4,
             canRead=True,
-            aclOwnershipType=ExperimentACL.SYSTEM_OWNED,
-            )
+            aclOwnershipType=ObjectACL.SYSTEM_OWNED,
+        )
         acl.save()
 
     def tearDown(self):
@@ -225,9 +225,9 @@ class ExperimentACLTestCase(TestCase):
         self.assertTrue(login)
 
         # user2 should be able to see experiment1 now
-        # response = self.client2.get('/experiment/view/%i/'
-        #                            % (self.experiment1.id))
-        # self.assertEqual(response.status_code, 200)
+        response = self.client2.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
 
         # user2 should be also able to see experiment2
         response = self.client2.get('/experiment/view/%i/'
@@ -251,9 +251,9 @@ class ExperimentACLTestCase(TestCase):
         self.assertTrue(login)
 
         # user3 should be able to see experiment1 via his group permissions
-        # response = self.client3.get('/experiment/view/%i/'
-        #                            % (self.experiment1.id))
-        # self.assertEqual(response.status_code, 200)
+        response = self.client3.get('/experiment/view/%i/'
+                                   % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
 
         # user3 should not be able to see experiment2
         response = self.client3.get('/experiment/view/%i/'
@@ -505,8 +505,8 @@ class ExperimentACLTestCase(TestCase):
         self.assertEqual(response.status_code, 302)
 
         # now user2 should have write access again
-        # response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
-        # self.assertEqual(response.status_code, 200)
+        response = self.client2.get('/experiment/edit/%i/' % (self.experiment1.id))
+        self.assertEqual(response.status_code, 200)
 
         # repeat all the tests with timestamps for user3
         url = '/experiment/control_panel/%i/access_list/change/user/%s/'
@@ -547,14 +547,14 @@ class ExperimentACLTestCase(TestCase):
         self.assertTrue(login)
 
         # user3 has acl to write to experiment3
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user3.id),
-            experiment=self.experiment3,
+            content_object=self.experiment3,
             canRead=True,
             canWrite=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         acl.save()
 
         response = self.client3.get('/experiment/edit/%i/' % (self.experiment3.id))

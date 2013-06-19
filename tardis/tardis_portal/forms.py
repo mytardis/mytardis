@@ -187,9 +187,10 @@ class ChangeUserPermissionsForm(ModelForm):
 
     class Meta:
         from django.forms.extras.widgets import SelectDateWidget
-        from tardis.tardis_portal.models import ExperimentACL
-        model = ExperimentACL
-        exclude = ('entityId', 'pluginId', 'experiment', 'aclOwnershipType',)
+        from tardis.tardis_portal.models import ObjectACL
+        model = ObjectACL
+        exclude = ('entityId', 'pluginId', 'content_object', 'content_type',
+                   'object_id', 'aclOwnershipType',)
         widgets = {
             'expiryDate': SelectDateWidget(),
             'effectiveDate': SelectDateWidget()}
@@ -477,12 +478,12 @@ class ExperimentForm(forms.ModelForm):
     def save(self, commit=True):
         # remove m2m field before saving
         del self.cleaned_data['authors']
-        
+
         # fix up experiment form
         if self.instance:
             authors = self.instance.author_experiment_set.all()
             for author in authors:
-                author.delete()        
+                author.delete()
 
         experiment = super(ExperimentForm, self).save(commit)
 
@@ -966,4 +967,3 @@ class ManageAccountForm(ModelForm):
     class Meta:
         model = User
         fields = ('first_name', 'last_name', 'email')
-

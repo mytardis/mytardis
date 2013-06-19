@@ -91,11 +91,9 @@ def has_experiment_ownership(request, experiment_id):
 
 
 def has_experiment_access(request, experiment_id):
-    try:
-        Experiment.safe.get(request.user, experiment_id)
-        return True
-    except PermissionDenied:
-        return False
+    experiment = Experiment.objects.get(id=experiment_id)
+    return request.user.has_perm('tardis_acls.view_experiment', experiment)
+
 
 def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
@@ -162,13 +160,15 @@ def has_read_or_owner_ACL(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
 
     # does the user own this experiment
-    query = Q(experiment=experiment,
+    query = Q(content_type=experiment.get_ct(),
+              object_id=experiment.id,
               pluginId=django_user,
               entityId=str(request.user.id),
               isOwner=True)
 
     # check if there is a user based authorisation role
-    query |= Q(experiment=experiment,
+    query |= Q(content_type=experiment.get_ct(),
+               object_id=experiment.id,
                pluginId=django_user,
                entityId=str(request.user.id),
                canRead=True)\
@@ -181,7 +181,8 @@ def has_read_or_owner_ACL(request, experiment_id):
     for name, group in request.user.ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
-                   experiment=experiment,
+                   content_type=experiment.get_ct(),
+                   object_id=experiment.id,
                    canRead=True)\
                    & (Q(effectiveDate__lte=datetime.today())
                       | Q(effectiveDate__isnull=True))\
@@ -189,8 +190,8 @@ def has_read_or_owner_ACL(request, experiment_id):
                       | Q(expiryDate__isnull=True))
 
     # is there at least one ACL rule which satisfies the rules?
-    from tardis.tardis_portal.models import ExperimentACL
-    acl = ExperimentACL.objects.filter(query)
+    from tardis.tardis_portal.models import ObjectACL
+    acl = ObjectACL.objects.filter(query)
     if acl.count() == 0:
         return False
     else:
@@ -199,12 +200,12 @@ def has_read_or_owner_ACL(request, experiment_id):
 
 def has_write_permissions(request, experiment_id):
     experiment = Experiment.objects.get(id=experiment_id)
-    return experiment.has_change_perm(request.user)
+    return request.user.has_perm('tardis_acls.change_experiment', experiment)
 
 
 def has_delete_permissions(request, experiment_id):
     experiment = Experiment.safe.get(request.user, experiment_id)
-    return experiment.has_delete_perm(request.user)
+    return request.user.has_perm('tardis_acls.delete_experiment', experiment)
 
 
 @login_required

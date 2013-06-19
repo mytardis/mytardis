@@ -12,7 +12,7 @@ from django.test.client import Client
 from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.models import User, UserProfile, \
-    Experiment, ExperimentACL, Dataset, Dataset_File, Replica, Location
+    Experiment, ObjectACL, Dataset, Dataset_File, Replica, Location
 
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -37,14 +37,14 @@ def _create_datafile():
                                            created_by=user,
                                            public_access=full_access)
     experiment.save()
-    ExperimentACL(experiment=experiment,
-                  pluginId='django_user',
-                  entityId=str(user.id),
-                  isOwner=True,
-                  canRead=True,
-                  canWrite=True,
-                  canDelete=True,
-                  aclOwnershipType=ExperimentACL.OWNER_OWNED).save()
+    ObjectACL(content_object=experiment,
+              pluginId='django_user',
+              entityId=str(user.id),
+              isOwner=True,
+              canRead=True,
+              canWrite=True,
+              canDelete=True,
+              aclOwnershipType=ObjectACL.OWNER_OWNED).save()
     dataset = Dataset()
     dataset.save()
     dataset.experiments.add(experiment)
@@ -59,7 +59,7 @@ def _create_datafile():
     datafile = Dataset_File(dataset=dataset,
                             size=os.path.getsize(tempfile.file.name),
                             filename='iiif_named_file')
-    replica = Replica(datafile=datafile, 
+    replica = Replica(datafile=datafile,
                       url=write_uploaded_file_to_dataset(dataset, tempfile),
                       location=Location.get_default_location())
     replica.verify(allowEmptyChecksums=True)

@@ -11,7 +11,7 @@ from django.http import HttpResponse
 from django.template import Context
 
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ExperimentACL, Group
+    ObjectACL, Group
 from tardis.tardis_portal.auth import localdb_auth
 from tardis.tardis_portal.forms import createLinkedUserAuthenticationForm
 from tardis.tardis_portal.shortcuts import render_response_index
@@ -175,7 +175,7 @@ def _setupJsonData(authForm, authenticationMethod, supportedAuthMethods):
 def merge_auth_method(request):
     """Merge the account that the user is logged in as and the account that
     he provided in the Authentication Form. Merging accounts involve relinking
-    the UserAuthentication table entries, transferring ExperimentACL entries
+    the UserAuthentication table entries, transferring ObjectACL entries
     to the merged account, changing the Group memberships and deleting the
     unneeded account.
 
@@ -239,7 +239,8 @@ def merge_auth_method(request):
         # TODO: note that django_user here has been hardcoded. Uli's going
         # to change the implementation on his end so that I can just use a key
         # in here instead of a hardcoded string.
-        experimentACLs = ExperimentACL.objects.filter(pluginId='django_user',
+        experimentACLs = ObjectACL.objects.filter(
+            pluginId='django_user',
             entityId=userIdToBeReplaced)
 
         for experimentACL in experimentACLs:
@@ -247,14 +248,16 @@ def merge_auth_method(request):
             # now let's check if there's already an existing entry in the ACL
             # for the given experiment and replacementUserId
             try:
-                acl = ExperimentACL.objects.get(pluginId='django_user',
-                    entityId=replacementUserId, experiment=experimentACL.experiment)
+                acl = ObjectACL.objects.get(
+                    pluginId='django_user',
+                    entityId=replacementUserId,
+                    content_object=experimentACL.experiment)
                 acl.canRead = acl.canRead or experimentACL.canRead
                 acl.canWrite = acl.canWrite or experimentACL.canWrite
                 acl.canDelete = acl.canDelete or acl.canDelete
                 acl.save()
                 experimentACL.delete()
-            except ExperimentACL.DoesNotExist:
+            except ObjectACL.DoesNotExist:
                 experimentACL.entityId = replacementUserId
                 experimentACL.save()
 
