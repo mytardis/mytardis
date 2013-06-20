@@ -14,6 +14,7 @@ default.  It is enabled in MyTardis in ``settings_changeme.py`` together with
 the custom object level permission framework described below.
 
 .. code-block:: python
+
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
         'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
@@ -24,6 +25,7 @@ The verbs are ``add``, ``change``, ``delete``, and they can be queried on the
 user object as follows:
 
 .. code-block:: python
+
    user.has_perm('tardis_portal.add_experiment')
    user.has_perm('tardis_portal.add_dataset')
    user.has_perm('tardis_portal.change_experiment')
@@ -34,6 +36,7 @@ There is a function in ``tardis.tardis_portal.auth.authservice`` called
 created using custom methods:
 
 .. code-block:: python
+
    'add_experiment'
    'change_experiment'
    'change_group'
@@ -50,7 +53,9 @@ custom permissions class.
 
 Custom permissions are queried on the user object as well, however, with the
 addition of the object in question:
+
 .. code-block:: python
+
    user.has_perm('tardis_acls.change_experiment', experiment)
 
 Verbs currently available are ``change``, ``view``, ``delete``, ``owns``,
