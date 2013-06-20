@@ -12,25 +12,28 @@ Django Authorisation
 Django provides an authorisation/permission mechanism that is in use by
 default.  It is enabled in MyTardis in ``settings_changeme.py`` together with
 the custom object level permission framework described below.
+
 .. code-block:: python
-   AUTHENTICATION_BACKENDS = (
-       'django.contrib.auth.backends.ModelBackend',
-       'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
-   )
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+        'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+    )
 
 The Django default permissions are automatically available for each Model.
 The verbs are ``add``, ``change``, ``delete``, and they can be queried on the
 user object as follows:
+
 .. code-block:: python
-  user.has_perm('tardis_portal.add_experiment')
-  user.has_perm('tardis_portal.add_dataset')
-  user.has_perm('tardis_portal.change_experiment')
-  user.has_perm('tardis_portal.delete_datasetparameterset')
+   user.has_perm('tardis_portal.add_experiment')
+   user.has_perm('tardis_portal.add_dataset')
+   user.has_perm('tardis_portal.change_experiment')
+   user.has_perm('tardis_portal.delete_datasetparameterset')
 
 There is a function in ``tardis.tardis_portal.auth.authservice`` called
 ``_set_user_from_dict`` that adds the following permissions for each new user
 created using custom methods:
-.. code-block::
+
+.. code-block:: python
    'add_experiment'
    'change_experiment'
    'change_group'
