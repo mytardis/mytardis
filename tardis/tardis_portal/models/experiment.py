@@ -194,14 +194,14 @@ class Experiment(models.Model):
                                         isOwner=True)
         return [acl.get_related_object() for acl in acls]
 
-    def has_view_perm(self, user_obj):
+    def _has_view_perm(self, user_obj):
         if not hasattr(self, 'id'):
             return False
 
         if self.public_access != self.PUBLIC_ACCESS_NONE:
             return True
 
-    def has_change_perm(self, user_obj):
+    def _has_change_perm(self, user_obj):
         if not hasattr(self, 'id'):
             return False
 
@@ -210,7 +210,7 @@ class Experiment(models.Model):
 
         return None
 
-    def has_delete_perm(self, user_obj):
+    def _has_delete_perm(self, user_obj):
         if not hasattr(self, 'id'):
             return False
 

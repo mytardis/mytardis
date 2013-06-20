@@ -25,13 +25,13 @@ class ACLAwareBackend(object):
         '''
         relates ACLs to permissions
         '''
-        if verb in ('add', 'change'):
+        if verb in ('change'):
             return Q(canWrite=True) | Q(isOwner=True)
         elif verb in ('view'):
             return Q(canRead=True) | Q(isOwner=True)
         elif verb in ('delete',):
             return Q(canDelete=True) | Q(isOwner=True)
-        elif verb in ('owns',):
+        elif verb in ('owns', 'share'):
             return Q(isOwner=True)
         return Q()
 
@@ -40,7 +40,7 @@ class ACLAwareBackend(object):
         main method, calls other methods based on permission type queried
         '''
         if not user_obj.is_authenticated():
-            allowed_tokens = user_obj.allowed_tokens
+            allowed_tokens = getattr(user_obj, 'allowed_tokens', [])
             user_obj = AnonymousUser()
             user_obj.allowed_tokens = allowed_tokens
 
@@ -60,14 +60,14 @@ class ACLAwareBackend(object):
         if ct.name != perm_ct:
             return False
 
-        method_name = 'has_%s_perm' % perm_action
+        method_name = '_has_%s_perm' % perm_action
 
         # run any custom perms per model, continue if not None
         # allows complete overriding of standard authorisation, eg for public
         # experiments
         model_spec_perm = getattr(obj, method_name,
                                   lambda *args, **kwargs: None)(user_obj)
-        if model_spec_perm is not None:
+        if type(model_spec_perm) == bool:
             return model_spec_perm
 
         #get_acls
