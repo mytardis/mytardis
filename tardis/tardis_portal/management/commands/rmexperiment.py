@@ -15,7 +15,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
 from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
-from tardis.tardis_portal.models import Author_Experiment, ExperimentACL
+from tardis.tardis_portal.models import Author_Experiment, ObjectACL
 from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
 from tardis.tardis_portal.models import DatasetParameterSet
 from tardis.tardis_portal.models import DatafileParameterSet
@@ -44,21 +44,22 @@ class Command(BaseCommand):
             exp = Experiment.objects.get(pk=int(args[0]))
         except Experiment.DoesNotExist:
             raise CommandError("Experiment ID %s not found" % args[0])
-        
+
         # FIXME - we are fetch a bunch of stuff outside of any transaction, and then
         # doing the deletes in a transaction.  There is an obvious race condition here
         # that may result in components of an experiment not being deleted or being deleted
         # when they shouldn't be.
-        
+
         # Fetch Datasets and Datafiles and work out which ones would be deleted
         datasets = Dataset.objects.filter(experiments__id=exp.id)
         datafiles = Dataset_File.objects.filter(dataset__id__in=map((lambda ds : ds.id), datasets))
         uniqueDatasets = filter((lambda ds : ds.experiments.count() == 1), datasets)
         uniqueDatasetIds = map((lambda ds : ds.id), uniqueDatasets)
         uniqueDatafiles = filter((lambda df : df.dataset.id in uniqueDatasetIds), datafiles)
-        
+
         # Fetch other stuff to be printed and deleted.
-        acls = ExperimentACL.objects.filter(experiment=exp)
+        acls = ObjectACL.objects.filter(content_type=exp.get_ct(),
+                                        object_id=exp.id)
         authors = Author_Experiment.objects.filter(experiment=exp)
         epsets = ExperimentParameterSet.objects.filter(experiment=exp)
 

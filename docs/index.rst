@@ -76,6 +76,8 @@ Development
    architecture
    data
 
+   authorisation
+
    contextual_views
 
    api

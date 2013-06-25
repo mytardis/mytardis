@@ -28,9 +28,9 @@ class MockGroupProvider(GroupProvider):
                         'members': [u'Group 123', u'user2']},
                        ]
 
-    def getGroups(self, request):
+    def getGroups(self, user):
         for i in self.groups:
-            if str(request.user).split("_")[1] in i['members']:
+            if str(user).split("_")[1] in i['members']:
                 yield i['id']
 
     def getGroupById(self, id):

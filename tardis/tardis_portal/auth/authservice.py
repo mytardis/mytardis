@@ -121,7 +121,7 @@ class AuthService():
         user.email = user_dict.get('email', '')
         user.first_name = user_dict.get('first_name', '')
         user.last_name = user_dict.get('last_name', '')
-        
+
         user.save()
         user.user_permissions.add(Permission.objects.get(codename='add_experiment'))
         user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
@@ -238,8 +238,7 @@ class AuthService():
                 pass
         return username
 
-
-    def getGroups(self, request):
+    def getGroups(self, user):
         """Return a list of tuples containing pluginname and group id
 
         :param request: a HTTP Request instance
@@ -250,7 +249,7 @@ class AuthService():
         grouplist = []
         for gp in self._group_providers:
             # logger.debug("group provider: " + gp.name)
-            for group in gp.getGroups(request):
+            for group in gp.getGroups(user):
                 grouplist.append((gp.name, group))
         return grouplist
 
@@ -334,4 +333,3 @@ class AuthService():
             for group in gp.getGroupsForEntity(entity):
                 group["pluginname"] = gp.name
                 yield group
-

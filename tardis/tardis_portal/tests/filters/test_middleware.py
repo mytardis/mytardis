@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -39,7 +39,7 @@ from django.core.exceptions import MiddlewareNotUsed
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
 from tardis.tardis_portal.models import User, UserProfile, Experiment, \
-    ExperimentACL, Location, Dataset, Dataset_File, Replica
+    ObjectACL, Location, Dataset, Dataset_File, Replica
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
 
@@ -65,14 +65,14 @@ class FilterInitTestCase(TestCase):
                                 institution_name='Test Uni',
                                 created_by=user)
         experiment.save()
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId='django_user',
             entityId=str(user.id),
-            experiment=experiment,
+            content_object=experiment,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         acl.save()
 
         dataset = Dataset(description='dataset description...')
@@ -149,9 +149,9 @@ class FilterInitTestCase(TestCase):
         finally:
             # Remove our hooks!
             for f in TEST_FILTERS:
-                post_save.disconnect(sender=Dataset_File, weak=False, 
+                post_save.disconnect(sender=Dataset_File, weak=False,
                                      dispatch_uid=f[0] + ".datafile")
-                post_save.disconnect(sender=Replica, weak=False, 
+                post_save.disconnect(sender=Replica, weak=False,
                                      dispatch_uid=f[0] + ".replica")
 
 
@@ -163,7 +163,7 @@ class Filter1:
         tuples = cls.tuples
         cls.tuples = []
         return tuples
-    
+
     def __call__(self, sender, **kwargs):
         datafile = kwargs.get('instance')
         replica = kwargs.get('replica')
@@ -177,7 +177,7 @@ class Filter2:
         tuples = cls.tuples
         cls.tuples = []
         return tuples
-    
+
     def __call__(self, sender, **kwargs):
         datafile = kwargs.get('instance')
         replica = kwargs.get('replica')

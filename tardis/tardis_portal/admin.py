@@ -34,6 +34,8 @@ from django.contrib import admin
 from tardis.tardis_portal import models
 from django.forms import TextInput
 import django.db
+from django.contrib.contenttypes import generic
+
 # from south.models import MigrationHistory
 
 
@@ -41,19 +43,23 @@ class ExperimentParameterInline(admin.TabularInline):
     model = models.ExperimentParameter
     extra = 0
     formfield_overrides = {
-      django.db.models.TextField: {'widget': TextInput},
+        django.db.models.TextField: {'widget': TextInput},
     }
+
 
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
-class ExperimentACLInline(admin.TabularInline):
-    model = models.ExperimentACL
+
+class ObjectACLInline(generic.GenericTabularInline):
+    model = models.ObjectACL
     extra = 0
+
 
 class ExperimentAdmin(admin.ModelAdmin):
     search_fields = ['title', 'id']
-    inlines = [ExperimentACLInline]
+    inlines = [ObjectACLInline]
+
 
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
@@ -86,12 +92,14 @@ class SchemaAdmin(admin.ModelAdmin):
 class ParameterNameAdmin(admin.ModelAdmin):
     search_fields = ['name', 'schema__id']
 
-class ExperimentAclAdmin(admin.ModelAdmin):
-    search_fields = ['experiment__id']
+
+class ObjectACLAdmin(admin.ModelAdmin):
+    search_fields = ['content_type', 'object_id']
     list_display = [
         '__unicode__', 'pluginId', 'entityId', 'canRead',
         'canWrite', 'canDelete', 'isOwner'
     ]
+
 
 class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
@@ -116,6 +124,6 @@ admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)
 admin.site.register(models.UserAuthentication)
-admin.site.register(models.ExperimentACL, ExperimentAclAdmin)
+admin.site.register(models.ObjectACL, ObjectACLAdmin)
 admin.site.register(models.FreeTextSearchField, FreeTextSearchFieldAdmin)
 # admin.site.register(MigrationHistory)

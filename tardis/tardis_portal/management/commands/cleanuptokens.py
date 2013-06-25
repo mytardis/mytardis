@@ -7,7 +7,7 @@ import sys
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Count
-from tardis.tardis_portal.models import Token, ExperimentACL
+from tardis.tardis_portal.models import Token, ObjectACL
 from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
 
 from datetime import datetime as dt
@@ -43,9 +43,10 @@ class Command(BaseCommand):
             purge ACLs if they are not in use
         """
 
-        acls_to_delete = ExperimentACL.objects.filter(pluginId=TokenGroupProvider.name) \
-                        .annotate(num_tokens=Count('experiment__token')) \
-                        .filter(num_tokens__eq=0)
+        acls_to_delete = ObjectACL.objects.filter(
+            pluginId=TokenGroupProvider.name).annotate(
+                num_tokens=Count('content_object__token')
+            ).filter(num_tokens__eq=0)
 
         num_acls = acls_to_delete.count()
 

@@ -40,11 +40,11 @@ from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, Group
 from tardis.tardis_portal.shortcuts import return_response_error
 
 def get_accessible_experiments(request):
-    return Experiment.safe.all(request)
+    return Experiment.safe.all(request.user)
 
 
 def get_accessible_experiments_for_dataset(request, dataset_id):
-    experiments = Experiment.safe.all(request)
+    experiments = Experiment.safe.all(request.user)
 
     # probably a much cleverer way of writing this with safe
     experiment_dataset_access = []
@@ -59,7 +59,7 @@ def get_accessible_experiments_for_dataset(request, dataset_id):
 
 
 def get_shared_experiments(request):
-    experiments = Experiment.safe.owned_and_shared(request)
+    experiments = Experiment.safe.owned_and_shared(request.user)
 
     #exclude owned experiments
     owned = get_owned_experiments(request)
@@ -68,7 +68,7 @@ def get_shared_experiments(request):
 
 
 def get_owned_experiments(request):
-    return Experiment.safe.owned(request)
+    return Experiment.safe.owned(request.user)
 
 
 def get_accessible_datafiles_for_user(request):
@@ -87,22 +87,20 @@ def get_accessible_datafiles_for_user(request):
 
 
 def has_experiment_ownership(request, experiment_id):
-    return Experiment.safe.owned(request).filter(pk=experiment_id).exists()
+    return Experiment.safe.owned(request.user).filter(pk=experiment_id).exists()
 
 
 def has_experiment_access(request, experiment_id):
-    try:
-        Experiment.safe.get(request, experiment_id)
-        return True
-    except PermissionDenied:
-        return False
+    experiment = Experiment.objects.get(id=experiment_id)
+    return request.user.has_perm('tardis_acls.view_experiment', experiment)
+
 
 def has_experiment_write(request, experiment_id):
     return has_write_permissions(request, experiment_id)
 
 def has_experiment_download_access(request, experiment_id):
 
-    if Experiment.safe.owned_and_shared(request) \
+    if Experiment.safe.owned_and_shared(request.user) \
                       .filter(id=experiment_id) \
                       .exists():
 
@@ -144,7 +142,8 @@ def has_datafile_download_access(request, dataset_file_id):
 
 def has_read_or_owner_ACL(request, experiment_id):
     """
-    Check whether the user has read access to the experiment - this means either
+    Check whether the user has read access to the experiment -
+    this means either
     they have been granted read access, or that they are the owner.
 
     NOTE:
@@ -158,16 +157,18 @@ def has_read_or_owner_ACL(request, experiment_id):
     from datetime import datetime
     from tardis.tardis_portal.auth.localdb_auth import django_user
 
-    experiment = Experiment.safe.get(request, experiment_id)
+    experiment = Experiment.safe.get(request.user, experiment_id)
 
     # does the user own this experiment
-    query = Q(experiment=experiment,
+    query = Q(content_type=experiment.get_ct(),
+              object_id=experiment.id,
               pluginId=django_user,
               entityId=str(request.user.id),
               isOwner=True)
 
     # check if there is a user based authorisation role
-    query |= Q(experiment=experiment,
+    query |= Q(content_type=experiment.get_ct(),
+               object_id=experiment.id,
                pluginId=django_user,
                entityId=str(request.user.id),
                canRead=True)\
@@ -177,10 +178,11 @@ def has_read_or_owner_ACL(request, experiment_id):
                   | Q(expiryDate__isnull=True))
 
     # and finally check all the group based authorisation roles
-    for name, group in request.groups:
+    for name, group in request.user.ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
-                   experiment=experiment,
+                   content_type=experiment.get_ct(),
+                   object_id=experiment.id,
                    canRead=True)\
                    & (Q(effectiveDate__lte=datetime.today())
                       | Q(effectiveDate__isnull=True))\
@@ -188,90 +190,22 @@ def has_read_or_owner_ACL(request, experiment_id):
                       | Q(expiryDate__isnull=True))
 
     # is there at least one ACL rule which satisfies the rules?
-    from tardis.tardis_portal.models import ExperimentACL
-    acl = ExperimentACL.objects.filter(query)
+    from tardis.tardis_portal.models import ObjectACL
+    acl = ObjectACL.objects.filter(query)
     if acl.count() == 0:
         return False
     else:
         return True
 
+
 def has_write_permissions(request, experiment_id):
-    from datetime import datetime
-    from tardis.tardis_portal.auth.localdb_auth import django_user
-
     experiment = Experiment.objects.get(id=experiment_id)
-    if experiment.locked:
-        return False
-
-    # does the user own this experiment
-    query = Q(experiment=experiment,
-              pluginId=django_user,
-              entityId=str(request.user.id),
-              isOwner=True)
-
-    # check if there is a user based authorisation role
-    query |= Q(experiment=experiment,
-               pluginId=django_user,
-               entityId=str(request.user.id),
-               canWrite=True)\
-               & (Q(effectiveDate__lte=datetime.today())
-                  | Q(effectiveDate__isnull=True))\
-               & (Q(expiryDate__gte=datetime.today())
-                  | Q(expiryDate__isnull=True))
-
-    # and finally check all the group based authorisation roles
-    for name, group in request.groups:
-        query |= Q(pluginId=name,
-                   entityId=str(group),
-                   experiment=experiment,
-                   canWrite=True)\
-                   & (Q(effectiveDate__lte=datetime.today())
-                      | Q(effectiveDate__isnull=True))\
-                   & (Q(expiryDate__gte=datetime.today())
-                      | Q(expiryDate__isnull=True))
-
-    # is there at least one ACL rule which satisfies the rules?
-    from tardis.tardis_portal.models import ExperimentACL
-    acl = ExperimentACL.objects.filter(query)
-    return acl.count() != 0
+    return request.user.has_perm('tardis_acls.change_experiment', experiment)
 
 
 def has_delete_permissions(request, experiment_id):
-    from datetime import datetime
-    from tardis.tardis_portal.auth.localdb_auth import django_user
-    experiment = Experiment.safe.get(request, experiment_id)
-
-    # does the user own this experiment
-    query = Q(experiment=experiment,
-              pluginId=django_user,
-              entityId=str(request.user.id),
-              isOwner=True)
-
-    # check if there is a user based authorisation role
-    query |= Q(experiment=experiment,
-               pluginId=django_user,
-               entityId=str(request.user.id),
-               canDelete=True)\
-               & (Q(effectiveDate__lte=datetime.today())
-                  | Q(effectiveDate__isnull=True))\
-               & (Q(expiryDate__gte=datetime.today())
-                  | Q(expiryDate__isnull=True))
-
-    # and finally check all the group based authorisation roles
-    for name, group in request.groups:
-        query |= Q(pluginId=name,
-                   entityId=str(group),
-                   experiment=experiment,
-                   canDelete=True)\
-                   & (Q(effectiveDate__lte=datetime.today())
-                      | Q(effectiveDate__isnull=True))\
-                   & (Q(expiryDate__gte=datetime.today())
-                      | Q(expiryDate__isnull=True))
-
-    # is there at least one ACL rule which satisfies the rules?
-    from tardis.tardis_portal.models import ExperimentACL
-    acl = ExperimentACL.objects.filter(query)
-    return acl.count() != 0
+    experiment = Experiment.safe.get(request.user, experiment_id)
+    return request.user.has_perm('tardis_acls.delete_experiment', experiment)
 
 
 @login_required

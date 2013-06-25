@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -34,12 +34,12 @@ from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.tardis_portal.models import Location
 
-def generate_datafile(path, dataset, content=None, size=-1, 
+def generate_datafile(path, dataset, content=None, size=-1,
                       verify=True, verified=True):
     '''Generates a datafile AND a replica to hold its contents'''
     from tardis.tardis_portal.models import Dataset_File, Replica, Location
 
-    saved = settings.REQUIRE_DATAFILE_CHECKSUMS 
+    saved = settings.REQUIRE_DATAFILE_CHECKSUMS
     settings.REQUIRE_DATAFILE_CHECKSUMS = False
     try:
         datafile = Dataset_File()
@@ -106,21 +106,21 @@ def generate_dataset(datafiles=[], experiments=[]):
     return dataset
 
 def generate_experiment(datasets=[], users=[]):
-    from tardis.tardis_portal.models import Experiment, ExperimentACL
+    from tardis.tardis_portal.models import Experiment, ObjectACL
     experiment = Experiment(created_by=users[0])
     experiment.save()
     for ds in datasets:
         ds.experiments.add(experiment)
         ds.save()
     for user in users:
-        acl = ExperimentACL(experiment=experiment,
-                            pluginId='django_user',
-                            entityId=str(user.id),
-                            isOwner=True,
-                            canRead=True,
-                            canWrite=True,
-                            canDelete=True,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ObjectACL(content_object=experiment,
+                        pluginId='django_user',
+                        entityId=str(user.id),
+                        isOwner=True,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
         acl.save()
     return experiment
 

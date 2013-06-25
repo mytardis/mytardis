@@ -11,7 +11,7 @@ from django.core.urlresolvers import reverse
 from lxml import etree
 
 from tardis.tardis_portal.models import \
-    Experiment, ExperimentACL, License, User, UserProfile
+    Experiment, License, ObjectACL, User, UserProfile
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 
@@ -42,14 +42,14 @@ class RifCSTestCase(TestCase):
         experiment.public_access = Experiment.PUBLIC_ACCESS_FULL
         experiment.license = license_
         experiment.save()
-        acl = ExperimentACL(experiment=experiment,
-                            pluginId='django_user',
-                            entityId=str(user.id),
-                            isOwner=False,
-                            canRead=True,
-                            canWrite=True,
-                            canDelete=False,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ObjectACL(content_object=experiment,
+                        pluginId='django_user',
+                        entityId=str(user.id),
+                        isOwner=False,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=False,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
         acl.save()
 
         params = {'type': 'website',

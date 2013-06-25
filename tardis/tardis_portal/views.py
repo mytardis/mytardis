@@ -88,13 +88,13 @@ from tardis.tardis_portal.tasks import create_staging_datafiles,\
     create_staging_datafile
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
-    DatafileParameter, DatasetParameter, ExperimentACL, Dataset_File, \
+    DatafileParameter, DatasetParameter, ObjectACL, Dataset_File, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
@@ -147,7 +147,7 @@ def get_dataset_info(dataset, include_thumbnail=False):
             if ns in schemas:
                 obj["datasettype"] = schemas[ns].name
                 break
-    
+
     return obj
 
 
@@ -372,12 +372,16 @@ def view_experiment(request, experiment_id,
     c = Context({})
 
     try:
-        experiment = Experiment.safe.get(request, experiment_id)
+        experiment = Experiment.safe.get(request.user, experiment_id)
     except PermissionDenied:
         return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
-
+    #import ipdb; ipdb.set_trace()
+    print request.user.groups
+    write_permissions = request.user.has_perm(
+        'tardis_acls.change_experiment',
+        experiment)
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -421,15 +425,15 @@ def view_experiment(request, experiment_id,
     return HttpResponse(render_response_index(request, template_name, c))
 
 def _add_protocols_and_organizations(request, experiment, c):
-    """Add the protocol, format and organization details for 
-    archive requests.  Since the MacOSX archiver can't cope with 
-    streaming ZIP, the best way to avoid 'user disappointment' 
+    """Add the protocol, format and organization details for
+    archive requests.  Since the MacOSX archiver can't cope with
+    streaming ZIP, the best way to avoid 'user disappointment'
     is to not offer ZIP."""
 
     if getattr(settings, 'USER_AGENT_SENSING', False) and \
             request.user_agent:
         logger.debug('user_agent.os.family: %s' % request.user_agent.os.family)
-        cannot_do_zip = request.user_agent.os.family in ['Macintosh', 
+        cannot_do_zip = request.user_agent.os.family in ['Macintosh',
                                                          'Mac OS X']
     else:
         cannot_do_zip = False
@@ -465,7 +469,7 @@ def experiment_description(request, experiment_id):
     c = Context({})
 
     try:
-        experiment = Experiment.safe.get(request, experiment_id)
+        experiment = Experiment.safe.get(request.user, experiment_id)
     except PermissionDenied:
         return return_response_error(request)
     except Experiment.DoesNotExist:
@@ -640,7 +644,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
         for experiment_id in updated_experiments - current_experiments:
             # You must own the experiment to assign datasets to it
             if authz.has_experiment_ownership(request, experiment_id):
-                experiment = Experiment.safe.get(request, experiment_id)
+                experiment = Experiment.safe.get(request.user, experiment_id)
                 logger.info("Adding dataset #%d to experiment #%d" %
                     (dataset.id, experiment.id))
                 dataset.experiments.add(experiment)
@@ -683,7 +687,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
 @authz.experiment_access_required
 def experiment_datasets_json(request, experiment_id):
     try:
-        experiment = Experiment.safe.get(request, experiment_id)
+        experiment = Experiment.safe.get(request.user, experiment_id)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
@@ -698,7 +702,7 @@ def experiment_datasets_json(request, experiment_id):
 @never_cache
 @authz.experiment_access_required
 def experiment_dataset_transfer(request, experiment_id):
-    experiments = Experiment.safe.owned(request)
+    experiments = Experiment.safe.owned(request.user)
 
     def get_json_url_pattern():
         placeholder = '314159'
@@ -774,14 +778,14 @@ def create_experiment(request,
             full_experiment.save_m2m()
 
             # add defaul ACL
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId=django_user,
-                                entityId=str(request.user.id),
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True,
-                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl = ObjectACL(content_object=experiment,
+                            pluginId=django_user,
+                            entityId=str(request.user.id),
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
 
             request.POST = {'status': "Experiment Created."}
@@ -829,7 +833,7 @@ def metsexport_experiment(request, experiment_id):
 @permission_required('tardis_portal.change_experiment')
 @authz.write_permissions_required
 def edit_experiment(request, experiment_id,
-                      template="tardis_portal/create_experiment.html"):
+                    template="tardis_portal/create_experiment.html"):
     """Edit an existing experiment.
 
     :param request: a HTTP Request instance
@@ -992,14 +996,15 @@ def _registerExperimentDocument(filename, created_by, expid=None,
                 logger.debug('registering owner: ' + owner)
                 e = Experiment.objects.get(pk=eid)
 
-                acl = ExperimentACL(experiment=e,
-                                    pluginId=django_user,
-                                    entityId=str(owner_user.id),
-                                    canRead=True,
-                                    canWrite=True,
-                                    canDelete=True,
-                                    isOwner=True,
-                                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                acl = ObjectACL(content_object=e.get_ct(),
+                                object_id=e.id,
+                                pluginId=django_user,
+                                entityId=str(owner_user.id),
+                                canRead=True,
+                                canWrite=True,
+                                canDelete=True,
+                                isOwner=True,
+                                aclOwnershipType=ObjectACL.OWNER_OWNED)
                 acl.save()
 
     return (eid, sync_root)
@@ -1232,7 +1237,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
 @login_required()
 def control_panel(request):
 
-    experiments = Experiment.safe.owned(request)
+    experiments = Experiment.safe.owned(request.user)
     if experiments:
         experiments = experiments.order_by('title')
 
@@ -1905,7 +1910,7 @@ def retrieve_field_list(request):
 @authz.experiment_ownership_required
 def retrieve_access_list_user(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    user_acls = Experiment.safe.user_acls(request, experiment_id)
+    user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id,
                  'addUserPermissionsForm': AddUserPermissionsForm() })
@@ -1916,7 +1921,7 @@ def retrieve_access_list_user(request, experiment_id):
 @never_cache
 def retrieve_access_list_user_readonly(request, experiment_id):
     from tardis.tardis_portal.forms import AddUserPermissionsForm
-    user_acls = Experiment.safe.user_acls(request, experiment_id)
+    user_acls = Experiment.safe.user_acls(experiment_id)
 
     c = Context({ 'user_acls': user_acls, 'experiment_id': experiment_id })
     return HttpResponse(render_response_index(request,
@@ -1929,11 +1934,11 @@ def retrieve_access_list_group(request, experiment_id):
 
     from tardis.tardis_portal.forms import AddGroupPermissionsForm
 
-    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
-                                                          experiment_id)
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(
+        experiment_id)
 
-    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
-                                                            experiment_id)
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(
+        experiment_id)
 
     c = Context({'group_acls_user_owned': group_acls_user_owned,
                  'group_acls_system_owned': group_acls_system_owned,
@@ -1946,11 +1951,11 @@ def retrieve_access_list_group(request, experiment_id):
 @never_cache
 def retrieve_access_list_group_readonly(request, experiment_id):
 
-    group_acls_system_owned = Experiment.safe.group_acls_system_owned(request,
-                                                            experiment_id)
+    group_acls_system_owned = Experiment.safe.group_acls_system_owned(
+        experiment_id)
 
-    group_acls_user_owned = Experiment.safe.group_acls_user_owned(request,
-                                                          experiment_id)
+    group_acls_user_owned = Experiment.safe.group_acls_user_owned(
+        experiment_id)
 
     c = Context({'experiment_id': experiment_id,
                  'group_acls_system_owned': group_acls_system_owned,
@@ -1963,24 +1968,40 @@ def retrieve_access_list_group_readonly(request, experiment_id):
 @authz.experiment_ownership_required
 def retrieve_access_list_external(request, experiment_id):
 
-    groups = Experiment.safe.external_users(request, experiment_id)
+    groups = Experiment.safe.external_users(experiment_id)
     c = Context({'groups': groups, 'experiment_id': experiment_id})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/access_list_external.html', c))
+
 
 @never_cache
 @authz.experiment_download_required
 def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
+
+    def token_url(token):
+        from urllib import urlencode
+        from urlparse import urlparse, parse_qs
+
+        url = request.META['HTTP_REFERER']
+        u = urlparse(url)
+        query = parse_qs(u.query)
+        query.pop('token', None)
+        query['token'] = token.token
+        u = u._replace(query=urlencode(query, True))
+        return u.geturl()
+        #return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
     tokens = [{'expiry_date': token.expiry_date,
-                 'user': token.user,
-                 'url': request.build_absolute_uri(token.get_absolute_url()),
-                 'id': token.id,
-                 'experiment_id': experiment_id,
-              } for token in tokens]
+               'user': token.user,
+               'url': request.build_absolute_uri(token_url(token)),
+               'id': token.id,
+               'experiment_id': experiment_id,
+               'is_owner': request.user.has_perm('tardis_acls.owns_experiment',
+                                                 token.experiment),
+               } for token in tokens]
     c = Context({'tokens': tokens})
-    return HttpResponse(render_response_index(request,
-        'tardis_portal/ajax/access_list_tokens.html', c))
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/ajax/access_list_tokens.html', c))
 
 
 @never_cache
@@ -2141,21 +2162,22 @@ def add_experiment_access_user(request, experiment_id, username):
         return HttpResponse('Experiment (id=%d) does not exist.'
             % (experiment.id))
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId=django_user,
         entityId=str(user.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 0:
-        acl = ExperimentACL(experiment=experiment,
-                            pluginId=django_user,
-                            entityId=str(user.id),
-                            canRead=canRead,
-                            canWrite=canWrite,
-                            canDelete=canDelete,
-                            isOwner=isOwner,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ObjectACL(content_object=experiment,
+                        pluginId=django_user,
+                        entityId=str(user.id),
+                        canRead=canRead,
+                        canWrite=canWrite,
+                        canDelete=canDelete,
+                        isOwner=isOwner,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
         acl.save()
         c = Context({'authMethod': authMethod,
@@ -2183,11 +2205,12 @@ def remove_experiment_access_user(request, experiment_id, username):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
         pluginId=django_user,
         entityId=str(user.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 1:
         if int(acl[0].entityId) == request.user.id:
@@ -2217,12 +2240,13 @@ def change_user_permissions(request, experiment_id, username):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(
-            experiment=experiment,
+        acl = ObjectACL.objects.get(
+            content_type=experiment.get_ct(),
+            object_id=experiment.id,
             pluginId=django_user,
             entityId=str(user.id),
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    except ExperimentACL.DoesNotExist:
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+    except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
     if request.method == 'POST':
@@ -2258,12 +2282,13 @@ def change_group_permissions(request, experiment_id, group_id):
         return return_response_error(request)
 
     try:
-        acl = ExperimentACL.objects.get(
-            experiment=experiment,
-            pluginId=django_group,
+        acl = ObjectACL.objects.get(
+            content_type=experiment.get_ct(),
+            object_id=experiment.id,
+            pluginId='django_group',
             entityId=str(group.id),
-            aclOwnershipType=ExperimentACL.OWNER_OWNED)
-    except ExperimentACL.DoesNotExist:
+            aclOwnershipType=ObjectACL.OWNER_OWNED)
+    except ObjectACL.DoesNotExist:
         return return_response_error(request)
 
     if request.method == 'POST':
@@ -2413,11 +2438,12 @@ def add_experiment_access_group(request, experiment_id, groupname):
         transaction.rollback()
         return HttpResponse('Group %s does not exist' % (groupname))
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
-        pluginId=django_group,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
+        pluginId='django_group',
         entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() > 0:
         # An ACL already exists for this experiment/group.
@@ -2425,14 +2451,14 @@ def add_experiment_access_group(request, experiment_id, groupname):
         return HttpResponse('Could not create group %s ' \
             '(It is likely that it already exists)' % (groupname))
 
-    acl = ExperimentACL(experiment=experiment,
-                        pluginId=django_group,
-                        entityId=str(group.id),
-                        canRead=canRead,
-                        canWrite=canWrite,
-                        canDelete=canDelete,
-                        isOwner=isOwner,
-                        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+    acl = ObjectACL(content_object=experiment,
+                    pluginId='django_group',
+                    entityId=str(group.id),
+                    canRead=canRead,
+                    canWrite=canWrite,
+                    canDelete=canDelete,
+                    isOwner=isOwner,
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
 
     c = Context({'group': group,
@@ -2458,11 +2484,12 @@ def remove_experiment_access_group(request, experiment_id, group_id):
     except Experiment.DoesNotExist:
         return HttpResponse('Experiment does not exist')
 
-    acl = ExperimentACL.objects.filter(
-        experiment=experiment,
-        pluginId=django_group,
+    acl = ObjectACL.objects.filter(
+        content_type=experiment.get_ct(),
+        object_id=experiment.id,
+        pluginId='django_group',
         entityId=str(group.id),
-        aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        aclOwnershipType=ObjectACL.OWNER_OWNED)
 
     if acl.count() == 1:
         acl[0].delete()
@@ -3092,7 +3119,7 @@ def view_rifcs(request, experiment_id):
 
     """
     try:
-        experiment = Experiment.safe.get(request, experiment_id)
+        experiment = Experiment.safe.get(request.user, experiment_id)
     except PermissionDenied:
         return return_response_error(request)
     except Experiment.DoesNotExist:
@@ -3233,5 +3260,3 @@ def stage_files_to_dataset(request, dataset_id):
 
     email = {'email': user.email}
     return HttpResponse(json.dumps(email), status=201)
-
-
