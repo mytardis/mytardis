@@ -287,6 +287,10 @@ UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
 # Download size limit: zero means no limit
 DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
 
+# temporary download file location
+from tempfile import gettempdir
+DOWNLOAD_TEMP_DIR = gettempdir()
+
 # Safety margin for temporary space when downloading.  (Estimated archive
 # file size + safety_margin must be less that available disk space ...)
 DOWNLOAD_SPACE_SAFETY_MARGIN = 8388608

@@ -48,7 +48,8 @@ class StreamingFile:
         # writer_callable outputs the file strictly sequentially.  If it seeks
         # backwards to back-fill details (like ZipFile does!), this can cause
         # a data race and can result in a corrupted download.
-        _, self.name = mkstemp()
+        _, self.name = mkstemp(
+            dir=getattr(settings, 'DOWNLOAD_TEMP_DIR', None))
         self.asynchronous = asynchronous_file_creation
         if asynchronous_file_creation:
             self.runnable = writer_callable
@@ -312,7 +313,9 @@ def _write_files_to_archive(write_func, files):
         if not fileObj:
             logger.debug('Skipping %s - file open failed.' % name)
             continue
-        with NamedTemporaryFile(prefix='mytardis_tmp_dl_') as fdst:
+        with NamedTemporaryFile(
+                prefix='mytardis_tmp_dl_',
+                dir=getattr(settings, 'DOWNLOAD_TEMP_DIR', None)) as fdst:
             try:
                 # Copy url to destination file
                 shutil.copyfileobj(fileObj, fdst)
@@ -401,11 +404,13 @@ def _estimate_archive_size(mapper, datafiles, comptype):
         estimate += 100
     return (count, estimate)
 
+
 def _get_free_temp_space():
     """ Return free space on the file system holding the temporary
     directory (in bytes)
     """
-    return get_free_space(gettempdir())
+    return get_free_space(getattr(settings, 'DOWNLOAD_TEMP_DIR', gettempdir()))
+
 
 def _check_download_limits(mapper, datafiles, comptype):
     (count, estimate) = _estimate_archive_size(mapper, datafiles, comptype)
