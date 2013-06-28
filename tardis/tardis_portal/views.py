@@ -430,7 +430,7 @@ def _add_protocols_and_organizations(request, experiment, c):
     if getattr(settings, 'USER_AGENT_SENSING', False) and \
             request.user_agent:
         logger.debug('user_agent.os.family: %s' % request.user_agent.os.family)
-        cannot_do_zip = request.user_agent.os.family in ['Macintosh', 
+        cannot_do_zip = request.user_agent.os.family in ['Macintosh',
                                                          'Mac OS X']
     else:
         cannot_do_zip = False
@@ -1113,11 +1113,11 @@ def display_datafile_details(request, dataset_file_id):
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, dataset_file_id),
                           "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, dataset_file_id),
                           "name": schema.name})
     context = Context({
         'datafile_id': dataset_file_id,
