@@ -24,10 +24,30 @@ class MetsExporter():
 
     def export(self, experimentId, replace_protocols={}, filename=None,
                export_images=True, force_http_urls=False):
+        experiment = Experiment.objects.get(id=experimentId)
+
+	# Use the experiment directory,  a temporary directory if none
+        # available
+        dirname = experiment.get_or_create_directory()
+        if dirname is None:
+            from tempfile import mkdtemp
+            dirname = mkdtemp()
+        logger.debug('Using directory %s for METS export' % dirname)
+
+	# Use generated filename if not provided
+        if not filename:
+            filename = 'mets_expid_%i.xml' % experiment.id
+
+        filepath = join(dirname, filename)
+        with open(filepath, 'w') as outfile:
+            self.export_to_file(experiment, outfile, **kwargs)
+        return filepath
+
+    def export_to_file(self, experiment, outfile, replace_protocols={},
+                       export_images=True, force_http_urls=False):
         self.export_images = export_images
         # initialise the metadata counter
         metadataCounter = 1
-        experiment = Experiment.objects.get(id=experimentId)
 
         # TODO: what info do we put on label?
         profile = '"Scientific Dataset Profile 1.0"' \
@@ -175,7 +195,7 @@ class MetsExporter():
         _mets.add_structMap(_structMap)
         _mets.set_fileSec(_fileSec)
 
-        # create teh mets header
+        # create the mets header
         dateNow = datetime.now().isoformat(' ').replace(
             ' ', 'T').rsplit('.')[0]
         _metsHdr = metsHdr(CREATEDATE=dateNow, LASTMODDATE=dateNow)
@@ -188,24 +208,7 @@ class MetsExporter():
 
         _mets.set_metsHdr(_metsHdr)
 
-
-	# Use experiment directory, or temporary directory if unavailable
-        dirname = experiment.get_or_create_directory()
-        if dirname is None:
-            from tempfile import mkdtemp
-            dirname = mkdtemp()
-	logger.debug('Using directory %s for METS export' % dirname)
-
-	# Use generated filename if not provided
-        if not filename:
-            filename = 'mets_expid_%i.xml' % experiment.id
-
-        filepath = join(dirname, filename)
-
-        outfile = open(filepath, 'w')
         _mets.export(outfile=outfile, level=1)
-        outfile.close()
-        return filepath
 
     def getTechMDXmlDataForParameterSets(self, experiment, parameterSets, type="experiment"):
         _xmlData = xmlData()
