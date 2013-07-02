@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -30,4 +30,5 @@
 
 from .base import MigrationError
 from .migration import migrate_replica, migrate_replica_by_id
+from .archiving import create_experiment_archive
 from .scoring import MigrationScorer

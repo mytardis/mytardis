@@ -10,7 +10,7 @@
 #    * Redistributions in binary form must reproduce the above copyright
 #      notice, this list of conditions and the following disclaimer in the
 #      documentation and/or other materials provided with the distribution.
-#    * Neither the name of the University of Queensland nor the
+#    * Neither the name of the  University of Queensland nor the
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
@@ -27,52 +27,41 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from django.test import TestCase
+from compare import expect
+from nose.tools import ok_, eq_
 
-from urllib2 import Request, urlopen, HTTPError, URLError
-from urlparse import urlparse
+import logging, base64, os, urllib2
 from tempfile import NamedTemporaryFile
-from tarfile import TarFile, TarInfo
-import os, tarfile, shutil
+from urllib2 import HTTPError, URLError, urlopen
+from tarfile import is_tarfile
 
-from django.conf import settings
-from django.db import transaction
+from tardis.tardis_portal.models import Dataset_File, Replica, Location
+from tardis.tardis_portal.transfer import TransferError
+from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
+from tardis.tardis_portal.tests.transfer.generate import \
+    generate_datafile, generate_dataset, generate_experiment, generate_user
 
-from tardis.tardis_portal.metsexporter import MetsExporter
+from tardis.apps.migration import MigrationError, create_experiment_archive
 
-from tardis.apps.migration import MigrationError
-from tardis.tardis_portal.models import \
-    Experiment, Dataset, Dataset_File, Replica 
+class ArchivingTestCase(TestCase):
 
-import logging
+    def setUp(self):
+        self.user = generate_user('fred')
+        Location.force_initialize()
+        self.experiment = generate_experiment(users=[self.user])
+        self.dataset = generate_dataset(experiments=[self.experiment])
 
-logger = logging.getLogger(__name__)
+    def tearDown(self):
+        self.dataset.delete()
+        self.experiment.delete()
+        self.user.delete()
 
-def create_experiment_archive(exp, outfile):
-    with NamedTemporaryFile() as manifest, \
-            tarfile.open(mode='w:gz', fileobj=outfile) as tf:
-        MetsExporter().export_to_file(exp, manifest)
-        tf.add(manifest.name, arcname='Manifest')
-        for datafile in exp.get_datafiles():
-            replica = datafile.get_preferred_replica(verified=True)
-            tarinfo = TarInfo(name=datafile.filename)
-            tarinfo.size = datafile.size
-            tarinfo.mtime = datafile.modification_time
-            with NamedTemporaryFile(prefix='mytardis_tmp_ar_') as fdst, \
-                    datafile.get_file() as f:
-                try:
-                    shutil.copyfileobj(f, fdst)
-                    fdst.flush()
-                    tf.add(fdst.name, datafile.filename)
-                except URLError:
-                    logger.warn("Unable to fetch %s for archive creation." % 
-                                datafile.filename)
-
-def remove_experiment(exp):
-    pass
-
-def remove_experiment_data(exp):
-    pass
-
-def create_archive_record(exp, url):
-    pass
-
+    def testCreateExperimentArchive(self):
+        datafile, replica = generate_datafile(None, self.dataset, "Hi mum")
+        try:
+            tmp = NamedTemporaryFile(delete=False)
+            create_experiment_archive(self.experiment, tmp)
+            self.assertTrue(is_tarfile(tmp.name))
+        finally:
+            os.unlink(tmp.name)

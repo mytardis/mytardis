@@ -40,7 +40,11 @@ class MetsExporter():
 
         filepath = join(dirname, filename)
         with open(filepath, 'w') as outfile:
-            self.export_to_file(experiment, outfile, **kwargs)
+            self.export_to_file(
+                experiment, outfile, 
+                replace_protocols=replace_protocols,
+                export_images=export_images, 
+                force_http_urls=force_http_urls)
         return filepath
 
     def export_to_file(self, experiment, outfile, replace_protocols={},
