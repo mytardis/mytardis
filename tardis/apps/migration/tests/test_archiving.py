@@ -91,4 +91,4 @@ class ArchivingTestCase(TestCase):
         archive = create_archive_record(self.experiment, 'http://example.com')
         self.assertEqual(Archive.objects.count(), count + 1)
         self.assertEqual(archive.experiment_owner, 'fred')
-        
+
