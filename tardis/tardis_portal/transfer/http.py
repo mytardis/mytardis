@@ -173,9 +173,3 @@ class SimpleHttpTransfer(TransferProvider):
             self.opener.open(self.DeleteRequest(replica.url))
         except HTTPError as e:
             raise TransferError(e.msg)
-
-    def _check_url(self, url):
-        if not url.startswith(self.base_url):
-            raise TransferError(
-                'url %s does not belong to the %s destination (url %s)' % \
-                    (url, self.name, self.base_url))

@@ -48,3 +48,8 @@ class TransferProvider(object):
         path = '%s/%s-archive.tar.gz' % (experiment.id, experiment.id)
         return urljoin(self.base_url, quote(path))
 
+    def _check_url(self, url):
+        if not url.startswith(self.base_url):
+            raise TransferError(
+                'url %s does not belong to the %s destination (url %s)' % \
+                    (url, self.name, self.base_url))
