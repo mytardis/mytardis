@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -105,9 +105,11 @@ def generate_dataset(datafiles=[], experiments=[]):
     dataset.save()
     return dataset
 
-def generate_experiment(datasets=[], users=[]):
-    from tardis.tardis_portal.models import Experiment, ObjectACL
-    experiment = Experiment(created_by=users[0])
+def generate_experiment(datasets=[], users=[], title=None, url=None):
+    from tardis.tardis_portal.models import Experiment, ExperimentACL
+    experiment = Experiment(created_by=users[0],
+                            title=title,
+                            url=url)
     experiment.save()
     for ds in datasets:
         ds.experiments.add(experiment)

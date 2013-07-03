@@ -31,3 +31,5 @@ from .priority import UserPriority, GroupPriority, \
     get_user_priority, get_group_priority, \
     DEFAULT_USER_PRIORITY, DEFAULT_GROUP_PRIORITY
 
+from .archive import Archive
+

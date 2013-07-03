@@ -30,5 +30,5 @@
 
 from .base import MigrationError
 from .migration import migrate_replica, migrate_replica_by_id
-from .archiving import create_experiment_archive
+from .archiving import create_experiment_archive, create_archive_record
 from .scoring import MigrationScorer

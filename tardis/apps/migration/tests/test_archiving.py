@@ -41,14 +41,19 @@ from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
 from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
 
-from tardis.apps.migration import MigrationError, create_experiment_archive
+from tardis.apps.migration import MigrationError, \
+    create_experiment_archive, create_archive_record
+from tardis.apps.migration.models import Archive
 
 class ArchivingTestCase(TestCase):
 
     def setUp(self):
         self.user = generate_user('fred')
         Location.force_initialize()
-        self.experiment = generate_experiment(users=[self.user])
+        self.experiment = generate_experiment(
+            users=[self.user],
+            title='Meanwhile, down in the archives ...',
+            url='http://example.com/something')
         self.dataset = generate_dataset(experiments=[self.experiment])
 
     def tearDown(self):
@@ -76,3 +81,8 @@ class ArchivingTestCase(TestCase):
             
         finally:
             os.unlink(tmp.name)
+
+    def testCreateArchiveRecord(self):
+        count = Archive.objects.count()
+        create_archive_record(self.experiment, 'http://example.com')
+        self.assertTrue(Archive.objects.count() == count + 1)

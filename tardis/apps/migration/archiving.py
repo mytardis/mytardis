@@ -36,10 +36,12 @@ import os, tarfile, shutil, os.path
 
 from django.conf import settings
 from django.db import transaction
+from django.contrib.auth.models import User
 
 from tardis.tardis_portal.metsexporter import MetsExporter
 
 from tardis.apps.migration import MigrationError
+from tardis.apps.migration.models import Archive
 from tardis.tardis_portal.models import \
     Experiment, Dataset, Dataset_File, Replica 
 
@@ -77,5 +79,11 @@ def remove_experiment_data(exp):
     pass
 
 def create_archive_record(exp, url):
-    pass
+    owner = User.objects.get(id=exp.created_by.id).username
+    archive = Archive(experiment=exp,
+                      experiment_title=exp.title,
+                      experiment_owner=owner,
+                      experiment_url=exp.url,
+                      archive_url=url)
+    archive.save()
 

@@ -33,17 +33,35 @@ from django.db import models
 class Archive(models.Model):
     """
     This class is the descriptor for an archive of a MyTardis Experiment.
+    
+    The 'experiment' linkage is designed to be fragile so that we can 
+    delete the actual 'Experiment' from the MyTardis database and still
+    keep the archive record.
+    
+    The 'experiment_owner' is the name of the experiment's owning user 
+    at the time the archive was created.
+
+    The 'experiment_title' is the title of the experiment at the time 
+    the archive was created.
+
+    The 'experiment_url' is the URL of the experiment.  This should be stable.
+
+    The 'archive_url' is the URL where the archive was stored.
+
+    The 'archive_created' timestamp is self explanatory.
     """
 
     from tardis.tardis_portal.models import Experiment
     experiment = models.ForeignKey(Experiment, unique=False, 
-                                   on_delete=SET_NULL, null=True)
-    date_created = models.DateTimeField(auto_now_add=True)
-    url = models.URLField(verify_exists=False, max_length=255,
-                          null=False, blank=False)
+                                   on_delete=models.SET_NULL, null=True)
+    experiment_owner =  models.CharField(max_length=30)
+    experiment_title = models.CharField(max_length=400)
+    archive_created = models.DateTimeField(auto_now_add=True)
+    experiment_url = models.URLField(verify_exists=False, max_length=255,
+                                     null=False, blank=False)
     archive_url = models.URLField(verify_exists=False, max_length=255,
                                   null=False, blank=False)
 
     class Meta:
-        app_label = 'archiving'
+        app_label = 'migration'
 
