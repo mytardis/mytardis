@@ -379,6 +379,7 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'priority': 5}]
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
+DEFAULT_ARCHIVE_LOCATION = 'unknown'
 
 TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',

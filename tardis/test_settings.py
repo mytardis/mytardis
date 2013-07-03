@@ -141,6 +141,11 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'url': 'http://127.0.0.1:4272/data/',
                       'type': 'online',
                       'priority': 10},
+                     {'name': 'archtest',
+                      'provider': 'http',
+                      'url': 'http://127.0.0.1:4272/archive/',
+                      'type': 'offline',
+                      'priority': 10},
                      {'name': 'test2',
                       'provider': 'dav',
                       'params': {'trust_length': False},
@@ -160,6 +165,7 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
 ]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'
+DEFAULT_ARCHIVE_LOCATION = 'archtest'
 
 MIGRATION_SCORING_PARAMS = {
     'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],
