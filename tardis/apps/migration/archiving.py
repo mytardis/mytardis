@@ -32,7 +32,7 @@ from urllib2 import Request, urlopen, HTTPError, URLError
 from urlparse import urlparse
 from tempfile import NamedTemporaryFile
 from tarfile import TarFile, TarInfo
-import os, tarfile, shutil
+import os, tarfile, shutil, os.path
 
 from django.conf import settings
 from django.db import transaction
@@ -48,24 +48,27 @@ import logging
 logger = logging.getLogger(__name__)
 
 def create_experiment_archive(exp, outfile):
-    with NamedTemporaryFile() as manifest, \
-            tarfile.open(mode='w:gz', fileobj=outfile) as tf:
+    with NamedTemporaryFile() as manifest:
+        tf = tarfile.open(mode='w:gz', fileobj=outfile)
         MetsExporter().export_to_file(exp, manifest)
+        manifest.flush()
         tf.add(manifest.name, arcname='Manifest')
         for datafile in exp.get_datafiles():
             replica = datafile.get_preferred_replica(verified=True)
-            tarinfo = TarInfo(name=datafile.filename)
-            tarinfo.size = datafile.size
-            tarinfo.mtime = datafile.modification_time
-            with NamedTemporaryFile(prefix='mytardis_tmp_ar_') as fdst, \
-                    datafile.get_file() as f:
-                try:
-                    shutil.copyfileobj(f, fdst)
-                    fdst.flush()
-                    tf.add(fdst.name, datafile.filename)
-                except URLError:
-                    logger.warn("Unable to fetch %s for archive creation." % 
-                                datafile.filename)
+            try:
+                fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
+                f = datafile.get_file()
+                shutil.copyfileobj(f, fdst)
+                fdst.flush()
+                tf.add(fdst.name, arcname=datafile.filename)
+            except URLError:
+                logger.warn("Unable to fetch %s for archive creation." % 
+                            datafile.filename)
+            finally:
+                fdst.close()
+                f.close()
+        tf.close()
+        outfile.close()
 
 def remove_experiment(exp):
     pass

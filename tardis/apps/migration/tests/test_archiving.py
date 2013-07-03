@@ -31,10 +31,9 @@ from django.test import TestCase
 from compare import expect
 from nose.tools import ok_, eq_
 
-import logging, base64, os, urllib2
+import logging, base64, os, urllib2, os.path, tarfile
 from tempfile import NamedTemporaryFile
 from urllib2 import HTTPError, URLError, urlopen
-from tarfile import is_tarfile
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
 from tardis.tardis_portal.transfer import TransferError
@@ -62,6 +61,18 @@ class ArchivingTestCase(TestCase):
         try:
             tmp = NamedTemporaryFile(delete=False)
             create_experiment_archive(self.experiment, tmp)
-            self.assertTrue(is_tarfile(tmp.name))
+            self.assertTrue(os.path.exists(tmp.name))
+            self.assertTrue(os.path.getsize(tmp.name) > 0)
+            try:
+                tf = tarfile.open(name=tmp.name, mode='r')
+                members = tf.getmembers()
+                self.assertTrue(len(members) == 2) # manifest + one data file.
+                self.assertTrue(members[0].name == "Manifest")
+                self.assertTrue(members[0].size > 0)
+                self.assertTrue(members[1].name == datafile.filename)
+                self.assertTrue(members[1].size == int(datafile.size))
+            finally:
+                tf.close()
+            
         finally:
             os.unlink(tmp.name)
