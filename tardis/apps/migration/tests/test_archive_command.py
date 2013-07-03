@@ -63,6 +63,7 @@ class ArchiveCommandTestCase(TestCase):
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
         datafile, _ = generate_datafile(None, dataset, "Hi grandpa")
+        archtest = Location.get_location('archtest')
 
         # Dry run ...
         out = StringIO()
@@ -86,7 +87,7 @@ class ArchiveCommandTestCase(TestCase):
         self.assertEquals(out.read(), 
                           'Would have archived experiment %s\n' % experiment.id)
 
-        # Do one ...
+        # Do one ... to file
         out = StringIO()
         try:
             call_command('archive', experiment.id, directory='/tmp',
@@ -99,3 +100,18 @@ class ArchiveCommandTestCase(TestCase):
             'Archived experiment %s to /tmp/%s-archive.tar.gz\n' \
             'Archived 1 experiments with 0 errors\n' % \
                 (experiment.id, experiment.id))
+
+        # Do one ... to archtest
+        out = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         verbosity=1, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived experiment %s to %s%s/%s-archive.tar.gz\n' \
+            'Archived 1 experiments with 0 errors\n' % \
+                (experiment.id, archtest.provider.base_url, 
+                 experiment.id, experiment.id))

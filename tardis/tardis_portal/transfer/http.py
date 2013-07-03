@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -27,12 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from urllib import quote
+from urlparse import urlparse, urljoin
 from urllib2 import Request, HTTPError, build_opener, \
     HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, \
-    HTTPDigestAuthHandler
-from urllib import quote
-from urllib2 import URLError
-from urlparse import urlparse, urljoin
+    HTTPDigestAuthHandler, URLError
 import poster.streaminghttp
 import os
 
@@ -152,6 +151,21 @@ class SimpleHttpTransfer(TransferProvider):
             raise TransferError(e.msg)
         finally:
             f.close()
+
+    def put_archive(self, archive_file, experiment):
+        archive_url = self._generate_archive_url(experiment)
+        try:
+            f = open(archive_file, 'r')
+            request = self.PutRequest(archive_url)
+            request.add_header('Content-Type', 'application/x-tar')
+            request.add_header('Content-Length', os.path.getsize(archive_file))
+            response = self.opener.open(request, data=f)
+        except HTTPError as e:
+            raise TransferError(e.msg)
+        finally:
+            f.close()
+            
+        return archive_url
 
     def remove_file(self, replica):
         self._check_url(replica.url)

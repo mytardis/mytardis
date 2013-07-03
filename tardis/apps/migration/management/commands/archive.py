@@ -33,6 +33,7 @@ Management command to migrate datafiles, datasets and experiments
 
 import sys, re, os.path
 from optparse import make_option
+from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -133,18 +134,19 @@ class Command(BaseCommand):
         if self.dryRun:
             self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
+        tmp_file = None
         try:
             if self.directory:
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
-                create_experiment_archive(exp, open(pathname, 'w'))
             else:
-                pathname = create_experiment_archive(exp)
+                tmp_file = NamedTemporaryFile(prefix='mytardis_tmp_ar',
+                                              suffix='.tar.gz',
+                                              delete=False)
+                create_experiment_archive(exp, tmp_file)
             if not self.directory:
-                url = location.provider.export_experiment_archive(
-                    pathname, exp)
+                url = self.location.provider.put_archive(tmp_file.name, exp)
                 create_archive_record(exp, url)
-                os.unlink(pathname)
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
                                       (exp.id, url))
@@ -169,6 +171,9 @@ class Command(BaseCommand):
                 'archive export failed experiment %s : %s\n' % \
                     (exp.id, e.args[0]))
             self.error_count += 1
+        finally:
+            if tmp_file:
+                os.unlink(tmp_file.name)
         
     def _ping(self, location, label):
         if not location.provider.alive():

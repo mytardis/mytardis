@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -27,6 +27,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from urllib import quote
+from urlparse import urljoin
+
+
 class TransferError(Exception):
     pass
 
@@ -39,3 +43,8 @@ class TransferProvider(object):
 
     def get_file(self, replica):
         return self.get_opener(replica)()
+
+    def _generate_archive_url(self, experiment):
+        path = '%s/%s-archive.tar.gz' % (experiment.id, experiment.id)
+        return urljoin(self.base_url, quote(path))
+

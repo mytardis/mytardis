@@ -54,6 +54,9 @@ def create_experiment_archive(exp, outfile):
         tf = tarfile.open(mode='w:gz', fileobj=outfile)
         MetsExporter().export_to_file(exp, manifest)
         manifest.flush()
+        # (Note to self: path creation by string bashing is correct
+        # here because these are not 'os' paths.  They are paths in 
+        # the namespace of a TAR file, and '/' is always the separator.)
         tf.add(manifest.name, arcname=('%s/Manifest' % exp.id))
         for datafile in exp.get_datafiles():
             replica = datafile.get_preferred_replica(verified=True)
