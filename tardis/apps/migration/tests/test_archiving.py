@@ -71,11 +71,15 @@ class ArchivingTestCase(TestCase):
             try:
                 tf = tarfile.open(name=tmp.name, mode='r')
                 members = tf.getmembers()
-                self.assertTrue(len(members) == 2) # manifest + one data file.
-                self.assertTrue(members[0].name == "Manifest")
+                self.assertEqual(len(members), 2) # manifest + one data file.
+                self.assertEqual(members[0].name, 
+                                 '%s/Manifest' % self.experiment.id)
                 self.assertTrue(members[0].size > 0)
-                self.assertTrue(members[1].name == datafile.filename)
-                self.assertTrue(members[1].size == int(datafile.size))
+                self.assertEqual(members[1].name, 
+                                 '%s/%s/%s' % (self.experiment.id,
+                                               self.dataset.id,
+                                               datafile.filename))
+                self.assertEqual(members[1].size, int(datafile.size))
             finally:
                 tf.close()
             
@@ -84,5 +88,7 @@ class ArchivingTestCase(TestCase):
 
     def testCreateArchiveRecord(self):
         count = Archive.objects.count()
-        create_archive_record(self.experiment, 'http://example.com')
-        self.assertTrue(Archive.objects.count() == count + 1)
+        archive = create_archive_record(self.experiment, 'http://example.com')
+        self.assertEqual(Archive.objects.count(), count + 1)
+        self.assertEqual(archive.experiment_owner, 'fred')
+        

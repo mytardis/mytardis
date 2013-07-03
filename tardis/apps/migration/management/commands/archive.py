@@ -31,7 +31,7 @@
 Management command to migrate datafiles, datasets and experiments
 """
 
-import sys, re
+import sys, re, os.path
 from optparse import make_option
 
 from django.conf import settings
@@ -39,8 +39,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.utils.log import dictConfig
 
 from tardis.tardis_portal.models import Location, Experiment
+from tardis.tardis_portal.transfer import TransferError
 
-from tardis.apps.migration import MigrationError, archive_experiment \
+from tardis.apps.migration import ArchivingError, create_experiment_archive, \
     create_archive_record, remove_experiment, remove_experiment_data
 from tardis.tardis_portal.logging_middleware import LOGGING
 
@@ -92,19 +93,23 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         self.verbosity = int(options.get('verbosity', 1))
-        self.removeAll = options.get('removeAll', False)
-        self.remove = options.get('remove', False)
+        self.remove_all = options.get('removeAll', False)
+        self.remove_data = options.get('remove', False)
         self.dryRun = options.get('dryRun', False)
         self.location = self._get_destination(
             options.get('location', None),
-            settings.DEFAULT_ARCHIVING_LOCATION)
-        self.directory = self.get('directory', None)
+            settings.DEFAULT_ARCHIVE_LOCATION)
+        self.directory = options.get('directory', None)
         self.all = options.get('all', False)
         if not (self.directory or self.dryRun or 
                 self._ping(self.location, 'Archive')):
             return
         self.transfer_count = 0
         self.error_count = 0
+        if self.all:
+            self._all_experiments()
+        else:
+            self._experiments(args)
         self._stats()
 
     def _stats(self):
@@ -121,23 +126,37 @@ class Command(BaseCommand):
             try:
                 self._process_experiment(Experiment.objects.get(id=id))
             except Experiment.DoesNotExist:
+                print "Not exist\n"
                 self.stderr.write('Experiment %s does not exist\n' % id)
                 
     def _process_experiment(self, exp):
         if self.dryRun:
-            self.stdout.write('Would have archived experiment %s\n' % id)
+            self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
         try:
-            pathname = create_experiment_archive(experiment, directory)
+            if self.directory:
+                pathname = os.path.join(self.directory, 
+                                        '%s-archive.tar.gz' % exp.id)
+                create_experiment_archive(exp, open(pathname, 'w'))
+            else:
+                pathname = create_experiment_archive(exp)
             if not self.directory:
                 url = location.provider.export_experiment_archive(
-                    pathname, experiment)
-                create_archive_record(experiment, url)
+                    pathname, exp)
+                create_archive_record(exp, url)
                 os.unlink(pathname)
+                if self.verbosity > 0:
+                    self.stdout.write('Archived experiment %s to %s\n' %
+                                      (exp.id, url))
+            else:
+                if self.verbosity > 0:
+                    self.stdout.write('Archived experiment %s to %s\n' %
+                                      (exp.id, pathname))
+                    
             self.transfer_count += 1
-            if self.removeAll:
+            if self.remove_all:
                 remove_experiment(exp)
-            elif self.removeData:
+            elif self.remove_data:
                 remove_experiment_data(exp)
 
         except ArchivingError as e:          

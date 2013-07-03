@@ -54,7 +54,7 @@ def create_experiment_archive(exp, outfile):
         tf = tarfile.open(mode='w:gz', fileobj=outfile)
         MetsExporter().export_to_file(exp, manifest)
         manifest.flush()
-        tf.add(manifest.name, arcname='Manifest')
+        tf.add(manifest.name, arcname=('%s/Manifest' % exp.id))
         for datafile in exp.get_datafiles():
             replica = datafile.get_preferred_replica(verified=True)
             try:
@@ -62,7 +62,9 @@ def create_experiment_archive(exp, outfile):
                 f = datafile.get_file()
                 shutil.copyfileobj(f, fdst)
                 fdst.flush()
-                tf.add(fdst.name, arcname=datafile.filename)
+                arcname = '%s/%s/%s' % (exp.id, datafile.dataset.id,
+                                        datafile.filename)
+                tf.add(fdst.name, arcname=arcname)
             except URLError:
                 logger.warn("Unable to fetch %s for archive creation." % 
                             datafile.filename)
@@ -86,4 +88,4 @@ def create_archive_record(exp, url):
                       experiment_url=exp.url,
                       archive_url=url)
     archive.save()
-
+    return archive

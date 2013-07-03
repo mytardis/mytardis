@@ -28,7 +28,8 @@
 #
 
 
-from .base import MigrationError
+from .base import MigrationError, ArchivingError
 from .migration import migrate_replica, migrate_replica_by_id
-from .archiving import create_experiment_archive, create_archive_record
+from .archiving import create_experiment_archive, create_archive_record, \
+    remove_experiment, remove_experiment_data
 from .scoring import MigrationScorer
