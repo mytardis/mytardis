@@ -39,7 +39,8 @@
     {{ action_bar }}
 
     <div id="datasets">
-    {{ experiment|dataset_tiles:has_download_permissions }}
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
+    {# experiment|dataset_tiles:has_download_permissions #}
     </div>
 
     {% if experiment.datasets.count|gt:4 %}
@@ -47,4 +48,3 @@
     {% endif %}
   </form>
 </div> <!-- experiment_datasets -->
-

@@ -117,7 +117,7 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False):
+def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
     def get_thumbnail_url(datafile):
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': datafile.id,
@@ -127,12 +127,15 @@ def get_dataset_info(dataset, include_thumbnail=False):
                                'quality': 'native',
                                'format': 'jpg'})
     obj = model_to_dict(dataset)
-    obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
+    if exclude is None or 'datafiles' not in exclude:
+        obj['datafiles'] = list(
+            dataset.dataset_file_set.values_list('id', flat=True))
 
     obj['url'] = dataset.get_absolute_url()
 
-    obj['size'] = dataset.get_size()
-    obj['size_human_readable'] = filesizeformat(dataset.get_size())
+    if exclude is None or 'size' not in exclude:
+        obj['size'] = dataset.get_size()
+        obj['size_human_readable'] = filesizeformat(obj['size'])
 
     if include_thumbnail:
         try:
@@ -140,14 +143,15 @@ def get_dataset_info(dataset, include_thumbnail=False):
         except AttributeError:
             pass
 
-    if hasattr(settings, "DATASET_VIEWS"):
-        schemas = {}
-        for ps in dataset.getParameterSets():
-            schemas[ps.schema.namespace] = ps.schema
-        for ns, view_fn in settings.DATASET_VIEWS:
-            if ns in schemas:
-                obj["datasettype"] = schemas[ns].name
-                break
+    if exclude is None or 'datasettype' not in exclude:
+        if hasattr(settings, "DATASET_VIEWS"):
+            schemas = {}
+            for ps in dataset.getParameterSets():
+                schemas[ps.schema.namespace] = ps.schema
+            for ns, view_fn in settings.DATASET_VIEWS:
+                if ns in schemas:
+                    obj["datasettype"] = schemas[ns].name
+                    break
 
     return obj
 
@@ -691,8 +695,10 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    objects = [ get_dataset_info(ds, has_download_permissions) \
-                for ds in experiment.datasets.all() ]
+    objects = [
+        get_dataset_info(ds, include_thumbnail=False,
+                         exclude=["datafiles", 'size', 'datasettype'])
+        for ds in experiment.datasets.all()]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
 
