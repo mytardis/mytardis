@@ -4,7 +4,9 @@ Migration App
 
 The migration app supports the orderly migration of data files between different storage locations under the control of a single MyTardis instance.  The secondary storage locations are essentially "dumb" consisting in the simple case of nothing more than an off-the-shelf WebDAV server.
 
-The initial version of the app simply provides a django admin command for manually migrating the data associated with a Datafile, Dataset or Experiment.  
+The app provides the "migratefiles" django admin command for migrating datafiles.  It can migrate (or mirror) data associated with manually selected Datafiles, Datasets or Experiments, or it can use a scoring system to select Datafiles for migration.
+
+The app also provides the "archive" django admin command for creating offline archives.  These consist of all of the data files for an Experiment and METS format "manifest" that includes all Experiment / Dataset / Datafile metadata.  Archives can be saved as local files, or saved via a transfer provider.  In the latter case, an record is added to the Archive table to facilitate later retrieval.
 
 TO DO:
 
@@ -85,10 +87,10 @@ We recommend that the target server use HTTP Digest rather than HTTP Basic authe
 If there is a significant risk of network snooping, etc, consider using SSL/TLS for the transfers. 
 
 
-Commands
-========
+The "migratefiles" Command
+==========================
 
-The initial version of the migration app provides the "migratefiles" command to perform migrations
+The "migratefiles" command migrates or mirrors data files selected in various ways between different locations. 
 
 Usage
 ~~~~~
@@ -99,12 +101,15 @@ Usage
 ``./bin/django migratefiles score``
 ``./bin/django migratefiles destinations``
 
-.. option:: -d DESTINATION, --dest=DESTINATION
+.. option:: -d LOCATION, --dest=LOCATION
+.. option:: -s LOCATION, --source=LOCATION
 .. option:: --verbosity={0,1,2,3}
 .. option:: -n, --dryRun
 .. option:: --noRemove
 .. option:: -a, --all
 
+Subcommands
+~~~~~~~~~~~
 The 'migrate' subcommand migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<type>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type.  Alternatively, the "--all" option selects all Datafiles for migration.
 
 Datafiles are migrated from a "source" location to a "destination" location.  The default "source" location is "local" (i.e. the MyTardis primary filestore), and the default "destination" location is site specific.
@@ -132,6 +137,40 @@ The options are as follows:
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
   * --noRemove used with "migrate" to stop the removal of the file at the source location.  (This is implied in the case of mirroring.)
   * --help prints 'migratefiles' command help.
+
+The "archive" Command
+==========================
+
+The "archive" command creates and records archival copies of the data files and metadata comprising an Experiment.
+
+Usage
+~~~~~
+``./bin/django archive [<id> ...]``
+
+.. option:: -l LOCATION, --location=LOCATION
+.. option:: -d PATHNAME, --directory=PATHNAME
+.. option:: --verbosity={0,1,2,3}
+.. option:: -n, --dryRun
+.. option:: --removeData
+.. option:: --removeAll
+.. option:: -a, --all
+
+There are two ways to select Experiments for archiving.  You can list one or more Experiment ids and argument. Alternatively, the "--all" option selects all Experiments for archiving.  A separate archive will be created for each Experiment.  These are gzip'd tar files containing the data files together with a METS format manifest.
+
+The "--location" and "--directory" options determine where the archives are sent.  If --directory is used, the archives are saved to a local directory.  Otherwise, they are transferred to the selected Location, defaulting to a configured Location.
+
+When an Experiment is archived to a Location, a record is added to the Archive table to facilitate retrieval and possible restoration in the future. In addition, you can choose to remove the online Replicas of the Datafiles (replacing them with offline Replicas), or to remove all Experiment / Dataset / Datafile metadata.
+
+The options are as follows:
+
+  * -l, --location=Location specifies a Location for archiving to.
+  * -d, --directory=Pathname specifies a local directory to write the archives to.
+  * --all select all Experiments for the action.
+  * -v, --verbosity=0,1,2,3 controls how much output the command produces.
+  * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
+  * --removeAll in "archive to location" mode, remove all online information about the Experiment and its dependent Datasets and Datafiles.
+  * --removeData in "archive to location" mode, replace the online Replicas with a single offline one, and delete the online copies of the data. 
+  * --help prints 'archive' command help.
 
 Architecture
 ============
@@ -163,5 +202,3 @@ The process for migration is roughly as follows:
 We currently support two ways of checking that a file has been transferred correctly.  The preferred way is to get the transfer destination to calculate and return the metadata (checksums and length) for its copy of the file.  If that fails (or is not supported), the fallback is to read back the file from the destination and do the checksumming locally.
 
 Normally, we require there to be either an MD5 or SHA512 checksum in the metadata.  However if 'trust_length' is set, we will accept matching file lengths as being sufficient to verify the transfer.  That would normally be a bad idea, but if the transfer process is sufficiently reliable, file length checking may be sufficient.  (In this mode, a transfer provider could get away with sending a HEAD request and using the "Content-length".)
-
-(Note that migrating and restoring are now symmetric, and there is no longer a distinct 'restore' action.)
