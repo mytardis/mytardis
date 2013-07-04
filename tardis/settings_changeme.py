@@ -384,6 +384,7 @@ DEFAULT_ARCHIVE_LOCATION = 'unknown'
 TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
+    'scp': 'tardis.tardis_portal.transfer.ScpTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
 
 UPLOAD_METHOD = "uploadify"

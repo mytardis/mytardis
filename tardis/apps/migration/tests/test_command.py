@@ -514,6 +514,8 @@ class MigrateCommandTestCase(TestCase):
             ' http://127.0.0.1:4272/data/\n' +
             'archtest         : offline  : http     :' +
             ' http://127.0.0.1:4272/archive/\n' +
+            'scptest          : offline  : scp      :' +
+            ' scp://127.0.0.1/data/archive/\n' +
             'test2            : online   : dav      :' +
             ' http://127.0.0.1/data2/\n' +
             'test3            : online   : dav      :' +

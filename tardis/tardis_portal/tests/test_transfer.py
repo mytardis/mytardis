@@ -36,10 +36,12 @@ from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
 from tardis.tardis_portal.transfer import TransferProvider, \
-    SimpleHttpTransfer, WebDAVTransfer, TransferError
+    SimpleHttpTransfer, WebDAVTransfer, ScpTransfer, TransferError
 from .transfer import SimpleHttpTestServer
 from .transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
+
+logger = logging.getLogger(__name__)
 
 class TransferProviderTestCase(TestCase):
 
@@ -78,6 +80,31 @@ class TransferProviderTestCase(TestCase):
         self.assertIsInstance(provider, WebDAVTransfer)
         self.assertTrue(401 in provider.opener.handle_error['http'])
         self.assertEqual(provider.base_url, 'http://127.0.0.1/data3/')
+
+        provider = Location.get_location('scptest').provider
+        self.assertIsInstance(provider, ScpTransfer)
+
+    def testScpTransferProviderInit(self):
+        with self.assertRaises(ValueError) as cm:
+            ScpTransfer('xxx', 'http://localhost/', {})
+        self.assertEquals(cm.exception.message, 
+                          'scp: url required for transfer provider (xxx)')
+        with self.assertRaises(ValueError) as cm:
+            ScpTransfer('xxx', 'scp://user@localhost/', {})
+        self.assertEquals(cm.exception.message, 
+                          'url for transfer provider (xxx) cannot use a '
+                          'username or password')
+        with self.assertRaises(ValueError) as cm:
+            ScpTransfer('xxx', 'scp://:passwd@localhost/', {})
+        self.assertEquals(cm.exception.message, 
+                          'url for transfer provider (xxx) cannot use a '
+                          'username or password')
+
+        # These won't normally be seen ...
+        logger.warning('The next 3 warnings are "expected"')
+        ScpTransfer('xxx', 'scp://localhost/foo?wot', {})
+        ScpTransfer('xxx', 'scp://localhost/foo#frag', {})
+        ScpTransfer('xxx', 'scp://localhost/foo;param', {})
 
     def testLocalProvider(self):
         self.do_ext_provider('sync')

@@ -199,7 +199,7 @@ class ModelTestCase(TestCase):
                           'local')
         self.assertEquals(Location.get_location('staging').name,
                           'staging')
-        self.assertEquals(len(Location.objects.all()), 7)
+        self.assertEquals(len(Location.objects.all()), 8)
 
     # check conversion of b64encoded images back into files
     def test_parameter(self):

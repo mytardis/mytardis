@@ -38,16 +38,45 @@ from .base import TransferError, TransferProvider
 import logging
 logger = logging.getLogger(__name__)
 
-
 class ScpTransfer(TransferProvider):
     
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
+        parts = urlparse(base_url)
+        if parts.scheme != 'scp':
+            raise ValueError('scp: url required for transfer provider (%s)' %
+                             name)
+        if parts.username or parts.password:
+            raise ValueError('url for transfer provider (%s) cannot use' 
+                             ' a username or password' % name)
+        if parts.path.find('#') != -1 or parts.path.find('?') != -1 or \
+                parts.path.find(';') != -1:
+            logger.warning('The base url for transfer provider (%s) appears'
+                           ' to contain an http-style path param, query or'
+                           ' fragment marker.  It will be treated as a plain'
+                           ' pathname character')
+        if not parts.hostname or not parts.path:
+            raise ValueError('url for transfer provider (%s) requires a '
+                             'non-empty hostname and path' % name)
+        self.hostname = parts.hostname
+        self.port = parts.port if parts.port else 22
+        
         self.metadata_supported = False
         self.trust_length = params.get('trust_length', 'False') == 'True'
+        self.username = params.get('username', None)
+        self.password = params.get('password', None)
+        self.key_filename = params.get('key_filename', None)
 
     def alive(self):
-        return True
+        try:
+            with closing(self._get_client()) as scp:
+                return True
+        except Exception:
+            logger.warning('SSH aliveness test failed for provider %s' % 
+                           self.name)
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug('Cause of aliveness failure', sys.exc_info())
+            return False
 
     def get_length(self, replica):
         raise NotImplementedError
@@ -80,9 +109,11 @@ class ScpTransfer(TransferProvider):
 
     def _get_client(self):
         ssh = SSHClient()
-        ssh.connect(this.hostname, username=this.username, 
-                    key_filename=this.key_filename, 
-                    password=this.password)
+        ssh.connect(self.hostname, 
+                    port=self.port,
+                    username=self.username, 
+                    key_filename=self.key_filename, 
+                    password=self.password)
         return ssh
 
     def remove_file(self, replica):
