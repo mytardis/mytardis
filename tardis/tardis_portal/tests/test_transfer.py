@@ -28,7 +28,7 @@
 #
 
 from django.test import TestCase
-from unittest import skipUnless
+from nose.plugins.skip import SkipTest 
 from compare import expect
 from nose.tools import ok_, eq_
 
@@ -44,19 +44,6 @@ from .transfer.generate import \
 
 logger = logging.getLogger(__name__)
 
-def sshDir():
-    return os.path.join(os.environ.get('HOME', '/'), '.ssh')
-
-def hasDotSsh():
-    return os.path.exists(sshDir())
-
-def findKeyFile():
-    if os.path.exists(os.path.join(sshDir(), 'id_dsa')):
-        return os.path.join(sshDir(), 'id_dsa')
-    elif os.path.exists(os.path.join(sshDir(), 'id_rsa')):
-        return os.path.join(sshDir(), 'id_rsa')
-    else:
-        return None
     
 class TransferProviderTestCase(TestCase):
 
@@ -133,12 +120,30 @@ class TransferProviderTestCase(TestCase):
     def testSimpleHttpProvider(self):
         self.do_provider(Location.get_location('test'))
 
-    @skipUnless(hasDotSsh() and findKeyFile(), \
-                    "need user a/c with .ssh and keys")
+    def sshDir(self):
+        return os.path.join(os.environ.get('HOME', '/'), '.ssh')
+
+    def hasDotSsh(self):
+        return os.path.exists(self.sshDir())
+
+    def findKeyFile(self):
+        dir = self.sshDir()
+        if os.path.exists(os.path.join(dir, 'id_dsa')):
+            return os.path.join(dir, 'id_dsa')
+        elif os.path.exists(os.path.join(dir, 'id_rsa')):
+            return os.path.join(dir, 'id_rsa')
+        else:
+            return None
+
     def testScpProvider(self):
+        if not self.hasDotSsh():
+            raise SkipTest()
+        key_filename = self.findKeyFile()
+        if not key_filename:
+            raise SkipTest()
+            
         start_time = time.time()
         username = os.environ.get('LOGNAME', None)
-        key_filename = findKeyFile()
         provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
                                {'username': 'blarg',
                                 'password': 'blarg', 
