@@ -13,9 +13,11 @@ register = template.Library()
 
 @register.filter
 def dataset_tiles(experiment, include_thumbnails):
-    datasets = experiment.datasets.all()
+    # only show 8 datasets for initial load
+    datasets = experiment.datasets.all()[:8]
 
     # Get data to template (used by JSON service too)
+    # ?? doesn't seem to be used by JSON service at all
     data = ( get_dataset_info(ds, bool(include_thumbnails)) for ds in datasets )
 
     class DatasetInfo(object):
