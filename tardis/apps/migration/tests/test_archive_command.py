@@ -111,7 +111,7 @@ class ArchiveCommandTestCase(TestCase):
         out.seek(0)
         self.assertEquals(
             out.read(), 
-            'Archived experiment %s to %s%s/%s-archive.tar.gz\n' \
+            'Archived experiment %s to %s%s-archive.tar.gz\n' \
             'Archived 1 experiments with 0 errors\n' % \
                 (experiment.id, archtest.provider.base_url, 
-                 experiment.id, experiment.id))
+                 experiment.id))

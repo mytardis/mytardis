@@ -29,8 +29,9 @@
 
 from urllib import quote
 from urlparse import urlparse, urljoin
-import os
-from paramiko import SSHClient
+from contextlib import closing
+import os, sys
+from paramiko import SSHClient, AutoAddPolicy
 from scpclient import SCPError, Write
 
 from .base import TransferError, TransferProvider
@@ -39,6 +40,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 class ScpTransfer(TransferProvider):
+    """A half-hearted attempt at doing transfers using scp.  The root
+    problem is that the scp 'protocol' is extremely limited.  You can either
+    transfer a single file to an existing directory, or do a full recursive 
+    directory copy.  (It would be possible in theory to cause the remote
+    to create directories using some tricky stuff and recursive 
+    directory copy, but ...)
+
+    Anyhow, this only implements the subset of the TransferProvider API
+    needed to do archiving.
+    """
     
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
@@ -63,19 +74,25 @@ class ScpTransfer(TransferProvider):
         
         self.metadata_supported = False
         self.trust_length = params.get('trust_length', 'False') == 'True'
+        self.auto_add = params.get('auto_add_missing_host_key', False)
         self.username = params.get('username', None)
         self.password = params.get('password', None)
         self.key_filename = params.get('key_filename', None)
+        self.ssh = None
 
     def alive(self):
+        ssh = None
         try:
-            with closing(self._get_client()) as scp:
-                return True
+            ssh = self._get_client()
+            return True
         except Exception:
             logger.warning('SSH aliveness test failed for provider %s' % 
                            self.name)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug('Cause of aliveness failure', sys.exc_info())
+                logger.debug('Cause of aliveness failure', 
+                             exc_info=sys.exc_info())
+            if ssh:
+                ssh.get_transport().close()
             return False
 
     def get_length(self, replica):
@@ -94,28 +111,38 @@ class ScpTransfer(TransferProvider):
         raise NotImplementedError
 
     def put_archive(self, archive_file, experiment):
+        # Warning: this only works if the dirname part of the archive URL's 
+        # path component matches an existing (writable) directory at the
+        # remote end.  
         archive_url = self._generate_archive_url(experiment)
+        path = urlparse(archive_url).path
+        scp = None
         try:
-            parts = urlparse.parse(archive_url)
-            path = parts.path
-            scp = Write(self._get_client().get_transport(), "/")
-            scp.send_file(archive_file, path)
+            scp = Write(self._get_client().get_transport(), 
+                        os.path.dirname(path))
+            scp.send_file(archive_file, remote_filename=os.path.basename(path))
         except SCPError as e:
-            raise TransferError(e.msg)
-        finally:
-            scp.close()
-            
+            if scp:
+                scp.close()
+            raise TransferError(e.message)
         return archive_url
 
     def _get_client(self):
-        ssh = SSHClient()
-        ssh.connect(self.hostname, 
+        if self.ssh and not self.ssh.get_transport().is_active():
+            return self.ssh
+        self.ssh = SSHClient()
+        if self.auto_add:
+            self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        self.ssh.connect(self.hostname, 
                     port=self.port,
                     username=self.username, 
                     key_filename=self.key_filename, 
                     password=self.password)
-        return ssh
+        return self.ssh
 
     def remove_file(self, replica):
         raise NotImplementedError
 
+    def close(self):
+        if self.ssh:
+            self.ssh.get_transport().close()

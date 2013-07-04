@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -28,10 +28,11 @@
 #
 
 from django.test import TestCase
+from unittest import skipUnless
 from compare import expect
 from nose.tools import ok_, eq_
 
-import logging, base64, os, urllib2
+import logging, base64, os, urllib2, time, urlparse
 from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
@@ -43,6 +44,20 @@ from .transfer.generate import \
 
 logger = logging.getLogger(__name__)
 
+def sshDir():
+    return os.path.join(os.environ.get('HOME', '/'), '.ssh')
+
+def hasDotSsh():
+    return os.path.exists(sshDir())
+
+def findKeyFile():
+    if os.path.exists(os.path.join(sshDir(), 'id_dsa')):
+        return os.path.join(sshDir(), 'id_dsa')
+    elif os.path.exists(os.path.join(sshDir(), 'id_rsa')):
+        return os.path.join(sshDir(), 'id_rsa')
+    else:
+        return None
+    
 class TransferProviderTestCase(TestCase):
 
     def setUp(self):
@@ -117,6 +132,38 @@ class TransferProviderTestCase(TestCase):
 
     def testSimpleHttpProvider(self):
         self.do_provider(Location.get_location('test'))
+
+    @skipUnless(hasDotSsh() and findKeyFile(), \
+                    "need user a/c with .ssh and keys")
+    def testScpProvider(self):
+        start_time = time.time()
+        username = os.environ.get('LOGNAME', None)
+        key_filename = findKeyFile()
+        provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
+                               {'username': 'blarg',
+                                'password': 'blarg', 
+                                'auto_add_missing_host_key' : True})
+        self.assertFalse(provider.alive())
+        provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
+                               {'username': username,
+                                'key_filename': key_filename})
+        self.assertFalse(provider.alive())
+        provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
+                               {'username': username,
+                                'key_filename': key_filename, 
+                                'auto_add_missing_host_key' : True})
+        self.assertTrue(provider.alive())
+        url = provider.put_archive('/etc/passwd', self.experiment)
+        path = urlparse.urlparse(url).path
+        try:
+            self.assertEquals(url, 'scp://localhost/tmp/%s-archive.tar.gz' %
+                              self.experiment.id)
+            self.assertTrue(os.path.exists(path))
+            self.assertTrue(os.path.getmtime(path) >= start_time)
+            self.assertEquals(os.path.getsize(path), 
+                              os.path.getsize('/etc/passwd'))
+        finally:
+            os.unlink(path)
 
     def do_ext_provider(self, loc_name):
         # This test requires an external test server configured

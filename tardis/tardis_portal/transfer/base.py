@@ -28,7 +28,6 @@
 #
 
 from urllib import quote
-from urlparse import urljoin
 
 
 class TransferError(Exception):
@@ -44,12 +43,18 @@ class TransferProvider(object):
     def get_file(self, replica):
         return self.get_opener(replica)()
 
+    def close(self):
+        pass
+
     def _generate_archive_url(self, experiment):
-        path = '%s/%s-archive.tar.gz' % (experiment.id, experiment.id)
-        return urljoin(self.base_url, quote(path))
+        path = '%s-archive.tar.gz' % experiment.id
+        # (For reasons I don't understand, urljoin doesn't work here.
+        # It might be to do with using a non-blessed scheme ...)
+        return self.base_url + quote(path)
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):
             raise TransferError(
                 'url %s does not belong to the %s destination (url %s)' % \
                     (url, self.name, self.base_url))
+
