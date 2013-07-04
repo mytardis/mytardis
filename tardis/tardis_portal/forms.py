@@ -80,7 +80,7 @@ def getAuthMethodChoices():
 
 
 class LoginForm(AuthenticationForm):
-    authMethod = forms.CharField()
+    # authMethod = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -89,11 +89,11 @@ class LoginForm(AuthenticationForm):
                              label="Username",
                              max_length=75)
 
-        authMethods = ((None, "Any"),) + getAuthMethodChoices()
-        self.fields['authMethod'] = \
-            forms.CharField(required=True,
-                            widget=forms.Select(choices=authMethods),
-                            label='Authentication Method')
+        # authMethods = ((None, "Any"),) + getAuthMethodChoices()
+        # self.fields['authMethod'] = \
+        #     forms.CharField(required=True,
+        #                     widget=forms.Select(choices=authMethods),
+        #                     label='Authentication Method')
 
 
 attrs_dict = {'class': 'required'}
