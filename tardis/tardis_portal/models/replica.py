@@ -146,6 +146,9 @@ class Replica(models.Model):
         If passed a file handle, it will write the file to it instead of
         discarding data as it's read.
         '''
+        from tardis import settings
+        if not getattr(settings, "REQUIRE_DATAFILE_CHECKSUMS", True):
+            allowEmptyChecksums=True    
 
         from .datafile import Dataset_File
         df = self.datafile
@@ -165,7 +168,7 @@ class Replica(models.Model):
             if (df.sha512sum or df.md5sum) and not df.size: 
                 # If the size is missing but we have a checksum to check
                 # the missing size is harmless ... we will fill it in below.
-                logger.warn("%s size is missing" % (self.url))
+                logger.warn("%s size is missing" % (self.url)) 
             else:
                 logger.error("%s failed size check: %d != %s",
                              self.url, size, df.size)
