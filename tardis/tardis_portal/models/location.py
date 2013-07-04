@@ -70,7 +70,7 @@ class Location(models.Model):
         return None
 
     @classmethod
-    def _initialize(cls):
+    def force_initialize(cls):
         for desc in settings.INITIAL_LOCATIONS:
             try:
                 logger.debug('Checking location %s' % desc['name'])
@@ -127,7 +127,7 @@ class Location(models.Model):
         return self.name
 
 # Trigger initialisation once
-Location._initialize()
+Location.force_initialize()
 
 class ProviderParameter(models.Model):
     '''This class represents a "parameter" that is passed when
