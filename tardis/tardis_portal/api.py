@@ -24,7 +24,7 @@ from tardis.tardis_portal.auth.decorators import has_delete_permissions
 from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
-from tardis.tardis_portal.models import ExperimentACL
+from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.models.datafile import Dataset_File
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -115,9 +115,9 @@ class ACLAuthorization(Authorization):
     '''
     def read_list(self, object_list, bundle):
         if type(bundle.obj) == Experiment:
-            return type(bundle.obj).safe.all(bundle.request)
+            return type(bundle.obj).safe.all(bundle.request.user)
         elif type(bundle.obj) == ExperimentParameterSet:
-            experiments = Experiment.safe.all(bundle.request)
+            experiments = Experiment.safe.all(bundle.request.user)
             eps_list = []
             for eps in object_list:
                 exp = eps.experiment
@@ -125,7 +125,7 @@ class ACLAuthorization(Authorization):
                     eps_list.append(eps)
             return eps_list
         elif type(bundle.obj) == ExperimentParameter:
-            experiments = Experiment.safe.all(bundle.request)
+            experiments = Experiment.safe.all(bundle.request.user)
             ep_list = []
             for ep in object_list:
                 exp = ep.experiment
@@ -497,14 +497,15 @@ class ExperimentResource(MyTardisModelResource):
             experiment = bundle.obj
             # TODO: unify this with the view function's ACL creation,
             # maybe through an ACL toolbox.
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId=django_user,
-                                entityId=str(bundle.request.user.id),
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True,
-                                aclOwnershipType=ExperimentACL.OWNER_OWNED)
+            acl = ObjectACL(content_type=experiment.get_ct(),
+                            object_id=experiment.id,
+                            pluginId=django_user,
+                            entityId=str(bundle.request.user.id),
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True,
+                            aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
         return super(ExperimentResource, self).hydrate_m2m(bundle)
 
@@ -533,7 +534,7 @@ class ExperimentResource(MyTardisModelResource):
                                                         string_value=epn)
             experiment_id = parameter.parameterset.experiment.id
             experiment = Experiment.objects.filter(pk=experiment_id)
-            if experiment[0] in Experiment.safe.all(bundle.request):
+            if experiment[0] in Experiment.safe.all(bundle.request.user):
                 return experiment
 
         return super(ExperimentResource, self).obj_get_list(bundle,
