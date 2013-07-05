@@ -118,19 +118,21 @@ def remove_experiment_data(exp, archive_url, archive_location):
                     for replica in replicas:
                         location = Location.get_location(replica.location.name)
                         location.provider.remove_file(replica)
-                    old_replica = replicas[0]
-                    path_in_archive = '%s/%s/%s' % (exp.id, ds.id, df.filename)
-                    new_replica_url = '%s#%s' % (
-                        archive_url, quote(path_in_archive))
-                    new_replica = Replica(datafile=old_replica.datafile,
-                                          url=new_replica_url,
-                                          protocol=old_replica.protocol,
-                                          verified=True,
-                                          stay_remote=False,
-                                          location=archive_location)
-                    new_replica.save()
+                        if archive_url:
+                            old_replica = replicas[0]
+                            path_in_archive = '%s/%s/%s' % (
+                                exp.id, ds.id, df.filename)
+                            new_replica_url = '%s#%s' % (
+                                archive_url, quote(path_in_archive))
+                            new_replica = Replica(datafile=old_replica.datafile,
+                                                  url=new_replica_url,
+                                                  protocol=old_replica.protocol,
+                                                  verified=True,
+                                                  stay_remote=False,
+                                                  location=archive_location)
+                            new_replica.save()
                     replicas.delete()
-                    
+                            
 def create_archive_record(exp, url):
     """Create an Archive for an archive of the 'exp' Experiment.  The
     'url' is the Experiment's URL

@@ -145,12 +145,14 @@ class Command(BaseCommand):
                                               delete=False)
                 create_experiment_archive(exp, tmp_file)
             if not self.directory:
-                url = self.location.provider.put_archive(tmp_file.name, exp)
-                create_archive_record(exp, url)
+                archive_url = self.location.provider.put_archive(
+                    tmp_file.name, exp)
+                create_archive_record(exp, archive_url)
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, url))
+                                      (exp.id, archive_url))
             else:
+                archive_url = None
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
                                       (exp.id, pathname))
@@ -159,7 +161,7 @@ class Command(BaseCommand):
             if self.remove_all:
                 remove_experiment(exp)
             elif self.remove_data:
-                remove_experiment_data(exp)
+                remove_experiment_data(exp, archive_url, location)
 
         except ArchivingError as e:          
             self.stderr.write(
