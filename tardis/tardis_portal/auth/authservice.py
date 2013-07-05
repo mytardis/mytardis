@@ -127,7 +127,7 @@ class AuthService():
         user.user_permissions.add(Permission.objects.get(codename='change_experiment'))
         user.user_permissions.add(Permission.objects.get(codename='change_group'))
         user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
-        user.user_permissions.add(Permission.objects.get(codename='change_experimentacl'))
+        user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
 
 
     def authenticate(self, authMethod, **credentials):

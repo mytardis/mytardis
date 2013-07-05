@@ -130,9 +130,9 @@
                     </a>
                   </li>
                   {% endif %}
-                  {% if perms.tardis_portal.change_experimentacl or perms.auth.change_group %}
+                  {% if perms.tardis_portal.change_objectacl or perms.auth.change_group %}
                   <li class="divider"></li>
-                  <!-- {% if perms.tardis_portal.change_experimentacl %}
+                  <!-- {% if perms.tardis_portal.change_objectacl %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.control_panel' %}">
                       <i class="icon-user"></i>
