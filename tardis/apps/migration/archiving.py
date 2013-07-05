@@ -29,6 +29,7 @@
 
 
 from urllib2 import Request, urlopen, HTTPError, URLError
+from urllib import quote
 from urlparse import urlparse
 from tempfile import NamedTemporaryFile
 from tarfile import TarFile, TarInfo
@@ -43,7 +44,7 @@ from tardis.tardis_portal.metsexporter import MetsExporter
 from tardis.apps.migration import MigrationError
 from tardis.apps.migration.models import Archive
 from tardis.tardis_portal.models import \
-    Experiment, Dataset, Dataset_File, Replica 
+    Experiment, Dataset, Dataset_File, Replica, Location
 
 import logging
 
@@ -80,9 +81,29 @@ def create_experiment_archive(exp, outfile):
 def remove_experiment(exp):
     pass
 
-def remove_experiment_data(exp):
-    pass
-
+def remove_experiment_data(exp, archive_url, archive_location):
+    for ds in Dataset.objects.filter(experiments=exp):
+        if ds.experiments.count() == 1:
+            for df in Dataset_File.objects.filter(dataset=ds):
+                replicas = Replica.objects.filter(datafile=df, 
+                                                  location__type='online')
+                if replicas.count() > 0:
+                    for replica in replicas:
+                        location = Location.get_location(replica.location.name)
+                        location.provider.remove_file(replica)
+                    old_replica = replicas[0]
+                    path_in_archive = '%s/%s/%s' % (exp.id, ds.id, df.filename)
+                    new_replica_url = '%s#%s' % (
+                        archive_url, quote(path_in_archive))
+                    new_replica = Replica(datafile=old_replica.datafile,
+                                          url=new_replica_url,
+                                          protocol=old_replica.protocol,
+                                          verified=True,
+                                          stay_remote=False,
+                                          location=archive_location)
+                    new_replica.save()
+                    replicas.delete()
+                    
 def create_archive_record(exp, url):
     owner = User.objects.get(id=exp.created_by.id).username
     archive = Archive(experiment=exp,
