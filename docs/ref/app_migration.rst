@@ -159,7 +159,9 @@ There are two ways to select Experiments for archiving.  You can list one or mor
 
 The "--location" and "--directory" options determine where the archives are sent.  If --directory is used, the archives are saved to a local directory.  Otherwise, they are transferred to the selected Location, defaulting to a configured Location.
 
-When an Experiment is archived to a Location, a record is added to the Archive table to facilitate retrieval and possible restoration in the future. In addition, you can choose to remove the online Replicas of the Datafiles (replacing them with offline Replicas), or to remove all Experiment / Dataset / Datafile metadata.
+When an Experiment is archived to a Location, a record is added to the Archive table to facilitate retrieval and possible restoration in the future. 
+
+You can also choose to remove the online Replicas of the archived Datafiles (replacing them with offline Replicas), or to remove all Experiment / Dataset / Datafile data and metadata.  Note that a Dataset (and its Datafiles) will not be removed if it is in multiple Experiments.  To make that happen, you need to (fully) remove all of the Experiments involved.
 
 The options are as follows:
 
@@ -168,9 +170,9 @@ The options are as follows:
   * --all select all Experiments for the action.
   * -v, --verbosity=0,1,2,3 controls how much output the command produces.
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
-  * --removeAll in "archive to location" mode, remove all online information about the Experiment and its dependent Datasets and Datafiles.
-  * --removeData in "archive to location" mode, replace the online Replicas with a single offline one, and delete the online copies of the data. 
-  * --help prints 'archive' command help.
+  * --removeAll remove all online information about the Experiment and its dependent Datasets and Datafiles.
+  * --removeData replace the online Replicas with a single offline one, and delete the online copies of the data.  The metadata remains online. 
+  * --help prints the 'archive' command help.
 
 Architecture
 ============
