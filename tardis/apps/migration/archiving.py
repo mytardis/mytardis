@@ -51,6 +51,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 def create_experiment_archive(exp, outfile):
+    """Create an experiment archive for 'exp' writing it to the 
+    file object given by 'outfile'.  The archive is in tar/gzip
+    format, and contains a METs manifest and the data files for
+    all Datasets currently in the Experiment.
+
+    On completion, 'outfile' is closed.
+    """
     with NamedTemporaryFile() as manifest:
         tf = tarfile.open(mode='w:gz', fileobj=outfile)
         MetsExporter().export_to_file(exp, manifest)
@@ -79,9 +86,29 @@ def create_experiment_archive(exp, outfile):
         outfile.close()
 
 def remove_experiment(exp):
+    """Completely remove an Experiment, together with any Datasets,
+    Datafiles and Replicas that belong to it exclusively.
+    """
+    for ds in Dataset.objects.filter(experiments=exp):
+        if ds.experiments.count() == 1:
+            for df in Dataset_File.objects.filter(dataset=ds):
+                replicas = Replica.objects.filter(datafile=df, 
+                                                  location__type='online')
+                for replica in replicas:
+                    location = Location.get_location(replica.location.name)
+                    location.provider.remove_file(replica)
+            ds.delete()
+        else:
+            ds.experiments.remove(exp)
+    exp.delete()
     pass
 
 def remove_experiment_data(exp, archive_url, archive_location):
+    """Remove the online Replicas for an Experiment that are not shared with
+    other Experiments.  When Replicas are removed, they are replaced with
+    offline replicas whose 'url' consists of the archive_url, with the 
+    archive pathname for the datafile as a url fragment id.
+    """
     for ds in Dataset.objects.filter(experiments=exp):
         if ds.experiments.count() == 1:
             for df in Dataset_File.objects.filter(dataset=ds):
@@ -105,6 +132,10 @@ def remove_experiment_data(exp, archive_url, archive_location):
                     replicas.delete()
                     
 def create_archive_record(exp, url):
+    """Create an Archive for an archive of the 'exp' Experiment.  The
+    'url' is the Experiment's URL
+    """
+
     owner = User.objects.get(id=exp.created_by.id).username
     archive = Archive(experiment=exp,
                       experiment_title=exp.title,

@@ -67,13 +67,17 @@ class UtilsTestCase(TestCase):
             None, self.dataset2, "Hello father")
 
     def _clear(self):
-        self.dataset.delete()
-        self.dataset2.delete()
-        self.experiment.delete()
-        self.experiment2.delete()
+        if self.dataset.id:
+            self.dataset.delete()
+        if self.dataset2.id:
+            self.dataset2.delete()
+        if self.experiment.id:
+            self.experiment.delete()
+        if self.experiment2.id:
+            self.experiment2.delete()
 
     def testRemoveExperimentData(self):
-        # First with no 
+        # First with no sharing
         self._build()
         archive_location = Location.get_location('archtest')
         try:
@@ -125,7 +129,44 @@ class UtilsTestCase(TestCase):
             new_replica = self.datafile.get_preferred_replica()
             self.assertTrue(self.replica.id == new_replica.id)
             self.assertTrue(exists(self.replica.get_absolute_filepath()))
+            self.assertFalse(exists(self.replica2.get_absolute_filepath()))
         finally:
             self._clear()
 
         
+    def testRemoveExperiment(self):
+        # First with no sharing
+        self._build()
+        archive_location = Location.get_location('archtest')
+        try:
+            self.assertTrue(exists(self.replica.get_absolute_filepath()))
+            remove_experiment(self.experiment) 
+            self.assertEquals(1, Experiment.objects.count())
+            self.assertEquals(0, Dataset.objects.count())
+            self.assertEquals(0, Dataset_File.objects.count())
+            self.assertEquals(0, Replica.objects.count())
+            self.assertFalse(exists(self.replica.get_absolute_filepath()))
+        finally:
+            self._clear()
+
+        # (Check that the deletes cascaded ... )
+        self.assertEquals(0, Dataset_File.objects.count())
+        self.assertEquals(0, Replica.objects.count())
+        
+        # Repeat, but with the first dataset in 2 experiments.
+        self._build()
+        self.dataset.experiments.add(self.experiment2)
+        archive_location = Location.get_location('archtest')
+        try:
+            self.assertTrue(exists(self.replica.get_absolute_filepath()))
+            remove_experiment(self.experiment) 
+            self.assertEquals(1, Experiment.objects.count())
+            self.assertEquals(1, Dataset.objects.count())
+            self.assertEquals(1, Dataset_File.objects.count())
+            self.assertEquals(1, Replica.objects.count())
+            new_replica = self.datafile.get_preferred_replica()
+            self.assertTrue(self.replica.id == new_replica.id)
+            self.assertTrue(exists(self.replica.get_absolute_filepath()))
+            self.assertFalse(exists(self.replica2.get_absolute_filepath()))
+        finally:
+            self._clear()
