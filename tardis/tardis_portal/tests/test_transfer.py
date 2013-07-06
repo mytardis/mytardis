@@ -136,12 +136,17 @@ class TransferProviderTestCase(TestCase):
             return None
 
     def testScpProvider(self):
+        # Check that this test is viable; i.e. that the user has 
+        # configured SSH access for themselves.  (I don't check that the
+        # user has configured >>incoming<< access for themselves via 
+        # "ssh localhost".  That's a prerequisite too.)
         if not self.hasDotSsh():
             raise SkipTest()
         key_filename = self.findKeyFile()
         if not key_filename:
             raise SkipTest()
-            
+    
+        # Tests that we can 'ping'
         start_time = time.time()
         username = os.environ.get('LOGNAME', None)
         provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
@@ -153,14 +158,16 @@ class TransferProviderTestCase(TestCase):
                                {'username': username,
                                 'key_filename': key_filename})
         self.assertFalse(provider.alive())
+        
+        # Test a 'put_archive'
         provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
                                {'username': username,
                                 'key_filename': key_filename, 
                                 'auto_add_missing_host_key' : True})
         self.assertTrue(provider.alive())
         url = provider.put_archive('/etc/passwd', self.experiment)
-        path = urlparse.urlparse(url).path
         try:
+            path = urlparse.urlparse(url).path
             self.assertEquals(url, 'scp://localhost/tmp/%s-archive.tar.gz' %
                               self.experiment.id)
             self.assertTrue(os.path.exists(path))
@@ -169,6 +176,33 @@ class TransferProviderTestCase(TestCase):
                               os.path.getsize('/etc/passwd'))
         finally:
             os.unlink(path)
+
+        # Test a 'put_archive' with a '-pre' hook to do a 'mkdir -p'
+        for i in range(10):
+            tmpdirpath = '/tmp/mytardis-scptest-%s' % time.time()
+            print '****** - %s, %s\n' % (i, tmpdirpath)
+            if os.path.exists(tmpdirpath):
+                os.rmdir(tmpdirpath)
+            provider = ScpTransfer('yyy', 'scp://localhost%s' % tmpdirpath, 
+                                   {'username': username,
+                                    'key_filename': key_filename, 
+                                    'commands': {'pre_put_archive': 
+                                                 'mkdir -p ${dirname}'},
+                                    'auto_add_missing_host_key' : True})
+            self.assertTrue(provider.alive())
+            url = provider.put_archive('/etc/passwd', self.experiment)
+            try:
+                path = urlparse.urlparse(url).path
+                self.assertEquals(url, 'scp://localhost%s/%s-archive.tar.gz' %
+                                  (tmpdirpath, self.experiment.id))
+                self.assertTrue(os.path.exists(tmpdirpath))
+                self.assertTrue(os.path.exists(path))
+                self.assertTrue(os.path.getmtime(path) >= start_time)
+                self.assertEquals(os.path.getsize(path), 
+                                  os.path.getsize('/etc/passwd'))
+            finally:
+                os.unlink(path)
+                os.rmdir(tmpdirpath)
 
     def do_ext_provider(self, loc_name):
         # This test requires an external test server configured

@@ -28,6 +28,7 @@
 #
 
 from urllib import quote
+from string import Template
 from urlparse import urlparse, urljoin
 from contextlib import closing
 import os, sys
@@ -49,6 +50,10 @@ class ScpTransfer(TransferProvider):
 
     Anyhow, this only implements the subset of the TransferProvider API
     needed to do archiving.
+
+    The 'commands' hash provides a 'hook' that allows simple commands to
+    be executed via the SSH session on the remote machine, before or after
+    the main transfer.
     """
     
     def __init__(self, name, base_url, params):
@@ -78,6 +83,7 @@ class ScpTransfer(TransferProvider):
         self.username = params.get('username', None)
         self.password = params.get('password', None)
         self.key_filename = params.get('key_filename', None)
+        self.commands = params.get('commands', {})
         self.ssh = None
 
     def alive(self):
@@ -117,15 +123,37 @@ class ScpTransfer(TransferProvider):
         archive_url = self._generate_archive_url(experiment)
         path = urlparse(archive_url).path
         scp = None
+        ssh = self._get_client()
         try:
-            scp = Write(self._get_client().get_transport(), 
-                        os.path.dirname(path))
+            self._run_command(ssh, 'pre_put_archive', path)
+            scp = Write(ssh.get_transport(), os.path.dirname(path))
             scp.send_file(archive_file, remote_filename=os.path.basename(path))
+            self._run_command(ssh, 'post_put_archive', path)
         except SCPError as e:
             if scp:
                 scp.close()
             raise TransferError(e.message)
         return archive_url
+
+    def _run_command(self, ssh, key, path):
+        command_template = self.commands.get(key, None)
+        if command_template:
+            command = Template(command_template).safe_substitute(
+                {'path': path, 
+                 'basename': os.path.basename(path),
+                 'dirname': os.path.dirname(path)})
+            (stdin, stdout, stderr) = ssh.exec_command(command)
+            # We need to wait for the status, or else we get a race
+            # condition with the command we are going to perform.
+            status = stdin.channel.recv_exit_status()
+            if status != 0:
+                raise TransferError('%s command (%s) failed: status %s' %
+                                    (key, command, status))
+            # Ignore outputs and input ...
+            stdin.close()
+            stdout.close()
+            stderr.close()
+            
 
     def _get_client(self):
         if self.ssh and not self.ssh.get_transport().is_active():
