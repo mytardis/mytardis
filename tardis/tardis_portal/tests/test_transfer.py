@@ -177,17 +177,14 @@ class TransferProviderTestCase(TestCase):
         finally:
             os.unlink(path)
 
-        # Test a 'put_archive' with a '-pre' hook to do a 'mkdir -p'
+        # Test a 'put_archive' requiring a 'mkdir'
         for i in range(10):
             tmpdirpath = '/tmp/mytardis-scptest-%s' % time.time()
-            print '****** - %s, %s\n' % (i, tmpdirpath)
             if os.path.exists(tmpdirpath):
                 os.rmdir(tmpdirpath)
             provider = ScpTransfer('yyy', 'scp://localhost%s' % tmpdirpath, 
                                    {'username': username,
                                     'key_filename': key_filename, 
-                                    'commands': {'pre_put_archive': 
-                                                 'mkdir -p ${dirname}'},
                                     'auto_add_missing_host_key' : True})
             self.assertTrue(provider.alive())
             url = provider.put_archive('/etc/passwd', self.experiment)
