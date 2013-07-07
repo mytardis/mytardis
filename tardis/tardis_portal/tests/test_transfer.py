@@ -206,6 +206,7 @@ class TransferProviderTestCase(TestCase):
         return (username, key_filename)
 
     def testScpProvider2(self):
+        raise SkipTest()
         (username, key_filename) = self._check_scp_prerequisites()
         location = Location.get_location('scptest')
         location.provider.username = username
