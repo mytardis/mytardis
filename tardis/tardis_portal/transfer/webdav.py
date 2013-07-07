@@ -64,6 +64,6 @@ class WebDAVTransfer(SimpleHttpTransfer):
                     if e.code == 405 or e.code == 301:
                         pass
                     else:
-                        raise TransferError(e.msg)
+                        raise TransferError(e.message)
                 partial += '/'
         

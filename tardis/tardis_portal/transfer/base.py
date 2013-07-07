@@ -46,6 +46,9 @@ class TransferProvider(object):
     def close(self):
         pass
 
+    def generate_url(self, replica):
+        return replica.generate_default_url()
+
     def _generate_archive_url(self, experiment):
         path = '%s-archive.tar.gz' % experiment.id
         # (For reasons I don't understand, urljoin doesn't work here.

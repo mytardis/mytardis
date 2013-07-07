@@ -136,19 +136,10 @@ class TransferProviderTestCase(TestCase):
             return None
 
     def testScpProvider(self):
-        # Check that this test is viable; i.e. that the user has 
-        # configured SSH access for themselves.  (I don't check that the
-        # user has configured >>incoming<< access for themselves via 
-        # "ssh localhost".  That's a prerequisite too.)
-        if not self.hasDotSsh():
-            raise SkipTest()
-        key_filename = self.findKeyFile()
-        if not key_filename:
-            raise SkipTest()
+        (username, key_filename) = self._check_scp_prerequisites()
     
         # Tests that we can 'ping'
         start_time = time.time()
-        username = os.environ.get('LOGNAME', None)
         provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
                                {'username': 'blarg',
                                 'password': 'blarg', 
@@ -178,7 +169,7 @@ class TransferProviderTestCase(TestCase):
             os.unlink(path)
 
         # Test a 'put_archive' requiring a 'mkdir'
-        for i in range(10):
+        for i in range(2):
             tmpdirpath = '/tmp/mytardis-scptest-%s' % time.time()
             if os.path.exists(tmpdirpath):
                 os.rmdir(tmpdirpath)
@@ -200,6 +191,27 @@ class TransferProviderTestCase(TestCase):
             finally:
                 os.unlink(path)
                 os.rmdir(tmpdirpath)
+
+    def _check_scp_prerequisites(self):
+        # Check that this test is viable; i.e. that the user has 
+        # configured SSH access for themselves.  (I don't check that the
+        # user has configured >>incoming<< access for themselves via 
+        # "ssh localhost".  That's a prerequisite too.)
+        if not self.hasDotSsh():
+            raise SkipTest()
+        key_filename = self.findKeyFile()
+        if not key_filename:
+            raise SkipTest()
+        username = os.environ.get('LOGNAME', None)
+        return (username, key_filename)
+
+    def testScpProvider2(self):
+        (username, key_filename) = self._check_scp_prerequisites()
+        location = Location.get_location('scptest')
+        location.provider.username = username
+        location.provider.key_filename = key_filename
+        location.provider.auto_add = True
+        self.do_provider(location)
 
     def do_ext_provider(self, loc_name):
         # This test requires an external test server configured

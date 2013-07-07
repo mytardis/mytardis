@@ -105,7 +105,7 @@ class SimpleHttpTransfer(TransferProvider):
         try:
             response = self.opener.open(self.HeadRequest(replica.url))
         except HTTPError as e:
-            raise TransferError(e.msg);
+            raise TransferError(e.message);
         length = response.info().get('Content-length')
         if length is None:
             raise TransferError("No content-length in response")
@@ -122,7 +122,7 @@ class SimpleHttpTransfer(TransferProvider):
                 self.GetRequest(replica.url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(e.message)
     
     def get_opener(self, replica):
         url = replica.url
@@ -132,12 +132,9 @@ class SimpleHttpTransfer(TransferProvider):
             try:
                 return self.opener.open(url)
             except HTTPError as e:
-                raise TransferError(e.msg)
+                raise TransferError(e.message)
 
         return getter
-
-    def generate_url(self, replica):
-        return replica.generate_default_url()
 
     def put_file(self, source_replica, target_replica):
         self._check_url(target_replica.url)
@@ -148,7 +145,7 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Length', source_replica.datafile.size)
             response = self.opener.open(request, data=f)
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(e.message)
         finally:
             f.close()
 
@@ -161,7 +158,7 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Length', os.path.getsize(archive_file))
             response = self.opener.open(request, data=f)
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(e.message)
         finally:
             f.close()
             
@@ -172,4 +169,4 @@ class SimpleHttpTransfer(TransferProvider):
         try:
             self.opener.open(self.DeleteRequest(replica.url))
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(e.message)

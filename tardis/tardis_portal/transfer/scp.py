@@ -33,7 +33,7 @@ from urlparse import urlparse, urljoin
 from contextlib import closing
 import os, sys
 from paramiko import SSHClient, AutoAddPolicy
-from scpclient import SCPError, Write
+from scpclient import SCPError, Write, Read
 
 from .base import TransferError, TransferProvider
 
@@ -105,22 +105,45 @@ class ScpTransfer(TransferProvider):
         raise NotImplementedError
     
     def get_opener(self, replica):
-        raise NotImplementedError
-
-    def generate_url(self, replica):
-        raise NotImplementedError
+        (path, dirname, filename) = self._analyse_url(replica.url)
+        scp = None
+        ssh = self._get_client()
+        try:            
+            scp = Read(ssh.get_transport(), dirname)
+            reader = scp._receive(filename).next()
+            def opener():
+                return ScpWrapper(reader)
+            return opener
+        except SCPError as e:
+            if scp:
+                scp.close()
+            raise TransferError(e.message)
 
     def put_file(self, source_replica, target_replica):
-        raise NotImplementedError
+        (path, dirname, filename) = self._analyse_url(target_replica.url)
+        scp = None
+        ssh = self._get_client()
+        try:
+            self._run_command(ssh, 'pre_put_file', path)
+            if self.base_url_path != dirname:
+                self._run_command(ssh, 'mkdirs', dirname)
+            f = source_replica.get_file()
+            scp = Write(ssh.get_transport(), dirname)
+            scp.send(f, filename, '0644', int(source_replica.datafile.size))
+            self._run_command(ssh, 'post_put_file', path)
+        except SCPError as e:
+            if scp:
+                scp.close()
+            raise TransferError(e.message)
+        finally:
+            f.close()
 
     def put_archive(self, archive_file, experiment):
         # Warning: this only works if the dirname part of the archive URL's 
         # path component matches an existing (writable) directory at the
         # remote end.  
         archive_url = self._generate_archive_url(experiment)
-        path = urlparse(archive_url).path
-        dirname = os.path.dirname(path)
-        filename = os.path.basename(path)
+        (path, dirname, filename) = self._analyse_url(archive_url)
         scp = None
         ssh = self._get_client()
         try:
@@ -135,6 +158,13 @@ class ScpTransfer(TransferProvider):
                 scp.close()
             raise TransferError(e.message)
         return archive_url
+
+    def _analyse_url(self, url):
+        self._check_url(url)
+        path = urlparse(url).path
+        dirname = os.path.dirname(path)
+        filename = os.path.basename(path)
+        return (path, dirname, filename)
 
     def run_command(self, command_template, path):
         ssh = self._get_client()
@@ -182,3 +212,11 @@ class ScpTransfer(TransferProvider):
     def close(self):
         if self.ssh:
             self.ssh.get_transport().close()
+
+
+class ScpWrapper:
+    def __init__(self, reader):
+        self.reader = reader.read_fn()
+
+    def read(self):
+        return self.reader.next()
