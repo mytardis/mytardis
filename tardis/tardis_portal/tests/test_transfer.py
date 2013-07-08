@@ -143,18 +143,18 @@ class TransferProviderTestCase(TestCase):
         provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
                                {'username': 'blarg',
                                 'password': 'blarg', 
-                                'auto_add' : True})
+                                'auto_add_missing_host_key' : True})
         self.assertFalse(provider.alive())
         provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
                                {'username': username,
-                                'key_file': key_filename})
+                                'key_filename': key_filename})
         self.assertFalse(provider.alive())
         
         # Test a 'put_archive'
         provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
                                {'username': username,
-                                'key_file': key_filename, 
-                                'auto_add' : True})
+                                'key_filename': key_filename, 
+                                'auto_add_missing_host_key' : True})
         self.assertTrue(provider.alive())
         url = provider.put_archive('/etc/passwd', self.experiment)
         try:
@@ -175,8 +175,8 @@ class TransferProviderTestCase(TestCase):
                 os.rmdir(tmpdirpath)
             provider = ScpTransfer('yyy', 'scp://localhost%s' % tmpdirpath, 
                                    {'username': username,
-                                    'key_file': key_filename, 
-                                    'auto_add' : True})
+                                    'key_filename': key_filename, 
+                                    'auto_add_missing_host_key' : True})
             self.assertTrue(provider.alive())
             url = provider.put_archive('/etc/passwd', self.experiment)
             try:

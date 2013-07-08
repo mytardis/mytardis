@@ -73,10 +73,10 @@ class ScpTransfer(TransferProvider):
         
         self.metadata_supported = False
         self.trust_length = params.get('trust_length', 'False') == 'True'
-        self.auto_add = params.get('auto_add', False)
+        self.auto_add = params.get('auto_add_missing_host_key', False)
         self.username = params.get('username', None)
         self.password = params.get('password', None)
-        self.key_file = params.get('key_file', None)
+        self.key_filename = params.get('key_filename', None)
         self.commands = {
             'mkdirs': '/bin/mkdir -p ${path}'}
         self.commands.update(params.get('commands', {}))
@@ -202,7 +202,7 @@ class ScpTransfer(TransferProvider):
         self.ssh.connect(self.hostname, 
                     port=self.port,
                     username=self.username, 
-                    key_filename=self.key_file, 
+                    key_filename=self.key_filename, 
                     password=self.password)
         return self.ssh
 
