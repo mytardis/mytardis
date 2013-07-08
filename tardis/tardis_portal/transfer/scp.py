@@ -31,9 +31,8 @@ from urllib import quote
 from string import Template
 from urlparse import urlparse, urljoin
 from contextlib import closing
-import os, sys
-from paramiko import SSHClient, AutoAddPolicy
-from scpclient import SCPError, Write, Read
+from subprocess import CalledProcessError, STDOUT
+import os, sys, subprocess
 
 from .base import TransferError, TransferProvider
 
@@ -53,6 +52,7 @@ class ScpTransfer(TransferProvider):
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
         parts = urlparse(base_url)
+        print 'parts is %s\n' % (parts, )
         if parts.scheme != 'scp':
             raise ValueError('scp: url required for transfer provider (%s)' %
                              name)
@@ -68,115 +68,113 @@ class ScpTransfer(TransferProvider):
         if not parts.hostname or not parts.path:
             raise ValueError('url for transfer provider (%s) requires a '
                              'non-empty hostname and path' % name)
-        self.hostname = parts.hostname
-        self.port = parts.port if parts.port else 22
         
+        self.username = params.get('username', None)
+        if not self.username:
+            raise ValueError('No username parameter found')
+             
         self.metadata_supported = True
         self.trust_length = self._isTrue(params, 'trust_length', False)
-        self.auto_add = self._isTrue(params, 'auto_add_missing_host_key', False)
-        self.username = params.get('username', None)
-        self.password = params.get('password', None)
-        self.key_filename = params.get('key_filename', None)
         self.commands = {
-            'mkdirs': '/bin/mkdir -p ${path}',
-            'length': '/bin/stat --format="%s" ${path}',
-            'remove': '/bin/rm ${path}'}
+            'echo': 'echo hi',
+            'mkdirs': 'mkdir -p "${path}"',
+            'length': 'stat --format="%s" "${path}"',
+            'remove': 'rm "${path}"',
+            'scp_from': 'scp ${opts} ${username}@${hostname}:"${path}" "${local}"',
+            'scp_to': 'scp ${opts} "${local}" ${username}@${hostname}:"${path}"',
+            'ssh': 'ssh ${opts} ${username}@{hostname}'}
         self.commands.update(params.get('commands', {}))
         self.base_url_path = urlparse(self.base_url).path
 
+        self.key_filename = params.get('key_filename', None)
+        self.hostname = parts.netloc
+        self.port = parts.port if parts.port else 22
+
+    def _get_scp_opts(self):
+        opts = ''
+        if self.key_filename:
+            opts += ' -i %s' % self.key_filename
+        if self.port != 22:
+            opts += ' -P %s' % self.port
+        return opts
+
+    def _get_ssh_command(self):
+        opts = ''
+        if self.key_filename:
+            opts += ' -i %s' % self.key_filename
+        if self.port != 22:
+            opts += ' -p %s' % self.port
+        
+        template = self.commands.get('ssh')
+        return Template(template).safe_substitute(
+                username=self.username,
+                hostname=self.hostname,
+                opts=opts)
+
     def alive(self):
-        ssh = None
         try:
-            ssh = self._get_client()
-            return True
-        except Exception:
-            logger.warning('SSH aliveness test failed for provider %s' % 
+            output = self.run_command('echo')
+            if output == 'hi\n':
+                return True
+            else:
+                logger.debug("SSH remote echo output is incorrect")
+                return False
+        except Exception as e:
+            logger.warning('SSH aliveness test failed for provider %s' %
                            self.name)
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug('Cause of aliveness failure', 
+                logger.debug('Cause of aliveness failure',
                              exc_info=sys.exc_info())
             return False
-        finally:
-            if ssh:
-                ssh.close()
-
 
     def get_length(self, replica):
-        (path, dirname, filename) = self._analyse_url(replica.url)
-        command_template = self.commands.get('length')
-        return int(self.run_command(command_template, path))
-        
+        (path, _, _) = self._analyse_url(replica.url)
+        return int(self.run_command('length', path=path).strip())
+    
     def get_metadata(self, replica):
         raise NotImplementedError
     
     def get_opener(self, replica):
-        (path, dirname, filename) = self._analyse_url(replica.url)
-        scp = None
-        ssh = self._get_client()
-        try:            
-            scp = Read(ssh.get_transport(), dirname)
-            reader = scp._receive(filename).next()
-            def opener():
-                return ScpWrapper(reader)
-            return opener
-        except SCPError as e:
-            raise TransferError(e.message)
-        finally:
-            if scp:
-                scp.close()
-            else:
-                ssh.close()
+        (path, _, _) = self._analyse_url(replica.url)
+        tmpFile = NamedTemporaryFile(mode='rb', prefix='mytardis_scp_')
+        self.run_command('scp_from', local=tmpFile.name, path=path)
+        def opener():
+            return tmpFile
+        return opener
 
     def put_file(self, source_replica, target_replica):
         (path, dirname, filename) = self._analyse_url(target_replica.url)
-        self._run_command('pre_put_file', path)
+        self.run_command('pre_put_file', path=path, dirname=dirname, 
+                         filename=filename, optional=True)
         if self.base_url_path != dirname:
-            self._run_command('mkdirs', dirname)
-        scp = None
-        ssh = self._get_client()
-        try:
-            f = source_replica.get_file()
-            scp = Write(ssh.get_transport(), dirname)
-            scp.send(f, filename, '0644', int(source_replica.datafile.size))
-        except SCPError as e:
-            raise TransferError(e.message)
-        finally:
-            f.close()
-            if scp:
-                scp.close()
+            self.run_command('mkdirs', path=dirname)
+        with closing(source_replica.get_file()) as f:
+            # The 'scp' command copies to and from named files.
+            if f.name: 
+                self.run_command('scp_to', local=f.name, remote=path)
             else:
-                ssh.close()
-        self._run_command('post_put_file', path)
+                with closing(NamedTemporaryFile(
+                        mode='w+b', prefix='mytardis_scp_')) as t:
+                    shutil.copyFileObj(f, t)
+                    self.run_command('scp_to', local=t.name, path=path)
+        self.run_command('post_put_file', path=path, dirname=dirname, 
+                         filename=filename, optional=True)
 
-    def put_archive(self, archive_file, experiment):
-        # Warning: this only works if the dirname part of the archive URL's 
-        # path component matches an existing (writable) directory at the
-        # remote end.  
+    def put_archive(self, archive_filename, experiment):
         archive_url = self._generate_archive_url(experiment)
         (path, dirname, filename) = self._analyse_url(archive_url)
-        self._run_command('pre_put_archive', path)
+        self.run_command('pre_put_archive', path=path, dirname=dirname, 
+                          filename=filename, optional=True)
         if self.base_url_path != dirname:
-            self._run_command('mkdirs', dirname)
-        scp = None
-        ssh = self._get_client()
-        try:
-            scp = Write(ssh.get_transport(), dirname)
-            scp.send_file(archive_file, remote_filename=filename)
-        except SCPError as e:
-            raise TransferError(e.message)
-        finally:
-            if scp:
-                scp.close()
-            else:
-                ssh.close()
-        
-        self._run_command('post_put_archive', path)
+            self.run_command('mkdirs', path=dirname)
+        self.run_command('scp_to', local=archive_filename, remote=path)
+        self.run_command('post_put_archive', path=path, dirname=dirname, 
+                         filename=filename, optional=True)
         return archive_url
 
     def remove_file(self, replica):
-        (path, dirname, filename) = self._analyse_url(replica.url)
-        command_template = self.commands.get('remove')
-        self.run_command(command_template, path)
+        (path, _, _) = self._analyse_url(replica.url)
+        self.run_command('remove', path=path)
 
     def close(self):
         pass
@@ -188,55 +186,23 @@ class ScpTransfer(TransferProvider):
         filename = os.path.basename(path)
         return (path, dirname, filename)
 
-    def run_command(self, command_template, path):
-        return self._do_run_command(command_template, path)
-
-    def _run_command(self, key, path):
-        command_template = self.commands.get(key, None)
-        if command_template:
-            return self._do_run_command(command_template, path)
-
-    def _do_run_command(self, command_template, path):
-        ssh = self._get_client()
+    def run_command(self, key, **kwargs):
+        template = self.commands.get(key)
+        if not template:
+            if kwargs.get('optional', False):
+                return
+            raise TransferError('No command found for %s' % key)
+      
+        if key.startswith('scp'):
+            kwargs.put('opts', self._get_scp_opts())
+            ssh_cmd = ''
+        else:
+            ssh_cmd = self._get_ssh_command(),
+        command = '%s %s' % (ssh_cmd,
+                             Template(template).safe_substitute(**kwargs))
         try:
-            command = Template(command_template).safe_substitute(
-                {'path': path, 
-                 'basename': os.path.basename(path),
-                 'dirname': os.path.dirname(path)})
-            (stdin, stdout, stderr) = ssh.exec_command(command)
-            stdin.close()
-            output = stdout.read()
-            stdout.close()
-            errors = stderr.read()
-            stderr.close()
-            status = stdin.channel.recv_exit_status()
-            if status != 0:
-                logger.debug('command %s on %s failed: status %s\n' %
-                             (self.hostname, command, status))
-                if errors:
-                    logger.debug('error output: %s\n' % errors)
-                raise TransferError('command (%s) failed on %s: status %s' %
-                                    (command, self.hostname, status))
-            return output
-        finally:
-            ssh.close();
-
-    def _get_client(self):
-        self.ssh = SSHClient()
-        if self.auto_add:
-            self.ssh.set_missing_host_key_policy(AutoAddPolicy())
-        self.ssh.connect(self.hostname, 
-                    port=self.port,
-                    username=self.username, 
-                    key_filename=self.key_filename, 
-                    password=self.password)
-        return self.ssh
-
-
-
-class ScpWrapper:
-    def __init__(self, reader):
-        self.reader = reader.read_fn()
-
-    def read(self):
-        return self.reader.next()
+            return subprocess.check_output(command, stderr=STDOUT, shell=True)
+        except CalledProcessError as e:
+            logger.debug('error output: %s\n' % e.output)
+            raise TransferError('command %s failed: rc %s' %
+                                (command, e.returncode))

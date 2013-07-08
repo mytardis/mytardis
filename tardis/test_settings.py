@@ -151,7 +151,7 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'url': 'scp://127.0.0.1/tmp/mytardis-scptest/',
                       'type': 'offline',
                       'priority': 10,
-                      'params': {}, # 'configured' by the tests themselves ...
+                      'params': {'username': 'blarg'}, 
                       },
                      {'name': 'test2',
                       'provider': 'dav',
