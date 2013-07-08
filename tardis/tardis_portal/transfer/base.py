@@ -61,3 +61,12 @@ class TransferProvider(object):
                 'url %s does not belong to the %s destination (url %s)' % \
                     (url, self.name, self.base_url))
 
+    def _isTrue(self, params, key, default):
+        value = params.get(key, None)
+        if value == None:
+            return default
+        if isinstance(value, basestring):
+            return value.upper() == 'TRUE'
+        else:
+            return value
+

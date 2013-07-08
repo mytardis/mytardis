@@ -206,7 +206,6 @@ class TransferProviderTestCase(TestCase):
         return (username, key_filename)
 
     def testScpProvider2(self):
-        raise SkipTest()
         (username, key_filename) = self._check_scp_prerequisites()
         location = Location.get_location('scptest')
         location.provider.username = username
@@ -215,15 +214,11 @@ class TransferProviderTestCase(TestCase):
         self.do_provider(location)
 
     def do_ext_provider(self, loc_name):
-        # This test requires an external test server configured
-        # as per the 'dest_name' destination.  We skip the test is the 
-        # server doesn't respond.
         loc = Location.get_location(loc_name)
-        if loc.provider.alive():
-            self.do_provider(loc)
-        else:
-            print 'SKIPPING TEST - %s server on %s is not responding\n' % \
-                (loc_name, loc.url)
+        if not loc.provider.alive():
+            print '%s server on %s is not responding\n' % (loc_name, loc.url)
+            raise SkipTest()
+        self.do_provider(loc)
 
     def do_provider(self, loc):
         provider = loc.provider
