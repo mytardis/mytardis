@@ -192,10 +192,7 @@ class Command(BaseCommand):
                 raise CommandError("No default destination configured")
             else:
                 destName = default
-        try:
-            dest = Location.get_location(destName)
-            if not dest:
-                raise CommandError("Destination %s not known" % destName)
-            return dest
-        except MigrationError as e:
-            raise CommandError("Migration error: %s" % e.args[0])
+        dest = Location.get_location(destName)
+        if not dest:
+            raise CommandError("Destination %s not known" % destName)
+        return dest
