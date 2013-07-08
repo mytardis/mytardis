@@ -72,8 +72,8 @@ class ScpTransfer(TransferProvider):
         self.port = parts.port if parts.port else 22
         
         self.metadata_supported = False
-        self.trust_length = params.get('trust_length', 'False') == 'True'
-        self.auto_add = params.get('auto_add_missing_host_key', False)
+        self.trust_length = self._isTrue(params, 'trust_length', False)
+        self.auto_add = self._isTrue(params, 'auto_add_missing_host_key', False)
         self.username = params.get('username', None)
         self.password = params.get('password', None)
         self.key_filename = params.get('key_filename', None)
@@ -82,6 +82,15 @@ class ScpTransfer(TransferProvider):
         self.commands.update(params.get('commands', {}))
         self.ssh = None
         self.base_url_path = urlparse(self.base_url).path
+
+    def _isTrue(self, params, key, default):
+        value = params.get(key, None)
+        if value == None:
+            return default
+        if isinstance(value, basestring):
+            return value.upper() == 'TRUE'
+        else:
+            return value
 
     def alive(self):
         ssh = None
