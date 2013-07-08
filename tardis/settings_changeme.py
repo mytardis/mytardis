@@ -380,6 +380,7 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
 DEFAULT_ARCHIVE_LOCATION = 'unknown'
+DEFAULT_EXPERIMENT_URL_BASE = None
 
 TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',

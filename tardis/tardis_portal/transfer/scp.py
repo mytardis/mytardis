@@ -78,7 +78,7 @@ class ScpTransfer(TransferProvider):
         self.password = params.get('password', None)
         self.key_file = params.get('key_file', None)
         self.commands = {
-            'mkdirs': '/usr/bin/mkdir -p ${path}'}
+            'mkdirs': '/bin/mkdir -p ${path}'}
         self.commands.update(params.get('commands', {}))
         self.ssh = None
         self.base_url_path = urlparse(self.base_url).path
@@ -189,8 +189,8 @@ class ScpTransfer(TransferProvider):
         stderr.close()
         status = stdin.channel.recv_exit_status()
         if status != 0:
-            raise TransferError('%s command (%s) failed on %s: status %s' %
-                                (key, command, self.hostname, status))
+            raise TransferError('command (%s) failed on %s: status %s' %
+                                (command, self.hostname, status))
         return output
 
     def _get_client(self):

@@ -135,14 +135,18 @@ def remove_experiment_data(exp, archive_url, archive_location):
                             
 def create_archive_record(exp, url):
     """Create an Archive for an archive of the 'exp' Experiment.  The
-    'url' is the Experiment's URL
+    'url' is the Experiment archive URL
     """
 
     owner = User.objects.get(id=exp.created_by.id).username
+    if exp.url:
+        exp_url = exp.url
+    else:
+        exp_url = '%s/%s' % (settings.DEFAULT_EXPERIMENT_URL_BASE, exp.id)
     archive = Archive(experiment=exp,
                       experiment_title=exp.title,
                       experiment_owner=owner,
-                      experiment_url=exp.url,
+                      experiment_url=exp_url,
                       archive_url=url)
     archive.save()
     return archive
