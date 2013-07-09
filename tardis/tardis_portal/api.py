@@ -114,6 +114,8 @@ class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
     def read_list(self, object_list, bundle):
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return object_list
         if type(bundle.obj) == Experiment:
             return type(bundle.obj).safe.all(bundle.request)
         elif type(bundle.obj) == ExperimentParameterSet:
@@ -171,6 +173,8 @@ class ACLAuthorization(Authorization):
             return []
 
     def read_detail(self, object_list, bundle):
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return True
         if type(bundle.obj) == Experiment:
             return has_experiment_access(bundle.request, bundle.obj.id)
         elif type(bundle.obj) == ExperimentParameterSet:
@@ -211,6 +215,8 @@ class ACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):
         if not bundle.request.user.is_authenticated():
             return False
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return True
         if type(bundle.obj) == Experiment:
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         elif type(bundle.obj) in (ExperimentParameterSet,):
