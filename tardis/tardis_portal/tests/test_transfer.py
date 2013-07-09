@@ -101,12 +101,17 @@ class TransferProviderTestCase(TestCase):
         self.assertEquals(cm.exception.message, 
                           'url for transfer provider (xxx) cannot use a '
                           'username or password')
+        with self.assertRaises(ValueError) as cm:
+            ScpTransfer('xxx', 'scp://localhost/foo?wot', {})
+        self.assertEquals(cm.exception.message, 
+                          'No username parameter found')
+
 
         # These won't normally be seen ...
         logger.warning('The next 3 warnings are "expected"')
-        ScpTransfer('xxx', 'scp://localhost/foo?wot', {})
-        ScpTransfer('xxx', 'scp://localhost/foo#frag', {})
-        ScpTransfer('xxx', 'scp://localhost/foo;param', {})
+        ScpTransfer('xxx', 'scp://localhost/foo?wot', {'username': 'blarg'})
+        ScpTransfer('xxx', 'scp://localhost/foo#frag', {'username': 'blarg'})
+        ScpTransfer('xxx', 'scp://localhost/foo;param', {'username': 'blarg'})
 
     def testLocalProvider(self):
         self.do_ext_provider('sync')
@@ -143,10 +148,6 @@ class TransferProviderTestCase(TestCase):
         provider = ScpTransfer('xxx', 'scp://localhost/tmp', 
                                {'username': 'blarg'})
         self.assertFalse(provider.alive())
-        provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
-                               {'username': username,
-                                'key_filename': key_filename})
-        self.assertFalse(provider.alive())
         
         # Test a 'put_archive'
         provider = ScpTransfer('yyy', 'scp://localhost/tmp', 
@@ -163,7 +164,10 @@ class TransferProviderTestCase(TestCase):
             self.assertEquals(os.path.getsize(path), 
                               os.path.getsize('/etc/passwd'))
         finally:
-            os.unlink(path)
+            try:
+                os.unlink(path)
+            except:
+                pass
 
         # Test a 'put_archive' requiring a 'mkdir'
         for i in range(2):

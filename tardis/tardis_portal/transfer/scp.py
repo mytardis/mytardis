@@ -32,6 +32,7 @@ from string import Template
 from urlparse import urlparse, urljoin
 from contextlib import closing
 from subprocess import CalledProcessError, STDOUT
+from tempfile import NamedTemporaryFile
 import os, sys, subprocess
 
 from .base import TransferError, TransferProvider
@@ -52,7 +53,6 @@ class ScpTransfer(TransferProvider):
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
         parts = urlparse(base_url)
-        print 'parts is %s\n' % (parts, )
         if parts.scheme != 'scp':
             raise ValueError('scp: url required for transfer provider (%s)' %
                              name)
@@ -80,9 +80,9 @@ class ScpTransfer(TransferProvider):
             'mkdirs': 'mkdir -p "${path}"',
             'length': 'stat --format="%s" "${path}"',
             'remove': 'rm "${path}"',
-            'scp_from': 'scp ${opts} ${username}@${hostname}:"${path}" "${local}"',
-            'scp_to': 'scp ${opts} "${local}" ${username}@${hostname}:"${path}"',
-            'ssh': 'ssh ${opts} ${username}@{hostname}'}
+            'scp_from': 'scp ${opts} ${username}@${hostname}:"${remote}" "${local}"',
+            'scp_to': 'scp ${opts} "${local}" ${username}@${hostname}:"${remote}"',
+            'ssh': 'ssh -o PasswordAuthentication=no ${opts} ${username}@${hostname}'}
         self.commands.update(params.get('commands', {}))
         self.base_url_path = urlparse(self.base_url).path
 
@@ -113,7 +113,7 @@ class ScpTransfer(TransferProvider):
 
     def alive(self):
         try:
-            output = self.run_command('echo')
+            output = self.run_command('echo', {})
             if output == 'hi\n':
                 return True
             else:
@@ -129,52 +129,71 @@ class ScpTransfer(TransferProvider):
 
     def get_length(self, replica):
         (path, _, _) = self._analyse_url(replica.url)
-        return int(self.run_command('length', path=path).strip())
+        return int(self.run_command('length', {'path': path}).strip())
     
     def get_metadata(self, replica):
         raise NotImplementedError
     
     def get_opener(self, replica):
         (path, _, _) = self._analyse_url(replica.url)
-        tmpFile = NamedTemporaryFile(mode='rb', prefix='mytardis_scp_')
-        self.run_command('scp_from', local=tmpFile.name, path=path)
+        tmpFile = NamedTemporaryFile(mode='rb', prefix='mytardis_scp_', 
+                                     delete=False)
+        name = tmpFile.name
+        self.run_command('scp_from', 
+                         {'local': name, 'remote': path,
+                          'username': self.username, 
+                          'hostname': self.hostname})
         def opener():
-            return tmpFile
+            return _TemporaryFileWrapper(name)
         return opener
 
     def put_file(self, source_replica, target_replica):
         (path, dirname, filename) = self._analyse_url(target_replica.url)
-        self.run_command('pre_put_file', path=path, dirname=dirname, 
-                         filename=filename, optional=True)
+        self.run_hook('pre_put_file', 
+                      {'path': path, 'dirname': dirname, 
+                       'filename': filename})
         if self.base_url_path != dirname:
-            self.run_command('mkdirs', path=dirname)
+            self.run_command('mkdirs', {'path': dirname})
         with closing(source_replica.get_file()) as f:
             # The 'scp' command copies to and from named files.
             if f.name: 
-                self.run_command('scp_to', local=f.name, remote=path)
+                self.run_command('scp_to', 
+                                 {'local': f.name, 'remote': path,
+                                  'username': self.username, 
+                                  'hostname': self.hostname})
             else:
                 with closing(NamedTemporaryFile(
                         mode='w+b', prefix='mytardis_scp_')) as t:
                     shutil.copyFileObj(f, t)
-                    self.run_command('scp_to', local=t.name, path=path)
-        self.run_command('post_put_file', path=path, dirname=dirname, 
-                         filename=filename, optional=True)
+                    self.run_command('scp_to', 
+                                     {'local': t.name, 'remote': path,
+                                      'username': self.username, 
+                                      'hostname': self.hostname})
+            self.run_hook('post_put_file', 
+                          {'path': path, 'dirname': dirname, 
+                           'filename': filename})
 
     def put_archive(self, archive_filename, experiment):
         archive_url = self._generate_archive_url(experiment)
         (path, dirname, filename) = self._analyse_url(archive_url)
-        self.run_command('pre_put_archive', path=path, dirname=dirname, 
-                          filename=filename, optional=True)
+        self.run_command('pre_put_archive', 
+                         {'path': path, 'dirname': dirname, 
+                          'filename': filename},
+                         optional=True)
         if self.base_url_path != dirname:
-            self.run_command('mkdirs', path=dirname)
-        self.run_command('scp_to', local=archive_filename, remote=path)
-        self.run_command('post_put_archive', path=path, dirname=dirname, 
-                         filename=filename, optional=True)
+            self.run_command('mkdirs', {'path': dirname})
+        self.run_command('scp_to', 
+                         {'local': archive_filename, 'remote': path,
+                          'username': self.username, 'hostname': self.hostname})
+        self.run_command('post_put_archive', 
+                         {'path': path, 'dirname': dirname, 
+                          'filename': filename},
+                         optional=True)
         return archive_url
 
     def remove_file(self, replica):
         (path, _, _) = self._analyse_url(replica.url)
-        self.run_command('remove', path=path)
+        self.run_command('remove', {'path': path})
 
     def close(self):
         pass
@@ -186,23 +205,60 @@ class ScpTransfer(TransferProvider):
         filename = os.path.basename(path)
         return (path, dirname, filename)
 
-    def run_command(self, key, **kwargs):
+    def run_hook(self, key, params):
+        return self.run_command(key, params, optional=True)
+
+    def run_command(self, key, params, optional=False):
         template = self.commands.get(key)
         if not template:
-            if kwargs.get('optional', False):
+            if optional:
                 return
             raise TransferError('No command found for %s' % key)
       
         if key.startswith('scp'):
-            kwargs.put('opts', self._get_scp_opts())
+            params['opts'] = self._get_scp_opts()
             ssh_cmd = ''
         else:
-            ssh_cmd = self._get_ssh_command(),
-        command = '%s %s' % (ssh_cmd,
-                             Template(template).safe_substitute(**kwargs))
+            ssh_cmd = self._get_ssh_command()
+        remote_cmd = Template(template).safe_substitute(params)
+        command = '%s %s' % (ssh_cmd, remote_cmd)
         try:
+            logger.debug(command)
             return subprocess.check_output(command, stderr=STDOUT, shell=True)
         except CalledProcessError as e:
             logger.debug('error output: %s\n' % e.output)
             raise TransferError('command %s failed: rc %s' %
                                 (command, e.returncode))
+
+class _TemporaryFileWrapper:
+    # This is a cut-down / hacked about version of the same named
+    # class in tempfile.  Main differences are 1) delete is hard-wired
+    # 2) we open our own file object, 3) there is no __del__ because
+    # it causes premature closing, and 4) stripped out the Windows.NT stuff.
+    def __init__(self, name):
+        self.name = name
+        self.file = open(name, 'rb')
+        self.close_called = False
+
+    def __getattr__(self, name):
+        file = self.__dict__['file']
+        a = getattr(file, name)
+        if not issubclass(type(a), type(0)):
+            setattr(self, name, a)
+        return a
+
+    def __enter__(self):
+        self.file.__enter__()
+        return self
+
+    def close(self):
+        if not self.close_called:
+            self.close_called = True
+            self.file.close()
+            if self.delete:
+                os.unlink(self.name)
+                    
+    def __exit__(self, exc, value, tb):
+        result = self.file.__exit__(exc, value, tb)
+        self.close()
+        return result
