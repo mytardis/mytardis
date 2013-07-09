@@ -139,6 +139,7 @@ class Command(BaseCommand):
             if self.directory:
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
+                create_experiment_archive(exp, open(pathname, 'wb'))
             else:
                 tmp_file = NamedTemporaryFile(prefix='mytardis_tmp_ar',
                                               suffix='.tar.gz',
