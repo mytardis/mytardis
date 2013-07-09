@@ -31,7 +31,7 @@ from urllib import quote
 from string import Template
 from urlparse import urlparse, urljoin
 from contextlib import closing
-from subprocess import CalledProcessError, STDOUT
+from subprocess import Popen, STDOUT, PIPE
 from tempfile import NamedTemporaryFile
 import os, sys, subprocess
 
@@ -222,13 +222,15 @@ class ScpTransfer(TransferProvider):
             ssh_cmd = self._get_ssh_command()
         remote_cmd = Template(template).safe_substitute(params)
         command = '%s %s' % (ssh_cmd, remote_cmd)
-        try:
-            logger.debug(command)
-            return subprocess.check_output(command, stderr=STDOUT, shell=True)
-        except CalledProcessError as e:
-            logger.debug('error output: %s\n' % e.output)
-            raise TransferError('command %s failed: rc %s' %
-                                (command, e.returncode))
+        logger.debug(command)
+
+        process = Popen(command, stdout=PIPE, stderr=STDOUT, shell=True)
+        output, unused_err = process.communicate()
+        rc = process.poll()
+        if rc:
+            logger.debug('error output: %s\n' % output)
+            raise TransferError('command %s failed: rc %s' % (command, rc))
+        return output
 
 class _TemporaryFileWrapper:
     # This is a cut-down / hacked about version of the same named
