@@ -120,8 +120,7 @@ class Replica(models.Model):
         """
         file_path = path.join(self.datafile.dataset.get_path(), 
                               self.datafile.filename)
-        # (Note: urljoin fails for some non-standard URL schemes ...)
-        return self.location.url + urllib.quote(file_path)
+        return urlparse.urljoin(self.location.url, urllib.quote(file_path))
 
     def get_absolute_filepath(self):
         url = urlparse.urlparse(self.url)

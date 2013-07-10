@@ -29,7 +29,7 @@
 
 from urllib import quote
 from string import Template
-from urlparse import urlparse, urljoin
+from urlparse import urlparse, urljoin, uses_netloc, uses_relative
 from contextlib import closing
 from subprocess import Popen, STDOUT, PIPE
 from tempfile import NamedTemporaryFile
@@ -39,6 +39,11 @@ from .base import TransferError, TransferProvider
 
 import logging
 logger = logging.getLogger(__name__)
+
+# Monkey-patch the urlparser code to grok "scp:" URLs.
+uses_netloc.append('scp')
+uses_relative.append('scp')
+
 
 class ScpTransfer(TransferProvider):
     """So far, this only implements the subset of the TransferProvider API
@@ -87,7 +92,7 @@ class ScpTransfer(TransferProvider):
         self.base_url_path = urlparse(self.base_url).path
 
         self.key_filename = params.get('key_filename', None)
-        self.hostname = parts.netloc
+        self.hostname = parts.hostname
         self.port = parts.port if parts.port else 22
 
     def _get_scp_opts(self):

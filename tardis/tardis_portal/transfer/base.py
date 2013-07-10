@@ -28,7 +28,7 @@
 #
 
 from urllib import quote
-
+from urlparse import urljoin
 
 class TransferError(Exception):
     pass
@@ -51,9 +51,7 @@ class TransferProvider(object):
 
     def _generate_archive_url(self, experiment):
         path = '%s-archive.tar.gz' % experiment.id
-        # (For reasons I don't understand, urljoin doesn't work here.
-        # It might be to do with using a non-blessed scheme ...)
-        return self.base_url + quote(path)
+        return urljoin(self.base_url, quote(path))
 
     def _check_url(self, url):
         if not url.startswith(self.base_url):
