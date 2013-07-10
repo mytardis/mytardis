@@ -49,8 +49,6 @@ setup(
         'user-agents==0.1.1', # ditto
         'ua-parser==0.3.2', # ditto
         'PyYAML==3.10', # ditto
-        'paramiko==1.10.1', # For ssh2 / scp transfer providers
-        'scpclient==0.4', # ditto
         ],
     dependency_links = [
         'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
