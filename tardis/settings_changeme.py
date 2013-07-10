@@ -26,8 +26,18 @@ DATABASES = {
     }
 }
 
-# Celery queue uses Django for persistence
-BROKER_TRANSPORT = 'django'
+# Celery queue
+BROKER_URL = 'django://'
+'''
+use django:, add kombu.transport.django to INSTALLED_APPS
+or use redis: install redis separately and add the following to a
+custom buildout.cfg:
+    django-celery-with-redis
+    redis
+    hiredis
+'''
+#BROKER_URL = 'redis://localhost:6379/0'
+#CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # A dictionary containing the settings for all caches to be used with
 # Django. The CACHES setting must configure a default cache; any
@@ -345,13 +355,27 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
 
+REDIS_VERIFY_MANAGER = False
+'''
+Uses REDIS to keep track of files that fail to verify
+'''
+REDIS_VERIFY_MANAGER_SETUP = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 1,
+}
+
+REDIS_VERIFY_DELAY = 86400  # 1 day = 86400
+'''
+delay between verification attempts in seconds
+'''
 
 CELERYBEAT_SCHEDULE = {
-      "verify-files": {
+    "verify-files": {
         "task": "tardis_portal.verify_files",
-        "schedule": timedelta(seconds=30)
-      },
-    }
+        "schedule": timedelta(seconds=60)
+    },
+}
 
 djcelery.setup_loader()
 
