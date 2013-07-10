@@ -43,7 +43,8 @@ from tardis.tardis_portal.models import Location, Experiment
 from tardis.tardis_portal.transfer import TransferError
 
 from tardis.apps.migration import ArchivingError, create_experiment_archive, \
-    create_archive_record, remove_experiment, remove_experiment_data
+    create_archive_record, remove_experiment, remove_experiment_data, \
+    last_experiment_change
 from tardis.tardis_portal.logging_middleware import LOGGING
 
 class Command(BaseCommand):
@@ -71,6 +72,12 @@ class Command(BaseCommand):
                     default=False,
                     help='Dry-run mode just lists the experiments that' \
                         ' would be archived'), 
+        make_option('-i', '--incremental',
+                    action='store_true',
+                    dest='incremental',
+                    default=False,
+                    help='Incremental mode just archives experiments that' \
+                        ' are new or have changed since their last archive'), 
         make_option('--removeData',
                     action='store_true',
                     dest='removeData',
@@ -97,6 +104,7 @@ class Command(BaseCommand):
         self.remove_all = options.get('removeAll', False)
         self.remove_data = options.get('remove', False)
         self.dryRun = options.get('dryRun', False)
+        self.incremental = options.get('incremental', False)
         self.location = self._get_destination(
             options.get('location', None),
             settings.DEFAULT_ARCHIVE_LOCATION)
@@ -131,6 +139,15 @@ class Command(BaseCommand):
                 self.stderr.write('Experiment %s does not exist\n' % id)
                 
     def _process_experiment(self, exp):
+        experiment_changed = last_experiment_change(exp)
+        if self.incremental:
+            try:
+                last_archive = Archive.objects.filter(experiment=exp) \
+                    .order_by('-experiment_changed')[0]
+                if last_archive.experiment_changed >= experiment_changed:
+                    return
+            except IndexError:
+                pass
         if self.dryRun:
             self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
@@ -148,7 +165,7 @@ class Command(BaseCommand):
             if not self.directory:
                 archive_url = self.location.provider.put_archive(
                     tmp_file.name, exp)
-                create_archive_record(exp, archive_url)
+                create_archive_record(exp, archive_url, experiment_changed)
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
                                       (exp.id, archive_url))

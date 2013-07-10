@@ -85,6 +85,18 @@ def create_experiment_archive(exp, outfile):
         tf.close()
         outfile.close()
 
+def last_experiment_change(exp):
+    # FIXME - there doesn't appear to be any way to tell when experiment
+    # dataset or datafile parameters are added or modified.
+    latest = exp.update_time
+    for ds in Dataset.objects.filter(experiments=exp):
+        for df in Dataset_File.objects.filter(dataset=ds):
+            if df.created_time and latest < df.created_time:
+                latest = df.created_time
+            if df.modification_time and latest < df.modification_time:
+                latest = df.modification_time
+    return latest
+
 def remove_experiment(exp):
     """Completely remove an Experiment, together with any Datasets,
     Datafiles and Replicas that belong to it exclusively.
@@ -133,7 +145,7 @@ def remove_experiment_data(exp, archive_url, archive_location):
                             new_replica.save()
                     replicas.delete()
                             
-def create_archive_record(exp, url):
+def create_archive_record(exp, url, experiment_changed):
     """Create an Archive for an archive of the 'exp' Experiment.  The
     'url' is the Experiment archive URL
     """
@@ -148,6 +160,7 @@ def create_archive_record(exp, url):
                       experiment_title=exp.title,
                       experiment_owner=owner,
                       experiment_url=exp.url,
+                      experiment_changed=experiment_changed,
                       archive_url=url)
     archive.save()
     return archive

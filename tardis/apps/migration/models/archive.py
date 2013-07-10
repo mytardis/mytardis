@@ -49,6 +49,10 @@ class Archive(models.Model):
     The 'archive_url' is the URL where the archive was stored.
 
     The 'archive_created' timestamp is self explanatory.
+
+    The 'experiment_changed' timestamp is the timestamp for the last change
+    to the experiment as saved in the archive.  This is to allow incremental
+    archive creation
     """
 
     from tardis.tardis_portal.models import Experiment
@@ -57,6 +61,7 @@ class Archive(models.Model):
     experiment_owner =  models.CharField(max_length=30)
     experiment_title = models.CharField(max_length=400)
     archive_created = models.DateTimeField(auto_now_add=True)
+    experiment_changed = models.DateTimeField(null=True)
     experiment_url = models.URLField(verify_exists=False, max_length=255,
                                      null=False, blank=False)
     archive_url = models.URLField(verify_exists=False, max_length=255,

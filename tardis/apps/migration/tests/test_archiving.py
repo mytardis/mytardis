@@ -32,6 +32,7 @@ from compare import expect
 from nose.tools import ok_, eq_
 
 import logging, base64, os, urllib2, os.path, tarfile
+from datetime import datetime
 from tempfile import NamedTemporaryFile
 from urllib2 import HTTPError, URLError, urlopen
 
@@ -41,7 +42,7 @@ from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
 from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
 
-from tardis.apps.migration import MigrationError, \
+from tardis.apps.migration import MigrationError, last_experiment_change, \
     create_experiment_archive, create_archive_record
 from tardis.apps.migration.models import Archive
 
@@ -86,9 +87,14 @@ class ArchivingTestCase(TestCase):
         finally:
             os.unlink(tmp.name)
 
+    def testLastExperimentChange(self):
+        self.assertTrue(last_experiment_change(self.experiment) <
+                        datetime.now())
+
     def testCreateArchiveRecord(self):
         count = Archive.objects.count()
-        archive = create_archive_record(self.experiment, 'http://example.com')
+        archive = create_archive_record(self.experiment, 'http://example.com',
+                                        datetime.now())
         self.assertEqual(Archive.objects.count(), count + 1)
         self.assertEqual(archive.experiment_owner, 'fred')
 
