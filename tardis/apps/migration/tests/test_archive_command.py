@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-import os
+import os, datetime
 from StringIO import StringIO
 
 from django.test import TestCase
@@ -60,9 +60,11 @@ class ArchiveCommandTestCase(TestCase):
         self.server.stop()
 
     def testArchiveExperiment(self):
+        now = datetime.datetime.now()
         dataset = generate_dataset()
         experiment = generate_experiment([dataset], [self.dummy_user])
         datafile, _ = generate_datafile(None, dataset, "Hi grandpa")
+        datafile2, _ = generate_datafile(None, dataset, "Hi grandma", time=now)
         archtest = Location.get_location('archtest')
 
         # Dry run ...
@@ -106,6 +108,36 @@ class ArchiveCommandTestCase(TestCase):
         try:
             call_command('archive', experiment.id, location='archtest',
                          verbosity=1, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived experiment %s to %s%s-archive.tar.gz\n' \
+            'Archived 1 experiments with 0 errors\n' % \
+                (experiment.id, archtest.provider.base_url, 
+                 experiment.id))
+
+        # Repeat to archtest ... incremental (no change)
+        out = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         incremental=True, verbosity=1, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived 0 experiments with 0 errors\n')
+
+        # Repeat to archtest ... incremental (changed)
+        datafile2 = Dataset_File.objects.get(id=datafile2.id)
+        datafile2.modification_time = now + datetime.timedelta(seconds=1)
+        datafile2.save()
+        out = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         incremental=True, verbosity=1, stdout=out)
         except SystemExit:
             pass
         out.seek(0)

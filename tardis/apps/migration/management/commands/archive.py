@@ -45,6 +45,8 @@ from tardis.tardis_portal.transfer import TransferError
 from tardis.apps.migration import ArchivingError, create_experiment_archive, \
     create_archive_record, remove_experiment, remove_experiment_data, \
     last_experiment_change
+from tardis.apps.migration.models import Archive
+
 from tardis.tardis_portal.logging_middleware import LOGGING
 
 class Command(BaseCommand):
@@ -140,6 +142,7 @@ class Command(BaseCommand):
                 
     def _process_experiment(self, exp):
         experiment_changed = last_experiment_change(exp)
+        print 'experiment_changed is %s\n' % experiment_changed
         if self.incremental:
             try:
                 last_archive = Archive.objects.filter(experiment=exp) \
