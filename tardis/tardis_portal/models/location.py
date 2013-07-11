@@ -27,8 +27,6 @@ class Location(models.Model):
     is_available = models.BooleanField(default=True)
     transfer_provider = models.CharField(max_length=10, default='local')
 
-    initialized = False
-
     class Meta:
         app_label = 'tardis_portal'
 
@@ -58,39 +56,21 @@ class Location(models.Model):
     @classmethod
     def get_location(cls, loc_name):
         '''Lookup a named location'''
-
         try:
             return Location.objects.get(name=loc_name)
         except Location.DoesNotExist:
-            if not cls._check_initialized():
-                return cls.get_location(loc_name)
-            else:
-                return None
+            return None
 
     @classmethod
     def get_location_for_url(cls, url):
         '''Reverse lookup a location from a url'''
-        
         for location in Location.objects.all():
             if url.startswith(location.url):
                 return location
-        if not cls._check_initialized():
-            return cls.get_location_for_url(url)
-        else:
-            return None
-
-    @classmethod
-    def _check_initialized(cls):
-        '''Attempt to initialize if we need to''' 
-        if cls.initialized:
-            return True
-        res = cls.force_initialize()
-        cls.initialized = True
-        return res
+        return None
 
     @classmethod
     def force_initialize(cls):
-        done_init = False
         for desc in settings.INITIAL_LOCATIONS:
             try:
                 logger.debug('Checking location %s' % desc['name'])
@@ -99,8 +79,6 @@ class Location(models.Model):
             except Location.DoesNotExist:
                 Location.load_location(desc, check=False)
                 logger.info('Location %s loaded' % desc['name'])
-                done_init = True
-        return done_init
 
     @classmethod
     def load_location(cls, desc, noslash=False, check=True):
@@ -148,6 +126,8 @@ class Location(models.Model):
     def __unicode__(self):
         return self.name
 
+# Trigger initialisation once
+Location.force_initialize()
 
 class ProviderParameter(models.Model):
     '''This class represents a "parameter" that is passed when
