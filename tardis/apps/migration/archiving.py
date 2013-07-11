@@ -30,7 +30,7 @@
 
 from urllib2 import Request, urlopen, HTTPError, URLError
 from urllib import quote
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 from tempfile import NamedTemporaryFile
 from tarfile import TarFile, TarInfo
 import os, tarfile, shutil, os.path
@@ -91,10 +91,12 @@ def last_experiment_change(exp):
     latest = exp.update_time
     for ds in Dataset.objects.filter(experiments=exp):
         for df in Dataset_File.objects.filter(dataset=ds):
-            if df.created_time and latest < df.created_time:
+            if df.modification_time:
+                if latest < df.modification_time:
+                    latest = df.modification_time
+            elif df.created_time and latest < df.created_time:
                 latest = df.created_time
-            if df.modification_time and latest < df.modification_time:
-                latest = df.modification_time
+
     return latest
 
 def remove_experiment(exp):
@@ -145,7 +147,7 @@ def remove_experiment_data(exp, archive_url, archive_location):
                             new_replica.save()
                     replicas.delete()
                             
-def create_archive_record(exp, url, experiment_changed):
+def create_archive_record(exp, url_base, experiment_changed):
     """Create an Archive for an archive of the 'exp' Experiment.  The
     'url' is the Experiment archive URL
     """
@@ -153,7 +155,7 @@ def create_archive_record(exp, url, experiment_changed):
     if exp.url:
         exp_url = exp.url
     else:
-        exp_url = '%s/%s' % (settings.DEFAULT_EXPERIMENT_URL_BASE, exp.id)
+        exp_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, str(exp.id))
 
     owner = User.objects.get(id=exp.created_by.id).username
     archive = Archive(experiment=exp,
@@ -161,6 +163,9 @@ def create_archive_record(exp, url, experiment_changed):
                       experiment_owner=owner,
                       experiment_url=exp.url,
                       experiment_changed=experiment_changed,
-                      archive_url=url)
+                      archive_url='http://example.com')
+    archive.save()
+    archive_url = urljoin(url_base, 
+                          '%s-%s-archive.tar.gz' % (exp.id, archive.id))
     archive.save()
     return archive

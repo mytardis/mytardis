@@ -178,8 +178,7 @@ class ScpTransfer(TransferProvider):
                           {'path': path, 'dirname': dirname, 
                            'filename': filename})
 
-    def put_archive(self, archive_filename, experiment):
-        archive_url = self._generate_archive_url(experiment)
+    def put_archive(self, archive_filename, archive_url):
         (path, dirname, filename) = self._analyse_url(archive_url)
         self.run_command('pre_put_archive', 
                          {'path': path, 'dirname': dirname, 

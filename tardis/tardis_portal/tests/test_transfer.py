@@ -154,11 +154,10 @@ class TransferProviderTestCase(TestCase):
                                {'username': username,
                                 'key_filename': key_filename})
         self.assertTrue(provider.alive())
-        url = provider.put_archive('/etc/passwd', self.experiment)
+        url = 'scp://localhost/tmp/%s-archive.tar.gz' % self.experiment.id
+        provider.put_archive('/etc/passwd', url)
         try:
             path = urlparse.urlparse(url).path
-            self.assertEquals(url, 'scp://localhost/tmp/%s-archive.tar.gz' %
-                              self.experiment.id)
             self.assertTrue(os.path.exists(path))
             self.assertTrue(os.path.getmtime(path) >= start_time)
             self.assertEquals(os.path.getsize(path), 
@@ -178,11 +177,11 @@ class TransferProviderTestCase(TestCase):
                                    {'username': username,
                                     'key_filename': key_filename})
             self.assertTrue(provider.alive())
-            url = provider.put_archive('/etc/passwd', self.experiment)
+            url = 'scp://localhost%s/%s-archive.tar.gz' % \
+                (tmpdirpath, self.experiment.id)
+            provider.put_archive('/etc/passwd', url)
             try:
                 path = urlparse.urlparse(url).path
-                self.assertEquals(url, 'scp://localhost%s/%s-archive.tar.gz' %
-                                  (tmpdirpath, self.experiment.id))
                 self.assertTrue(os.path.exists(tmpdirpath))
                 self.assertTrue(os.path.exists(path))
                 self.assertTrue(os.path.getmtime(path) >= start_time)

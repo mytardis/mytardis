@@ -142,7 +142,6 @@ class Command(BaseCommand):
                 
     def _process_experiment(self, exp):
         experiment_changed = last_experiment_change(exp)
-        print 'experiment_changed is %s\n' % experiment_changed
         if self.incremental:
             try:
                 last_archive = Archive.objects.filter(experiment=exp) \
@@ -160,24 +159,24 @@ class Command(BaseCommand):
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
                 create_experiment_archive(exp, open(pathname, 'wb'))
-            else:
-                tmp_file = NamedTemporaryFile(prefix='mytardis_tmp_ar',
-                                              suffix='.tar.gz',
-                                              delete=False)
-                create_experiment_archive(exp, tmp_file)
-            if not self.directory:
-                archive_url = self.location.provider.put_archive(
-                    tmp_file.name, exp)
-                create_archive_record(exp, archive_url, experiment_changed)
-                if self.verbosity > 0:
-                    self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, archive_url))
-            else:
                 archive_url = None
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
                                       (exp.id, pathname))
-                    
+            else:
+                archive = create_archive_record(
+                    exp, self.location.provider.base_url, experiment_changed)
+                tmp_file = NamedTemporaryFile(
+                    prefix='mytardis_tmp_ar',
+                    suffix='.tar.gz',
+                    delete=False)
+                create_experiment_archive(exp, tmp_file)
+                self.location.provider.put_archive(
+                    tmp_file.name, archive.archive_url)
+                archive.save()
+                if self.verbosity > 0:
+                    self.stdout.write('Archived experiment %s to %s\n' %
+                                      (exp.id, archive.archive_url))
             self.transfer_count += 1
             if self.remove_all:
                 remove_experiment(exp)

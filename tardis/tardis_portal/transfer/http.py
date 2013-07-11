@@ -149,8 +149,7 @@ class SimpleHttpTransfer(TransferProvider):
         finally:
             f.close()
 
-    def put_archive(self, archive_file, experiment):
-        archive_url = self._generate_archive_url(experiment)
+    def put_archive(self, archive_file, archive_url):
         try:
             f = open(archive_file, 'r')
             request = self.PutRequest(archive_url)
