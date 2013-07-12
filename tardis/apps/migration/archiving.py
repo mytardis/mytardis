@@ -50,7 +50,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def create_experiment_archive(exp, outfile):
+def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
     """Create an experiment archive for 'exp' writing it to the 
     file object given by 'outfile'.  The archive is in tar/gzip
     format, and contains a METs manifest and the data files for
@@ -83,7 +83,17 @@ def create_experiment_archive(exp, outfile):
                 fdst.close()
                 f.close()
         tf.close()
+        size = long(outfile.tell())
         outfile.close()
+        if minSize or maxSize:
+            if minSize and size < minSize:
+                raise ArchivingError('Archive for experiment %s is too small' %
+                                     exp.id)
+            if maxSize and size > maxSize:
+                raise ArchivingError('Archive for experiment %s is too big' %
+                                     exp.id)
+        return size
+
 
 def last_experiment_change(exp):
     # FIXME - there doesn't appear to be any way to tell when experiment

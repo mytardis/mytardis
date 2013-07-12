@@ -114,10 +114,10 @@ class ArchiveCommandTestCase(TestCase):
         self.assertEquals(
             out.read(), 
             'Archived experiment %s to %s%s-1-archive.tar.gz\n' \
-            'Archived 1 experiments with 0 errors\n' % \
+                'Archived 1 experiments with 0 errors\n' % \
                 (experiment.id, archtest.provider.base_url, 
                  experiment.id))
-
+        
         # Repeat to archtest ... incremental (no change)
         out = StringIO()
         try:
@@ -144,6 +144,6 @@ class ArchiveCommandTestCase(TestCase):
         self.assertEquals(
             out.read(), 
             'Archived experiment %s to %s%s-2-archive.tar.gz\n' \
-            'Archived 1 experiments with 0 errors\n' % \
+                'Archived 1 experiments with 0 errors\n' % \
                 (experiment.id, archtest.provider.base_url, 
                  experiment.id))

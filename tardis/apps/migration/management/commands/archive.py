@@ -101,12 +101,28 @@ class Command(BaseCommand):
                         ' it has been archived.  This removes all traces' \
                         ' of the experiment and dependent datasets and' \
                         ' datafiles.  All that will remain online are the' \
-                        ' archive records.') 
+                        ' archive records.'),
+        make_option('--minSize',
+                    action='store',
+                    dest='minSize',
+                    default=None,
+                    help='The minimum allowed archive size'),
+        make_option('--maxSize',
+                    action='store',
+                    dest='maxSize',
+                    default=None,
+                    help='The maximum allowed archive size'),
+        make_option('--maxTotalSize',
+                    action='store',
+                    dest='maxTotalSize',
+                    default=None,
+                    help='The aggregate archive size limit'),
         )
     
     conf = dictConfig(LOGGING)
     
     def handle(self, *args, **options):
+        # Option processing
         self.verbosity = int(options.get('verbosity', 1))
         self.remove_all = options.get('removeAll', False)
         self.remove_data = options.get('remove', False)
@@ -117,34 +133,63 @@ class Command(BaseCommand):
             settings.DEFAULT_ARCHIVE_LOCATION)
         self.directory = options.get('directory', None)
         self.all = options.get('all', False)
+        self.maxSize = self._size_opt(options, 'maxSize', 
+                                      'DEFAULT_ARCHIVE_MAX_SIZE')
+        self.minSize = self._size_opt(options, 'minSize', 
+                                      'DEFAULT_ARCHIVE_MIN_SIZE')
+        self.maxTotalSize = self._size_opt(options, 'maxTotalSize', 
+                                           'DEFAULT_ARCHIVE_MAX_TOTAL, SIZE')
+
+        # Ping test
         if not (self.directory or self.dryRun or 
                 self._ping(self.location, 'Archive')):
             return
+        
+        # Process the experiments to be archived
         self.transfer_count = 0
         self.error_count = 0
+        self.total_size = long(0)
         if self.all:
             self._all_experiments()
         else:
             self._experiments(args)
         self._stats()
 
+    def _size_opt(self, options, key, dflt_key):
+        value = options.get(key, None)
+        if not value:
+            if self.location:
+                value = getattr(self.location.provider, key, None)
+                if not value:
+                    value = getattr(settings, dflt_key, None)
+        if value:
+            return long(value)
+        else:
+            return None
+            
     def _stats(self):
         if not self.dryRun and self.verbosity > 0:
             self.stdout.write("Archived %s experiments with %s errors\n" %
                               (self.transfer_count, self.error_count))
+            if self.verbosity > 1:
+                self.stdout.write("Total archive size %s bytes\n" % 
+                                  self.total_size)
             
     def _all_experiments(self):
         for exp in Experiment.objects.all():
             self._process_experiment(exp)
+            if self.total_size >= self.maxTotalSize:
+                return
             
     def _experiments(self, args):
         for id in args:
             try:
                 self._process_experiment(Experiment.objects.get(id=id))
             except Experiment.DoesNotExist:
-                print "Not exist\n"
-                self.stderr.write('Experiment %s does not exist\n' % id)
-                
+                self.stderr.write('Experiment %s does not exist\n' % id) 
+            if self.total_size >= self.maxTotalSize:
+                return
+               
     def _process_experiment(self, exp):
         experiment_changed = last_experiment_change(exp)
         if self.incremental:
@@ -159,29 +204,41 @@ class Command(BaseCommand):
             self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
         tmp_file = None
+        archive_url = None
+        archive = None
         try:
             if self.directory:
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
-                create_experiment_archive(exp, open(pathname, 'wb'))
-                archive_url = None
-                if self.verbosity > 0:
-                    self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, pathname))
+                size = create_experiment_archive(
+                    exp, open(pathname, 'wb'), 
+                    minSize=self.minSize, maxSize=self.maxSize)
             else:
                 archive = create_archive_record(
                     exp, self.location.provider.base_url, experiment_changed)
                 tmp_file = NamedTemporaryFile(
-                    prefix='mytardis_tmp_ar',
-                    suffix='.tar.gz',
+                    prefix='mytardis_tmp_ar', suffix='.tar.gz', 
                     delete=False)
-                create_experiment_archive(exp, tmp_file)
-                self.location.provider.put_archive(
-                    tmp_file.name, archive.archive_url)
-                archive.save()
+                size = create_experiment_archive(
+                    exp, tmp_file, minSize=self.minSize, maxSize=self.maxSize)
+                # to stop the Archive being deleted below ...
+                archive_url = archive.archive_url
+                archive = None
+
+            self.total_size += size
+            if self.maxTotalSize and self.total_size >= self.maxTotalSize:
+                raise ArchivingError('Exceeded total size') 
+
+            if self.directory: 
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, archive.archive_url))
+                                      (exp.id, pathname))
+            else:
+                self.location.provider.put_archive(
+                    tmp_file.name, archive_url)
+                if self.verbosity > 0:
+                    self.stdout.write('Archived experiment %s to %s\n' %
+                                      (exp.id, archive_url))
             self.transfer_count += 1
             if self.remove_all:
                 remove_experiment(exp)
@@ -203,7 +260,10 @@ class Command(BaseCommand):
         finally:
             if tmp_file:
                 os.unlink(tmp_file.name)
-        
+                tmp_file.close()
+            if archive:
+                archive.delete()
+
     def _ping(self, location, label):
         if not location.provider.alive():
             self.stderr.write(

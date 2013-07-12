@@ -34,11 +34,14 @@ class TransferError(Exception):
     pass
 
 class TransferProvider(object):
-    def __init__(self, name, base_url):
+    def __init__(self, name, base_url, params={}):
         self.name = name
         if not base_url.endswith('/'):
             base_url = base_url + '/'
         self.base_url = base_url
+        self.minSize = params.get('min_size', None)
+        self.maxSize = params.get('max_size', None)
+        self.maxTotalSize = params.get('max_total_size', None)
 
     def get_file(self, replica):
         return self.get_opener(replica)()

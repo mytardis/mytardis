@@ -56,7 +56,7 @@ class ScpTransfer(TransferProvider):
     """
     
     def __init__(self, name, base_url, params):
-        TransferProvider.__init__(self, name, base_url)
+        TransferProvider.__init__(self, name, base_url, params)
         parts = urlparse(base_url)
         if parts.scheme != 'scp':
             raise ValueError('scp: url required for transfer provider (%s)' %
