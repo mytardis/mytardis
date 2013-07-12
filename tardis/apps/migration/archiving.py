@@ -165,7 +165,7 @@ def create_archive_record(exp, url_base, experiment_changed):
                       experiment_changed=experiment_changed,
                       archive_url='http://example.com')
     archive.save()
-    archive_url = urljoin(url_base, 
-                          '%s-%s-archive.tar.gz' % (exp.id, archive.id))
+    archive.archive_url = urljoin(
+        url_base, '%s-%s-archive.tar.gz' % (exp.id, archive.id))
     archive.save()
     return archive

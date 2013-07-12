@@ -105,12 +105,13 @@ class SimpleHttpTestServer:
                             BaseHTTPServer.HTTPServer):
         pass
 
-    def __init__(self, allowQuery=True):
+    def __init__(self, allowQuery=True, port=4272):
         self.handler = self.RequestHandler
         self.allowQuery = allowQuery
+        self.port = port
 
     def start(self):
-        server = self.ThreadedTCPServer(('127.0.0.1', self.getPort()),
+        server = self.ThreadedTCPServer(('127.0.0.1', self.port),
                                         self.handler)
         server.allowQuery = self.allowQuery
         server_thread = threading.Thread(target=server.serve_forever)
@@ -121,11 +122,7 @@ class SimpleHttpTestServer:
         return server.socket.getsockname()
 
     def getUrl(self):
-        return 'http://%s:%d/' % self.server.socket.getsockname()
-
-    @classmethod
-    def getPort(cls):
-        return 4272
+        return 'http://%s:%d/' % (self.server.socket.getsockname(), self.port)
 
     def stop(self):
         self.server.shutdown()

@@ -31,7 +31,7 @@
 Management command to migrate datafiles, datasets and experiments
 """
 
-import sys, re, os.path
+import sys, re, os.path, traceback
 from optparse import make_option
 from tempfile import NamedTemporaryFile
 
@@ -47,9 +47,14 @@ from tardis.apps.migration import ArchivingError, create_experiment_archive, \
     last_experiment_change
 from tardis.apps.migration.models import Archive
 
-from tardis.tardis_portal.logging_middleware import LOGGING
+from tardis.tardis_portal.logging_middleware import LOGGING, LoggingMiddleware
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 class Command(BaseCommand):
+    LoggingMiddleware()
     args = 'archive_experiment <id> ...'
     help = 'This command archives MyTardis Experiments\n'
 
@@ -183,14 +188,16 @@ class Command(BaseCommand):
             elif self.remove_data:
                 remove_experiment_data(exp, archive_url, location)
 
-        except ArchivingError as e:          
+        except ArchivingError as e:
+            logger.info('Archiving error', exc_info=sys.exc_info())
             self.stderr.write(
                 'archiving failed for experiment %s : %s\n' % \
                     (exp.id, e.args[0]))
             self.error_count += 1
         except TransferError as e:
+            logger.info('Transfer error', exc_info=sys.exc_info())
             self.stderr.write(
-                'archive export failed experiment %s : %s\n' % \
+                'archive export failed for experiment %s : %s\n' % \
                     (exp.id, e.args[0]))
             self.error_count += 1
         finally:
