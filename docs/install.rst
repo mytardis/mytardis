@@ -309,17 +309,26 @@ The initial set of Locations is given by the INITIAL_LOCATIONS setting, where th
 			  'realm' : 'realmName',
 			  'auth' : 'digest',
 
-The attributes are as follows:
+The general attributes are as follows:
 
   * The 'name' is the name of the Location.
   * The 'url' field is a URL that identifies the Location.  This is used by a transfer provider as the base URL for data files.
   * The 'type' field characterizes the location:
     * 'online' means that the Location keeps the data files online
     * 'offline' means that the Location stores 
-  * The 'provider' is the transfer provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
+  * The 'provider' is the transfer provider type, and should match one of the keys of the MIGRATION_PROVIDERS map:
+    * 'local' is for local / locally mounted file system access
+    * 'http' is for a "vanilla" web server
+    * 'dav' is for a WebWAV enabled web server
+    * 'scp' is for a remote location accessed via SSH and SCP, and is primarly designed for archival storage.
   * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
   * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
+
+The 'http' and 'dav' providers have the following attributes.
   * The 'user', 'password', 'realm' and 'auth' attributes provide optional credentials for the provider to use when talking to the target server.  If 'realm' is omitted (or None) then you are saying to provide the user / password irrespective of the challenge realm.  The 'auth' property can be 'basic' or 'digest', and defaults to 'digest'.
+
+The 'scp' provider has a number of attributes
+
 
 Single Search
 ~~~~~~~~~~~~~

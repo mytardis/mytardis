@@ -18,6 +18,8 @@ TO DO:
 
  * Provide some mechanism for end users to influence which files are migrated, or not.
 
+ * Implement functionality for restoring archived experiments.
+
  * Work needs to be done on configuration of the destinations and providers ... so configuration details are liable to change.
 
 Setup
@@ -153,6 +155,7 @@ Usage
 .. option:: -n, --dryRun
 .. option:: --removeData
 .. option:: --removeAll
+.. option:: -i, --incremental
 .. option:: -a, --all
 
 There are two ways to select Experiments for archiving.  You can list one or more Experiment ids and argument. Alternatively, the "--all" option selects all Experiments for archiving.  A separate archive will be created for each Experiment.  These are gzip'd tar files containing the data files together with a METS format manifest.
@@ -160,6 +163,12 @@ There are two ways to select Experiments for archiving.  You can list one or mor
 The "--location" and "--directory" options determine where the archives are sent.  If --directory is used, the archives are saved to a local directory.  Otherwise, they are transferred to the selected Location, defaulting to a configured Location.
 
 When an Experiment is archived to a Location, a record is added to the Archive table to facilitate retrieval and possible restoration in the future. 
+
+Incremental archiving works by checking to see if an Experiment (or its component Datafiles) have changed since the last archive.  If it does not appear to have, then we don't create a new archive.  Unfortunately, the MyTardis data model has a few issues that make incremental archinving less than perfect:
+
+  * There are no timestamps on Datasets, so the addition or removal of a Datafile won't trigger an incremental archive.
+  * There are no timestamps on PropertySets, so a change in the metadata won't trigger am incremental archive.
+  * The timestamps on Datafiles are not populated or updated automatically.  It is left to (non-core) ingestion mechanisms to do this.  Hence, the behaviour of incremental archiving is liable to be site specific.
 
 You can also choose to remove the online Replicas of the archived Datafiles (replacing them with offline Replicas), or to remove all Experiment / Dataset / Datafile data and metadata.  Note that a Dataset (and its Datafiles) will not be removed if it is in multiple Experiments.  To make that happen, you need to (fully) remove all of the Experiments involved.
 
@@ -171,7 +180,8 @@ The options are as follows:
   * -v, --verbosity=0,1,2,3 controls how much output the command produces.
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
   * --removeAll remove all online information about the Experiment and its dependent Datasets and Datafiles.
-  * --removeData replace the online Replicas with a single offline one, and delete the online copies of the data.  The metadata remains online. 
+  * --removeData replace the online Replicas with a single offline one, and delete the online copies of the data.  The metadata remains online.
+  * -i, --incremental enables incremental archiving 
   * --help prints the 'archive' command help.
 
 Architecture
