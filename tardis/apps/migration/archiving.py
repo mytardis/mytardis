@@ -122,7 +122,7 @@ def remove_experiment(exp):
                                                   location__type='online')
                 for replica in replicas:
                     location = Location.get_location(replica.location.name)
-                    location.provider.remove_file(replica)
+                    location.provider.remove_file(replica.url)
             ds.delete()
         else:
             ds.experiments.remove(exp)
@@ -143,7 +143,7 @@ def remove_experiment_data(exp, archive_url, archive_location):
                 if replicas.count() > 0:
                     for replica in replicas:
                         location = Location.get_location(replica.location.name)
-                        location.provider.remove_file(replica)
+                        location.provider.remove_file(replica.url)
                         if archive_url:
                             old_replica = replicas[0]
                             path_in_archive = '%s/%s/%s' % (

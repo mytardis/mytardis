@@ -100,13 +100,13 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
                 raise MigrationError('Cannot migrate a replica to its' \
                                          ' current location')
             newreplica.url = url
-            location.provider.put_file(replica, newreplica) 
+            location.provider.put_replica(replica, newreplica) 
             verified = False
             try:
                 verified = check_file_transferred(newreplica, location)
             except:
                 # FIXME - should we always do this?
-                location.provider.remove_file(newreplica)
+                location.provider.remove_file(newreplica.url)
                 raise
             
             newreplica.verified = verified
@@ -121,7 +121,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         # FIXME - do this more reliably ...
         replica.delete()
         if not noRemove:
-            source.provider.remove_file(replica)
+            source.provider.remove_file(replica.url)
             logger.info('Removed local file %s for replica %s' %
                         (filename, replica.id))
         return True
@@ -139,7 +139,7 @@ def check_file_transferred(replica, location):
     # file length for its copy of the file
     try:
         # Fetch the remote's metadata for the file
-        m = location.provider.get_metadata(replica)
+        m = location.provider.get_metadata(replica.url)
         _check_attribute(m, datafile.size, 'length')
         if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
                _check_attribute(m, datafile.md5sum, 'md5sum')):
@@ -157,7 +157,7 @@ def check_file_transferred(replica, location):
 
     if location.provider.trust_length :
         try:
-            length = location.provider.get_length(replica)
+            length = location.provider.get_length(replica.url)
             if _check_attribute2(length, datafile.size, 'length'):
                 return False
         except NotImplementedError:

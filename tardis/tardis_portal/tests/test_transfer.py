@@ -237,17 +237,17 @@ class TransferProviderTestCase(TestCase):
         url = provider.generate_url(target_replica)
         self.assertEquals(url, base_url + '1/1/3')
         target_replica.url = url
-        provider.put_file(replica, target_replica)
+        provider.put_replica(replica, target_replica)
 
         self.assertEqual(replica.location.provider.get_file(replica).read(), 
                          "Hi mum")
         self.assertEqual(provider.get_file(target_replica).read(), "Hi mum")
 
-        self.assertEqual(provider.get_length(target_replica), 6)
+        self.assertEqual(provider.get_length(target_replica.url), 6)
 
         try:
             self.maxDiff = None
-            self.assertEqual(provider.get_metadata(target_replica),
+            self.assertEqual(provider.get_metadata(target_replica.url),
                              {'sha512sum' : '2274cc8c16503e3d182ffaa835c543b' +
                               'ce278bc8fc971f3bf38b94b4d9db44cd89c8f36d4006e' +
                               '5abea29bc05f7f0ea662cb4b0e805e56bbce97f00f94e' +
@@ -257,7 +257,7 @@ class TransferProviderTestCase(TestCase):
         except NotImplementedError:
             pass
             
-        provider.remove_file(target_replica)
+        provider.remove_file(target_replica.url)
         with self.assertRaises(TransferError):
-            provider.get_length(target_replica)
+            provider.get_length(target_replica.url)
 

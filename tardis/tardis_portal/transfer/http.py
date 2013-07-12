@@ -101,9 +101,9 @@ class SimpleHttpTransfer(TransferProvider):
             return False
             
 
-    def get_length(self, replica):
+    def get_length(self, url):
         try:
-            response = self.opener.open(self.HeadRequest(replica.url))
+            response = self.opener.open(self.HeadRequest(url))
         except HTTPError as e:
             raise TransferError(str(e));
         length = response.info().get('Content-length')
@@ -114,12 +114,11 @@ class SimpleHttpTransfer(TransferProvider):
         except TypeError:
             raise TransferError("Content-length is not numeric")
         
-    def get_metadata(self, replica):
+    def get_metadata(self, url):
         if not self.metadata_supported:
             raise NotImplementedError
         try:
-            response = self.opener.open(
-                self.GetRequest(replica.url + "?metadata"))
+            response = self.opener.open(self.GetRequest(url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
             raise TransferError(str(e))
@@ -136,7 +135,7 @@ class SimpleHttpTransfer(TransferProvider):
 
         return getter
 
-    def put_file(self, source_replica, target_replica):
+    def put_replica(self, source_replica, target_replica):
         self._check_url(target_replica.url)
         try:
             f = source_replica.get_file()
@@ -164,9 +163,9 @@ class SimpleHttpTransfer(TransferProvider):
             
         return archive_url
 
-    def remove_file(self, replica):
-        self._check_url(replica.url)
+    def remove_file(self, url):
+        self._check_url(url)
         try:
-            self.opener.open(self.DeleteRequest(replica.url))
+            self.opener.open(self.DeleteRequest(url))
         except HTTPError as e:
             raise TransferError(str(e))

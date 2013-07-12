@@ -55,15 +55,15 @@ class BaseLocalTransfer(TransferProvider):
     def alive(self):
         return True
 
-    def get_length(self, replica):
-        filename = self._uri_to_filename(replica.url)
+    def get_length(self, url):
+        filename = self._uri_to_filename(url)
         try:
             return self.storage.size(filename)
         except OSError as e:
             raise TransferError(e.strerror)
         
-    def get_metadata(self, replica):
-        filename = self._uri_to_filename(replica.url)
+    def get_metadata(self, url):
+        filename = self._uri_to_filename(url)
         with self.storage.open(filename, 'r') as f:
             try:
                 md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
@@ -85,7 +85,7 @@ class BaseLocalTransfer(TransferProvider):
     def generate_url(self, replica):
         return replica.generate_default_url()
     
-    def put_file(self, source_replica, target_replica):
+    def put_replica(self, source_replica, target_replica):
         datafile = target_replica.datafile
         with TemporaryUploadedFile(datafile.filename, 
                                    None, None, None) as tf:
@@ -106,8 +106,8 @@ class BaseLocalTransfer(TransferProvider):
             target_replica.protocol = ''
             target_replica.save()
     
-    def remove_file(self, replica):
-        path = self._uri_to_filename(replica.url)
+    def remove_file(self, url):
+        path = self._uri_to_filename(url)
         try:
             self.storage.delete(path)
         except OSError as e:

@@ -136,8 +136,8 @@ class ScpTransfer(TransferProvider):
                              exc_info=sys.exc_info())
             return False
 
-    def get_length(self, replica):
-        (path, _, _) = self._analyse_url(replica.url)
+    def get_length(self, url):
+        (path, _, _) = self._analyse_url(url)
         return int(self.run_command('length', {'path': path}).strip())
     
     def get_metadata(self, replica):
@@ -155,7 +155,7 @@ class ScpTransfer(TransferProvider):
             return _TemporaryFileWrapper(name)
         return opener
 
-    def put_file(self, source_replica, target_replica):
+    def put_replica(self, source_replica, target_replica):
         (path, dirname, filename) = self._analyse_url(target_replica.url)
         self.run_hook('pre_put_file', 
                       {'path': path, 'dirname': dirname, 
@@ -189,8 +189,8 @@ class ScpTransfer(TransferProvider):
                       {'path': path, 'dirname': dirname, 'filename': filename})
         return archive_url
 
-    def remove_file(self, replica):
-        (path, _, _) = self._analyse_url(replica.url)
+    def remove_file(self, url):
+        (path, _, _) = self._analyse_url(url)
         self.run_command('remove', {'path': path})
 
     def close(self):
