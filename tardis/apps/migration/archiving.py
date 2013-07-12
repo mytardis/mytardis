@@ -68,6 +68,7 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
         tf.add(manifest.name, arcname=('%s/Manifest' % exp.id))
         for datafile in exp.get_datafiles():
             replica = datafile.get_preferred_replica(verified=True)
+            f = None
             try:
                 fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
                 f = datafile.get_file()
@@ -81,7 +82,8 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
                             datafile.filename)
             finally:
                 fdst.close()
-                f.close()
+                if f:
+                    f.close()
         tf.close()
         size = long(outfile.tell())
         outfile.close()
