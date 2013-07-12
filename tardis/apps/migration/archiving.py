@@ -41,7 +41,7 @@ from django.contrib.auth.models import User
 
 from tardis.tardis_portal.metsexporter import MetsExporter
 
-from tardis.apps.migration import MigrationError
+from tardis.apps.migration import ArchivingError
 from tardis.apps.migration.models import Archive
 from tardis.tardis_portal.models import \
     Experiment, Dataset, Dataset_File, Replica, Location

@@ -178,7 +178,7 @@ class Command(BaseCommand):
     def _all_experiments(self):
         for exp in Experiment.objects.all():
             self._process_experiment(exp)
-            if self.total_size >= self.maxTotalSize:
+            if self.maxTotalSize and self.total_size >= self.maxTotalSize:
                 return
             
     def _experiments(self, args):
@@ -187,7 +187,7 @@ class Command(BaseCommand):
                 self._process_experiment(Experiment.objects.get(id=id))
             except Experiment.DoesNotExist:
                 self.stderr.write('Experiment %s does not exist\n' % id) 
-            if self.total_size >= self.maxTotalSize:
+            if self.maxTotalSize and self.total_size >= self.maxTotalSize:
                 return
                
     def _process_experiment(self, exp):
