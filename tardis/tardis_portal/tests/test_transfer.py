@@ -113,6 +113,14 @@ class TransferProviderTestCase(TestCase):
         ScpTransfer('xxx', 'scp://localhost/foo#frag', {'username': 'blarg'})
         ScpTransfer('xxx', 'scp://localhost/foo;param', {'username': 'blarg'})
 
+        # Check handling of a 'commands' hash and flattened 'command_' props.
+        t = ScpTransfer('xxx', 'scp://localhost/foo', 
+                        {'username': 'blarg', 'commands': {'ssh': 'fish'}})
+        self.assertEquals(t.commands['ssh'], 'fish')
+        t = ScpTransfer('xxx', 'scp://localhost/foo', 
+                        {'username': 'blarg', 'command_ssh': 'fish'})
+        self.assertEquals(t.commands['ssh'], 'fish')
+
     def testLocalProvider(self):
         self.do_ext_provider('sync')
 

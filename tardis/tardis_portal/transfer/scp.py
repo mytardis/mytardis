@@ -81,14 +81,18 @@ class ScpTransfer(TransferProvider):
         self.metadata_supported = True
         self.trust_length = self._isTrue(params, 'trust_length', False)
         self.commands = {
-            'echo': 'echo hi',
-            'mkdirs': 'mkdir -p "${path}"',
-            'length': 'stat --format="%s" "${path}"',
-            'remove': 'rm "${path}"',
-            'scp_from': 'scp ${opts} ${username}@${hostname}:"${remote}" "${local}"',
-            'scp_to': 'scp ${opts} "${local}" ${username}@${hostname}:"${remote}"',
-            'ssh': 'ssh -o PasswordAuthentication=no ${opts} ${username}@${hostname}'}
+            'echo': '${ssh} echo hi',
+            'mkdirs': '${ssh} mkdir -p "${path}"',
+            'length': '${ssh} stat --format="%s" "${path}"',
+            'remove': '${ssh} rm "${path}"',
+            'scp_from': 'scp ${scp_opts} ${username}@${hostname}:"${remote}" "${local}"',
+            'scp_to': 'scp ${scp_opts} "${local}" ${username}@${hostname}:"${remote}"',
+            'ssh': 'ssh -o PasswordAuthentication=no ${ssh_opts} ${username}@${hostname}'}
         self.commands.update(params.get('commands', {}))
+        # deal with the 'flattened' command params from a Location
+        for (key, value) in params.items():
+            if key.startswith('command_'):
+                self.commands[key[len('command_'):]] = value 
         self.base_url_path = urlparse(self.base_url).path
 
         self.key_filename = params.get('key_filename', None)
@@ -114,7 +118,7 @@ class ScpTransfer(TransferProvider):
         return Template(template).safe_substitute(
                 username=self.username,
                 hostname=self.hostname,
-                opts=opts)
+                ssh_opts=opts)
 
     def alive(self):
         try:
@@ -145,9 +149,8 @@ class ScpTransfer(TransferProvider):
                                      delete=False)
         name = tmpFile.name
         self.run_command('scp_from', 
-                         {'local': name, 'remote': path,
-                          'username': self.username, 
-                          'hostname': self.hostname})
+                         {'local': name, 'remote': path})
+
         def opener():
             return _TemporaryFileWrapper(name)
         return opener
@@ -163,36 +166,27 @@ class ScpTransfer(TransferProvider):
             # The 'scp' command copies to and from named files.
             if f.name: 
                 self.run_command('scp_to', 
-                                 {'local': f.name, 'remote': path,
-                                  'username': self.username, 
-                                  'hostname': self.hostname})
+                                 {'local': f.name, 'remote': path})
             else:
                 with closing(NamedTemporaryFile(
                         mode='w+b', prefix='mytardis_scp_')) as t:
                     shutil.copyFileObj(f, t)
                     self.run_command('scp_to', 
-                                     {'local': t.name, 'remote': path,
-                                      'username': self.username, 
-                                      'hostname': self.hostname})
+                                     {'local': t.name, 'remote': path})
             self.run_hook('post_put_file', 
                           {'path': path, 'dirname': dirname, 
                            'filename': filename})
 
     def put_archive(self, archive_filename, archive_url):
         (path, dirname, filename) = self._analyse_url(archive_url)
-        self.run_command('pre_put_archive', 
-                         {'path': path, 'dirname': dirname, 
-                          'filename': filename},
-                         optional=True)
+        self.run_hook('pre_put_archive', 
+                      {'path': path, 'dirname': dirname, 'filename': filename})
         if self.base_url_path != dirname:
             self.run_command('mkdirs', {'path': dirname})
         self.run_command('scp_to', 
-                         {'local': archive_filename, 'remote': path,
-                          'username': self.username, 'hostname': self.hostname})
-        self.run_command('post_put_archive', 
-                         {'path': path, 'dirname': dirname, 
-                          'filename': filename},
-                         optional=True)
+                         {'local': archive_filename, 'remote': path})
+        self.run_hook('post_put_archive', 
+                      {'path': path, 'dirname': dirname, 'filename': filename})
         return archive_url
 
     def remove_file(self, replica):
@@ -219,13 +213,11 @@ class ScpTransfer(TransferProvider):
                 return
             raise TransferError('No command found for %s' % key)
       
-        if key.startswith('scp'):
-            params['opts'] = self._get_scp_opts()
-            ssh_cmd = ''
-        else:
-            ssh_cmd = self._get_ssh_command()
-        remote_cmd = Template(template).safe_substitute(params)
-        command = '%s %s' % (ssh_cmd, remote_cmd)
+        params['ssh'] = self._get_ssh_command()
+        params['username'] = self.username 
+        params['hostname'] = self.hostname
+        params['scp_opts'] = self._get_scp_opts()
+        command = Template(template).safe_substitute(params)
         logger.debug(command)
 
         process = Popen(command, stdout=PIPE, stderr=STDOUT, shell=True)
