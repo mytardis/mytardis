@@ -43,14 +43,11 @@ class TransferProvider(object):
         self.maxSize = params.get('max_size', None)
         self.maxTotalSize = params.get('max_total_size', None)
 
-    def get_file(self, replica):
-        return self.get_opener(replica)()
+    def get_file(self, url):
+        return self.get_opener(url)()
 
     def close(self):
         pass
-
-    def generate_url(self, replica):
-        return replica.generate_default_url()
 
     def _generate_archive_url(self, experiment):
         path = '%s-archive.tar.gz' % experiment.id

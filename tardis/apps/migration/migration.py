@@ -93,7 +93,8 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             newreplica.protocol = ''
             newreplica.stay_remote = location != Location.get_default_location()
             newreplica.verified = False
-            url = location.provider.generate_url(newreplica)
+
+            url = newreplica.generate_default_url()
             
             if newreplica.url == url:
                 # We should get here ...
@@ -164,7 +165,7 @@ def check_file_transferred(replica, location):
             pass
     
     # Fetch back the remote file and verify it locally.
-    f = location.provider.get_opener(replica)()
+    f = replica.get_file_getter(False)()
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
     _check_attribute2(str(size), datafile.size, 'length')
     if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \

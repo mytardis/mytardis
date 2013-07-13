@@ -234,14 +234,15 @@ class TransferProviderTestCase(TestCase):
         target_replica = Replica()
         target_replica.datafile = datafile
         target_replica.location = loc
-        url = provider.generate_url(target_replica)
+        url = target_replica.generate_default_url()
         self.assertEquals(url, base_url + '1/1/3')
         target_replica.url = url
         provider.put_replica(replica, target_replica)
 
-        self.assertEqual(replica.location.provider.get_file(replica).read(), 
+        self.assertEqual(replica.get_file_getter(False)().read(), "Hi mum")
+        self.assertEqual(target_replica.get_file_getter(False)().read(), 
                          "Hi mum")
-        self.assertEqual(provider.get_file(target_replica).read(), "Hi mum")
+        self.assertEqual(provider.get_file(target_replica.url).read(), "Hi mum")
 
         self.assertEqual(provider.get_length(target_replica.url), 6)
 

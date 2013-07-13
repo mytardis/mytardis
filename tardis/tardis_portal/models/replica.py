@@ -85,7 +85,7 @@ class Replica(models.Model):
         
         if requireVerified and not self.verified:
             raise ValueError("Replica %s not verified" % self.id)
-        return self.location.provider.get_opener(self)
+        return self.location.provider.get_opener(self.url)
 
     def get_file(self, requireVerified=True):
         return self.get_file_getter(requireVerified=requireVerified)()

@@ -73,8 +73,8 @@ class BaseLocalTransfer(TransferProvider):
                     'sha512sum': sha512sum,
                     'length': str(size)}
     
-    def get_opener(self, replica):
-        path = self._uri_to_filename(replica.url)
+    def get_opener(self, url):
+        path = self._uri_to_filename(url)
         def getter():
             try:
                 return self.storage.open(path)
@@ -82,9 +82,6 @@ class BaseLocalTransfer(TransferProvider):
                 raise TransferError(e.strerror)
         return getter
    
-    def generate_url(self, replica):
-        return replica.generate_default_url()
-    
     def put_replica(self, source_replica, target_replica):
         datafile = target_replica.datafile
         with TemporaryUploadedFile(datafile.filename, 

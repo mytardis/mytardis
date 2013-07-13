@@ -143,8 +143,8 @@ class ScpTransfer(TransferProvider):
     def get_metadata(self, replica):
         raise NotImplementedError
     
-    def get_opener(self, replica):
-        (path, _, _) = self._analyse_url(replica.url)
+    def get_opener(self, url):
+        (path, _, _) = self._analyse_url(url)
         tmpFile = NamedTemporaryFile(mode='rb', prefix='mytardis_scp_', 
                                      delete=False)
         name = tmpFile.name
@@ -156,38 +156,33 @@ class ScpTransfer(TransferProvider):
         return opener
 
     def put_replica(self, source_replica, target_replica):
-        (path, dirname, filename) = self._analyse_url(target_replica.url)
-        self.run_hook('pre_put_file', 
-                      {'path': path, 'dirname': dirname, 
-                       'filename': filename})
-        if self.base_url_path != dirname:
-            self.run_command('mkdirs', {'path': dirname})
-        with closing(source_replica.get_file()) as f:
-            # The 'scp' command copies to and from named files.
-            if f.name: 
-                self.run_command('scp_to', 
-                                 {'local': f.name, 'remote': path})
-            else:
+        source_path = source_replica.get_absolute_filepath()
+        # The 'scp' command copies to and from named files, so a
+        # remote replica has to be fetched to a local temp file ...
+        if source_path:
+            self.put_file(source_path, target_replica.url, 'replica')
+        else:
+            with closing(source_replica.get_file()) as f:
                 with closing(NamedTemporaryFile(
                         mode='w+b', prefix='mytardis_scp_')) as t:
                     shutil.copyFileObj(f, t)
-                    self.run_command('scp_to', 
-                                     {'local': t.name, 'remote': path})
-            self.run_hook('post_put_file', 
-                          {'path': path, 'dirname': dirname, 
-                           'filename': filename})
+                    t.flush()
+                    self.put_file(t.name, target_replica.url, 'replica')
 
     def put_archive(self, archive_filename, archive_url):
-        (path, dirname, filename) = self._analyse_url(archive_url)
-        self.run_hook('pre_put_archive', 
+        self.put_file(archive_filename, archive_url, 'archive')
+
+    def put_file(self, source_filename, url, kind='file', 
+                 content_type=None, content_length=None):
+        (path, dirname, filename) = self._analyse_url(url)
+        self.run_hook(['pre_put_%s' % kind, 'pre_put_file'], 
                       {'path': path, 'dirname': dirname, 'filename': filename})
         if self.base_url_path != dirname:
             self.run_command('mkdirs', {'path': dirname})
         self.run_command('scp_to', 
-                         {'local': archive_filename, 'remote': path})
-        self.run_hook('post_put_archive', 
+                         {'local': source_filename, 'remote': path})
+        self.run_hook(['pre_put_%s' % kind, 'pre_put_file'], 
                       {'path': path, 'dirname': dirname, 'filename': filename})
-        return archive_url
 
     def remove_file(self, url):
         (path, _, _) = self._analyse_url(url)
@@ -203,16 +198,20 @@ class ScpTransfer(TransferProvider):
         filename = os.path.basename(path)
         return (path, dirname, filename)
 
-    def run_hook(self, key, params):
-        return self.run_command(key, params, optional=True)
+    def run_hook(self, keys, params):
+        for key in keys:
+            template = self.commands.get(key, None)
+            if template:
+                return self._do_run_command(template, params)
+        return None
 
-    def run_command(self, key, params, optional=False):
-        template = self.commands.get(key)
+    def run_command(self, key, params):
+        template = self.commands.get(key, None)
         if not template:
-            if optional:
-                return
             raise TransferError('No command found for %s' % key)
-      
+        return self._do_run_command(template, params)
+
+    def _do_run_command(self, template, params):      
         params['ssh'] = self._get_ssh_command()
         params['username'] = self.username 
         params['hostname'] = self.hostname

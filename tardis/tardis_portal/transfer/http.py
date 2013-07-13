@@ -123,8 +123,7 @@ class SimpleHttpTransfer(TransferProvider):
         except HTTPError as e:
             raise TransferError(str(e))
     
-    def get_opener(self, replica):
-        url = replica.url
+    def get_opener(self, url):
         self._check_url(url)
 
         def getter():
