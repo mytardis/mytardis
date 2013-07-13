@@ -101,7 +101,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
                 raise MigrationError('Cannot migrate a replica to its' \
                                          ' current location')
             newreplica.url = url
-            location.provider.put_replica(replica, newreplica) 
+            newreplica.url = location.provider.put_replica(replica, newreplica) 
             verified = False
             try:
                 verified = check_file_transferred(newreplica, location)

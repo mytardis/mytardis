@@ -84,7 +84,7 @@ class BaseLocalTransfer(TransferProvider):
    
     def put_replica(self, source_replica, target_replica):
         datafile = target_replica.datafile
-        with TemporaryUploadedFile(datafile.filename, 
+        with TemporaryUploadedFile(datafile.filename,
                                    None, None, None) as tf:
             with closing(source_replica.get_file()) as rf:
                 tf.file.write(rf.read())
@@ -94,14 +94,11 @@ class BaseLocalTransfer(TransferProvider):
                 copyto = path.join(dspath, tf.name)
                 self.storage.path(copyto)
             except (SuspiciousOperation, ValueError):
-                copyto = path.join(dspath. path.basename(tf.name))
+                copyto = path.join(dspath, path.basename(tf.name))
             try:
-                target_replica.url = self.storage.save(copyto, tf)
+                return self.storage.save(copyto, tf)
             except OSError as e:
                 raise TransferError(e.strerror)
-            target_replica.verified = False
-            target_replica.protocol = ''
-            target_replica.save()
     
     def remove_file(self, url):
         path = self._uri_to_filename(url)

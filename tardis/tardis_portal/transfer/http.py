@@ -142,6 +142,7 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Type', source_replica.datafile.mimetype)
             request.add_header('Content-Length', source_replica.datafile.size)
             response = self.opener.open(request, data=f)
+            return target_replica.url
         except HTTPError as e:
             raise TransferError(str(e))
         finally:
@@ -155,12 +156,11 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Type', 'application/x-tar')
             request.add_header('Content-Length', os.path.getsize(archive_file))
             response = self.opener.open(request, data=f)
+            return archive_url
         except HTTPError as e:
             raise TransferError(str(e))
         finally:
             f.close()
-            
-        return archive_url
 
     def remove_file(self, url):
         self._check_url(url)

@@ -49,7 +49,8 @@ class WebDAVTransfer(SimpleHttpTransfer):
     
     def put_replica(self, source_replica, target_replica):
         self._create_parent_collections(target_replica.url)
-        super(WebDAVTransfer, self).put_replica(source_replica, target_replica)
+        return super(WebDAVTransfer, self).put_replica(source_replica, 
+                                                       target_replica)
 
     def _create_parent_collections(self, url):
         path = url[len(self.base_url):].split('/')

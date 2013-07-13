@@ -160,17 +160,17 @@ class ScpTransfer(TransferProvider):
         # The 'scp' command copies to and from named files, so a
         # remote replica has to be fetched to a local temp file ...
         if source_path:
-            self.put_file(source_path, target_replica.url, 'replica')
+            return self.put_file(source_path, target_replica.url, 'replica')
         else:
             with closing(source_replica.get_file()) as f:
                 with closing(NamedTemporaryFile(
                         mode='w+b', prefix='mytardis_scp_')) as t:
                     shutil.copyFileObj(f, t)
                     t.flush()
-                    self.put_file(t.name, target_replica.url, 'replica')
+                    return self.put_file(t.name, target_replica.url, 'replica')
 
     def put_archive(self, archive_filename, archive_url):
-        self.put_file(archive_filename, archive_url, 'archive')
+        return self.put_file(archive_filename, archive_url, 'archive')
 
     def put_file(self, source_filename, url, kind='file', 
                  content_type=None, content_length=None):
@@ -183,6 +183,7 @@ class ScpTransfer(TransferProvider):
                          {'local': source_filename, 'remote': path})
         self.run_hook(['pre_put_%s' % kind, 'pre_put_file'], 
                       {'path': path, 'dirname': dirname, 'filename': filename})
+        return url
 
     def remove_file(self, url):
         (path, _, _) = self._analyse_url(url)
