@@ -237,7 +237,11 @@ class TransferProviderTestCase(TestCase):
         url = target_replica.generate_default_url()
         self.assertEquals(url, base_url + '1/1/3')
         target_replica.url = url
-        provider.put_replica(replica, target_replica)
+        url2 = provider.put_replica(replica, target_replica)
+        if loc.name == 'sync':  # the 'local' provider
+            self.assertEquals(url2, '1/1/3')
+        else:
+            self.assertEquals(url, url2)
 
         self.assertEqual(replica.get_file_getter(False)().read(), "Hi mum")
         self.assertEqual(target_replica.get_file_getter(False)().read(), 
@@ -261,4 +265,8 @@ class TransferProviderTestCase(TestCase):
         provider.remove_file(target_replica.url)
         with self.assertRaises(TransferError):
             provider.get_length(target_replica.url)
+
+        url = urlparse.urljoin(provider.base_url, "xyzzy")
+        url2 = provider.put_archive(replica.get_absolute_filepath(), url)
+        self.assertEquals(url, url2)
 
