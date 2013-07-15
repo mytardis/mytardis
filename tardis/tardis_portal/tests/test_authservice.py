@@ -5,6 +5,7 @@ from django.test.client import Client
 from django.http import HttpRequest
 from django.contrib.auth import SESSION_KEY
 from tardis.tardis_portal.models import User
+from tardis.tardis_portal.models import UserProfile
 from tardis.tardis_portal.auth.interfaces import GroupProvider
 
 
@@ -81,6 +82,10 @@ class AuthServiceTestCase(TestCase):
         self.user1 = User.objects.create_user('mockdb_user1', '', 'secret')
         self.user2 = User.objects.create_user('mockdb_user2', '', 'secret')
         self.user3 = User.objects.create_user('mockdb_user3', '', 'secret')
+
+        self.userProfile1 = UserProfile(user=self.user1).save()
+        self.userProfile2 = UserProfile(user=self.user2).save()
+        self.userProfile3 = UserProfile(user=self.user3).save()
 
         from tardis.tardis_portal.auth import AuthService, auth_service
         s = MockSettings()

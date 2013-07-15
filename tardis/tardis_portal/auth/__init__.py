@@ -31,29 +31,5 @@
 
 from tardis.tardis_portal.auth.authservice import AuthService
 
-GROUPS = "_group_list"
-
 # The auth_service ``singleton``
 auth_service = AuthService()
-
-
-def login(request, user):
-    from django.contrib.auth import login
-    login(request, user)
-    request.user.__class__.ext_groups = auth_service.getGroups(request.user)
-    request.session[GROUPS] = request.user.ext_groups
-
-
-class LazyGroups(object):
-
-    def __get__(self, user, obj_type=None):
-        if not hasattr(user, '_cached_groups'):
-            user._cached_groups = auth_service.getGroups(user)
-        return user._cached_groups
-
-
-class AuthorizationMiddleware(object):
-
-    def process_request(self, request):
-        request.user.__class__.ext_groups = LazyGroups()
-        return None

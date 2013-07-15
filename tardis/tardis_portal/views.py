@@ -876,7 +876,8 @@ def edit_experiment(request, experiment_id,
 
 # todo complete....
 def login(request):
-    from tardis.tardis_portal.auth import login, auth_service
+    from tardis.tardis_portal.auth import auth_service
+    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
