@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 
 from tardis.tardis_portal.models import \
-    Experiment, ExperimentACL, User, UserProfile
+    Experiment, ObjectACL, User, UserProfile
 
 
 def _create_user_and_login(username='testuser', password='testpass'):
@@ -30,14 +30,14 @@ class TabTestCase(TestCase):
                                 description='Parrot + 40kV',
                                 created_by=user)
         experiment.save()
-        acl = ExperimentACL(experiment=experiment,
-                            pluginId='django_user',
-                            entityId=str(user.id),
-                            isOwner=False,
-                            canRead=True,
-                            canWrite=False,
-                            canDelete=False,
-                            aclOwnershipType=ExperimentACL.OWNER_OWNED)
+        acl = ObjectACL(content_object=experiment,
+                        pluginId='django_user',
+                        entityId=str(user.id),
+                        isOwner=False,
+                        canRead=True,
+                        canWrite=False,
+                        canDelete=False,
+                        aclOwnershipType=ObjectACL.OWNER_OWNED)
         acl.save()
         self.client = client
         self.experiment = experiment

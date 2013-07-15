@@ -84,9 +84,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
-    'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
+    'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
 )
 
 ROOT_URLCONF = 'tardis.urls'
@@ -200,7 +200,7 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
-    )
+)
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'tardis_portal',
@@ -208,13 +208,13 @@ JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
                                                 'jasmine'))
 
 
-USER_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
+USER_PROVIDERS = (
+    'tardis.tardis_portal.auth.localdb_auth.DjangoUserProvider',
 )
 
-GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
-                    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
-                   'tardis.tardis_portal.auth.ip_auth.IPGroupProvider'
-
+GROUP_PROVIDERS = (
+    'tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
+    'tardis.tardis_portal.auth.token_auth.TokenGroupProvider',
 )
 
 # AUTH_PROVIDERS entry format:
@@ -225,7 +225,8 @@ GROUP_PROVIDERS = ('tardis.tardis_portal.auth.localdb_auth.DjangoGroupProvider',
 # We will assume that localdb will always be a default AUTH_PROVIDERS entry
 
 AUTH_PROVIDERS = (
-    ('localdb', 'Local DB', 'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
+    ('localdb', 'Local DB',
+     'tardis.tardis_portal.auth.localdb_auth.DjangoAuthBackend'),
 )
 
 # default authentication module for experiment ownership user during
@@ -238,6 +239,11 @@ AUTH_PROFILE_MODULE = 'tardis_portal.UserProfile'
 NEW_USER_INITIAL_GROUPS = []
 
 ACCOUNT_ACTIVATION_DAYS = 3
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'tardis.tardis_portal.auth.authorisation.ACLAwareBackend',
+)
 
 # Email Configuration
 

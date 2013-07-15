@@ -53,10 +53,10 @@ class DjangoAuthBackend(AuthProvider):
 class DjangoGroupProvider(GroupProvider):
     name = u'django_group'
 
-    def getGroups(self, request):
+    def getGroups(self, user):
         """return an iteration of the available groups.
         """
-        groups = request.user.groups.all()
+        groups = user.groups.all()
         return [g.id for g in groups]
 
     def getGroupById(self, id):

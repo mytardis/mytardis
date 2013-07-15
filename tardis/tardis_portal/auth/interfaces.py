@@ -92,7 +92,7 @@ class UserProvider:
 
 class GroupProvider:
 
-    def getGroups(self, request):
+    def getGroups(self, user):
         """
         return an iteration of the available groups.
         """

@@ -11,7 +11,8 @@ import pytz
 
 from tardis.tardis_portal.creativecommonshandler import CreativeCommonsHandler
 from tardis.tardis_portal.models import \
-    Experiment, ExperimentACL, License, UserProfile
+    Experiment, License, ObjectACL, UserProfile
+
 
 def _create_test_data():
     user = User(username='tom',
@@ -37,16 +38,17 @@ def _create_test_data():
     experiment.author_experiment_set.create(order=1,
                                             author="Michael Palin",
                                             url="http://nla.gov.au/nla.party-2")
-    acl = ExperimentACL(experiment=experiment,
+    acl = ObjectACL(content_object=experiment,
                     pluginId='django_user',
                     entityId=str(user.id),
                     isOwner=True,
                     canRead=True,
                     canWrite=True,
                     canDelete=True,
-                    aclOwnershipType=ExperimentACL.OWNER_OWNED)
+                    aclOwnershipType=ObjectACL.OWNER_OWNED)
     acl.save()
     return (user, experiment)
+
 
 class EndpointTestCase(TestCase):
 
@@ -309,4 +311,3 @@ class EndpointTestCase(TestCase):
 
     def tearDown(self):
         pass
-

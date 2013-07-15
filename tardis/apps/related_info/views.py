@@ -27,7 +27,7 @@ def _get_schema_func(schema_uri):
 @authz.experiment_access_required
 def index(request, experiment_id):
     try:
-        experiment = Experiment.safe.get(request, experiment_id)
+        experiment = Experiment.safe.get(request.user, experiment_id)
     except PermissionDenied:
         return return_response_error(request)
     except Experiment.DoesNotExist:
