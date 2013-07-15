@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     namespace_packages=['tardis'],
     install_requires=[
-        'setuptools',
+        'setuptools>=0.7',
         'lxml==2.2.7',
         'pyparsing==1.5.6',
         'feedparser==5.1.2',
