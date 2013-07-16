@@ -5,7 +5,8 @@ python:
 install:
  - curl -s "http://git.fedorahosted.org/cgit/mailcap.git/plain/mime.types" > mime.types
  - sudo cp mime.types /etc/mime.types
- - sudo apt-get install python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev libexiv2-dev
+ - sudo apt-get install python python-dev python-pip libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev libexiv2-dev
+ - pip install -U setuptools
  - python bootstrap.py -v 1.7.0
  - bin/buildout install
 # # command to run tests

@@ -54,7 +54,7 @@ from tardis.tardis_portal.models import *
 from tardis.tardis_portal.views import _registerExperimentDocument
 from tardis.tardis_portal.metsparser import MetsExperimentStructCreator
 from tardis.tardis_portal.metsparser import MetsDataHolder
-from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
+from tardis.tardis_portal.auth.localdb_auth import django_user
 
 from tardis.tardis_portal.transfer import TransferProvider
 
@@ -75,6 +75,8 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
+        self.userprofile = UserProfile(user=user).save()
+
         base_path = path.abspath(path.dirname(__file__))
         files = ['METS_test.xml']
         for f in files:
@@ -83,14 +85,14 @@ class SearchTestCase(TestCase):
                                                    created_by=user,
                                                    expid=None)
             experiment = Experiment.objects.get(pk=expid)
-            
-            acl = ExperimentACL(pluginId=django_user,
-                                entityId=str(user.id),
-                                experiment=experiment,
-                                canRead=True,
-                                canWrite=True,
-                                canDelete=True,
-                                isOwner=True)
+
+            acl = ObjectACL(pluginId=django_user,
+                            entityId=str(user.id),
+                            content_object=experiment,
+                            canRead=True,
+                            canWrite=True,
+                            canDelete=True,
+                            isOwner=True)
             acl.save()
             self.experiments += [experiment]
 
@@ -146,7 +148,7 @@ class SearchTestCase(TestCase):
         login = self.client.login(username='test', password='test')
         self.assertEqual(login, True)
         response = self.client.get('/datafile/search/',
-                                   {'type': 'saxs', 
+                                   {'type': 'saxs',
                                     'filename': 'ment0005.osc', })
 
         # check for the existence of the contexts..
@@ -289,13 +291,13 @@ class UserInterfaceTestCase(TestCase):
                                                public_access= \
                                                  Experiment.PUBLIC_ACCESS_FULL)
         experiment.save()
-        acl = ExperimentACL(pluginId=django_user,
-                            entityId=str(user.id),
-                            experiment=experiment,
-                            canRead=True,
-                            canWrite=True,
-                            canDelete=True,
-                            isOwner=True)
+        acl = ObjectACL(pluginId=django_user,
+                        entityId=str(user.id),
+                        content_object=experiment,
+                        canRead=True,
+                        canWrite=True,
+                        canDelete=True,
+                        isOwner=True)
         acl.save()
         dataset = Dataset(description="test dataset")
         dataset.save()
@@ -431,6 +433,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         except User.DoesNotExist:
             self.user = User.objects.create_user('test', '', 'test')
             self.user.save()
+
+        self.userprofile = UserProfile(user=self.user).save()
 
         filename = path.join(path.abspath(path.dirname(__file__)),
                              './METS_test.xml')

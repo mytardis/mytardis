@@ -6,8 +6,10 @@ from django.template import Template, RequestContext
 
 def groups_view(request):
     "Dummy view for remote user tests"
-    t = Template("Groups are {% for p, g in groups %}({{ p }},{{ g }}) {% endfor %}.")
-    c = RequestContext(request, {'groups': request.groups})
+    t = Template(
+        "Groups are {% for p, g in groups %}({{ p }},{{ g }}) {% endfor %}.")
+    c = RequestContext(request,
+                       {'groups': request.user.get_profile().ext_groups})
     return HttpResponse(t.render(c))
 
 # special urls for auth test cases

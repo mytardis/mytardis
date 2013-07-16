@@ -15,14 +15,14 @@
                 </th>
                 <th colspan="2">
                     Granted By
-                </th>                               
+                </th>
             </tr>
             {% for token in tokens %}
             <tr>
                 <td>
                     <a href="{{ token.url }}"
-                    style="font-weight: bold;">Right click.. copy link</a>    
-                </td>                
+                    style="font-weight: bold;">Right click.. copy link</a>
+                </td>
                 <td align="center">
                     {{ token.expiry_date }}
                 </td>
@@ -30,7 +30,7 @@
                     {{ token.user }}
                 </td>
                 <td>
-                {% if is_owner %}
+                {% if token.is_owner %}
                   <a title="Delete Token"
                     href="{% url 'tardis.tardis_portal.views.token_delete' token.id %}"
                     class="token_delete btn btn-danger btn-mini"

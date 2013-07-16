@@ -56,7 +56,7 @@ from django.test.utils import override_settings
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ExperimentACL, Experiment, Dataset, Dataset_File, Schema, \
+    ObjectACL, Experiment, Dataset, Dataset_File, Schema, \
     DatafileParameterSet, Replica, Location
 
 class UploadTestCase(TestCase):
@@ -70,7 +70,7 @@ class UploadTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
 
         self.test_dir = mkdtemp()
 
@@ -80,14 +80,14 @@ class UploadTestCase(TestCase):
                 institution_name='monash', created_by=self.user)
         self.exp.save()
 
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user.id),
-            experiment=self.exp,
+            content_object=self.exp,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         acl.save()
 
         self.dataset = \
@@ -337,14 +337,14 @@ class RightsTestCase(TestCase):
                                 institution_name='Test Uni',
                                 created_by=user)
         experiment.save()
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(user.id),
-            experiment=experiment,
+            content_object=experiment,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         acl.save()
 
         # Create client and login as user
@@ -437,15 +437,14 @@ class StageFilesTestCase(TestCase):
                                 institution_name='Test Uni',
                                 created_by=user)
         experiment.save()
-        acl = ExperimentACL(
+        acl = ObjectACL(
             pluginId=django_user,
             entityId=str(user.id),
-            experiment=experiment,\
-
+            content_object=experiment,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         acl.save()
 
         self.dataset = \
@@ -553,6 +552,7 @@ class ExperimentTestCase(TestCase):
         user.save()
         # Data used in tests
         self.user, self.username, self.password = (user, username, password)
+        self.userprofile = UserProfile(user=self.user).save()
 
     def testCreateAndEdit(self):
 
@@ -598,9 +598,10 @@ class ExperimentTestCase(TestCase):
         expect([a.author for a in experiment.author_experiment_set.all()])\
             .to_equal(data['authors'].split(', '))
 
-        acl = ExperimentACL.objects.get(experiment=experiment,
-                                        pluginId='django_user',
-                                        entityId=self.user.id)
+        acl = ObjectACL.objects.get(content_type=experiment.get_ct(),
+                                    object_id=experiment.id,
+                                    pluginId='django_user',
+                                    entityId=self.user.id)
         expect(acl.canRead).to_be_truthy()
         expect(acl.canWrite).to_be_truthy()
         expect(acl.isOwner).to_be_truthy()
@@ -656,14 +657,14 @@ class ExperimentTestCase(TestCase):
                                      institution_name='Test Uni',
                                      created_by=user)
             experiment.save()
-            acl = ExperimentACL(
+            acl = ObjectACL(
                 pluginId=django_user,
                 entityId=str(user.id),
-                experiment=experiment,
+                content_object=experiment,
                 canRead=True,
                 isOwner=True,
-                aclOwnershipType=ExperimentACL.OWNER_OWNED,
-                )
+                aclOwnershipType=ObjectACL.OWNER_OWNED,
+            )
             acl.save()
             return experiment
 
@@ -761,18 +762,18 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
-        self.acl = ExperimentACL(
+        self.acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user.id),
-            experiment=self.exp,
+            content_object=self.exp,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')
         self.dataset.save()
@@ -801,7 +802,7 @@ class ContextualViewTest(TestCase):
         self.testschema.delete()
         self.dfps.delete()
         self.acl.delete()
-        
+
     def testDetailsDisplay(self):
         """
         test display of view for an existing schema and no display for an undefined one.
@@ -829,18 +830,18 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
-        self.acl = ExperimentACL(
+        self.acl = ObjectACL(
             pluginId=django_user,
             entityId=str(self.user.id),
-            experiment=self.exp,
+            content_object=self.exp,
             canRead=True,
             isOwner=True,
-            aclOwnershipType=ExperimentACL.OWNER_OWNED,
-            )
+            aclOwnershipType=ObjectACL.OWNER_OWNED,
+        )
         self.acl.save()
         self.dataset = Dataset(description='dataset description...')
         self.dataset.save()
@@ -863,7 +864,7 @@ class ViewTemplateContextsTest(TestCase):
         self.dataset.delete()
         self.dataset_file.delete()
         self.acl.delete()
-        
+
     def testExperimentView(self):
         """
         test some template context parameters for an experiment view
@@ -880,13 +881,13 @@ class ViewTemplateContextsTest(TestCase):
         request.user=self.user
         request.groups=[]
         context = {'organization': ['classic', 'test', 'test2'],
-                   'default_organization': 'classic', 
-                   'default_format': 'zip', 
-                   'protocol': [['zip', '/download/experiment/1/zip/'], 
+                   'default_organization': 'classic',
+                   'default_format': 'zip',
+                   'protocol': [['zip', '/download/experiment/1/zip/'],
                                 ['tar', '/download/experiment/1/tar/']]}
         views_module.should_call('render_response_index'). \
-            with_args(_AnyMatcher(), "tardis_portal/view_experiment.html", 
-                      _ContextMatcher(context)) 
+            with_args(_AnyMatcher(), "tardis_portal/view_experiment.html",
+                      _ContextMatcher(context))
         response = view_experiment(request, experiment_id=self.exp.id)
         self.assertEqual(response.status_code, 200)
 
@@ -900,12 +901,12 @@ class ViewTemplateContextsTest(TestCase):
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
             setattr(request, 'user_agent', mock_agent);
             context = {'organization': ['classic', 'test', 'test2'],
-                       'default_organization': 'classic', 
-                       'default_format': 'tar', 
+                       'default_organization': 'classic',
+                       'default_format': 'tar',
                        'protocol': [['tar', '/download/experiment/1/tar/']]}
             views_module.should_call('render_response_index'). \
-                with_args(_AnyMatcher(), "tardis_portal/view_experiment.html", 
-                          _ContextMatcher(context)) 
+                with_args(_AnyMatcher(), "tardis_portal/view_experiment.html",
+                          _ContextMatcher(context))
             response = view_experiment(request, experiment_id=self.exp.id)
             self.assertEqual(response.status_code, 200)
         finally:
@@ -913,7 +914,7 @@ class ViewTemplateContextsTest(TestCase):
                 setattr(settings, "USER_AGENT_SENSING", saved_setting)
             else:
                 delattr(settings, "USER_AGENT_SENSING")
-            
+
 
     def testDatasetView(self):
         """
@@ -929,11 +930,11 @@ class ViewTemplateContextsTest(TestCase):
         request = HttpRequest()
         request.user=self.user
         request.groups=[]
-        context = {'default_organization': 'classic', 
+        context = {'default_organization': 'classic',
                    'default_format': 'zip'}
         views_module.should_call('render_response_index'). \
-            with_args(_AnyMatcher(), "tardis_portal/view_dataset.html", 
-                      _ContextMatcher(context)) 
+            with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
+                      _ContextMatcher(context))
         response = view_dataset(request, dataset_id=self.dataset.id)
         self.assertEqual(response.status_code, 200)
 
@@ -946,11 +947,11 @@ class ViewTemplateContextsTest(TestCase):
             request.groups=[]
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
             setattr(request, 'user_agent', mock_agent);
-            context = {'default_organization': 'classic', 
+            context = {'default_organization': 'classic',
                        'default_format': 'tar'}
             views_module.should_call('render_response_index'). \
-                with_args(_AnyMatcher(), "tardis_portal/view_dataset.html", 
-                          _ContextMatcher(context)) 
+                with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
+                          _ContextMatcher(context))
             response = view_dataset(request, dataset_id=self.dataset.id)
             self.assertEqual(response.status_code, 200)
         finally:
