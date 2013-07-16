@@ -150,6 +150,13 @@ STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
 SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/sync/')).replace('\\', '/')
 
+
+METADATA_STORE_PATH = FILE_STORE_PATH
+'''
+storage path for image paths stored in parameters. Better to set to another
+location if possible
+'''
+
 STAGING_PROTOCOL = 'ldap'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
 STAGING_MOUNT_USER_SUFFIX_ENABLE = False

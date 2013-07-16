@@ -176,8 +176,15 @@ class Dataset_File(models.Model):
         return False
 
     def is_image(self):
-        return self.get_mimetype().startswith('image/') \
-            and not self.get_mimetype() == 'image/x-icon'
+        '''
+        returns True if it's an image and not an x-icon and not an img
+        the image/img mimetype is made up though and may need revisiting if
+        there is an official img mimetype that does not refer to diffraction
+        images
+        '''
+        mimetype = self.get_mimetype()
+        return mimetype.startswith('image/') \
+            and not mimetype in ('image/x-icon', 'image/img')
 
     def get_image_data(self):
         from .parameters import DatafileParameter
@@ -201,10 +208,9 @@ class Dataset_File(models.Model):
                 preview_image_par = dps[0]
 
         if preview_image_par:
-            file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
+            file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                                preview_image_par.string_value))
 
-            from django.core.servers.basehttp import FileWrapper
             preview_image_file = file(file_path)
 
             return preview_image_file

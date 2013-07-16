@@ -231,7 +231,7 @@ def site_settings(request):
 
 @never_cache
 def load_image(request, parameter):
-    file_path = path.abspath(path.join(settings.FILE_STORE_PATH,
+    file_path = path.abspath(path.join(settings.METADATA_STORE_PATH,
                                        parameter.string_value))
 
     from django.core.servers.basehttp import FileWrapper
