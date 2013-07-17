@@ -165,15 +165,16 @@ def create_archive_record(exp, url_base, experiment_changed):
     """
 
     if exp.url:
-        exp_url = exp.url
+        experiment_url = exp.url
     else:
-        exp_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, str(exp.id))
+        experiment_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, 
+                                 str(exp.id))
 
     owner = User.objects.get(id=exp.created_by.id).username
     archive = Archive(experiment=exp,
                       experiment_title=exp.title,
                       experiment_owner=owner,
-                      experiment_url=exp.url,
+                      experiment_url=experiment_url,
                       experiment_changed=experiment_changed,
                       archive_url='http://example.com')
     archive.save()
