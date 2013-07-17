@@ -11,8 +11,6 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from django.template import Context
 
-import redis
-
 from tardis.tardis_portal.models import Dataset_File, Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
@@ -34,6 +32,7 @@ except Exception:
 
 # set up redis connection pool. TODO: do this only in celery workers
 if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
+    import redis  # only import if this installation uses redis
     rvms = getattr(settings, 'REDIS_VERIFY_MANAGER_SETUP',
                    {'host': 'localhost',
                     'port': 6379,

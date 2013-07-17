@@ -121,7 +121,7 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        
+
         $.ajax({
           type: 'POST',
           url: href,
@@ -134,9 +134,9 @@
             },
           async:false
         });
-        
-        refreshMetadataDisplay();        
-        
+
+        refreshMetadataDisplay();
+
         form.parents('.modal').find('.modal-footer').hide();
         return false;
     });
@@ -144,7 +144,7 @@
         e.preventDefault();
         var form = $(this);
         var contentContainer = form.closest('.modal-body')
-        
+
         $.ajax({
           type: 'POST',
           url: form.attr('action'),
@@ -152,12 +152,12 @@
           success: function(data) {
                   	contentContainer.html(data);
                     if (contentContainer.find('form').length == 0) {
-                  	  contentContainer.parents('.modal').find('.modal-footer').hide();       	  
+                  	  contentContainer.parents('.modal').find('.modal-footer').hide();
                 }
             },
           async:false
         });
-        
+
         refreshMetadataDisplay();
 
         // Hide the form buttons
@@ -270,14 +270,14 @@ $('#modal-metadata .submit-button').click(function() {
 </div>
 
 <div class="row-fluid" >
-  <div class="span7">   
+  <div class="span7">
   <div align="center" style="margin-bottom: -20px">
   <div id="abstractHolder" style="display: none">{{ experiment.description|safe|linebreaksbr }}</div>
   <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
      Toggle Full Description
-  </a>          
-  </div>           
-  <p class="abstract well info-box" property="dc:abstract">    
+  </a>
+  </div>
+  <p class="abstract well info-box" property="dc:abstract">
       <span id="abstractText">
       </span>
   </p>
@@ -426,33 +426,36 @@ $(document).ready(function() {
              hideAbstract = false;
              $('#abstract-toggle').text('Hide Description');
            }
-      }); 
+      });
     }
     else
     {
 	$('#abstractText').html(spanhtml);
     }
-  
+
 });
 
 </script>
 
 <script type="text/javascript">
 var datasetTiles = (function() {
+    var dataset = MyTardis.Dataset;
+    dataset.url = "/ajax/json/dataset";{# using hardcoded url because arg isnt known yet #}
 
-  var datasets = new MyTardis.Datasets();
-  datasets.experimentId = {{ experiment.id }};
-  datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
+    var datasets = new MyTardis.Datasets();
+    datasets.model = dataset;
+    datasets.experimentId = {{ experiment.id }};
+    datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
-  var datasetTiles = new MyTardis.DatasetTiles({
-    'id': "datasets",
-    'collection': datasets,
-    'el': $('#datasets').get(0)
-  });
+    var datasetTiles = new MyTardis.DatasetTiles({
+	'id': "datasets",
+	'collection': datasets,
+	'el': $('#datasets').get(0)
+    });
 
-  datasets.fetch({});
+    datasets.fetch({});
 
-  return datasetTiles;
+    return datasetTiles;
 })();
 </script>
 
