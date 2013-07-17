@@ -106,7 +106,7 @@ def generate_dataset(datafiles=[], experiments=[]):
     return dataset
 
 def generate_experiment(datasets=[], users=[], title='', url=''):
-    from tardis.tardis_portal.models import Experiment, ExperimentACL
+    from tardis.tardis_portal.models import Experiment, ObjectACL
     experiment = Experiment(created_by=users[0],
                             title=title,
                             url=url)
