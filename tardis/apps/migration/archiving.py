@@ -56,8 +56,12 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
     format, and contains a METs manifest and the data files for
     all Datasets currently in the Experiment.
 
-    On completion, 'outfile' is closed.
+    On completion, 'outfile' is closed.  The result is a mostly populated
+    Archive record that has not been persisted.
     """
+
+    nos_errors = 0
+    nos_files = 0
     with NamedTemporaryFile() as manifest:
         tf = tarfile.open(mode='w:gz', fileobj=outfile)
         MetsExporter().export_to_file(exp, manifest)
@@ -70,16 +74,23 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
             replica = datafile.get_preferred_replica(verified=True)
             f = None
             try:
+                fetched = False
                 fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
-                f = datafile.get_file()
-                shutil.copyfileobj(f, fdst)
+                try:
+                    f = datafile.get_file()
+                    shutil.copyfileobj(f, fdst)
+                except Exception:
+                    logger.warn("Unable to fetch %s from %s for archiving." % 
+                                (datafile.filename, replica.url),
+                                exc_info=True)
+                    nos_errors += 1
+                    continue
+
                 fdst.flush()
                 arcname = '%s/%s/%s' % (exp.id, datafile.dataset.id,
                                         datafile.filename)
                 tf.add(fdst.name, arcname=arcname)
-            except URLError:
-                logger.warn("Unable to fetch %s for archive creation." % 
-                            datafile.filename)
+                nos_files += 1
             finally:
                 fdst.close()
                 if f:
@@ -87,6 +98,7 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
         tf.close()
         size = long(outfile.tell())
         outfile.close()
+        # (The intention is to do these checks as we are writing the archive)
         if minSize or maxSize:
             if minSize and size < minSize:
                 raise ArchivingError('Archive for experiment %s is too small' %
@@ -94,8 +106,23 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
             if maxSize and size > maxSize:
                 raise ArchivingError('Archive for experiment %s is too big' %
                                      exp.id)
-        return size
-
+        if exp.url:
+            experiment_url = exp.url
+        else:
+            experiment_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, 
+                                     str(exp.id))
+        owner = User.objects.get(id=exp.created_by.id).username
+        return Archive(experiment=exp,
+                       experiment_title=exp.title,
+                       experiment_owner=owner,
+                       experiment_url=experiment_url,
+                       archive_url=None,
+                       size=size, 
+                       nos_files=nos_files, 
+                       nos_errors=nos_errors,
+                       mimetype='application/x-tar', 
+                       encoding='x-gzip',
+                       sha512sum='')
 
 def last_experiment_change(exp):
     # FIXME - there doesn't appear to be any way to tell when experiment
@@ -159,26 +186,12 @@ def remove_experiment_data(exp, archive_url, archive_location):
                             new_replica.save()
                     replicas.delete()
                             
-def create_archive_record(exp, url_base, experiment_changed):
-    """Create an Archive for an archive of the 'exp' Experiment.  The
-    'url' is the Experiment archive URL
-    """
+def save_archive_record(archive, url_base):
+    """Save an Archive record"""
 
-    if exp.url:
-        experiment_url = exp.url
-    else:
-        experiment_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, 
-                                 str(exp.id))
-
-    owner = User.objects.get(id=exp.created_by.id).username
-    archive = Archive(experiment=exp,
-                      experiment_title=exp.title,
-                      experiment_owner=owner,
-                      experiment_url=experiment_url,
-                      experiment_changed=experiment_changed,
-                      archive_url='http://example.com')
+    archive.archive_url='http://example.com'
     archive.save()
     archive.archive_url = urljoin(
-        url_base, '%s-%s-archive.tar.gz' % (exp.id, archive.id))
+        url_base, '%s-%s-archive.tar.gz' % (archive.experiment.id, archive.id))
     archive.save()
     return archive

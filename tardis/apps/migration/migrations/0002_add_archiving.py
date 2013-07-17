@@ -18,6 +18,12 @@ class Migration(SchemaMigration):
             ('experiment_changed', self.gf('django.db.models.fields.DateTimeField')(null=True)),
             ('experiment_url', self.gf('django.db.models.fields.URLField')(max_length=255)),
             ('archive_url', self.gf('django.db.models.fields.URLField')(max_length=255)),
+            ('nos_files', self.gf('django.db.models.fields.IntegerField')()),
+            ('nos_errors', self.gf('django.db.models.fields.IntegerField')()),
+            ('size', self.gf('django.db.models.fields.IntegerField')()),
+            ('sha512sum', self.gf('django.db.models.fields.CharField')(max_length=128, blank=True)),
+            ('mimetype', self.gf('django.db.models.fields.CharField')(max_length=80)),
+            ('encoding', self.gf('django.db.models.fields.CharField')(max_length=80)),
         ))
         db.send_create_signal('migration', ['Archive'])
 
@@ -68,12 +74,18 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Archive'},
             'archive_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'archive_url': ('django.db.models.fields.URLField', [], {'max_length': '255'}),
+            'encoding': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
             'experiment_changed': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'experiment_owner': ('django.db.models.fields.CharField', [], {'max_length': '30'}),
             'experiment_title': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
             'experiment_url': ('django.db.models.fields.URLField', [], {'max_length': '255'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'mimetype': ('django.db.models.fields.CharField', [], {'max_length': '80'}),
+            'nos_errors': ('django.db.models.fields.IntegerField', [], {}),
+            'nos_files': ('django.db.models.fields.IntegerField', [], {}),
+            'sha512sum': ('django.db.models.fields.CharField', [], {'max_length': '128', 'blank': 'True'}),
+            'size': ('django.db.models.fields.IntegerField', [], {})
         },
         'migration.grouppriority': {
             'Meta': {'object_name': 'GroupPriority'},
@@ -114,6 +126,21 @@ class Migration(SchemaMigration):
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '400'}),
             'url': ('django.db.models.fields.URLField', [], {'unique': 'True', 'max_length': '2000'})
+        },
+        'tardis_portal.objectacl': {
+            'Meta': {'ordering': "['content_type', 'object_id']", 'object_name': 'ObjectACL'},
+            'aclOwnershipType': ('django.db.models.fields.IntegerField', [], {'default': '1'}),
+            'canDelete': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'canRead': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'canWrite': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
+            'effectiveDate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'entityId': ('django.db.models.fields.CharField', [], {'max_length': '320'}),
+            'expiryDate': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'isOwner': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {}),
+            'pluginId': ('django.db.models.fields.CharField', [], {'max_length': '30'})
         }
     }
 

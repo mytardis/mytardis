@@ -38,24 +38,32 @@ class Archive(models.Model):
     delete the actual 'Experiment' from the MyTardis database and still
     keep the archive record.
     
-    The 'experiment_owner' is the name of the experiment's owning user 
+    :attribute experiment_owner: the name of the experiment's owning user 
     at the time the archive was created.
-
-    The 'experiment_title' is the title of the experiment at the time 
+    :attribute experiment_title: the title of the experiment at the time 
     the archive was created.
-
-    The 'experiment_url' is the URL of the experiment.  This should be stable.
-
-    The 'archive_url' is the URL where the archive was stored.
-
-    The 'archive_created' timestamp is self explanatory.
+    :attribute experiment_url: the URL of the experiment.  This should 
+    be stable.
+    :attribute archive_url: the URL where the archive was stored.
+    :attribute archive_created: the timestamp for the archive creation
+    :attribute nos_files: the number of files in the archive
+    :attribute nos_errors: the number of errors (missing / unreadable files) 
+    encountered while creating the archive 
+    :attribute size: the archive size in bytes
+    :attribute sha512sum: the archive checksum (optional)
+    :attribute mimetype: the archive mimetype (e.g. 'application/x-tar')
+    :attribute encoding: the archive encoding (e.g. 'x-gzip')
 
     The 'experiment_changed' timestamp is the timestamp for the last change
     to the experiment as saved in the archive.  This is to allow incremental
-    archive creation
+    archive creation.
+
+    Note that it is not mandatory to persist the archive record for an
+    archive.
     """
 
     from tardis.tardis_portal.models import Experiment
+    
     experiment = models.ForeignKey(Experiment, unique=False, 
                                    on_delete=models.SET_NULL, null=True)
     experiment_owner =  models.CharField(max_length=30)
@@ -66,6 +74,12 @@ class Archive(models.Model):
                                      null=False, blank=False)
     archive_url = models.URLField(verify_exists=False, max_length=255,
                                   null=False, blank=False)
+    nos_files = models.IntegerField(null=False)
+    nos_errors = models.IntegerField(null=False)
+    size = models.IntegerField(null=False)
+    sha512sum = models.CharField(blank=True, max_length=128)
+    mimetype = models.CharField(blank=False, max_length=80)
+    encoding = models.CharField(max_length=80)
 
     class Meta:
         app_label = 'migration'

@@ -43,7 +43,7 @@ from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, generate_user
 
 from tardis.apps.migration import MigrationError, last_experiment_change, \
-    create_experiment_archive, create_archive_record
+    create_experiment_archive, save_archive_record
 from tardis.apps.migration.models import Archive
 
 class ArchivingTestCase(TestCase):
@@ -66,7 +66,7 @@ class ArchivingTestCase(TestCase):
         datafile, replica = generate_datafile(None, self.dataset, "Hi mum")
         try:
             tmp = NamedTemporaryFile(delete=False)
-            create_experiment_archive(self.experiment, tmp)
+            archive = create_experiment_archive(self.experiment, tmp)
             self.assertTrue(os.path.exists(tmp.name))
             self.assertTrue(os.path.getsize(tmp.name) > 0)
             try:
@@ -83,6 +83,12 @@ class ArchivingTestCase(TestCase):
                 self.assertEqual(members[1].size, int(datafile.size))
             finally:
                 tf.close()
+
+            self.assertEqual(archive.experiment_owner, 'fred')
+
+            count = Archive.objects.count()
+            archive = save_archive_record(archive, 'http://example.com')
+            self.assertEqual(Archive.objects.count(), count + 1)
             
         finally:
             os.unlink(tmp.name)
@@ -91,10 +97,4 @@ class ArchivingTestCase(TestCase):
         self.assertTrue(last_experiment_change(self.experiment) <
                         datetime.now())
 
-    def testCreateArchiveRecord(self):
-        count = Archive.objects.count()
-        archive = create_archive_record(self.experiment, 'http://example.com',
-                                        datetime.now())
-        self.assertEqual(Archive.objects.count(), count + 1)
-        self.assertEqual(archive.experiment_owner, 'fred')
 

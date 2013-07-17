@@ -43,7 +43,7 @@ from tardis.tardis_portal.models import Location, Experiment
 from tardis.tardis_portal.transfer import TransferError
 
 from tardis.apps.migration import ArchivingError, create_experiment_archive, \
-    create_archive_record, remove_experiment, remove_experiment_data, \
+    save_archive_record, remove_experiment, remove_experiment_data, \
     last_experiment_change
 from tardis.apps.migration.models import Archive
 
@@ -204,28 +204,23 @@ class Command(BaseCommand):
             self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
         tmp_file = None
-        archive_url = None
-        archive = None
         try:
             if self.directory:
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
-                size = create_experiment_archive(
+                archive = create_experiment_archive(
                     exp, open(pathname, 'wb'), 
                     minSize=self.minSize, maxSize=self.maxSize)
             else:
-                archive = create_archive_record(
-                    exp, self.location.provider.base_url, experiment_changed)
                 tmp_file = NamedTemporaryFile(
                     prefix='mytardis_tmp_ar', suffix='.tar.gz', 
                     delete=False)
-                size = create_experiment_archive(
+                archive = create_experiment_archive(
                     exp, tmp_file, minSize=self.minSize, maxSize=self.maxSize)
-                # to stop the Archive being deleted below ...
-                archive_url = archive.archive_url
-                archive = None
+                archive.experiment_changed=experiment_changed
+                save_archive_record(archive, self.location.provider.base_url)
 
-            self.total_size += size
+            self.total_size += archive.size
             if self.maxTotalSize and self.total_size >= self.maxTotalSize:
                 raise ArchivingError('Exceeded total size') 
 
@@ -235,15 +230,19 @@ class Command(BaseCommand):
                                       (exp.id, pathname))
             else:
                 self.location.provider.put_archive(
-                    tmp_file.name, archive_url)
+                    tmp_file.name, archive.archive_url)
                 if self.verbosity > 0:
                     self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, archive_url))
+                                      (exp.id, archive.archive_url))
+            if archive.nos_errors > 0:
+                self.stderr.write(
+                    'Archive for experiment %s is missing %s files\n' % \
+                        (exp.id, archive.nos_errors))
             self.transfer_count += 1
             if self.remove_all:
                 remove_experiment(exp)
             elif self.remove_data:
-                remove_experiment_data(exp, archive_url, location)
+                remove_experiment_data(exp, archive.archive_url, location)
 
         except ArchivingError as e:
             logger.info('Archiving error', exc_info=sys.exc_info())
@@ -261,8 +260,6 @@ class Command(BaseCommand):
             if tmp_file:
                 os.unlink(tmp_file.name)
                 tmp_file.close()
-            if archive:
-                archive.delete()
 
     def _ping(self, location, label):
         if not location.provider.alive():
