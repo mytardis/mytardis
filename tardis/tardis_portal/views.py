@@ -127,9 +127,14 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
                                'quality': 'native',
                                'format': 'jpg'})
     obj = model_to_dict(dataset)
-    if exclude is None or 'datafiles' not in exclude:
-        obj['datafiles'] = list(
+    if exclude is None or 'datafiles' not in exclude or 'file_count' \
+       not in exclude:
+        datafiles = list(
             dataset.dataset_file_set.values_list('id', flat=True))
+        if exclude is None or 'datafiles' not in exclude:
+            obj['datafiles'] = datafiles
+        if exclude is None or 'file_count' not in exclude:
+            obj['file_count'] = len(datafiles)
 
     obj['url'] = dataset.get_absolute_url()
 
@@ -684,6 +689,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
                                                     has_download_permissions)),
                         mimetype='application/json')
 
+
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets_json(request, experiment_id):
@@ -696,11 +702,12 @@ def experiment_datasets_json(request, experiment_id):
         authz.has_experiment_download_access(request, experiment_id)
 
     objects = [
-        get_dataset_info(ds, include_thumbnail=False,
-                         exclude=["datafiles", 'size', 'datasettype'])
+        get_dataset_info(ds, include_thumbnail=has_download_permissions,
+                         exclude=['datafiles', 'datasettype'])
         for ds in experiment.datasets.all()]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
+
 
 @never_cache
 @authz.experiment_access_required

@@ -439,11 +439,9 @@ $(document).ready(function() {
 
 <script type="text/javascript">
 var datasetTiles = (function() {
-    var dataset = MyTardis.Dataset;
-    dataset.url = "/ajax/json/dataset";{# using hardcoded url because arg isnt known yet #}
 
     var datasets = new MyTardis.Datasets();
-    datasets.model = dataset;
+
     datasets.experimentId = {{ experiment.id }};
     datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
@@ -458,6 +456,5 @@ var datasetTiles = (function() {
     return datasetTiles;
 })();
 </script>
-
 
 {% endblock %}
