@@ -9,26 +9,28 @@ download.py
 """
 import logging
 import shutil
-import subprocess
 import urllib
-import os, platform, ctypes, stat, time, struct
+import os
+import stat
+import time
+import struct
 
 try:
-    import zlib # We may need its compression method
+    import zlib  # We may need its compression method
     crc32 = zlib.crc32
 except ImportError:
     zlib = None
+    import binascii
     crc32 = binascii.crc32
 
 from itertools import chain
 from tempfile import mkstemp, gettempdir, NamedTemporaryFile
 from threading import Thread
-from urllib2 import urlopen, URLError
+from urllib2 import URLError
 from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP_DEFLATED
 
 from django.core.servers.basehttp import FileWrapper
-from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
@@ -40,6 +42,7 @@ from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
+
 
 class StreamingFile:
 
@@ -85,19 +88,24 @@ class StreamingFile:
         self.reader.close()
         os.unlink(self.name)
 
+
 class StreamableZipFile(ZipFile):
-    def __init__(self, file, mode="r", compression=ZIP_STORED, allowZip64=False):
+    def __init__(self, file, mode="r", compression=ZIP_STORED,
+                 allowZip64=False):
         ZipFile.__init__(self, file, mode, compression, allowZip64)
 
     def write(self, filename, arcname=None, compress_type=None):
         """Put the bytes from filename into the archive under the name
-        arcname.  The file is written in strictly sequential fashion - no seeking."""
+        arcname.  The file is written in strictly sequential fashion -
+        no seeking.
+        """
 
         # This code is a tweaked version of ZipFile.write ...
-        # TODO: add an alternative version that works with a stream rather than a filename.
+        # TODO: add an alternative version that works with a stream rather
+        # than a filename.
         if not self.fp:
             raise RuntimeError(
-                  "Attempt to write to ZIP archive that was already closed")
+                "Attempt to write to ZIP archive that was already closed")
 
         st = os.stat(filename)
         isdir = stat.S_ISDIR(st.st_mode)
@@ -119,8 +127,9 @@ class StreamableZipFile(ZipFile):
             zinfo.compress_type = compress_type
 
         zinfo.file_size = st.st_size
-        zinfo.flag_bits = 0x08                  # Use trailing data descriptor for file sizes and CRC
-        zinfo.header_offset = self.fp.tell()    # Start of header bytes
+        zinfo.flag_bits = 0x08  # Use trailing data descriptor for file
+        # sizes and CRC
+        zinfo.header_offset = self.fp.tell()  # Start of header bytes
 
         self._writecheck(zinfo)
         self._didModify = True
@@ -142,7 +151,7 @@ class StreamableZipFile(ZipFile):
             self.fp.write(zinfo.FileHeader())
             if zinfo.compress_type == ZIP_DEFLATED:
                 cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
-                     zlib.DEFLATED, -15)
+                                        zlib.DEFLATED, -15)
             else:
                 cmpr = None
             while 1:
@@ -162,13 +171,15 @@ class StreamableZipFile(ZipFile):
             zinfo.compress_size = compress_size
         else:
             zinfo.compress_size = file_size
-        # Write the data descriptor after the file containing the true sizes and CRC
+        # Write the data descriptor after the file containing the true sizes
+        # and CRC
         zinfo.CRC = CRC
         zinfo.file_size = file_size
         self.fp.write(struct.pack("<LLL", zinfo.CRC, zinfo.compress_size,
-              zinfo.file_size))
+                                  zinfo.file_size))
         self.filelist.append(zinfo)
         self.NameToInfo[zinfo.filename] = zinfo
+
 
 def _create_download_response(request, datafile_id, disposition='attachment'):
     #import ipdb; ipdb.set_trace()
@@ -222,14 +233,17 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
 def view_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id, 'inline')
 
+
 def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
 
 __mapper_makers = None
 
+
 def get_download_organizations():
     return _get_mapper_makers().keys()
+
 
 def _get_mapper_makers():
     global __mapper_makers
@@ -243,16 +257,18 @@ def _get_mapper_makers():
             else:
                 kwarg = {}
 
-            def mapper_maker_maker(kwarg) :
+            def mapper_maker_maker(kwarg):
                 def mapper_maker(rootdir):
                     myKwarg = dict(kwarg)
                     myKwarg['rootdir'] = rootdir
+
                     def mapper(datafile):
                         return mapper_fn(datafile, **myKwarg)
                     return mapper
                 return mapper_maker
             __mapper_makers[organization] = mapper_maker_maker(kwarg)
     return __mapper_makers
+
 
 def _safe_import(path):
     try:
@@ -272,6 +288,7 @@ def _safe_import(path):
             'Mapper module "%s" does not define a "%s" function' %
             (mapper_module, mapper_fname))
 
+
 def _make_mapper(organization, rootdir):
     if organization == 'classic':
         return classic_mapper(rootdir)
@@ -288,6 +305,7 @@ def classic_mapper(rootdir):
     def _get_filename(df):
         return os.path.join(rootdir, str(df.dataset.id), df.filename)
     return _get_filename
+
 
 def _get_datafile_details_for_archive(mapper, datafiles):
     # It would be simplest to do this lazily.  But if we do that, we implicitly
@@ -342,19 +360,23 @@ def _write_tar_func(mapper, datafiles):
             logger.debug('Writing tar archive to %s' % filename)
             _write_files_to_archive(tf.add, files)
             tf.close()
-            logger.debug('Completed tar archive size is %i' % os.stat(filename).st_size)
-        except IOError as ex:
-            logger.warn("I/O error({0}) while writing tar archive: {1}".format(e.errno, e.strerror))
+            logger.debug('Completed tar archive size is %i' %
+                         os.stat(filename).st_size)
+        except IOError as e:
+            logger.warn("I/O error({0}) while writing tar archive: {1}"
+                        .format(e.errno, e.strerror))
             os.unlink(filename)
         finally:
             tf.close()
     # Returns the function to do the actual writing
     return write_tar
 
+
 def _write_zip_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(mapper, datafiles)
+
     # Define the function
     def write_zip(filename):
         try:
@@ -362,14 +384,17 @@ def _write_zip_func(mapper, datafiles):
             logger.debug('Writing zip archive to %s' % filename)
             _write_files_to_archive(zf.write, files)
             zf.close()
-            logger.debug('Completed zip archive size is %i' % os.stat(filename).st_size)
-        except IOError as ex:
-            logger.warn("I/O error({0}) while writing zip archive: {1}".format(e.errno, e.strerror))
+            logger.debug('Completed zip archive size is %i' %
+                         os.stat(filename).st_size)
+        except IOError as e:
+            logger.warn("I/O error({0}) while writing zip archive: {1}"
+                        .format(e.errno, e.strerror))
             os.unlink(filename)
         finally:
             zf.close()
     # Returns the function to do the actual writing
     return write_zip
+
 
 def _estimate_archive_size(mapper, datafiles, comptype):
     """
@@ -397,8 +422,8 @@ def _estimate_archive_size(mapper, datafiles, comptype):
             estimate += (20 + name_length) + int(df.get_size()) + \
                 8 + (46 + name_length)
     if comptype == "tar":
-         # Two records of zeros at the end.
-         estimate += 1024
+        # Two records of zeros at the end.
+        estimate += 1024
     elif comptype == "zip":
         # Central directory overheads
         estimate += 100
@@ -429,6 +454,7 @@ def _check_download_limits(mapper, datafiles, comptype):
             ' for download'
     else:
         return None
+
 
 @experiment_download_required
 def download_experiment(request, experiment_id, comptype,
@@ -512,7 +538,7 @@ def download_datafiles(request):
         organization = request.POST['organization']
 
     if 'datafile' in request.POST or 'dataset' in request.POST:
-        if (len(request.POST.getlist('datafile')) > 0 \
+        if (len(request.POST.getlist('datafile')) > 0
                 or len(request.POST.getlist('dataset'))) > 0:
 
             datasets = request.POST.getlist('dataset')
@@ -521,8 +547,8 @@ def download_datafiles(request):
             # Generator to produce datafiles from dataset id
             def get_dataset_datafiles(dsid):
                 for datafile in Dataset_File.objects.filter(dataset=dsid):
-                    if has_datafile_download_access(request=request,
-                                                    dataset_file_id=datafile.id):
+                    if has_datafile_download_access(
+                            request=request, dataset_file_id=datafile.id):
                         yield datafile
 
             # Generator to produce datafile from datafile id
@@ -554,7 +580,8 @@ def download_datafiles(request):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
             experiment_id = request.POST['expid']
-            datafile = Dataset_File.objects.filter(url__endswith=raw_path,
+            datafile = Dataset_File.objects.filter(
+                url__endswith=raw_path,
                 dataset__experiment__id=experiment_id)[0]
             if has_datafile_download_access(request=request,
                                             dataset_file_id=datafile.id):
@@ -596,14 +623,14 @@ def download_datafiles(request):
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
-                'attachment; filename="experiment%s-selection.tar"' % expid
+            'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
         reader = StreamingFile(_write_zip_func(mapper, df_set),
                                asynchronous_file_creation=True)
         response = HttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
         response['Content-Disposition'] = \
-                'attachment; filename="experiment%s-selection.zip"' % expid
+            'attachment; filename="experiment%s-selection.zip"' % expid
     else:
         response = render_error_message(
             request, 'Unsupported download format: %s' % comptype, status=404)
