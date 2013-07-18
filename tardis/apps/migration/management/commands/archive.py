@@ -41,7 +41,8 @@ from django.utils.log import dictConfig
 
 from tardis.tardis_portal.models import Location, Experiment
 from tardis.tardis_portal.transfer import TransferError
-from tardis.tardis_portal.util import generate_file_checksums
+from tardis.tardis_portal.util import generate_file_checksums, \
+    parse_scaled_number
 
 from tardis.apps.migration import ArchivingError, create_experiment_archive, \
     save_archive_record, remove_experiment, remove_experiment_data, \
@@ -102,7 +103,12 @@ class Command(BaseCommand):
                         ' it has been archived.  This removes all traces' \
                         ' of the experiment and dependent datasets and' \
                         ' datafiles.  All that will remain online are the' \
-                        ' archive records.'),
+                        ' archive records.'),        
+        make_option('--keepOnly',
+                    action='store',
+                    dest='keepOnly',
+                    default=None,
+                    help='The number of archives to keep'),
         make_option('--minSize',
                     action='store',
                     dest='minSize',
@@ -134,12 +140,17 @@ class Command(BaseCommand):
             settings.DEFAULT_ARCHIVE_LOCATION)
         self.directory = options.get('directory', None)
         self.all = options.get('all', False)
-        self.maxSize = self._size_opt(options, 'maxSize', 
-                                      'DEFAULT_ARCHIVE_MAX_SIZE')
-        self.minSize = self._size_opt(options, 'minSize', 
-                                      'DEFAULT_ARCHIVE_MIN_SIZE')
-        self.maxTotalSize = self._size_opt(options, 'maxTotalSize', 
-                                           'DEFAULT_ARCHIVE_MAX_TOTAL, SIZE')
+        self.keepOnly = self._int_opt(options, 'keepOnly', '',
+                                      scale_allowed=False)
+        if self.keepOnly != None and self.keepOnly <= 0:
+            raise CommandError('--keepOnly value must be > zero')
+
+        self.maxSize = self._int_opt(options, 'maxSize', 
+                                     'DEFAULT_ARCHIVE_MAX_SIZE')
+        self.minSize = self._int_opt(options, 'minSize', 
+                                     'DEFAULT_ARCHIVE_MIN_SIZE')
+        self.maxTotalSize = self._int_opt(options, 'maxTotalSize', 
+                                          'DEFAULT_ARCHIVE_MAX_TOTAL, SIZE')
 
         # Ping test
         if not (self.directory or self.dryRun or 
@@ -156,7 +167,7 @@ class Command(BaseCommand):
             self._experiments(args)
         self._stats()
 
-    def _size_opt(self, options, key, dflt_key):
+    def _int_opt(self, options, key, dflt_key, scale_allowed=True):
         value = options.get(key, None)
         if not value:
             if self.location:
@@ -164,7 +175,20 @@ class Command(BaseCommand):
                 if not value:
                     value = getattr(settings, dflt_key, None)
         if value:
-            return long(value)
+            if scale_allowed:
+                try:
+                    return parse_scaled_number(value)
+                except:
+                    raise CommandError(
+                        "--%s argument (%s) must be a non-negative" \
+                            " number followed by an optional scale" \
+                            " factor (K, M, G or T)" % (key, value))
+            else:
+                try:
+                    return long(value)
+                except:
+                    raise CommandError(
+                        "--%s argument (%s) must be an integer" % (key, value))
         else:
             return None
             
@@ -231,10 +255,17 @@ class Command(BaseCommand):
                 try:
                     provider = self.location.provider
                     archive.experiment_changed=experiment_changed
-                    (_, archive.sha512sum, _, _) = \
+                    (md5sum, sha512sum, length, _) = \
                         generate_file_checksums(open(tmp_file.name))
+                    archive.sha512sum = sha512sum
                     save_archive_record(archive, provider.base_url)
+                    paranoid = self.remove_all or self.remove_data
                     provider.put_archive(tmp_file.name, archive.archive_url)
+                    provider.check_transfer(archive.archive_url,
+                                            {'length': str(length),
+                                             'md5sum': md5sum,
+                                             'sha512sum': sha512sum},
+                                            require_checksum=paranoid)
                     if self.verbosity > 0:
                         self.stdout.write('Archived experiment %s to %s\n' %
                                           (exp.id, archive.archive_url))
@@ -251,6 +282,9 @@ class Command(BaseCommand):
                 remove_experiment(exp)
             elif self.remove_data:
                 remove_experiment_data(exp, archive.archive_url, location)
+
+            if self.keepOnly:
+                self._prune_archives(exp)
 
         except ArchivingError as e:
             logger.info('Archiving error', exc_info=sys.exc_info())
@@ -288,3 +322,6 @@ class Command(BaseCommand):
         if not dest:
             raise CommandError("Destination %s not known" % destName)
         return dest
+
+    def _prune_archives(self, exp):
+        pass

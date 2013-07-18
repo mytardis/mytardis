@@ -110,7 +110,8 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             target_replica.url = location.provider.put_replica(
                 replica, target_replica) 
             try:
-                check_file_transferred(target_replica, location)
+                check_file_transferred(target_replica, location,
+                                       require_checksum=(not mirror))
             except:
                 # FIXME - should we always do this?
                 location.provider.remove_file(target_replica.url)
@@ -133,7 +134,7 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
                         (filename, replica.id))
         return True
 
-def check_file_transferred(replica, location):
+def check_file_transferred(replica, location, require_checksum=True):
     """
     Check that a replica has been successfully transfered to a remote
     storage location
@@ -147,7 +148,7 @@ def check_file_transferred(replica, location):
             {'length': datafile.size,
              'md5sum': datafile.md5sum,
              'sha512sum': datafile.sha512sum},
-            require_checksum=True)
+            require_checksum=require_checksum)
     except TransferError as e:
         raise MigrationError(e.args[0])
     
