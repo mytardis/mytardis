@@ -118,14 +118,6 @@ from django.contrib.auth import logout as django_logout
 logger = logging.getLogger(__name__)
 
 def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
-    def get_thumbnail_url(datafile):
-        return reverse('tardis.tardis_portal.iiif.download_image',
-                       kwargs={'datafile_id': datafile.id,
-                               'region': 'full',
-                               'size': '100,',
-                               'rotation': 0,
-                               'quality': 'native',
-                               'format': 'jpg'})
     obj = model_to_dict(dataset)
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
@@ -144,7 +136,9 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
 
     if include_thumbnail:
         try:
-            obj['thumbnail'] = get_thumbnail_url(dataset.image)
+            obj['thumbnail'] = reverse(
+                'tardis.tardis_portal.views.dataset_thumbnail',
+                kwargs={'dataset_id': dataset.id})
         except AttributeError:
             pass
 
@@ -306,6 +300,12 @@ def display_datafile_image(
                                           parameterset=parameterset_id)
 
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
+
+
+@authz.dataset_access_required
+def dataset_thumbnail(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    return HttpResponseRedirect(dataset.get_thumbnail_url())
 
 
 def about(request):
