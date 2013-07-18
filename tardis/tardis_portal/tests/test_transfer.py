@@ -31,8 +31,9 @@ from django.test import TestCase
 from nose.plugins.skip import SkipTest 
 from compare import expect
 from nose.tools import ok_, eq_
+from django.conf import settings
 
-import logging, base64, os, urllib2, time, urlparse
+import logging, base64, os, urllib2, time, urlparse, shutil
 from urllib2 import HTTPError, URLError, urlopen
 
 from tardis.tardis_portal.models import Dataset_File, Replica, Location
@@ -54,6 +55,10 @@ class TransferProviderTestCase(TestCase):
         self.dataset = generate_dataset(experiments=[self.experiment])
         self.server = SimpleHttpTestServer()
         self.server.start()
+        try:
+            shutil.rmtree(os.path.join(settings.SYNC_TEMP_PATH, "1"))
+        except:
+            pass
 
     def tearDown(self):
         self.dataset.delete()
@@ -89,21 +94,21 @@ class TransferProviderTestCase(TestCase):
     def testScpTransferProviderInit(self):
         with self.assertRaises(ValueError) as cm:
             ScpTransfer('xxx', 'http://localhost/', {})
-        self.assertEquals(cm.exception.message, 
+        self.assertEquals(cm.exception.args[0], 
                           'scp: url required for transfer provider (xxx)')
         with self.assertRaises(ValueError) as cm:
             ScpTransfer('xxx', 'scp://user@localhost/', {})
-        self.assertEquals(cm.exception.message, 
+        self.assertEquals(cm.exception.args[0], 
                           'url for transfer provider (xxx) cannot use a '
                           'username or password')
         with self.assertRaises(ValueError) as cm:
             ScpTransfer('xxx', 'scp://:passwd@localhost/', {})
-        self.assertEquals(cm.exception.message, 
+        self.assertEquals(cm.exception.args[0], 
                           'url for transfer provider (xxx) cannot use a '
                           'username or password')
         with self.assertRaises(ValueError) as cm:
             ScpTransfer('xxx', 'scp://localhost/foo?wot', {})
-        self.assertEquals(cm.exception.message, 
+        self.assertEquals(cm.exception.args[0], 
                           'No username parameter found')
 
 
@@ -230,6 +235,9 @@ class TransferProviderTestCase(TestCase):
         provider = loc.provider
         base_url = loc.url
         datafile, replica = generate_datafile("1/1/3", self.dataset, "Hi mum")
+        metadata = {'length': datafile.size,
+                    'md5sum': datafile.md5sum,
+                    'sha512sum': datafile.sha512sum}
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         target_replica = Replica()
         target_replica.datafile = datafile
@@ -249,6 +257,7 @@ class TransferProviderTestCase(TestCase):
         self.assertEqual(provider.get_file(target_replica.url).read(), "Hi mum")
 
         self.assertEqual(provider.get_length(target_replica.url), 6)
+        self.assertTrue(provider.check_transfer(target_replica.url, metadata))
 
         try:
             self.maxDiff = None
@@ -269,4 +278,15 @@ class TransferProviderTestCase(TestCase):
         url = urlparse.urljoin(provider.base_url, "xyzzy")
         url2 = provider.put_archive(replica.get_absolute_filepath(), url)
         self.assertEquals(url, url2)
+        self.assertTrue(provider.check_transfer(url2, metadata))
 
+        provider.remove_file(url2)
+        with self.assertRaises(TransferError):
+            provider.check_transfer(url2, metadata)
+        with self.assertRaises(TransferError):
+            provider.get_file(url2)
+
+        with self.assertRaises(TransferError) as cm:
+            provider.get_file('http://foo')  
+        self.assertTrue(cm.exception.args[0].startswith(
+                'url http://foo does not belong to'))

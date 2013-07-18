@@ -65,21 +65,21 @@ class BaseLocalTransfer(TransferProvider):
         
     def get_metadata(self, url):
         (_, filename) = self._uri_split(url)
-        with self.storage.open(filename, 'r') as f:
-            try:
+        try:
+            with self.storage.open(filename, 'r') as f:
                 md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
-            except OSError as e:
-                raise TransferError(e.strerror)
-            return {'md5sum': md5sum,
-                    'sha512sum': sha512sum,
-                    'length': str(size)}
+                return {'md5sum': md5sum,
+                        'sha512sum': sha512sum,
+                        'length': str(size)}
+        except IOError as e:
+            raise TransferError(e.strerror)
     
     def get_opener(self, url):
         (_, path) = self._uri_split(url)
         def getter():
             try:
                 return self.storage.open(path)
-            except OSError as e:
+            except IOError as e:
                 raise TransferError(e.strerror)
         return getter
    
@@ -103,19 +103,23 @@ class BaseLocalTransfer(TransferProvider):
 
     def put_file(self, filename, url):
         (scheme, path) = self._uri_split(url)
-        with File(open(filename, 'rb')) as f:
-            path = self._do_put_file(f, path, True)
-            if scheme:
-                return '%s:%s' % (scheme, path)
-            else:
-                return path
+        try:
+            with File(open(filename, 'rb')) as f:
+                path = self._do_put_file(f, path, True)
+                if scheme:
+                    return '%s:%s' % (scheme, path)
+                else:
+                    return path
+        except IOError as e:
+            raise TransferError(e.strerror)
+
 
     def _do_put_file(self, file, path, unique):
         try:
             if unique:
                 self.storage.delete(path)
             return self.storage.save(path, file)
-        except OSError as e:
+        except IOError as e:
             raise TransferError(e.strerror)
     
     def remove_file(self, url):
@@ -132,7 +136,7 @@ class BaseLocalTransfer(TransferProvider):
             return (None, '%s/%s' % (self.base_path, uri))
         if not uri.startswith(self.base_url):
             raise TransferError(
-                'Url %s does not belong to the %s destination (url %s)' % \
+                'url %s does not belong to the %s destination (url %s)' % \
                     (uri, self.name, self.base_url))
         return (parts.scheme, unquote('/%s/%s' % (parts.netloc, parts.path)))
 

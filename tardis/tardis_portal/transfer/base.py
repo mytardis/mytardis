@@ -50,12 +50,20 @@ class TransferProvider(object):
     def close(self):
         pass
 
-    def check_transfer(self, url, expected):
+    def check_transfer(self, url, expected, require_checksum=False):
         """
         Check that a file has been successfully transfered.  Try fetching
         the metadata, fetching the length or reading back and checksumming
-        the file.
+        the file.  A result of True means we verified at least one checksum,
+        and a result of False means we only checked the length.  If a check
+        fails, or if there is insufficient info, we raise TransferError.
+
+        The 'url' is the URL of the object to be checked.  The 'expected'
+        hash gives the attributes to check against.  If 'require_checksum' 
+        is given, it overrides the location's 'trust_length' setting.
         """
+
+        trust_length = not require_checksum and self.trust_length
         
         # If the remote is capable, get it to send us the checksums and / or
         # file length for its copy of the file
@@ -66,14 +74,13 @@ class TransferProvider(object):
             if (self._check_attr(m, expected, 'sha512sum') or \
                     self._check_attr(m, expected, 'md5sum')):
                 return True
-            if location.trust_length and \
-                    self._check_attr(m, expected, 'length') :
+            if trust_length and self._check_attr(m, expected, 'length') :
                 return False
             raise TransferError('Not enough metadata for verification')
         except NotImplementedError:
             pass
 
-        if self.trust_length :
+        if trust_length :
             try:
                 length = self.get_length(replica.url)
                 if self._check_attr2(length, expected, 'length'):
