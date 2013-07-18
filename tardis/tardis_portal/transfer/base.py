@@ -29,6 +29,7 @@
 
 from urllib import quote
 from urlparse import urljoin
+from tardis.tardis_portal.util import generate_file_checksums
 
 class TransferError(Exception):
     pass
@@ -49,6 +50,66 @@ class TransferProvider(object):
     def close(self):
         pass
 
+    def check_transfer(self, url, expected):
+        """
+        Check that a file has been successfully transfered.  Try fetching
+        the metadata, fetching the length or reading back and checksumming
+        the file.
+        """
+        
+        # If the remote is capable, get it to send us the checksums and / or
+        # file length for its copy of the file
+        try:
+            # Fetch the remote's metadata for the file
+            m = self.get_metadata(url)
+            self._check_attr(m, expected, 'length')
+            if (self._check_attr(m, expected, 'sha512sum') or \
+                    self._check_attr(m, expected, 'md5sum')):
+                return True
+            if location.trust_length and \
+                    self._check_attr(m, expected, 'length') :
+                return False
+            raise TransferError('Not enough metadata for verification')
+        except NotImplementedError:
+            pass
+
+        if self.trust_length :
+            try:
+                length = self.get_length(replica.url)
+                if self._check_attr2(length, expected, 'length'):
+                    return False
+            except NotImplementedError:
+                pass
+    
+        # Fetch back the remote file and verify it locally.
+        f = self.get_file(url)
+        md5sum, sha512sum, size, _ = generate_file_checksums(f, None)
+        self._check_attr2(str(size), expected, 'length')
+        if self._check_attr2(sha512sum, expected, 'sha512sum') or \
+                self._check_attr2(md5sum, expected, 'md5sum'):
+            return True
+        raise TransferError('Not enough metadata for file verification')
+    
+
+    def _check_attr(self, attributes, expected, key):
+        return self._check_attr2(attributes.get(key, None), expected, key)
+        
+    def _check_attr2(self, attribute, expected, key):
+        """Check that the 'attribute' value matches the corresponding
+        value in 'expected'.  If there is a mismatch throw TransferError.
+        Otherwise 'True' means that the match succeeded, 'False' means 
+        no information.
+        """
+
+        value = expected.get(key, None)
+        if not value or not attribute:
+            return False
+        if value.lower() == attribute.lower():
+            return True
+        logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
+        raise TransferError('Transfer check failed: the %s of the target '
+                            ' file does not match' % key)
+    
     def _generate_archive_url(self, experiment):
         path = '%s-archive.tar.gz' % experiment.id
         return urljoin(self.base_url, quote(path))

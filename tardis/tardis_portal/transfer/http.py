@@ -121,7 +121,11 @@ class SimpleHttpTransfer(TransferProvider):
             response = self.opener.open(self.GetRequest(url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
-            raise TransferError(str(e))
+            # Bad request means that the remote didn't recognize the query
+            if e.code == 400:
+                raise NotImplementedError
+            else:
+                raise TransferError(str(e))
     
     def get_opener(self, url):
         self._check_url(url)

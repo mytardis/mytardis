@@ -53,7 +53,7 @@ def get_free_space(fs_dir):
         raise RuntimeError('Unsupported / unexpected platform type: %s' % \
                                sys_type)
 
-def generate_file_checksums(sourceFile, tempFile):
+def generate_file_checksums(sourceFile, tempFile=None):
     '''
     Generate checksums, etcetera for a file read from 'sourceFile'.
     If 'tempFile' is provided, the bytes are written to it as they are read.

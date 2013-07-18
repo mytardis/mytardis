@@ -38,6 +38,7 @@ from django.db import transaction
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.tardis_portal.staging import stage_replica
 from tardis.tardis_portal.util import generate_file_checksums
+from tardis.tardis_portal.transfer import TransferError
 
 from tardis.apps.migration import MigrationError
 
@@ -135,65 +136,12 @@ def check_file_transferred(replica, location):
 
     from tardis.tardis_portal.models import Dataset_File
     datafile = Dataset_File.objects.get(pk=replica.datafile.id)
-
-    # If the remote is capable, get it to send us the checksums and / or
-    # file length for its copy of the file
     try:
-        # Fetch the remote's metadata for the file
-        m = location.provider.get_metadata(replica.url)
-        _check_attribute(m, datafile.size, 'length')
-        if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
-               _check_attribute(m, datafile.md5sum, 'md5sum')):
-            return True
-        if location.trust_length and \
-                 _check_attribute(m, datafile.size, 'length') :
-            return False
-        raise MigrationError('Not enough metadata for verification')
-    except NotImplementedError:
-        pass
-    except HTTPError as e:
-        # Bad request means that the remote didn't recognize the query
-        if e.code != 400:
-            raise
-
-    if location.provider.trust_length :
-        try:
-            length = location.provider.get_length(replica.url)
-            if _check_attribute2(length, datafile.size, 'length'):
-                return False
-        except NotImplementedError:
-            pass
-    
-    # Fetch back the remote file and verify it locally.
-    f = replica.get_file_getter(False)()
-    md5sum, sha512sum, size, x = generate_file_checksums(f, None)
-    _check_attribute2(str(size), datafile.size, 'length')
-    if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
-            _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
-        return True
-    raise MigrationError('Not enough metadata for file verification')
-    
-def _check_attribute(attributes, value, key):
-    if not value:
-       return False
-    try:
-       if attributes[key].lower() == value.lower():
-          return True
-       logger.debug('incorrect %s: expected %s, got %s', 
-                    key, value, attributes[key])
-       raise MigrationError('Transfer check failed: the %s attribute of the' \
-                                ' remote file does not match' % (key))  
-    except KeyError:
-       return False;
-
-def _check_attribute2(attribute, value, key):
-    if not value or not attribute:
-        return False
-    if value.lower() == attribute.lower():
-        return True
-    logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
-    raise MigrationError('Transfer check failed: the %s attribute of the' \
-                           ' retrieved file does not match' % (key))
-
-
+        return location.provider.check_transfer(
+            replica.url,
+            {'length': datafile.size,
+             'md5sum': datafile.md5sum,
+             'sha512sum': datafile.sha512sum})
+    except TransferError as e:
+        raise MigrationError(e.args[0])
     

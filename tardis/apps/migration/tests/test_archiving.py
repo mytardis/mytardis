@@ -85,10 +85,22 @@ class ArchivingTestCase(TestCase):
                 tf.close()
 
             self.assertEqual(archive.experiment_owner, 'fred')
+            self.assertEqual(archive.nos_errors, 0)
+            self.assertEqual(archive.nos_files, 1)
+            self.assertEqual(archive.mimetype, 'application/x-tar')
+            self.assertEqual(archive.encoding, 'x-gzip')
+            self.assertEqual(archive.archive_url, None)
+            self.assertEqual(archive.experiment_url, 
+                             'http://example.com/something')
+            self.assertEqual(archive.experiment, self.experiment)
+            self.assertEqual(archive.experiment_title, 
+                             'Meanwhile, down in the archives ...')
 
             count = Archive.objects.count()
             archive = save_archive_record(archive, 'http://example.com')
             self.assertEqual(Archive.objects.count(), count + 1)
+            self.assertEqual(archive.archive_url, 
+                             'http://example.com/1-1-archive.tar.gz')
             
         finally:
             os.unlink(tmp.name)

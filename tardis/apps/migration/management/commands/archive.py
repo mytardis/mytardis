@@ -41,6 +41,7 @@ from django.utils.log import dictConfig
 
 from tardis.tardis_portal.models import Location, Experiment
 from tardis.tardis_portal.transfer import TransferError
+from tardis.tardis_portal.util import generate_file_checksums
 
 from tardis.apps.migration import ArchivingError, create_experiment_archive, \
     save_archive_record, remove_experiment, remove_experiment_data, \
@@ -217,8 +218,6 @@ class Command(BaseCommand):
                     delete=False)
                 archive = create_experiment_archive(
                     exp, tmp_file, minSize=self.minSize, maxSize=self.maxSize)
-                archive.experiment_changed=experiment_changed
-                save_archive_record(archive, self.location.provider.base_url)
 
             self.total_size += archive.size
             if self.maxTotalSize and self.total_size >= self.maxTotalSize:
@@ -229,11 +228,20 @@ class Command(BaseCommand):
                     self.stdout.write('Archived experiment %s to %s\n' %
                                       (exp.id, pathname))
             else:
-                self.location.provider.put_archive(
-                    tmp_file.name, archive.archive_url)
-                if self.verbosity > 0:
-                    self.stdout.write('Archived experiment %s to %s\n' %
-                                      (exp.id, archive.archive_url))
+                try:
+                    provider = self.location.provider
+                    archive.experiment_changed=experiment_changed
+                    (_, archive.sha512sum, _, _) = \
+                        generate_file_checksums(open(tmp_file.name))
+                    save_archive_record(archive, provider.base_url)
+                    provider.put_archive(tmp_file.name, archive.archive_url)
+                    if self.verbosity > 0:
+                        self.stdout.write('Archived experiment %s to %s\n' %
+                                          (exp.id, archive.archive_url))
+                except Exception as e:
+                    if archive.id:
+                        archive.delete()
+                    raise e
             if archive.nos_errors > 0:
                 self.stderr.write(
                     'Archive for experiment %s is missing %s files\n' % \
