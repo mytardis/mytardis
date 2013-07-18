@@ -452,25 +452,41 @@ def download_experiment(request, experiment_id, comptype,
         return render_error_message(
             request, 'Cannot download: %s' % msg, status=400)
 
-    if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(mapper, datafiles),
-                               asynchronous_file_creation=True)
+    try:
+        if comptype == "tar":
+            reader = StreamingFile(_write_tar_func(mapper, datafiles),
+                                   asynchronous_file_creation=True)
 
-        response = HttpResponse(FileWrapper(reader),
-                                mimetype='application/x-tar')
-        response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + rootdir + '-complete.tar"'
-    elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(mapper, datafiles),
-                               asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
-                                mimetype='application/zip')
+            response = HttpResponse(FileWrapper(reader),
+                                    mimetype='application/x-tar')
+            response['Content-Disposition'] = \
+                'attachment; filename="experiment' \
+                + rootdir + '-complete.tar"'
+        elif comptype == "zip":
+            reader = StreamingFile(_write_zip_func(mapper, datafiles),
+                                   asynchronous_file_creation=True)
+            response = HttpResponse(FileWrapper(reader),
+                                    mimetype='application/zip')
 
-        response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + rootdir + '-complete.zip"'
-    else:
-        response = render_error_message(
-            request, 'Unsupported download format: %s' % comptype, status=404)
+            response['Content-Disposition'] = \
+                'attachment; filename="experiment' \
+                + rootdir + '-complete.zip"'
+        else:
+            response = render_error_message(
+                request, 'Unsupported download format: %s' % comptype,
+                status=404)
+    except ValueError:  # raised when replica not verified TODO: custom excptn
+        redirect = request.META.get('HTTP_REFERER',
+                                    'http://%s/' %
+                                    request.META.get('HTTP_HOST'))
+        message = """The experiment you are trying to access has not yet been
+                     verified completely.
+                     Verification is an automated background process.
+                     Please try again later or contact the system
+                     administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
+        redirect = redirect + '#error:' + message
+        return HttpResponseRedirect(redirect)
     return response
 
 

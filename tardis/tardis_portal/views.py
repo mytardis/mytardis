@@ -249,7 +249,10 @@ def load_dataset_image(request, parameter_id):
 
 
 def load_datafile_image(request, parameter_id):
-    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    try:
+        parameter = DatafileParameter.objects.get(pk=parameter_id)
+    except DatafileParameter.DoesNotExist:
+        return HttpResponseNotFound()
     dataset_file = parameter.parameterset.dataset_file
     if authz.has_datafile_access(request, dataset_file.id):
         return load_image(request, parameter)
@@ -1200,7 +1203,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     if 'filename' in request.GET and len(request.GET['filename']):
         filename_search = request.GET['filename']
         dataset_results = \
-            dataset_results.filter(url__icontains=filename_search)
+            dataset_results.filter(filename__icontains=filename_search)
 
         params['filename'] = filename_search
 
