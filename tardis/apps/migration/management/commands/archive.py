@@ -274,8 +274,9 @@ class Command(BaseCommand):
                     raise e
             if archive.nos_errors > 0:
                 self.stderr.write(
-                    'Archive for experiment %s is missing %s files\n' % \
-                        (exp.id, archive.nos_errors))
+                    'Archive for experiment %s is missing %s of %s files\n' % \
+                        (exp.id, archive.nos_errors, 
+                         archive.nos_errors + archive.nos_files))
             self.transfer_count += 1
             if self.remove_all:
                 remove_experiment(exp)

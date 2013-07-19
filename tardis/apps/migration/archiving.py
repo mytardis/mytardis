@@ -83,7 +83,7 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
                     logger.warn("Unable to fetch %s from %s for archiving." \
                                     " (exp %s, df %s, rep %s)" % 
                                 (datafile.filename, replica.url, 
-                                 experiment.id, datafile.id, replica.id),
+                                 exp.id, datafile.id, replica.id),
                                 exc_info=True)
                     nos_errors += 1
                     continue
