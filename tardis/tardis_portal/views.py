@@ -352,7 +352,10 @@ def about(request):
          'about_pressed': True,
          'nav': [{'name': 'About', 'link': '/about/'}],
          'version': settings.MYTARDIS_VERSION,
-    }
+         'custom_about_section': getattr(
+             settings, 'CUSTOM_ABOUT_SECTION_TEMPLATE',
+             'tardis_portal/about_include.html'),
+         }
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -957,7 +960,7 @@ def experiment_datasets_json(request, experiment_id):
     objects = [
         get_dataset_info(ds, include_thumbnail=has_download_permissions,
                          exclude=['datafiles'])
-        for ds in experiment.datasets.all()]
+        for ds in experiment.datasets.all().order_by('description')]
 
     return HttpResponse(json.dumps(objects), content_type='application/json')
 
@@ -3329,7 +3332,10 @@ def stage_files_to_dataset(request, dataset_id):
 
 
 def user_guide(request):
-    c = {}
+    c = {
+        'user_guide_location': getattr(
+            settings, 'CUSTOM_USER_GUIDE', 'user_guide/index.html'),
+    }
     return HttpResponse(render_response_index(request,
                         'tardis_portal/user_guide.html', c))
 

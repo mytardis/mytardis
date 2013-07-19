@@ -27,3 +27,16 @@ tardis/settings.py
 tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml
 var/
 versions.cfg
+tardis/apps/*
+!tardis/apps/__init__.py
+!tardis/apps/anzsrc_codes
+!tardis/apps/deep_storage_download_mapper
+!tardis/apps/dl_mapper_df_dir_only
+!tardis/apps/equipment
+!tardis/apps/filepicker
+!tardis/apps/mx_views
+!tardis/apps/oaipmh
+!tardis/apps/publication_forms
+!tardis/apps/related_info
+!tardis/apps/slideshow_view
+!tardis/apps/synch_linking

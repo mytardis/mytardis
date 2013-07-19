@@ -37,7 +37,12 @@ logger = logging.getLogger(__name__)
 @login_required
 def index(request):
     if request.method == 'GET':
-        return HttpResponse(render_response_index(request, 'form.html'))
+        context = {'introduction': getattr(
+            settings, 'PUBLICATION_INTRODUCTION',
+            "<p><strong>... introduction and publication agreement "
+            "...</strong></p>")}
+        return HttpResponse(render_response_index(
+            request, 'form.html', context=context))
     else:
         return process_form(request)
 
