@@ -16,8 +16,7 @@ class Location(models.Model):
         when deciding which one to use
     :attribute is_available: if True, the location should currently be
         accessible / useable
-
-    ... and other attributes TBD
+    :attribute transfer_provider: the name for the transfer provider type
     '''
 
     name = models.CharField(max_length=40, unique=True)
