@@ -144,7 +144,6 @@ class Command(BaseCommand):
                                       scale_allowed=False)
         if self.keepOnly != None and self.keepOnly <= 0:
             raise CommandError('--keepOnly value must be > zero')
-
         self.maxSize = self._int_opt(options, 'maxSize', 
                                      'DEFAULT_ARCHIVE_MAX_SIZE')
         self.minSize = self._int_opt(options, 'minSize', 
@@ -178,7 +177,7 @@ class Command(BaseCommand):
             if scale_allowed:
                 try:
                     return parse_scaled_number(value)
-                except:
+                except ValueError:
                     raise CommandError(
                         "--%s argument (%s) must be a non-negative" \
                             " number followed by an optional scale" \
@@ -186,7 +185,7 @@ class Command(BaseCommand):
             else:
                 try:
                     return long(value)
-                except:
+                except ValueError:
                     raise CommandError(
                         "--%s argument (%s) must be an integer" % (key, value))
         else:

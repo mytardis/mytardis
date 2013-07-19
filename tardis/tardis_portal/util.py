@@ -3,7 +3,7 @@ from django.conf import settings
 import hashlib
 import pystache
 import pytz
-import os, platform, ctypes, stat, time, struct
+import os, platform, ctypes, stat, time, struct, re
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
