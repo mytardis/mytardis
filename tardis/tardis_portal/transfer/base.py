@@ -50,6 +50,9 @@ class TransferProvider(object):
     def close(self):
         pass
 
+    def take_offline(self, url):
+        raise NotImplementedError
+
     def check_transfer(self, url, expected, require_checksum=False):
         """
         Check that a file has been successfully transfered.  Try fetching

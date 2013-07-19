@@ -87,6 +87,12 @@ class Command(BaseCommand):
                     default=False,
                     help='Incremental mode just archives experiments that' \
                         ' are new or have changed since their last archive'), 
+        make_option('-o', '--sendOffline',
+                    action='store_true',
+                    dest='sendOffline',
+                    default=False,
+                    help='Causes archives to be pushed offline at the' \
+                        ' archive location after verification'), 
         make_option('--removeData',
                     action='store_true',
                     dest='removeData',
@@ -139,6 +145,7 @@ class Command(BaseCommand):
             options.get('location', None),
             settings.DEFAULT_ARCHIVE_LOCATION)
         self.directory = options.get('directory', None)
+        self.sendOffline = options.get('sendOffline', False)
         self.all = options.get('all', False)
         self.keepOnly = self._int_opt(options, 'keepOnly', '',
                                       scale_allowed=False)
@@ -265,6 +272,14 @@ class Command(BaseCommand):
                                              'md5sum': md5sum,
                                              'sha512sum': sha512sum},
                                             require_checksum=paranoid)
+                    if self.sendOffline:
+                        try:
+                            provider.push_offline(archive.archive_url)
+                        except NotImplementedError:
+                            self.stderr.write(
+                                'Archive location does not ' 
+                                'support --sendOffline ... ignoring it')
+                            self.sendOffline = False
                     if self.verbosity > 0:
                         self.stdout.write('Archived experiment %s to %s\n' %
                                           (exp.id, archive.archive_url))

@@ -85,6 +85,7 @@ class ScpTransfer(TransferProvider):
             'mkdirs': '${ssh} mkdir -p "${path}"',
             'length': '${ssh} stat --format="%s" "${path}"',
             'remove': '${ssh} rm "${path}"',
+            'take_offline': None,
             'scp_from': 'scp ${scp_opts} ${username}@${hostname}:"${remote}" "${local}"',
             'scp_to': 'scp ${scp_opts} "${local}" ${username}@${hostname}:"${remote}"',
             'ssh': 'ssh -o PasswordAuthentication=no ${ssh_opts} ${username}@${hostname}'}
@@ -140,6 +141,13 @@ class ScpTransfer(TransferProvider):
         (path, _, _) = self._analyse_url(url)
         return int(self.run_command('length', {'path': path}).strip())
     
+    def take_offline(self, url):
+        (path, _, _) = self._analyse_url(url)
+        if commands.get('take_offline', None):
+            self.run_command('take_offline', {'path': path})
+        else:
+            raise NotImplementedError
+
     def get_metadata(self, replica):
         raise NotImplementedError
     
