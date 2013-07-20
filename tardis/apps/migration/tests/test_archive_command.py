@@ -44,6 +44,7 @@ from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
     generate_user
 
+from tardis.apps.migration.models import Archive
 from tardis.apps.migration.management.commands.archive import Command
 
 
@@ -143,7 +144,82 @@ class ArchiveCommandTestCase(TestCase):
         out.seek(0)
         self.assertEquals(
             out.read(), 
-            'Archived experiment %s to %s%s-2-archive.tar.gz\n' \
+            'Archived experiment %s to %s%s-2-archive.tar.gz\n'
+            'Archived 1 experiments with 0 errors\n' %
+            (experiment.id, archtest.provider.base_url, experiment.id))
+
+        # Test 'minSize' and 'maxSize' handling
+        out = StringIO()
+        err = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         maxSize='1k', verbosity=1, stdout=out, stderr=err)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived 0 experiments with 1 errors\n')
+        err.seek(0)
+        self.assertEquals(
+            err.read(), 
+            'Archiving failed for experiment 1 : ' 
+            'Archive for experiment 1 is too big\n')
+
+        out = StringIO()
+        err = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         minSize='1g', verbosity=1, stdout=out, stderr=err)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived 0 experiments with 1 errors\n')
+        err.seek(0)
+        self.assertEquals(
+            err.read(), 
+            'Archiving failed for experiment 1 : ' 
+            'Archive for experiment 1 is too small\n')
+
+        # And with --force
+        out = StringIO()
+        err = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         minSize='1g', verbosity=1, force=True,
+                         stdout=out, stderr=err)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived experiment %s to %s%s-3-archive.tar.gz\n'
+            'Archived 1 experiments with 0 errors\n' % 
+            (experiment.id, archtest.provider.base_url, experiment.id))
+        err.seek(0)
+        self.assertEquals(
+            err.read(), 
+            'Warning: archive for experiment 1 is too small\n')
+
+        # Now test --keepOnly
+        self.assertEquals(Archive.objects.count(), 3)
+        out = StringIO()
+        try:
+            call_command('archive', experiment.id, location='archtest',
+                         keepOnly=2, verbosity=1, stdout=out)
+        except SystemExit:
+            pass
+        out.seek(0)
+        self.assertEquals(
+            out.read(), 
+            'Archived experiment %s to %s%s-4-archive.tar.gz\n' \
                 'Archived 1 experiments with 0 errors\n' % \
                 (experiment.id, archtest.provider.base_url, 
                  experiment.id))
+        self.assertEquals(Archive.objects.count(), 2)
+        for a in Archive.objects.all():
+            self.assertTrue(a.id in [3, 4])
+        
+

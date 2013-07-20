@@ -93,6 +93,13 @@ class Command(BaseCommand):
                     default=False,
                     help='Causes archives to be pushed offline at the' \
                         ' archive location after verification'), 
+        make_option('-c', '--checksums',
+                    action='store_true',
+                    dest='checksums',
+                    default=False,
+                    help='Forces verification of archive checksums after' \
+                        ' file transfer. (This is implied by --removeAll' \
+                        ' or --removeData.)'), 
         make_option('--removeData',
                     action='store_true',
                     dest='removeData',
@@ -129,7 +136,12 @@ class Command(BaseCommand):
                     action='store',
                     dest='maxTotalSize',
                     default=None,
-                    help='The aggregate archive size limit'),
+                    help='The aggregate archive size limit'), 
+        make_option('-f', '--force',
+                    action='store_true',
+                    dest='force',
+                    default=False,
+                    help='Turn the minSize and maxSize options into warnings'),
         )
     
     conf = dictConfig(LOGGING)
@@ -147,8 +159,10 @@ class Command(BaseCommand):
         self.directory = options.get('directory', None)
         self.sendOffline = options.get('sendOffline', False)
         self.all = options.get('all', False)
+        self.force = options.get('force', False)
         self.keepOnly = self._int_opt(options, 'keepOnly', '',
                                       scale_allowed=False)
+        self.checksums = options.get('checksums', False)
         if self.keepOnly != None and self.keepOnly <= 0:
             raise CommandError('--keepOnly value must be > zero')
         self.maxSize = self._int_opt(options, 'maxSize', 
@@ -157,6 +171,7 @@ class Command(BaseCommand):
                                      'DEFAULT_ARCHIVE_MIN_SIZE')
         self.maxTotalSize = self._int_opt(options, 'maxTotalSize', 
                                           'DEFAULT_ARCHIVE_MAX_TOTAL, SIZE')
+        self.paranoid = self.remove_all or self.remove_data or self.checksums
 
         # Ping test
         if not (self.directory or self.dryRun or 
@@ -172,6 +187,27 @@ class Command(BaseCommand):
         else:
             self._experiments(args)
         self._stats()
+
+    def _check_size(self, archive):
+        if self.minSize and archive.size < self.minSize:
+            if self.force:
+                self.stderr.write('Warning: archive for experiment %s '
+                                  'is too small\n' % archive.experiment.id)
+            else:
+                raise ArchivingError('Archive for experiment %s is too small' %
+                                     archive.experiment.id)
+        if self.maxSize and archive.size > self.maxSize:
+            if self.force:
+                self.stderr.write('Warning: archive for experiment %s '
+                                  'is too big\n' % archive.experiment.id)
+            else:
+                raise ArchivingError('Archive for experiment %s is too big' %
+                                     archive.experiment.id)
+
+        self.total_size += archive.size
+        if self.maxTotalSize and self.total_size >= self.maxTotalSize:
+            raise ArchivingError('Exceeded total size') 
+
 
     def _int_opt(self, options, key, dflt_key, scale_allowed=True):
         value = options.get(key, None)
@@ -235,23 +271,21 @@ class Command(BaseCommand):
             self.stdout.write('Would have archived experiment %s\n' % exp.id)
             return
         tmp_file = None
+        maxSize = None if self.force else self.maxSize 
         try:
             if self.directory:
                 pathname = os.path.join(self.directory, 
                                         '%s-archive.tar.gz' % exp.id)
                 archive = create_experiment_archive(
-                    exp, open(pathname, 'wb'), 
-                    minSize=self.minSize, maxSize=self.maxSize)
+                    exp, open(pathname, 'wb'), maxSize=maxSize)
             else:
                 tmp_file = NamedTemporaryFile(
                     prefix='mytardis_tmp_ar', suffix='.tar.gz', 
                     delete=False)
                 archive = create_experiment_archive(
-                    exp, tmp_file, minSize=self.minSize, maxSize=self.maxSize)
+                    exp, tmp_file, maxSize=maxSize)
 
-            self.total_size += archive.size
-            if self.maxTotalSize and self.total_size >= self.maxTotalSize:
-                raise ArchivingError('Exceeded total size') 
+            self._check_size(archive)
 
             if self.directory: 
                 if self.verbosity > 0:
@@ -265,13 +299,12 @@ class Command(BaseCommand):
                         generate_file_checksums(open(tmp_file.name))
                     archive.sha512sum = sha512sum
                     save_archive_record(archive, provider.base_url)
-                    paranoid = self.remove_all or self.remove_data
                     provider.put_archive(tmp_file.name, archive.archive_url)
                     provider.check_transfer(archive.archive_url,
                                             {'length': str(length),
                                              'md5sum': md5sum,
                                              'sha512sum': sha512sum},
-                                            require_checksum=paranoid)
+                                            require_checksum=self.paranoid)
                     if self.sendOffline:
                         try:
                             provider.push_offline(archive.archive_url)
@@ -304,13 +337,13 @@ class Command(BaseCommand):
         except ArchivingError as e:
             logger.info('Archiving error', exc_info=sys.exc_info())
             self.stderr.write(
-                'archiving failed for experiment %s : %s\n' % \
+                'Archiving failed for experiment %s : %s\n' % \
                     (exp.id, e.args[0]))
             self.error_count += 1
         except TransferError as e:
             logger.info('Transfer error', exc_info=sys.exc_info())
             self.stderr.write(
-                'archive export failed for experiment %s : %s\n' % \
+                'Archive export failed for experiment %s : %s\n' % \
                     (exp.id, e.args[0]))
             self.error_count += 1
         finally:
@@ -339,4 +372,17 @@ class Command(BaseCommand):
         return dest
 
     def _prune_archives(self, exp):
-        pass
+        archives = Archive.objects.filter(experiment=exp) \
+            .order_by('archive_created')
+        count = len(archives)
+        print 'count = %s\n' % count 
+        for i in range(0, count - self.keepOnly):
+            print 'i = %s\n' % i 
+            archive = archives[i]
+            location = Location.get_location_for_url(archive.archive_url)
+            if location:
+                location.provider.remove_file(archive.archive_url)
+                archive.delete()
+            
+            
+            

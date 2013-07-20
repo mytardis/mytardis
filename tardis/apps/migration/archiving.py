@@ -50,7 +50,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
+def create_experiment_archive(exp, outfile, maxSize=None):
     """Create an experiment archive for 'exp' writing it to the 
     file object given by 'outfile'.  The archive is in tar/gzip
     format, and contains a METs manifest and the data files for
@@ -100,14 +100,6 @@ def create_experiment_archive(exp, outfile, minSize=None, maxSize=None):
         tf.close()
         size = long(outfile.tell())
         outfile.close()
-        # (The intention is to do these checks as we are writing the archive)
-        if minSize or maxSize:
-            if minSize and size < minSize:
-                raise ArchivingError('Archive for experiment %s is too small' %
-                                     exp.id)
-            if maxSize and size > maxSize:
-                raise ArchivingError('Archive for experiment %s is too big' %
-                                     exp.id)
         if exp.url:
             experiment_url = exp.url
         else:
