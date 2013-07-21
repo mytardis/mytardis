@@ -57,14 +57,14 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     LoggingMiddleware()
-    args = 'archive_experiment <id> ...'
+    args = 'archive <id> ...'
     help = 'This command archives MyTardis Experiments\n'
 
     option_list = BaseCommand.option_list + (
         make_option('-a', '--all',
                     action='store_true',
                     dest='all',
-                    help='Process all datafiles'), 
+                    help='Process all experiments'), 
         make_option('-l', '--location',
                     action='store',
                     dest='location',
