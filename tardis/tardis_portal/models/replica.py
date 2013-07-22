@@ -128,7 +128,7 @@ class Replica(models.Model):
         if url.scheme == '':
             try:
                 base_path = self.location.provider.base_path
-                return _os.safe_join(base_path, url.path)
+                return _os.safe_join(base_path, self.url)
             except AttributeError:
                 return ''
         if url.scheme == 'file':
