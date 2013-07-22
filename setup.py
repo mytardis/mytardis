@@ -24,7 +24,7 @@ setup(
         'feedparser==5.1.3',
         'elementtree',
         'django==1.5.1',
-        'django-registration==0.8',
+        'django-registration==1.0',
         'django-extensions==1.1.1',
         'django-form-utils==0.2.0',
         'django-haystack==1.2.7',
