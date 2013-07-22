@@ -1,5 +1,4 @@
 {% extends "tardis_portal/portal_template.html" %}
-{% load url from future %}
 {% load static from staticfiles %}
 {% load capture %}
 {% load dataset_tags %}
@@ -9,7 +8,7 @@
 {% block script %}
 <script type="text/javascript">
     var loadingHTML = $('<img src="{% static 'images/ajax-loader.gif' %}"/><br />');
-    
+
     var shown_datafile_href = "";
     var prev_file_select = null;
 
@@ -86,7 +85,7 @@
         var type = form.attr('data-type');
         var parent_object_id = form.attr('data-parent_object_id');
         var href = "/ajax/add_" + type + "_parameters/" + parent_object_id + "/?schema_id=" + schema_id;
-        
+
         $.ajax({
           type: 'POST',
           url: href,
@@ -98,11 +97,11 @@
                 }
             },
           async:false
-        });        
-        
+        });
+
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
-        
+
         $('#metadata-pane').trigger('reload');
 
         return false;
@@ -123,12 +122,12 @@
                 }
             },
           async:false
-        });        
+        });
 
         // Hide the form buttons
         form.parents('.modal').find('.modal-footer').hide();
         $('#metadata-pane').trigger('reload');
-        
+
         return false;
     });
 
@@ -140,12 +139,12 @@
           $('#datafile-info');
 
         $datafile_metadata_container.toggle();
-        
+
         if(prev_file_select)
         {
             prev_file_select.removeClass("file-select");
-        }       
-        
+        }
+
         var file_select = $this.parents('tr.datafile');
         file_select.addClass("file-select");
         prev_file_select = file_select;
@@ -351,7 +350,7 @@ $('#modal-metadata .submit-button').live('click', function() {
   {% if from_experiment %}
   <h4 style="padding-top: 4px">
       <small>
-      From the experiment: 
+      From the experiment:
       <a
          class="experiment-link"
          href="{{ from_experiment.get_absolute_url }}">
@@ -359,11 +358,11 @@ $('#modal-metadata .submit-button').live('click', function() {
       </a>
       </small>
   </h4>
-  {% else %} 
+  {% else %}
         {% if other_experiments|length == 1 %}
         <h4 style="padding-top: 4px">
             <small>
-            From the experiment:        
+            From the experiment:
         {% for other_experiment in other_experiments %}
             <a
                class="experiment-link"
@@ -372,18 +371,18 @@ $('#modal-metadata .submit-button').live('click', function() {
             </a>
             </small>
         </h4>
-        {% endfor %}    
+        {% endfor %}
         {% endif %}
-    
+
   {% endif %}
   {% if dataset.immutable %}
   <h4 style="padding-top: 4px">
       <small>
       This experiment has been set to immutable on creation (cannot be modified)
       </small>
-  </h4>  
+  </h4>
   {% endif %}
-  
+
   <p style="text-align: right">
     {{ dataset|dataset_experiments_badge}}&nbsp;
     {{ dataset|dataset_datafiles_badge }}&nbsp;
@@ -396,7 +395,7 @@ $('#modal-metadata .submit-button').live('click', function() {
     {% block dataset_content_preview %}
     <div class="row-fluid" style="margin-bottom: 20px">
     <h3>Preview Images</h3>
-    <div class="info-box">        
+    <div class="info-box">
     {% if dataset.get_images.count > 0 %}
       <div id="preview" class="carousel" style="margin: 20px auto 20px auto">
         <!-- Carousel items -->
@@ -426,14 +425,14 @@ $('#modal-metadata .submit-button').live('click', function() {
     {% else %}
           <div class="alert">No previews available</div>
     {% endif %}
-      </div>    
+      </div>
     </div>
     {% endblock dataset_content_preview %}
     <div id="metadata-pane-datafile" class="row-fluid">
        <h3>Datafile Information</h3>
        <div id="datafile-info">
-	 <div class="info-box"> 
-	   <em>Click the 
+	 <div class="info-box">
+	   <em>Click the
 	   <i class="icon-list"></i>
 	   button next to any file to view details and actions.
 	   </em>
@@ -441,7 +440,7 @@ $('#modal-metadata .submit-button').live('click', function() {
        </div>
        {# include "tardis_portal/ajax/datafile_details.html" #}
     </div>
-    <div id="metadata-pane" class="row-fluid">    
+    <div id="metadata-pane" class="row-fluid">
       {% include "tardis_portal/ajax/dataset_metadata.html" %}
     </div>
     <div id="other-experiments-pane">
@@ -464,7 +463,7 @@ $('#modal-metadata .submit-button').live('click', function() {
                     </div>
                 {% endif %}
                 {% endfor %}
-        </div>        
+        </div>
         {% else %}
         <em>This dataset doesn't appear in any other experiments.</em>
         {% endif %}
@@ -475,8 +474,8 @@ $('#modal-metadata .submit-button').live('click', function() {
   <div class="span4">
       <h3 style="display: inline">
       {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
-      </h3>      
-      
+      </h3>
+
     <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
       <div class="row-fluid">
         <div class="pull-left">

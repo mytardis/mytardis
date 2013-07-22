@@ -1,5 +1,4 @@
 {% load static from staticfiles %}
-{% load url from future %}
 {% block content %}
 
 <!-- Scripts -->
@@ -100,7 +99,7 @@ $('#legal-section .cancel-button').live("click", function() {
   // Set default state
   publicAccessSelector.change();
   </script>
-  
+
 <h3>Step 2: Select a license:</h3>
   <div id="license-options"></div>
   <script type="text/javascript">
@@ -124,7 +123,7 @@ $('#legal-section .cancel-button').live("click", function() {
     $('#legal-section').show();
     $('#license-options').hide();
   });
-  
+
   $('#reselect-license').live('click', function(){
       $('#selected-license-text').html('');
       $('#license-options').show();
@@ -159,13 +158,13 @@ $('form.experiment-rights').submit(function(evt) {
       thisModal.html(data);
       // Show update message
       $('#legal-section').hide();
-      
+
       $('#choose-rights-message').html(
           Mustache.to_html(
               Mustache.TEMPLATES['tardis_portal/rights_update_message'],
               templateData, Mustache.TEMPLATES)
       );
-      
+
       // update badge on view experiment page
       $('#experiment-public-access-badge').load("public_access_badge/")
     },
@@ -211,4 +210,3 @@ $('form.experiment-rights').submit(function(evt) {
 </div>
 
 {% endblock %}
-
