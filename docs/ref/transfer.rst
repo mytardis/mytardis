@@ -83,3 +83,6 @@ The provider parameters are as follows:
         * 'remote' the path part of the url for SCP commands
         * 'local' the local file path for SCP commands
 
+      For examples, refer to the defaults in the source code.
+
+
