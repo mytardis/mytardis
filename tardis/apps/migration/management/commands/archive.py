@@ -375,13 +375,16 @@ class Command(BaseCommand):
         archives = Archive.objects.filter(experiment=exp) \
             .order_by('archive_created')
         count = len(archives)
-        print 'count = %s\n' % count 
         for i in range(0, count - self.keepOnly):
-            print 'i = %s\n' % i 
             archive = archives[i]
-            location = Location.get_location_for_url(archive.archive_url)
+            url = archive.archive_url
+            location = Location.get_location_for_url(url)
             if location:
-                location.provider.remove_file(archive.archive_url)
+                try:
+                    location.provider.remove_file(url)
+                except TransferError:
+                    logger.info('Failed to delete archive %s' % url, 
+                                exc_info=sys.exc_info())
                 archive.delete()
             
             
