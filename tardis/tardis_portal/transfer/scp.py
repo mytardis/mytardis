@@ -143,7 +143,7 @@ class ScpTransfer(TransferProvider):
     
     def take_offline(self, url):
         (path, _, _) = self._analyse_url(url)
-        if commands.get('take_offline', None):
+        if self.commands.get('take_offline', None):
             self.run_command('take_offline', {'path': path})
         else:
             raise NotImplementedError

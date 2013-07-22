@@ -307,7 +307,7 @@ class Command(BaseCommand):
                                             require_checksum=self.paranoid)
                     if self.sendOffline:
                         try:
-                            provider.push_offline(archive.archive_url)
+                            provider.take_offline(archive.archive_url)
                         except NotImplementedError:
                             self.stderr.write(
                                 'Archive location does not ' 
