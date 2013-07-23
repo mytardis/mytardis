@@ -62,61 +62,69 @@ def create_experiment_archive(exp, outfile, maxSize=None):
 
     nos_errors = 0
     nos_files = 0
-    with NamedTemporaryFile() as manifest:
-        tf = tarfile.open(mode='w:gz', fileobj=outfile)
-        MetsExporter().export_to_file(exp, manifest)
-        manifest.flush()
-        # (Note to self: path creation by string bashing is correct
-        # here because these are not 'os' paths.  They are paths in 
-        # the namespace of a TAR file, and '/' is always the separator.)
-        tf.add(manifest.name, arcname=('%s/Manifest' % exp.id))
-        for datafile in exp.get_datafiles():
-            replica = datafile.get_preferred_replica(verified=True)
-            f = None
-            try:
-                fetched = False
-                fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
+    try:
+        with NamedTemporaryFile() as manifest:
+            tf = tarfile.open(mode='w:gz', fileobj=outfile)
+            MetsExporter().export_to_file(exp, manifest)
+            manifest.flush()
+            # (Note to self: path creation by string bashing is correct
+            # here because these are not 'os' paths.  They are paths in 
+            # the namespace of a TAR file, and '/' is always the separator.)
+            tf.add(manifest.name, arcname=('%s/Manifest' % exp.id))
+            for datafile in exp.get_datafiles():
+                replica = datafile.get_preferred_replica(verified=True)
+                f = None
                 try:
-                    f = datafile.get_file()
-                    shutil.copyfileobj(f, fdst)
-                except Exception:
-                    logger.warn("Unable to fetch %s from %s for archiving." \
-                                    " (exp %s, df %s, rep %s)" % 
-                                (datafile.filename, replica.url, 
-                                 exp.id, datafile.id, replica.id),
-                                exc_info=True)
-                    nos_errors += 1
-                    continue
-
-                fdst.flush()
-                arcname = '%s/%s/%s' % (exp.id, datafile.dataset.id,
-                                        datafile.filename)
-                tf.add(fdst.name, arcname=arcname)
-                nos_files += 1
-            finally:
-                fdst.close()
-                if f:
-                    f.close()
-        tf.close()
-        size = long(outfile.tell())
-        outfile.close()
-        if exp.url:
-            experiment_url = exp.url
+                    fetched = False
+                    fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
+                    try:
+                        f = datafile.get_file()
+                        shutil.copyfileobj(f, fdst)
+                    except Exception:
+                        logger.warn("Unable to fetch %s from %s for archiving" \
+                                        " (exp %s, df %s, rep %s)" % 
+                                    (datafile.filename, replica.url, 
+                                     exp.id, datafile.id, replica.id),
+                                    exc_info=True)
+                        nos_errors += 1
+                        continue
+                    
+                    fdst.flush()
+                    arcname = '%s/%s/%s' % (exp.id, datafile.dataset.id,
+                                            datafile.filename)
+                    tf.add(fdst.name, arcname=arcname)
+                    nos_files += 1
+                finally:
+                    fdst.close()
+                    if f:
+                        f.close()
+            tf.close()
+            size = long(outfile.tell())
+            outfile.close()
+            if exp.url:
+                experiment_url = exp.url
+            else:
+                experiment_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, 
+                                         str(exp.id))
+            owner = User.objects.get(id=exp.created_by.id).username
+            return Archive(experiment=exp,
+                           experiment_title=exp.title,
+                           experiment_owner=owner,
+                           experiment_url=experiment_url,
+                           archive_url=None,
+                           size=size, 
+                           nos_files=nos_files, 
+                           nos_errors=nos_errors,
+                           mimetype='application/x-tar', 
+                           encoding='x-gzip',
+                           sha512sum='')
+    except IOError as e:
+        if e.errno == errno.ENOSPC:
+            raise ArchivingError(
+                "Insufficient temp filespace to create archive")
         else:
-            experiment_url = urljoin(settings.DEFAULT_EXPERIMENT_URL_BASE, 
-                                     str(exp.id))
-        owner = User.objects.get(id=exp.created_by.id).username
-        return Archive(experiment=exp,
-                       experiment_title=exp.title,
-                       experiment_owner=owner,
-                       experiment_url=experiment_url,
-                       archive_url=None,
-                       size=size, 
-                       nos_files=nos_files, 
-                       nos_errors=nos_errors,
-                       mimetype='application/x-tar', 
-                       encoding='x-gzip',
-                       sha512sum='')
+            raise e
+
 
 def last_experiment_change(exp):
     # FIXME - there doesn't appear to be any way to tell when experiment
