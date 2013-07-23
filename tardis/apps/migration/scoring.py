@@ -127,7 +127,6 @@ class MigrationScorer:
                                  self.file_size_threshold,
                                  self.file_size_weighting)
             if self.use_file_timestamps:
-                print 'filepath is %s\n' % datafile.get_absolute_filepath()
                 stat = os.stat(datafile.get_absolute_filepath())
                 # FIXME - it would be better to use creation / access 
                 # times maintained by MyTardis rather that file timestamps.
