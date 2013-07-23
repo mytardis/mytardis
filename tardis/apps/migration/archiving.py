@@ -33,7 +33,7 @@ from urllib import quote
 from urlparse import urlparse, urljoin
 from tempfile import NamedTemporaryFile
 from tarfile import TarFile, TarInfo
-import os, tarfile, shutil, os.path
+import os, tarfile, shutil, os.path, errno
 
 from django.conf import settings
 from django.db import transaction
