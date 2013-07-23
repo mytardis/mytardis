@@ -455,6 +455,7 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(),
+                          'Attempting to reclaim 11 bytes\n'
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have migrated %s / %s saving 6 bytes\n'
                           'Would have reclaimed 12 bytes\n' %
@@ -467,6 +468,7 @@ class MigrateCommandTestCase(TestCase):
             pass
         out.seek(0)
         self.assertEquals(out.read(),
+                          'Attempting to reclaim 11 bytes\n'
                           'Migrating %s / %s saving 6 bytes\n'
                           'Migrating %s / %s saving 6 bytes\n'
                           'Reclaimed 12 bytes\n'
