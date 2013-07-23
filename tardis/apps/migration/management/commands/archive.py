@@ -193,6 +193,7 @@ class Command(BaseCommand):
             if self.force:
                 self.stderr.write('Warning: archive for experiment %s '
                                   'is too small\n' % archive.experiment.id)
+                return False
             else:
                 raise ArchivingError('Archive for experiment %s is too small' %
                                      archive.experiment.id)
@@ -200,6 +201,7 @@ class Command(BaseCommand):
             if self.force:
                 self.stderr.write('Warning: archive for experiment %s '
                                   'is too big\n' % archive.experiment.id)
+                return False
             else:
                 raise ArchivingError('Archive for experiment %s is too big' %
                                      archive.experiment.id)
@@ -207,7 +209,7 @@ class Command(BaseCommand):
         self.total_size += archive.size
         if self.maxTotalSize and self.total_size >= self.maxTotalSize:
             raise ArchivingError('Exceeded total size') 
-
+        return True
 
     def _int_opt(self, options, key, dflt_key, scale_allowed=True):
         value = options.get(key, None)
@@ -285,7 +287,7 @@ class Command(BaseCommand):
                 archive = create_experiment_archive(
                     exp, tmp_file, maxSize=maxSize)
 
-            self._check_size(archive)
+            size_ok = self._check_size(archive)
 
             if self.directory: 
                 if self.verbosity > 0:
@@ -305,7 +307,7 @@ class Command(BaseCommand):
                                              'md5sum': md5sum,
                                              'sha512sum': sha512sum},
                                             require_checksum=self.paranoid)
-                    if self.sendOffline:
+                    if self.sendOffline and size_ok:
                         try:
                             provider.take_offline(archive.archive_url)
                         except NotImplementedError:
