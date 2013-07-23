@@ -37,6 +37,7 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 """
 from django.conf import settings
 from django.test import TestCase
+import os
 
 
 class ModelTestCase(TestCase):
@@ -155,6 +156,9 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(), 
                              '/test/download/datafile/1/')
             self.assertTrue(df_file.is_local())
+            self.assertEqual(df_file.get_absolute_filepath(), 
+                             os.path.join(settings.FILE_STORE_PATH,
+                                          'path/file.txt'))
             
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
@@ -166,6 +170,23 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/test/vbl/download/datafile/2/')
             self.assertFalse(df_file.is_local())
+            self.assertEqual(df_file.get_absolute_filepath(), 
+                             os.path.join(settings.FILE_STORE_PATH,
+                                          'path/file1.txt'))
+
+            df_file = _build(dataset, 'file1.txt', 'path/file1#txt', 'vbl')
+            self.assertEqual(df_file.filename, 'file1.txt')
+            self.assertEqual(df_file.get_preferred_replica().url,
+                             'path/file1#txt')
+            self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
+            self.assertEqual(df_file.dataset, dataset)
+            self.assertEqual(df_file.size, '')
+            self.assertEqual(df_file.get_download_url(),
+                             '/test/vbl/download/datafile/3/')
+            self.assertFalse(df_file.is_local())
+            self.assertEqual(df_file.get_absolute_filepath(), 
+                             os.path.join(settings.FILE_STORE_PATH,
+                                          'path/file1#txt'))
             
             df_file = _build(dataset, 'f.txt',
                              'http://localhost:8080/filestore/f.txt', '')
@@ -176,8 +197,10 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/test/download/datafile/3/')
+                             '/test/download/datafile/4/')
             self.assertFalse(df_file.is_local())
+            self.assertEqual(df_file.get_absolute_filepath(), '') # not local
+
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
