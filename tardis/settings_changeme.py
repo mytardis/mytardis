@@ -388,6 +388,13 @@ TRANSFER_PROVIDERS = {
     'scp': 'tardis.tardis_portal.transfer.ScpTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
 
+# Transfer providers that need to create temporary copies of files
+# should put them here
+TRANSFER_TEMP_DIR = gettempdir()
+
+# This temp space is for creation of archives.
+ARCHIVE_TEMP_DIR = gettempdir()
+
 UPLOAD_METHOD = "uploadify"
 '''
 can be changed to an app that provides an upload_button function,

@@ -35,6 +35,8 @@ from subprocess import Popen, STDOUT, PIPE
 from tempfile import NamedTemporaryFile
 import os, sys, subprocess
 
+from django.conf import settings
+
 from .base import TransferError, TransferProvider
 
 import logging
@@ -153,7 +155,8 @@ class ScpTransfer(TransferProvider):
     
     def get_opener(self, url):
         (path, _, _) = self._analyse_url(url)
-        tmpFile = NamedTemporaryFile(mode='rb', prefix='mytardis_scp_', 
+        tmpFile = NamedTemporaryFile(dir=settings.TRANSFER_TEMP_DIR,
+                                     mode='rb', prefix='mytardis_scp_', 
                                      delete=False)
         name = tmpFile.name
         self.run_command('scp_from', 
@@ -172,6 +175,7 @@ class ScpTransfer(TransferProvider):
         else:
             with closing(source_replica.get_file()) as f:
                 with closing(NamedTemporaryFile(
+                        dir=settings.TRANSFER_TEMP_DIR,
                         mode='w+b', prefix='mytardis_scp_')) as t:
                     shutil.copyFileObj(f, t)
                     t.flush()

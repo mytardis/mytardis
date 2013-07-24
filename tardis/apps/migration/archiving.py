@@ -63,7 +63,7 @@ def create_experiment_archive(exp, outfile, maxSize=None):
     nos_errors = 0
     nos_files = 0
     try:
-        with NamedTemporaryFile() as manifest:
+        with NamedTemporaryFile(dir=settings.ARCHIVE_TEMP_DIR) as manifest:
             tf = tarfile.open(mode='w:gz', fileobj=outfile)
             MetsExporter().export_to_file(exp, manifest)
             manifest.flush()
@@ -76,7 +76,8 @@ def create_experiment_archive(exp, outfile, maxSize=None):
                 f = None
                 try:
                     fetched = False
-                    fdst = NamedTemporaryFile(prefix='mytardis_tmp_ar_')
+                    fdst = NamedTemporaryFile(dir=settings.ARCHIVE_TEMP_DIR,
+                                              prefix='mytardis_tmp_ar_')
                     try:
                         f = datafile.get_file()
                         shutil.copyfileobj(f, fdst)

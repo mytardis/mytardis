@@ -282,6 +282,7 @@ class Command(BaseCommand):
                     exp, open(pathname, 'wb'), maxSize=maxSize)
             else:
                 tmp_file = NamedTemporaryFile(
+                    dir=settings.ARCHIVE_TEMP_DIR,
                     prefix='mytardis_tmp_ar', suffix='.tar.gz', 
                     delete=False)
                 archive = create_experiment_archive(
