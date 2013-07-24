@@ -76,7 +76,7 @@ class Archive(models.Model):
                                   null=False, blank=False)
     nos_files = models.IntegerField(null=False)
     nos_errors = models.IntegerField(null=False)
-    size = models.IntegerField(null=False)
+    size = models.BigIntegerField(null=False)
     sha512sum = models.CharField(blank=True, max_length=128)
     mimetype = models.CharField(blank=False, max_length=80)
     encoding = models.CharField(max_length=80)
