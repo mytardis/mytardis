@@ -226,13 +226,13 @@ class ScpTransfer(TransferProvider):
         params['hostname'] = self.hostname
         params['scp_opts'] = self._get_scp_opts()
         command = Template(template).safe_substitute(params)
-        logger.debug(command)
+        logger.debug('Remote command: "%s"' % command)
 
         process = Popen(command, stdout=PIPE, stderr=STDOUT, shell=True)
         output, unused_err = process.communicate()
         rc = process.poll()
         if rc:
-            logger.debug('error output: %s\n' % output)
+            logger.info('Output from failed command (see next): %s\n' % output)
             raise TransferError('command %s failed: rc %s' % (command, rc))
         return output
 
