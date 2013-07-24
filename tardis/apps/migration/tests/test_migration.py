@@ -162,4 +162,25 @@ class MigrationTestCase(TestCase):
         migrate_replica(replica, dest)
         self.assertFalse(os.path.exists(path))
 
+    def testReplicaVerify(self):
+        from django.conf import settings
+        saved = settings.REQUIRE_DATAFILE_CHECKSUMS
+        try:
+            dest = Location.get_location('test')
+            datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
+            settings.REQUIRE_DATAFILE_CHECKSUMS = True
+            self.assertTrue(replica.verify(),'Replica.verify() failed.')
+            datafile.sha512sum = None
+            datafile.md5sum = None
+            self.assertFalse(replica.verify(), 'Replica.verify() succeeded despite no checksum (settings.REQUIRE_DATAFILE_CHECKSUMS=True).')
+            self.assertFalse(replica.verify(allowEmptyChecksums=False), 'Replica.verify() succeeded despite no checksum (allowEmptyChecksums=False)')
+            settings.REQUIRE_DATAFILE_CHECKSUMS = False
+            datafile.sha512sum = None
+            datafile.md5sum = None
+            self.assertTrue(replica.verify(allowEmptyChecksums=True), 'Replica.verify() failed wrongly (allowEmptyChecksums=True)')
+            datafile.sha512sum = None
+            datafile.md5sum = None
+            self.assertTrue(replica.verify(), 'Replica.verify() failed wrongly')
+        finally:
+            settings.REQUIRE_DATAFILE_CHECKSUMS = saved
 
