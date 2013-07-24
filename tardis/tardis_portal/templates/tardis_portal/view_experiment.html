@@ -439,21 +439,21 @@ $(document).ready(function() {
 <script type="text/javascript">
 var datasetTiles = (function() {
 
-  var datasets = new MyTardis.Datasets();
-  datasets.experimentId = {{ experiment.id }};
-  datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
+    var datasets = new MyTardis.Datasets();
 
-  var datasetTiles = new MyTardis.DatasetTiles({
-    'id': "datasets",
-    'collection': datasets,
-    'el': $('#datasets').get(0)
-  });
+    datasets.experimentId = {{ experiment.id }};
+    datasets.url = "{% url 'tardis.tardis_portal.views.experiment_datasets_json' experiment.id %}";
 
-  datasets.fetch({});
+    var datasetTiles = new MyTardis.DatasetTiles({
+	'id': "datasets",
+	'collection': datasets,
+	'el': $('#datasets').get(0)
+    });
 
-  return datasetTiles;
+    datasets.fetch({});
+
+    return datasetTiles;
 })();
 </script>
-
 
 {% endblock %}

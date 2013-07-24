@@ -112,6 +112,7 @@ dataset_urls = patterns(
     (r'^(?P<dataset_id>\d+)/stage-files$', 'stage_files_to_dataset'),
     (r'^(?P<dataset_id>\d+)$', 'view_dataset'),
     (r'^(?P<dataset_id>\d+)/edit$', 'edit_dataset'),
+    (r'^(?P<dataset_id>\d+)/thumbnail$', 'dataset_thumbnail'),
 )
 iiif_urls = patterns(
     'tardis.tardis_portal.iiif',

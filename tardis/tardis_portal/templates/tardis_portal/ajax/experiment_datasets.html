@@ -38,6 +38,7 @@
     {{ action_bar }}
 
     <div id="datasets">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
     {{ experiment|dataset_tiles:has_download_permissions }}
     </div>
 

@@ -114,6 +114,8 @@ class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
     def read_list(self, object_list, bundle):
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return object_list
         if type(bundle.obj) == Experiment:
             return type(bundle.obj).safe.all(bundle.request.user)
         elif type(bundle.obj) == ExperimentParameterSet:
@@ -171,6 +173,8 @@ class ACLAuthorization(Authorization):
             return []
 
     def read_detail(self, object_list, bundle):
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return True
         if type(bundle.obj) == Experiment:
             return has_experiment_access(bundle.request, bundle.obj.id)
         elif type(bundle.obj) == ExperimentParameterSet:
@@ -211,6 +215,8 @@ class ACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):
         if not bundle.request.user.is_authenticated():
             return False
+        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+            return True
         if type(bundle.obj) == Experiment:
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
         elif type(bundle.obj) in (ExperimentParameterSet,):
@@ -459,6 +465,29 @@ class ExperimentParameterSetResource(ParameterSetResource):
         'experimentparameter_set',
         related_name='parameterset', full=True, null=True)
 
+    def save_m2m(self, bundle):
+        super(ExperimentParameterSetResource, self).save_m2m(bundle)
+        try:
+            epn = bundle.obj.get_param("EPN", value=True)
+            # create vbl group
+            acl = ExperimentACL.objects.filter(
+                experiment=bundle.obj.experiment,
+                pluginId='vbl_group',
+                entityId=epn,
+                canRead=True,
+                aclOwnershipType=
+                ExperimentACL.SYSTEM_OWNED)
+            if len(acl) == 0:
+                acl = ExperimentACL(experiment=bundle.obj.experiment,
+                                    pluginId='vbl_group',
+                                    entityId=epn,
+                                    canRead=True,
+                                    aclOwnershipType=
+                                    ExperimentACL.SYSTEM_OWNED)
+                acl.save()
+        except:
+            pass
+
     class Meta(ParameterSetResource.Meta):
         queryset = ExperimentParameterSet.objects.all()
 
@@ -507,6 +536,36 @@ class ExperimentResource(MyTardisModelResource):
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
             acl.save()
+
+            from django.contrib.auth.models import Group
+            from tardis.tardis_portal.auth.localdb_auth import django_group
+
+            beamline_group = "BEAMLINE_MX"
+            group, created = Group.objects.get_or_create(name=beamline_group)
+
+            # if created:
+            #     logger.debug('registering new group: %s' % group.name)
+            # else:
+            #     logger.debug('registering existing group: %s' % group.name)
+
+            # beamline group
+            acl = ExperimentACL(experiment=experiment,
+                                pluginId=django_group,
+                                entityId=str(group.id),
+                                canRead=True,
+                                aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            acl.save()
+
+            # finally, always add acl for admin group
+            group, created = Group.objects.get_or_create(name='admin')
+            acl = ExperimentACL(experiment=experiment,
+                                pluginId=django_group,
+                                entityId=str(group.id),
+                                isOwner=True,
+                                canRead=True,
+                                aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
+            acl.save()
+
         return super(ExperimentResource, self).hydrate_m2m(bundle)
 
     def obj_create(self, bundle, **kwargs):

@@ -13,9 +13,11 @@ register = template.Library()
 
 @register.filter
 def dataset_tiles(experiment, include_thumbnails):
-    datasets = experiment.datasets.all()
-    
+    # only show 8 datasets for initial load
+    datasets = experiment.datasets.all()[:8]
+
     # Get data to template (used by JSON service too)
+    # ?? doesn't seem to be used by JSON service at all
     data = ( get_dataset_info(ds, bool(include_thumbnails)) for ds in datasets )
 
     class DatasetInfo(object):
@@ -31,10 +33,14 @@ def dataset_tiles(experiment, include_thumbnails):
             })
 
         def dataset_size_badge(self):
+            if hasattr(self, 'size'):
+                return dataset_size_badge(size=self.size)
             ds = Dataset.objects.get(id=self.id)
             return dataset_size_badge(ds)
 
         def dataset_datafiles_badge(self):
+            if hasattr(self, 'datafiles'):
+                return dataset_datafiles_badge(count=len(self.datafiles))
             ds = Dataset.objects.get(id=self.id)
             return dataset_datafiles_badge(ds)
 
@@ -61,22 +67,26 @@ def dataset_experiments_badge(dataset):
     })
 
 @register.filter
-def dataset_datafiles_badge(dataset):
+def dataset_datafiles_badge(dataset=None, count=None):
     """
     Displays an badge with the number of datafiles for this experiment
     """
-    count = dataset.dataset_file_set.count()
+    if count is None:
+        count = dataset.dataset_file_set.count()
     return render_mustache('tardis_portal/badges/datafile_count', {
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,
     })
 
 @register.filter
-def dataset_size_badge(dataset):
+def dataset_size_badge(dataset=None, size=None):
     """
     Displays an badge with the total size of the files in this experiment
     """
-    size = filesizeformat(dataset.get_size())
+    if size is None:
+        size = filesizeformat(dataset.get_size())
+    else:
+        size = filesizeformat(size)
     return render_mustache('tardis_portal/badges/size', {
         'title': "Dataset size is ~%s" % size,
         'label': str(size),
