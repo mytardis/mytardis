@@ -25,7 +25,7 @@ Reporting Bugs
 
 Bug reports and feature requests can be made via our `public issue tracker`_.
 
-.. _`public issue tracker`: http://mytardis.lighthouseapp.com/
+.. _`public issue tracker`: https://github.com/mytardis/mytardis/issues
 
 Contributing
 ------------

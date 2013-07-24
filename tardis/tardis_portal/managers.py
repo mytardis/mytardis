@@ -42,7 +42,7 @@ class ExperimentManager(OracleSafeManager):
 
     To make this work, the request must be passed to all class
     functions. The username and the group memberships are then
-    resolved via the user.ext_groups and user objects.
+    resolved via the user.get_profile().ext_groups and user objects.
 
     The :py:mod:`tardis.tardis_portal.auth.AuthService` is responsible for
     filling the request.groups object.
@@ -85,7 +85,7 @@ class ExperimentManager(OracleSafeManager):
 
         # for which does experiments does the user have read access
         # based on GROUP permissions
-        for name, group in user.ext_groups:
+        for name, group in user.get_profile().ext_groups:
             query |= Q(objectacls__pluginId=name,
                        objectacls__entityId=str(group),
                        objectacls__canRead=True) &\
@@ -192,7 +192,7 @@ class ExperimentManager(OracleSafeManager):
 
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='Experiment',
+            content_type__name='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -208,7 +208,7 @@ class ExperimentManager(OracleSafeManager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='Experiment',
+            content_type__name='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.OWNER_OWNED)
 
@@ -222,7 +222,7 @@ class ExperimentManager(OracleSafeManager):
         """
         return ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='Experiment',
+            content_type__name='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -238,7 +238,7 @@ class ExperimentManager(OracleSafeManager):
         from tardis.tardis_portal.models import ObjectACL
         acl = ObjectACL.objects.filter(
             pluginId='django_group',
-            content_type__name='Experiment',
+            content_type__name='experiment',
             object_id=experiment_id,
             aclOwnershipType=ObjectACL.SYSTEM_OWNED)
 
@@ -256,7 +256,7 @@ class ExperimentManager(OracleSafeManager):
         from tardis.tardis_portal.models import ObjectACL
         acl = ObjectACL.objects.exclude(pluginId=django_user)
         acl = acl.exclude(pluginId='django_group')
-        acl = acl.filter(content_type__name='Experiment',
+        acl = acl.filter(content_type__name='experiment',
                          object_id=experiment_id)
 
         if not acl:

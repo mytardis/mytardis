@@ -84,7 +84,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
-    'tardis.tardis_portal.auth.AuthorizationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'tardis.tardis_portal.auth.token_auth.TokenAuthMiddleware',
@@ -293,6 +292,10 @@ UPLOADIFY_UPLOAD_PATH = '%s/%s' % (MEDIA_URL, 'uploads')
 
 # Download size limit: zero means no limit
 DOWNLOAD_ARCHIVE_SIZE_LIMIT = 0
+
+# temporary download file location
+from tempfile import gettempdir
+DOWNLOAD_TEMP_DIR = gettempdir()
 
 # Safety margin for temporary space when downloading.  (Estimated archive
 # file size + safety_margin must be less that available disk space ...)

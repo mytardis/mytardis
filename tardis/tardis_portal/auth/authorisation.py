@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 
+from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
 from tardis.tardis_portal.models import ObjectACL
 
 
@@ -79,7 +80,13 @@ class ACLAwareBackend(object):
         query = Q(pluginId='django_user',
                   entityId=str(user_obj.id))
 
-        for name, group in user_obj.ext_groups:
-            query |= Q(pluginId=name, entityId=str(group))
+        if user_obj.is_authenticated():
+            for name, group in user_obj.get_profile().ext_groups:
+                query |= Q(pluginId=name, entityId=str(group))
+        else:
+            # the only authorisation available for anonymous users is tokenauth
+            tgp = TokenGroupProvider()
+            for name, group in tgp.getGroups(user_obj):
+                query |= Q(pluginId=name, entityId=str(group))
 
         return obj_acls.filter(query).count() > 0

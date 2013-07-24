@@ -70,7 +70,7 @@ class UploadTestCase(TestCase):
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
 
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
 
         self.test_dir = mkdtemp()
 
@@ -552,6 +552,7 @@ class ExperimentTestCase(TestCase):
         user.save()
         # Data used in tests
         self.user, self.username, self.password = (user, username, password)
+        self.userprofile = UserProfile(user=self.user).save()
 
     def testCreateAndEdit(self):
 
@@ -761,7 +762,7 @@ class ContextualViewTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()
@@ -829,7 +830,7 @@ class ViewTemplateContextsTest(TestCase):
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        self.userProfile = UserProfile(user=self.user)
+        self.userProfile = UserProfile(user=self.user).save()
         self.exp = Experiment(title='test exp1',
                               institution_name='monash', created_by=self.user)
         self.exp.save()

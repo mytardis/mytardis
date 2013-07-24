@@ -14,9 +14,10 @@ class Migration(DataMigration):
 
         if not db.dry_run:
             for acl in orm.ObjectACL.objects.all():
-                acl.content_type = orm['contenttypes.ContentType'](
-                    app_label='tardis_portal',
-                    model='experiment')
+                acl.content_type = orm['contenttypes.ContentType']\
+                   .objects.get(
+                       app_label='tardis_portal',
+                       model='experiment')
                 acl.object_id = acl.experiment.id
                 acl.save()
 
