@@ -146,7 +146,6 @@ class Replica(models.Model):
         If passed a file handle, it will write the file to it instead of
         discarding data as it's read.
         '''
-        from django.conf import settings
         if not getattr(settings, "REQUIRE_DATAFILE_CHECKSUMS", True):
             allowEmptyChecksums=True    
 
