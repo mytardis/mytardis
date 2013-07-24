@@ -86,7 +86,7 @@ class ACLAwareBackend(object):
         else:
             # the only authorisation available for anonymous users is tokenauth
             tgp = TokenGroupProvider()
-            for name, group in tgp.getGroups(user_obj):
-                query |= Q(pluginId=name, entityId=str(group))
+            for group in tgp.getGroups(user_obj):
+                query |= Q(pluginId=tgp.name, entityId=str(group))
 
         return obj_acls.filter(query).count() > 0

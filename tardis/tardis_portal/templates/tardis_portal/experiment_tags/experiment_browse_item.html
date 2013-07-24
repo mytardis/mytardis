@@ -25,7 +25,7 @@
     <div class="image-preview">
       <span style="height: 28px"></span>
     {% for datafile in experiment.get_images|slice:":10" %}
-      {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
+      {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
       <img alt="Thumbnail for Datafile #{{datafile.id}}"
           src="{{ thumbnail }}"
           onerror="$(this).hide()"/>

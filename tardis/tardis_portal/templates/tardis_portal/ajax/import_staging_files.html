@@ -6,24 +6,24 @@
 var treeConfig = {
     core : { "initially_open" : ['phtml_1'] },
     plugins : [ "themes", "html_data", "checkbox" ],
-    "html_data" : {      
+    "html_data" : {
         "ajax" : {
-            "type": 'GET',       
+            "type": 'GET',
             "url": function (node) {
                 var nodeId = "";
                 var url = ""
                 if (node == -1)
                 {
-                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}";
+                    url = "{% url 'tardis.tardis_portal.views.list_staging_files' dataset_id %}";
                 }
                 else
                 {
                     nodeId = encodeURIComponent(node.attr('id'));
-                    url = "{% url tardis.tardis_portal.views.list_staging_files dataset_id %}?path=" + nodeId;
+                    url = "{% url 'tardis.tardis_portal.views.list_staging_files' dataset_id %}?path=" + nodeId;
                 }
 
                 return url;
-            },           
+            },
             "success": function (new_data) {
                 return new_data;
             }
@@ -105,7 +105,7 @@ $('#staging-import-button').click(function() {
   // Send data
   $.ajax({
     type: 'POST',
-    url: '{% url tardis.tardis_portal.views.stage_files_to_dataset dataset_id %}',
+    url: '{% url 'tardis.tardis_portal.views.stage_files_to_dataset' dataset_id %}',
     data: JSON.stringify(files),
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
@@ -123,13 +123,13 @@ $('#staging-import-button').click(function() {
         if(files != '')
         {
             var templateData = {'import_staging': true};
-            
+
             if(data != '')
             {
                 templateData['email'] = data.email;
             }
 
-            $('#datafile-download').before(       
+            $('#datafile-download').before(
               Mustache.to_html(
               Mustache.TEMPLATES['tardis_portal/import_staging_message'],
               templateData, Mustache.TEMPLATES)
@@ -142,4 +142,3 @@ $('#staging-import-button').click(function() {
   });
 });
 </script>
-
