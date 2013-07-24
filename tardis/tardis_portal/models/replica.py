@@ -142,12 +142,12 @@ class Replica(models.Model):
         Verifies this replica's data matches the Datafile checksums. 
         It must have at least one checksum hash to verify unless 
         "allowEmptyChecksums" is True. If "allowEmptyChecksums" is provided
-        and false, it will override the system-wide REQUIRE_DATAFILE_CHECKSUMS setting.
+        (whether True or False), it will override the system-wide REQUIRE_DATAFILE_CHECKSUMS setting.
 
         If passed a file handle, it will write the file to it instead of
         discarding data as it's read.
         '''
-        if allowEmptyChecksums = None:
+        if allowEmptyChecksums is None:
             if getattr(settings, "REQUIRE_DATAFILE_CHECKSUMS", True):
                 allowEmptyChecksums = False
             else:
