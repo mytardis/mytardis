@@ -213,16 +213,16 @@ Usage
 ~~~~~
 ``./bin/django archivelist [<id> ...]``
 
-.. option:: -A, --showAll
-.. option:: -F, --showFirst
+.. option:: -a, --showAll
+.. option:: -f, --showFirst
 .. option:: --verbosity={0,1,2,3}
 .. option:: -c, --count
 .. option:: -e, --experimentDate
 .. option:: -u, --user=USERNAME
 .. option:: -t, --title=TITLE
 .. option:: -d, --date=ISO_DATE_OR_DATETIME
-.. option:: -f, --fromDate=ISO_DATE_OR_DATETIME.
-.. option:: -t, --toDate=ISO_DATE_OR_DATETIME.
+.. option:: -F, --fromDate=ISO_DATE_OR_DATETIME.
+.. option:: -T, --toDate=ISO_DATE_OR_DATETIME.
 
 The command either lists or counts records in the Archive table.  (It doesn't check that the archive files are still present.)
 
@@ -243,17 +243,17 @@ Date options give dates or datetime values in ISO format; i.e. <YYYY>-<MM>-<DD> 
 
 The complete set of options is as follows:
 
-  * -A, --showAll if present, show all selected record, not just the latest one
-  * -F, --showFirst if present, show the first selected record, not the last one
+  * -a, --showAll if present, show all selected record, not just the latest one
+  * -f, --showFirst if present, show the first selected record, not the last one
   * --verbosity={0,1,2,3} controls the level of output
   * -c, --count if present, count records rather than listing them
   * -e, --experimentDate if present, use the 'experiment_updated' field rather than the 'archive_created' field for selection, ordering and display
   * -u, --user=USERNAME restrict to records with the specified owner
   * -t, --title=TITLE restrict to records with the specified title
   * -f, --fromDate=ISO_DATE_OR_DATETIME restrict to records with a date on or after the specified date or datetime.  
-  * -t, --toDate=ISO_DATE_OR_DATETIME restrict to records with a date on or before the specified date or datetime.  
-  * -d, --date=ISO_DATE_OR_DATETIME this is a short cut for --fromDate=ISO_DATE_OR_DATETIME, --toDat=ISO_DATE_OR_DATETIME
-  * --help prints the 'archive' command help.
+  * -T, --toDate=ISO_DATE_OR_DATETIME restrict to records with a date on or before the specified date or datetime.  
+  * -s, --date=ISO_DATE_OR_DATETIME this is a short cut for -F ISO_DATE_OR_DATETIME and -T ISO_DATE_OR_DATETIME
+  * --help prints the 'archivelist' command help.
 
 Architecture
 ============

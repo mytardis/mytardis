@@ -62,12 +62,12 @@ class Command(BaseCommand):
     help = 'This command lists MyTardis experiment archives\n'
 
     option_list = BaseCommand.option_list + (
-        make_option('-A', '--showAll',
+        make_option('-a', '--showAll',
                     action='store_true',
                     dest='all',
                     help='List all archives selected rather than just the'
                     ' last for each experiment.'), 
-        make_option('-F', '--showFirst',
+        make_option('-f', '--showFirst',
                     action='store_true',
                     dest='first',
                     help='List first rather than the last archive ' \
@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     dest='title',
                     default=None,
                     help='Select archives with this title'),
-        make_option('-D', '--date',
+        make_option('-d', '--date',
                     action='store',
                     dest='date',
                     default=None,
