@@ -141,7 +141,6 @@ class Command(BaseCommand):
         self.complete = options.get('complete', False)
         if self.incomplete and self.complete:
             raise CommandError('--incomplete cannot be used with --complete')
-        if not self.incomplete and not self.complete:
 
         qm = Archive.objects
         if len(args) > 0:
