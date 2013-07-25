@@ -189,6 +189,8 @@ download_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',  # noqa
      'download_experiment'),
     (r'^datafiles/$', 'download_datafiles'),
+    (r'^new_experiment/(?P<experiment_id>\d+)/$',
+     'streaming_download_experiment'),
     )
 
 group_urls = patterns(

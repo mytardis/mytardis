@@ -34,9 +34,11 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 
-from tardis.tardis_portal.models import *
+from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_free_space
-from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import experiment_download_required
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, render_error_message
 
@@ -634,3 +636,157 @@ def download_datafiles(request):
         response = render_error_message(
             request, 'Unsupported download format: %s' % comptype, status=404)
     return response
+
+
+########### NEW DOWNLOAD ##############
+import tarfile
+from tarfile import TarFile
+
+
+class UncachedTarStream(TarFile):
+    '''
+    Stream files into a compressed tar stream on the fly
+    '''
+
+    def __init__(self, mapped_file_objs, can_gzip=False,
+                 buffersize=65536, comp_level=6):
+        self.errors = 'strict'
+        self.pax_headers = {}
+        self.mode = 'w'
+        self.closed = False
+        self.members = []
+        self._loaded = False
+        self.offset = 0
+        self.inodes = {}
+        self._loaded = True
+        self.mapped_file_objs = mapped_file_objs
+        self.can_gzip = can_gzip
+        if can_gzip:
+            self.compressor = zlib.compressobj(comp_level)
+        self.buffersize = buffersize
+
+    def compute_size(self):
+        tarinfo_size = 512
+        total_size = 0
+        for fo_getter, name in self.mapped_file_objs:
+            total_size += tarinfo_size
+            the_file = fo_getter()
+            size = os.fstat(the_file.fileno()).st_size
+            blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
+            total_size += blocks * tarfile.BLOCKSIZE
+            if remainder > 0:
+                print remainder
+                total_size += tarfile.BLOCKSIZE
+        total_size += tarfile.BLOCKSIZE * 2
+        blocks, remainder = divmod(total_size, tarfile.RECORDSIZE)
+        if remainder > 0:
+            total_size += tarfile.RECORDSIZE
+        print blocks * tarfile.RECORDSIZE
+        return total_size
+
+    def compress(self, buf):
+        if self.can_gzip:
+            result = self.compressor.compress(buf)
+            result += self.compressor.flush(zlib.Z_SYNC_FLUSH)
+            return result
+        return buf
+
+    def make_tar(self):  # noqa
+        '''
+        main tar generator. until python 3 needs to be in one function
+        because 'yield's don't bubble up.
+        '''
+        for fileobj_getter, name in self.mapped_file_objs:
+            fileobj = fileobj_getter()
+            self._check('aw')
+            tarinfo = self.gettarinfo(name, name, fileobj)
+            # tarinfo = copy.copy(tarinfo)
+            buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
+            yield self.compress(buf)
+            print len(buf)
+            self.offset += len(buf)
+            if tarinfo.isreg():
+                if tarinfo.size == 0:
+                    continue
+                blocks, remainder = divmod(tarinfo.size, self.buffersize)
+                for b in xrange(blocks):
+                    buf = fileobj.read(self.buffersize)
+                    if len(buf) < self.buffersize:
+                        raise IOError("end of file reached")
+                    yield self.compress(buf)
+                if remainder != 0:
+                    buf = fileobj.read(remainder)
+                    if len(buf) < remainder:
+                        raise IOError("end of file reached")
+                    yield self.compress(buf)
+                blocks, remainder = divmod(tarinfo.size, tarfile.BLOCKSIZE)
+                if remainder > 0:
+                    yield self.compress(
+                        (tarfile.NUL * (tarfile.BLOCKSIZE - remainder)))
+                    blocks += 1
+                self.offset += blocks * tarfile.BLOCKSIZE
+
+        yield self.compress((tarfile.NUL * (tarfile.BLOCKSIZE * 2)))
+        self.offset += (tarfile.BLOCKSIZE * 2)
+        # fill up the end with zero-blocks
+        # (like option -b20 for tar does)
+        blocks, remainder = divmod(self.offset, tarfile.RECORDSIZE)
+        if remainder > 0:
+            print "remainder size: %d" % (remainder)
+
+            print "padding size: %d" % (tarfile.RECORDSIZE - remainder)
+            yield self.compress(
+                tarfile.NUL * (tarfile.RECORDSIZE - remainder))
+        if self.can_gzip:
+            yield self.compressor.flush()
+
+    def get_response(self, filename):
+        response = StreamingHttpResponse(self.make_tar(),
+                                         content_type='application/x-tar')
+        response['Content-Disposition'] = 'attachment; filename="%s"' %\
+                                          filename
+        response['Content-Length'] = self.compute_size()
+        if self.can_gzip:
+            response['Content-Encoding'] = 'deflate'
+        return response
+
+
+@experiment_download_required
+def streaming_download_experiment(request, experiment_id,
+                                  organization='deep-storage'):
+    experiment = Experiment.objects.get(id=experiment_id)
+    datafiles = Dataset_File.objects.filter(
+        dataset__experiments__id=experiment_id)
+
+    mapper = _make_mapper(organization, experiment.title)
+    if not mapper:
+        return render_error_message(
+            request, 'Unknown download organization: %s' % organization,
+            status=400)
+    try:
+        files = _get_datafile_details_for_archive(mapper, datafiles)
+        can_gzip = 'gzip' in request.META.get('HTTP_ACCEPT_ENCODING', '')
+        tfs = UncachedTarStream(files, can_gzip=can_gzip)
+        return tfs.get_response(filename='%s-complete.tar' % experiment.title)
+    except ValueError:  # raised when replica not verified TODO: custom excptn
+        redirect = request.META.get('HTTP_REFERER',
+                                    'http://%s/' %
+                                    request.META.get('HTTP_HOST'))
+        message = """The experiment you are trying to access has not yet been
+                     verified completely.
+                     Verification is an automated background process.
+                     Please try again later or contact the system
+                     administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
+        redirect = redirect + '#error:' + message
+        return HttpResponseRedirect(redirect)
+
+
+'''
+class FileIterWrapper(object):
+  def __init__(self, flo, chunk_size = 1024**2):
+    self.flo = flo
+    self.chunk_size = chunk_size
+
+
+'''
