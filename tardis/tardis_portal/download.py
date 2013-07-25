@@ -641,6 +641,8 @@ def download_datafiles(request):
 ########### NEW DOWNLOAD ##############
 import tarfile
 from tarfile import TarFile
+import gzip
+import io
 
 
 class UncachedTarStream(TarFile):
@@ -648,7 +650,7 @@ class UncachedTarStream(TarFile):
     Stream files into a compressed tar stream on the fly
     '''
 
-    def __init__(self, mapped_file_objs, can_gzip=False,
+    def __init__(self, mapped_file_objs, filename, can_gzip=False,
                  buffersize=65536, comp_level=6):
         self.errors = 'strict'
         self.pax_headers = {}
@@ -660,9 +662,12 @@ class UncachedTarStream(TarFile):
         self.inodes = {}
         self._loaded = True
         self.mapped_file_objs = mapped_file_objs
+        self.filename = filename
         self.can_gzip = can_gzip
         if can_gzip:
-            self.compressor = zlib.compressobj(comp_level)
+            self.binary_buffer = io.BytesIO()
+            self.gzipfile = gzip.GzipFile(bytes(filename), 'w',
+                                          comp_level, self.binary_buffer)
         self.buffersize = buffersize
 
     def compute_size(self):
@@ -675,21 +680,31 @@ class UncachedTarStream(TarFile):
             blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
             total_size += blocks * tarfile.BLOCKSIZE
             if remainder > 0:
-                print remainder
                 total_size += tarfile.BLOCKSIZE
         total_size += tarfile.BLOCKSIZE * 2
         blocks, remainder = divmod(total_size, tarfile.RECORDSIZE)
         if remainder > 0:
             total_size += tarfile.RECORDSIZE
-        print blocks * tarfile.RECORDSIZE
         return total_size
 
     def compress(self, buf):
         if self.can_gzip:
-            result = self.compressor.compress(buf)
-            result += self.compressor.flush(zlib.Z_SYNC_FLUSH)
+            self.gzipfile.write(buf)
+            self.gzipfile.flush()
+            self.binary_buffer.seek(0)
+            result = self.binary_buffer.read()
+            self.binary_buffer.seek(0)
+            self.binary_buffer.truncate()
             return result
         return buf
+
+    def close_gzip(self):
+        self.gzipfile.close()
+        self.binary_buffer.seek(0)
+        result = self.binary_buffer.read()
+        self.binary_buffer.seek(0)
+        self.binary_buffer.truncate()
+        return result
 
     def make_tar(self):  # noqa
         '''
@@ -703,7 +718,6 @@ class UncachedTarStream(TarFile):
             # tarinfo = copy.copy(tarinfo)
             buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
             yield self.compress(buf)
-            print len(buf)
             self.offset += len(buf)
             if tarinfo.isreg():
                 if tarinfo.size == 0:
@@ -732,22 +746,19 @@ class UncachedTarStream(TarFile):
         # (like option -b20 for tar does)
         blocks, remainder = divmod(self.offset, tarfile.RECORDSIZE)
         if remainder > 0:
-            print "remainder size: %d" % (remainder)
-
-            print "padding size: %d" % (tarfile.RECORDSIZE - remainder)
             yield self.compress(
                 tarfile.NUL * (tarfile.RECORDSIZE - remainder))
         if self.can_gzip:
-            yield self.compressor.flush()
+            yield self.close_gzip()
 
-    def get_response(self, filename):
+    def get_response(self):
         response = StreamingHttpResponse(self.make_tar(),
-                                         content_type='application/x-tar')
+                                         content_type='application/x-gzip')
         response['Content-Disposition'] = 'attachment; filename="%s"' %\
-                                          filename
-        response['Content-Length'] = self.compute_size()
-        if self.can_gzip:
-            response['Content-Encoding'] = 'deflate'
+                                          self.filename
+        #response['Content-Length'] = self.compute_size()
+        #if self.can_gzip:
+         #   response['Content-Encoding'] = 'gzip'
         return response
 
 
@@ -766,8 +777,11 @@ def streaming_download_experiment(request, experiment_id,
     try:
         files = _get_datafile_details_for_archive(mapper, datafiles)
         can_gzip = 'gzip' in request.META.get('HTTP_ACCEPT_ENCODING', '')
-        tfs = UncachedTarStream(files, can_gzip=can_gzip)
-        return tfs.get_response(filename='%s-complete.tar' % experiment.title)
+        tfs = UncachedTarStream(
+            files,
+            filename='%s-complete.tar.gz' % experiment.title,
+            can_gzip=True)
+        return tfs.get_response()
     except ValueError:  # raised when replica not verified TODO: custom excptn
         redirect = request.META.get('HTTP_REFERER',
                                     'http://%s/' %
