@@ -32,7 +32,7 @@ from string import Template
 from urlparse import urlparse, urljoin, uses_netloc, uses_relative
 from contextlib import closing
 from subprocess import Popen, STDOUT, PIPE
-from tempfile import NamedTemporaryFile
+from tempfile import mkstemp
 import os, sys, subprocess
 
 from django.conf import settings
@@ -155,16 +155,29 @@ class ScpTransfer(TransferProvider):
     
     def get_opener(self, url):
         (path, _, _) = self._analyse_url(url)
-        tmpFile = NamedTemporaryFile(dir=settings.TRANSFER_TEMP_DIR,
-                                     mode='rb', prefix='mytardis_scp_', 
-                                     delete=False)
-        name = tmpFile.name
-        self.run_command('scp_from', 
-                         {'local': name, 'remote': path})
+        (fd, name) = mkstemp(dir=settings.TRANSFER_TEMP_DIR,
+                                 prefix='mytardis_scp_')
+        os.close(fd)
+        try:
+            self.run_command('scp_from', 
+                             {'local': name, 'remote': path})
+        except:
+            try:
+                os.unlink(name)
+            except:
+                pass
+            raise
 
-        def opener():
-            return _TemporaryFileWrapper(name)
-        return opener
+        class _OpenerClosure(object):
+            def __init__(self, name):
+                self.wrapper = _TemporaryFileWrapper(name)
+            
+            def make_opener(self):
+                def opener():
+                    return self.wrapper
+                return opener
+                
+        return _OpenerClosure(name).make_opener()
 
     def put_replica(self, source_replica, target_replica):
         source_path = source_replica.get_absolute_filepath()
@@ -243,8 +256,8 @@ class ScpTransfer(TransferProvider):
 class _TemporaryFileWrapper:
     # This is a cut-down / hacked about version of the same named
     # class in tempfile.  Main differences are 1) delete is hard-wired
-    # 2) we open our own file object, 3) there is no __del__ because
-    # it causes premature closing, and 4) stripped out the Windows.NT stuff.
+    # 2) we open our own file object, and 3) stripped out the 
+    # Windows-specific stuff.
     def __init__(self, name):
         self.name = name
         self.file = open(name, 'rb')
@@ -265,9 +278,15 @@ class _TemporaryFileWrapper:
         if not self.close_called:
             self.close_called = True
             self.file.close()
-            os.unlink(self.name)
+            try:
+                os.unlink(self.name)
+            except:
+                pass
                     
     def __exit__(self, exc, value, tb):
         result = self.file.__exit__(exc, value, tb)
         self.close()
         return result
+
+    def __del(self):
+        self.close()
