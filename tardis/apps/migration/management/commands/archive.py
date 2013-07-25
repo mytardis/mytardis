@@ -65,7 +65,7 @@ class Command(BaseCommand):
                     action='store_true',
                     dest='all',
                     help='Process all experiments'), 
-        make_option('-l', '--location',
+        make_option('-l', '--location', '--dest',
                     action='store',
                     dest='location',
                     help='The location for sending the archive. ' \
@@ -122,6 +122,12 @@ class Command(BaseCommand):
                     dest='keepOnly',
                     default=None,
                     help='The number of archives to keep'),
+        make_option('--saveIncomplete',
+                    action='store_true',
+                    dest='saveIncomplete',
+                    default=False,
+                    help='Save archives that are incomplete due to' \
+                        'missing data files'),
         make_option('--minSize',
                     action='store',
                     dest='minSize',
@@ -153,6 +159,7 @@ class Command(BaseCommand):
         self.remove_data = options.get('remove', False)
         self.dryRun = options.get('dryRun', False)
         self.incremental = options.get('incremental', False)
+        self.saveIncomplete = options.get('saveIncomplete', False)
         self.location = self._get_destination(
             options.get('location', None),
             settings.DEFAULT_ARCHIVE_LOCATION)
@@ -324,10 +331,14 @@ class Command(BaseCommand):
                         archive.delete()
                     raise e
             if archive.nos_errors > 0:
-                self.stderr.write(
-                    'Archive for experiment %s is missing %s of %s files\n' % \
-                        (exp.id, archive.nos_errors, 
-                         archive.nos_errors + archive.nos_files))
+                message = 'Experiment %s is missing %s of %s files' % \
+                    (exp.id, archive.nos_errors, 
+                     archive.nos_errors + archive.nos_files)
+                if self.saveIncomplete:
+                    self.stderr.write('Warning: %s\n' % message)
+                else:
+                    raise ArchivingError(message)
+
             self.transfer_count += 1
             if self.remove_all:
                 remove_experiment(exp)
@@ -366,12 +377,12 @@ class Command(BaseCommand):
     def _get_destination(self, destName, default):
         if not destName:
             if not default:
-                raise CommandError("No default destination configured")
+                raise CommandError("No default archive location configured")
             else:
                 destName = default
         dest = Location.get_location(destName)
         if not dest:
-            raise CommandError("Destination %s not known" % destName)
+            raise CommandError("Location %s not known" % destName)
         return dest
 
     def _prune_archives(self, exp):
@@ -389,6 +400,3 @@ class Command(BaseCommand):
                     logger.info('Failed to delete archive %s' % url, 
                                 exc_info=sys.exc_info())
                 archive.delete()
-            
-            
-            

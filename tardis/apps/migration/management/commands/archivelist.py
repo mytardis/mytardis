@@ -76,6 +76,14 @@ class Command(BaseCommand):
                     action='store_true',
                     dest='count',
                     help='Count rather than list archives'), 
+        make_option('-I', '--incomplete',
+                    action='store_true',
+                    dest='incomplete',
+                    help='Select only incomplete archives'), 
+        make_option('-C', '--complete',
+                    action='store_true',
+                    dest='complete',
+                    help='Select only complete archives'), 
         make_option('-e', '--experimentDate',
                     action='store_true',
                     dest='experimentDate',
@@ -129,8 +137,15 @@ class Command(BaseCommand):
             self.toDate = self._get_datetime(options, 'date', end=True)
         elif self.fromDate and self.toDate and self.fromDate > self.toDate:
             raise CommandError('--fromDate must be before --toDate')
+        self.incomplete = options.get('incomplete', False)
+        self.complete = options.get('complete', False)
+        if self.incomplete and self.complete:
+            raise CommandError('--incomplete cannot be used with --complete')
+        if not self.incomplete and not self.complete:
 
         qm = Archive.objects
+        if len(args) > 0:
+            qm = qm.filter(experiment__id__in=map(args, long))
         if self.user:
             qm = qm.filter(experiment_owner=self.user)
         if self.title:
@@ -145,9 +160,10 @@ class Command(BaseCommand):
                 qm = qm.filter(experiment_changed__lte=self.toDate)
             else:
                 qm = qm.filter(archive_created__lte=self.toDate)
-
-        if len(args) > 0:
-            qm = qm.filter(experiment__id__in=map(args, long))
+        if self.incomplete:
+            qm = qm.exclude(nos_errors=0)
+        if self.complete:
+            qm = qm.filter(nos_errors=0)
 
         count = 0
         if self.count and self.all:
@@ -180,7 +196,6 @@ class Command(BaseCommand):
                            archive.experiment_owner,
                            date,
                            archive.archive_url))
-        
         
     def _get_datetime(self, options, key, end=False):
         value = options.get(key, None)

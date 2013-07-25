@@ -163,6 +163,7 @@ Usage
 .. option:: -o, --sendOffline
 .. option:: -c, --checksums
 .. option:: -k, --keepOnly=COUNT
+.. option:: --saveIncomplete
 .. option:: --minSize=SIZE
 .. option:: --maxSize=SIZE
 .. option:: --maxTotalSize=SIZE
@@ -196,12 +197,13 @@ The complete set of options is as follows:
   * --removeData replace the online Replicas with a single offline one, and delete the online copies of the data.  The metadata remains online.
   * -i, --incremental enables incremental archiving 
   * -o, --sendOffline if the transfer provider and destination support this, a transferred archive is pushed offline once verified.
-.. option:: -c, --checksums force the transferred archive to be verified against the checksums.  (The default is provider specific.)
-.. option:: -k, --keepOnly=COUNT only keep COUNT archives for the Experiments being processed.  
-.. option:: --minSize=SIZE archives smaller than this are not saved / transferred
-.. option:: --maxSize=SIZE archives larger than this are not saved / transferred
-.. option:: --maxTotalSize=SIZE this gives an upper limit on the total size of archives created by the run
-.. option:: -f, --force turns --minSize and --maxSize into warnsings; i.e. the archives are saved anyway
+  * -c, --checksums force the transferred archive to be verified against the checksums.  (The default is provider specific.)
+  * -k, --keepOnly=COUNT only keep COUNT archives for the Experiments being processed.  
+  * --minSize=SIZE archives smaller than this are not saved / transferred
+  * --maxSize=SIZE archives larger than this are not saved / transferred
+  * --maxTotalSize=SIZE this gives an upper limit on the total size of archives created by the run
+  * -f, --force turns --minSize and --maxSize into warnsings; i.e. the archives are saved anyway
+  * --saveIncomplete causes archives of Experiments with "missing" files to be saved anyway (with a warning).  Note that a "missing" file may due to a temporary problem with fetching a file from a remote location.
   * --help prints the 'archive' command help.
 
 The "archivelist" Command
@@ -223,6 +225,8 @@ Usage
 .. option:: -d, --date=ISO_DATE_OR_DATETIME
 .. option:: -F, --fromDate=ISO_DATE_OR_DATETIME.
 .. option:: -T, --toDate=ISO_DATE_OR_DATETIME.
+.. option:: -I, --incomplete
+.. option:: -C, --complete
 
 The command either lists or counts records in the Archive table.  (It doesn't check that the archive files are still present.)
 
@@ -250,9 +254,11 @@ The complete set of options is as follows:
   * -e, --experimentDate if present, use the 'experiment_updated' field rather than the 'archive_created' field for selection, ordering and display
   * -u, --user=USERNAME restrict to records with the specified owner
   * -t, --title=TITLE restrict to records with the specified title
-  * -f, --fromDate=ISO_DATE_OR_DATETIME restrict to records with a date on or after the specified date or datetime.  
+  * -F, --fromDate=ISO_DATE_OR_DATETIME restrict to records with a date on or after the specified date or datetime.  
   * -T, --toDate=ISO_DATE_OR_DATETIME restrict to records with a date on or before the specified date or datetime.  
-  * -s, --date=ISO_DATE_OR_DATETIME this is a short cut for -F ISO_DATE_OR_DATETIME and -T ISO_DATE_OR_DATETIME
+  * -d, --date=ISO_DATE_OR_DATETIME this is a short cut for -F ISO_DATE_OR_DATETIME and -T ISO_DATE_OR_DATETIME
+  * -I, --incomplete restrict to archives that are incomplete; i.e. those with nos_errors > 0.
+  * -C, --complete restrict to archives that are complete; i.e. those with nos_errors == 0.
   * --help prints the 'archivelist' command help.
 
 Architecture
