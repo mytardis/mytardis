@@ -467,26 +467,6 @@ class ExperimentParameterSetResource(ParameterSetResource):
 
     def save_m2m(self, bundle):
         super(ExperimentParameterSetResource, self).save_m2m(bundle)
-        try:
-            epn = bundle.obj.get_param("EPN", value=True)
-            # create vbl group
-            acl = ExperimentACL.objects.filter(
-                experiment=bundle.obj.experiment,
-                pluginId='vbl_group',
-                entityId=epn,
-                canRead=True,
-                aclOwnershipType=
-                ExperimentACL.SYSTEM_OWNED)
-            if len(acl) == 0:
-                acl = ExperimentACL(experiment=bundle.obj.experiment,
-                                    pluginId='vbl_group',
-                                    entityId=epn,
-                                    canRead=True,
-                                    aclOwnershipType=
-                                    ExperimentACL.SYSTEM_OWNED)
-                acl.save()
-        except:
-            pass
 
     class Meta(ParameterSetResource.Meta):
         queryset = ExperimentParameterSet.objects.all()
@@ -535,35 +515,6 @@ class ExperimentResource(MyTardisModelResource):
                             canDelete=True,
                             isOwner=True,
                             aclOwnershipType=ObjectACL.OWNER_OWNED)
-            acl.save()
-
-            from django.contrib.auth.models import Group
-            from tardis.tardis_portal.auth.localdb_auth import django_group
-
-            beamline_group = "BEAMLINE_MX"
-            group, created = Group.objects.get_or_create(name=beamline_group)
-
-            # if created:
-            #     logger.debug('registering new group: %s' % group.name)
-            # else:
-            #     logger.debug('registering existing group: %s' % group.name)
-
-            # beamline group
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId=django_group,
-                                entityId=str(group.id),
-                                canRead=True,
-                                aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
-            acl.save()
-
-            # finally, always add acl for admin group
-            group, created = Group.objects.get_or_create(name='admin')
-            acl = ExperimentACL(experiment=experiment,
-                                pluginId=django_group,
-                                entityId=str(group.id),
-                                isOwner=True,
-                                canRead=True,
-                                aclOwnershipType=ExperimentACL.SYSTEM_OWNED)
             acl.save()
 
         return super(ExperimentResource, self).hydrate_m2m(bundle)
