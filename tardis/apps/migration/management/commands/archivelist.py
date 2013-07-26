@@ -144,7 +144,7 @@ class Command(BaseCommand):
 
         qm = Archive.objects
         if len(args) > 0:
-            qm = qm.filter(experiment__id__in=map(args, long))
+            qm = qm.filter(experiment__id__in=map(long, args))
         if self.user:
             qm = qm.filter(experiment_owner=self.user)
         if self.title:
@@ -181,7 +181,7 @@ class Command(BaseCommand):
                     count += 1
                 else:
                     self._print_archive(archive)
-                    prev = archive
+                prev = archive
                     
         if self.count:
             self.stdout.write("There are %s archives meeting the " 
