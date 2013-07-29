@@ -456,7 +456,7 @@ def _add_protocols_and_organizations(request, experiment, c):
                 continue
             c['protocol'] += [[key, value]]
 
-    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
+    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])
     c['default_format'] = filter(
         lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 

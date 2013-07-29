@@ -70,7 +70,7 @@ def view_full_dataset(request, dataset_id):
         'default_organization':
             getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),
         'default_format':
-            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])[0]
+            getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])[0]
     })
     return HttpResponse(render_response_index(
         request, 'mx_views/view_full_dataset.html', c))
