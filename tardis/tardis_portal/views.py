@@ -307,7 +307,10 @@ def display_datafile_image(
 @authz.dataset_access_required
 def dataset_thumbnail(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
-    return HttpResponseRedirect(dataset.get_thumbnail_url())
+    tn_url = dataset.get_thumbnail_url()
+    if tn_url is None:
+        return HttpResponseNotFound()
+    return HttpResponseRedirect(tn_url)
 
 
 def about(request):

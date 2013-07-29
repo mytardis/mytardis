@@ -2,7 +2,6 @@ from os import path
 
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.http import HttpResponseNotFound
 
 from tardis.tardis_portal.managers import OracleSafeManager
 
@@ -80,7 +79,7 @@ class Dataset(models.Model):
 
     def get_thumbnail_url(self):
         if self.image is None:
-            return HttpResponseNotFound()
+            return None
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': self.image.id,
                                'region': 'full',
