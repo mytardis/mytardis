@@ -48,8 +48,9 @@ uses_relative.append('scp')
 
 
 class ScpTransfer(TransferProvider):
-    """So far, this only implements the subset of the TransferProvider API
-    needed to do archiving.
+    """This class allows you to do transfers using SSH and SCP, or similar.
+    The primary usecase is for storing archives, but it could also be used
+    for online storage of datafile replicas.
 
     The 'commands' hash provides a 'hook' that allows simple commands to
     be executed via the SSH session on the remote machine, before or after
@@ -110,18 +111,20 @@ class ScpTransfer(TransferProvider):
             opts += ' -P %s' % self.port
         return opts
 
-    def _get_ssh_command(self):
+    def _get_ssh_opts(self):
         opts = ''
         if self.key_filename:
             opts += ' -i %s' % self.key_filename
         if self.port != 22:
             opts += ' -p %s' % self.port
-        
+        return opts
+
+    def _get_ssh_command(self):
         template = self.commands.get('ssh')
         return Template(template).safe_substitute(
                 username=self.username,
                 hostname=self.hostname,
-                ssh_opts=opts)
+                ssh_opts=self._get_ssh_opts())
 
     def alive(self):
         try:
@@ -242,6 +245,7 @@ class ScpTransfer(TransferProvider):
         params['username'] = self.username 
         params['hostname'] = self.hostname
         params['scp_opts'] = self._get_scp_opts()
+        params['ssh_opts'] = self._get_ssh_opts()
         command = Template(template).safe_substitute(params)
         logger.debug('Remote command: "%s"' % command)
 
