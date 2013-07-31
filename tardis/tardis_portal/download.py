@@ -651,7 +651,7 @@ class UncachedTarStream(TarFile):
     '''
 
     def __init__(self, mapped_file_objs, filename, do_gzip=False,
-                 buffersize=65536, comp_level=6):
+                 buffersize=2*65536, comp_level=6, http_buffersize=65535):
         self.errors = 'strict'
         self.pax_headers = {}
         self.mode = 'w'
@@ -664,6 +664,7 @@ class UncachedTarStream(TarFile):
         self.mapped_file_objs = mapped_file_objs
         self.filename = filename
         self.buffersize = buffersize
+        self.http_buffersize = http_buffersize
         self.do_gzip = do_gzip
         if do_gzip:
             self.binary_buffer = io.BytesIO()
@@ -691,15 +692,26 @@ class UncachedTarStream(TarFile):
         return total_size
 
     def compress(self, buf):
+        self.gzipfile.write(buf)
+        self.gzipfile.flush()
+        self.binary_buffer.seek(0)
+        result = self.binary_buffer.read()
+        self.binary_buffer.seek(0)
+        self.binary_buffer.truncate()
+        return result
+
+    def prepare_output(self, uc_buf, remainder):
         if self.do_gzip:
-            self.gzipfile.write(buf)
-            self.gzipfile.flush()
-            self.binary_buffer.seek(0)
-            result = self.binary_buffer.read()
-            self.binary_buffer.seek(0)
-            self.binary_buffer.truncate()
-            return result
-        return buf
+            result_buf = self.compress(uc_buf)
+        else:
+            result_buf = uc_buf
+        if remainder is not None:
+            result_buf = remainder + result_buf
+        stream_buffers = []
+        while len(result_buf) >= self.http_buffersize:
+            stream_buffers.append(result_buf[:self.http_buffersize])
+            result_buf = result_buf[self.http_buffersize:]
+        return stream_buffers, result_buf
 
     def close_gzip(self):
         self.gzipfile.close()
@@ -715,13 +727,17 @@ class UncachedTarStream(TarFile):
         main tar generator. until python 3 needs to be in one function
         because 'yield's don't bubble up.
         '''
+        remainder_buf = None
         for fileobj_getter, name in self.mapped_file_objs:
             fileobj = fileobj_getter()
             self._check('aw')
             tarinfo = self.gettarinfo(name, name, fileobj)
             # tarinfo = copy.copy(tarinfo)
             buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
-            yield self.compress(buf)
+            stream_buffers, remainder_buf = self.prepare_output(
+                buf, remainder_buf)
+            for stream_buf in stream_buffers:
+                yield stream_buf
             self.offset += len(buf)
             if tarinfo.isreg():
                 if tarinfo.size == 0:
@@ -731,27 +747,45 @@ class UncachedTarStream(TarFile):
                     buf = fileobj.read(self.buffersize)
                     if len(buf) < self.buffersize:
                         raise IOError("end of file reached")
-                    yield self.compress(buf)
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
                 if remainder != 0:
                     buf = fileobj.read(remainder)
                     if len(buf) < remainder:
                         raise IOError("end of file reached")
-                    yield self.compress(buf)
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
                 blocks, remainder = divmod(tarinfo.size, tarfile.BLOCKSIZE)
                 if remainder > 0:
-                    yield self.compress(
-                        (tarfile.NUL * (tarfile.BLOCKSIZE - remainder)))
+                    buf = (tarfile.NUL * (tarfile.BLOCKSIZE - remainder))
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
                     blocks += 1
                 self.offset += blocks * tarfile.BLOCKSIZE
 
-        yield self.compress((tarfile.NUL * (tarfile.BLOCKSIZE * 2)))
+        buf = (tarfile.NUL * (tarfile.BLOCKSIZE * 2))
+        stream_buffers, remainder_buf = self.prepare_output(
+            buf, remainder_buf)
+        for stream_buf in stream_buffers:
+            yield stream_buf
         self.offset += (tarfile.BLOCKSIZE * 2)
         # fill up the end with zero-blocks
         # (like option -b20 for tar does)
         blocks, remainder = divmod(self.offset, tarfile.RECORDSIZE)
         if remainder > 0:
-            yield self.compress(
-                tarfile.NUL * (tarfile.RECORDSIZE - remainder))
+            buf = tarfile.NUL * (tarfile.RECORDSIZE - remainder)
+            stream_buffers, remainder_buf = self.prepare_output(
+                buf, remainder_buf)
+            for stream_buf in stream_buffers:
+                yield stream_buf
+        if len(remainder_buf) > 0:
+            yield remainder_buf
         if self.do_gzip:
             yield self.close_gzip()
 
@@ -767,6 +801,7 @@ class UncachedTarStream(TarFile):
                                          content_type=content_type)
         response['Content-Disposition'] = 'attachment; filename="%s"' %\
                                           self.filename
+        response['X-Accel-Buffering'] = 'no'
         if content_length is not None:
             response['Content-Length'] = content_length
         return response
@@ -829,10 +864,9 @@ def streaming_download_datafiles(request):
     # Create the HttpResponse object with the appropriate headers.
     # TODO: handle no datafile, invalid filename, all http links
     # TODO: intelligent selection of temp file versus in-memory buffering.
-
     logger.error('In download_datafiles !!')
-    comptype = "tgz"
-    organization = "deep-storage"
+    comptype = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tar'])[0]
+    organization = getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
     if 'comptype' in request.POST:
         comptype = request.POST['comptype']
     if 'organization' in request.POST:
