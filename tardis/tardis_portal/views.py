@@ -150,7 +150,6 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
                 if ns in schemas:
                     obj["datasettype"] = schemas[ns].name
                     break
-
     return obj
 
 
@@ -710,7 +709,7 @@ def experiment_datasets_json(request, experiment_id):
 
     objects = [
         get_dataset_info(ds, include_thumbnail=has_download_permissions,
-                         exclude=['datafiles', 'datasettype'])
+                         exclude=['datafiles'])
         for ds in experiment.datasets.all()]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
