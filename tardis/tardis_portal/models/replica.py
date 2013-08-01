@@ -85,7 +85,7 @@ class Replica(models.Model):
         
         if requireVerified and not self.verified:
             raise ValueError("Replica %s not verified" % self.id)
-        return self.location.provider.get_opener(self)
+        return self.location.provider.get_opener(self.url)
 
     def get_file(self, requireVerified=True):
         return self.get_file_getter(requireVerified=requireVerified)()
@@ -120,8 +120,7 @@ class Replica(models.Model):
         """
         file_path = path.join(self.datafile.dataset.get_path(), 
                               self.datafile.filename)
-        return urlparse.urljoin(self.location.url, 
-                                urllib.quote(file_path))
+        return urlparse.urljoin(self.location.url, urllib.quote(file_path))
 
     def get_absolute_filepath(self):
         url = urlparse.urlparse(self.url)

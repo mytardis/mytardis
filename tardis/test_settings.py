@@ -141,6 +141,18 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'url': 'http://127.0.0.1:4272/data/',
                       'type': 'online',
                       'priority': 10},
+                     {'name': 'archtest',
+                      'provider': 'http',
+                      'url': 'http://127.0.0.1:4272/archive/',
+                      'type': 'offline',
+                      'priority': 10},
+                     {'name': 'scptest',
+                      'provider': 'scp',
+                      'url': 'scp://127.0.0.1/tmp/mytardis-scptest/',
+                      'type': 'offline',
+                      'priority': 10,
+                      'params': {'username': 'blarg'}, 
+                      },
                      {'name': 'test2',
                       'provider': 'dav',
                       'params': {'trust_length': False},
@@ -160,6 +172,8 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
 ]
 
 DEFAULT_MIGRATION_DESTINATION = 'test'
+DEFAULT_ARCHIVE_LOCATION = 'archtest'
+DEFAULT_EXPERIMENT_URL_BASE = 'http://mytardis.example.com/experiments'
 
 MIGRATION_SCORING_PARAMS = {
     'user_priority_weighting': [5.0, 2.0, 1.0, 0.5, 0.2],

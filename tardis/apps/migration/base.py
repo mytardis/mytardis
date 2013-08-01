@@ -30,3 +30,6 @@
 class MigrationError(Exception):
     pass
 
+class ArchivingError(Exception):
+    pass
+

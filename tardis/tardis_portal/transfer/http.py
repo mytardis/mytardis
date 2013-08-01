@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -27,12 +27,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+from urllib import quote
+from urlparse import urlparse, urljoin
 from urllib2 import Request, HTTPError, build_opener, \
     HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, \
-    HTTPDigestAuthHandler
-from urllib import quote
-from urllib2 import URLError
-from urlparse import urlparse, urljoin
+    HTTPDigestAuthHandler, URLError
 import poster.streaminghttp
 import os
 
@@ -64,7 +63,7 @@ class SimpleHttpTransfer(TransferProvider):
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
         self.metadata_supported = False
-        self.trust_length = params.get('trust_length', 'False') == 'True'
+        self.trust_length = self._isTrue(params, 'trust_length', False)
         self.opener = self._build_opener(params, base_url)
         self.aliveErrors = [404]
 
@@ -102,11 +101,11 @@ class SimpleHttpTransfer(TransferProvider):
             return False
             
 
-    def get_length(self, replica):
+    def get_length(self, url):
         try:
-            response = self.opener.open(self.HeadRequest(replica.url))
+            response = self.opener.open(self.HeadRequest(url))
         except HTTPError as e:
-            raise TransferError(e.msg);
+            raise TransferError(str(e));
         length = response.info().get('Content-length')
         if length is None:
             raise TransferError("No content-length in response")
@@ -115,32 +114,31 @@ class SimpleHttpTransfer(TransferProvider):
         except TypeError:
             raise TransferError("Content-length is not numeric")
         
-    def get_metadata(self, replica):
+    def get_metadata(self, url):
         if not self.metadata_supported:
             raise NotImplementedError
         try:
-            response = self.opener.open(
-                self.GetRequest(replica.url + "?metadata"))
+            response = self.opener.open(self.GetRequest(url + "?metadata"))
             return simplejson.load(response)
         except HTTPError as e:
-            raise TransferError(e.msg)
+            # Bad request means that the remote didn't recognize the query
+            if e.code == 400:
+                raise NotImplementedError
+            else:
+                raise TransferError(str(e))
     
-    def get_opener(self, replica):
-        url = replica.url
+    def get_opener(self, url):
         self._check_url(url)
 
         def getter():
             try:
                 return self.opener.open(url)
             except HTTPError as e:
-                raise TransferError(e.msg)
+                raise TransferError(str(e))
 
         return getter
 
-    def generate_url(self, replica):
-        return replica.generate_default_url()
-
-    def put_file(self, source_replica, target_replica):
+    def put_replica(self, source_replica, target_replica):
         self._check_url(target_replica.url)
         try:
             f = source_replica.get_file()
@@ -148,20 +146,29 @@ class SimpleHttpTransfer(TransferProvider):
             request.add_header('Content-Type', source_replica.datafile.mimetype)
             request.add_header('Content-Length', source_replica.datafile.size)
             response = self.opener.open(request, data=f)
+            return target_replica.url
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(str(e))
         finally:
             f.close()
 
-    def remove_file(self, replica):
-        self._check_url(replica.url)
+    def put_archive(self, archive_file, archive_url):
         try:
-            self.opener.open(self.DeleteRequest(replica.url))
+            f = open(archive_file, 'rb')
+            request = self.PutRequest(archive_url)
+            print 'Putting %s\n' % archive_url
+            request.add_header('Content-Type', 'application/x-tar')
+            request.add_header('Content-Length', os.path.getsize(archive_file))
+            response = self.opener.open(request, data=f)
+            return archive_url
         except HTTPError as e:
-            raise TransferError(e.msg)
+            raise TransferError(str(e))
+        finally:
+            f.close()
 
-    def _check_url(self, url):
-        if not url.startswith(self.base_url):
-            raise TransferError(
-                'url %s does not belong to the %s destination (url %s)' % \
-                    (url, self.name, self.base_url))
+    def remove_file(self, url):
+        self._check_url(url)
+        try:
+            self.opener.open(self.DeleteRequest(url))
+        except HTTPError as e:
+            raise TransferError(str(e))

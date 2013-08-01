@@ -45,11 +45,11 @@ setup(
         'pystache==0.5.2',  # For server-side Mustache rendering to aid SEO
         'rdflib==3.2.1',    # For ANZSRCO parsing for ANZSRC FoR codes
         'rdfextras==0.2',  # For parsing n3 ANZSRCO
-        'django-user-agents==0.2.2',  # For user agent sensing
-        'user-agents==0.1.1',
-        'ua-parser==0.3.2',
-        'PyYAML==3.10',
-    ],
+        'django-user-agents==0.2.2', # For user agent sensing
+        'user-agents==0.1.1', # ditto
+        'ua-parser==0.3.2', # ditto
+        'PyYAML==3.10', # ditto
+        ],
     dependency_links = [
         'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
     ]

@@ -47,9 +47,10 @@ class WebDAVTransfer(SimpleHttpTransfer):
     def get_metadata(self, url):
         raise NotImplementedError
     
-    def put_file(self, source_replica, target_replica):
+    def put_replica(self, source_replica, target_replica):
         self._create_parent_collections(target_replica.url)
-        super(WebDAVTransfer, self).put_file(source_replica, target_replica)
+        return super(WebDAVTransfer, self).put_replica(source_replica, 
+                                                       target_replica)
 
     def _create_parent_collections(self, url):
         path = url[len(self.base_url):].split('/')
@@ -64,6 +65,6 @@ class WebDAVTransfer(SimpleHttpTransfer):
                     if e.code == 405 or e.code == 301:
                         pass
                     else:
-                        raise TransferError(e.msg)
+                        raise TransferError(e.message)
                 partial += '/'
         

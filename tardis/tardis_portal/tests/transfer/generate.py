@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2012, Centre for Microscopy and Microanalysis
+# Copyright (c) 2012-2013, Centre for Microscopy and Microanalysis
 #   (University of Queensland, Australia)
 # All rights reserved.
 #
@@ -34,8 +34,8 @@ from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 from tardis.tardis_portal.models import Location
 
-def generate_datafile(path, dataset, content=None, size=-1,
-                      verify=True, verified=True):
+def generate_datafile(path, dataset, content=None, size=-1, 
+                      verify=True, verified=True, time=None):
     '''Generates a datafile AND a replica to hold its contents'''
     from tardis.tardis_portal.models import Dataset_File, Replica, Location
 
@@ -68,6 +68,8 @@ def generate_datafile(path, dataset, content=None, size=-1,
         datafile.mimetype = "application/unspecified"
         datafile.filename = os.path.basename(filepath)
         datafile.dataset_id = dataset.id
+        datafile.created_time = time
+        datafile.modification_time = time
         datafile.save()
 
         location = _infer_location(path)
@@ -105,9 +107,11 @@ def generate_dataset(datafiles=[], experiments=[]):
     dataset.save()
     return dataset
 
-def generate_experiment(datasets=[], users=[]):
+def generate_experiment(datasets=[], users=[], title='', url=''):
     from tardis.tardis_portal.models import Experiment, ObjectACL
-    experiment = Experiment(created_by=users[0])
+    experiment = Experiment(created_by=users[0],
+                            title=title,
+                            url=url)
     experiment.save()
     for ds in datasets:
         ds.experiments.add(experiment)

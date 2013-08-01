@@ -38,6 +38,7 @@ from django.db import transaction
 from tardis.tardis_portal.fetcher import get_privileged_opener
 from tardis.tardis_portal.staging import stage_replica
 from tardis.tardis_portal.util import generate_file_checksums
+from tardis.tardis_portal.transfer import TransferError
 
 from tardis.apps.migration import MigrationError
 
@@ -77,40 +78,47 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         
         filename = replica.get_absolute_filepath()
         try:
-            newreplica = Replica.objects.get(datafile=replica.datafile,
+            target_replica = Replica.objects.get(datafile=replica.datafile,
                                              location=location)
             created_replica = False
             # We've most likely mirrored this file previously.  But if
             # we are about to delete the source Replica, we need to check
             # that the target Replica still verifies.
-            if not mirror and not check_file_transferred(newreplica, location):
-                raise MigrationError('Previously mirrored / migrated Replica' \
-                                         ' no longer verifies locally!')
+            if not mirror:
+                try:
+                    check_file_transferred(target_replica, location, 
+                                           require_checksum=True)
+                except TransferError:
+                    raise MigrationError('Previously mirrored / migrated' \
+                                         ' Replica no longer verifies!')
         except Replica.DoesNotExist:
-            newreplica = Replica()
-            newreplica.location = location
-            newreplica.datafile = replica.datafile
-            newreplica.protocol = ''
-            newreplica.stay_remote = location != Location.get_default_location()
-            newreplica.verified = False
-            url = location.provider.generate_url(newreplica)
+            target_replica = Replica()
+            target_replica.location = location
+            target_replica.datafile = replica.datafile
+            target_replica.protocol = ''
+            target_replica.stay_remote = \
+                location != Location.get_default_location()
+            target_replica.verified = False
+
+            url = target_replica.generate_default_url()
             
-            if newreplica.url == url:
+            if target_replica.url == url:
                 # We should get here ...
                 raise MigrationError('Cannot migrate a replica to its' \
                                          ' current location')
-            newreplica.url = url
-            location.provider.put_file(replica, newreplica) 
-            verified = False
+            target_replica.url = url
+            target_replica.url = location.provider.put_replica(
+                replica, target_replica) 
             try:
-                verified = check_file_transferred(newreplica, location)
+                check_file_transferred(target_replica, location,
+                                       require_checksum=(not mirror))
             except:
                 # FIXME - should we always do this?
-                location.provider.remove_file(newreplica)
+                location.provider.remove_file(target_replica.url)
                 raise
             
-            newreplica.verified = verified
-            newreplica.save()
+            target_replica.verified = True
+            target_replica.save()
             logger.info('Transferred file %s for replica %s' %
                         (filename, replica.id))
             created_replica = True
@@ -121,12 +129,12 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
         # FIXME - do this more reliably ...
         replica.delete()
         if not noRemove:
-            source.provider.remove_file(replica)
+            source.provider.remove_file(replica.url)
             logger.info('Removed local file %s for replica %s' %
                         (filename, replica.id))
         return True
 
-def check_file_transferred(replica, location):
+def check_file_transferred(replica, location, require_checksum=True):
     """
     Check that a replica has been successfully transfered to a remote
     storage location
@@ -134,65 +142,13 @@ def check_file_transferred(replica, location):
 
     from tardis.tardis_portal.models import Dataset_File
     datafile = Dataset_File.objects.get(pk=replica.datafile.id)
-
-    # If the remote is capable, get it to send us the checksums and / or
-    # file length for its copy of the file
     try:
-        # Fetch the remote's metadata for the file
-        m = location.provider.get_metadata(replica)
-        _check_attribute(m, datafile.size, 'length')
-        if (_check_attribute(m, datafile.sha512sum, 'sha512sum') or \
-               _check_attribute(m, datafile.md5sum, 'md5sum')):
-            return True
-        if location.trust_length and \
-                 _check_attribute(m, datafile.size, 'length') :
-            return False
-        raise MigrationError('Not enough metadata for verification')
-    except NotImplementedError:
-        pass
-    except HTTPError as e:
-        # Bad request means that the remote didn't recognize the query
-        if e.code != 400:
-            raise
-
-    if location.provider.trust_length :
-        try:
-            length = location.provider.get_length(replica)
-            if _check_attribute2(length, datafile.size, 'length'):
-                return False
-        except NotImplementedError:
-            pass
-    
-    # Fetch back the remote file and verify it locally.
-    f = location.provider.get_opener(replica)()
-    md5sum, sha512sum, size, x = generate_file_checksums(f, None)
-    _check_attribute2(str(size), datafile.size, 'length')
-    if _check_attribute2(sha512sum, datafile.sha512sum, 'sha512sum') or \
-            _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
-        return True
-    raise MigrationError('Not enough metadata for file verification')
-    
-def _check_attribute(attributes, value, key):
-    if not value:
-       return False
-    try:
-       if attributes[key].lower() == value.lower():
-          return True
-       logger.debug('incorrect %s: expected %s, got %s', 
-                    key, value, attributes[key])
-       raise MigrationError('Transfer check failed: the %s attribute of the' \
-                                ' remote file does not match' % (key))  
-    except KeyError:
-       return False;
-
-def _check_attribute2(attribute, value, key):
-    if not value or not attribute:
-        return False
-    if value.lower() == attribute.lower():
-        return True
-    logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
-    raise MigrationError('Transfer check failed: the %s attribute of the' \
-                           ' retrieved file does not match' % (key))
-
-
+        return location.provider.check_transfer(
+            replica.url,
+            {'length': datafile.size,
+             'md5sum': datafile.md5sum,
+             'sha512sum': datafile.sha512sum},
+            require_checksum=require_checksum)
+    except TransferError as e:
+        raise MigrationError(e.args[0])
     

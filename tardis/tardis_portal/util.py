@@ -3,7 +3,7 @@ from django.conf import settings
 import hashlib
 import pystache
 import pytz
-import os, platform, ctypes, stat, time, struct
+import os, platform, ctypes, stat, time, struct, re
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 
@@ -52,8 +52,20 @@ def get_free_space(fs_dir):
     else:
         raise RuntimeError('Unsupported / unexpected platform type: %s' % \
                                sys_type)
+def parse_scaled_number(value):
+    pat = re.compile(r"^(\d+(?:\.\d+)?)([kmgtKMGT]?)$")
+    res = pat.match(value)
+    if res:
+        amount = float(res.group(1))
+        scale = res.group(2).lower()
+        factor = {'': 1, 'k': 1024, 'm': 1048576,
+                  'g': 1073741824, 't': 1099511627776}.get(scale)
+        amount = amount * factor
+        return long(amount)
+    else:
+        raise ValueError('invalid scaled number')
 
-def generate_file_checksums(sourceFile, tempFile):
+def generate_file_checksums(sourceFile, tempFile=None):
     '''
     Generate checksums, etcetera for a file read from 'sourceFile'.
     If 'tempFile' is provided, the bytes are written to it as they are read.

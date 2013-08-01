@@ -30,4 +30,5 @@
 from .base import TransferProvider, TransferError
 from .http import SimpleHttpTransfer
 from .webdav import WebDAVTransfer
+from .scp import ScpTransfer
 from .local import BaseLocalTransfer, LocalTransfer, CustomTransfer

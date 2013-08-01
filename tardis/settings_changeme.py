@@ -379,11 +379,21 @@ INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
                       'priority': 5}]
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
+DEFAULT_ARCHIVE_LOCATION = 'unknown'
+DEFAULT_EXPERIMENT_URL_BASE = None
 
 TRANSFER_PROVIDERS = {
     'http': 'tardis.tardis_portal.transfer.SimpleHttpTransfer',
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
+    'scp': 'tardis.tardis_portal.transfer.ScpTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
+
+# Transfer providers that need to create temporary copies of files
+# should put them here
+TRANSFER_TEMP_DIR = gettempdir()
+
+# This temp space is for creation of archives.
+ARCHIVE_TEMP_DIR = gettempdir()
 
 UPLOAD_METHOD = "uploadify"
 '''

@@ -4,17 +4,25 @@ Migration App
 
 The migration app supports the orderly migration of data files between different storage locations under the control of a single MyTardis instance.  The secondary storage locations are essentially "dumb" consisting in the simple case of nothing more than an off-the-shelf WebDAV server.
 
-The initial version of the app simply provides a django admin command for manually migrating the data associated with a Datafile, Dataset or Experiment.  
+The app provides three django admin commands:
+
+  * The "migratefiles" command can migrate (or mirror) data associated with manually selected Datafiles, Datasets or Experiments, or it can use a scoring system to select Datafiles for migration.
+
+  * The "archive" command creates offline archives consisting of all of the data files for an Experiment and METS format "manifest" that includes all Experiment / Dataset / Datafile metadata.  Archives can be saved as local files, or saved via a transfer provider.  In the latter case, an record is added to the Archive table to facilitate later retrieval.
+
+  * The "archivelist" command allows you to search and list the Archive table to identify previously created archives by user, experiment title, experiment id and/or date range.
 
 TO DO:
 
- * Provide a framework that allows migrations to be run on a schedule, and the selection of files for migration is based on tailorable criteria, and is aware of storage availability.
+ * Provide a framework that allows migrations to be run on a schedule, and the selection of files for migration is based on tailorable criteria, and is aware of storage availability.  (Meanwhile, cron jobs work.)
 
  * Once the datafile has migrated, the default behaviour of MyTardis when the user attempts to fetch / view the Datafile is to fetch back a temporary copy.  Arrange that the temporary copy can be cached and/or reinstated locally.  Arrange that the files can be retrieved directly from the secondary store to the user's web browser.  (The last would involve some kind of SSO involving MyTardis and the secondary store's web server.)
 
  * Provide some indication to end users that datafiles have been migrated and that access will be slower.
 
  * Provide some mechanism for end users to influence which files are migrated, or not.
+
+ * Implement functionality for manual restoring archived experiments and/or on-demand fetching and restoring of datafiles. 
 
  * Work needs to be done on configuration of the destinations and providers ... so configuration details are liable to change.
 
@@ -85,10 +93,10 @@ We recommend that the target server use HTTP Digest rather than HTTP Basic authe
 If there is a significant risk of network snooping, etc, consider using SSL/TLS for the transfers. 
 
 
-Commands
-========
+The "migratefiles" Command
+==========================
 
-The initial version of the migration app provides the "migratefiles" command to perform migrations
+The "migratefiles" command migrates or mirrors data files selected in various ways between different locations. 
 
 Usage
 ~~~~~
@@ -99,12 +107,15 @@ Usage
 ``./bin/django migratefiles score``
 ``./bin/django migratefiles destinations``
 
-.. option:: -d DESTINATION, --dest=DESTINATION
+.. option:: -d LOCATION, --dest=LOCATION
+.. option:: -s LOCATION, --source=LOCATION
 .. option:: --verbosity={0,1,2,3}
 .. option:: -n, --dryRun
 .. option:: --noRemove
 .. option:: -a, --all
 
+Subcommands
+~~~~~~~~~~~
 The 'migrate' subcommand migrates the files associated with one or more DataFiles, DataSets or Experiments.  The "<type>" is one of "dataset", "datasets", "datafile", "datafiles", "experiment" or "experiments", and "<id> ..." is a sequence of object ids for objects of the target type.  Alternatively, the "--all" option selects all Datafiles for migration.
 
 Datafiles are migrated from a "source" location to a "destination" location.  The default "source" location is "local" (i.e. the MyTardis primary filestore), and the default "destination" location is site specific.
@@ -123,7 +134,7 @@ The 'score' subcommand simply scores all of the local files and lists their deta
 
 The 'destinations' subcommand lists the configured transfer destinations.
 
-The options are as follows:
+The complete set of options is as follows:
 
   * -d, --dest=Location selects the target location for the migrate, mirror and reclaim subcommands.
   * -s, --source=Location selects the source location for the migrate, mirror and reclaim subcommands.  The default is "local".
@@ -132,6 +143,123 @@ The options are as follows:
   * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
   * --noRemove used with "migrate" to stop the removal of the file at the source location.  (This is implied in the case of mirroring.)
   * --help prints 'migratefiles' command help.
+
+The "archive" Command
+=====================
+
+The "archive" command creates and records archival copies of the data files and metadata comprising an Experiment.
+
+Usage
+~~~~~
+``./bin/django archive [<id> ...]``
+
+.. option:: -l LOCATION, --location=LOCATION
+.. option:: -d PATHNAME, --directory=PATHNAME
+.. option:: --verbosity={0,1,2,3}
+.. option:: -n, --dryRun
+.. option:: --removeData
+.. option:: --removeAll
+.. option:: -i, --incremental
+.. option:: -o, --sendOffline
+.. option:: -c, --checksums
+.. option:: -k, --keepOnly=COUNT
+.. option:: --saveIncomplete
+.. option:: --minSize=SIZE
+.. option:: --maxSize=SIZE
+.. option:: --maxTotalSize=SIZE
+.. option:: -f, --force
+.. option:: -a, --all
+
+There are two ways to select Experiments for archiving.  You can list one or more Experiment ids and argument. Alternatively, the "--all" option selects all Experiments for archiving.  A separate archive will be created for each Experiment.  These are gzip'd tar files containing the data files together with a METS format manifest.
+
+The "--location" and "--directory" options determine where the archives are sent.  If --directory is used, the archives are saved to a local directory.  Otherwise, they are transferred to the selected Location, defaulting to a configured Location.
+
+When an Experiment is archived to a Location, a record is added to the Archive table to facilitate retrieval and possible restoration in the future. 
+
+Incremental archiving works by checking to see if an Experiment (or its component Datafiles) have changed since the last archive.  If it does not appear to have, then we don't create a new archive.  Unfortunately, the MyTardis data model has a few issues that make incremental archinving less than perfect:
+
+  * There are no timestamps on Datasets, so the addition or removal of a Datafile won't trigger an incremental archive.
+  * There are no timestamps on PropertySets, so a change in the metadata won't trigger am incremental archive.
+  * The timestamps on Datafiles are not populated or updated automatically.  It is left to (non-core) ingestion mechanisms to do this.  Hence, the behaviour of incremental archiving is liable to be site specific.
+
+You can also choose to remove the online Replicas of the archived Datafiles (replacing them with offline Replicas), or to remove all Experiment / Dataset / Datafile data and metadata.  Note that a Dataset (and its Datafiles) will not be removed if it is in multiple Experiments.  To make that happen, you need to (fully) remove all of the Experiments involved.
+
+The --keepOnly=COUNT option provides a simplistic mechanism for controlling the number of archives that are kept.  After transfering an archive, the command checks how many archives exist (in the Archive table) for the experiment being processed.  Any archives in excess of COUNT are deleted (from the Archive table and the transfer location), retaining only the COUNT most recently created archives.  It makes most sense to use --keepOnly in conjunction with --incremental.
+
+The complete set of options is as follows:
+
+  * -l, --location=Location specifies a Location for archiving to.
+  * -d, --directory=Pathname specifies a local directory to write the archives to.
+  * --all select all Experiments for the action.
+  * -v, --verbosity=0,1,2,3 controls how much output the command produces.
+  * --dryRun lists the files that would be migrated, mirrored or restored, but does not change anything.  (Currently, it doesn't check to see if the migrate / restore / mrror actions would have worked.)
+  * --removeAll remove all online information about the Experiment and its dependent Datasets and Datafiles.
+  * --removeData replace the online Replicas with a single offline one, and delete the online copies of the data.  The metadata remains online.
+  * -i, --incremental enables incremental archiving 
+  * -o, --sendOffline if the transfer provider and destination support this, a transferred archive is pushed offline once verified.
+  * -c, --checksums force the transferred archive to be verified against the checksums.  (The default is provider specific.)
+  * -k, --keepOnly=COUNT only keep COUNT archives for the Experiments being processed.  
+  * --minSize=SIZE archives smaller than this are not saved / transferred
+  * --maxSize=SIZE archives larger than this are not saved / transferred
+  * --maxTotalSize=SIZE this gives an upper limit on the total size of archives created by the run
+  * -f, --force turns --minSize and --maxSize into warnsings; i.e. the archives are saved anyway
+  * --saveIncomplete causes archives of Experiments with "missing" files to be saved anyway (with a warning).  Note that a "missing" file may due to a temporary problem with fetching a file from a remote location.
+  * --help prints the 'archive' command help.
+
+The "archivelist" Command
+=========================
+
+The "archivelist" command queries and lists the records in the Archive table
+
+Usage
+~~~~~
+``./bin/django archivelist [<id> ...]``
+
+.. option:: -a, --showAll
+.. option:: -f, --showFirst
+.. option:: --verbosity={0,1,2,3}
+.. option:: -c, --count
+.. option:: -e, --experimentDate
+.. option:: -u, --user=USERNAME
+.. option:: -t, --title=TITLE
+.. option:: -d, --date=ISO_DATE_OR_DATETIME
+.. option:: -F, --fromDate=ISO_DATE_OR_DATETIME.
+.. option:: -T, --toDate=ISO_DATE_OR_DATETIME.
+.. option:: -I, --incomplete
+.. option:: -C, --complete
+
+The command either lists or counts records in the Archive table.  (It doesn't check that the archive files are still present.)
+
+Conceptually, the procedure is as follows:
+  1. An initial set of experiments is chosen; i.e. the experiments whose ids are listed as command arguments, or "all experiments" if none are listed.  (We don't check that the ids correspond to Experiments in the Experiment table.)
+  1. Select all recorded archives for the selected experiments.
+  1. Filter out all archives that don't match the specified --user, --title and / or date range.
+  1. Depending on the presence of --showAll or --showFirst, select either the earliest, the latest or all remaining archive records for each experiment.
+  1. Either show (list) or count the archive records.
+
+The output listing shows 4 fields:
+  * The experiment id
+  * The experiment owner (at the time it was archived)
+  * The archive_created date (or experiment_updated; see below)
+  * The archive URL
+
+Date options give dates or datetime values in ISO format; i.e. <YYYY>-<MM>-<DD> or <YYYY>-<MM>-<DD>T<HH>:<MM>:<SS>.  Values are in local time.  If the date format is used, it is interpretted as the first millisecond of the day or the last millisecond of the day, for range starts and range ends respectively.
+
+The complete set of options is as follows:
+
+  * -a, --showAll if present, show all selected record, not just the latest one
+  * -f, --showFirst if present, show the first selected record, not the last one
+  * --verbosity={0,1,2,3} controls the level of output
+  * -c, --count if present, count records rather than listing them
+  * -e, --experimentDate if present, use the 'experiment_updated' field rather than the 'archive_created' field for selection, ordering and display
+  * -u, --user=USERNAME restrict to records with the specified owner
+  * -t, --title=TITLE restrict to records with the specified title
+  * -F, --fromDate=ISO_DATE_OR_DATETIME restrict to records with a date on or after the specified date or datetime.  
+  * -T, --toDate=ISO_DATE_OR_DATETIME restrict to records with a date on or before the specified date or datetime.  
+  * -d, --date=ISO_DATE_OR_DATETIME this is a short cut for -F ISO_DATE_OR_DATETIME and -T ISO_DATE_OR_DATETIME
+  * -I, --incomplete restrict to archives that are incomplete; i.e. those with nos_errors > 0.
+  * -C, --complete restrict to archives that are complete; i.e. those with nos_errors == 0.
+  * --help prints the 'archivelist' command help.
 
 Architecture
 ============
@@ -163,5 +291,3 @@ The process for migration is roughly as follows:
 We currently support two ways of checking that a file has been transferred correctly.  The preferred way is to get the transfer destination to calculate and return the metadata (checksums and length) for its copy of the file.  If that fails (or is not supported), the fallback is to read back the file from the destination and do the checksumming locally.
 
 Normally, we require there to be either an MD5 or SHA512 checksum in the metadata.  However if 'trust_length' is set, we will accept matching file lengths as being sufficient to verify the transfer.  That would normally be a bad idea, but if the transfer process is sufficiently reliable, file length checking may be sufficient.  (In this mode, a transfer provider could get away with sending a HEAD request and using the "Content-length".)
-
-(Note that migrating and restoring are now symmetric, and there is no longer a distinct 'restore' action.)

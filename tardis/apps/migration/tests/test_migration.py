@@ -85,7 +85,7 @@ class MigrationTestCase(TestCase):
         self.assertTrue(os.path.exists(path))
         # Check it was deleted remotely
         with self.assertRaises(TransferError):
-            dest.provider.get_length(new_replica)
+            dest.provider.get_length(new_replica.url)
 
         # Refresh the datafile object because it is now stale ...
         datafile = Dataset_File.objects.get(id=datafile.id)
@@ -95,14 +95,14 @@ class MigrationTestCase(TestCase):
         self.assertTrue(migrate_replica(replica, dest, noRemove=True))
         new_replica = datafile.get_preferred_replica()
         self.assertTrue(os.path.exists(path))
-        self.assertEquals(dest.provider.get_length(new_replica), 6)
+        self.assertEquals(dest.provider.get_length(new_replica.url), 6)
         migrate_replica(new_replica, local, noRemove=True)
         newpath = datafile.get_absolute_filepath()
         replica = datafile.get_preferred_replica()
         self.assertTrue(os.path.exists(path))
         self.assertTrue(os.path.exists(newpath))
         self.assertNotEqual(path, newpath)
-        self.assertEquals(dest.provider.get_length(new_replica), 6)
+        self.assertEquals(dest.provider.get_length(new_replica.url), 6)
 
     def testMirror(self):
         dest = Location.get_location('test')
@@ -115,12 +115,12 @@ class MigrationTestCase(TestCase):
         dummy_replica.url = dummy_replica.generate_default_url()
 
         with self.assertRaises(TransferError):
-            dest.provider.get_length(dummy_replica)
+            dest.provider.get_length(dummy_replica.url)
 
         self.assertTrue(migrate_replica(replica, dest, mirror=True))
         datafile = Dataset_File.objects.get(id=datafile.id)
         self.assertTrue(datafile.is_local())
-        self.assertEquals(dest.provider.get_length(dummy_replica), 9)
+        self.assertEquals(dest.provider.get_length(dummy_replica.url), 9)
 
 
     def testMigrateStoreWithSpaces(self):

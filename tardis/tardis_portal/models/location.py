@@ -16,11 +16,10 @@ class Location(models.Model):
         when deciding which one to use
     :attribute is_available: if True, the location should currently be
         accessible / useable
-
-    ... and other attributes TBD
+    :attribute transfer_provider: the name for the transfer provider type
     '''
 
-    name = models.CharField(max_length=10, unique=True)
+    name = models.CharField(max_length=40, unique=True)
     url = models.CharField(max_length=400, unique=True)
     type = models.CharField(max_length=10)
     priority = models.IntegerField()
@@ -154,8 +153,8 @@ class ProviderParameter(models.Model):
     instantiating a location's provider object.'''
 
     location = models.ForeignKey(Location)
-    name = models.CharField(max_length=10)
-    value = models.CharField(max_length=80, blank=True)
+    name = models.CharField(max_length=40)
+    value = models.CharField(max_length=400, blank=True)
 
     class Meta:
         app_label = 'tardis_portal'
