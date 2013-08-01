@@ -297,3 +297,16 @@ class ModelTestCase(TestCase):
             self.assertEqual(
                 "<a href='/test/ExperimentImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/ExperimentImage/load/%i/' /></a>" %   # noqa
                 (exp_parameter.id, exp_parameter.id), exp_parameter.get())
+
+    # Verify that create a new user will generate an api_key automtically
+    def test_create_user_automatically_generate_api_key(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_user('test', 'test@example.com', 'passw0rd')
+        user.save()
+
+        try:
+            api_key = user.api_key
+        except:
+            api_key = None
+
+        self.assertIsNotNone(api_key)

@@ -66,3 +66,8 @@ def ensure_doi_exists(sender, **kwargs):
         from tardis.tardis_portal.ands_doi import DOIService
         doi_service = DOIService(experiment)
         doi_service.get_or_mint_doi(doi_url)
+
+### ApiKey hooks
+#from django.contrib.auth.models import User
+#from tastypie.models import create_api_key
+#post_save.connect(create_api_key, sender=User)
