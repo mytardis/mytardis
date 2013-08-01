@@ -5,7 +5,7 @@
 $(document).ready(function() {
   $('#fileInput').uploadify({
     'uploader'  : '{{ uploadify_path }}/uploadify.swf',
-    'script'    : '{% url tardis.tardis_portal.views.upload dataset_id %}',
+    'script'    : '{% url 'tardis.tardis_portal.views.upload' dataset_id %}',
     'cancelImg' : '{{ uploadify_path }}/cancel.png',
     'auto'      : false,
     'multi'     : true,

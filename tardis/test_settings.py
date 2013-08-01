@@ -178,3 +178,5 @@ ARCHIVE_FILE_MAPPERS = {
     'test2': ('tardis.tardis_portal.tests.test_download.MyMapper',
               {'exclude' : '.txt'})
 }
+
+DEFAULT_ARCHIVE_ORGANIZATION = 'classic'

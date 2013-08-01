@@ -132,9 +132,14 @@ def has_dataset_download_access(request, dataset_id):
     return any(has_experiment_download_access(request, experiment.id)
                for experiment in dataset.experiments.all())
 
+
 def has_datafile_access(request, dataset_file_id):
-    dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    try:
+        dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    except Dataset.DoesNotExist:
+        return False
     return has_dataset_access(request, dataset.id)
+
 
 def has_datafile_download_access(request, dataset_file_id):
     dataset = Dataset.objects.get(dataset_file=dataset_file_id)
@@ -178,7 +183,7 @@ def has_read_or_owner_ACL(request, experiment_id):
                   | Q(expiryDate__isnull=True))
 
     # and finally check all the group based authorisation roles
-    for name, group in request.user.ext_groups:
+    for name, group in request.user.get_profile().ext_groups:
         query |= Q(pluginId=name,
                    entityId=str(group),
                    content_type=experiment.get_ct(),

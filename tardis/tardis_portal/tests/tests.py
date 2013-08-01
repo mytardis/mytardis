@@ -75,6 +75,8 @@ class SearchTestCase(TestCase):
             user = User.objects.create_user('test', '', 'test')
             user.save()
 
+        self.userprofile = UserProfile(user=user).save()
+
         base_path = path.abspath(path.dirname(__file__))
         files = ['METS_test.xml']
         for f in files:
@@ -431,6 +433,8 @@ class MetsMetadataInfoHandlerTestCase(TestCase):
         except User.DoesNotExist:
             self.user = User.objects.create_user('test', '', 'test')
             self.user.save()
+
+        self.userprofile = UserProfile(user=self.user).save()
 
         filename = path.join(path.abspath(path.dirname(__file__)),
                              './METS_test.xml')

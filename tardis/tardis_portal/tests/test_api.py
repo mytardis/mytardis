@@ -18,6 +18,7 @@ from tastypie.test import ResourceTestCase
 from tardis.tardis_portal.auth.authservice import AuthService
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
+from tardis.tardis_portal.models import UserProfile
 from tardis.tardis_portal.models.datafile import Dataset_File
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -80,6 +81,7 @@ class MyTardisResourceTestCase(ResourceTestCase):
             Permission.objects.get(codename='change_dataset'))
         self.user.user_permissions.add(
             Permission.objects.get(codename='add_dataset_file'))
+        self.user_profile = UserProfile(user=self.user).save()
         self.testexp = Experiment(title="test exp")
         self.testexp.approved = True
         self.testexp.created_by = self.user

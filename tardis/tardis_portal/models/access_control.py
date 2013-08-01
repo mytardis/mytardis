@@ -30,6 +30,9 @@ class UserProfile(models.Model):
     class Meta:
         app_label = 'tardis_portal'
 
+    def __unicode__(self):
+        return self.user.username
+
     def getUserAuthentications(self):
         return self.userAuthentication_set.all()
 
@@ -44,8 +47,14 @@ class UserProfile(models.Model):
         required_fields = ['email', 'first_name']
         return all(map(lambda f: bool(getattr(self.user, f)), required_fields))
 
-    def __unicode__(self):
-        return self.user.username
+    @property
+    def ext_groups(self):
+
+        import tardis.tardis_portal.auth.fix_circular as fix_circular
+
+        if not hasattr(self, '_cached_groups'):
+            self._cached_groups = fix_circular.getGroups(self.user)
+        return self._cached_groups
 
 
 class GroupAdmin(models.Model):

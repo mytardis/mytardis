@@ -1,6 +1,6 @@
 from os import path
 
-from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
@@ -9,6 +9,7 @@ from .experiment import Experiment
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 class Dataset(models.Model):
     """Class to link datasets to experiments
@@ -48,6 +49,7 @@ class Dataset(models.Model):
     def get_path(self):
         return path.join(str(self.get_first_experiment().id),
                          str(self.id))
+
     @models.permalink
     def get_absolute_url(self):
         """Return the absolute url to the current ``Dataset``"""
@@ -74,6 +76,15 @@ class Dataset(models.Model):
             return None
 
     image = property(_get_image)
+
+    def get_thumbnail_url(self):
+        return reverse('tardis.tardis_portal.iiif.download_image',
+                       kwargs={'datafile_id': self.image.id,
+                               'region': 'full',
+                               'size': '100,',
+                               'rotation': 0,
+                               'quality': 'native',
+                               'format': 'jpg'})
 
     def get_size(self):
         from .datafile import Dataset_File

@@ -177,6 +177,8 @@ def download_image(request, datafile_id, region, size, rotation,
         return HttpResponseNotFound()
     except ValueError:
         return HttpResponseNotFound()
+    except IOError:
+        return HttpResponseNotFound()
 
 
 @etag(compute_etag)

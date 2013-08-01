@@ -94,7 +94,7 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
-from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.auth.localdb_auth import django_user, django_group
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth import decorators as authz
 from tardis.tardis_portal.auth import auth_service
@@ -116,37 +116,40 @@ from django.contrib.auth import logout as django_logout
 
 logger = logging.getLogger(__name__)
 
-def get_dataset_info(dataset, include_thumbnail=False):
-    def get_thumbnail_url(datafile):
-        return reverse('tardis.tardis_portal.iiif.download_image',
-                       kwargs={'datafile_id': datafile.id,
-                               'region': 'full',
-                               'size': '100,',
-                               'rotation': 0,
-                               'quality': 'native',
-                               'format': 'jpg'})
+def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
     obj = model_to_dict(dataset)
-    obj['datafiles'] = list(dataset.dataset_file_set.values_list('id', flat=True))
+    if exclude is None or 'datafiles' not in exclude or 'file_count' \
+       not in exclude:
+        datafiles = list(
+            dataset.dataset_file_set.values_list('id', flat=True))
+        if exclude is None or 'datafiles' not in exclude:
+            obj['datafiles'] = datafiles
+        if exclude is None or 'file_count' not in exclude:
+            obj['file_count'] = len(datafiles)
 
     obj['url'] = dataset.get_absolute_url()
 
-    obj['size'] = dataset.get_size()
-    obj['size_human_readable'] = filesizeformat(dataset.get_size())
+    if exclude is None or 'size' not in exclude:
+        obj['size'] = dataset.get_size()
+        obj['size_human_readable'] = filesizeformat(obj['size'])
 
     if include_thumbnail:
         try:
-            obj['thumbnail'] = get_thumbnail_url(dataset.image)
+            obj['thumbnail'] = reverse(
+                'tardis.tardis_portal.views.dataset_thumbnail',
+                kwargs={'dataset_id': dataset.id})
         except AttributeError:
             pass
 
-    if hasattr(settings, "DATASET_VIEWS"):
-        schemas = {}
-        for ps in dataset.getParameterSets():
-            schemas[ps.schema.namespace] = ps.schema
-        for ns, view_fn in settings.DATASET_VIEWS:
-            if ns in schemas:
-                obj["datasettype"] = schemas[ns].name
-                break
+    if exclude is None or 'datasettype' not in exclude:
+        if hasattr(settings, "DATASET_VIEWS"):
+            schemas = {}
+            for ps in dataset.getParameterSets():
+                schemas[ps.schema.namespace] = ps.schema
+            for ns, view_fn in settings.DATASET_VIEWS:
+                if ns in schemas:
+                    obj["datasettype"] = schemas[ns].name
+                    break
 
     return obj
 
@@ -245,7 +248,10 @@ def load_dataset_image(request, parameter_id):
 
 
 def load_datafile_image(request, parameter_id):
-    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    try:
+        parameter = DatafileParameter.objects.get(pk=parameter_id)
+    except DatafileParameter.DoesNotExist:
+        return HttpResponseNotFound()
     dataset_file = parameter.parameterset.dataset_file
     if authz.has_datafile_access(request, dataset_file.id):
         return load_image(request, parameter)
@@ -298,11 +304,19 @@ def display_datafile_image(
     return HttpResponse(b64decode(image.string_value), mimetype='image/jpeg')
 
 
+@authz.dataset_access_required
+def dataset_thumbnail(request, dataset_id):
+    dataset = Dataset.objects.get(id=dataset_id)
+    return HttpResponseRedirect(dataset.get_thumbnail_url())
+
+
 def about(request):
 
     c = Context({'subtitle': 'About',
                  'about_pressed': True,
-                 'nav': [{'name': 'About', 'link': '/about/'}]})
+                 'nav': [{'name': 'About', 'link': '/about/'}],
+                 'version': settings.MYTARDIS_VERSION,
+             })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
 
@@ -377,11 +391,7 @@ def view_experiment(request, experiment_id,
         return return_response_error(request)
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
-    #import ipdb; ipdb.set_trace()
-    print request.user.groups
-    write_permissions = request.user.has_perm(
-        'tardis_acls.change_experiment',
-        experiment)
+
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -683,6 +693,7 @@ def dataset_json(request, experiment_id=None, dataset_id=None):
                                                     has_download_permissions)),
                         mimetype='application/json')
 
+
 @never_cache
 @authz.experiment_access_required
 def experiment_datasets_json(request, experiment_id):
@@ -694,10 +705,13 @@ def experiment_datasets_json(request, experiment_id):
     has_download_permissions = \
         authz.has_experiment_download_access(request, experiment_id)
 
-    objects = [ get_dataset_info(ds, has_download_permissions) \
-                for ds in experiment.datasets.all() ]
+    objects = [
+        get_dataset_info(ds, include_thumbnail=has_download_permissions,
+                         exclude=['datafiles', 'datasettype'])
+        for ds in experiment.datasets.all()]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')
+
 
 @never_cache
 @authz.experiment_access_required
@@ -876,7 +890,11 @@ def edit_experiment(request, experiment_id,
 
 # todo complete....
 def login(request):
-    from tardis.tardis_portal.auth import login, auth_service
+    '''
+    handler for login page
+    '''
+    from tardis.tardis_portal.auth import auth_service
+    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -886,7 +904,7 @@ def login(request):
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
-        authMethod = request.POST['authMethod']
+        authMethod = request.POST.get('authMethod', None)
 
         if 'next' not in request.GET:
             next = '/'
@@ -1108,11 +1126,11 @@ def display_datafile_details(request, dataset_file_id):
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, dataset_file_id),
                           "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, dataset_file_id),
                           "name": schema.name})
     context = Context({
         'datafile_id': dataset_file_id,
@@ -1182,7 +1200,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
     if 'filename' in request.GET and len(request.GET['filename']):
         filename_search = request.GET['filename']
         dataset_results = \
-            dataset_results.filter(url__icontains=filename_search)
+            dataset_results.filter(filename__icontains=filename_search)
 
         params['filename'] = filename_search
 

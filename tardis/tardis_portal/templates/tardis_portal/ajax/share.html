@@ -1,5 +1,4 @@
 {% load static from staticfiles %}
-{% load url from future %}
 {% load experiment_tags %}
 {% block script %}
 <script type="text/javascript">
@@ -16,14 +15,14 @@ $('.public_access_link').bind('click', function(evt) {
     modal.find('.modal-body')
          .load("/ajax/experiment/" + experiment_id + "/rights", function(response, status, xhr) {
             modal.find('.loading-placeholder').hide();
-            
+
             if (status == "error") {
                 $(this).html(response);
             }
-            
+
             $('#legal-section').hide();
         });
-       
+
 });
 
 
@@ -62,7 +61,7 @@ $('.share_link').bind('click', function(evt) {
                    // Reset autocomplete user when typing in the user edit field.
                    $(this).siblings("#id_autocomp_user").val('');
                    $(this).siblings("#id_authMethod").attr('disabled', '');
-                   
+
                    if (e.keyCode == 13)
                    {
                        $("#user.form_submit").click();
@@ -107,9 +106,9 @@ $('.share_link').bind('click', function(evt) {
                }
                var experiment_id = $(this).siblings(".experiment_id").val();
                var users_div = $(this).parents('.access_list1').children('.users');
-               
+
                var permissions = $(this).siblings("#id_permission").val();
-               
+
                var canDelete = false
                if(permissions == "read")
                {
@@ -184,8 +183,8 @@ $('.share_link').bind('click', function(evt) {
 
                return false;
              }); // end remove user
-            });            
-       
+            });
+
 });
 
 $('#modal-share').bind('hidden', function () {
@@ -225,7 +224,7 @@ $('.share_link_group').bind('click', function(evt) {
               });
               return val;
             })();
-            
+
             $("#id_addgroup").keypress(function(e) {
                  if (e.keyCode == 13)
                  {
@@ -237,7 +236,7 @@ $('.share_link_group').bind('click', function(evt) {
             $(".groupsuggest").typeahead({
               'source': groups.split(" ~ ")
             });
-            
+
             // view group members
             $(".member_list_user_toggle").unbind('click');
             $(".member_list_user_toggle").bind('click', function(evt){
@@ -273,7 +272,7 @@ $('.share_link_group').bind('click', function(evt) {
                     }
                   });
                 }).show();
-            });            
+            });
 
             $("#group.form_submit").unbind('click');
             $("#group.form_submit").click(function(event) {
@@ -290,11 +289,11 @@ $('.share_link_group').bind('click', function(evt) {
               // var canWrite = $(this).parents('.access_list2').find(".canWrite").is(':checked');
               // var canDelete = $(this).parents('.access_list2').find(".canDelete").is(':checked');
               // var permissions = '/?authMethod=' + authMethod + '&create=' + create + '&canRead=' + canRead + '&canWrite=' + canWrite + '&canDelete=' + canDelete + '&admin=' + usersuggest;
-              
+
               action = '/experiment/control_panel/' + experiment_id + '/access_list/add/group/' + groupsuggest
 
               var permissions = $(this).siblings("#id_permission_group").val();
-              
+
               var canDelete = false
               if(permissions == "read")
               {
@@ -323,7 +322,7 @@ $('.share_link_group').bind('click', function(evt) {
                 url: action,
                 success: function(data) {
                 groups_div.hide().append(data).fadeIn();
-                
+
                 // view group members
                 $(".member_list_user_toggle").unbind('click');
                 $(".member_list_user_toggle").bind('click', function(evt){
@@ -339,7 +338,7 @@ $('.share_link_group').bind('click', function(evt) {
                       user_list.hide();
                       return;
                     }
-                    
+
                     user_list.html(loadingHTML);
                     // Load (jQuery AJAX "load()") and show access list
                     user_list.load(this.href, function() {
@@ -359,7 +358,7 @@ $('.share_link_group').bind('click', function(evt) {
                         }
                       });
                     }).show();
-                });  // end member_list_user_toggle                
+                });  // end member_list_user_toggle
 
                 // todo this is a duplicate function..
                 $(".remove_group").unbind('click');
@@ -383,7 +382,7 @@ $('.share_link_group').bind('click', function(evt) {
                       }); // end ajax
                       return false;
                     }); // end remove group
-                                      
+
                 },
                 error: function(data) { alert('Error adding group!'); }
               });
@@ -411,16 +410,16 @@ $('.share_link_group').bind('click', function(evt) {
                   else { alert("val"); }
                 }
               }); // end ajax
-              
+
               return false;
             }); // end remove group
-            
+
     });
 });
 
 $(document).ready(function() {
-    
-// user access list    
+
+// user access list
   var $target_user = $("#experiment_user_list");
   $target_user.html(loadingHTML + "</br>");
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/user/readonly/"
@@ -430,14 +429,14 @@ $(document).ready(function() {
   var $target_group = $("#experiment_group_list");
   $target_group.html(loadingHTML + "</br>");
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/group/readonly/"
-  $target_group.load(href);  
+  $target_group.load(href);
 
 // token access list
   var $target_token = $("#experiment_token_list");
   $target_token.html(loadingHTML + "</br>");
   var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
   $target_token.load(href);
-  
+
 
   $('.token_delete').live('click', function(evt){
       var delRow = $(this).parents('tr')
@@ -445,7 +444,7 @@ $(document).ready(function() {
       var $toggle = $($(this).attr('data-toggle_selector'));
       $.post(this.href, {}, function()
       {
-          delRow.remove();          
+          delRow.remove();
       });
   });
 
@@ -460,9 +459,9 @@ $(document).ready(function() {
          var href = "/experiment/control_panel/{{experiment.id}}/access_list/tokens/"
          $target_token.load(href);
      });  // TODO error-handling
-     
+
   });
-  
+
  });
 </script>
 {% endblock %}
@@ -530,7 +529,7 @@ $(document).ready(function() {
               <dd style="padding-top: 5px;">
                 {{ experiment|experiment_public_access_badge }}
               </dd>
-            </dl>            
+            </dl>
             <dl>
               <dt>Current License</dt>
               <dd>
@@ -576,15 +575,15 @@ $(document).ready(function() {
         Change User Sharing
     </a>
     {% endif %}
-    <br/><br/> 
-    <h4>Groups</h4>       
+    <br/><br/>
+    <h4>Groups</h4>
     <p>Groups who have a share in this experiment:</p>
-    <div id="experiment_group_list"/> 
-    {% if is_owner %}       
+    <div id="experiment_group_list"/>
+    {% if is_owner %}
     <a data-experiment_id="{{experiment.id}}" class="share_link_group btn btn-mini" title="Change">
         <i class="icon-share"></i>
         Change Group Sharing
-    </a>    
+    </a>
     {% endif %}
     </div>
     <hr/>
@@ -600,7 +599,7 @@ $(document).ready(function() {
         {% else %}
         <p>This experiment is private. A temporary link can be created by its owner(s) and privately shared for direct access.</p>
         {% endif %}
-    
+
     {% if has_download_permissions %}
     <br/>
     <p>Temporary access links provide full access to recipients regardless of an experiment's public status.</p>
@@ -611,12 +610,11 @@ $(document).ready(function() {
             href="{{ experiment.get_create_token_url }}"
             class="create_token_link btn btn-mini">
             <i class="icon-plus-sign"></i>
-            Create New Temporary Link 
+            Create New Temporary Link
         </a>
         {% endif %}
-    {% endif %}    
+    {% endif %}
     </div>
     </div>
 
 {% endblock %}
-
