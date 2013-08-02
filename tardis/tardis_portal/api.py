@@ -44,6 +44,7 @@ from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
+from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
@@ -80,26 +81,40 @@ class MyTardisAuthentication(object):
         credentials are given but wrong and return Anonymous User when
         credentials are not given or the session has expired (web use).
         '''
-        basic_auth = BasicAuthentication()
-        check = basic_auth.is_authenticated(request, **kwargs)
-        if check:
-            if isinstance(check, HttpUnauthorized):
-                if 'HTTP_AUTHORIZATION' in request.META:
-                    return False
-            else:
-                request._authentication_backend = basic_auth
-                return check
-        session_auth = SessionAuthentication()
-        check = session_auth.is_authenticated(request, **kwargs)
-        if check:
-            if isinstance(check, HttpUnauthorized):
-                return False
-            else:
-                request._authentication_backend = session_auth
-                return check
+        auth_info = request.META.get('HTTP_AUTHORIZATION')
 
-        request.user = AnonymousUser()
-        return True
+        if 'HTTP_AUTHORIZATION' not in request.META:
+            session_auth = SessionAuthentication()
+            check = session_auth.is_authenticated(request, **kwargs)
+            if check:
+                if isinstance(check, HttpUnauthorized):
+                    return(False)
+                else:
+                    request._authentication_backend = session_auth
+                    return(check)
+            else:
+                request.user = AnonymousUser()
+                return(True)
+        else:
+            if auth_info.startswith('Basic'):
+                basic_auth = BasicAuthentication()
+                check = basic_auth.is_authenticated(request, **kwargs)
+                if check:
+                    if isinstance(check, HttpUnauthorized):
+                        return(False)
+                    else:
+                        request._authentication_backend = basic_auth
+                        return(check)
+            if auth_info.startswith('ApiKey'):
+                apikey_auth = ApiKeyAuthentication()
+                check = apikey_auth.is_authenticated(request, **kwargs)
+                if check:
+                    if isinstance(check, HttpUnauthorized):
+                        return(False)
+                    else:
+                        request._authentication_backend = apikey_auth
+                        return(check)
+
 
     def get_identifier(self, request):
         try:
