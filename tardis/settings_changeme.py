@@ -478,6 +478,3 @@ MYTARDIS_VERSION = get_git_version()
 #    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + \
 #        ('django_user_agents.middleware.UserAgentMiddleware',)
 
-# Fix for ValueError: astimezone() cannot be applied to a naive datetime
-# Seems only happen on django 1.5.x
-USE_TZ = True
