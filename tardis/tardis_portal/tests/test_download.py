@@ -308,11 +308,10 @@ class DownloadTestCase(TestCase):
             if simpleNames:
                 filename = df.filename
             else:
-                filename = join(rootdir, str(df.dataset.id),
-                                df.filename)
+                filename = join(df.filename)  # TODO: update 'classic' to a
+                # useful method and adapt test
             expect(filename in names).to_be(
                 not (noTxt and filename.endswith('.txt')))
-
 
     def testDownload(self):
         client = Client()
@@ -332,7 +331,7 @@ class DownloadTestCase(TestCase):
         #                 for ds in self.experiment1.datasets.all()]))
 
         # check download for experiment1 as tar
-        response = client.get('/download/experiment/%i/tar/classic/' %
+        response = client.get('/download/experiment/%i/tar/test/' %
                               self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'

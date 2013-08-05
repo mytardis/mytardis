@@ -880,8 +880,8 @@ class ViewTemplateContextsTest(TestCase):
         request = HttpRequest()
         request.user=self.user
         request.groups=[]
-        context = {'organization': ['classic', 'test', 'test2'],
-                   'default_organization': 'classic',
+        context = {'organization': ['test', 'test2'],
+                   'default_organization': 'test',
                    'default_format': 'tar',
                    'protocol': [['tgz', '/download/experiment/1/tgz/'],
                                 ['tar', '/download/experiment/1/tar/']]}
@@ -930,7 +930,7 @@ class ViewTemplateContextsTest(TestCase):
         request = HttpRequest()
         request.user=self.user
         request.groups=[]
-        context = {'default_organization': 'classic',
+        context = {'default_organization': 'test',
                    'default_format': 'tar'}
         views_module.should_call('render_response_index'). \
             with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
@@ -948,7 +948,7 @@ class ViewTemplateContextsTest(TestCase):
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
             setattr(request, 'user_agent', mock_agent);
             context = {'default_organization': 'classic',
-                       'default_format': 'tgz'}
+                       'default_format': 'tar'}
             views_module.should_call('render_response_index'). \
                 with_args(_AnyMatcher(), "tardis_portal/view_dataset.html",
                           _ContextMatcher(context))
