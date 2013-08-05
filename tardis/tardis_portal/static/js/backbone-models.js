@@ -65,7 +65,7 @@ var MyTardis = (function(){
 	_filterDescription: function(str) {
             lStr = str.toLowerCase();
             return function(model) {
-		return _.string.include(model.get('description').toLowerCase(), lStr);
+		return _.string.include(model.get('directory').toLowerCase() + model.get('description').toLowerCase(), lStr);
             };
 	},
 	render: function() {

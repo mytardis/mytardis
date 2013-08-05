@@ -184,11 +184,15 @@ ajax_urls = patterns(
 download_urls = patterns(
     'tardis.tardis_portal.download',
     (r'^datafile/(?P<datafile_id>\d+)/$', 'download_datafile'),
-    (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/$',
-     'download_experiment'),
-    (r'^experiment/(?P<experiment_id>\d+)/(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',  # noqa
-     'download_experiment'),
-    (r'^datafiles/$', 'download_datafiles'),
+    (r'^datafiles/$', 'streaming_download_datafiles'),
+    (r'^experiment/(?P<experiment_id>\d+)/$',
+     'streaming_download_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
+     'streaming_download_experiment'),
+    (r'^experiment/(?P<experiment_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+     'streaming_download_experiment'),
     )
 
 group_urls = patterns(

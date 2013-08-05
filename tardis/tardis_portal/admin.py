@@ -32,6 +32,7 @@
 
 from django.contrib import admin
 from tardis.tardis_portal import models
+from django import forms
 from django.forms import TextInput
 import django.db
 from django.contrib.contenttypes import generic
@@ -64,8 +65,20 @@ class ExperimentAdmin(admin.ModelAdmin):
 class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['description', 'id']
 
+
+class DatafileAdminForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Dataset_File
+        widgets = {
+            'directory': TextInput(attrs={'size': 120}),
+        }
+
+
 class DatafileAdmin(admin.ModelAdmin):
     search_fields = ['filename', 'id']
+    form = DatafileAdminForm
+
 
 class ReplicaAdmin(admin.ModelAdmin):
     search_fields = ['url', 'id']

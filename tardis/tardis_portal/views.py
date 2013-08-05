@@ -150,7 +150,6 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
                 if ns in schemas:
                     obj["datasettype"] = schemas[ns].name
                     break
-
     return obj
 
 
@@ -307,7 +306,10 @@ def display_datafile_image(
 @authz.dataset_access_required
 def dataset_thumbnail(request, dataset_id):
     dataset = Dataset.objects.get(id=dataset_id)
-    return HttpResponseRedirect(dataset.get_thumbnail_url())
+    tn_url = dataset.get_thumbnail_url()
+    if tn_url is None:
+        return HttpResponseNotFound()
+    return HttpResponseRedirect(tn_url)
 
 
 def about(request):
@@ -456,7 +458,7 @@ def _add_protocols_and_organizations(request, experiment, c):
                 continue
             c['protocol'] += [[key, value]]
 
-    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['zip', 'tar'])
+    formats = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tgz', 'tar'])
     c['default_format'] = filter(
         lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 
@@ -500,9 +502,6 @@ def experiment_description(request, experiment_id):
 
     # calculate the sum of the datafile sizes
     c['size'] = Dataset_File.sum_sizes(c['datafiles'])
-
-    c['has_read_or_owner_ACL'] = \
-        authz.has_read_or_owner_ACL(request, experiment_id)
 
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
@@ -707,7 +706,7 @@ def experiment_datasets_json(request, experiment_id):
 
     objects = [
         get_dataset_info(ds, include_thumbnail=has_download_permissions,
-                         exclude=['datafiles', 'datasettype'])
+                         exclude=['datafiles'])
         for ds in experiment.datasets.all()]
 
     return HttpResponse(json.dumps(objects), mimetype='application/json')

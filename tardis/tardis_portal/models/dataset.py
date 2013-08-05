@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
+from tardis.tardis_portal.models.fields import DirectoryField
 
 from .experiment import Experiment
 
@@ -21,6 +22,7 @@ class Dataset(models.Model):
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
+    directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
     objects = OracleSafeManager()
 
@@ -78,6 +80,8 @@ class Dataset(models.Model):
     image = property(_get_image)
 
     def get_thumbnail_url(self):
+        if self.image is None:
+            return None
         return reverse('tardis.tardis_portal.iiif.download_image',
                        kwargs={'datafile_id': self.image.id,
                                'region': 'full',

@@ -5,15 +5,17 @@ from django.db import models
 from django.db.models import Q
 from django.core.urlresolvers import reverse
 
+from tardis.tardis_portal.models.fields import DirectoryField
 from .dataset import Dataset
 from .replica import Replica
 
 import logging
 logger = logging.getLogger(__name__)
 
-IMAGE_FILTER = (Q(mimetype__startswith='image/') & \
-              ~Q(mimetype='image/x-icon')) | \
-               (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))
+IMAGE_FILTER = (Q(mimetype__startswith='image/') &
+                ~Q(mimetype='image/x-icon')) |\
+    (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
+
 
 class Dataset_File(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
@@ -27,11 +29,13 @@ class Dataset_File(models.Model):
     :attribute modification_time: last modification time of the file
     :attribute mimetype: for example 'application/pdf'
     :attribute md5sum: digest of length 32, containing only hexadecimal digits
-    :attribute sha512sum: digest of length 128, containing only hexadecimal digits
+    :attribute sha512sum: digest of length 128, containing only hexadecimal
+        digits
     """
 
     dataset = models.ForeignKey(Dataset)
     filename = models.CharField(max_length=400)
+    directory = DirectoryField(blank=True, null=True)
     size = models.CharField(blank=True, max_length=400)
     created_time = models.DateTimeField(null=True, blank=True)
     modification_time = models.DateTimeField(null=True, blank=True)

@@ -49,77 +49,79 @@ def _generate_test_image(testfile):
         f.write("II\x2a\x00")
         f.close()
 
-class StreamingFileTestCase(TestCase):
+# disabled as irrelevant for new method
+# class StreamingFileTestCase(TestCase):
 
-    def testDirectCopy(self):
+#     def testDirectCopy(self):
 
-        def writeTestData(filename):
-            with open(filename, 'w') as f:
-                from time import sleep
-                for i in range(1,10):
-                    print i
-                    sleep(0.1)
-                    f.write("%d\n" % i)
+#         def writeTestData(filename):
+#             with open(filename, 'w') as f:
+#                 from time import sleep
+#                 for i in range(1,10):
+#                     print i
+#                     sleep(0.1)
+#                     f.write("%d\n" % i)
 
-        # Test the asynchronous flavor
-        reader = StreamingFile(writeTestData, asynchronous_file_creation=True)
-        expect(reader.thread.is_alive()).to_be_truthy()
-        expect(exists(reader.name)).to_be_truthy()
-        contents = reader.read(10)
-        expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
-        contents = reader.read(1024)
-        expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
-        contents = reader.read(1024)
-        expect(contents).to_equal('')
-        expect(exists(reader.name)).to_be_truthy()
-        reader.close()
-        expect(exists(reader.name)).to_be_falsy()
+#         # Test the asynchronous flavor
+#         reader = StreamingFile(writeTestData, asynchronous_file_creation=True)
+#         expect(reader.thread.is_alive()).to_be_truthy()
+#         expect(exists(reader.name)).to_be_truthy()
+#         contents = reader.read(10)
+#         expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
+#         contents = reader.read(1024)
+#         expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
+#         contents = reader.read(1024)
+#         expect(contents).to_equal('')
+#         expect(exists(reader.name)).to_be_truthy()
+#         reader.close()
+#         expect(exists(reader.name)).to_be_falsy()
 
-        # Test the synchronous flavor
-        reader = StreamingFile(writeTestData, asynchronous_file_creation=False)
-        expect(hasattr(reader, 'thread')).to_be_falsy()
-        expect(exists(reader.name)).to_be_truthy()
-        contents = reader.read(10)
-        expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
-        contents = reader.read(1024)
-        expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
-        contents = reader.read(1024)
-        expect(contents).to_equal('')
-        expect(exists(reader.name)).to_be_truthy()
-        reader.close()
-        expect(exists(reader.name)).to_be_falsy()
+#         # Test the synchronous flavor
+#         reader = StreamingFile(writeTestData, asynchronous_file_creation=False)
+#         expect(hasattr(reader, 'thread')).to_be_falsy()
+#         expect(exists(reader.name)).to_be_truthy()
+#         contents = reader.read(10)
+#         expect(contents).to_equal("\n".join(map(str,range(1,6)))+"\n")
+#         contents = reader.read(1024)
+#         expect(contents).to_equal("\n".join(map(str,range(6,10)))+"\n")
+#         contents = reader.read(1024)
+#         expect(contents).to_equal('')
+#         expect(exists(reader.name)).to_be_truthy()
+#         reader.close()
+#         expect(exists(reader.name)).to_be_falsy()
 
-class StreamableZipFileTestCase(TestCase):
-    def testCreateZip(self):
-        (zipFileObj, self.zipFilename) = mkstemp(suffix='zip')
-        (tiffFileObj, self.tiffFilename) = mkstemp(suffix='tiff')
-        try:
-            close(zipFileObj)
-            close(tiffFileObj)
-            _generate_test_image(self.tiffFilename)
-            self._create_test_zip()
-            self._check_test_zip()
-        finally:
-            unlink(self.zipFilename)
-            unlink(self.tiffFilename)
+# disabled as irrelevant for new downloads
+# class StreamableZipFileTestCase(TestCase):
+#     def testCreateZip(self):
+#         (zipFileObj, self.zipFilename) = mkstemp(suffix='zip')
+#         (tiffFileObj, self.tiffFilename) = mkstemp(suffix='tiff')
+#         try:
+#             close(zipFileObj)
+#             close(tiffFileObj)
+#             _generate_test_image(self.tiffFilename)
+#             self._create_test_zip()
+#             self._check_test_zip()
+#         finally:
+#             unlink(self.zipFilename)
+#             unlink(self.tiffFilename)
 
-    def _create_test_zip(self):
-        zip = StreamableZipFile(self.zipFilename, 'w')
-        try:
-            zip.write(self.tiffFilename, arcname='image')
-        finally:
-            zip.close()
+#     def _create_test_zip(self):
+#         zip = StreamableZipFile(self.zipFilename, 'w')
+#         try:
+#             zip.write(self.tiffFilename, arcname='image')
+#         finally:
+#             zip.close()
 
-    def _check_test_zip(self):
-        zip = ZipFile(self.zipFilename, 'r')
-        try:
-            info = zip.getinfo('image')
-            expect(info).to_be_truthy()
-            expect(info.flag_bits).to_equal(8)
-            expect(info.filename).to_equal('image')
-            expect(info.file_size).to_equal(stat(self.tiffFilename).st_size)
-        finally:
-            zip.close()
+#     def _check_test_zip(self):
+#         zip = ZipFile(self.zipFilename, 'r')
+#         try:
+#             info = zip.getinfo('image')
+#             expect(info).to_be_truthy()
+#             expect(info.flag_bits).to_equal(8)
+#             expect(info.filename).to_equal('image')
+#             expect(info.file_size).to_equal(stat(self.tiffFilename).st_size)
+#         finally:
+#             zip.close()
 
 class DownloadTestCase(TestCase):
 
@@ -316,30 +318,31 @@ class DownloadTestCase(TestCase):
         client = Client()
 
         # check download for experiment1
-        response = client.get('/download/experiment/%i/zip/' % \
-                                  self.experiment1.id)
-        self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.zip"'
-                         % self.experiment1.id)
-        self.assertEqual(response.status_code, 200)
-        self._check_zip_file(
-            response.streaming_content, str(self.experiment1.id),
-            reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all() \
-                        for ds in self.experiment1.datasets.all()]))
+        # disable zip test while zip is disabled
+        # response = client.get('/download/experiment/%i/zip/' % \
+        #                           self.experiment1.id)
+        # self.assertEqual(response['Content-Disposition'],
+        #                  'attachment; filename="experiment%s-complete.zip"'
+        #                  % self.experiment1.id)
+        # self.assertEqual(response.status_code, 200)
+        # self._check_zip_file(
+        #     response.streaming_content, str(self.experiment1.id),
+        #     reduce(lambda x, y: x + y,
+        #            [ds.dataset_file_set.all() \
+        #                 for ds in self.experiment1.datasets.all()]))
 
         # check download for experiment1 as tar
-        response = client.get('/download/experiment/%i/tar/' % \
-                                  self.experiment1.id)
+        response = client.get('/download/experiment/%i/tar/classic/' %
+                              self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.tar"'
-                         % self.experiment1.id)
+                         'attachment; filename="%s-complete.tar"'
+                         % self.experiment1.title)
         self.assertEqual(response.status_code, 200)
         self._check_tar_file(
-            response.streaming_content, str(self.experiment1.id),
+            response.streaming_content, str(self.experiment1.title),
             reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all() \
-                        for ds in self.experiment1.datasets.all()]))
+                   [ds.dataset_file_set.all()
+                    for ds in self.experiment1.datasets.all()]))
 
         # check download of file1
         response = client.get('/download/datafile/%i/' % self.datafile1.id)
@@ -358,13 +361,14 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
         # check dataset1 download
-        response = client.post('/download/datafiles/',
-                               {'expid': self.experiment1.id,
-                                'dataset': [self.dataset1.id],
-                                'datafile': []})
-        self.assertEqual(response.status_code, 200)
-        self._check_zip_file(response.streaming_content, 'datasets',
-                             self.dataset1.dataset_file_set.all())
+        # zips disabled for now
+        # response = client.post('/download/datafiles/',
+        #                        {'expid': self.experiment1.id,
+        #                         'dataset': [self.dataset1.id],
+        #                         'datafile': []})
+        # self.assertEqual(response.status_code, 200)
+        # self._check_zip_file(response.streaming_content, 'datasets',
+        #                      self.dataset1.dataset_file_set.all())
 
         # check dataset1 download as tar
         response = client.post('/download/datafiles/',
@@ -373,7 +377,8 @@ class DownloadTestCase(TestCase):
                                 'datafile': [],
                                 'comptype': 'tar'})
         self.assertEqual(response.status_code, 200)
-        self._check_tar_file(response.streaming_content, 'datasets',
+        self._check_tar_file(response.streaming_content,
+                             'Experiment 1-selection',
                              self.dataset1.dataset_file_set.all())
 
         # check dataset2 download
@@ -389,7 +394,8 @@ class DownloadTestCase(TestCase):
                                 'dataset': [],
                                 'datafile': [self.datafile1.id]})
         self.assertEqual(response.status_code, 200)
-        self._check_zip_file(response.streaming_content, 'datasets',
+        self._check_tar_file(response.streaming_content,
+                             'Experiment 1-selection',
                              [self.datafile1])
 
         # check datafile2 download via POST
@@ -419,26 +425,27 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response_content[0:4], "II\x2a\x00")
 
         # check experiment zip download with alternative organization
-        response = client.get('/download/experiment/%i/zip/test/' % \
-                                  self.experiment1.id)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.zip"'
-                         % self.experiment1.id)
-        self._check_zip_file(
-            response.streaming_content, str(self.experiment1.id),
-            reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all() \
-                        for ds in self.experiment1.datasets.all()]),
-            simpleNames=True)
+        # disable zip for now
+        # response = client.get('/download/experiment/%i/zip/test/' % \
+        #                           self.experiment1.id)
+        # self.assertEqual(response.status_code, 200)
+        # self.assertEqual(response['Content-Disposition'],
+        #                  'attachment; filename="%s-complete.zip"'
+        #                  % self.experiment1.title)
+        # self._check_zip_file(
+        #     response.streaming_content, str(self.experiment1.id),
+        #     reduce(lambda x, y: x + y,
+        #            [ds.dataset_file_set.all() \
+        #                 for ds in self.experiment1.datasets.all()]),
+        #     simpleNames=True)
 
         # check experiment tar download with alternative organization
         response = client.get('/download/experiment/%i/tar/test/' % \
                                   self.experiment1.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.tar"'
-                         % self.experiment1.id)
+                         'attachment; filename="%s-complete.tar"'
+                         % self.experiment1.title)
         self._check_tar_file(
             response.streaming_content, str(self.experiment1.id),
             reduce(lambda x, y: x + y,
@@ -449,15 +456,15 @@ class DownloadTestCase(TestCase):
         # check experiment1 download with '.txt' filtered out (none left)
         response = client.get('/download/experiment/%i/tar/test2/' % \
                                   self.experiment1.id)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
 
         # check experiment2 download with '.txt' filtered out
         response = client.get('/download/experiment/%i/tar/test2/' % \
                                   self.experiment2.id)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
-                         'attachment; filename="experiment%s-complete.tar"'
-                         % self.experiment2.id)
+                         'attachment; filename="%s-complete.tar"'
+                         % self.experiment2.title)
         self._check_tar_file(
             response.streaming_content, str(self.experiment2.id),
             reduce(lambda x, y: x + y,
@@ -466,17 +473,17 @@ class DownloadTestCase(TestCase):
             simpleNames=True, noTxt=True)
 
         # check dataset1 download
-        response = client.post('/download/datafiles/',
-                               {'expid': self.experiment1.id,
-                                'dataset': [self.dataset1.id],
-                                'datafile': [],
-                                'comptype': 'zip',
-                                'organization': 'test'})
-        self.assertEqual(response.status_code, 200)
-        self._check_zip_file(response.streaming_content, 'datasets',
-                             self.dataset1.dataset_file_set.all(),
-                             simpleNames=True)
-
+        # zips disabled for now
+        # response = client.post('/download/datafiles/',
+        #                        {'expid': self.experiment1.id,
+        #                         'dataset': [self.dataset1.id],
+        #                         'datafile': [],
+        #                         'comptype': 'zip',
+        #                         'organization': 'test'})
+        # self.assertEqual(response.status_code, 200)
+        # self._check_zip_file(response.streaming_content, 'datasets',
+        #                      self.dataset1.dataset_file_set.all(),
+        #                      simpleNames=True)
 
     def testDatasetFile(self):
 

@@ -30,7 +30,7 @@ setup(
         'django-haystack==1.2.7',
         'django-bootstrap-form==2.0.6',
         'celery==3.0.21',           # Delayed tasks and queues
-        'django-celery==3.0.17',
+        'django-celery>=3.0.17',
         'kombu==2.5.12',
         'pysolr==2.1.0-beta',
         'beautifulsoup4==4.2.1',

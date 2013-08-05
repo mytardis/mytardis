@@ -429,7 +429,7 @@ ARCHIVE_FILE_MAPPERS = {
 DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
 
 # Site's preferred archive types, with the most preferred first
-DEFAULT_ARCHIVE_FORMATS = ['zip', 'tar']
+DEFAULT_ARCHIVE_FORMATS = ['tgz', 'tar']
 
 DEEP_DATASET_STORAGE = True
 '''

@@ -11,6 +11,7 @@ from tardis.tardis_portal.models.dataset import Dataset
 
 register = template.Library()
 
+
 @register.filter
 def dataset_tiles(experiment, include_thumbnails):
     # only show 8 datasets for initial load
@@ -18,7 +19,9 @@ def dataset_tiles(experiment, include_thumbnails):
 
     # Get data to template (used by JSON service too)
     # ?? doesn't seem to be used by JSON service at all
-    data = ( get_dataset_info(ds, bool(include_thumbnails)) for ds in datasets )
+    data = (get_dataset_info(ds, bool(include_thumbnails),
+                             exclude=['datasettype', 'size'])
+            for ds in datasets)
 
     class DatasetInfo(object):
 
@@ -26,7 +29,7 @@ def dataset_tiles(experiment, include_thumbnails):
             self.__dict__.update(data)
 
         def experiment_badge(self):
-            count = len(self.experiments);
+            count = len(self.experiments)
             return render_mustache('tardis_portal/badges/experiment_count', {
                 'title': "In %d experiment%s" % (count, pluralize(count)),
                 'count': count,
