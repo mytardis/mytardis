@@ -49,10 +49,9 @@ setup(
         'user-agents==0.1.1',
         'ua-parser==0.3.3',
         'PyYAML==3.10',
-        'django-tastypie==0.9.16-dev',
+        'django-tastypie==0.9.16-tzfix',
     ],
     dependency_links=[
-        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
-        'https://github.com/grischa/django-tastypie/tarball/master#egg=django-tastypie-0.9.16-dev',  # noqa
+        'https://github.com/grischa/django-tastypie/tarball/testing-mytardis-deployment#egg=django-tastypie-0.9.16-tzfix',  # noqa
     ]
 )

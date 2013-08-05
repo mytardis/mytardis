@@ -148,7 +148,9 @@ class Experiment(models.Model):
         local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
         if any(p in protocols for p in local_protocols):
             view = 'tardis.tardis_portal.download.streaming_download_experiment'
-            for comptype in ['tgz', 'tar']:
+            for comptype in getattr(settings,
+                                    'DEFAULT_ARCHIVE_FORMATS',
+                                    ['tgz', 'tar']):
                 kwargs = dict(params+(('comptype', comptype),))
                 urls[comptype] = reverse(view, kwargs=kwargs)
 
