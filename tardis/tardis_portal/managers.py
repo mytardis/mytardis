@@ -74,7 +74,7 @@ class ExperimentManager(OracleSafeManager):
         # should be refactored, but cannot think of good way atm
         if not user.is_authenticated():
             from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
-            query = Q()
+            query = Q(id=None)
             tgp = TokenGroupProvider()
             for group in tgp.getGroups(user):
                 query |= Q(objectacls__pluginId=tgp.name,
