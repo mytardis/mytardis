@@ -503,9 +503,6 @@ def experiment_description(request, experiment_id):
     # calculate the sum of the datafile sizes
     c['size'] = Dataset_File.sum_sizes(c['datafiles'])
 
-    c['has_read_or_owner_ACL'] = \
-        authz.has_read_or_owner_ACL(request, experiment_id)
-
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
 

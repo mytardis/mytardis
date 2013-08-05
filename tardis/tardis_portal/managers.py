@@ -12,8 +12,8 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User, Group
 
-from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.auth.localdb_auth import django_user
+from tardis.tardis_portal.models import ObjectACL
 
 
 class OracleSafeManager(models.Manager):
@@ -69,9 +69,22 @@ class ExperimentManager(OracleSafeManager):
             self._query_owned_and_shared(user)).distinct()
 
     def _query_owned_and_shared(self, user):
-        # if the user is not authenticated, nothing should be returned
+        # if the user is not authenticated, only tokens apply
+        # this is almost duplicate code of end of has_perm in authorisation.py
+        # should be refactored, but cannot think of good way atm
         if not user.is_authenticated():
-            return Q(id=None)
+            from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
+            query = Q()
+            tgp = TokenGroupProvider()
+            for group in tgp.getGroups(user):
+                query |= Q(objectacls__pluginId=tgp.name,
+                           objectacls__entityId=str(group),
+                           objectacls__canRead=True) &\
+                    (Q(objectacls__effectiveDate__lte=datetime.today())
+                     | Q(objectacls__effectiveDate__isnull=True)) &\
+                    (Q(objectacls__expiryDate__gte=datetime.today())
+                     | Q(objectacls__expiryDate__isnull=True))
+            return query
 
         # for which experiments does the user have read access
         # based on USER permissions?
