@@ -463,7 +463,7 @@ def _add_protocols_and_organizations(request, experiment, c):
         lambda x: not (cannot_do_zip and x == 'zip'), formats)[0]
 
     from tardis.tardis_portal.download import get_download_organizations
-    c['organization'] = ['classic'] + get_download_organizations()
+    c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
         settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
 
