@@ -46,6 +46,7 @@ from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
+from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
 from tastypie.http import HttpUnauthorized
@@ -129,7 +130,8 @@ class ACLAuthorization(Authorization):
     '''Authorisation class for Tastypie.
     '''
     def read_list(self, object_list, bundle):
-        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+        if bundle.request.user.is_authenticated() and \
+           bundle.request.user.is_superuser:
             return object_list
         if type(bundle.obj) == Experiment:
             return type(bundle.obj).safe.all(bundle.request.user)
@@ -169,7 +171,9 @@ class ACLAuthorization(Authorization):
                     dp_list.append(dp)
             return dp_list
         elif type(bundle.obj) == Dataset_File:
-            return get_accessible_datafiles_for_user(bundle.request)
+            all_dfs = set(
+                get_accessible_datafiles_for_user(bundle.request))
+            return list(all_dfs.intersection(object_list))
         elif type(bundle.obj) == DatafileParameterSet:
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             dfps_list = []
@@ -188,7 +192,8 @@ class ACLAuthorization(Authorization):
             return []
 
     def read_detail(self, object_list, bundle):
-        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+        if bundle.request.user.is_authenticated() and \
+           bundle.request.user.is_superuser:
             return True
         if type(bundle.obj) == Experiment:
             return has_experiment_access(bundle.request, bundle.obj.id)
@@ -230,7 +235,8 @@ class ACLAuthorization(Authorization):
     def create_detail(self, object_list, bundle):
         if not bundle.request.user.is_authenticated():
             return False
-        if bundle.request.user.is_authenticated() and bundle.request.user.is_superuser:
+        if bundle.request.user.is_authenticated() and \
+           bundle.request.user.is_superuser:
             return True
         if type(bundle.obj) == Experiment:
             return bundle.request.user.has_perm('tardis_portal.add_experiment')
@@ -597,6 +603,36 @@ class DatasetResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
+        filtering = {
+            'id': ('exact', ),
+        }
+
+    def prepend_urls(self):
+        return [
+            url(r'^(?P<resource_name>%s)/(?P<pk>\w[\w/-]*)/files/'
+                r'(?:(?P<file_path>.+))?$' % self._meta.resource_name,
+                self.wrap_view('get_datafiles'),
+                name='api_get_datafiles_for_dataset'),
+        ]
+
+    def get_datafiles(self, request, **kwargs):
+        file_path = kwargs.get('file_path', None)
+        dataset_id = kwargs['pk']
+
+        datafiles = Dataset_File.objects.filter(dataset__id=dataset_id)
+        auth_bundle = self.build_bundle(request=request)
+        auth_bundle.obj = Dataset_File()
+        #import ipdb; ipdb.set_trace()
+        self.authorized_read_list(
+            datafiles, auth_bundle
+            )
+        del kwargs['pk']
+        del kwargs['file_path']
+        kwargs['dataset__id'] = dataset_id
+        if file_path is not None:
+            kwargs['directory__startswith'] = file_path
+        df_res = Dataset_FileResource()
+        return df_res.dispatch('list', request, **kwargs)
 
 
 class Dataset_FileResource(MyTardisModelResource):
@@ -615,6 +651,10 @@ class Dataset_FileResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset_File.objects.all()
+        filtering = {
+            'directory': ('exact', 'startswith'),
+            'dataset': ALL_WITH_RELATIONS,
+        }
 
     def download_file(self, request, **kwargs):
         '''
