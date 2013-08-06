@@ -22,8 +22,8 @@ class ApiKeyDownloadTestCase(ResourceTestCase):
     def tearDown(self):
         self.user.delete()
 
-    def testView(self):
-        download_api_key_url = reverse('tardis.tardis_portal.views.download_api_key')
+    def test_download_apikey(self):
+        download_api_key_url = reverse('tardis.tardis_portal.download.download_api_key')
         client = Client()
 
         # Expect redirect to login
@@ -35,11 +35,11 @@ class ApiKeyDownloadTestCase(ResourceTestCase):
         self.assertTrue(login)
         response = client.get(download_api_key_url)
         self.assertEqual(response['Content-Disposition'],
-                         'inline; filename="{0}.key"'.format(self.username))
+                         'attachment; filename="{0}.key"'.format(self.username))
         self.assertEqual(response.status_code, 200)
         response_content = ""
         for c in response.streaming_content:
             response_content += c
         self.assertEqual(response_content,
                          self.create_apikey(username=self.username,
-                                            api_key=user.api_key.key))
+                                            api_key=self.user.api_key.key))
