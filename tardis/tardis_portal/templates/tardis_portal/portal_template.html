@@ -112,6 +112,13 @@
                       Manage Account
                     </a>
                   </li>
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.download.download_api_key' %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-key"></i>
+                      Download Api Key
+                    </a>
+                  </li>
                   {% if perms.tardis_portal.change_userauthentication %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_auth_methods' %}">
