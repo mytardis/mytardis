@@ -72,10 +72,10 @@ class ACLAwareBackend(object):
             return model_spec_perm
 
         #get_acls
-        obj_acls = ObjectACL.objects.filter(
-            content_type=ct, object_id=obj.id).filter(
-                self.get_perm_bool(perm_action)).filter(
-                    ObjectACL.get_effective_query())
+        obj_acls = ObjectACL.objects\
+            .filter(content_type=ct, object_id=obj.id)\
+            .filter(self.get_perm_bool(perm_action))\
+            .filter(ObjectACL.get_effective_query())
 
         query = Q(pluginId='django_user',
                   entityId=str(user_obj.id))
