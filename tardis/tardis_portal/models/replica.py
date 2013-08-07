@@ -204,3 +204,17 @@ class Replica(models.Model):
         filename = self.get_absolute_filepath()
         os.remove(filename)
         self.delete()
+
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.datafil
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
