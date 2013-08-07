@@ -502,6 +502,9 @@ class ExperimentResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Experiment.objects.all()
+        filtering = {
+            'title': ('exact',),
+        }
 
     def hydrate_m2m(self, bundle):
         '''
@@ -590,6 +593,8 @@ class DatasetResource(MyTardisModelResource):
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'description': ('exact', ),
+            'directory': ('exact', ),
         }
 
     def prepend_urls(self):
@@ -639,6 +644,7 @@ class Dataset_FileResource(MyTardisModelResource):
         filtering = {
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
+            'filename': ('exact', ),
         }
 
     def download_file(self, request, **kwargs):
