@@ -93,3 +93,21 @@ class Dataset(models.Model):
     def get_size(self):
         from .datafile import Dataset_File
         return Dataset_File.sum_sizes(self.dataset_file_set)
+
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.experiments.all()
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        if self.immutable:
+            return False
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        if self.immutable:
+            return False
+        return self._has_any_perm(user_obj)

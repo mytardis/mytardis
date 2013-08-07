@@ -327,6 +327,20 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
         except (AttributeError, ObjectDoesNotExist):
             return 'Uninitialised %sParameterSet' % default
 
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.parameter_class
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
 
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
@@ -362,6 +376,20 @@ class Parameter(models.Model):
             self.datetime_value = value
         else:
             self.string_value = unicode(value)
+
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.parameterset
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
 
 
 class DatafileParameter(Parameter):
