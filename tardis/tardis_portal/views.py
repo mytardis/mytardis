@@ -925,7 +925,7 @@ def login(request):
 
     url = request.META.get('HTTP_REFERER', '/')
     u = urlparse(url)
-    if u.netloc == request.META['HTTP_HOST']:
+    if u.netloc == request.META.get('HTTP_HOST', ""):
         next_page = u.path
     else:
         next_page = '/'
