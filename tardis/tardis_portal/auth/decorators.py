@@ -91,7 +91,10 @@ def has_experiment_ownership(request, experiment_id):
 
 
 def has_experiment_access(request, experiment_id):
-    experiment = Experiment.objects.get(id=experiment_id)
+    try:
+        experiment = Experiment.objects.get(id=experiment_id)
+    except Experiment.DoesNotExist:
+        return False
     return request.user.has_perm('tardis_acls.view_experiment', experiment)
 
 
