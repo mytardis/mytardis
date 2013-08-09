@@ -43,6 +43,8 @@ from tardis.tardis_portal.auth.decorators import has_datafile_download_access,\
 from base64 import b64decode
 import urllib2
 from urllib import urlencode, urlopen
+from urlparse import urlparse, parse_qs
+
 from os import path
 import logging
 import json
@@ -898,33 +900,37 @@ def login(request):
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
         # login page
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(request.POST.get('next_page', '/'))
 
     # TODO: put me in SETTINGS
     if 'username' in request.POST and \
             'password' in request.POST:
         authMethod = request.POST.get('authMethod', None)
 
-        if 'next' not in request.GET:
-            next = '/'
-        else:
-            next = request.GET['next']
-
         user = auth_service.authenticate(
             authMethod=authMethod, request=request)
 
         if user:
+            next_page = request.POST.get(
+                'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, user)
-            return HttpResponseRedirect(next)
+            return HttpResponseRedirect(next_page)
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
                      'loginForm': LoginForm()})
-        return HttpResponseForbidden( \
-                render_response_index(request, 'tardis_portal/login.html', c))
+        return HttpResponseForbidden(
+            render_response_index(request, 'tardis_portal/login.html', c))
 
-    c = Context({'loginForm': LoginForm()})
+    url = request.META.get('HTTP_REFERER', '/')
+    u = urlparse(url)
+    if u.netloc == request.META.get('HTTP_HOST', ""):
+        next_page = u.path
+    else:
+        next_page = '/'
+    c = Context({'loginForm': LoginForm(),
+                 'next_page': next_page})
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
@@ -1997,9 +2003,6 @@ def retrieve_access_list_tokens(request, experiment_id):
     tokens = Token.objects.filter(experiment=experiment_id)
 
     def token_url(token):
-        from urllib import urlencode
-        from urlparse import urlparse, parse_qs
-
         url = request.META['HTTP_REFERER']
         u = urlparse(url)
         query = parse_qs(u.query)

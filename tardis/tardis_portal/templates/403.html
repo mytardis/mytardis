@@ -1,4 +1,15 @@
-{% extends "tardis_portal/error_page.html" %}
-
-{% block error_code %}403{% endblock %}
-{% block error_message %}Forbidden{% endblock %}
+{% extends "tardis_portal/portal_template.html" %}
+{% block content %}
+<h1 class="msg alert alert-error">
+  Permission denied
+</h1>
+<p>Error code 403</p>
+<p>Unfortunately, you do not have access to this page.<br/>
+{% if request.user.is_authenticated %}
+Please log in as a different user, request access from the owner of the data
+or contact the administrator.
+{% else %}
+Please log in or request a fresh access token to gain access.
+{% endif %}
+</p>
+{% endblock content %}
