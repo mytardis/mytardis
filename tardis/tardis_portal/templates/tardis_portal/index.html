@@ -1,22 +1,239 @@
 {% extends "tardis_portal/portal_template.html" %}
+{% load static from staticfiles %}
+{% load experiment_tags %}
+{% load experimentstats %}
 
 {% block script %}
-
 {% endblock script %}
 
 {% block content %}
-<div class="page-header">
-  <h1>MyTardis Data Store</h1>
-</div>
+  <div class="page-header">
+    <h1>MyTardis Data Store</h1>
+  </div>
 
-<p>
-{% if is_authenticated %}
-  Please go to
-  <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">Data</a>
-  to review your experiment data.
-{% else %}
-  Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
-  to see your experiment data.
-{% endif %}
-</p>
+  <p>
+    {% if is_authenticated %}
+      Please go to
+      <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">Data</a>
+      to review all your experiment data.
+    {% else %}
+      Please <a href="{% url 'tardis.tardis_portal.views.login' %}">login</a>
+      to see your experiment data.
+    {% endif %}
+  </p>
+  <div class="row-fluid">
+    <div class="span6">
+      {% if is_authenticated %}
+	{% with total=private_experiments|length %}
+	  <h3>Your {{ total }} most recent experiment{{ total|pluralize }}</h3>
+	{% endwith %}
+	<div id="private_experiments" class="accordion">
+	  {% for exp in private_experiments %}
+	    <div class="accordion-group">
+	      <div class="accordion-heading" data-parent="#private_experiments">
+		  <div class="accordion-toggle"
+		       data-toggle="collapse"  data-parent="#private_experiments"
+		       onclick="$('#collapse{{exp.id}}').collapse('toggle');" >
+			<strong><a class="explink"
+				   href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			<span class="pull-right muted">
+			  Click to show more/less info
+			</span><br/>
+			<ul class="nav nav-pills" style="margin-bottom:4px">
+			<li class="pull-right">
+			  {{ exp|experiment_public_access_badge }}
+			  </li><li class="pull-right">
+			  {{ exp|experiment_datasets_badge }}
+			  </li><li class="pull-right">
+			  {{ exp|experiment_datafiles_badge }}
+			  </li><li class="pull-right">
+			  {{ exp|experiment_last_updated_badge }}
+			</li>
+		    </ul>
+		  </div>
+	      </div>
+	      <div id="collapse{{exp.id}}"
+		   class="accordion-body collapse{% if forloop.first %}{% endif %}">
+		<div class="accordion-inner">
+		  <small>
+		    {% for author in exp.author_experiment_set.all %}
+		      {% if not forloop.first %}
+			,
+		  {% else %} <em>Authors:</em>
+		      {% endif %}
+		      <span property="dc:author">{{ author.author }}</span>
+		    {% endfor %}
+		  </small>
+		  {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
+		    {% if forloop.first %}
+		      <ul class="nav nav-list">
+		      {% with total=exp.datasets.all|length %}
+			<li class="nav-header">The {{total}} most recent dataset{{total|pluralize}} in this experiment</li>
+		      {% endwith %}
+		    {% endif %}
+		        <li>
+			  <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong>
+			  {% for datafile in ds.get_images|slice:":5" %}
+			    {% if forloop.first %}
+			      <ul class="thumbnails">
+			    {% endif %}
+			    <li>
+			    <a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
+			    <img alt="Thumbnail for Datafile #{{datafile.id}}"
+				 src="{{ thumbnail }}"
+				 onerror="$(this).hide()"/></a>
+			    </li>
+			    {% if forloop.last %}
+			      </ul>
+			    {% endif %}
+			  {% endfor %}
+			  </a>
+		    </li>
+		    {% if forloop.last %}
+		      </ul>
+		    {% endif %}
+		  {% endfor %}
+		</div>
+	      </div>
+	    </div>
+	{% empty %}
+	  <p>You have no data stored on this server.<br/>
+	  <a href="{% url 'tardis.tardis_portal.views.create_experiment' %}">Create
+	  a new experiment</a> and upload your data</p>
+      {% endfor %}
+      </div><br/>
+    {% endif %}
+
+
+    {% with total=public_experiments|length %}
+      <h3>The {{ total }} most recent public experiment{{total|pluralize}}</h3>
+    {% endwith %}
+    <div id="public_experiments" class="accordion">
+      {% for exp in public_experiments %}
+	<div class="accordion-group">
+	  <div class="accordion-heading" data-parent="#public_experiments">
+	    <div class="accordion-toggle"
+		 data-toggle="collapse"  data-parent="#public_experiments"
+		 onclick="$('#collapsepub{{exp.id}}').collapse('toggle');" >
+	      <strong><a class="explink"
+			 href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">{{ exp.title }}</a></strong>
+			<span class="pull-right muted">
+			  Click to show more/less info
+			</span><br/>
+			<ul class="nav nav-pills" style="margin-bottom:4px">
+			  <li class="pull-right">
+			  {{ exp|experiment_datasets_badge }}
+			  </li><li class="pull-right">
+			  {{ exp|experiment_datafiles_badge }}
+			  </li><li class="pull-right">
+			  {{ exp|experiment_last_updated_badge }}
+			</li>
+		    </ul>
+	    </div>
+	  </div>
+	  <div id="collapsepub{{exp.id}}"
+	       class="accordion-body collapse{% if forloop.first %} in{% endif %}">
+	    <div class="accordion-inner">
+	      <small>
+		{% for author in exp.author_experiment_set.all %}
+		  {% if not forloop.first %}
+		    ,
+		  {% else %} <em>Authors:</em>
+		{% endif %}
+		<span property="dc:author">{{ author.author }}</span>
+	      {% endfor %}
+	      </small>
+	      {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
+		{% if forloop.first %}
+		  <ul class="nav nav-list">
+		    {% with total=exp.datasets.all|length %}
+		      <li class="nav-header">The {{total}} most recent dataset{{total|pluralize}} in this experiment</li>
+		    {% endwith %}
+		  {% endif %}
+		  <li>
+		    <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong>
+		    {% for datafile in ds.get_images|slice:":5" %}
+		      {% if forloop.first %}
+			<ul class="thumbnails">
+		      {% endif %}
+		      <li>
+			<a class="thumbnail" href="{% url 'tardis.tardis_portal.download.view_datafile' datafile.id %}">{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',50' rotation=0 quality='native' format='jpg' as thumbnail %}
+			  <img alt="Thumbnail for Datafile #{{datafile.id}}"
+			       src="{{ thumbnail }}"
+			       onerror="$(this).hide()"/></a>
+		      </li>
+		      {% if forloop.last %}
+			</ul>
+		      {% endif %}
+		    {% endfor %}
+		    </a>
+		  </li>
+		  {% if forloop.last %}
+		    </ul>
+		  {% endif %}
+		{% endfor %}
+	    </div>
+	  </div>
+	</div>
+	{% empty %}
+	<p>There is no public data available on this server.</p>
+      {% endfor %}
+      </div>
+    </div>
+    <div class="span6">
+      <h3>Current status</h3>
+      <div style="width:100%; height:100%" class="accordion-group">
+	<div class="accordion-heading">
+	  <a class="accordion-toggle">Files deposited</a>
+	</div>
+	<div id="chart_div" class="accordion-body collapse in">
+	</div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <script src="https://www.google.com/uds/?file=visualization&amp;v=1&amp;packages=corechart" type="text/javascript"></script>
+  <script src="https://www.google.com/uds/api/visualization/1.0/1af6fd65c53499a33119e115103a57a1/format+en,default,corechart.I.js" type="text/javascript"></script>
+  <link href="https://ajax.googleapis.com/ajax/static/modules/gviz/1.0/core/tooltip.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript">
+$(function(){
+    $("#private_experiments .accordion-body").collapse({parent:"#private_experiments", toggle: false});
+    $("#public_experiments .accordion-body").collapse({parent:"#public_experiments", toggle: false});
+    $(".explink").click(function(e){
+	e.stopPropagation();//this.attr('href');
+    });
+
+
+
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var jsonData = $.ajax({
+          url: "{% static 'sampledata.json' %}",
+          dataType:"json",
+          async: false
+          }).responseText;
+
+        // Create our data table out of JSON data loaded from server.
+        var data = new google.visualization.DataTable(jsonData, 0.6);
+
+        var chart = new
+	  google.visualization.LineChart(document.getElementById('chart_div'));
+
+	var options = {
+  	  width: document.getElementById('chart_div').width,
+  	  height: 600,
+  	  title: 'store.synchrotron - Files stored in MyTardis',
+  	  colors: ['#e0440e', '#e6693e', '#ec8f6e', '#f3b49f', '#f6c7b6'],
+          hAxis: { textStyle: { fontSize: '10'}, showTextEvery: '900' },
+          pointSize: 0
+	};
+
+        chart.draw(data, options);
+      }
+});
+
+
+</script>
 {% endblock content %}
