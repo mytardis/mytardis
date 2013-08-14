@@ -4,7 +4,7 @@
 <div class="pull-right">
     {% if has_write_permissions and not experiment.locked %}
         <a title="Add" class="add-metadata btn btn-mini"
-           href="{% url tardis.tardis_portal.views.add_experiment_par experiment.id %}">
+           href="{% url 'tardis.tardis_portal.views.add_experiment_par' experiment.id %}">
           <i class="icon-plus"></i>
           Add Experiment Metadata
         </a>
@@ -17,7 +17,7 @@
    {% if has_write_permissions and not parameterset.schema.immutable %}
    <div class="pull-right">
        <a class="edit-metadata btn btn-mini btn-warning"
-          href="{% url tardis.tardis_portal.views.edit_experiment_par parameterset.id %}">
+          href="{% url 'tardis.tardis_portal.views.edit_experiment_par' parameterset.id %}">
           <i class="icon-pencil"></i>
           Edit
        </a>

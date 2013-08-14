@@ -1,5 +1,4 @@
 {% extends "tardis_portal/view_dataset.html" %}
-{% load url from future %}
 
 {% block style %}
 {{ block.super }}
@@ -19,14 +18,14 @@
 {% block dataset_content_preview %}
 <div class="row-fluid" style="margin-bottom: 20px;">
   <h3>A few diffractions from your dataset</h3>
-  <div class="info-box">   
+  <div class="info-box">
     {% if display_images|length > 0 %}
     <div class="display_images">
       {% for datafile in display_images %}
 	{% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='!350,350' rotation=0 quality='native' format='jpg' as thumbnail %}
-        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}	
+        {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size='full' rotation=0 quality='native' format='png' as image %}
 	{% cycle "<div class='row-fluid'>" "" %}
-	<div class="span6">    
+	<div class="span6">
 	<a href="{{ image }}">
 	      <img alt="Preview image for Datafile #{{ datafile.id }}"
 		   src="{{ thumbnail }}"

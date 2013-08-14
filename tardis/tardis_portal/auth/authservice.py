@@ -42,9 +42,11 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib import auth
+from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
+from tardis.tardis_portal.auth.utils import get_or_create_user
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +108,6 @@ class AuthService():
 
 
     def _get_or_create_user_from_dict(self, user_dict, auth_method):
-        from tardis.tardis_portal.auth.utils import get_or_create_user
         (user, created) = get_or_create_user(auth_method, user_dict['id'])
         if user and created:
             self._set_user_from_dict(user, user_dict, auth_method)
@@ -144,7 +145,11 @@ class AuthService():
 
         user = None
 
-        if authMethod in self._authentication_backends:
+        if authMethod is None or authMethod == "None":
+            authMethods = self._authentication_backends
+        else:
+            authMethods = [authMethod]
+        for authMethod in authMethods:
             # authenticate() returns either a User or a dictionary describing a
             # user (id, display, email, first_name, last_name).
             user = self._authentication_backends[
@@ -152,7 +157,9 @@ class AuthService():
             if isinstance(user, dict):
                 user_dict = user
                 user = self._get_or_create_user_from_dict(user_dict, authMethod)
-        return user
+            if isinstance(user, User):
+                return user
+        return None
 
 
     def getUser(self, authMethod, user_id, force_user_create=False):

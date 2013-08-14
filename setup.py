@@ -18,39 +18,40 @@ setup(
     packages=find_packages(),
     namespace_packages=['tardis'],
     install_requires=[
-        'setuptools>=0.7',
-        'lxml==2.2.7',
-        'pyparsing==1.5.6',
-        'feedparser==5.1.2',
+        'setuptools>=0.9',
+        'lxml==3.2.1',
+        'pyparsing==1.5.7',  # held back by rdflib and rdfextras
+        'feedparser==5.1.3',
         'elementtree',
-        'django',
-        'django-registration==0.8',
-        'django-extensions==0.9',
+        'django==1.5.1',
+        'django-registration==1.0',
+        'django-extensions==1.1.1',
         'django-form-utils==0.2.0',
         'django-haystack==1.2.7',
-        'django-bootstrap-form==2.0.3',
-        'celery==3.0.19',           # Delayed tasks and queues
-        'django-celery==3.0.17',
-        'kombu==2.5.10',
+        'django-bootstrap-form==2.0.6',
+        'celery==3.0.21',           # Delayed tasks and queues
+        'django-celery>=3.0.17',
+        'kombu==2.5.12',
         'pysolr==2.1.0-beta',
-        'beautifulsoup4==4.1.1',
-        'south==0.7.6',
-        'httplib2==0.7.6',
+        'beautifulsoup4==4.2.1',
+        'south==0.8.1',
+        'httplib2==0.8',
         'python-magic',  # File type detection
-        'pytz==2012d',         # Timezone library
+        'pytz==2013b',         # Timezone library
         'iso8601==0.1.4',      # ISO8601 time formatting
         'pyoai==2.4.4',        # For OAI-PMH provider
-        'Wand==0.2.3',    # For image file conversion
+        'Wand==0.3.2',    # For image file conversion
         'django-mustachejs==0.6.0',  # client-side Mustache template helpers
-        'pystache==0.5.2',  # For server-side Mustache rendering to aid SEO
-        'rdflib==3.2.1',    # For ANZSRCO parsing for ANZSRC FoR codes
-        'rdfextras==0.2',  # For parsing n3 ANZSRCO
+        'pystache==0.5.3',  # For server-side Mustache rendering to aid SEO
+        'rdflib==4.0.1',    # For ANZSRCO parsing for ANZSRC FoR codes
+        'rdfextras==0.4',  # For parsing n3 ANZSRCO
         'django-user-agents==0.2.2',  # For user agent sensing
         'user-agents==0.1.1',
-        'ua-parser==0.3.2',
+        'ua-parser==0.3.3',
         'PyYAML==3.10',
+        'django-tastypie==0.9.16-tzfix',
     ],
-    dependency_links = [
-        'https://github.com/defunkt/pystache/tarball/v0.5.2#egg=pystache-0.5.2',
+    dependency_links=[
+        'https://github.com/grischa/django-tastypie/tarball/testing-mytardis-deployment#egg=django-tastypie-0.9.16-tzfix',  # noqa
     ]
 )

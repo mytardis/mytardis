@@ -1,4 +1,3 @@
-{% load url from future %}
 <div class="groups">
 {% if group_acls_system_owned or group_acls_user_owned %}
   <div class="access_list_group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
@@ -7,13 +6,13 @@
               <tr>
                   <th>
                       Name
-                  </th>               
+                  </th>
                   <th style="width: 120px">
                       Permissions
-                  </th>                
-              </tr>   
+                  </th>
+              </tr>
               {% for group_acl in group_acls_system_owned %}
-              {% with group=group_acl.get_related_object_group %}               
+              {% with group=group_acl.get_related_object_group %}
                   <tr>
                       <td>
                           {{ group.name }}
@@ -29,10 +28,10 @@
                           <span class="label label-info">Owner</span>
                           {% endif %}
                       </td>
-                  </tr>  
+                  </tr>
               {% endwith %}
               {% endfor %}
-              
+
               {% for group_acl in group_acls_user_owned %}
               {% with group=group_acl.get_related_object_group %}
                   <tr>
@@ -50,7 +49,7 @@
                           <span class="label label-info">Owner</span>
                           {% endif %}
                       </td>
-                  </tr>    
+                  </tr>
                   {% endwith %}
                   {% endfor %}
                   </table>

@@ -1,10 +1,13 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils.safestring import mark_safe
+from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
+from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 from tardis.tardis_portal.managers import OracleSafeManager,\
     ParameterNameManager, SchemaManager
 
@@ -13,7 +16,20 @@ from .dataset import Dataset
 from .datafile import Dataset_File
 
 import logging
+import operator
+import pytz
+
+LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
 logger = logging.getLogger(__name__)
+
+
+class ParameterSetManagerMixin(ParameterSetManager):
+    '''for clarity's sake and for future extension this class makes
+    ParameterSetManager local to this file.
+    At the moment its only function is increasing the line count
+    '''
+    pass
+
 
 class Schema(models.Model):
 
@@ -29,7 +45,6 @@ class Schema(models.Model):
     )
 
     namespace = models.URLField(unique=True,
-                                verify_exists=False,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
     type = models.IntegerField( #@ReservedAssignment
@@ -275,88 +290,121 @@ def _getParameter(parameter):
         return None
 
 
-class DatafileParameterSet(models.Model):
+class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema)
-    dataset_file = models.ForeignKey(Dataset_File)
-
-    def __unicode__(self):
-        return '%s / %s' % (self.schema.namespace, self.dataset_file.filename)
+    parameter_class = None
 
     class Meta:
+        abstract = True
         app_label = 'tardis_portal'
         ordering = ['id']
 
+    def _init_parameterset_accessors(self):
+        self.parameterset = self
+        self.namespace = self.schema.namespace
+        self.parameters = self.parameter_class.objects.filter(
+            parameterset=self.parameterset).order_by('name__full_name')
+        self.blank_param = self.parameter_class
 
-class DatasetParameterSet(models.Model):
-    schema = models.ForeignKey(Schema)
-    dataset = models.ForeignKey(Dataset)
+    def __init__(self, *args, **kwargs):
+        super(ParameterSet, self).__init__(*args, **kwargs)
+        if self.pk is not None:  # we have a ParameterSet that's manageable
+            self._init_parameterset_accessors()
+
+    def save(self, *args, **kwargs):
+        super(ParameterSet, self).save(*args, **kwargs)
+        self._init_parameterset_accessors()
+
+    def _get_label(self):
+        raise NotImplementedError
 
     def __unicode__(self):
-        return '%s / %s' % (self.schema.namespace, self.dataset.description)
+        labelattribute, default = self._get_label()
+        try:
+            namespace = operator.attrgetter('schema.namespace')(self)
+            label = operator.attrgetter(labelattribute)(self)
+            return '%s / %s' % (namespace, label)
+        except (AttributeError, ObjectDoesNotExist):
+            return 'Uninitialised %sParameterSet' % default
 
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['id']
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.parameter_class
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
 
 
-class ExperimentParameterSet(models.Model):
-    schema = models.ForeignKey(Schema)
-    experiment = models.ForeignKey(Experiment)
-
-    def __unicode__(self):
-        return '%s / %s' % (self.schema.namespace, self.experiment.title)
-
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['id']
-
-
-class DatafileParameter(models.Model):
-
-    parameterset = models.ForeignKey(DatafileParameterSet)
+class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True, db_index=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
     objects = OracleSafeManager()
+    parameter_type = 'Abstract'
+
+    class Meta:
+        abstract = True
+        app_label = 'tardis_portal'
+        ordering = ['name']
 
     def get(self):
         return _getParameter(self)
 
     def __unicode__(self):
-        return 'Datafile Param: %s=%s' % (self.name.name, self.get())
+        try:
+            return '%s Param: %s=%s' % (self.parameter_type,
+                                        self.name.name, self.get())
+        except:
+            return 'Unitialised %sParameter' % self.parameter_type
 
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['name']
+    def set_value(self, value):
+        if self.name.isNumeric():
+            self.numerical_value = float(value)
+        elif self.name.isDateTime():
+            if settings.USE_TZ and is_naive(value):
+                value = make_aware(value, LOCAL_TZ)
+            elif not settings.USE_TZ and is_aware(value):
+                value = make_naive(value, LOCAL_TZ)
+            self.datetime_value = value
+        else:
+            self.string_value = unicode(value)
+
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.parameterset
+
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
 
 
-class DatasetParameter(models.Model):
+class DatafileParameter(Parameter):
+    parameterset = models.ForeignKey('DatafileParameterSet')
+    parameter_type = 'Datafile'
 
-    parameterset = models.ForeignKey(DatasetParameterSet)
-    name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True, db_index=True)
-    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
-    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
-    objects = OracleSafeManager()
 
-    def get(self):
-        return _getParameter(self)
+class DatasetParameter(Parameter):
+    parameterset = models.ForeignKey('DatasetParameterSet')
+    parameter_type = 'Dataset'
 
-    def __unicode__(self):
-        return 'Dataset Param: %s=%s' % (self.name.name, self.get())
 
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['name']
-
-class ExperimentParameter(models.Model):
-    parameterset = models.ForeignKey(ExperimentParameterSet)
-    name = models.ForeignKey(ParameterName)
-    string_value = models.TextField(null=True, blank=True, db_index=True)
-    numerical_value = models.FloatField(null=True, blank=True, db_index=True)
-    datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
-    objects = OracleSafeManager()
+class ExperimentParameter(Parameter):
+    parameterset = models.ForeignKey('ExperimentParameterSet')
+    parameter_type = 'Experiment'
 
     def save(self, *args, **kwargs):
         super(ExperimentParameter, self).save(*args, **kwargs)
@@ -366,15 +414,29 @@ class ExperimentParameter(models.Model):
         except StandardError:
             logger.exception('')
 
-    def get(self):
-        return _getParameter(self)
 
-    def __unicode__(self):
-        return 'Experiment Param: %s=%s' % (self.name.name, self.get())
+class DatafileParameterSet(ParameterSet):
+    dataset_file = models.ForeignKey(Dataset_File)
+    parameter_class = DatafileParameter
 
-    class Meta:
-        app_label = 'tardis_portal'
-        ordering = ['name']
+    def _get_label(self):
+        return ('dataset_file.filename', 'Datafile')
+
+
+class DatasetParameterSet(ParameterSet):
+    dataset = models.ForeignKey(Dataset)
+    parameter_class = DatasetParameter
+
+    def _get_label(self):
+        return ('dataset.description', 'Dataset')
+
+
+class ExperimentParameterSet(ParameterSet):
+    experiment = models.ForeignKey(Experiment)
+    parameter_class = ExperimentParameter
+
+    def _get_label(self):
+        return ('experiment.title', 'Experiment')
 
 
 class FreeTextSearchField(models.Model):
@@ -386,38 +448,3 @@ class FreeTextSearchField(models.Model):
 
     def __unicode__(self):
         return "Index on %s" % (self.parameter_name)
-
-
-@receiver(pre_save, sender=ExperimentParameter)
-@receiver(pre_save, sender=DatasetParameter)
-@receiver(pre_save, sender=DatafileParameter)
-def pre_save_parameter(sender, **kwargs):
-
-    # the object can be accessed via kwargs 'instance' key.
-    parameter = kwargs['instance']
-    if parameter.name.units.startswith('image') \
-            and parameter.name.data_type == ParameterName.FILENAME:
-        if parameter.string_value:
-            from base64 import b64decode
-            from os import mkdir
-            from os.path import exists, join
-            from uuid import uuid4 as uuid
-
-            dirname = settings.FILE_STORE_PATH
-            filename = str(uuid())
-            filepath = join(dirname, filename)
-
-            b64 = parameter.string_value
-            modulo = len(b64) % 4
-            if modulo:
-                b64 += (4 - modulo) * '='
-
-            if not exists(dirname):
-                mkdir(dirname)
-            f = open(filepath, 'w')
-            try:
-                f.write(b64decode(b64))
-            except TypeError:
-                f.write(b64)
-            f.close()
-            parameter.string_value = filename

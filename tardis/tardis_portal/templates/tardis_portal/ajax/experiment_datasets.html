@@ -1,5 +1,4 @@
 {% load basiccomparisonfilters %}
-{% load url from future %}
 {% load capture %}
 {% load uploadify_tags %}
 {% load static from staticfiles %}
@@ -34,11 +33,12 @@
 <br/>
 
 <div id="experiment_datasets">
-  <form method="POST" action="{% url 'tardis.tardis_portal.download.download_datafiles' %}" target="_blank">
+  <form method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
     <input type="hidden" name="expid" value="{{experiment.id}}"/>
     {{ action_bar }}
 
     <div id="datasets">
+    <p>Please wait... <img src="{% static 'images/ajax-loader.gif'%}" alt="loading" /></p>
     {{ experiment|dataset_tiles:has_download_permissions }}
     </div>
 
@@ -47,4 +47,3 @@
     {% endif %}
   </form>
 </div> <!-- experiment_datasets -->
-

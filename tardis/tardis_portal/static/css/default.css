@@ -57,7 +57,7 @@ form .dataset-download-box {
 
 div.copylink {
     font-weight:bold;
-    padding: 7px;    
+    padding: 7px;
     margin: 5px;
     border: 1px solid #CCCCCC;
     border-radius: 3px 3px 3px 3px;
@@ -116,3 +116,46 @@ div.copylink {
     color: white;
     text-decoration: none;
 }
+
+#login-button {
+display: inline-block;
+padding: 4px 10px 4px;
+margin: 5px 5px 6px;
+line-height: 18px;
+color: #ffffff;
+text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+#login-button:hover {
+    background-color: #2f96b4;
+}
+
+/* index page */
+#experiments .accordion-toggle .explink {
+    font-size: 1.3em;
+}
+#experiments .accordion-toggle .badgelist {
+    margin-bottom: 4px;
+}
+#experiments .accordion-inner {
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #e5e5e5;
+    padding-top:5px;
+    padding-right:10px;
+    padding-left:10px;
+    background-color:#F4F4F4;
+    margin: 5px 5px;
+}
+#experiments .accordion-inner p {
+    width: 75%;
+}
+#experiments .accordion-inner .dataset-list-header {
+    margin-left: -30px;
+}
+#experiments .accordion-inner .thumbnails li {
+    margin-bottom: 5px;
+    margin-top: 2px;
+}
+/* end index page */

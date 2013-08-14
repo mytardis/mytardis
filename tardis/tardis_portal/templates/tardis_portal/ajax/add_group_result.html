@@ -1,4 +1,3 @@
-{% load url from future %}
 <div class="access_list_group group row-fluid" style="margin-top: 1ex; margin-bottom: 1ex">
   <div class="span4">
       <div class="row-fluid group">
@@ -8,7 +7,7 @@
             {{ group.name }}
           </a>
         </strong>
-      </div>      
+      </div>
   </div>
     <div class="span4">
       {% if group_acl.canRead %}
@@ -19,12 +18,12 @@
       {% endif %}
       {% if group_acl.isOwner %}
       <span class="label label-info">Owner</span>
-      {% endif %}         
+      {% endif %}
    </div>
     {% if system %}
     <em>(System Group)</em>
     {% else %}
-    <div class="span4">       
+    <div class="span4">
     <a class="remove_group btn btn-mini btn-danger"
        href="{% url 'tardis.tardis_portal.views.remove_experiment_access_group' experiment_id group.id %}">
       <i class="icon-remove"></i> Delete

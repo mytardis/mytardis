@@ -61,7 +61,7 @@ class Replica(models.Model):
         except AttributeError:
             pass
         return urlparse.urlparse(self.url).scheme == ''
-    
+
     def get_actual_url(self):
         """Return a URL for this replica that should be resolvable within
         this MyTardis application platform.  This should be a well-formed
@@ -76,13 +76,13 @@ class Replica(models.Model):
         if url.scheme in ('http', 'https', 'ftp', 'file'):
             return self.url
         return None
-    
+
     def get_file_getter(self, requireVerified=True):
-        """Return a function that will return a File-like handle for the 
-        replica's data.  The returned function uses a cached URL for the 
+        """Return a function that will return a File-like handle for the
+        replica's data.  The returned function uses a cached URL for the
         file to avoid depending on the current database transaction.
         """
-        
+
         if requireVerified and not self.verified:
             raise ValueError("Replica %s not verified" % self.id)
         return self.location.provider.get_opener(self)
@@ -118,9 +118,9 @@ class Replica(models.Model):
         be an absolute url which is resolveable and fetchable at least
         by mytardis itself.
         """
-        file_path = path.join(self.datafile.dataset.get_path(), 
+        file_path = path.join(self.datafile.dataset.get_path(),
                               self.datafile.filename)
-        return urlparse.urljoin(self.location.url, 
+        return urlparse.urljoin(self.location.url,
                                 urllib.quote(file_path))
 
     def get_absolute_filepath(self):
@@ -159,7 +159,10 @@ class Replica(models.Model):
             logger.error("Datafile for %s has no checksums", self.url)
             return False
 
-        sourcefile = self.get_file(requireVerified=False)
+        try:
+            sourcefile = self.get_file(requireVerified=False)
+        except IOError:
+            return False
         if not sourcefile:
             logger.error("%s content not accessible", self.url)
             return False
@@ -168,7 +171,7 @@ class Replica(models.Model):
             generate_file_checksums(sourcefile, tempfile)
 
         if not (df.size and size == int(df.size)):
-            if (df.sha512sum or df.md5sum) and not df.size: 
+            if (df.sha512sum or df.md5sum) and not df.size:
                 # If the size is missing but we have a checksum to check
                 # the missing size is harmless ... we will fill it in below.
                 logger.warn("%s size is missing" % (self.url))
@@ -201,12 +204,23 @@ class Replica(models.Model):
             df.save()
         self.verified = True
         return True
-    
+
     def deleteCompletely(self):
         import os
         filename = self.get_absolute_filepath()
         os.remove(filename)
         self.delete()
 
-                    
+    def _has_any_perm(self, user_obj):
+        if not hasattr(self, 'id'):
+            return False
+        return self.datafile
 
+    def _has_view_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_change_perm(self, user_obj):
+        return self._has_any_perm(user_obj)
+
+    def _has_delete_perm(self, user_obj):
+        return self._has_any_perm(user_obj)

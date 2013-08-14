@@ -3,7 +3,7 @@
 <tr>
   <th>
     <span{% if result.experiment_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.pk %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-1">{{result.sr.title}}</a>
+    <a href="{% url 'tardis.tardis_portal.views.view_experiment' result.sr.pk %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-1">{{result.sr.title}}</a>
     </span>
   </th>
 </tr>
@@ -25,7 +25,7 @@
 <tr>
   <td class="experiment-table_stats">
       <span{% if result.dataset_hit %} style="background-color: #FFFF00"{% endif %}>
-    <a href="{% url tardis.tardis_portal.views.view_experiment result.sr.id %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
+    <a href="{% url 'tardis.tardis_portal.views.view_experiment' result.sr.id %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
 <strong> {{result.sr.datasets.all.count}} </strong>
 dataset{{result.sr.datasets.all.count|pluralize }}</strong>
 </a>
