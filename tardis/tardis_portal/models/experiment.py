@@ -47,7 +47,7 @@ class Experiment(models.Model):
         (PUBLIC_ACCESS_FULL,        'Public'),
     )
 
-    url = models.URLField(verify_exists=False, max_length=255,
+    url = models.URLField(max_length=255,
                           null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)

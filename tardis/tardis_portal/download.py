@@ -28,7 +28,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP_DEFLATED
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseNotFound
+    HttpResponseNotFound, StreamingHttpResponse
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
@@ -198,7 +198,7 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
             # If file path doesn't resolve, return not found
             return return_response_not_found(request)
         wrapper = FileWrapper(file_obj)
-        response = HttpResponse(wrapper,
+        response = StreamingHttpResponse(wrapper,
                                 mimetype=datafile.get_mimetype())
         response['Content-Disposition'] = \
             '%s; filename="%s"' % (disposition, datafile.filename)
@@ -451,14 +451,14 @@ def download_experiment(request, experiment_id, comptype,
         reader = StreamingFile(_write_tar_func(mapper, datafiles),
                                asynchronous_file_creation=True)
 
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = 'attachment; filename="experiment' \
             + rootdir + '-complete.tar"'
     elif comptype == "zip":
         reader = StreamingFile(_write_zip_func(mapper, datafiles),
                                asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
 
         response['Content-Disposition'] = 'attachment; filename="experiment' \
@@ -572,14 +572,14 @@ def download_datafiles(request):
     if comptype == "tar":
         reader = StreamingFile(_write_tar_func(mapper, df_set),
                                asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
         reader = StreamingFile(_write_zip_func(mapper, df_set),
                                asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
         response['Content-Disposition'] = \
                 'attachment; filename="experiment%s-selection.zip"' % expid
