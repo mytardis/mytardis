@@ -65,7 +65,12 @@ var MyTardis = (function(){
 	_filterDescription: function(str) {
             lStr = str.toLowerCase();
             return function(model) {
-		return _.string.include(model.get('directory').toLowerCase() + model.get('description').toLowerCase(), lStr);
+		directory = model.get('directory');
+		searchString = model.get('description').toLowerCase();
+		if (directory !== null) {
+		    searchString = directory.toLowerCase() + searchString;
+		}
+		return _.string.include(searchString , lStr);
             };
 	},
 	render: function() {

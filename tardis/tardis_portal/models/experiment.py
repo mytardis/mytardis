@@ -186,6 +186,12 @@ class Experiment(models.Model):
         '''
         return public_access_level > cls.PUBLIC_ACCESS_METADATA
 
+    def public_download_allowed(self):
+        '''
+        instance method version of 'public_access_implies_distribution'
+        '''
+        return self.public_access > Experiment.PUBLIC_ACCESS_METADATA
+
     def get_ct(self):
         return ContentType.objects.get_for_model(self)
 
