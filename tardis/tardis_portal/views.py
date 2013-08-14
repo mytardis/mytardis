@@ -191,14 +191,14 @@ def logout(request):
 
 def index(request):
     status = ''
-    limit = 10
+    limit = 8
     c = Context({'status': status})
     if request.user.is_authenticated():
-        private_experiments = Experiment.safe.all(request.user)\
+        private_experiments = Experiment.safe.owned_and_shared(request.user)\
             .order_by('-update_time')[:limit]
         c['private_experiments'] = private_experiments
-        if len(private_experiments) > 5:
-            limit = 5
+        if len(private_experiments) > 4:
+            limit = 4
     public_experiments = Experiment.objects\
         .exclude(public_access=Experiment.PUBLIC_ACCESS_NONE)\
         .order_by('-update_time')[:limit]
