@@ -485,3 +485,8 @@ MYTARDIS_VERSION = get_git_version()
 #    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + \
 #        ('django_user_agents.middleware.UserAgentMiddleware',)
 
+AUTOGENERATE_API_KEY = False
+'''
+Generate a tastypie API key with user post_save
+(tardis/tardis_portal/models/hooks.py)
+'''
