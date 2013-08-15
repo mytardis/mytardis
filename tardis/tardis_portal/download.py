@@ -948,13 +948,15 @@ def streaming_download_datafiles(request):
     return _streaming_downloader(request, df_set, rootdir, filename,
                                  comptype, organization)
 
+
 @login_required
 def download_api_key(request):
     user = request.user
     api_key_file = StringIO.StringIO()
     api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
     api_key_file.seek(0)
-    response = StreamingHttpResponse(FileWrapper(api_key_file), content_type='text/plain')
-    response['Content-Disposition'] = 'attachment; filename="{0}.key"'.format(user)
-    
-    return(response)
+    response = StreamingHttpResponse(FileWrapper(api_key_file),
+                                     content_type='text/plain')
+    response['Content-Disposition'] = \
+        'attachment; filename="{0}.key"' .format(user)
+    return response

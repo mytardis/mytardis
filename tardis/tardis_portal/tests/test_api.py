@@ -102,10 +102,10 @@ class MyTardisResourceTestCase(ResourceTestCase):
     def get_credentials(self):
         return self.create_basic(username=self.username,
                                  password=self.password)
+
     def get_apikey_credentials(self):
         return self.create_apikey(username=self.username,
                                   api_key=self.user.api_key.key)
-
 
 
 class MyTardisAuthenticationTest(MyTardisResourceTestCase):
