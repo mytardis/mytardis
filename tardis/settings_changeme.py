@@ -484,3 +484,4 @@ MYTARDIS_VERSION = get_git_version()
 #    INSTALLED_APPS = INSTALLED_APPS + ('django_user_agents',)
 #    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + \
 #        ('django_user_agents.middleware.UserAgentMiddleware',)
+

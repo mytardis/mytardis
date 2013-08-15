@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import urllib
 import os, platform, ctypes, stat, time, struct
+import cStringIO as StringIO
 
 try:
     import zlib  # We may need its compression method
@@ -33,6 +34,7 @@ from django.http import HttpResponse, HttpResponseRedirect, \
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.models import Experiment
@@ -945,3 +947,14 @@ def streaming_download_datafiles(request):
     rootdir = '%s-selection' % experiment.title
     return _streaming_downloader(request, df_set, rootdir, filename,
                                  comptype, organization)
+
+@login_required
+def download_api_key(request):
+    user = request.user
+    api_key_file = StringIO.StringIO()
+    api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
+    api_key_file.seek(0)
+    response = StreamingHttpResponse(FileWrapper(api_key_file), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename="{0}.key"'.format(user)
+    
+    return(response)
