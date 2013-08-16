@@ -103,10 +103,12 @@ class MigrateCommandTestCase(TestCase):
                          datafile.id, stderr=err)
         except SystemExit:
             pass
+        except CommandError as e:
+            err.write(str(e))
         err.seek(0)
         self.assertEquals(err.read(),
-                          'Migration failed for datafile %s : ' \
-                          'Only verified datafiles can be migrated ' \
+                          'Migration failed for datafile %s : '
+                          'Only verified datafiles can be migrated '
                           'to this destination\n' % datafile.id)
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
         replica.save()

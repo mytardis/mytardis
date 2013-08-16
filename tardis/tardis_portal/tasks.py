@@ -42,61 +42,48 @@ if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
 
 
 @task(name="tardis_portal.verify_files", ignore_result=True)
-def verify_files():
+def verify_files(replicas=None):
     if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
         r = redis.Redis(connection_pool=redis_verify_manager_pool)
 
-    def verify_replica(replica):
-        if replica.stay_remote or replica.is_local():
-            verify_as_remote.delay(replica.id)
-        else:
-            make_local_copy.delay(replica.id)
+    replicas_to_verify = replicas or Replica.objects\
+                                            .filter(verified=False)\
+                                            .exclude(protocol='staging')
 
-    for replica in Replica.objects.filter(verified=False)\
-                                  .exclude(protocol='staging'):
+    for replica in replicas_to_verify:
         if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
             last_verification = r.hget('replicas_last_verified', replica.id)
             if last_verification is None or \
                time.time() - float(last_verification) >\
                getattr(settings, 'REDIS_VERIFY_DELAY', 86400):
-                verify_replica(replica)
+                verify_replica.delay(replica.id)
                 r.hset('replicas_last_verified', replica.id, time.time())
                 r.hincrby('replicas_verification_attempts', replica.id)
                 if r.hget('replicas_verification_attempts', replica.id) > 3:
                     r.sadd('replicas_manual_verification', replica.id)
         else:
-            verify_replica(replica)
+            verify_replica.delay(replica.id)
 
 
-@task(name="tardis_portal.verify_as_remote", ignore_result=True)
-def verify_as_remote(replica_id):
-    replica = Replica.objects.get(id=replica_id)
-    # Check that we still need to verify - it might have been done already
-    if replica.verified:
-        return
-    # Use a transaction for safety
-    with transaction.commit_on_success():
-        # Get replica locked for write (to prevent concurrent actions)
-        replica = Replica.objects.select_for_update().get(id=replica.id)
-        # Second check after lock (concurrency paranoia)
-        if not replica.verified:
-            replica.verify()
-            replica.save()
-
-
-@task(name="tardis_portal.make_local_copy", ignore_result=True)
-def make_local_copy(replica_id):
-    replica = Replica.objects.get(id=replica_id)
-    # Check that we still need to verify - it might have been done already
-    if replica.is_local():
-        return
+@task(name="tardis_portal.verify_replica", ignore_result=True)
+def verify_replica(replica_id, only_local=False, reverify=False):
+    '''
+    verify task
+    allowemtpychecksums is false for auto-verify, hence the parameter
+    '''
     # Use a transaction for safety
     with transaction.commit_on_success():
         # Get replica locked for write (to prevent concurrent actions)
         replica = Replica.objects.select_for_update().get(id=replica_id)
-        # Second check after lock (concurrency paranoia)
-        if not replica.is_local():
-            stage_replica(replica)
+        if replica.stay_remote or replica.is_local():
+            # Check after lock (concurrency paranoia)
+            if not replica.verified or reverify:
+                replica.verify()
+                replica.save(update_fields=['verified'])
+        else:
+            # Check after lock (concurrency paranoia)
+            if not replica.is_local() and not only_local:
+                stage_replica(replica)
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)

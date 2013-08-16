@@ -21,8 +21,8 @@ class BackgroundTaskTestCase(TestCase):
 
     def _get_or_create_local_location(self, name, url, type, priority):
         return Location.load_location({
-            'name': name, 'url': url, 'type': type, 'priority': priority, 
-            'transfer_provider': 'local'}) 
+            'name': name, 'url': url, 'type': type, 'priority': priority,
+            'transfer_provider': 'local'})
 
     def _create_dataset(self):
         user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
@@ -38,7 +38,6 @@ class BackgroundTaskTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
         return dataset
-
 
     def testLocalFile(self):
         content = urandom(1024)
@@ -58,13 +57,16 @@ class BackgroundTaskTestCase(TestCase):
         def get_replica(datafile):
             return Replica.objects.get(datafile=datafile)
 
+        # undo auto-verify:
+        replica.verified = False
+        replica.save(update_fields=['verified'])
+
         # Check that it's not currently verified
         expect(get_replica(datafile).verified).to_be(False)
 
         # Check it verifies
         verify_files()
         expect(get_replica(datafile).verified).to_be(True)
-
 
     def testRemoteFile(self):
             content = urandom(1024)

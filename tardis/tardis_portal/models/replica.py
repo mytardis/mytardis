@@ -139,21 +139,19 @@ class Replica(models.Model):
 
     def verify(self, tempfile=None, allowEmptyChecksums=None):
         '''
-        Verifies this replica's data matches the Datafile checksums. 
-        It must have at least one checksum hash to verify unless 
+        Verifies this replica's data matches the Datafile checksums.
+        It must have at least one checksum hash to verify unless
         "allowEmptyChecksums" is True. If "allowEmptyChecksums" is provided
-        (whether True or False), it will override the system-wide REQUIRE_DATAFILE_CHECKSUMS setting.
+        (whether True or False), it will override the system-wide
+        REQUIRE_DATAFILE_CHECKSUMS setting.
 
         If passed a file handle, it will write the file to it instead of
         discarding data as it's read.
         '''
         if allowEmptyChecksums is None:
-            if getattr(settings, "REQUIRE_DATAFILE_CHECKSUMS", True):
-                allowEmptyChecksums = False
-            else:
-                allowEmptyChecksums = True
+            allowEmptyChecksums = not getattr(
+                settings, "REQUIRE_DATAFILE_CHECKSUMS", True)
 
-        from .datafile import Dataset_File
         df = self.datafile
         if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
             logger.error("Datafile for %s has no checksums", self.url)

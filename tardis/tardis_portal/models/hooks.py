@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 from tardis.tardis_portal.staging import StagingHook
+from tardis.tardis_portal.tasks import verify_replica
 
 from .experiment import Experiment, Author_Experiment
 from .replica import Replica
@@ -72,3 +73,19 @@ if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     from django.contrib.auth.models import User
     from tastypie.models import create_api_key
     post_save.connect(create_api_key, sender=User)
+
+
+@receiver(post_save, sender=Replica)
+def auto_verify_on_save(sender, **kwargs):
+    '''
+    auto verify local files
+    reverify on every save
+    '''
+    replica = kwargs['instance']
+    update_fields = kwargs['update_fields']
+    # if save is done by the verify action, only 'verified' is updated
+    # needs to be called as .save(update_fields=['verified'])
+    if update_fields is not None and list(update_fields) == ['verified']:
+        return
+    if replica.protocol != 'staging':
+        verify_replica.delay(replica.id, only_local=True, reverify=True)
