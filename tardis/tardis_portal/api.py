@@ -179,7 +179,7 @@ class ACLAuthorization(Authorization):
             for dfps in object_list:
                 if dfps.dataset_file in datafiles:
                     dfps_list.append(dfps)
-            return dfps
+            return dfps_list
         elif type(bundle.obj) == DatafileParameter:
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             dfp_list = []

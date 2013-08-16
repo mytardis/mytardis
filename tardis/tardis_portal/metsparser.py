@@ -400,7 +400,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                 # we'll definitely have only either Experiment or Dataset
                 # object in the metsStructMap, if there are other type of
                 # objects that got saved in the map, we'll throw an exception
-                raise SAXParseException
+                raise SAXParseException  #pylint: disable=W0710
 
         elif elName == 'title' and self.inDmdSec:
             self.grabTitle = True
