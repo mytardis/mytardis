@@ -50,7 +50,7 @@
 		    <span class="pull-right">
 		      {% for dltype, dlurl in exp.get_download_urls.items %}
 			{% if forloop.first %}
-			  <a href="{{dlurl}}"
+			  <a class="dllink" href="{{dlurl}}"
 			     title="Download Entire Experiment as {{dltype}}">
 			    <i class="icon-download-alt"></i>
 			    <em>Download data as .{{dltype}}</em>
@@ -140,7 +140,7 @@
 
 		  {% for dltype, dlurl in exp.get_download_urls.items %}
 		    {% if forloop.first %}
-		      <a href="{{dlurl}}"
+		      <a class="dllink" href="{{dlurl}}"
 			 title="Download Entire Experiment as {{dltype}}">
 			<i class="icon-download-alt"></i>
 			<em>Download data as .{{dltype}}</em>
@@ -201,6 +201,9 @@
 $(function(){
     $("#experiments .accordion-body").collapse({parent:"#experiments", toggle: false});
     $(".explink").click(function(e){
+	e.stopPropagation();
+    });
+    $(".dllink").click(function(e){
 	e.stopPropagation();
     });
 });
