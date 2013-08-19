@@ -7,7 +7,7 @@ install:
  - sudo cp mime.types /etc/mime.types
  - sudo apt-get install python python-dev python-pip libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev libexiv2-dev
  - pip install -U setuptools
- - pip install pylint
+ - pip install -U pylint
  - python bootstrap.py -v 1.7.0
  - bin/buildout install
 # # command to run tests
