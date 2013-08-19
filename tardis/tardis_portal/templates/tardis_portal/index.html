@@ -19,7 +19,7 @@
   <div class="row-fluid">
     <div class="span7">
       {% if is_authenticated %}
-	<h3>The most recent of <a href="{% url 'tardis.tardis_portal.views.experiment_index' %}"><i class="icon-arrow-right"></i>Your Experiments</a></h3>
+	<h3>Your most recent experiments <small><strong>(<a href="{% url 'tardis.tardis_portal.views.experiment_index' %}">view all</a>)</strong></small></h3>
 	<div id="experiments" class="accordion">
 	  {% for exp in private_experiments %}
 	    <div class="accordion-group">

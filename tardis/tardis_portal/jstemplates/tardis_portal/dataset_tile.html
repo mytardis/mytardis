@@ -33,11 +33,11 @@
   </p>
 
 </div>
-<div class="pull-left" style="margin-right: 10px">
+<div class="pull-left ds-thumb" style="margin-right: 10px">
   {{#thumbnail}}
       <img alt="Thumbnail for Dataset #{{ id }}"
            src="{{ thumbnail }}"
-           onerror="$(this).hide()"/>
+           onerror="$(this).parent().append('<canvas></canvas>');$(this).remove();"/>
   {{/thumbnail}}
   {{^thumbnail}}
       <canvas style="width: 100px"></canvas>
