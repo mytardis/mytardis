@@ -149,24 +149,24 @@ def stage_replica(replica):
         subdir = path.dirname(path.join(*spliturl))
     else:
         subdir = None
-    with TemporaryUploadedFile(replica.datafile.filename, 
+    with TemporaryUploadedFile(replica.datafile.filename,
                                None, None, None) as tf:
         if replica.verify(tempfile=tf.file):
             if not replica.stay_remote:
                 tf.file.flush()
-                target_replica = Replica(
-                    datafile=replica.datafile,
-                    url=write_uploaded_file_to_dataset(
+                target_replica = {
+                    'datafile': replica.datafile,
+                    'url': write_uploaded_file_to_dataset(
                         replica.datafile.dataset, tf,
                         subdir=subdir),
-                    location=Location.get_default_location(),
-                    verified=True,
-                    protocol='')
-                target_replica.save()
-                replica.delete()
+                    'location': Location.get_default_location(),
+                    'verified': True,
+                    'protocol': ''}
+                Replica.objects.filter(id=replica.id).update(**target_replica)
             return True
         else:
             return False
+
 
 def get_sync_location():
     from tardis.tardis_portal.models import Location

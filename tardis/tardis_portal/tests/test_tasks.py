@@ -107,6 +107,7 @@ class BackgroundTaskTestCase(TestCase):
 
                 # Check it now verifies
                 verify_files()
-                expect(get_replica(replica)).to_be(None)
+                expect(get_replica(replica).id).to_be(
+                    get_new_replica(datafile).id)
                 expect(get_new_replica(datafile).verified).to_be(True)
                 expect(get_new_replica(datafile).is_local()).to_be(True)

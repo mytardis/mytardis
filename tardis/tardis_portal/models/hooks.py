@@ -75,7 +75,7 @@ if getattr(settings, 'AUTOGENERATE_API_KEY', False):
     post_save.connect(create_api_key, sender=User)
 
 
-@receiver(post_save, sender=Replica)
+@receiver(post_save, sender=Replica, dispatch_uid='auto_verify_replicas')
 def auto_verify_on_save(sender, **kwargs):
     '''
     auto verify local files
@@ -88,4 +88,4 @@ def auto_verify_on_save(sender, **kwargs):
     if update_fields is not None and list(update_fields) == ['verified']:
         return
     if replica.protocol != 'staging':
-        verify_replica.delay(replica.id, only_local=True, reverify=True)
+        verify_replica.delay(replica.id, only_local=False, reverify=True)
