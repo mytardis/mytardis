@@ -2,7 +2,11 @@
 Installing MyTARDIS
 ===================
 
-The sections through to Extended Configuration below provide a Quick Start guide for getting a basic MyTARDIS installation up and running.  The following section provides additional information on advanced configuration and add-on capabilities of MyTARDIS.
+The sections through to Extended Configuration below provide a Quick Start
+guide for getting a basic MyTARDIS installation up and running.  The following
+section provides additional information on advanced configuration and add-on
+capabilities of MyTARDIS.
+
 
 Prerequisites
 -------------
@@ -18,25 +22,29 @@ Debian/Ubuntu::
 Download
 --------
 
-To get the most recent stable release, 2.5::
+To get the most recent stable release::
 
-   git clone -b 2.5 git://github.com/mytardis/mytardis.git
+   git clone git://github.com/mytardis/mytardis.git
    cd mytardis
 
 This clones the repository as read-only.
 
-Or, to get the current master (development) branch::
+Or, to get the current development branch::
 
-   git clone git://github.com/mytardis/mytardis.git
+   git clone -b develop git://github.com/mytardis/mytardis.git
    cd mytardis
 
 Quick configuration
 -------------------
 
-MyTARDIS is using the Buildout build system to handle dependencies and create the python class path.
+MyTARDIS is using the Buildout build system to handle dependencies and create
+the python class path.
 
 Configuring MyTARDIS is done through a standard Django *settings.py*
-file. MyTARDIS comes with a sample configuration file at ``tardis/settings_changeme.py``. You can import this as the basis of your own config file - options defined here will override the relevant options in ``settings_changeme.py``.
+file. MyTARDIS comes with a sample configuration file at
+``tardis/settings_changeme.py``. You can import this as the basis of your own
+config file - options defined here will override the relevant options in
+``settings_changeme.py``.
 
 Create a new file ``tardis/settings.py`` containing the following::
 
@@ -66,7 +74,8 @@ Create a new file ``buildout-dev.cfg`` containing the following::
     The ``settings = settings`` line tells Buildout to use the settings
     file you just created.
 
-This is the minimum set of changes required to successfully run the server. You can make any other site-specific changes as necessary.
+This is the minimum set of changes required to successfully run the
+server. You can make any other site-specific changes as necessary.
 
 Building
 --------
@@ -79,19 +88,20 @@ Download and build django and all dependencies::
 
    ./bin/buildout -c buildout-dev.cfg
 
-This can be run again at any time to check for and download any new dependencies.
+This can be run again at any time to check for and download any new
+dependencies.
 
 Create and configure the database::
 
-    ./bin/django syncdb && ./bin/django migrate
+    ./bin/django syncdb --noinput --migrate
 
-Answer "no" when asked to create a superuser. More information about the ``syncdb`` and ``migrate`` commands can be found at :doc:`admin`.
+This avoids creating a superuser before the MyTardis specific `UserProfile`
+table has been created. More information about the ``syncdb`` and ``migrate``
+commands can be found at :doc:`admin`.
 
-Create a superuser::
+Next, create a superuser::
 
     ./bin/django createsuperuser
-
-This is deferred until after the migrate as the command has been overridden to set up MyTARDIS specific information.
 
 MyTARDIS can now be executed in its simplest form using::
 
@@ -103,6 +113,9 @@ Extended configuration
 ----------------------
 
 See below for some extra configuration options that are specific to MyTARDIS.
+
+An automatically generated documentation of the settings can be found in
+:doc:`pydoc/tardis`.
 
 Database
 ~~~~~~~~
@@ -162,15 +175,15 @@ Repository
 
 .. attribute:: tardis.settings_changeme.INITIAL_LOCATIONS
 
-   An initial list of the Locations where Datafiles may be held.  This list 
+   An initial list of the Locations where Datafiles may be held.  This list
    is used to bootstrap the contents of the Locations table when MyTardis
    starts for the first time.  On a restart, any new entries in the list
    Location list will be added.  Locations can also be added or updated
    via the django admin web interface.
 
-   The default list defines the 'local' and 'staging' Locations. 
+   The default list defines the 'local' and 'staging' Locations.
 
-   Locations are required for any configured external source of data, and 
+   Locations are required for any configured external source of data, and
    for secondary MyTardis storage servers.
 
 .. attribute:: tardis.settings_changeme.DEFAULT_LOCATION
@@ -183,7 +196,7 @@ Repository
 
 .. attribute:: tardis.settings_changeme.REQUIRE_DATAFILE_CHECKSUMS
 
-   If True, a Datafile requires an MD5 or SHA-512 checksum from the time 
+   If True, a Datafile requires an MD5 or SHA-512 checksum from the time
    it is first recorded in the MyTardis database.  This enables a model-level
    constraint check each time a Datafile record is saved.  Defaults to True.
    Datafile record is saved.
@@ -219,7 +232,7 @@ Legal Notice
 When changing the public access rights or licence for an experiment, a
 legal notice is displayed. You can override it by either:
 
-#. creating a new app (probably your site theme) and putting your legal text in ``tardis/apps/<app_name>/static/publishing_legal.txt``, or 
+#. creating a new app (probably your site theme) and putting your legal text in ``tardis/apps/<app_name>/static/publishing_legal.txt``, or
 #. directly making changes to ``tardis/tardis_portal/static/publishing_legal.txt``.
 
 Filters
@@ -248,8 +261,8 @@ Archive Organizations
 
 .. attribute:: tardis.settings_changeme.DEFAULT_ARCHIVE_FORMATS.
 
-   This is a prioritized list of download archive formats to be used 
-   in contexts where only one choice is offered to the user; e.g. the 
+   This is a prioritized list of download archive formats to be used
+   in contexts where only one choice is offered to the user; e.g. the
    "download selected" buttons.  (The list allows for using different
    archive formats depending on the user's platform.)
 
@@ -277,28 +290,28 @@ Archive Organizations
    of optional keyword arguments to be passed to the function.  At runtime,
    the function is called with each Datafile as a positional argument, and
    an additional 'rootdir' keyword argument.  The function should compute
-   and return a (unique) pathname based on the Datafile and associated 
+   and return a (unique) pathname based on the Datafile and associated
    objects.  If the function returns **None**, this tells the archive builder
    to leave out the file.
 
    By default, the archive builder uses the built-in "classic" mapper which
    gives pathnames that look like::
 
-       <rootdir>/<experiment-id>/<dataset-id>/<datafile-name>    
+       <rootdir>/<experiment-id>/<dataset-id>/<datafile-name>
 
-   (For a real-life example of a mapper, got to the GitHub UQ-CMM-Mirage / 
-   mytardis-app-datagrabber repository, and look in the "organizations.py" 
-   file.  The "source_path" mapper function maps names based on a setting 
+   (For a real-life example of a mapper, got to the GitHub UQ-CMM-Mirage /
+   mytardis-app-datagrabber repository, and look in the "organizations.py"
+   file.  The "source_path" mapper function maps names based on a setting
    in DatafileParameterSet, and does some further rewriting and filtering.)
 
 Locations
 ~~~~~~~~~
 
-A MyTardis instance can be configured to support multiple "Locations" for storing data files.  Each location holds copies ("Replicas") of "Datafiles" that are recorded in the MyTardis database.  MyTardis is aware of the replicas, and can serve the content to the users (in some cases indirectly) from different replicas depending on availability. 
+A MyTardis instance can be configured to support multiple "Locations" for storing data files.  Each location holds copies ("Replicas") of "Datafiles" that are recorded in the MyTardis database.  MyTardis is aware of the replicas, and can serve the content to the users (in some cases indirectly) from different replicas depending on availability.
 
 The initial set of Locations is given by the INITIAL_LOCATIONS setting, where the 'name' attribute gives the Location name::
 
-    INITIAL_LOCATIONS = [{'name': 'test', 
+    INITIAL_LOCATIONS = [{'name': 'test',
                           'url': 'http://127.0.0.1:4272/data/',
 			  'type': 'online',
 			  'priority': 5,
@@ -315,7 +328,7 @@ The attributes are as follows:
   * The 'url' field is a URL that identifies the Location.  This is used by a transfer provider as the base URL for data files.
   * The 'type' field characterizes the location:
     * 'online' means that the Location keeps the data files online
-    * 'offline' means that the Location stores 
+    * 'offline' means that the Location stores
   * The 'provider' is the transfer provider type, and should match one of the keys of the MIGRATION_PROVIDERS map.
   * The 'datafile_protocol' is the value to be used in the Datafile's 'protocol' field after migration to this destination.
   * The 'trust_length' field says whether simply checking a transferred file's length (e.g. using HEAD) is sufficient verification that it transferred.
