@@ -92,6 +92,16 @@ This needs to be set to your hostname and/or IP address when you receive
 requests from external clients.
 '''
 
+SITE_TITLE = None
+'''
+customise the title of your site
+'''
+
+SPONSORED_TEXT = None
+'''
+add text to the footer to acknowledge someone
+'''
+
 # once the cache is set up, you'll need to add
 # 'django.middleware.cache.UpdateCacheMiddleware' and
 # 'django.middleware.cache.FetchFromCacheMiddleware'
@@ -115,6 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
+    'tardis.tardis_portal.context_processors.global_contexts',
     'tardis.tardis_portal.context_processors.single_search_processor',
     'tardis.tardis_portal.context_processors.tokenuser_processor',
     'tardis.tardis_portal.context_processors.registration_processor',

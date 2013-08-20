@@ -277,7 +277,18 @@
         </div>
       </div>
 
-      {% block footer %}{% endblock footer %}
+      {% block footer %}
+      <div class="row-fluid">
+	<div class="span6">
+	  {{sponsored_by|default:""}}
+	</div>
+	<div class="span6">
+	  <div class="pull-right">
+	  Powered by <a href="https://github.com/mytardis/mytardis">MyTardis
+	  </div>
+	</div>
+      </div>
+      {% endblock footer %}
 
     </div>
     <!-- /container -->

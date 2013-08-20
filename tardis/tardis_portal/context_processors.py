@@ -42,5 +42,11 @@ def user_details_processor(request):
     staging = True if get_full_staging_path(username) else False
     return {'username': username,
             'is_authenticated': is_authenticated,
-            'is_superuser': is_superuser, 
+            'is_superuser': is_superuser,
             'has_staging_access': staging}
+
+def global_contexts(request):
+    site_title = getattr(settings, 'SITE_TITLE', None)
+    sponsored_by = getattr(settings, 'SPONSORED_TEXT', None)
+    return {'site_title': site_title,
+            'sponsored_by': sponsored_by}
