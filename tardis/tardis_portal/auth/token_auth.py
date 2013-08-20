@@ -42,6 +42,7 @@ def _ensure_acl_exists(experiment_id):
 
 class TokenGroupProvider(GroupProvider):
     '''
+    Transforms tokens into auth groups
     '''
     name = u'token_group'
 

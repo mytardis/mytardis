@@ -1,19 +1,14 @@
 '''
-
-'''
-from tardis.tardis_portal.ParameterSetManager import\
-    ParameterSetManager
-from tardis.tardis_portal.models import \
-    Experiment, ExperimentParameterSet
-
-"""
 Creative Commons Handler
 
 A wrapper for creative commons interactions on a ParameterSet
 
 .. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
-
-"""
+'''
+from tardis.tardis_portal.ParameterSetManager import\
+    ParameterSetManager
+from tardis.tardis_portal.models import \
+    Experiment, ExperimentParameterSet
 
 
 class CreativeCommonsHandler():

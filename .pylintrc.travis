@@ -39,11 +39,10 @@ load-plugins=
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 # formerly disabled: C0204, C0321, E0001, E0213, E0702, E0711, E1003,
-# W0631, W0710, E1120, W0122,
+# W0631, W0710, E1120, W0122, C0112,
 # pylint 1 only:     W0110,
 disable=C0103,
     C0111,
-    C0112,
     C0301,
     C0302,
     C0322,
