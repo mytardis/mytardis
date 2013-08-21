@@ -280,7 +280,7 @@
       {% block footer %}
       <div class="row-fluid">
 	<div class="span6">
-	  {{sponsored_by|default:""}}
+	  {{sponsored_by|default:""|safe}}
 	</div>
 	<div class="span6">
 	  <div class="pull-right">
