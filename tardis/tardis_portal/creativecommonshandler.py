@@ -83,8 +83,8 @@ class CreativeCommonsHandler():
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
         """
-        if request.POST['cc_js_want_cc_license'] ==\
-            'sure':
+        if request.POST['cc_js_want_cc_license'] == \
+           'sure':
             cc_js_result_img = request.POST['cc_js_result_img']
             cc_js_result_name = request.POST['cc_js_result_name']
             cc_js_result_uri = request.POST['cc_js_result_uri']

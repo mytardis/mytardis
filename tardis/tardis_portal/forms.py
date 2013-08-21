@@ -667,7 +667,6 @@ def __getParameterChoices(choicesString):
 
     """
 
-    import string
     import re
     paramChoices = ()
 
@@ -676,9 +675,9 @@ def __getParameterChoices(choicesString):
     paramChoices += (('-', '-'),)
     dropDownEntryPattern = re.compile(r'\((.*):(.*)\)')
 
-    dropDownEntryStrings = string.split(choicesString, ',')
+    dropDownEntryStrings = choicesString.split(',')
     for dropDownEntry in dropDownEntryStrings:
-        dropDownEntry = string.strip(dropDownEntry)
+        dropDownEntry = dropDownEntry.strip()
         (key, value) = dropDownEntryPattern.search(dropDownEntry).groups()
         paramChoices += ((str(key), str(value)),)
 

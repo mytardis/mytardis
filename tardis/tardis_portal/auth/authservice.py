@@ -179,7 +179,7 @@ class AuthService():
                 # get_user returns either a User or a dictionary describing a
                 # user (id, display, email, first_name, last_name).
                 user = self._authentication_backends[authMethod].get_user(user_id)
-            except NotImplementedError, AttributeError:
+            except (NotImplementedError, AttributeError):
                 # For backwards compatibility
                 try:
                     from tardis.tardis_portal.models import UserAuthentication
@@ -241,7 +241,7 @@ class AuthService():
         elif authMethod in self._authentication_backends:
             try:
                 username = self._authentication_backends[authMethod].getUsernameByEmail(email)
-            except NotImplementedError, AttributeError:
+            except (NotImplementedError, AttributeError):
                 pass
         return username
 

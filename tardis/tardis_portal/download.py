@@ -801,7 +801,7 @@ class UncachedTarStream(TarFile):
             content_length = self.tar_size
         response = StreamingHttpResponse(self.make_tar(),
                                          content_type=content_type)
-        response['Content-Disposition'] = 'attachment; filename="%s"' %\
+        response['Content-Disposition'] = 'attachment; filename="%s"' % \
                                           self.filename
         response['X-Accel-Buffering'] = 'no'
         if content_length is not None:
