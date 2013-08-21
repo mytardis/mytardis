@@ -406,6 +406,22 @@ def view_experiment(request, experiment_id,
     except Experiment.DoesNotExist:
         return return_response_not_found(request)
 
+    if hasattr(settings, "EXPERIMENT_VIEWS"):
+        namespaces = [ps.schema.namespace
+                      for ps in experiment.getParameterSets()]
+        for ns, view_fn in settings.EXPERIMENT_VIEWS:
+            if ns in namespaces:
+                x = view_fn.split(".")
+                mod_name, fn_name = (".".join(x[:-1]), x[-1])
+                try:
+                    module = __import__(mod_name, fromlist=[fn_name])
+                    fn = getattr(module, fn_name)
+                    return fn(request, experiment_id=experiment_id)
+                except (ImportError, AttributeError) as e:
+                    logger.error('custom view import failed. view name: %s, '
+                                 'error-msg: %s' % (repr(view_fn), e))
+                    continue
+
     c['experiment'] = experiment
     c['has_write_permissions'] = \
         authz.has_write_permissions(request, experiment_id)
@@ -587,7 +603,9 @@ def view_dataset(request, dataset_id):
                     module = __import__(mod_name, fromlist=[fn_name])
                     fn = getattr(module, fn_name)
                     return fn(request, dataset_id=dataset_id)
-                except (ImportError, AttributeError):
+                except (ImportError, AttributeError) as e:
+                    logger.error('custom view import failed. view name: %s, '
+                                 'error-msg: %s' % (repr(view_fn), e))
                     continue
 
     def get_datafiles_page():
