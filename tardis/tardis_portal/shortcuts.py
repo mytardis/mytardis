@@ -79,7 +79,6 @@ def get_experiment_referer(request, dataset_id):
         for experiment in get_accessible_experiments_for_dataset(request, dataset_id):
             if experiment.id == referer:
                 return experiment
-                break
     except:
         pass
 

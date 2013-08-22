@@ -845,7 +845,7 @@ def _streaming_downloader(request, datafiles, rootdir, filename,
 def streaming_download_experiment(request, experiment_id, comptype='tgz',
                                   organization='deep-storage'):
     experiment = Experiment.objects.get(id=experiment_id)
-    rootdir = experiment.title
+    rootdir = experiment.title.replace(' ', '_')
     filename = '%s-complete.tar' % rootdir
 
     datafiles = Dataset_File.objects.filter(
@@ -943,8 +943,8 @@ def streaming_download_datafiles(request):
     except (KeyError, Experiment.DoesNotExist):
         experiment = iter(df_set).next().dataset.get_first_experiment()
 
-    filename = '%s-selection.tar' % experiment.title
-    rootdir = '%s-selection' % experiment.title
+    filename = '%s-selection.tar' % experiment.title.replace(' ', '_')
+    rootdir = '%s-selection' % experiment.title.replace(' ', '_')
     return _streaming_downloader(request, df_set, rootdir, filename,
                                  comptype, organization)
 

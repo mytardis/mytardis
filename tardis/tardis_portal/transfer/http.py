@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -48,19 +48,19 @@ class SimpleHttpTransfer(TransferProvider):
     class HeadRequest(Request):
         def get_method(self):
             return 'HEAD'
-    
+
     class PutRequest(Request):
         def get_method(self):
             return 'PUT'
-    
+
     class GetRequest(Request):
         def get_method(self):
             return 'GET'
-    
+
     class DeleteRequest(Request):
         def get_method(self):
             return 'DELETE'
-    
+
     def __init__(self, name, base_url, params):
         TransferProvider.__init__(self, name, base_url)
         self.metadata_supported = False
@@ -76,7 +76,7 @@ class SimpleHttpTransfer(TransferProvider):
             password = params.get('password', '')
             scheme = params.get('scheme', 'digest')
             password_mgr = HTTPPasswordMgrWithDefaultRealm()
-            password_mgr.add_password(realm, base_url, user, password) 
+            password_mgr.add_password(realm, base_url, user, password)
             if scheme == 'basic':
                 handler = HTTPBasicAuthHandler(password_mgr)
             elif scheme == 'digest':
@@ -93,20 +93,20 @@ class SimpleHttpTransfer(TransferProvider):
         except HTTPError as e:
             if e.code in self.aliveErrors:
                 return True
-            logger.info('Aliveness test failed for %s (url %s): %s', 
+            logger.info('Aliveness test failed for %s (url %s): %s',
                         self.name, self.base_url, e)
             return False
         except URLError as e:
-            logger.info('Aliveness test failed for %s (url %s): %s', 
+            logger.info('Aliveness test failed for %s (url %s): %s',
                         self.name, self.base_url, e)
             return False
-            
+
 
     def get_length(self, replica):
         try:
             response = self.opener.open(self.HeadRequest(replica.url))
         except HTTPError as e:
-            raise TransferError(e.msg);
+            raise TransferError(e.msg)
         length = response.info().get('Content-length')
         if length is None:
             raise TransferError("No content-length in response")
@@ -114,7 +114,7 @@ class SimpleHttpTransfer(TransferProvider):
             return int(length)
         except TypeError:
             raise TransferError("Content-length is not numeric")
-        
+
     def get_metadata(self, replica):
         if not self.metadata_supported:
             raise NotImplementedError
@@ -124,7 +124,7 @@ class SimpleHttpTransfer(TransferProvider):
             return simplejson.load(response)
         except HTTPError as e:
             raise TransferError(e.msg)
-    
+
     def get_opener(self, replica):
         url = replica.url
         self._check_url(url)

@@ -327,14 +327,14 @@ class ACLAuthorization(Authorization):
 
     def update_list(self, object_list, bundle):
         raise NotImplementedError(type(bundle.obj))
-        allowed = []
+        # allowed = []
 
-        # Since they may not all be saved, iterate over them.
-        for obj in object_list:
-            if obj.user == bundle.request.user:
-                allowed.append(obj)
+        # # Since they may not all be saved, iterate over them.
+        # for obj in object_list:
+        #     if obj.user == bundle.request.user:
+        #         allowed.append(obj)
 
-        return allowed
+        # return allowed
 
     def update_detail(self, object_list, bundle):
         if not bundle.request.user.is_authenticated():

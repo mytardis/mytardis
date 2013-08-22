@@ -10909,7 +10909,6 @@ class structLink(structLinkType):
         smLinkGrp=None,
         ):
         super(structLink, self).__init__(ID, smLink, smLinkGrp)
-        pass
 
     def factory(*args_, **kwargs_):
         if structLink.subclass:
@@ -11024,7 +11023,6 @@ class structLink(structLinkType):
         ):
         super(structLink, self).buildChildren(child_, node, nodeName_,
                 True)
-        pass
 
 
 # end class structLink
@@ -11074,7 +11072,6 @@ class fileGrp(fileGrpType):
             fileGrp,
             file,
             )
-        pass
 
     def factory(*args_, **kwargs_):
         if fileGrp.subclass:
@@ -11189,7 +11186,6 @@ class fileGrp(fileGrpType):
         ):
         super(fileGrp, self).buildChildren(child_, node, nodeName_,
                 True)
-        pass
 
 
 # end class fileGrp
@@ -11239,7 +11235,6 @@ class mets(metsType):
             structLink,
             behaviorSec,
             )
-        pass
 
     def factory(*args_, **kwargs_):
         if mets.subclass:
@@ -11350,7 +11345,6 @@ class mets(metsType):
         from_subclass=False,
         ):
         super(mets, self).buildChildren(child_, node, nodeName_, True)
-        pass
 
 
 # end class mets

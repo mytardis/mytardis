@@ -87,8 +87,7 @@ class HttpBasicEndpointAuthTestCase(TestCase):
 
 
     def setUp(self):
-        self.mock_endpoint = 'http://test.example/login';
-        pass
+        self.mock_endpoint = 'http://test.example/login'
 
     def tearDown(self):
         flexmock_teardown()
@@ -156,13 +155,13 @@ class HttpBasicEndpointAuthTestCase(TestCase):
             .at_least.once
         # Ditto for group object retrieval
         group = Group.objects.create(name='test-group')
-        group.save();
+        group.save()
         mockGroupDao = flexmock(Group.objects)
         mockGroupDao.should_receive('get').with_args(name='test-group')\
             .and_return(group).at_least.once
         mockGroupDao.should_receive('get').with_args(name='unknown-group')\
             .and_raise(Group.DoesNotExist)
-        
+
         result = auth.authenticate(request)
         server.stop()
         self._checkResult(result, username)
@@ -199,4 +198,3 @@ class HttpBasicEndpointAuthTestCase(TestCase):
         assert not isinstance(result, dict)
         assert isinstance(result, User)
         eq_(result.username, username)
-

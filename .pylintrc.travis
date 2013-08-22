@@ -38,8 +38,9 @@ load-plugins=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-# formerly disabled: C0204, C0321, E0001, E0213, E0702, E0711, E1003,
-# W0631, W0710, E1120, W0122, C0112, W0109, W0402, W0623, C0323,
+# formerly disabled: C0204, C0321, E0001, E0213, E0702, E0711, E1003, W0631,
+# W0710, E1120, W0122, C0112, W0109, W0402, W0623, C0323, W0101, W0312, W0107,
+# W0301,
 # pylint 1.0 only:     W0110,
 disable=C0103,
     C0111,
@@ -66,12 +67,9 @@ disable=C0103,
     R0914,
     R0915,
     R0921,
-    R0924,
-    W0101,
     W0102,
     W0105,
     W0106,
-    W0107,
     W0108,
     W0141,
     W0142,
@@ -81,9 +79,7 @@ disable=C0103,
     W0223,
     W0231,
     W0232,
-    W0301,
     W0311,
-    W0312,
     W0401,
     W0403,
     W0404,
@@ -102,7 +98,8 @@ disable=C0103,
     W1401,
     E1002,
     R0901,
-    I0011
+    I0011,
+    R0924
 
 [REPORTS]
 

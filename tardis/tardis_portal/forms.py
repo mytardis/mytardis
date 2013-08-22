@@ -956,7 +956,7 @@ class RightsForm(ModelForm):
 
         if not suitable:
             raise forms.ValidationError("Selected license it not suitable "+
-                                        "for public access level.");
+                                        "for public access level.")
 
         return cleaned_data
 

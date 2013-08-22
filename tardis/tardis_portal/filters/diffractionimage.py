@@ -326,7 +326,7 @@ class DiffractionImageFilter(object):
         diffdump_exec = split_diffdump_path[1]
 
         cmd = "cd '" + cd + "'; ./'" + diffdump_exec + "' '" + file_path + "'"
-	with open("test2.txt", "a") as myfile:
+        with open("test2.txt", "a") as myfile:
             myfile.write(cmd)
         output = subprocess.Popen(
                             cmd,

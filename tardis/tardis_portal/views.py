@@ -458,7 +458,6 @@ def view_experiment(request, experiment_id,
                                                   app))
         except:
             logger.debug("No tab for %s" % app)
-            pass
 
     c['apps'] = zip(appurls, appnames)
 
@@ -756,7 +755,7 @@ def experiment_dataset_transfer(request, experiment_id):
     c = Context({
                  'experiments': experiments.exclude(id=experiment_id),
                  'url_pattern': get_json_url_pattern()
-                 });
+                 })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/ajax/experiment_dataset_transfer.html',
                         c))
@@ -3131,7 +3130,7 @@ def create_token(request, experiment_id):
     token = Token(experiment=experiment, user=request.user)
     token.save_with_random_token()
     logger.info('created token: %s' % token)
-    return HttpResponse('{"success": true}', mimetype='application/json');
+    return HttpResponse('{"success": true}', mimetype='application/json')
 
 
 @require_POST
@@ -3139,7 +3138,7 @@ def token_delete(request, token_id):
     token = Token.objects.get(id=token_id)
     if authz.has_experiment_ownership(request, token.experiment_id):
         token.delete()
-        return HttpResponse('{"success": true}', mimetype='application/json');
+        return HttpResponse('{"success": true}', mimetype='application/json')
 
 
 def token_login(request, token):

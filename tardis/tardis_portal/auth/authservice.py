@@ -266,7 +266,6 @@ class AuthService():
         """
         if not self._initialised:
             self._manual_init()
-        pass
 
     def searchUsers(self, filter):
         """Return a list of users and/or groups
@@ -274,7 +273,6 @@ class AuthService():
         """
         if not self._initialised:
             self._manual_init()
-        pass
 
     def searchGroups(self, **kw):
         """Return a list of users and/or groups

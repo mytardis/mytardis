@@ -120,7 +120,7 @@ class Location(models.Model):
             param = ProviderParameter(location=location,
                                       name=name, value=value)
             param.save()
-        return location;
+        return location
 
 
     @classmethod
