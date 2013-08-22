@@ -5,7 +5,10 @@ how tocall the manage.py command
 
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
-from django_extensions.management.modelviz import generate_dot
+try:
+    from django_extensions.management.modelviz import generate_dot
+except:
+    pass
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -74,18 +77,23 @@ class Command(BaseCommand):
         graph.layout(prog=kwargs['layout'])
         graph.draw(kwargs['outputfile'])
 
-arguments = [
-    'bin/django',
-    'graph_models',
-    'tardis_portal',
-    '-o', 'images/models-graphviz.png',
-]
-Command().run_from_argv(arguments)
+try:
+    arguments = [
+        'bin/django',
+        'graph_models',
+        'tardis_portal',
+        '-o', 'images/models-graphviz.png',
+    ]
+    Command().run_from_argv(arguments)
+    print 'generated model graph'
 
-arguments = [
-    'bin/django',
-    'graph_models',
-    '-a',
-    '-o', 'images/models-graphviz-all.png',
-]
-Command().run_from_argv(arguments)
+    arguments = [
+        'bin/django',
+        'graph_models',
+        '-a',
+        '-o', 'images/models-graphviz-all.png',
+    ]
+    Command().run_from_argv(arguments)
+    print 'generated big model graph'
+except Exception as e:
+    print e
