@@ -1,6 +1,26 @@
 Changelog
 =========
 
+3.5 - 23 August 2013
+--------------------
+
+* API
+
+* API keys
+
+* Authorisation
+
+* Front page overview
+
+* Contextual views for Datafiles, Datasets and Experiments
+
+
+3.0 - unreleased
+----------------
+
+* Twitter Bootstrap
+
+
 2.0 - Unreleased
 ----------------
 * Auth/Auth redesign [Gerson, Uli, Russel]

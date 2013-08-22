@@ -117,6 +117,27 @@ See below for some extra configuration options that are specific to MyTARDIS.
 An automatically generated documentation of the settings can be found in
 :doc:`pydoc/tardis`.
 
+Essential Production Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These settings are essential if you want to run MyTardis in production mode
+(``DEBUG = False``).
+
+.. attribute:: SECRET_KEY
+
+   This key needs to be unique per installation and, as the name implies,
+   be kept secret.
+
+   A new one can be conveniently generated with the command::
+
+     echo "SECRET_KEY='`bin/django generate_secret_key`'" >> tardis/settings.py
+
+.. attribute:: ALLOWED_HOSTS
+
+   `ALLOWED_HOSTS` is a list of hostnames and/or IP addresses under which the
+   server is accessible. If this is not set you will get a 500 Error for any
+   request.
+
 Database
 ~~~~~~~~
 

@@ -2,14 +2,22 @@
 Ingesting
 =========
 
-There are three mechanisms for ingesting metadata and data into MyTARDIS:
+There are four mechanisms for ingesting metadata and data into MyTARDIS:
 
 #. User Interface
-   The User Interface is appropriate for ingesting a single experiment by the end user with a relatively small amount of data.
+   The User Interface is appropriate for ingesting a single experiment by the
+   end user with a relatively small amount of data.
+#. REST API
+   The RESTful API allows creation of Experiments, Datasets and Datafiles
+   including meta data. Files can be added via POSTing, through a staging
+   area or through a shared data storage area. See :doc:`api` for more
+   information.
 #. Staging Area
-   The Staging Area is appropriate for ingesting a single experiment by the end user with larger amounts of data.
+   The Staging Area is appropriate for ingesting a single experiment by the
+   end user with larger amounts of data.
 #. Batch Ingestion
-   Batch ingestion is typically used by facilities automatically ingesting all metadata from one or more instruments into MyTARDIS.
+   Batch ingestion is typically used by facilities automatically ingesting all
+   metadata from one or more instruments into MyTARDIS.
 
 MyTARDIS supports 2 different XML schemas for importing metadata. One
 method is METS and the other is using a MyTARDIS specific XML
@@ -25,7 +33,8 @@ The Meta-data Encoding and Transmission Standard was recommended by
 Monash Librarians and ANU in 2008 as the XML description format for
 MyTARDIS datasets.
 
-For details about the METS format and how it is used by MyTARDIS, please see :doc:`ref/mets-format`.
+For details about the METS format and how it is used by MyTARDIS, please see
+:doc:`ref/mets-format`.
 
 Ingestion Script
 ----------------
