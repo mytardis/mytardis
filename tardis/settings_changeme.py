@@ -405,7 +405,7 @@ delay between verification attempts in seconds
 CELERYBEAT_SCHEDULE = {
     "verify-files": {
         "task": "tardis_portal.verify_files",
-        "schedule": timedelta(seconds=60)
+        "schedule": timedelta(seconds=300)
     },
 }
 
@@ -454,8 +454,11 @@ ARCHIVE_FILE_MAPPERS = {
 # Site's default archive organization (i.e. path structure)
 DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
 
-# Site's preferred archive types, with the most preferred first
-DEFAULT_ARCHIVE_FORMATS = ['tgz', 'tar']
+DEFAULT_ARCHIVE_FORMATS = ['tar']
+'''
+Site's preferred archive types, with the most preferred first
+other available option: 'tgz'. Add to list if desired
+'''
 
 DEEP_DATASET_STORAGE = True
 '''
