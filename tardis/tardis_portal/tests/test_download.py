@@ -335,10 +335,11 @@ class DownloadTestCase(TestCase):
                               self.experiment1.id)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment1.title)
+                         % self.experiment1.title.replace(' ', '_'))
         self.assertEqual(response.status_code, 200)
         self._check_tar_file(
-            response.streaming_content, str(self.experiment1.title),
+            response.streaming_content, str(self.experiment1.title
+                                            .replace(' ', '_')),
             reduce(lambda x, y: x + y,
                    [ds.dataset_file_set.all()
                     for ds in self.experiment1.datasets.all()]))
@@ -444,7 +445,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment1.title)
+                         % self.experiment1.title.replace(' ', '_'))
         self._check_tar_file(
             response.streaming_content, str(self.experiment1.id),
             reduce(lambda x, y: x + y,
@@ -463,7 +464,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Disposition'],
                          'attachment; filename="%s-complete.tar"'
-                         % self.experiment2.title)
+                         % self.experiment2.title.replace(' ', '_'))
         self._check_tar_file(
             response.streaming_content, str(self.experiment2.id),
             reduce(lambda x, y: x + y,
