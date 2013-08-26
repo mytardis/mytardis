@@ -121,7 +121,7 @@ class MetsExporter():
                 parameterSets = DatafileParameterSet.objects.filter(
                     dataset_file=datafile)
 
-		if not parameterSets:
+                if not parameterSets:
                     ADMID_val = None
                 else:
                     ADMID_val = "A-{0}".format(metadataCounter)
@@ -194,7 +194,7 @@ class MetsExporter():
         if dirname is None:
             from tempfile import mkdtemp
             dirname = mkdtemp()
-	logger.debug('Using directory %s for METS export' % dirname)
+        logger.debug('Using directory %s for METS export' % dirname)
 
 	# Use generated filename if not provided
         if not filename:
@@ -343,4 +343,3 @@ class MetsExporter():
         _xmlData = xmlData()
         _xmlData.add_xsdAny_(xmlDataContentEl)
         return _xmlData
-

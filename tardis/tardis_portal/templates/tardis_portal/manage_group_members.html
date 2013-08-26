@@ -1,6 +1,5 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
-{% load url from future %}
 
 {% block script %}
 
@@ -97,12 +96,12 @@ $(document).ready(function() {
           }
         });
     });
-    // 
+    //
     // // grouplist
       var $target_group_list = $("#grouplist");
       $target_group_list.html(loadingHTML + "</br>");
       var href = "/ajax/group_list_by_user/"
-      $target_group_list.load(href);    
+      $target_group_list.load(href);
 
     var loadingHTML = "<img src=\"{% static 'images/ajax-loader.gif' %}\"/>";
 
@@ -140,7 +139,7 @@ $(document).ready(function() {
           });
         }).show();
     });
-    
+
     // add user
     $('.create_user_link').live('click', function(evt) {
         var experiment_id = $(this).attr('data-experiment_id');
@@ -163,12 +162,12 @@ $(document).ready(function() {
                   var username = $(this).parents('.user_create').find("#id_username").val();
                   var email = $(this).parents('.user_create').find("#id_email").val();
                   var password1 = $(this).parents('.user_create').find("#id_password1").val();
-                  var password2 = $(this).parents('.user_create').find("#id_password2").val(); 
-                  var authMethod = $(this).parents('.user_create').find("#id_authMethod").val();                                    
+                  var password2 = $(this).parents('.user_create').find("#id_password2").val();
+                  var authMethod = $(this).parents('.user_create').find("#id_authMethod").val();
 
                   post_vars = 'user=' + username + '&email=' + email + '&authMethod=' + authMethod + '&password=' + password1
                   action = '/experiment/control_panel/create/user/'
-                  
+
                   // returns 0 on fail
                   var passwordMatch = password1.localeCompare(password2);
 
@@ -195,7 +194,7 @@ $(document).ready(function() {
                 {
                     alert('Passwords do not match!');
                 }
-                
+
                 }); // end form submit event
 
             });
@@ -208,9 +207,9 @@ $(document).ready(function() {
         $target_group_list.html(loadingHTML + "</br>");
         var href = "/ajax/group_list_by_user/"
         $target_group_list.load(href);
-    });    
-    
-    
+    });
+
+
 });
 </script>
 {% endblock %}

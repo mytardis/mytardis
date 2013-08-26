@@ -59,8 +59,8 @@ class HttpBasicEndpointAuth(AuthProvider):
         except User.DoesNotExist:
             user = User.objects.create_user(username, '')
             user.save()
-            configure_user(user);
-            
+            configure_user(user)
+
         # We don't want a localdb user created, so don't use a dict
         return user
 

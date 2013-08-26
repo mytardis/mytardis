@@ -1,19 +1,14 @@
 '''
-
-'''
-from tardis.tardis_portal.ParameterSetManager import\
-    ParameterSetManager
-from tardis.tardis_portal.models import \
-    Experiment, ExperimentParameterSet
-
-"""
 Creative Commons Handler
 
 A wrapper for creative commons interactions on a ParameterSet
 
 .. moduleauthor:: Steve Androulakis <steve.androulakis@monash.edu>
-
-"""
+'''
+from tardis.tardis_portal.ParameterSetManager import\
+    ParameterSetManager
+from tardis.tardis_portal.models import \
+    Experiment, ExperimentParameterSet
 
 
 class CreativeCommonsHandler():
@@ -88,8 +83,8 @@ class CreativeCommonsHandler():
         :param request: a HTTP Request instance
         :type request: :class:`django.http.HttpRequest`
         """
-        if request.POST['cc_js_want_cc_license'] ==\
-            'sure':
+        if request.POST['cc_js_want_cc_license'] == \
+           'sure':
             cc_js_result_img = request.POST['cc_js_result_img']
             cc_js_result_name = request.POST['cc_js_result_name']
             cc_js_result_uri = request.POST['cc_js_result_uri']

@@ -73,4 +73,4 @@ class MockBackend():
         return user
 
     def get_user(self, user_id):
-        raise NotImplemented()
+        raise NotImplementedError

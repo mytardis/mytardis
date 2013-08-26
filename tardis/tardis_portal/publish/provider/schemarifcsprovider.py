@@ -27,10 +27,10 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
                                     parameterset__experiment = experiment,
                                     name__schema__namespace = self.namespace)
         return True # TJD: temporary
-        if len(eps) > 0:
-            schema = Schema.objects.get(namespace = self.namespace)
-            return True
-        return False
+        # if len(eps) > 0:
+        #     schema = Schema.objects.get(namespace = self.namespace)
+        #     return True
+        # return False
 
     def get_beamlines(self, experiment):
 #        sch = Schema.objects.get(namespace=self.namespace)
@@ -191,4 +191,3 @@ class SchemaRifCsProvider(rifcsprovider.RifCsProvider):
             return psm.get_params(key, True)
         else:
             return []
-

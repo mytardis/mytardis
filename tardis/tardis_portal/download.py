@@ -12,12 +12,14 @@ import shutil
 import subprocess
 import urllib
 import os, platform, ctypes, stat, time, struct
+import cStringIO as StringIO
 
 try:
-    import zlib # We may need its compression method
+    import zlib  # We may need its compression method
     crc32 = zlib.crc32
 except ImportError:
     zlib = None
+    import binascii
     crc32 = binascii.crc32
 
 from itertools import chain
@@ -28,18 +30,22 @@ from zipfile import ZipFile, ZipInfo, ZIP_STORED, ZIP_DEFLATED
 
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse, HttpResponseRedirect, \
-    HttpResponseNotFound
+    HttpResponseNotFound, StreamingHttpResponse
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
+from django.contrib.auth.decorators import login_required
 
-from tardis.tardis_portal.models import *
+from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_free_space
-from tardis.tardis_portal.auth.decorators import *
+from tardis.tardis_portal.auth.decorators import has_datafile_download_access
+from tardis.tardis_portal.auth.decorators import experiment_download_required
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, render_error_message
 
 logger = logging.getLogger(__name__)
+
 
 class StreamingFile:
 
@@ -85,19 +91,24 @@ class StreamingFile:
         self.reader.close()
         os.unlink(self.name)
 
+
 class StreamableZipFile(ZipFile):
-    def __init__(self, file, mode="r", compression=ZIP_STORED, allowZip64=False):
+    def __init__(self, file, mode="r", compression=ZIP_STORED,
+                 allowZip64=False):
         ZipFile.__init__(self, file, mode, compression, allowZip64)
 
     def write(self, filename, arcname=None, compress_type=None):
         """Put the bytes from filename into the archive under the name
-        arcname.  The file is written in strictly sequential fashion - no seeking."""
+        arcname.  The file is written in strictly sequential fashion -
+        no seeking.
+        """
 
         # This code is a tweaked version of ZipFile.write ...
-        # TODO: add an alternative version that works with a stream rather than a filename.
+        # TODO: add an alternative version that works with a stream rather
+        # than a filename.
         if not self.fp:
             raise RuntimeError(
-                  "Attempt to write to ZIP archive that was already closed")
+                "Attempt to write to ZIP archive that was already closed")
 
         st = os.stat(filename)
         isdir = stat.S_ISDIR(st.st_mode)
@@ -119,8 +130,9 @@ class StreamableZipFile(ZipFile):
             zinfo.compress_type = compress_type
 
         zinfo.file_size = st.st_size
-        zinfo.flag_bits = 0x08                  # Use trailing data descriptor for file sizes and CRC
-        zinfo.header_offset = self.fp.tell()    # Start of header bytes
+        zinfo.flag_bits = 0x08  # Use trailing data descriptor for file
+        # sizes and CRC
+        zinfo.header_offset = self.fp.tell()  # Start of header bytes
 
         self._writecheck(zinfo)
         self._didModify = True
@@ -142,7 +154,7 @@ class StreamableZipFile(ZipFile):
             self.fp.write(zinfo.FileHeader())
             if zinfo.compress_type == ZIP_DEFLATED:
                 cmpr = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
-                     zlib.DEFLATED, -15)
+                                        zlib.DEFLATED, -15)
             else:
                 cmpr = None
             while 1:
@@ -162,13 +174,15 @@ class StreamableZipFile(ZipFile):
             zinfo.compress_size = compress_size
         else:
             zinfo.compress_size = file_size
-        # Write the data descriptor after the file containing the true sizes and CRC
+        # Write the data descriptor after the file containing the true sizes
+        # and CRC
         zinfo.CRC = CRC
         zinfo.file_size = file_size
         self.fp.write(struct.pack("<LLL", zinfo.CRC, zinfo.compress_size,
-              zinfo.file_size))
+                                  zinfo.file_size))
         self.filelist.append(zinfo)
         self.NameToInfo[zinfo.filename] = zinfo
+
 
 def _create_download_response(request, datafile_id, disposition='attachment'):
     #import ipdb; ipdb.set_trace()
@@ -197,9 +211,9 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
         if not file_obj:
             # If file path doesn't resolve, return not found
             return return_response_not_found(request)
-        wrapper = FileWrapper(file_obj)
-        response = HttpResponse(wrapper,
-                                mimetype=datafile.get_mimetype())
+        wrapper = FileWrapper(file_obj, blksize=65535)
+        response = StreamingHttpResponse(wrapper,
+                                         mimetype=datafile.get_mimetype())
         response['Content-Disposition'] = \
             '%s; filename="%s"' % (disposition, datafile.filename)
         return response
@@ -222,13 +236,17 @@ def _create_download_response(request, datafile_id, disposition='attachment'):
 def view_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id, 'inline')
 
+
 def download_datafile(request, datafile_id):
     return _create_download_response(request, datafile_id)
 
+
 __mapper_makers = None
+
 
 def get_download_organizations():
     return _get_mapper_makers().keys()
+
 
 def _get_mapper_makers():
     global __mapper_makers
@@ -242,16 +260,18 @@ def _get_mapper_makers():
             else:
                 kwarg = {}
 
-            def mapper_maker_maker(kwarg) :
+            def mapper_maker_maker(kwarg):
                 def mapper_maker(rootdir):
                     myKwarg = dict(kwarg)
                     myKwarg['rootdir'] = rootdir
+
                     def mapper(datafile):
                         return mapper_fn(datafile, **myKwarg)
                     return mapper
                 return mapper_maker
             __mapper_makers[organization] = mapper_maker_maker(kwarg)
     return __mapper_makers
+
 
 def _safe_import(path):
     try:
@@ -271,6 +291,7 @@ def _safe_import(path):
             'Mapper module "%s" does not define a "%s" function' %
             (mapper_module, mapper_fname))
 
+
 def _make_mapper(organization, rootdir):
     if organization == 'classic':
         return classic_mapper(rootdir)
@@ -282,10 +303,12 @@ def _make_mapper(organization, rootdir):
         else:
             return None
 
+
 def classic_mapper(rootdir):
     def _get_filename(df):
         return os.path.join(rootdir, str(df.dataset.id), df.filename)
     return _get_filename
+
 
 def _get_datafile_details_for_archive(mapper, datafiles):
     # It would be simplest to do this lazily.  But if we do that, we implicitly
@@ -300,6 +323,7 @@ def _get_datafile_details_for_archive(mapper, datafiles):
         if mapped_pathname:
             res.append((df.get_file_getter(), mapper(df)))
     return res
+
 
 def _write_files_to_archive(write_func, files):
     for fileGetter, name in files:
@@ -325,10 +349,12 @@ def _write_files_to_archive(write_func, files):
             finally:
                 fileObj.close()
 
+
 def _write_tar_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(mapper, datafiles)
+
     # Define the function
     def write_tar(filename):
         from tarfile import TarFile
@@ -337,19 +363,23 @@ def _write_tar_func(mapper, datafiles):
             logger.debug('Writing tar archive to %s' % filename)
             _write_files_to_archive(tf.add, files)
             tf.close()
-            logger.debug('Completed tar archive size is %i' % os.stat(filename).st_size)
-        except IOError as ex:
-            logger.warn("I/O error({0}) while writing tar archive: {1}".format(e.errno, e.strerror))
+            logger.debug('Completed tar archive size is %i' %
+                         os.stat(filename).st_size)
+        except IOError as e:
+            logger.warn("I/O error({0}) while writing tar archive: {1}"
+                        .format(e.errno, e.strerror))
             os.unlink(filename)
         finally:
             tf.close()
     # Returns the function to do the actual writing
     return write_tar
 
+
 def _write_zip_func(mapper, datafiles):
     logger.debug('Getting files to write to archive')
     # Resolve url and name for the files
     files = _get_datafile_details_for_archive(mapper, datafiles)
+
     # Define the function
     def write_zip(filename):
         try:
@@ -357,14 +387,17 @@ def _write_zip_func(mapper, datafiles):
             logger.debug('Writing zip archive to %s' % filename)
             _write_files_to_archive(zf.write, files)
             zf.close()
-            logger.debug('Completed zip archive size is %i' % os.stat(filename).st_size)
-        except IOError as ex:
-            logger.warn("I/O error({0}) while writing zip archive: {1}".format(e.errno, e.strerror))
+            logger.debug('Completed zip archive size is %i' %
+                         os.stat(filename).st_size)
+        except IOError as e:
+            logger.warn("I/O error({0}) while writing zip archive: {1}"
+                        .format(e.errno, e.strerror))
             os.unlink(filename)
         finally:
             zf.close()
     # Returns the function to do the actual writing
     return write_zip
+
 
 def _estimate_archive_size(mapper, datafiles, comptype):
     """
@@ -392,8 +425,8 @@ def _estimate_archive_size(mapper, datafiles, comptype):
             estimate += (20 + name_length) + int(df.get_size()) + \
                 8 + (46 + name_length)
     if comptype == "tar":
-         # Two records of zeros at the end.
-         estimate += 1024
+        # Two records of zeros at the end.
+        estimate += 1024
     elif comptype == "zip":
         # Central directory overheads
         estimate += 100
@@ -425,6 +458,7 @@ def _check_download_limits(mapper, datafiles, comptype):
     else:
         return None
 
+
 @experiment_download_required
 def download_experiment(request, experiment_id, comptype,
                         organization='classic'):
@@ -447,25 +481,41 @@ def download_experiment(request, experiment_id, comptype,
         return render_error_message(
             request, 'Cannot download: %s' % msg, status=400)
 
-    if comptype == "tar":
-        reader = StreamingFile(_write_tar_func(mapper, datafiles),
-                               asynchronous_file_creation=True)
+    try:
+        if comptype == "tar":
+            reader = StreamingFile(_write_tar_func(mapper, datafiles),
+                                   asynchronous_file_creation=True)
 
-        response = HttpResponse(FileWrapper(reader),
-                                mimetype='application/x-tar')
-        response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + rootdir + '-complete.tar"'
-    elif comptype == "zip":
-        reader = StreamingFile(_write_zip_func(mapper, datafiles),
-                               asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
-                                mimetype='application/zip')
+            response = StreamingHttpResponse(FileWrapper(reader),
+                                    mimetype='application/x-tar')
+            response['Content-Disposition'] = \
+                'attachment; filename="experiment' \
+                + rootdir + '-complete.tar"'
+        elif comptype == "zip":
+            reader = StreamingFile(_write_zip_func(mapper, datafiles),
+                                   asynchronous_file_creation=True)
+            response = StreamingHttpResponse(FileWrapper(reader),
+                                    mimetype='application/zip')
 
-        response['Content-Disposition'] = 'attachment; filename="experiment' \
-            + rootdir + '-complete.zip"'
-    else:
-        response = render_error_message(
-            request, 'Unsupported download format: %s' % comptype, status=404)
+            response['Content-Disposition'] = \
+                'attachment; filename="experiment' \
+                + rootdir + '-complete.zip"'
+        else:
+            response = render_error_message(
+                request, 'Unsupported download format: %s' % comptype,
+                status=404)
+    except ValueError:  # raised when replica not verified TODO: custom excptn
+        redirect = request.META.get('HTTP_REFERER',
+                                    'http://%s/' %
+                                    request.META.get('HTTP_HOST'))
+        message = """The experiment you are trying to access has not yet been
+                     verified completely.
+                     Verification is an automated background process.
+                     Please try again later or contact the system
+                     administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
+        redirect = redirect + '#error:' + message
+        return HttpResponseRedirect(redirect)
     return response
 
 
@@ -491,7 +541,7 @@ def download_datafiles(request):
         organization = request.POST['organization']
 
     if 'datafile' in request.POST or 'dataset' in request.POST:
-        if (len(request.POST.getlist('datafile')) > 0 \
+        if (len(request.POST.getlist('datafile')) > 0
                 or len(request.POST.getlist('dataset'))) > 0:
 
             datasets = request.POST.getlist('dataset')
@@ -500,8 +550,8 @@ def download_datafiles(request):
             # Generator to produce datafiles from dataset id
             def get_dataset_datafiles(dsid):
                 for datafile in Dataset_File.objects.filter(dataset=dsid):
-                    if has_datafile_download_access(request=request,
-                                                    dataset_file_id=datafile.id):
+                    if has_datafile_download_access(
+                            request=request, dataset_file_id=datafile.id):
                         yield datafile
 
             # Generator to produce datafile from datafile id
@@ -533,7 +583,8 @@ def download_datafiles(request):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
             experiment_id = request.POST['expid']
-            datafile = Dataset_File.objects.filter(url__endswith=raw_path,
+            datafile = Dataset_File.objects.filter(
+                url__endswith=raw_path,
                 dataset__experiment__id=experiment_id)[0]
             if has_datafile_download_access(request=request,
                                             dataset_file_id=datafile.id):
@@ -572,18 +623,340 @@ def download_datafiles(request):
     if comptype == "tar":
         reader = StreamingFile(_write_tar_func(mapper, df_set),
                                asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/x-tar')
         response['Content-Disposition'] = \
-                'attachment; filename="experiment%s-selection.tar"' % expid
+            'attachment; filename="experiment%s-selection.tar"' % expid
     elif comptype == "zip":
         reader = StreamingFile(_write_zip_func(mapper, df_set),
                                asynchronous_file_creation=True)
-        response = HttpResponse(FileWrapper(reader),
+        response = StreamingHttpResponse(FileWrapper(reader),
                                 mimetype='application/zip')
         response['Content-Disposition'] = \
-                'attachment; filename="experiment%s-selection.zip"' % expid
+            'attachment; filename="experiment%s-selection.zip"' % expid
     else:
         response = render_error_message(
             request, 'Unsupported download format: %s' % comptype, status=404)
+    return response
+
+
+########### NEW DOWNLOAD ##############
+import tarfile
+from tarfile import TarFile
+import gzip
+import io
+
+
+class UncachedTarStream(TarFile):
+    '''
+    Stream files into a compressed tar stream on the fly
+    '''
+
+    def __init__(self, mapped_file_objs, filename, do_gzip=False,
+                 buffersize=2*65536, comp_level=6, http_buffersize=65535):
+        self.errors = 'strict'
+        self.pax_headers = {}
+        self.mode = 'w'
+        self.closed = False
+        self.members = []
+        self._loaded = False
+        self.offset = 0
+        self.inodes = {}
+        self._loaded = True
+        self.mapped_file_objs = mapped_file_objs
+        self.filename = filename
+        self.buffersize = buffersize
+        self.http_buffersize = http_buffersize
+        self.do_gzip = do_gzip
+        if do_gzip:
+            self.binary_buffer = io.BytesIO()
+            self.gzipfile = gzip.GzipFile(bytes(filename), 'w',
+                                          comp_level, self.binary_buffer)
+        else:
+            self.tar_size = self.compute_size()
+
+    def compute_size(self):
+        tarinfo_size = 512
+        total_size = 0
+        for fo_getter, name in self.mapped_file_objs:
+            total_size += tarinfo_size
+            the_file = fo_getter()
+            size = os.fstat(the_file.fileno()).st_size
+            blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
+            total_size += blocks * tarfile.BLOCKSIZE
+            if remainder > 0:
+                total_size += tarfile.BLOCKSIZE
+        total_size += tarfile.BLOCKSIZE * 2
+        blocks, remainder = divmod(total_size, tarfile.RECORDSIZE)
+        total_size = blocks * tarfile.RECORDSIZE
+        if remainder > 0:
+            total_size += tarfile.RECORDSIZE
+        return total_size
+
+    def compress(self, buf):
+        self.gzipfile.write(buf)
+        self.gzipfile.flush()
+        self.binary_buffer.seek(0)
+        result = self.binary_buffer.read()
+        self.binary_buffer.seek(0)
+        self.binary_buffer.truncate()
+        return result
+
+    def prepare_output(self, uc_buf, remainder):
+        if self.do_gzip:
+            result_buf = self.compress(uc_buf)
+        else:
+            result_buf = uc_buf
+        if remainder is not None:
+            result_buf = remainder + result_buf
+        stream_buffers = []
+        while len(result_buf) >= self.http_buffersize:
+            stream_buffers.append(result_buf[:self.http_buffersize])
+            result_buf = result_buf[self.http_buffersize:]
+        return stream_buffers, result_buf
+
+    def close_gzip(self):
+        self.gzipfile.close()
+        self.binary_buffer.seek(0)
+        result = self.binary_buffer.read()
+        self.binary_buffer.seek(0)
+        self.binary_buffer.truncate()
+        print len(result)
+        return result
+
+    def make_tar(self):  # noqa
+        '''
+        main tar generator. until python 3 needs to be in one function
+        because 'yield's don't bubble up.
+        '''
+        remainder_buf = None
+        for fileobj_getter, name in self.mapped_file_objs:
+            fileobj = fileobj_getter()
+            self._check('aw')
+            tarinfo = self.gettarinfo(name, name, fileobj)
+            # tarinfo = copy.copy(tarinfo)
+            buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
+            stream_buffers, remainder_buf = self.prepare_output(
+                buf, remainder_buf)
+            for stream_buf in stream_buffers:
+                yield stream_buf
+            self.offset += len(buf)
+            if tarinfo.isreg():
+                if tarinfo.size == 0:
+                    continue
+                blocks, remainder = divmod(tarinfo.size, self.buffersize)
+                for b in xrange(blocks):
+                    buf = fileobj.read(self.buffersize)
+                    if len(buf) < self.buffersize:
+                        raise IOError("end of file reached")
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
+                if remainder != 0:
+                    buf = fileobj.read(remainder)
+                    if len(buf) < remainder:
+                        raise IOError("end of file reached")
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
+                blocks, remainder = divmod(tarinfo.size, tarfile.BLOCKSIZE)
+                if remainder > 0:
+                    buf = (tarfile.NUL * (tarfile.BLOCKSIZE - remainder))
+                    stream_buffers, remainder_buf = self.prepare_output(
+                        buf, remainder_buf)
+                    for stream_buf in stream_buffers:
+                        yield stream_buf
+                    blocks += 1
+                self.offset += blocks * tarfile.BLOCKSIZE
+
+        buf = (tarfile.NUL * (tarfile.BLOCKSIZE * 2))
+        stream_buffers, remainder_buf = self.prepare_output(
+            buf, remainder_buf)
+        for stream_buf in stream_buffers:
+            yield stream_buf
+        self.offset += (tarfile.BLOCKSIZE * 2)
+        # fill up the end with zero-blocks
+        # (like option -b20 for tar does)
+        blocks, remainder = divmod(self.offset, tarfile.RECORDSIZE)
+        if remainder > 0:
+            buf = tarfile.NUL * (tarfile.RECORDSIZE - remainder)
+            stream_buffers, remainder_buf = self.prepare_output(
+                buf, remainder_buf)
+            for stream_buf in stream_buffers:
+                yield stream_buf
+        if len(remainder_buf) > 0:
+            yield remainder_buf
+        if self.do_gzip:
+            yield self.close_gzip()
+
+    def get_response(self):
+        if self.do_gzip:
+            content_type = 'application/x-gzip'
+            content_length = None
+            self.filename = self.filename + '.gz'
+        else:
+            content_type = 'application/x-tar'
+            content_length = self.tar_size
+        response = StreamingHttpResponse(self.make_tar(),
+                                         content_type=content_type)
+        response['Content-Disposition'] = 'attachment; filename="%s"' % \
+                                          self.filename
+        response['X-Accel-Buffering'] = 'no'
+        if content_length is not None:
+            response['Content-Length'] = content_length
+        return response
+
+
+def _streaming_downloader(request, datafiles, rootdir, filename,
+                          comptype='tgz', organization='deep-storage'):
+    '''
+    private function to be called by wrappers
+    creates download response with given files and names
+    '''
+    mapper = _make_mapper(organization, rootdir)
+    if not mapper:
+        return render_error_message(
+            request, 'Unknown download organization: %s' % organization,
+            status=400)
+    try:
+        files = _get_datafile_details_for_archive(mapper, datafiles)
+        tfs = UncachedTarStream(
+            files,
+            filename=filename,
+            do_gzip=comptype != 'tar')
+        return tfs.get_response()
+    except ValueError:  # raised when replica not verified TODO: custom excptn
+        redirect = request.META.get('HTTP_REFERER',
+                                    'http://%s/' %
+                                    request.META.get('HTTP_HOST'))
+        message = """The experiment you are trying to access has not yet been
+                     verified completely.
+                     Verification is an automated background process.
+                     Please try again later or contact the system
+                     administrator if the issue persists."""
+        message = ' '.join(message.split())  # removes spaces
+        redirect = redirect + '#error:' + message
+        return HttpResponseRedirect(redirect)
+
+
+@experiment_download_required
+def streaming_download_experiment(request, experiment_id, comptype='tgz',
+                                  organization='deep-storage'):
+    experiment = Experiment.objects.get(id=experiment_id)
+    rootdir = experiment.title.replace(' ', '_')
+    filename = '%s-complete.tar' % rootdir
+
+    datafiles = Dataset_File.objects.filter(
+        dataset__experiments__id=experiment_id)
+    return _streaming_downloader(request, datafiles, rootdir, filename,
+                                 comptype, organization)
+
+
+def streaming_download_datafiles(request):
+    """
+    takes string parameter "comptype" for compression method.
+    Currently implemented: "tgz" and "tar"
+    The datafiles to be downloaded are selected using "datafile", "dataset"
+    or "url" parameters.  An "expid" parameter may be supplied for use in
+    the download archive name.  If "url" is used, the "expid" parameter
+    is also used to limit the datafiles to be downloaded to a given experiment.
+    """
+    # Create the HttpResponse object with the appropriate headers.
+    # TODO: handle no datafile, invalid filename, all http links
+    # TODO: intelligent selection of temp file versus in-memory buffering.
+    logger.error('In download_datafiles !!')
+    comptype = getattr(settings, 'DEFAULT_ARCHIVE_FORMATS', ['tar'])[0]
+    organization = getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+    if 'comptype' in request.POST:
+        comptype = request.POST['comptype']
+    if 'organization' in request.POST:
+        organization = request.POST['organization']
+
+    if 'datafile' in request.POST or 'dataset' in request.POST:
+        if (len(request.POST.getlist('datafile')) > 0
+                or len(request.POST.getlist('dataset'))) > 0:
+
+            datasets = request.POST.getlist('dataset')
+            datafiles = request.POST.getlist('datafile')
+
+            # Generator to produce datafiles from dataset id
+            def get_dataset_datafiles(dsid):
+                for datafile in Dataset_File.objects.filter(dataset=dsid):
+                    if has_datafile_download_access(
+                            request=request, dataset_file_id=datafile.id):
+                        yield datafile
+
+            # Generator to produce datafile from datafile id
+            def get_datafile(dfid):
+                datafile = Dataset_File.objects.get(pk=dfid)
+                if has_datafile_download_access(request=request,
+                                                dataset_file_id=datafile.id):
+                    yield datafile
+
+            # Take chained generators and turn them into a set of datafiles
+            df_set = set(chain(chain.from_iterable(map(get_dataset_datafiles,
+                                                       datasets)),
+                               chain.from_iterable(map(get_datafile,
+                                                       datafiles))))
+        else:
+            return render_error_message(
+                request,
+                'No Datasets or Datafiles were selected for downloaded',
+                status=404)
+
+    elif 'url' in request.POST:
+        if not len(request.POST.getlist('url')) == 0:
+            return render_error_message(
+                request,
+                'No Datasets or Datafiles were selected for downloaded',
+                status=404)
+
+        for url in request.POST.getlist('url'):
+            url = urllib.unquote(url)
+            raw_path = url.partition('//')[2]
+            experiment_id = request.POST['expid']
+            datafile = Dataset_File.objects.filter(
+                url__endswith=raw_path,
+                dataset__experiment__id=experiment_id)[0]
+            if has_datafile_download_access(request=request,
+                                            dataset_file_id=datafile.id):
+                df_set = set([datafile])
+    else:
+        return render_error_message(
+            request, 'No Datasets or Datafiles were selected for downloaded',
+            status=404)
+
+    logger.info('Files for archive command: %s' % df_set)
+
+    if len(df_set) == 0:
+        return render_error_message(
+            request,
+            'You do not have download access for any of the '
+            'selected Datasets or Datafiles ',
+            status=403)
+
+    try:
+        expid = request.POST['expid']
+        experiment = Experiment.objects.get(id=expid)
+    except (KeyError, Experiment.DoesNotExist):
+        experiment = iter(df_set).next().dataset.get_first_experiment()
+
+    filename = '%s-selection.tar' % experiment.title.replace(' ', '_')
+    rootdir = '%s-selection' % experiment.title.replace(' ', '_')
+    return _streaming_downloader(request, df_set, rootdir, filename,
+                                 comptype, organization)
+
+
+@login_required
+def download_api_key(request):
+    user = request.user
+    api_key_file = StringIO.StringIO()
+    api_key_file.write("ApiKey {0}:{1}".format(user, user.api_key.key))
+    api_key_file.seek(0)
+    response = StreamingHttpResponse(FileWrapper(api_key_file),
+                                     content_type='text/plain')
+    response['Content-Disposition'] = \
+        'attachment; filename="{0}.key"' .format(user)
     return response

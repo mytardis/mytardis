@@ -44,8 +44,8 @@ Currently, the default view is always ``Dataset_File`` metadata. This
 can be changed, for example, by developing a custom ``Dataset`` view,
 which is explained in the following chapter.
 
-Dataset Views
-=============
+Dataset and Experiment Views
+============================
 
 Rationale
 ---------
@@ -62,8 +62,8 @@ displayed differently.
 User Guide
 ----------
 
-Similarly to contextual ``Dataset_File`` views, ``Dataset`` views rely
-on specific schemas attached to ``Dataset`` s.
+Similarly to contextual ``Dataset_File`` views, ``Dataset`` and ``Experiment``
+views rely on specific schemas attached to them.
 
 The schema for each view either needs to be created and attached to a
 Dataset, or the view can be set up for Dataset schemas that are
@@ -82,17 +82,24 @@ There are two main differences:
         ("http://example.org/awesome_data/1",
          "tardis.apps.mx_views.views.view_full_dataset"),
     ]
+    EXPERIMENT_VIEWS = [
+        ("http://example.org/awesome_experiments/1",
+         "tardis.apps.mx_views.views.view_fancy_experiment"),
+    ]
 
 
-* there is currently no UI choice of the ``Dataset`` view
+* there is currently no UI choice of the ``Dataset`` and ``Experiment`` views.
 
 Good practice
 -------------
 
-The default and well-tested ``Dataset`` view can be changed minimally
-for specific purposes by extending the default template and overriding
-a template block.
+The default and well-tested ``Dataset`` and ``Experiment`` views can be
+changed minimally for specific purposes by extending the default template
+and overriding a template block.
 
+New versions may change the default view functions. If you copy and paste them
+for your application, please check with each upgrade that you are still using
+up to date code.
 
 Example filter
 ==============

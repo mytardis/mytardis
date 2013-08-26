@@ -26,8 +26,18 @@ DATABASES = {
     }
 }
 
-# Celery queue uses Django for persistence
-BROKER_TRANSPORT = 'django'
+# Celery queue
+BROKER_URL = 'django://'
+'''
+use django:, add kombu.transport.django to INSTALLED_APPS
+or use redis: install redis separately and add the following to a
+custom buildout.cfg:
+    django-celery-with-redis
+    redis
+    hiredis
+'''
+#BROKER_URL = 'redis://localhost:6379/0'
+#CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # A dictionary containing the settings for all caches to be used with
 # Django. The CACHES setting must configure a default cache; any
@@ -70,9 +80,27 @@ SITE_ID = 1
 
 USE_I18N = True
 
-# Make this unique, and don't share it with anybody.
-
 SECRET_KEY = 'ij!%7-el^^rptw$b=iol%78okl10ee7zql-()z1r6e)gbxd3gl'
+'''
+Before running as production server Make this unique, and don't share it with
+anybody.
+'''
+
+ALLOWED_HOSTS = ['localhost']
+'''
+This needs to be set to your hostname and/or IP address when you receive
+requests from external clients.
+'''
+
+SITE_TITLE = None
+'''
+customise the title of your site
+'''
+
+SPONSORED_TEXT = None
+'''
+add text to the footer to acknowledge someone
+'''
 
 # once the cache is set up, you'll need to add
 # 'django.middleware.cache.UpdateCacheMiddleware' and
@@ -97,6 +125,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
     'django.core.context_processors.i18n',
+    'tardis.tardis_portal.context_processors.global_contexts',
     'tardis.tardis_portal.context_processors.single_search_processor',
     'tardis.tardis_portal.context_processors.tokenuser_processor',
     'tardis.tardis_portal.context_processors.registration_processor',
@@ -139,6 +168,13 @@ STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/staging/')).replace('\\', '/')
 SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
     '../var/sync/')).replace('\\', '/')
+
+
+METADATA_STORE_PATH = FILE_STORE_PATH
+'''
+storage path for image paths stored in parameters. Better to set to another
+location if possible
+'''
 
 STAGING_PROTOCOL = 'ldap'
 STAGING_MOUNT_PREFIX = 'smb://localhost/staging/'
@@ -200,6 +236,7 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'bootstrapform',
     'mustachejs',
+    'tastypie',
 )
 
 JASMINE_TEST_DIRECTORY = path.abspath(path.join(path.dirname(__file__),
@@ -350,13 +387,27 @@ OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.RifCsExperimentProvider',
 ]
 
+REDIS_VERIFY_MANAGER = False
+'''
+Uses REDIS to keep track of files that fail to verify
+'''
+REDIS_VERIFY_MANAGER_SETUP = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 1,
+}
+
+REDIS_VERIFY_DELAY = 86400  # 1 day = 86400
+'''
+delay between verification attempts in seconds
+'''
 
 CELERYBEAT_SCHEDULE = {
-      "verify-files": {
+    "verify-files": {
         "task": "tardis_portal.verify_files",
-        "schedule": timedelta(seconds=30)
-      },
-    }
+        "schedule": timedelta(seconds=300)
+    },
+}
 
 djcelery.setup_loader()
 
@@ -395,16 +446,53 @@ To use filepicker, please also get an API key at http://filepicker.io
 #FILEPICKER_API_KEY = "YOUR KEY"
 
 ARCHIVE_FILE_MAPPERS = {
-#    'test': ('tardis.apps.example.ExampleMapper',),
-#    'test2': ('tardis.apps.example.ExampleMapper', {'foo': 1})
-    }
+    'deep-storage': (
+        'tardis.apps.deep_storage_download_mapper.mapper.deep_storage_mapper',
+    ),
+}
 
 # Site's default archive organization (i.e. path structure)
-DEFAULT_ARCHIVE_ORGANIZATION = 'classic'
+DEFAULT_ARCHIVE_ORGANIZATION = 'deep-storage'
 
-# Site's preferred archive types, with the most preferred first
-DEFAULT_ARCHIVE_FORMATS = ['zip', 'tar']
+DEFAULT_ARCHIVE_FORMATS = ['tar']
+'''
+Site's preferred archive types, with the most preferred first
+other available option: 'tgz'. Add to list if desired
+'''
 
+DEEP_DATASET_STORAGE = True
+'''
+Set to true if you want to preserve folder structure on "stage_file" ingest,
+eg. via the METS importer.
+Currently, only tested for the METS importer.
+'''
+
+
+# Get version from git to be displayed on About page.
+def get_git_version():
+    repo_dir = path.dirname(path.dirname(path.abspath(__file__)))
+
+    def run_git(args):
+        import subprocess
+        process = subprocess.Popen('git %s' % args,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   cwd=repo_dir,
+                                   universal_newlines=True)
+        return process.communicate()[0]
+
+    try:
+        info = [run_git("log -1 --format='Commit: %H'"),
+                run_git("log -1 --format='Date: %cd' --date=rfc"),
+                "Branch: %s" % run_git("rev-parse --abbrev-ref HEAD"),
+                "Tag: %s" % run_git("describe --abbrev=0 --tags"),
+                ]
+    except Exception:
+        return ["unavailable"]
+    return info
+
+MYTARDIS_VERSION = get_git_version()
 # If you want enable user agent sensing, copy this to settings.py
 # and uncomment it.
 #
@@ -418,3 +506,9 @@ DEFAULT_ARCHIVE_FORMATS = ['zip', 'tar']
 #    INSTALLED_APPS = INSTALLED_APPS + ('django_user_agents',)
 #    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + \
 #        ('django_user_agents.middleware.UserAgentMiddleware',)
+
+AUTOGENERATE_API_KEY = False
+'''
+Generate a tastypie API key with user post_save
+(tardis/tardis_portal/models/hooks.py)
+'''

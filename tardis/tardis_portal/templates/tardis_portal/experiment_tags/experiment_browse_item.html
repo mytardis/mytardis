@@ -13,19 +13,16 @@
     </a>
     <br />
     <small>
-    {% for author in experiment.author_experiment_set.all %}
-      {% if not forloop.first %}
-      ,
+    {% for author in experiment.author_experiment_set.all %}{% if not forloop.first %},
       {% endif %}
-      <span property="dc:author">{{ author.author }}</span>
-    {% endfor %}
+      <span property="dc:author">{{ author.author }}</span>{% endfor %}
     </small>
   </h4>
   {% if show_images and experiment.get_images.count > 0 %}
     <div class="image-preview">
       <span style="height: 28px"></span>
     {% for datafile in experiment.get_images|slice:":10" %}
-      {% url tardis.tardis_portal.iiif.download_image datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
+      {% url 'tardis.tardis_portal.iiif.download_image' datafile_id=datafile.id region='full' size=',28' rotation=0 quality='native' format='jpg' as thumbnail %}
       <img alt="Thumbnail for Datafile #{{datafile.id}}"
           src="{{ thumbnail }}"
           onerror="$(this).hide()"/>

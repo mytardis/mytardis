@@ -70,7 +70,7 @@ class Location(models.Model):
     @classmethod
     def get_location_for_url(cls, url):
         '''Reverse lookup a location from a url'''
-        
+
         for location in Location.objects.all():
             if url.startswith(location.url):
                 return location
@@ -81,7 +81,7 @@ class Location(models.Model):
 
     @classmethod
     def _check_initialized(cls):
-        '''Attempt to initialize if we need to''' 
+        '''Attempt to initialize if we need to'''
         if cls.initialized:
             return True
         res = cls.force_initialize()
@@ -117,10 +117,10 @@ class Location(models.Model):
                             transfer_provider=desc.get('provider', 'local'))
         location.save()
         for (name, value) in desc.get('params', {}).items():
-            param = ProviderParameter(location=location, 
+            param = ProviderParameter(location=location,
                                       name=name, value=value)
             param.save()
-        return location;
+        return location
 
 
     @classmethod
@@ -142,7 +142,7 @@ class Location(models.Model):
             module += p
             globals()[p] = __import__(module, globals(), locals(), [], -1)
             module += '.'
-        exec 'provider = ' + p_class + '(loc.name, loc.url, params)'
+        exec 'provider = ' + p_class + '(loc.name, loc.url, params)'   # noqa # pylint: disable=W0122
         return provider
 
     def __unicode__(self):
@@ -163,4 +163,3 @@ class ProviderParameter(models.Model):
 
     def __unicode__(self):
         return '%s: %s' % (self.name, self.value)
-    

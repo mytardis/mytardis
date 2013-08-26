@@ -101,6 +101,11 @@ pygments_style = 'sphinx'
 execfile("generate-api-docs.py")
 
 
+# Model graph generation
+# ----------------------
+
+execfile('generate-model-graphs.py')
+
 # Options for HTML output
 # -----------------------
 
@@ -205,4 +210,4 @@ latex_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/dev': None,
-                       'http://docs.djangoproject.com/en/1.2/': 'http://docs.djangoproject.com/en/1.2/_objects'}
+                       'http://docs.djangoproject.com/en/1.5/': 'http://docs.djangoproject.com/en/1.5/_objects'}

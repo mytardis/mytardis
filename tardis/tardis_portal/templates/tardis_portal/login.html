@@ -3,6 +3,7 @@
 
 {% block content %}
 <form action="" method="post" class="form-horizontal">
+  <input name="next_page" type="hidden" value="{{ next_page }}" />
   <fieldset>
     <legend>Please Log In</legend>
     {{ loginForm|bootstrap }}

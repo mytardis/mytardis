@@ -177,7 +177,7 @@ class DcExperimentProvider(AbstractExperimentProvider):
         })
 
     def _get_user_metadata(self):
-        raise None
+        raise
 
     def _handles_metadata_prefix(self, metadataPrefix):
         return metadataPrefix == 'oai_dc'
@@ -213,7 +213,7 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
             psm = ParameterSetManager(ps)
             parameter_names = ['type','identifier','title','notes']
             try:
-                return dict([('id', ps.id)] + # Use set ID 
+                return dict([('id', ps.id)] + # Use set ID
                             zip(parameter_names,
                                 (psm.get_param(k, True) \
                                      for k in parameter_names)))
@@ -495,11 +495,3 @@ class RifCsExperimentProvider(AbstractExperimentProvider):
                 RifCsExperimentProvider.get_rifcs_id(experiment.id, site)
             SubElement(relatedObject, _nsrif('relation')) \
                 .set('type', 'isManagerOf')
-
-
-
-
-
-
-
-

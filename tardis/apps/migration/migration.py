@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -50,17 +50,17 @@ def migrate_replica_by_id(replica_id, location,
                           noRemove=False, mirror=False):
     # (Deferred import to avoid prematurely triggering DB init)
     from tardis.tardis_portal.models import Replica
-    
+
     replica = Replica.objects.get(id=replica_id)
     if not replica:
         raise ValueError('No such replica (%s)' % (replica_id))
-    return migrate_replica(replica, location, 
+    return migrate_replica(replica, location,
                             noRemove=noRemove, mirror=mirror)
-                               
+
 def migrate_replica(replica, location, noRemove=False, mirror=False):
     """
     Migrate the replica to a different storage location.  The overall
-    effect will be that the datafile will be stored at the new location and 
+    effect will be that the datafile will be stored at the new location and
     removed from the current location, and the datafile metadata will be
     updated to reflect this.
     """
@@ -70,11 +70,11 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
     with transaction.commit_on_success():
         replica = Replica.objects.select_for_update().get(pk=replica.pk)
         source = Location.get_location(replica.location.name)
-        
+
         if not replica.verified or location.provider.trust_length:
             raise MigrationError('Only verified datafiles can be migrated' \
                                      ' to this destination')
-        
+
         filename = replica.get_absolute_filepath()
         try:
             newreplica = Replica.objects.get(datafile=replica.datafile,
@@ -94,13 +94,13 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
             newreplica.stay_remote = location != Location.get_default_location()
             newreplica.verified = False
             url = location.provider.generate_url(newreplica)
-            
+
             if newreplica.url == url:
                 # We should get here ...
                 raise MigrationError('Cannot migrate a replica to its' \
                                          ' current location')
             newreplica.url = url
-            location.provider.put_file(replica, newreplica) 
+            location.provider.put_file(replica, newreplica)
             verified = False
             try:
                 verified = check_file_transferred(newreplica, location)
@@ -108,13 +108,13 @@ def migrate_replica(replica, location, noRemove=False, mirror=False):
                 # FIXME - should we always do this?
                 location.provider.remove_file(newreplica)
                 raise
-            
+
             newreplica.verified = verified
             newreplica.save()
             logger.info('Transferred file %s for replica %s' %
                         (filename, replica.id))
             created_replica = True
-        
+
         if mirror:
             return created_replica
 
@@ -162,7 +162,7 @@ def check_file_transferred(replica, location):
                 return False
         except NotImplementedError:
             pass
-    
+
     # Fetch back the remote file and verify it locally.
     f = location.provider.get_opener(replica)()
     md5sum, sha512sum, size, x = generate_file_checksums(f, None)
@@ -171,19 +171,19 @@ def check_file_transferred(replica, location):
             _check_attribute2(md5sum, datafile.md5sum, 'md5sum'):
         return True
     raise MigrationError('Not enough metadata for file verification')
-    
+
 def _check_attribute(attributes, value, key):
     if not value:
        return False
     try:
        if attributes[key].lower() == value.lower():
           return True
-       logger.debug('incorrect %s: expected %s, got %s', 
+       logger.debug('incorrect %s: expected %s, got %s',
                     key, value, attributes[key])
        raise MigrationError('Transfer check failed: the %s attribute of the' \
-                                ' remote file does not match' % (key))  
+                                ' remote file does not match' % (key))
     except KeyError:
-       return False;
+       return False
 
 def _check_attribute2(attribute, value, key):
     if not value or not attribute:
@@ -193,6 +193,3 @@ def _check_attribute2(attribute, value, key):
     logger.debug('incorrect %s: expected %s, got %s', key, value, attribute)
     raise MigrationError('Transfer check failed: the %s attribute of the' \
                            ' retrieved file does not match' % (key))
-
-
-    

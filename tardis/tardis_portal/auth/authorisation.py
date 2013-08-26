@@ -6,6 +6,7 @@ Object-level authorisation backend
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.db.models.query import QuerySet
 
 from tardis.tardis_portal.auth.token_auth import TokenGroupProvider
 from tardis.tardis_portal.models import ObjectACL
@@ -50,7 +51,11 @@ class ACLAwareBackend(object):
 
         try:
             perm_label, perm_type = perm.split('.')
-            perm_action, perm_ct = perm_type.split('_')
+            # the following is necessary because of the ridiculous naming
+            # of 'Dataset_File'......
+            type_list = perm_type.split('_')
+            perm_action = type_list[0]
+            perm_ct = '_'.join(type_list[1:])
         except:
             return False
 
@@ -58,7 +63,7 @@ class ACLAwareBackend(object):
             return False
 
         ct = ContentType.objects.get_for_model(obj)
-        if ct.name != perm_ct:
+        if ct.model != perm_ct:
             return False
 
         method_name = '_has_%s_perm' % perm_action
@@ -70,12 +75,23 @@ class ACLAwareBackend(object):
                                   lambda *args, **kwargs: None)(user_obj)
         if type(model_spec_perm) == bool:
             return model_spec_perm
+        elif model_spec_perm is not None:
+            # pass auth to a different object, if False try this ACL
+            # works when returned object is parent.
+            # makes it impossible to 'hide' child objects
+            if type(model_spec_perm) not in (list, set, QuerySet):
+                model_spec_perm = [model_spec_perm]
+            for msp in model_spec_perm:
+                new_ct = ContentType.objects.get_for_model(msp)
+                new_perm = '%s.%s_%s' % (perm_label, perm_action, new_ct)
+                if user_obj.has_perm(new_perm, msp):
+                    return True
 
         #get_acls
-        obj_acls = ObjectACL.objects.filter(
-            content_type=ct, object_id=obj.id).filter(
-                self.get_perm_bool(perm_action)).filter(
-                    ObjectACL.get_effective_query())
+        obj_acls = ObjectACL.objects\
+            .filter(content_type=ct, object_id=obj.id)\
+            .filter(self.get_perm_bool(perm_action))\
+            .filter(ObjectACL.get_effective_query())
 
         query = Q(pluginId='django_user',
                   entityId=str(user_obj.id))
@@ -86,7 +102,7 @@ class ACLAwareBackend(object):
         else:
             # the only authorisation available for anonymous users is tokenauth
             tgp = TokenGroupProvider()
-            for name, group in tgp.getGroups(user_obj):
-                query |= Q(pluginId=name, entityId=str(group))
+            for group in tgp.getGroups(user_obj):
+                query |= Q(pluginId=tgp.name, entityId=str(group))
 
         return obj_acls.filter(query).count() > 0

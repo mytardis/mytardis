@@ -99,9 +99,10 @@ class FilterInitTestCase(TestCase):
                               url='file://'+path.abspath(testfile),
                               protocol='file',
                               location=location)
-            if index == 1:
-                replica.verify()
             replica.save()
+            if index != 1:
+                replica.verified = False
+                replica.save(update_fields=['verified'])
             return Dataset_File.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
@@ -132,19 +133,19 @@ class FilterInitTestCase(TestCase):
 
             self.datafiles[0].get_preferred_replica().save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
+            expect(len(t)).to_equal(2)
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
+            expect(len(t)).to_equal(2)
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
 
             self.datafiles[1].get_preferred_replica().save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(0)
+            expect(len(t)).to_equal(1)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(0)
+            expect(len(t)).to_equal(1)
 
         finally:
             # Remove our hooks!

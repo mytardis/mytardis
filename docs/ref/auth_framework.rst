@@ -9,6 +9,9 @@
 .. moduleauthor:: Gerson Galang <gerson.galang@versi.edu.au>
 .. moduleauthor:: Russell Sim <russell.sim@monash.edu>
 
+The Authorisation framework has recently been extended substantially.
+Details can be found in :doc:`../authorisation`.
+
 The main purpose of the reworked Auth system is to allow per
 experiment permissions to exist allowing a richer web experience.
 Because of this the permissions are applied on a per experiment basis
@@ -28,7 +31,7 @@ with a few predefined roles.
 Roles are applied through the web using the *Control Panel* and can be
 applied to either users or groups.
 
-To make an experiment public requires and explicit publish action.
+To make an experiment public requires an explicit publish action.
 
 In the *settings.py* user providers are activated by specifying them
 within the **USER_PROVIDERS** variable::

@@ -9,7 +9,7 @@
         {% else %}
         <span class="datafile_name">{{ datafile.filename }}</span>
         {% endif %}
-        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}    
+        {% if datafile.size %}<span style="margin-right: 5px">({{ datafile.size|filesizeformat }})</span>{% endif %}
     </strong>
 
     <div class="btn-group pull-right">
@@ -21,7 +21,7 @@
       </a>
       {% endif %}
       {% if has_write_permissions and not immutable %}
-      <a title="Add Metadata" href="{% url tardis.tardis_portal.views.add_datafile_par datafile.id %}"
+      <a title="Add Metadata" href="{% url 'tardis.tardis_portal.views.add_datafile_par' datafile.id %}"
        data-toggle_selector="#datafile_metadata_toggle_{{datafile.id}}"
        class="btn add-metadata">
           <i class="icon-plus"></i>
@@ -33,7 +33,7 @@
     {% if not parameterset.schema.immutable %}
     {% if has_write_permissions %}
       <div class="pull-right">
-        <a href="{% url tardis.tardis_portal.views.edit_datafile_par parameterset.id %}"
+        <a href="{% url 'tardis.tardis_portal.views.edit_datafile_par' parameterset.id %}"
            data-toggle_selector="#datafile_metadata_toggle_{{parameterset.dataset_file_id}}"
            class="edit-metadata btn btn-mini btn-warning">
           <i class="icon-pencil"></i>
