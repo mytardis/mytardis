@@ -4,13 +4,14 @@ Changelog
 3.5 - 26 August 2013
 --------------------
 
-* API
-* API keys
+* REST API
+* REST API keys
 * Authorisation now supports object-level permissions
 * Front page overview
 * Contextual views for Datafiles, Datasets and Experiments
 * Backwards incompatible database changes
-* Replica support
+* Replica multi file location support
+* Migration of replicas
 * Streaming downloads
 * Django 1.5
 * REDIS option for celery queue
@@ -19,7 +20,8 @@ Changelog
 * Pylint testing on Travis CI
 * Some error pages are now functional
 * optionally upload comfortably with Filepicker.io
-* Experiment view speedup
+* Experiment view page load speedup
+* Removed ancient XML ingest format.
 
 3.0 - unreleased
 ----------------
@@ -27,6 +29,9 @@ Changelog
 * Twitter Bootstrap
 * javascript templates
 * backbone.js rendering of datasets
+* UI for transferring datasets
+* bpython shell
+* celery queue
 
 
 2.0 - Unreleased
