@@ -54,7 +54,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         print "Starting verification and SHA-512 generation for %d files." % \
-            orm.Dataset_File.objects.all().count();
+            orm.Dataset_File.objects.all().count()
         for df in orm.Dataset_File.objects.iterator():
             url = self.get_actual_url(df)
             if not url:

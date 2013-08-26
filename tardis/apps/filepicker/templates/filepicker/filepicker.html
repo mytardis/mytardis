@@ -9,7 +9,7 @@ $('.upload_files_link').live('click', function(evt) {
 	console.log("successful pick");
 	$.ajax({
 	    type: "POST",
-	    url: '{% url tardis.apps.filepicker.views.fpupload dataset_id %}',
+	    url: '{% url 'tardis.apps.filepicker.views.fpupload' dataset_id %}',
 	    data: {files: fpfiles},
 	    dataType: "json",
 	    error: function(data, vars) {
@@ -19,7 +19,7 @@ $('.upload_files_link').live('click', function(evt) {
             },
 	    success: function(data, vars){
 		console.log("upload successful");
-		$('#datafiles-pane').load('{% url tardis.tardis_portal.views.retrieve_datafile_list dataset_id %}');
+		$('#datafiles-pane').load('{% url 'tardis.tardis_portal.views.retrieve_datafile_list' dataset_id %}');
 		showMsg.success('Your file(s) have been added.');
 	    }
 	});

@@ -72,7 +72,6 @@ class PrivilegedOpenerTestCase(TestCase):
         os.chdir(os.path.dirname(__file__))
         cls.server = TestWebServer()
         cls.server.start()
-        pass
 
     @classmethod
     def tearDownClass(cls):
@@ -97,4 +96,3 @@ class PrivilegedOpenerTestCase(TestCase):
             eq_(f.getcode(), 200, 'Should have been: "200 OK"')
         except urllib2.HTTPError:
             ok_(False, 'Should not have thrown error')
-        pass

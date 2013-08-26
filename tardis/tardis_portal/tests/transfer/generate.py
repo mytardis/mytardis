@@ -31,11 +31,10 @@
 import os, urlparse
 
 from django.conf import settings
-from tardis.test_settings import FILE_STORE_PATH
 from tardis.tardis_portal.models import Location
 
 def generate_datafile(path, dataset, content=None, size=-1,
-                      verify=True, verified=True):
+                      verify=True, verified=True, verify_checksums_req=False):
     '''Generates a datafile AND a replica to hold its contents'''
     from tardis.tardis_portal.models import Dataset_File, Replica, Location
 
@@ -55,30 +54,30 @@ def generate_datafile(path, dataset, content=None, size=-1,
             path = "%s/%s/%s" % (dataset.get_first_experiment().id,
                                  dataset.id, datafile.id)
 
-        filepath = os.path.normpath(FILE_STORE_PATH + '/' + path)
+        filepath = os.path.normpath(settings.FILE_STORE_PATH + '/' + path)
         if content:
             try:
                 os.makedirs(os.path.dirname(filepath))
                 os.remove(filepath)
             except:
                 pass
-            file = open(filepath, 'wb+')
-            file.write(content)
-            file.close()
+            gen_file = open(filepath, 'wb+')
+            gen_file.write(content)
+            gen_file.close()
         datafile.mimetype = "application/unspecified"
         datafile.filename = os.path.basename(filepath)
         datafile.dataset_id = dataset.id
         datafile.save()
-
+        settings.REQUIRE_DATAFILE_CHECKSUMS = verify_checksums_req
         location = _infer_location(path)
         replica = Replica(datafile=datafile, url=path, protocol='',
                           location=location)
         if verify and content:
-            if not replica.verify(allowEmptyChecksums=True):
+            if not replica.verify():
                 raise RuntimeError('verify failed!?!')
-        else:
-            replica.verified = verified
         replica.save()
+        replica.verified = verified
+        replica.save(update_fields=['verified'])  # force no verification
         return (datafile, replica)
     finally:
         settings.REQUIRE_DATAFILE_CHECKSUMS = saved

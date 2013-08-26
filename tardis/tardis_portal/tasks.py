@@ -1,16 +1,19 @@
-from celery.task import task
+
 import os
 from os import path
-from django.db import transaction
+import time
+
+from celery.task import task
+
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.db import transaction
+from django.template import Context
 
 from tardis.tardis_portal.models import Dataset_File, Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
-
-from django.template import Context
-
-from django.contrib.sites.models import Site
 
 from tardis.tardis_portal.staging import stage_replica
 from tardis.tardis_portal.models import Replica, Location
@@ -27,47 +30,64 @@ try:
 except Exception:
     pass
 
+# set up redis connection pool. TODO: do this only in celery workers
+if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
+    import redis  # only import if this installation uses redis
+    rvms = getattr(settings, 'REDIS_VERIFY_MANAGER_SETUP',
+                   {'host': 'localhost',
+                    'port': 6379,
+                    'db': 0, })
+    redis_verify_manager_pool = redis.ConnectionPool(
+        host=rvms['host'], port=rvms['port'], db=rvms['db'])
+
+
 @task(name="tardis_portal.verify_files", ignore_result=True)
-def verify_files():
-    for replica in Replica.objects.filter(verified=False).exclude(protocol='staging'):
-        if replica.stay_remote or replica.is_local():
-            verify_as_remote.delay(replica.id)
+def verify_files(replicas=None):
+    if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
+        r = redis.Redis(connection_pool=redis_verify_manager_pool)
+
+    replicas_to_verify = replicas or Replica.objects\
+                                            .filter(verified=False)\
+                                            .exclude(protocol='staging')
+
+    for replica in replicas_to_verify:
+        if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
+            last_verification = r.hget('replicas_last_verified', replica.id)
+            if last_verification is None or \
+               time.time() - float(last_verification) >\
+               getattr(settings, 'REDIS_VERIFY_DELAY', 86400):
+                verify_replica.delay(replica.id)
+                r.hset('replicas_last_verified', replica.id, time.time())
+                r.hincrby('replicas_verification_attempts', replica.id)
+                if r.hget('replicas_verification_attempts', replica.id) > 3:
+                    r.sadd('replicas_manual_verification', replica.id)
         else:
-            make_local_copy.delay(replica.id)
+            verify_replica.delay(replica.id)
 
-@task(name="tardis_portal.verify_as_remote", ignore_result=True)
-def verify_as_remote(replica_id):
-    replica = Replica.objects.get(id=replica_id)
-    # Check that we still need to verify - it might have been done already
-    if replica.verified:
-        return
-    # Use a transaction for safety
-    with transaction.commit_on_success():
-        # Get replica locked for write (to prevent concurrent actions)
-        replica = Replica.objects.select_for_update().get(id=replica.id)
-        # Second check after lock (concurrency paranoia)
-        if not replica.verified:
-            replica.verify()
-            replica.save()
 
-@task(name="tardis_portal.make_local_copy", ignore_result=True)
-def make_local_copy(replica_id):
-    replica = Replica.objects.get(id=replica_id)
-    # Check that we still need to verify - it might have been done already
-    if replica.is_local():
-        return
+@task(name="tardis_portal.verify_replica", ignore_result=True)
+def verify_replica(replica_id, only_local=False, reverify=False):
+    '''
+    verify task
+    allowemtpychecksums is false for auto-verify, hence the parameter
+    '''
     # Use a transaction for safety
     with transaction.commit_on_success():
         # Get replica locked for write (to prevent concurrent actions)
         replica = Replica.objects.select_for_update().get(id=replica_id)
-        # Second check after lock (concurrency paranoia)
-        if not replica.is_local():
-            stage_replica(replica)
+        if replica.stay_remote or replica.is_local():
+            # Check after lock (concurrency paranoia)
+            if not replica.verified or reverify:
+                replica.verify()
+                replica.save(update_fields=['verified'])
+        else:
+            # Check after lock (concurrency paranoia)
+            if not replica.is_local() and not only_local:
+                stage_replica(replica)
+
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)
 def create_staging_datafiles(files, user_id, dataset_id, is_secure):
-
-    from os import path
 
     from tardis.tardis_portal.staging import get_full_staging_path
 
@@ -90,7 +110,7 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
     user = User.objects.get(id=user_id)
     staging = get_full_staging_path(user.username)
     stage_files = []
-        
+
     for f in files:
         abs_path = ''
         if f == 'phtml_1':

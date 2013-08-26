@@ -49,8 +49,9 @@ class FrozenTime:
         self.day = args[2]
         self.hour = args[3]
 
-    def __lt__(a, b):
-        return old_datetime(a.year, a.month, a.day, a.hour) < old_datetime(b.year, b.month, b.day, b.hour)
+    def __lt__(self, b):
+        return old_datetime(self.year, self.month, self.day, self.hour) < \
+            old_datetime(b.year, b.month, b.day, b.hour)
 
     @classmethod
     def freeze_time(cls, time):

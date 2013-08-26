@@ -176,5 +176,10 @@ REQUIRE_VALIDATION_ON_INGESTION = True
 ARCHIVE_FILE_MAPPERS = {
     'test': ('tardis.tardis_portal.tests.test_download.MyMapper',),
     'test2': ('tardis.tardis_portal.tests.test_download.MyMapper',
-              {'exclude' : '.txt'})
+              {'exclude': '.txt'})
 }
+
+DEFAULT_ARCHIVE_ORGANIZATION = 'test'
+DEFAULT_ARCHIVE_FORMATS = ['tar', 'tgz']
+
+AUTOGENERATE_API_KEY = True

@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -63,7 +63,8 @@ class MigrationTestCase(TestCase):
         dest = Location.get_location('test')
         local = Location.get_location('local')
         datafile, replica = generate_datafile(None, self.dataset, "Hi mum",
-                                              verify=False)
+                                              verify=False,
+                                              verify_checksums_req=True)
 
         # Attempt to migrate without datafile hashes ... should
         # fail because we can't verify.
@@ -126,10 +127,10 @@ class MigrationTestCase(TestCase):
     def testMigrateStoreWithSpaces(self):
         dest = Location.get_location('test')
         local = Location.get_location('local')
-        
-        datafile, replica = generate_datafile('1/1/Hi Mum', self.dataset, 
+
+        datafile, replica = generate_datafile('1/1/Hi Mum', self.dataset,
                                               "Hi mum")
-        datafile2, replica2 = generate_datafile('1/1/Hi Dad', self.dataset, 
+        datafile2, replica2 = generate_datafile('1/1/Hi Dad', self.dataset,
                                                 "Hi dad")
 
         path = datafile.get_absolute_filepath()
@@ -153,7 +154,7 @@ class MigrationTestCase(TestCase):
     def testMigrationNoHashes(self):
         # Tweak the server to turn off the '?metadata' query
         self.server.server.allowQuery = False
-        
+
         dest = Location.get_location('test')
         datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
         self.assertEquals(replica.verify(allowEmptyChecksums=True), True)
@@ -166,21 +167,29 @@ class MigrationTestCase(TestCase):
         from django.conf import settings
         saved = settings.REQUIRE_DATAFILE_CHECKSUMS
         try:
-            dest = Location.get_location('test')
-            datafile, replica = generate_datafile("1/2/3", self.dataset, "Hi mum")
+            Location.get_location('test')
+            datafile, replica = generate_datafile("1/2/3", self.dataset,
+                                                  "Hi mum")
             settings.REQUIRE_DATAFILE_CHECKSUMS = True
-            self.assertTrue(replica.verify(),'Replica.verify() failed.')
-            datafile.sha512sum = None
-            datafile.md5sum = None
-            self.assertFalse(replica.verify(), 'Replica.verify() succeeded despite no checksum (settings.REQUIRE_DATAFILE_CHECKSUMS=True).')
-            self.assertFalse(replica.verify(allowEmptyChecksums=False), 'Replica.verify() succeeded despite no checksum (allowEmptyChecksums=False)')
+            self.assertTrue(replica.verify(), 'Replica.verify() failed.')
+            replica.datafile.sha512sum = ''
+            replica.datafile.md5sum = ''
+            self.assertFalse(
+                replica.verify(),
+                'Replica.verify() succeeded despite no checksum '
+                '(settings.REQUIRE_DATAFILE_CHECKSUMS=True).')
+            self.assertFalse(replica.verify(allowEmptyChecksums=False),
+                             'Replica.verify() succeeded despite no checksum '
+                             '(allowEmptyChecksums=False)')
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             datafile.sha512sum = None
             datafile.md5sum = None
-            self.assertTrue(replica.verify(allowEmptyChecksums=True), 'Replica.verify() failed wrongly (allowEmptyChecksums=True)')
+            self.assertTrue(replica.verify(allowEmptyChecksums=True),
+                            'Replica.verify() failed wrongly '
+                            '(allowEmptyChecksums=True)')
             datafile.sha512sum = None
             datafile.md5sum = None
-            self.assertTrue(replica.verify(), 'Replica.verify() failed wrongly')
+            self.assertTrue(replica.verify(),
+                            'Replica.verify() failed wrongly')
         finally:
             settings.REQUIRE_DATAFILE_CHECKSUMS = saved
-

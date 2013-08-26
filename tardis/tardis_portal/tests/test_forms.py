@@ -86,7 +86,7 @@ class RightsFormTestCase(TestCase):
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)
-            ensure(form.is_valid(), True, form.errors);
+            ensure(form.is_valid(), True, form.errors)
 
         # Check we reject invalid input
         for public_access, license_id in unsuitableCombinations:
@@ -94,7 +94,7 @@ class RightsFormTestCase(TestCase):
             data = {'public_access': str(public_access),
                     'license': license_id }
             form = RightsForm(data)
-            ensure(form.is_valid(), False);
+            ensure(form.is_valid(), False)
 
     def test_needs_confirmation(self):
         suitable_data = {'public_access': str(Experiment.PUBLIC_ACCESS_NONE),

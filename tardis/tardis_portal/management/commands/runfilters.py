@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -50,10 +50,10 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     args = '[<filter-no>] ...'
-    help = """Run selected ingestion filters on all Datafiles.  
-Note that a typical ingestion filter sets a 'flag' parameter in its 
-Datafile's parameter set to avoid adding multiple copies of the ingested 
-metadata parameters.  This command cannot override that flag to force 
+    help = """Run selected ingestion filters on all Datafiles.
+Note that a typical ingestion filter sets a 'flag' parameter in its
+Datafile's parameter set to avoid adding multiple copies of the ingested
+metadata parameters.  This command cannot override that flag to force
 metadata to be reingested."""
     option_list = BaseCommand.option_list + (
         make_option('--dryRun', '-n',
@@ -95,7 +95,7 @@ metadata to be reingested."""
                     raise CommandError("Invalid filter-no: '%s'" % arg)
                 filterIds = filterIds + [id]
         if len(filterIds):
-            self.runFilters(self.instantiateFilters(filterIds), 
+            self.runFilters(self.instantiateFilters(filterIds),
                             dryRun=options['dryRun'])
         else:
             self.listFilters()
@@ -108,16 +108,16 @@ metadata to be reingested."""
                 cls = f[0]
                 args = []
                 kw = {}
-                
+
                 if len(f) >= 2:
                     args = f[1]
-                    
+
                 if len(f) >= 3:
                     kw = f[2]
                 try:
                     filters += [self._safe_import(cls, args, kw)]
                 except ImproperlyConfigured as e:
-                    print "Skipping improperly configured filter %s : %s" %\
+                    print "Skipping improperly configured filter %s : %s" % \
                         (id + 1, e)
         return filters
 
@@ -140,7 +140,7 @@ metadata to be reingested."""
 
         filter_instance = filter_class(*args, **kw)
         return filter_instance
-            
+
     def runFilters(self, filters, dryRun=False):
         using = DEFAULT_DB_ALIAS
         transaction.enter_transaction_management(using=using)
@@ -150,7 +150,7 @@ metadata to be reingested."""
                 transaction.managed(True, using=using)
                 try:
                     for filter in filters:
-                        filter(sender=Dataset_File, instance=datafile, 
+                        filter(sender=Dataset_File, instance=datafile,
                                created=False, using='default')
                     if dryRun:
                         transaction.rollback(using=using)
@@ -167,7 +167,7 @@ metadata to be reingested."""
             transaction.leave_transaction_management(using=using)
 
     def listFilters(self):
-        if len(self.availableFilters): 
+        if len(self.availableFilters):
             print 'The following filters are available\n'
             for i in range(0, len(self.availableFilters)):
                 filter = self.availableFilters[i]
@@ -176,7 +176,7 @@ metadata to be reingested."""
                 elif len(filter) == 2:
                     print '%d - %s, %s\n' % (i + 1, filter[0], filter[1])
                 elif len(filter) >= 3:
-                    print '%d - %s, %s, %s\n' % (i + 1, filter[0], 
+                    print '%d - %s, %s, %s\n' % (i + 1, filter[0],
                                                  filter[1], filter[2])
         else:
             print 'No filters are available\n'

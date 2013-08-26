@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
-{% load url from future %}
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
@@ -113,6 +112,15 @@
                       Manage Account
                     </a>
                   </li>
+		  {% if request.user.api_key.key %}
+                  <li>
+                    <a href="{% url 'tardis.tardis_portal.download.download_api_key' %}">
+                      <!-- Font Awesome needs a "link" icon! -->
+                      <i class="icon-key"></i>
+                      Download Api Key
+                    </a>
+                  </li>
+		  {% endif %}
                   {% if perms.tardis_portal.change_userauthentication %}
                   <li>
                     <a href="{% url 'tardis.tardis_portal.views.manage_auth_methods' %}">
@@ -161,16 +169,16 @@
             {% else %}
               {% if registration_enabled %}
               <li>
-                <a href="{% url 'registration.views.register' %}">
+                <a href="{% url 'register' %}">
                   Register
                 </a>
               </li>
               {% endif %}
               <li>
-                <button class="btn btn-info" onclick="window.location.href={% url 'tardis.tardis_portal.views.login' %}">
+                <a id="login-button" class="btn btn-info" href="{% url 'tardis.tardis_portal.views.login' %}">
                   <i class="icon-signin"></i>
                   Log In
-                </button>
+                </a>
               </li>
             {% endif %}
             </ul>
@@ -269,7 +277,18 @@
         </div>
       </div>
 
-      {% block footer %}{% endblock footer %}
+      {% block footer %}
+      <div class="row-fluid">
+	<div class="span6">
+	  {{sponsored_by|default:""|safe}}
+	</div>
+	<div class="span6">
+	  <div class="pull-right">
+	  Powered by <a href="https://github.com/mytardis/mytardis">MyTardis
+	  </div>
+	</div>
+      </div>
+      {% endblock footer %}
 
     </div>
     <!-- /container -->

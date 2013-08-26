@@ -47,7 +47,7 @@ class Experiment(models.Model):
         (PUBLIC_ACCESS_FULL,        'Public'),
     )
 
-    url = models.URLField(verify_exists=False, max_length=255,
+    url = models.URLField(max_length=255,
                           null=True, blank=True)
     approved = models.BooleanField()
     title = models.CharField(max_length=400)
@@ -147,8 +147,10 @@ class Experiment(models.Model):
         # Get built-in download links
         local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
         if any(p in protocols for p in local_protocols):
-            view = 'tardis.tardis_portal.download.download_experiment'
-            for comptype in ['tar', 'zip']:
+            view = 'tardis.tardis_portal.download.streaming_download_experiment'
+            for comptype in getattr(settings,
+                                    'DEFAULT_ARCHIVE_FORMATS',
+                                    ['tgz', 'tar']):
                 kwargs = dict(params+(('comptype', comptype),))
                 urls[comptype] = reverse(view, kwargs=kwargs)
 
@@ -183,6 +185,12 @@ class Experiment(models.Model):
         overly-restrictive licences for public data.
         '''
         return public_access_level > cls.PUBLIC_ACCESS_METADATA
+
+    def public_download_allowed(self):
+        '''
+        instance method version of 'public_access_implies_distribution'
+        '''
+        return self.public_access > Experiment.PUBLIC_ACCESS_METADATA
 
     def get_ct(self):
         return ContentType.objects.get_for_model(self)

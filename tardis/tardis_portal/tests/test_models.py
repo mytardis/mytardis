@@ -123,7 +123,7 @@ class ModelTestCase(TestCase):
                 Dataset_File, Replica, Location
             datafile = Dataset_File(dataset=dataset, filename=filename)
             datafile.save()
-            replica = Replica(datafile=datafile, url=url, 
+            replica = Replica(datafile=datafile, url=url,
                               protocol=protocol,
                               location=Location.get_default_location())
             replica.save()
@@ -148,18 +148,18 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
             self.assertEqual(df_file.filename, 'file.txt')
-            self.assertEqual(df_file.get_preferred_replica().url, 
+            self.assertEqual(df_file.get_preferred_replica().url,
                              'path/file.txt')
             self.assertEqual(df_file.get_preferred_replica().protocol, '')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
-            self.assertEqual(df_file.get_download_url(), 
+            self.assertEqual(df_file.get_download_url(),
                              '/test/download/datafile/1/')
             self.assertTrue(df_file.is_local())
             self.assertEqual(df_file.get_absolute_filepath(), 
                              os.path.join(settings.FILE_STORE_PATH,
                                           'path/file.txt'))
-            
+
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
             self.assertEqual(df_file.get_preferred_replica().url,
@@ -187,7 +187,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_absolute_filepath(), 
                              os.path.join(settings.FILE_STORE_PATH,
                                           'path/file1#txt'))
-            
+
             df_file = _build(dataset, 'f.txt',
                              'http://localhost:8080/filestore/f.txt', '')
             self.assertEqual(df_file.filename, 'f.txt')
@@ -210,11 +210,11 @@ class ModelTestCase(TestCase):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
                 Dataset_File(dataset=dataset, filename='foo.txt', size='1')
-                
+
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
             settings.REQUIRE_DATAFILE_CHECKSUMS = save2
-            
+
 
     def test_location(self):
         from tardis.tardis_portal.models import Location
@@ -291,35 +291,45 @@ class ModelTestCase(TestCase):
                                                    experiment=exp)
         exp_parset.save()
 
-        from base64 import b64encode
         from os import path
-        from os import remove
+        with self.settings(METADATA_STORE_PATH=path.dirname(__file__)):
+            filename = 'test.jpg'
+            df_parameter = models.DatafileParameter(name=df_parname,
+                                                    parameterset=df_parset,
+                                                    string_value=filename)
+            df_parameter.save()
 
-        filename = path.join(path.dirname(__file__), 'test.jpg')
-        df_parameter = models.DatafileParameter(name=df_parname,
-                                                parameterset=df_parset,
-                                                string_value=b64encode(open(filename).read()))
-        df_parameter.save()
+            ds_parameter = models.DatasetParameter(name=ds_parname,
+                                                   parameterset=ds_parset,
+                                                   string_value=filename)
+            ds_parameter.save()
 
-        ds_parameter = models.DatasetParameter(name=ds_parname,
-                                               parameterset=ds_parset,
-                                               string_value=b64encode(open(filename).read()))
-        ds_parameter.save()
+            exp_parameter = models.ExperimentParameter(name=exp_parname,
+                                                       parameterset=exp_parset,
+                                                       string_value=filename)
+            exp_parameter.save()
 
-        exp_parameter = models.ExperimentParameter(name=exp_parname,
-                                                   parameterset=exp_parset,
-                                                   string_value=b64encode(open(filename).read()))
-        exp_parameter.save()
+            self.assertEqual(
+                "<a href='/test/DatafileImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatafileImage/load/%i/' /></a>" %  # noqa
+                (df_parameter.id, df_parameter.id), df_parameter.get())
 
-        self.assertEqual("<a href='/test/DatafileImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatafileImage/load/%i/' /></a>" % (df_parameter.id, df_parameter.id),
-                         df_parameter.get())
+            self.assertEqual(
+                "<a href='/test/DatasetImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatasetImage/load/%i/' /></a>" %  # noqa
+                (ds_parameter.id, ds_parameter.id), ds_parameter.get())
 
-        self.assertEqual("<a href='/test/DatasetImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/DatasetImage/load/%i/' /></a>" % (ds_parameter.id, ds_parameter.id),
-                         ds_parameter.get())
+            self.assertEqual(
+                "<a href='/test/ExperimentImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/ExperimentImage/load/%i/' /></a>" %   # noqa
+                (exp_parameter.id, exp_parameter.id), exp_parameter.get())
 
-        self.assertEqual("<a href='/test/ExperimentImage/load/%i/' target='_blank'><img style='width: 300px;' src='/test/ExperimentImage/load/%i/' /></a>" % (exp_parameter.id, exp_parameter.id),
-                         exp_parameter.get())
+    # Verify that create a new user will generate an api_key automtically
+    def test_create_user_automatically_generate_api_key(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_user('test', 'test@example.com', 'passw0rd')
+        user.save()
 
-        remove(path.join(settings.FILE_STORE_PATH, df_parameter.string_value))
-        remove(path.join(settings.FILE_STORE_PATH, ds_parameter.string_value))
-        remove(path.join(settings.FILE_STORE_PATH, exp_parameter.string_value))
+        try:
+            api_key = user.api_key
+        except:
+            api_key = None
+
+        self.assertIsNotNone(api_key)

@@ -10,7 +10,7 @@ install:
  - python bootstrap.py -v 1.7.0
  - bin/buildout install
 # # command to run tests
-script: "bin/django test"
+script: "bin/django test && bin/pylint --rcfile=.pylintrc.travis tardis"
 after_failure: "cat tardis-test.log"
 branches:
   except:

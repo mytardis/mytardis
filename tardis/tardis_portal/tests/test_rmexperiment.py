@@ -76,10 +76,10 @@ def _create_test_data():
     ds1_ = _create_test_dataset(1)
     ds2_ = _create_test_dataset(2)
     ds3_ = _create_test_dataset(3)
-    ds1_.experiments.add(exp1_);
-    ds2_.experiments.add(exp1_);
-    ds2_.experiments.add(exp2_);
-    ds3_.experiments.add(exp2_);
+    ds1_.experiments.add(exp1_)
+    ds2_.experiments.add(exp1_)
+    ds2_.experiments.add(exp2_)
+    ds3_.experiments.add(exp2_)
     ds1_.save()
     ds2_.save()
     ds3_.save()

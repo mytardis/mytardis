@@ -72,5 +72,5 @@ In addition to ACLs ``has_perm`` calls model functions named
 ``_has_VERB_perm``, which allows model-specific permission logic.
 
 The current policy is that if those functions return True or False then that
-result is returned without further checking. If they return anything else, the
-result is ignored.
+result is returned without further checking. If they return an object,
+permissions will be checked for this object thereby allowing delegation.

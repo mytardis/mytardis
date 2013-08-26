@@ -91,7 +91,10 @@ def has_experiment_ownership(request, experiment_id):
 
 
 def has_experiment_access(request, experiment_id):
-    experiment = Experiment.objects.get(id=experiment_id)
+    try:
+        experiment = Experiment.objects.get(id=experiment_id)
+    except Experiment.DoesNotExist:
+        return False
     return request.user.has_perm('tardis_acls.view_experiment', experiment)
 
 
@@ -132,9 +135,14 @@ def has_dataset_download_access(request, dataset_id):
     return any(has_experiment_download_access(request, experiment.id)
                for experiment in dataset.experiments.all())
 
+
 def has_datafile_access(request, dataset_file_id):
-    dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    try:
+        dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+    except Dataset.DoesNotExist:
+        return False
     return has_dataset_access(request, dataset.id)
+
 
 def has_datafile_download_access(request, dataset_file_id):
     dataset = Dataset.objects.get(dataset_file=dataset_file_id)

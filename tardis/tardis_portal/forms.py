@@ -80,7 +80,7 @@ def getAuthMethodChoices():
 
 
 class LoginForm(AuthenticationForm):
-    authMethod = forms.CharField()
+    # authMethod = forms.CharField()
 
     def __init__(self, *args, **kwargs):
         super(LoginForm, self).__init__(*args, **kwargs)
@@ -89,10 +89,11 @@ class LoginForm(AuthenticationForm):
                              label="Username",
                              max_length=75)
 
-        self.fields['authMethod'] = \
-            forms.CharField(required=True,
-                            widget=forms.Select(choices=getAuthMethodChoices()),
-                            label='Authentication Method')
+        # authMethods = ((None, "Any"),) + getAuthMethodChoices()
+        # self.fields['authMethod'] = \
+        #     forms.CharField(required=True,
+        #                     widget=forms.Select(choices=authMethods),
+        #                     label='Authentication Method')
 
 
 attrs_dict = {'class': 'required'}
@@ -337,7 +338,8 @@ class RegisterExperimentForm(forms.Form):
 
     username = forms.CharField(max_length=400, required=True)
     password = forms.CharField(max_length=400, required=True)
-    xmldata = forms.FileField()
+    xmldata = forms.FileField(required=False)
+    xml_filename = forms.CharField(max_length=400, required=False)
     experiment_owner = forms.CharField(max_length=400, required=False)
     originid = forms.CharField(max_length=400, required=False)
     from_url = forms.CharField(max_length=400, required=False)
@@ -665,7 +667,6 @@ def __getParameterChoices(choicesString):
 
     """
 
-    import string
     import re
     paramChoices = ()
 
@@ -674,9 +675,9 @@ def __getParameterChoices(choicesString):
     paramChoices += (('-', '-'),)
     dropDownEntryPattern = re.compile(r'\((.*):(.*)\)')
 
-    dropDownEntryStrings = string.split(choicesString, ',')
+    dropDownEntryStrings = choicesString.split(',')
     for dropDownEntry in dropDownEntryStrings:
-        dropDownEntry = string.strip(dropDownEntry)
+        dropDownEntry = dropDownEntry.strip()
         (key, value) = dropDownEntryPattern.search(dropDownEntry).groups()
         paramChoices += ((str(key), str(value)),)
 
@@ -955,7 +956,7 @@ class RightsForm(ModelForm):
 
         if not suitable:
             raise forms.ValidationError("Selected license it not suitable "+
-                                        "for public access level.");
+                                        "for public access level.")
 
         return cleaned_data
 

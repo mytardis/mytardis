@@ -8,8 +8,6 @@ from django.contrib.contenttypes import generic
 from django.db import models
 from django.db.models import Q
 
-from tardis.tardis_portal.auth import auth_service
-
 
 class UserProfile(models.Model):
     """
@@ -51,8 +49,11 @@ class UserProfile(models.Model):
 
     @property
     def ext_groups(self):
+
+        import tardis.tardis_portal.auth.fix_circular as fix_circular
+
         if not hasattr(self, '_cached_groups'):
-            self._cached_groups = auth_service.getGroups(self.user)
+            self._cached_groups = fix_circular.getGroups(self.user)
         return self._cached_groups
 
 
