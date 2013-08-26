@@ -1,3 +1,2 @@
 django-nose
 django-jasmine
-pygraphviz
