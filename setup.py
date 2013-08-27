@@ -7,7 +7,7 @@ CHANGES = open(os.path.join(here, 'docs/changes.rst')).read()
 
 setup(
     name="MyTardis",
-    version="3.5-RC1",
+    version="3.5",
     url='http://github.com/mytardis/mytardis',
     license='BSD',
     description="Next iteration of the TARDIS framework. No digital " +
