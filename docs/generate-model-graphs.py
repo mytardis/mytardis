@@ -10,31 +10,49 @@ try:
 except:
     pass
 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--disable-fields', '-d', action='store_true', dest='disable_fields',
+        make_option('--disable-fields', '-d', action='store_true',
+                    dest='disable_fields',
                     help='Do not show the class member fields'),
-        make_option('--group-models', '-g', action='store_true', dest='group_models',
-                    help='Group models together respective to their application'),
-        make_option('--all-applications', '-a', action='store_true', dest='all_applications',
-                    help='Automatically include all applications from INSTALLED_APPS'),
+        make_option('--group-models', '-g', action='store_true',
+                    dest='group_models',
+                    help='Group models together respective to their '
+                    'application'),
+        make_option('--all-applications', '-a', action='store_true',
+                    dest='all_applications',
+                    help='Automatically include all applications from '
+                    'INSTALLED_APPS'),
         make_option('--output', '-o', action='store', dest='outputfile',
-                    help='Render output file. Type of output dependend on file extensions. Use png or jpg to render graph to image.'),
-        make_option('--layout', '-l', action='store', dest='layout', default='dot',
-                    help='Layout to be used by GraphViz for visualization. Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
-        make_option('--verbose-names', '-n', action='store_true', dest='verbose_names',
+                    help='Render output file. Type of output dependend on file'
+                    'extensions. Use png or jpg to render graph to image.'),
+        make_option('--layout', '-l', action='store', dest='layout',
+                    default='dot',
+                    help='Layout to be used by GraphViz for visualization. '
+                    'Layouts: circo dot fdp neato nop nop1 nop2 twopi'),
+        make_option('--verbose-names', '-n', action='store_true',
+                    dest='verbose_names',
                     help='Use verbose_name of models and fields'),
         make_option('--language', '-L', action='store', dest='language',
-                    help='Specify language used for verbose_name localization'),
-        make_option('--exclude-columns', '-x', action='store', dest='exclude_columns',
-                    help='Exclude specific column(s) from the graph. Can also load exclude list from file.'),
-        make_option('--exclude-models', '-X', action='store', dest='exclude_models',
-                    help='Exclude specific model(s) from the graph. Can also load exclude list from file.'),
-        make_option('--inheritance', '-e', action='store_true', dest='inheritance',
+                    help='Specify language used for verbose_name '
+                    'localization'),
+        make_option('--exclude-columns', '-x', action='store',
+                    dest='exclude_columns',
+                    help='Exclude specific column(s) from the graph. Can also '
+                    'load exclude list from file.'),
+        make_option('--exclude-models', '-X', action='store',
+                    dest='exclude_models',
+                    help='Exclude specific model(s) from the graph. Can also '
+                    'load exclude list from file.'),
+        make_option('--inheritance', '-e', action='store_true',
+                    dest='inheritance',
                     help='Include inheritance arrows'),
     )
 
-    help = ("Creates a GraphViz dot file for the specified app names.  You can pass multiple app names and they will all be combined into a single model.  Output is usually directed to a dot file.")
+    help = ("Creates a GraphViz dot file for the specified app names.  You can"
+            "pass multiple app names and they will all be combined into a "
+            "single model.  Output is usually directed to a dot file.")
     args = "[appname]"
     label = 'application name'
 
@@ -64,7 +82,8 @@ class Command(BaseCommand):
         version = pygraphviz.__version__.rstrip("-svn")
         try:
             if [int(v) for v in version.split('.')] < (0, 36):
-                # HACK around old/broken AGraph before version 0.36 (ubuntu ships with this old version)
+                # HACK around old/broken AGraph before version 0.36 (ubuntu
+                # ships with this old version)
                 import tempfile
                 tmpfile = tempfile.NamedTemporaryFile()
                 tmpfile.write(vizdata)
@@ -77,6 +96,17 @@ class Command(BaseCommand):
         graph.layout(prog=kwargs['layout'])
         graph.draw(kwargs['outputfile'])
 
+    def run_from_sphinx(self, argv):
+        '''
+        custom replacement of run_from_argv to raise exceptions that can be
+        caught rather than exiting
+        '''
+        parser = self.create_parser(argv[0], argv[1])
+        options, args = parser.parse_args(argv[2:])
+        #handle_default_options(options)
+        self.execute(*args, **options.__dict__)
+
+
 try:
     arguments = [
         'bin/django',
@@ -84,7 +114,7 @@ try:
         'tardis_portal',
         '-o', 'images/models-graphviz.png',
     ]
-    Command().run_from_argv(arguments)
+    Command().run_from_sphinx(arguments)
     print 'generated model graph'
 
     arguments = [
@@ -93,7 +123,8 @@ try:
         '-a',
         '-o', 'images/models-graphviz-all.png',
     ]
-    Command().run_from_argv(arguments)
+    Command().run_from_sphinx(arguments)
     print 'generated big model graph'
 except Exception as e:
+    print "skipping model graph creation"
     print e
