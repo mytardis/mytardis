@@ -86,10 +86,10 @@ Before running as production server Make this unique, and don't share it with
 anybody.
 '''
 
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = ['*']
 '''
-This needs to be set to your hostname and/or IP address when you receive
-requests from external clients.
+For security reasons this needs to be set to your hostname and/or IP
+address in production.
 '''
 
 SITE_TITLE = None
