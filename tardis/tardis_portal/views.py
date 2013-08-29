@@ -250,7 +250,7 @@ def load_experiment_image(request, parameter_id):
 
 
 def load_dataset_image(request, parameter_id):
-    parameter = DatafileParameter.objects.get(pk=parameter_id)
+    parameter = DatasetParameter.objects.get(pk=parameter_id)
     dataset = parameter.parameterset.dataset
     if  authz.has_dataset_access(request, dataset.id):
         return load_image(request, parameter)

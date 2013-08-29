@@ -160,6 +160,8 @@ class Replica(models.Model):
         try:
             sourcefile = self.get_file(requireVerified=False)
         except IOError:
+            logger.error("Replica %s not found/accessible at: %s" %
+                         (self.id, self.url))
             return False
         if not sourcefile:
             logger.error("%s content not accessible", self.url)
