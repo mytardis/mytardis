@@ -708,7 +708,7 @@ class UncachedTarStream(TarFile):
         else:
             result_buf = uc_buf
         if remainder is not None:
-            result_buf = remainder + result_buf
+            result_buf = ''.join([remainder, result_buf])
         stream_buffers = []
         while len(result_buf) >= self.http_buffersize:
             stream_buffers.append(result_buf[:self.http_buffersize])
@@ -770,6 +770,7 @@ class UncachedTarStream(TarFile):
                         yield stream_buf
                     blocks += 1
                 self.offset += blocks * tarfile.BLOCKSIZE
+            fileobj.close()
 
         buf = (tarfile.NUL * (tarfile.BLOCKSIZE * 2))
         stream_buffers, remainder_buf = self.prepare_output(
