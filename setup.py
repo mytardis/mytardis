@@ -29,9 +29,9 @@ setup(
         'django-form-utils==0.2.0',
         'django-haystack==1.2.7',
         'django-bootstrap-form==2.0.6',
-        'celery==3.0.21',           # Delayed tasks and queues
+        'celery>=3.0.21',           # Delayed tasks and queues
         'django-celery>=3.0.17',
-        'kombu==2.5.12',
+        'kombu>=2.5.12',
         'pysolr==2.1.0-beta',
         'beautifulsoup4==4.2.1',
         'south==0.8.1',
