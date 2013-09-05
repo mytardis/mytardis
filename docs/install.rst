@@ -13,11 +13,11 @@ Prerequisites
 
 Redhat::
 
-   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git graphviz-devel
+   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git graphviz-devel compat-libevent14-devel
 
 Debian/Ubuntu::
 
-   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev git libgraphviz-dev
+   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev git libgraphviz-dev libevent-dev
 
 Download
 --------
