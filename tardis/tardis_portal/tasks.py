@@ -11,12 +11,10 @@ from django.contrib.sites.models import Site
 from django.db import transaction
 from django.template import Context
 
-from tardis.tardis_portal.models import Dataset_File, Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
 from tardis.tardis_portal.staging import stage_replica
-from tardis.tardis_portal.models import Replica, Location
 
 # Ensure filters are loaded
 try:
@@ -43,6 +41,7 @@ if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
 
 @task(name="tardis_portal.verify_files", ignore_result=True)
 def verify_files(replicas=None):
+    from tardis.tardis_portal.models import Replica
     if getattr(settings, 'REDIS_VERIFY_MANAGER', False):
         r = redis.Redis(connection_pool=redis_verify_manager_pool)
 
@@ -71,6 +70,7 @@ def verify_replica(replica_id, only_local=False, reverify=False):
     verify task
     allowemtpychecksums is false for auto-verify, hence the parameter
     '''
+    from tardis.tardis_portal.models import Replica
     # Use a transaction for safety
     with transaction.commit_on_success():
         # Get replica locked for write (to prevent concurrent actions)
@@ -149,6 +149,8 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
 
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
 def create_staging_datafile(filepath, username, dataset_id):
+    from tardis.tardis_portal.models import Dataset_File, Dataset, Replica, \
+        Location
     dataset = Dataset.objects.get(id=dataset_id)
 
     url, size = get_staging_url_and_size(username, filepath)
