@@ -463,7 +463,8 @@ def view_experiment(request, experiment_id,
 
     return HttpResponse(render_response_index(request, template_name, c))
 
-def _add_protocols_and_organizations(request, experiment, c):
+
+def _add_protocols_and_organizations(request, collection_object, c):
     """Add the protocol, format and organization details for
     archive requests.  Since the MacOSX archiver can't cope with
     streaming ZIP, the best way to avoid 'user disappointment'
@@ -477,9 +478,9 @@ def _add_protocols_and_organizations(request, experiment, c):
     else:
         cannot_do_zip = False
 
-    if experiment:
+    if collection_object:
         c['protocol'] = []
-        download_urls = experiment.get_download_urls()
+        download_urls = collection_object.get_download_urls()
         for key, value in download_urls.iteritems():
             if cannot_do_zip and key == 'zip':
                 continue
@@ -493,6 +494,7 @@ def _add_protocols_and_organizations(request, experiment, c):
     c['organization'] = get_download_organizations()
     c['default_organization'] = getattr(
         settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic')
+
 
 @authz.experiment_access_required
 def experiment_description(request, experiment_id):
@@ -643,7 +645,7 @@ def view_dataset(request, dataset_id):
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'upload_method': upload_method
     })
-    _add_protocols_and_organizations(request, None, c)
+    _add_protocols_and_organizations(request, dataset, c)
     return HttpResponse(render_response_index(
         request, 'tardis_portal/view_dataset.html', c))
 
@@ -1281,6 +1283,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'params' : params
 
         })
+    _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(request, template_name, c))
 
 

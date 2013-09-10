@@ -36,11 +36,13 @@ from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
+from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.models import Dataset_File
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_free_space
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 from tardis.tardis_portal.auth.decorators import experiment_download_required
+from tardis.tardis_portal.auth.decorators import dataset_download_required
 from tardis.tardis_portal.views import return_response_not_found, \
     return_response_error, render_error_message
 
@@ -851,6 +853,18 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
 
     datafiles = Dataset_File.objects.filter(
         dataset__experiments__id=experiment_id)
+    return _streaming_downloader(request, datafiles, rootdir, filename,
+                                 comptype, organization)
+
+
+@dataset_download_required
+def streaming_download_dataset(request, dataset_id, comptype='tgz',
+                                organization='deep-storage'):
+    dataset = Dataset.objects.get(id=dataset_id)
+    rootdir = dataset.description.replace(' ', '_')
+    filename = '%s-complete.tar' % rootdir
+
+    datafiles = Dataset_File.objects.filter(dataset=dataset)
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
 

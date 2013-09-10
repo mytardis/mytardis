@@ -194,6 +194,14 @@ download_urls = patterns(
     (r'^experiment/(?P<experiment_id>\d+)/'
      r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
      'streaming_download_experiment'),
+    (r'^dataset/(?P<dataset_id>\d+)/$',
+     'streaming_download_dataset'),
+    (r'^dataset/(?P<dataset_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/$',  # tgz or tar
+     'streaming_download_dataset'),
+    (r'^dataset/(?P<dataset_id>\d+)/'
+     r'(?P<comptype>[a-z]{3})/(?P<organization>[^/]+)/$',
+     'streaming_download_dataset'),
     (r'^api_key/$', 'download_api_key'),
     )
 
