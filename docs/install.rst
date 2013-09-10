@@ -13,7 +13,15 @@ Prerequisites
 
 Redhat::
 
-   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git graphviz-devel compat-libevent14-devel
+   sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git graphviz-devel
+
+Depending on which flavour of RHEL or CentOS and which db try one of::
+
+   sudo yum install libevent-devel
+
+or::
+
+   sudo yum install compat-libevent14-devel
 
 Debian/Ubuntu::
 
