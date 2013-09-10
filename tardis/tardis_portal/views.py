@@ -1283,6 +1283,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'params' : params
 
         })
+    _add_protocols_and_organizations(request, None, c)
     return HttpResponse(render_response_index(request, template_name, c))
 
 

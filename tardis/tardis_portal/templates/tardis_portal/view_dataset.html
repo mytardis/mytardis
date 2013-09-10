@@ -389,35 +389,6 @@ $('#modal-metadata .submit-button').live('click', function() {
     {{ dataset|dataset_size_badge }}
     </p>
     <p style="text-align:left; margin-top:10px;">
-  {% block downloads %}
-  {% if has_download_permissions %}
-    {% if organization|length > 1 %}
-      {% for p in protocol %}
-        {% for o in organization %}
-          <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
-             title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
-            <i class="icon-download-alt"></i>
-            {% if o == default_organization %}
-            {{p.0|upper}}
-            {% else %}
-            {{p.0|upper}} - {{o}}
-	    {% endif %}
-          </a>
-        {% endfor %}
-      {% endfor %}
-    {% else %}
-      {% for p in protocol %}
-        <a class="btn btn-primary btn-mini" href="{{p.1}}"
-           title="Download Entire Experiment as {{p.0|upper}}">
-          <i class="icon-download-alt"></i>
-          {{p.0|upper}}
-        </a>
-      {% endfor %}
-    {% endif %}
-      Download Dataset
-
-  {% endif %}
-  {% endblock downloads %}
   </p>
 </div>
 
@@ -506,22 +477,38 @@ $('#modal-metadata .submit-button').live('click', function() {
       <h3 style="display: inline">
       {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
       </h3>
+  {% block downloads %}
+  {% if has_download_permissions %}
+  <p><b>Download Dataset:</b>
+    {% if organization|length > 1 %}
+      {% for p in protocol %}
+        {% for o in organization %}
+          <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
+             title="Download Entire Experiment as {{p.0|upper}} with {{o}} organization">
+            <i class="icon-download-alt"></i>
+            {% if o == default_organization %}
+            {{p.0|upper}}
+            {% else %}
+            {{p.0|upper}} - {{o}}
+	    {% endif %}
+          </a>
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for p in protocol %}
+        <a class="btn btn-primary btn-mini" href="{{p.1}}"
+           title="Download Entire Experiment as {{p.0|upper}}">
+          <i class="icon-download-alt"></i>
+          {{p.0|upper}}
+        </a>
+      {% endfor %}
+      {% endif %}
+  </p>
+  {% endif %}
+  {% endblock downloads %}
 
-    <form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
-      <div class="row-fluid">
-        <div class="pull-left">
-          {% if has_download_permissions %}
-            <button type="submit" class="btn btn-mini download-selected">
-              <i class="icon-download-alt"></i>
-              Download Selected Files
-            </button>
-	    <input type="hidden" name="comptype" value="{{default_format}}"/>
-	    <input type="hidden" name="organization" value="{{default_organization}}"/>
-          {% endif %}
-        </div>
-      </div>
       <div id="datafiles-pane"></div>
-    </form>
+
   </div>
 </div>
 

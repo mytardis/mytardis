@@ -60,6 +60,18 @@
       value="{{filename_search|default:''}}" />
 </p>
 
+<form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
+  <div class="pull-left">
+    {% if has_download_permissions %}
+    <button type="submit" class="btn btn-mini download-selected">
+      <i class="icon-download-alt"></i>
+      Download Selected Files
+    </button>
+    <input type="hidden" name="comptype" value="{{default_format}}"/>
+    <input type="hidden" name="organization" value="{{default_organization}}"/>
+    {% endif %}
+  </div>
+
 <div class="pull-right">
   {% if not dataset.immutable %}
     {% if has_write_permissions %}
@@ -165,6 +177,7 @@ Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset
 
 </tbody>
 </table>
+</form>
 
 {# this appears to break things? Why is it here? -steve #}
 {# <script type="text/javascript"> #}
