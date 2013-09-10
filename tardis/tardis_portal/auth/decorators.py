@@ -272,6 +272,19 @@ def experiment_download_required(f):
     wrap.__name__ = f.__name__
     return wrap
 
+
+def dataset_download_required(f):
+
+    def wrap(request, *args, **kwargs):
+        if not has_dataset_download_access(request, kwargs['dataset_id']):
+            return return_response_error(request)
+        return f(request, *args, **kwargs)
+
+    wrap.__doc__ = f.__doc__
+    wrap.__name__ = f.__name__
+    return wrap
+
+
 def dataset_access_required(f):
 
     def wrap(request, *args, **kwargs):

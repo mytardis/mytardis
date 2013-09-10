@@ -1,5 +1,6 @@
 from os import path
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.db import models
 
@@ -57,6 +58,39 @@ class Dataset(models.Model):
         """Return the absolute url to the current ``Dataset``"""
         return ('tardis.tardis_portal.views.view_dataset', (),
                 {'dataset_id': self.id})
+
+    def get_replicas(self):
+        from .replica import Replica
+        return Replica.objects.filter(datafile__dataset=self)
+
+    def get_download_urls(self):
+        urls = {}
+        params = (('dataset_id', self.id),)
+        protocols = frozenset(self.get_replicas()
+                                  .values_list('protocol', flat=True)
+                                  .distinct())
+        # Get built-in download links
+        local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
+        if any(p in protocols for p in local_protocols):
+            view = 'tardis.tardis_portal.download.streaming_download_' \
+                   'dataset'
+            for comptype in getattr(settings,
+                                    'DEFAULT_ARCHIVE_FORMATS',
+                                    ['tgz', 'tar']):
+                kwargs = dict(params+(('comptype', comptype),))
+                urls[comptype] = reverse(view, kwargs=kwargs)
+
+        # Get links from download providers
+        for protocol in protocols - local_protocols:
+            try:
+                for module in settings.DOWNLOAD_PROVIDERS:
+                    if module[0] == protocol:
+                        view = '%s.download_dataset' % module[1]
+                        urls[protocol] = reverse(view, kwargs=dict(params))
+            except AttributeError:
+                pass
+
+        return urls
 
     @models.permalink
     def get_edit_url(self):
