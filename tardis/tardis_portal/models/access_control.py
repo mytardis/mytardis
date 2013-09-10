@@ -8,6 +8,14 @@ from django.contrib.contenttypes import generic
 from django.db import models
 from django.db.models import Q
 
+class UserProfileManager():
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's UserProfile model.
+    """
+    def get_by_natural_key(self, username):
+        return self.get(user=User.objects.get_by_natural_key(username),
+        )
 
 class UserProfile(models.Model):
     """
@@ -26,6 +34,14 @@ class UserProfile(models.Model):
     # False.
     isDjangoAccount = models.BooleanField(
         null=False, blank=False, default=True)
+    
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = UserProfileManager()
+    
+    def natural_key(self):
+        return self.user.natural_key()
+    
+    natural_key.dependencies = ['auth.User']
 
     class Meta:
         app_label = 'tardis_portal'
