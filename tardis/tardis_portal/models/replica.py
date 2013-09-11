@@ -17,7 +17,7 @@ from .location import Location
 import logging
 logger = logging.getLogger(__name__)
 
-class ReplicaManager():
+class ReplicaManager(models.Manager):
     """
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's Replica model.

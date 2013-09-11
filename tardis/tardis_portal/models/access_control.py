@@ -8,7 +8,7 @@ from django.contrib.contenttypes import generic
 from django.db import models
 from django.db.models import Q
 
-class UserProfileManager():
+class UserProfileManager(models.Manager):
     """
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's UserProfile model.
@@ -72,7 +72,7 @@ class UserProfile(models.Model):
             self._cached_groups = fix_circular.getGroups(self.user)
         return self._cached_groups
 
-class GroupAdminManager():
+class GroupAdminManager(models.Manager):
     """
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's GroupAdmin model.
@@ -109,7 +109,7 @@ class GroupAdmin(models.Model):
     def __unicode__(self):
         return '%s: %s' % (self.user.username, self.group.name)
 
-class UserAuthenticationManager():
+class UserAuthenticationManager(models.Manager):
     """
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's UserAuthentication model.

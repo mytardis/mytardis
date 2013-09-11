@@ -6,7 +6,7 @@ from django.core.files.storage import default_storage
 import logging
 logger = logging.getLogger(__name__)
 
-class LocationManager():
+class LocationManager(models.Manager):
     """
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's Location model.
