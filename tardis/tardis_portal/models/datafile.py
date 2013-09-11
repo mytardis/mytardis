@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.core.urlresolvers import reverse
 
 from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.managers import OracleSafeManager
 from .dataset import Dataset
 from .replica import Replica
 
