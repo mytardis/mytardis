@@ -21,7 +21,7 @@ class Location(models.Model):
     :attribute url: the url for the location
     :attribute type: one of 'online', 'offline' and 'external'
     :attribute priority: a priority score that is used to rank the locations
-        when deciding which one to uses
+        when deciding which one to use
     :attribute is_available: if True, the location should currently be
         accessible / useable
 
