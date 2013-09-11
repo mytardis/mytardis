@@ -17,6 +17,16 @@ from .location import Location
 import logging
 logger = logging.getLogger(__name__)
 
+class ReplicaManager():
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Replica model.
+    """
+    def get_by_natural_key(self, filename, description, name, url):
+        return self.get(datafile=Dataset_File.objects.get_by_natural_key(filename, description),
+                        location=Location.objects.get_by_natural_key(name, url),
+        )
+
 class Replica(models.Model):
     """Class to store meta-data about a physical file replica
 
@@ -43,6 +53,14 @@ class Replica(models.Model):
     verified = models.BooleanField(default=False)
     stay_remote = models.BooleanField(default=False)
     location = models.ForeignKey(Location)
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ReplicaManager()
+    
+    def natural_key(self):
+        return (self.datafile.natural_key(),) + self.location.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Dataset_File', 'tardis_portal.Location']
 
     class Meta:
         app_label = 'tardis_portal'
