@@ -109,13 +109,29 @@ class GroupAdmin(models.Model):
     def __unicode__(self):
         return '%s: %s' % (self.user.username, self.group.name)
 
-
+class UserAuthenticationManager():
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's UserAuthentication model.
+    """
+    def get_by_natural_key(self, username):
+        return self.get(userProfile=UserProfile.objects.get_by_natural_key(username),
+        )
+        
 # TODO: Generalise auth methods
 class UserAuthentication(models.Model):
     CHOICES = ()
     userProfile = models.ForeignKey(UserProfile)
     username = models.CharField(max_length=50)
     authenticationMethod = models.CharField(max_length=30, choices=CHOICES)
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = UserAuthenticationManager()
+    
+    def natural_key(self):
+        return self.userProfile.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.UserProfile']
 
     class Meta:
         app_label = 'tardis_portal'
