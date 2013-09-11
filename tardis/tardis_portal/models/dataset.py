@@ -11,6 +11,22 @@ from .experiment import Experiment
 import logging
 logger = logging.getLogger(__name__)
 
+class DatasetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Dataset model.
+    """
+    # Uncomment the following commented lines before loading model Dataset.
+    #def get_by_natural_key(self, description, title, username):
+    def get_by_natural_key(self, description):
+        """ Ideally the natural key for Dataset should be a combination of description 
+        and  Experiment. But the ManyToManyField relationship manager 'ManyRelatedManager' 
+        throws the exception - object has no attribute 'natural_key'. So Experiment needs
+        to be commented out for loading models other than Dataset.
+        """
+        return self.get(description=description,
+                    #experiments=Experiment.objects.get_by_natural_key(title, username), # Uncomment for loading model Dataset
+        )
 
 class Dataset(models.Model):
     """Class to link datasets to experiments
@@ -24,7 +40,20 @@ class Dataset(models.Model):
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
-    objects = OracleSafeManager()
+    #objects = OracleSafeManager()   # Commented by Sindhu E
+    objects = DatasetManager()   # For natural key support added by Sindhu E
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    def natural_key(self):
+        """ Ideally the natural key for Dataset should be a combination of description 
+        and  Experiment. But the ManyToManyField relationship manager 'ManyRelatedManager' 
+        throws the exception - object has no attribute 'natural_key'. So Experiment needs
+        to be commented out for loading models other than Dataset.
+        """
+        #return (self.description,) + self.experiments.natural_key()
+        return (self.description,)
+    
+    #natural_key.dependencies = ['tardis_portal.Experiment'] # Uncomment for dumping model Dataset
 
     class Meta:
         app_label = 'tardis_portal'
