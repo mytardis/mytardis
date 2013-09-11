@@ -68,8 +68,15 @@ class Experiment(models.Model):
     license = models.ForeignKey(License,  # @ReservedAssignment
                                 blank=True, null=True)
     objectacls = generic.GenericRelation(ObjectACL)
-    objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    #objects = OracleSafeManager()  # Commented by Sindhu E
+    objects = ExperimentManager()   # For natural key support added by Sindhu E
+    safe = ExperimentManager()      # The acl-aware specific manager.
+
+    def natural_key(self):
+        return (self.title,) + self.created_by.natural_key()
+    
+    natural_key.dependencies = ['auth.User']
 
     class Meta:
         app_label = 'tardis_portal'
