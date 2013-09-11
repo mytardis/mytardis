@@ -15,9 +15,17 @@ Redhat::
 
    sudo yum install cyrus-sasl-ldap cyrus-sasl-devel openldap-devel libxslt libxslt-devel libxslt-python git graphviz-devel
 
+Depending on which flavour of RHEL or CentOS and which db try one of::
+
+   sudo yum install libevent-devel
+
+or::
+
+   sudo yum install compat-libevent14-devel
+
 Debian/Ubuntu::
 
-   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev git libgraphviz-dev
+   sudo apt-get install subversion python python-dev libpq-dev libssl-dev libsasl2-dev libldap2-dev libxslt1.1 libxslt1-dev python-libxslt1 libexiv2-dev git libgraphviz-dev libevent-dev
 
 Download
 --------
@@ -405,20 +413,20 @@ Serving with Apache HTTPD + mod_wsgi
 
 See ``./apache`` for example configurations.
 
-Serving with Nginx + uWSGI
+Serving with Nginx + Gunicorn
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this configuration, Nginx serves static files and proxies application
-requests to a uWSGI server::
+requests to a Gunicorn server::
 
-       HTTP  +-----------+ uWSGI +--------------+
-    +------->|   Nginx   +------>| uWSGI Server |
-             +-----------+       +--------------+
-               0.0.0.0:80         127.0.0.1:3031
+       HTTP  +-----------+ uWSGI +-----------------+
+    +------->|   Nginx   +------>| Gunicorn Server |
+             +-----------+       +-----------------+
+               0.0.0.0:80         127.0.0.1:8000
 
 Unlike :ref:`apache-wsgi`, application requests run in a completely different
 process to web requests. This allows the application server to be run as a
-seperate user to the web server, which can improve security.
+seperate user to the web server, which can improve security and scalability.
 
 This configuration allows more flexibility when tuning for performance, but
 does add additional deployment complexity.
@@ -435,7 +443,7 @@ exporting system scripts:
     # Export Upstart start-up scripts (running as user "django")
     # (We use a patched template while we wait for
     # https://github.com/ddollar/foreman/pull/137 to be merged.)
-    sudo foreman export upstart /etc/init -u <mytardis_user> -p 3031 -t ./foreman
+    sudo foreman export upstart /etc/init -u <mytardis_user> -p 8000 -t ./foreman
 
 
 Nginx should then be configured to send requests to the server::
@@ -444,13 +452,18 @@ Nginx should then be configured to send requests to the server::
         listen 80 default;
         listen 443 default ssl;
         client_max_body_size 4G;
+        client_body_buffer_size 8192k;
         keepalive_timeout 5;
 
         root /home/django/public;
 
         location / {
-            include uwsgi_params;
-            uwsgi_pass 127.0.0.1:3031;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+            proxy_pass http://127.0.0.1:8000;
+            proxy_read_timeout 2000;
+            proxy_send_timeout 2000;
         }
 
         location /static/ {
@@ -470,7 +483,7 @@ permissions.
     setfacl -R -m user:nginx:rx static/
 
 .. seealso::
-            `Django with uWSGI`_
+            `Django with Gunicorn`_
 
 .. _Foreman: http://ddollar.github.com/foreman/
-.. _`Django with uWSGI`: https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/uwsgi/
+.. _`Django with Gunicorn`: https://docs.djangoproject.com/en/dev/howto/deployment/wsgi/gunicorn/
