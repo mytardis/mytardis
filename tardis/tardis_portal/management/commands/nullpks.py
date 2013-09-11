@@ -15,7 +15,7 @@ Created on Sep 11, 2013
 '''
 class Command(BaseCommand):
     args = 'directory_name'
-    help = 'Help text goes here'
+    help = 'Replaces the pk field with null in all the json files in the given directory'
 
     def handle(self, *args, **options):
         if len(args) == 1:
