@@ -468,27 +468,48 @@ def view_experiment(request, experiment_id,
         c['error'] = request.POST['error']
     if 'query' in request.GET:
         c['search_query'] = SearchQueryString(request.GET['query'])
-    if  'search' in request.GET:
+    if 'search' in request.GET:
         c['search'] = request.GET['search']
-    if  'load' in request.GET:
+    if 'load' in request.GET:
         c['load'] = request.GET['load']
 
     _add_protocols_and_organizations(request, experiment, c)
 
-    import sys
+    default_apps = [
+        {'name': 'Description',
+         'viewfn': 'tardis.tardis_portal.views.experiment_description'},
+        {'name': 'Metadata',
+         'viewfn': 'tardis.tardis_portal.views.retrieve_experiment_metadata'},
+        {'name': 'Sharing', 'viewfn': 'tardis.tardis_portal.views.share'},
+        {'name': 'Transfer Datasets',
+         'viewfn': 'tardis.tardis_portal.views.experiment_dataset_transfer'},
+    ]
     appnames = []
     appurls = []
+
+    for app in getattr(settings, 'EXPERIMENT_APPS', default_apps):
+        try:
+            appnames.append(app['name'])
+            if 'viewfn' in app:
+                appurls.append(reverse(app['viewfn'], args=[experiment_id]))
+            elif 'url' in app:
+                appurls.append(app['url'])
+        except:
+            logger.debug('error when loading default exp apps')
+
+    import sys
     for app in getTardisApps():
         try:
-            appnames.append(sys.modules['%s.%s.settings'
-                                        % (settings.TARDIS_APP_ROOT, app)].NAME)
-            appurls.append('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
-                                                  app))
+            appnames.append(
+                sys.modules['%s.%s.settings'
+                            % (settings.TARDIS_APP_ROOT, app)].NAME)
+            appurls.append(
+                reverse('%s.%s.views.index' % (settings.TARDIS_APP_ROOT,
+                                               app), args=[experiment_id]))
         except:
             logger.debug("No tab for %s" % app)
 
     c['apps'] = zip(appurls, appnames)
-
     return HttpResponse(render_response_index(request, template_name, c))
 
 
