@@ -72,6 +72,15 @@ class UserProfile(models.Model):
             self._cached_groups = fix_circular.getGroups(self.user)
         return self._cached_groups
 
+class GroupAdminManager():
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's GroupAdmin model.
+    """
+    def get_by_natural_key(self, username, groupname):
+        return self.get(user=User.objects.get_by_natural_key(username),
+                        group=Group.objects.get_by_natural_key(groupname),
+        )
 
 class GroupAdmin(models.Model):
     """GroupAdmin links the Django User and Group tables for group
@@ -85,6 +94,14 @@ class GroupAdmin(models.Model):
 
     user = models.ForeignKey(User)
     group = models.ForeignKey(Group)
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = GroupAdminManager()
+    
+    def natural_key(self):
+        return (self.user.natural_key(),) + self.group.natural_key()
+    
+    natural_key.dependencies = ['auth.User', 'auth.Group']
 
     class Meta:
         app_label = 'tardis_portal'
