@@ -231,6 +231,15 @@ class Experiment(models.Model):
 
         return None
 
+class Author_ExperimentManager(models.Manager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Author_Experiment model.
+    """
+    def get_by_natural_key(self, author, title, username):
+        return self.get(author=author,
+                        experiment=Experiment.objects.get_by_natural_key(title, username),
+        )
 
 class Author_Experiment(models.Model):
 
@@ -241,6 +250,14 @@ class Author_Experiment(models.Model):
         max_length=2000,
         blank=True,
         help_text="URL identifier for the author")
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = Author_ExperimentManager()
+    
+    def natural_key(self):
+        return (self.author,) + self.experiment.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Experiment']
 
     def save(self, *args, **kwargs):
         super(Author_Experiment, self).save(*args, **kwargs)
