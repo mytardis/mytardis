@@ -286,14 +286,6 @@ class ExperimentManager(OracleSafeManager):
                 result += group
         return result
 
-    def get_by_natural_key(self, title, username):
-        """ 
-        Added by Sindhu Emilda for natural key support for model Experiment
-        """
-        return self.get_query_set.get(title=title,
-                        created_by=User.objects.get_by_natural_key(username)
-        )
-        
 class ParameterNameManager(models.Manager):
     def get_by_natural_key(self, namespace, name):
         return self.get(schema__namespace=namespace, name=name)
