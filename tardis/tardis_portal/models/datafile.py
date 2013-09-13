@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.core.urlresolvers import reverse
 
 from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.managers import OracleSafeManager
 from .dataset import Dataset
 from .replica import Replica
 
@@ -16,6 +17,15 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
                 ~Q(mimetype='image/x-icon')) |\
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
+class Dataset_FileManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Dataset_File model.
+    """
+    def get_by_natural_key(self, filename, description):
+        return self.get(filename=filename,
+                        dataset=Dataset.objects.get_by_natural_key(description),
+        )
 
 class Dataset_File(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
@@ -42,6 +52,13 @@ class Dataset_File(models.Model):
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
+    objects = Dataset_FileManager()  # Added by Sindhu Emilda
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    def natural_key(self):
+        return (self.filename,) + self.dataset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Dataset']
 
     class Meta:
         app_label = 'tardis_portal'

@@ -18,7 +18,16 @@ from .license import License
 import logging
 logger = logging.getLogger(__name__)
 
-
+class ExperimentNKManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Experiment model.
+    """
+    def get_by_natural_key(self, title, username):
+        return self.get(title=title,
+                        created_by=User.objects.get_by_natural_key(username)
+        )
+            
 class Experiment(models.Model):
     """The ``Experiment`` model inherits from :class:`django.db.models.Model`
 
@@ -68,8 +77,15 @@ class Experiment(models.Model):
     license = models.ForeignKey(License,  # @ReservedAssignment
                                 blank=True, null=True)
     objectacls = generic.GenericRelation(ObjectACL)
-    objects = OracleSafeManager()
-    safe = ExperimentManager()  # The acl-aware specific manager.
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    #objects = OracleSafeManager()  # Commented by Sindhu E
+    objects = ExperimentNKManager()   # For natural key support added by Sindhu E
+    safe = ExperimentManager()      # The acl-aware specific manager.
+
+    def natural_key(self):
+        return (self.title,) + self.created_by.natural_key()
+    
+    natural_key.dependencies = ['auth.User']
 
     class Meta:
         app_label = 'tardis_portal'
@@ -224,6 +240,15 @@ class Experiment(models.Model):
 
         return None
 
+class Author_ExperimentManager(models.Manager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Author_Experiment model.
+    """
+    def get_by_natural_key(self, author, title, username):
+        return self.get(author=author,
+                        experiment=Experiment.objects.get_by_natural_key(title, username),
+        )
 
 class Author_Experiment(models.Model):
 
@@ -234,6 +259,14 @@ class Author_Experiment(models.Model):
         max_length=2000,
         blank=True,
         help_text="URL identifier for the author")
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = Author_ExperimentManager()
+    
+    def natural_key(self):
+        return (self.author,) + self.experiment.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Experiment']
 
     def save(self, *args, **kwargs):
         super(Author_Experiment, self).save(*args, **kwargs)

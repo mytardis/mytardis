@@ -13,6 +13,17 @@ def _token_expiry():
     import datetime as dt
     return dt.datetime.now().date() + dt.timedelta(settings.TOKEN_EXPIRY_DAYS)
 
+class TokenManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Token model.
+    """
+    def get_by_natural_key(self, token, title, username):
+        return self.get(token=token,
+                        experiment=Experiment.objects.get_by_natural_key(title, username),
+                        user=User.objects.get_by_natural_key(username),
+        )
+
 class Token(models.Model):
 
     token = models.CharField(max_length=30, unique=True)
@@ -24,7 +35,15 @@ class Token(models.Model):
 
     _TOKEN_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
-    objects = OracleSafeManager()
+    #objects = OracleSafeManager() # Commented by Sindhu E for natural key support
+    
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = TokenManager()
+    
+    def natural_key(self):
+        return (self.token,) + (self.experiment.natural_key(),) + self.user.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Experiment', 'auth.User']
 
     class Meta:
         app_label = 'tardis_portal'
