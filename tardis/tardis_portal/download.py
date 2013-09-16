@@ -187,7 +187,6 @@ class StreamableZipFile(ZipFile):
 
 
 def _create_download_response(request, datafile_id, disposition='attachment'):
-    #import ipdb; ipdb.set_trace()
     # Get datafile (and return 404 if absent)
     try:
         datafile = Dataset_File.objects.get(pk=datafile_id)
