@@ -174,6 +174,16 @@ class UserAuthentication(models.Model):
 #     object_id = models.PositiveIntegerField()
 #     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
+class ObjectACLManager(models.Manager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's ObjectACL model.
+    """
+    def get_by_natural_key(self, content_type, object_id, entityId):
+        return self.get(
+                content_type=ContentType.objects.get_by_natural_key(content_type), 
+                object_id=object_id, entityId=entityId
+        )
 
 class ObjectACL(models.Model):
     """The ObjectACL (formerly ExperimentACL) table is the core of the `Tardis
@@ -220,6 +230,14 @@ class ObjectACL(models.Model):
     expiryDate = models.DateField(null=True, blank=True)
     aclOwnershipType = models.IntegerField(
         choices=__COMPARISON_CHOICES, default=OWNER_OWNED)
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ObjectACLManager()
+    
+    def natural_key(self):
+        return self.content_type.natural_key() + (self.object_id,) + (self.entityId,)
+    
+    natural_key.dependencies = ['contenttypes.ContentType']
 
     def get_related_object(self):
         """
