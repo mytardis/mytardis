@@ -39,7 +39,7 @@ class Location(models.Model):
     objects = LocationManager()
     
     def natural_key(self):
-        return (self.nase,) + (self.url,)
+        return (self.name,) + (self.url,)
 
     initialized = False
 
