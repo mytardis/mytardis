@@ -430,10 +430,27 @@ class DatasetParameterSet(ParameterSet):
     def _get_label(self):
         return ('dataset.description', 'Dataset')
 
+class ExperimentParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's ExperimentParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, title, username):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        experiment=Experiment.objects.get_by_natural_key(title, username),
+        )
 
 class ExperimentParameterSet(ParameterSet):
     experiment = models.ForeignKey(Experiment)
     parameter_class = ExperimentParameter
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ExperimentParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.experiment.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Experiment']
 
     def _get_label(self):
         return ('experiment.title', 'Experiment')
