@@ -414,10 +414,27 @@ class ExperimentParameter(Parameter):
         except StandardError:
             logger.exception('')
 
+class DatafileParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatafileParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, filename, description):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        dataset_file=Dataset_File.objects.get_by_natural_key(filename, description),
+        )
 
 class DatafileParameterSet(ParameterSet):
     dataset_file = models.ForeignKey(Dataset_File)
     parameter_class = DatafileParameter
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatafileParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.dataset_file.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Dataset_File']
 
     def _get_label(self):
         return ('dataset_file.filename', 'Datafile')
