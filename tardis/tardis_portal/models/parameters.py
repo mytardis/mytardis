@@ -439,10 +439,27 @@ class DatafileParameterSet(ParameterSet):
     def _get_label(self):
         return ('dataset_file.filename', 'Datafile')
 
+class DatasetParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatasetParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, description):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        dataset=Dataset.objects.get_by_natural_key(description),
+        )
 
 class DatasetParameterSet(ParameterSet):
     dataset = models.ForeignKey(Dataset)
     parameter_class = DatasetParameter
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatasetParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.dataset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Dataset']
 
     def _get_label(self):
         return ('dataset.description', 'Dataset')
