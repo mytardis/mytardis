@@ -179,9 +179,9 @@ class ObjectACLManager(models.Manager):
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's ObjectACL model.
     """
-    def get_by_natural_key(self, content_type, object_id, entityId):
+    def get_by_natural_key(self, app_label, model, object_id, entityId):
         return self.get(
-                content_type=ContentType.objects.get_by_natural_key(content_type), 
+                content_type=ContentType.objects.get_by_natural_key(app_label, model), 
                 object_id=object_id, entityId=entityId
         )
 
