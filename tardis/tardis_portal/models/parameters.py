@@ -390,10 +390,27 @@ class Parameter(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
+class DatafileParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatafileParameter model.
+    """
+    def get_by_natural_key(self, nmspace, filename, description, namespace, name):
+        return self.get(parameterset=DatafileParameterSet.objects.get_by_natural_key(nmspace, filename, description),
+                        name=ParameterName.objects.get_by_natural_key(namespace, name),
+        )
 
 class DatafileParameter(Parameter):
     parameterset = models.ForeignKey('DatafileParameterSet')
     parameter_type = 'Datafile'
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatafileParameterManager()
+    
+    def natural_key(self):
+        return (self.parameterset.natural_key(),) + self.name.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.DatafileParameterSet', 'tardis_portal.ParameterName']
 
 class DatasetParameterManager(OracleSafeManager):
     """
