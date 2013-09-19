@@ -341,15 +341,14 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
-
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True, db_index=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
-    objects = OracleSafeManager()
+    #objects = OracleSafeManager()   # Commented by Sindhu E for natural key support
     parameter_type = 'Abstract'
-
+    
     class Meta:
         abstract = True
         app_label = 'tardis_portal'
@@ -396,10 +395,27 @@ class DatafileParameter(Parameter):
     parameterset = models.ForeignKey('DatafileParameterSet')
     parameter_type = 'Datafile'
 
+class DatasetParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatasetParameter model.
+    """
+    def get_by_natural_key(self, namespace, name, description):
+        return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
+                        parameterset=DatasetParameterSet.objects.get_by_natural_key(description),
+        )
 
 class DatasetParameter(Parameter):
     parameterset = models.ForeignKey('DatasetParameterSet')
     parameter_type = 'Dataset'
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatasetParameterManager()
+    
+    def natural_key(self):
+        return (self.name.natural_key(),) + self.parameterset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.ParameterName', 'tardis_portal.DatasetParameterSet']
 
 class ExperimentParameterManager(OracleSafeManager):
     """
@@ -410,11 +426,11 @@ class ExperimentParameterManager(OracleSafeManager):
         return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
                         parameterset=ExperimentParameterSet.objects.get_by_natural_key(nmspace, title, username),
         )
-
+        
 class ExperimentParameter(Parameter):
     parameterset = models.ForeignKey('ExperimentParameterSet')
     parameter_type = 'Experiment'
-    
+
     ''' Added by Sindhu Emilda for natural key implementation '''
     objects = ExperimentParameterManager()
     
@@ -422,7 +438,7 @@ class ExperimentParameter(Parameter):
         return (self.name.natural_key(),) + self.parameterset.natural_key()
     
     natural_key.dependencies = ['tardis_portal.ParameterName', 'tardis_portal.ExperimentParameterSet']
-
+    
     def save(self, *args, **kwargs):
         super(ExperimentParameter, self).save(*args, **kwargs)
         try:
