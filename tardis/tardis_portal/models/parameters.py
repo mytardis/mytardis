@@ -341,15 +341,14 @@ class ParameterSet(models.Model, ParameterSetManagerMixin):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
-
 class Parameter(models.Model):
     name = models.ForeignKey(ParameterName)
     string_value = models.TextField(null=True, blank=True, db_index=True)
     numerical_value = models.FloatField(null=True, blank=True, db_index=True)
     datetime_value = models.DateTimeField(null=True, blank=True, db_index=True)
-    objects = OracleSafeManager()
+    #objects = OracleSafeManager()   # Commented by Sindhu E for natural key support
     parameter_type = 'Abstract'
-
+    
     class Meta:
         abstract = True
         app_label = 'tardis_portal'
@@ -391,21 +390,72 @@ class Parameter(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
+class DatafileParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatafileParameter model.
+    """
+    def get_by_natural_key(self, nmspace, filename, description, namespace, name):
+        return self.get(parameterset=DatafileParameterSet.objects.get_by_natural_key(nmspace, filename, description),
+                        name=ParameterName.objects.get_by_natural_key(namespace, name),
+        )
 
 class DatafileParameter(Parameter):
     parameterset = models.ForeignKey('DatafileParameterSet')
     parameter_type = 'Datafile'
 
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatafileParameterManager()
+    
+    def natural_key(self):
+        return (self.parameterset.natural_key(),) + self.name.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.DatafileParameterSet', 'tardis_portal.ParameterName']
+
+class DatasetParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatasetParameter model.
+    """
+    def get_by_natural_key(self, namespace, name, description):
+        return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
+                        parameterset=DatasetParameterSet.objects.get_by_natural_key(description),
+        )
 
 class DatasetParameter(Parameter):
     parameterset = models.ForeignKey('DatasetParameterSet')
     parameter_type = 'Dataset'
 
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatasetParameterManager()
+    
+    def natural_key(self):
+        return (self.name.natural_key(),) + self.parameterset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.ParameterName', 'tardis_portal.DatasetParameterSet']
 
+class ExperimentParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's ExperimentParameter model.
+    """
+    def get_by_natural_key(self, namespace, name, nmspace, title, username):
+        return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
+                        parameterset=ExperimentParameterSet.objects.get_by_natural_key(nmspace, title, username),
+        )
+        
 class ExperimentParameter(Parameter):
     parameterset = models.ForeignKey('ExperimentParameterSet')
     parameter_type = 'Experiment'
 
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ExperimentParameterManager()
+    
+    def natural_key(self):
+        return (self.name.natural_key(),) + self.parameterset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.ParameterName', 'tardis_portal.ExperimentParameterSet']
+    
     def save(self, *args, **kwargs):
         super(ExperimentParameter, self).save(*args, **kwargs)
         try:
@@ -414,26 +464,77 @@ class ExperimentParameter(Parameter):
         except StandardError:
             logger.exception('')
 
+class DatafileParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatafileParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, filename, description):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        dataset_file=Dataset_File.objects.get_by_natural_key(filename, description),
+        )
 
 class DatafileParameterSet(ParameterSet):
     dataset_file = models.ForeignKey(Dataset_File)
     parameter_class = DatafileParameter
 
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatafileParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.dataset_file.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Dataset_File']
+
     def _get_label(self):
         return ('dataset_file.filename', 'Datafile')
 
+class DatasetParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's DatasetParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, description):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        dataset=Dataset.objects.get_by_natural_key(description),
+        )
 
 class DatasetParameterSet(ParameterSet):
     dataset = models.ForeignKey(Dataset)
     parameter_class = DatasetParameter
 
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = DatasetParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.dataset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Dataset']
+
     def _get_label(self):
         return ('dataset.description', 'Dataset')
 
+class ExperimentParameterSetManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's ExperimentParameterSet model.
+    """
+    def get_by_natural_key(self, namespace, title, username):
+        return self.get(schema=Schema.objects.get_by_natural_key(namespace),
+                        experiment=Experiment.objects.get_by_natural_key(title, username),
+        )
 
 class ExperimentParameterSet(ParameterSet):
     experiment = models.ForeignKey(Experiment)
     parameter_class = ExperimentParameter
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ExperimentParameterSetManager()
+    
+    def natural_key(self):
+        return self.schema.natural_key() + self.experiment.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.Schema', 'tardis_portal.Experiment']
 
     def _get_label(self):
         return ('experiment.title', 'Experiment')

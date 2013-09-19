@@ -286,7 +286,6 @@ class ExperimentManager(OracleSafeManager):
                 result += group
         return result
 
-
 class ParameterNameManager(models.Manager):
     def get_by_natural_key(self, namespace, name):
         return self.get(schema__namespace=namespace, name=name)

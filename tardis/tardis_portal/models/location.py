@@ -6,6 +6,14 @@ from django.core.files.storage import default_storage
 import logging
 logger = logging.getLogger(__name__)
 
+class LocationManager(models.Manager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's Location model.
+    """
+    def get_by_natural_key(self, name, url):
+        return self.get(name=name, url=url)
+
 class Location(models.Model):
     '''Class to store metadata about a storage location
 
@@ -26,6 +34,12 @@ class Location(models.Model):
     priority = models.IntegerField()
     is_available = models.BooleanField(default=True)
     transfer_provider = models.CharField(max_length=10, default='local')
+
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = LocationManager()
+    
+    def natural_key(self):
+        return (self.name,) + (self.url,)
 
     initialized = False
 
