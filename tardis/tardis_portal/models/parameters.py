@@ -417,9 +417,9 @@ class DatasetParameterManager(OracleSafeManager):
     Added by Sindhu Emilda for natural key implementation.
     The manager for the tardis_portal's DatasetParameter model.
     """
-    def get_by_natural_key(self, namespace, name, description):
+    def get_by_natural_key(self, namespace, name, nmspace, description):
         return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
-                        parameterset=DatasetParameterSet.objects.get_by_natural_key(description),
+                        parameterset=DatasetParameterSet.objects.get_by_natural_key(nmspace, description),
         )
 
 class DatasetParameter(Parameter):
