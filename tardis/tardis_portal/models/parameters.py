@@ -401,10 +401,27 @@ class DatasetParameter(Parameter):
     parameterset = models.ForeignKey('DatasetParameterSet')
     parameter_type = 'Dataset'
 
+class ExperimentParameterManager(OracleSafeManager):
+    """
+    Added by Sindhu Emilda for natural key implementation.
+    The manager for the tardis_portal's ExperimentParameter model.
+    """
+    def get_by_natural_key(self, namespace, name, nmspace, title, username):
+        return self.get(name=ParameterName.objects.get_by_natural_key(namespace, name),
+                        parameterset=ExperimentParameterSet.objects.get_by_natural_key(nmspace, title, username),
+        )
 
 class ExperimentParameter(Parameter):
     parameterset = models.ForeignKey('ExperimentParameterSet')
     parameter_type = 'Experiment'
+    
+    ''' Added by Sindhu Emilda for natural key implementation '''
+    objects = ExperimentParameterManager()
+    
+    def natural_key(self):
+        return (self.name.natural_key(),) + self.parameterset.natural_key()
+    
+    natural_key.dependencies = ['tardis_portal.ParameterName', 'tardis_portal.ExperimentParameterSet']
 
     def save(self, *args, **kwargs):
         super(ExperimentParameter, self).save(*args, **kwargs)
