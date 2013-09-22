@@ -26,6 +26,8 @@ core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
     url(r'^site-settings.xml/$', 'site_settings', name='tardis-site-settings'),
+    url(r'^mydata/$', 'my_data', name='mydata'),
+    url(r'^public_data/', 'public_data', name='public_data'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^import_params/$', 'import_params'),
