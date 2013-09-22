@@ -330,9 +330,37 @@ def about(request):
                  'about_pressed': True,
                  'nav': [{'name': 'About', 'link': '/about/'}],
                  'version': settings.MYTARDIS_VERSION,
-             })
+                 })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/about.html', c))
+
+
+@login_required
+def my_data(request):
+    '''
+    show data with credential-based access
+    delegate to custom views depending on settings
+    '''
+
+    c = Context({
+        'owned_experiments': Experiment.safe.owned(request.user)
+        .order_by('-update_time'),
+        'shared_experiments': Experiment.safe.shared(request.user)
+        .order_by('-update_time'),
+    })
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/my_data.html', c))
+
+
+def public_data(request):
+    '''
+    list of public experiments
+    '''
+    c = Context({
+        'public_experiments': Experiment.safe.public(),
+    })
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/public_data.html', c))
 
 
 def experiment_index(request):
