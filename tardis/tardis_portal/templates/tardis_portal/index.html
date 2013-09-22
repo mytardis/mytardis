@@ -43,8 +43,7 @@
 		      </li>
 		    </ul>
 		    <small>
-		      {% for author in exp.author_experiment_set.all %}{% if not forloop.first %}, {% else %}
-		      Authors: {% endif %}
+		      {% for author in exp.author_experiment_set.all %}{% if not forloop.first %}, {% endif %}
 		      <span property="dc:author">{{ author.author }}</span>{% endfor %}
 		    </small>
 		    <span class="pull-right">
@@ -131,7 +130,7 @@
 		</li>
 	      </ul>
 	      <small>
-		{% for author in exp.author_experiment_set.all %}{% if not forloop.first %}, {% else %} Authors:
+		{% for author in exp.author_experiment_set.all %}{% if not forloop.first %},
 	      {% endif %}
 	      <span property="dc:author">{{ author.author }}</span>{% endfor %}
 	      </small>
