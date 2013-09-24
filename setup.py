@@ -18,7 +18,6 @@ setup(
     packages=find_packages(),
     namespace_packages=['tardis'],
     install_requires=[
-        'setuptools>=0.9',
         'lxml==3.2.1',
         'pyparsing==1.5.7',  # held back by rdflib and rdfextras
         'feedparser==5.1.3',
