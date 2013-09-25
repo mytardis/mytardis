@@ -67,7 +67,7 @@
 		<small>
 		  {% for author in exp.author_experiment_set.all %}{% if not forloop.first %},
 		{% endif %}
-		<span property="dc:author">{{ author.author }}</span>{% endfor %}
+		<span property="dc:author">{{ author.author }}</span>{% empty %}&nbsp;{% endfor %}
 		</small>
 		<span class="pull-right">
 		  {% if exp.public_download_allowed %}
