@@ -138,6 +138,9 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 #experiments .accordion-toggle .badgelist {
     margin-bottom: 4px;
 }
+#experiments .accordion-body {
+    background-color: #E8F6FF;
+}
 #experiments .accordion-inner {
     -webkit-border-radius: 0px;
     -moz-border-radius: 0px;
@@ -195,6 +198,9 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 .mydata .accordion-toggle .badgelist {
     margin-bottom: 4px;
+}
+.mydata .accordion-body {
+    background-color: #E8F6FF;
 }
 .mydata .accordion-inner {
     -webkit-border-radius: 0px;

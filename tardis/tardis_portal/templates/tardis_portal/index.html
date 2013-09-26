@@ -62,8 +62,6 @@
 	      <div id="collapse{{exp.id}}"
 		   class="accordion-body collapse{% if forloop.first %} in{% endif %}">
 		<div class="accordion-inner">
-		  <em class="pull-right"><a href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">View
-		  experiment</a></em>
 		  <p>{{exp.description|default:"<em>No description</em>"}}</p>
 		  {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		    {% if forloop.first %}
@@ -153,8 +151,6 @@
 	  <div id="collapsepub{{exp.id}}"
 	       class="accordion-body collapse{% if forloop.first and not is_authenticated %} in{% endif %}">
 	    <div class="accordion-inner">
-	      <em class="pull-right"><a href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">View
-	      experiment</a></em>
 	      <p>{{exp.description|default:"<em>No description</em>"}}</p>
 	      {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		{% if forloop.first %}
