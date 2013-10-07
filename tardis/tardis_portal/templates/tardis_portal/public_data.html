@@ -67,7 +67,7 @@
 		<small>
 		  {% for author in exp.author_experiment_set.all %}{% if not forloop.first %},
 		{% endif %}
-		<span property="dc:author">{{ author.author }}</span>{% endfor %}
+		<span property="dc:author">{{ author.author }}</span>{% empty %}&nbsp;{% endfor %}
 		</small>
 		<span class="pull-right">
 		  {% if exp.public_download_allowed %}
@@ -87,8 +87,6 @@
 	    <div id="collapse{{exp.id}}"
 		 class="accordion-body collapse in">
 	      <div class="accordion-inner">
-		<em class="pull-right"><a href="{% url 'tardis.tardis_portal.views.view_experiment' exp.id %}">View
-		experiment</a></em>
 		<p><em>{{exp.description|default:""}}</em></p>
 		{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
 		  {% if forloop.first %}
