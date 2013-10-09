@@ -1,0 +1,8 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load static from staticfiles %}
+{% block content %}
+<div style="margin:-20px;padding:0px;overflow:hidden;height:100%">
+<iframe style="border:none;height:100%;width:100%;margin:0;padding:0"
+	src="{% static 'user_guide/example_guide.html' %}" />
+</div>
+{% endblock content %}
