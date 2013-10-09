@@ -1,4 +1,8 @@
 /* Inset brand in nav bar */
+.navbar .brand a {
+  color: #0097E2;
+}
+
 .brand.brand-inverse {
   color: rgba(0,0,0,0.4);
   font-weight: bold;
