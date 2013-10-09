@@ -30,6 +30,7 @@ core_urls = patterns(
     url(r'^public_data/', 'public_data', name='public_data'),
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
+    (r'^help/$', 'user_guide'),
     (r'^import_params/$', 'import_params'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",

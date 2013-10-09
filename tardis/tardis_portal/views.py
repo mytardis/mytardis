@@ -3359,3 +3359,9 @@ def stage_files_to_dataset(request, dataset_id):
 
     email = {'email': user.email}
     return HttpResponse(json.dumps(email), status=201)
+
+
+def user_guide(request):
+    c = Context({})
+    return HttpResponse(render_response_index(request,
+                        'tardis_portal/user_guide.html', c))
