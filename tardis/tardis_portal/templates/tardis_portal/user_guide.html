@@ -1,5 +1,14 @@
 {% extends "tardis_portal/portal_template.html" %}
 {% load static from staticfiles %}
+{% block script %}
+<style type="text/css">
+html, body, .container-fluid, .container-fluid .row-fluid,
+.container-fluid .row-fluid .span12,
+.container-fluid .row-fluid .span12 div {
+    height: 100%;
+}
+</style>
+{% endblock script %}
 {% block content %}
 <div style="margin:-20px;padding:0px;overflow:hidden;height:100%">
 <iframe style="border:none;height:100%;width:100%;margin:0;padding:0"
