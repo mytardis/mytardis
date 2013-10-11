@@ -91,12 +91,10 @@
 		{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
 		  {% if forloop.first %}
 		    <ul class="nav nav-list">
+		      <li class="nav-header dataset-list-header">Latest dataset in this experiment</li>
 		  {% endif %}
 		  <li>
-		    <span class="{% if exp.public_download_allowed %}pull-left{% endif %}" >
-		      Latest dataset in this experiment<br/>
 		      <a href="{% url 'tardis.tardis_portal.views.view_dataset' ds.id %}"><strong>{{ ds.description }}</strong></a>
-		    </span>
 		  {% if exp.public_download_allowed %}
 		    {% for datafile in ds.get_images|slice:":5" %}
 		      {% if forloop.first %}
@@ -117,6 +115,8 @@
 		  {% if forloop.last %}
 		    </ul>
 		  {% endif %}
+		  {% empty %}
+		  There are no datasets in this experiment
 		{% endfor %}
 	      </div>
 	    </div>
