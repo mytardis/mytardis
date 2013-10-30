@@ -2880,6 +2880,19 @@ def upload_files(request, dataset_id,
     return render_to_response(template_name, c)
 
 
+def remove_csrf_token(request):
+    '''
+    rather than fixing the form code that loops over all POST entries
+    indiscriminately, I am removing the csrf token with this hack.
+    This is only required in certain form code and can be removed should
+    this ever be fixed
+    '''
+    new_post_dict = request.POST.copy()
+    del(new_post_dict['csrfmiddlewaretoken'])
+    request.POST = new_post_dict
+    return request
+
+
 @login_required
 def edit_experiment_par(request, parameterset_id):
     parameterset = ExperimentParameterSet.objects.get(id=parameterset_id)
@@ -2915,9 +2928,10 @@ def edit_parameters(request, parameterset, otype):
     valid = True
 
     if request.method == 'POST':
+        request = remove_csrf_token(request)
 
         class DynamicForm(create_parameterset_edit_form(
-            parameterset, request=request)):
+                parameterset, request=request)):
             pass
 
         form = DynamicForm(request.POST)
@@ -3002,7 +3016,7 @@ def add_par(request, parentObject, otype, stype):
     valid = True
 
     if request.method == 'POST':
-
+        request = remove_csrf_token(request)
         class DynamicForm(create_datafile_add_form(
             schema.namespace, parentObject, request=request)):
             pass

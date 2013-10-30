@@ -2,7 +2,7 @@
 {% load bootstrap %}
 
 {% block content %}
-<form action="" method="post" class="form-horizontal">
+<form action="" method="post" class="form-horizontal">{% csrf_token %}
   <input name="next_page" type="hidden" value="{{ next_page }}" />
   <fieldset>
     <legend>Please Log In</legend>

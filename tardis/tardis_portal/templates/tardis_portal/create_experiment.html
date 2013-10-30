@@ -6,7 +6,7 @@
     </div>
     {{ form.non_field_errors }}
   <form id="create_experiment_form" action="" method="POST"
-        class="form-horizontal">
+        class="form-horizontal">{% csrf_token %}
       {% load bootstrap %}
       <fieldset>
         {{ form.title|bootstrap }}
