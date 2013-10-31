@@ -165,7 +165,12 @@ $(document).ready(function() {
                   var password2 = $(this).parents('.user_create').find("#id_password2").val();
                   var authMethod = $(this).parents('.user_create').find("#id_authMethod").val();
 
-                  post_vars = 'user=' + username + '&email=' + email + '&authMethod=' + authMethod + '&password=' + password1
+                  post_vars = {user: username,
+			       email: email,
+			       authMethod: authMethod,
+			       password: password1,
+			       csrfmiddlewaretoken: '{{csrf_token}}'
+			       };
                   action = '/experiment/control_panel/create/user/'
 
                   // returns 0 on fail
