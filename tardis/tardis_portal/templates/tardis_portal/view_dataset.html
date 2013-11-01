@@ -545,6 +545,7 @@ padding-top: 150px;
 font-weight: bold;
 color: lightgrey;
 display: none;
+margin-top: 20px;
       ">Drop files here
       </div>
   </div>
@@ -630,6 +631,11 @@ $(function () {
           //      $('<p/>').text(file.name).appendTo(document.body);
           //  });
             $('#datafiles-pane').trigger('reload');
+            var length = data.files.length;
+            for (var i = 0; i < length; i++) {
+                showMsg.success(data.files[i].name + " was successfully uploaded");
+                // need to change notification to show multiple, not replace existing ones
+            }
         },
 	dropZone: $('.dropzone')
     });
