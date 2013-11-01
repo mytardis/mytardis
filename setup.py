@@ -23,7 +23,7 @@ setup(
         'pyparsing==1.5.7',  # held back by rdflib and rdfextras
         'feedparser==5.1.3',
         'elementtree',
-        'django==1.5.1',
+        'django==1.5.5',
         'django-registration==1.0',
         'django-extensions==1.1.1',
         'django-form-utils==0.2.0',
