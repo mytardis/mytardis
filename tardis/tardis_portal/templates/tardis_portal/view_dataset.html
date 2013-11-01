@@ -283,6 +283,22 @@
             });
   });
 </script>
+<style type="text/css">
+.dropzone.in {
+    background: blue;
+}
+.dropzone.hover {
+    background: lawngreen;
+}
+.dropzone.fade {
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -ms-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    opacity: 1;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -474,6 +490,8 @@ $('#modal-metadata .submit-button').live('click', function() {
   </div>
   <hr class="visible-phone"/>
   <div class="span4">
+  <div class="row-fluid">
+    <div class="span8">
       <h3 style="display: inline">
       {{dataset.dataset_file_set.count}} File{% if dataset.dataset_file_set.count != 1 %}s{%endif%}
       </h3>
@@ -506,9 +524,29 @@ $('#modal-metadata .submit-button').live('click', function() {
   </p>
   {% endif %}
   {% endblock downloads %}
-
-      <div id="datafiles-pane"></div>
-
+    </div>
+    <div class="span4">
+         <span class="btn btn-success fileinput-button pull-right">
+        <i class="glyphicon glyphicon-plus"></i>
+        <span>Add files...</span>
+        <input id="fileupload" type="file" name="attached_file" data-url="/api/v1/dataset_file/" multiple>
+    </span>
+    </div>
+  </div>
+      <div id="datafiles-pane" class="dropzone"></div>
+      <div id="dropzone" class="dropzone" style="
+border: 6px dashed lightgrey;
+-moz-border-radius: 40px;
+border-radius: 40px;
+height: 210px;
+text-align: center;
+font-size: 40px;
+padding-top: 150px;
+font-weight: bold;
+color: lightgrey;
+display: none;
+      ">Drop files here
+      </div>
   </div>
 </div>
 
@@ -571,6 +609,82 @@ $(document).ready(function(){
   $("#upload_button_code").load('{% url upload_method dataset.id %}');
 {% endif %}
 
+});
+</script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="{% static 'js/jquery.iframe-transport.js' %}"></script>
+<!-- The basic File Upload plugin -->
+<script src="{% static 'js/jquery.fileupload.js' %}"></script>
+<!-- The File Upload processing plugin -->
+<script src="{% static 'js/jquery.fileupload-process.js' %}"></script>
+<!-- The File Upload validation plugin -->
+<script src="{% static 'js/jquery.fileupload-validate.js' %}"></script>
+<script type="text/javascript">
+$(function () {
+    $('#dropzone').hide();
+    $('#fileupload').fileupload({
+        dataType: 'json',
+	headers: {'X-CSRFToken': '{{csrf_token}}'},
+        done: function (e, data) {
+          //  $.each(data.result.files, function (index, file) {
+          //      $('<p/>').text(file.name).appendTo(document.body);
+          //  });
+            $('#datafiles-pane').trigger('reload');
+        },
+	dropZone: $('.dropzone')
+    });
+    $('#datafiles-pane').bind('drop dragover', function (e) {
+        e.preventDefault();
+    });
+    $('#fileupload').bind('fileuploadsubmit', function (e, data) {
+        var jsondata = {
+            dataset: "/api/v1/dataset/{{dataset.id}}/",
+            filename: data.files[0].name,
+            size: data.files[0].size,
+            mimetype: data.files[0].type
+        };
+        data.formData = {json_data: JSON.stringify(jsondata)};
+    });
+});
+var showDropzone = function() {
+    $('#datafiles-pane').hide();
+    $('#dropzone').show();
+};
+var inDropzone = function() {
+
+};
+var hideDropzone = function() {
+    $('#datafiles-pane').show();
+    $('#dropzone').hide();
+};
+$(document).bind('dragover', function (e) {
+    var dropZone = $('.dropzone'),
+        timeout = window.dropZoneTimeout;
+    if (!timeout) {
+        //dropZone.addClass('in');
+        showDropzone();
+    } else {
+        clearTimeout(timeout);
+    }
+    var found = false,
+        node = e.target;
+    do {
+        if (node === dropZone[0]) {
+           found = true;
+           break;
+       }
+       node = node.parentNode;
+    } while (node != null);
+    if (found) {
+        dropZone.addClass('hover');
+    } else {
+        dropZone.removeClass('hover');
+    }
+    window.dropZoneTimeout = setTimeout(function () {
+        window.dropZoneTimeout = null;
+        //dropZone.removeClass('in hover');
+	hideDropzone();
+    }, 100);
 });
 </script>
 {% endblock finalscript %}
