@@ -677,7 +677,7 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
-    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
+    upload_method = getattr(settings, "UPLOAD_METHOD", False)
 
     c = Context({
         'dataset': dataset,

@@ -437,9 +437,10 @@ TRANSFER_PROVIDERS = {
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
 
-UPLOAD_METHOD = "uploadify"
+UPLOAD_METHOD = False
 '''
-can be changed to an app that provides an upload_button function,
+Old version: UPLOAD_METHOD = "uploadify".
+This can be changed to an app that provides an upload_button function,
 eg. "tardis.apps.filepicker.views.upload_button" to use a fancy
 commercial uploader.
 To use filepicker, please also get an API key at http://filepicker.io
