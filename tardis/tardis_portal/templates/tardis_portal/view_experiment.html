@@ -6,6 +6,7 @@
 {% load uploadify_tags %}
 {% load dynurl %}
 {% load mustachejs %}
+{% load bleach_tag %}
 
 {% block script %}
 
@@ -263,15 +264,17 @@ $('#modal-metadata .submit-button').click(function() {
 <div class="row-fluid" >
   <div class="span7">
   <div align="center" style="margin-bottom: -20px">
-  <div id="abstractHolder" style="display: none">{{ experiment.description|safe|linebreaksbr }}</div>
+  <div id="abstractHolder" style="display: none">{{ experiment.description|bleach|linebreaksbr }}</div>
   <a id="abstract-toggle" class="btn btn-mini" title="Show Description">
      Toggle Full Description
   </a>
   </div>
+  <div style="padding-top:10px;">
   <p class="abstract well info-box" property="dc:abstract">
       <span id="abstractText">
       </span>
   </p>
+  </div>
     <!-- Tab buttons -->
     <ul id="experiment-tabs" class="nav nav-pills">
       {% for appurl, appname in apps %}
@@ -384,31 +387,26 @@ $(document).ready(function() {
   // Abbreviate abstract
   var hideAbstract = false;
   var spanhtml = $('#abstractHolder').html();
-  var spantext = $('#abstractHolder').text();
 
     if(spanhtml.length > 100)
     {
 	hideAbstract = true;
-        $('#abstractText').parent().attr('style', 'padding-top: 25px;');
         $('#abstract-toggle').attr('style', 'display: inline;');
 
-        span = $('#abstractText').addClass('truncated-text');
-
-        $('#abstractText').empty().html(spantext);
+        $('#abstractText').empty().html(spanhtml);
+        $('#abstractText').parent().attr('style', 'height: 33px;');
         $('#abstractText').parent().addClass('abstract-clickable');
 
         $('#abstract-toggle').click(function(evt) {
            if(!hideAbstract)
            {
-             span.addClass('truncated-text');
-             $('#abstractText').empty().html(spantext);
+             $('#abstractText').parent().attr('style', 'height: 33px;');
              hideAbstract = true;
 	     $('#abstract-toggle').text('Show Description');
            }
            else
            {
-             span.removeClass('truncated-text');
-             $('#abstractText').empty().html(spanhtml);
+             $('#abstractText').parent().attr('style', 'padding-top:20px;');
              hideAbstract = false;
              $('#abstract-toggle').text('Hide Description');
            }

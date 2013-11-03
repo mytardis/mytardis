@@ -2,6 +2,7 @@
 {% load experiment_tags %}
 {% load experimentstats %}
 {% load humanize %}
+{% load bleach_tag %}
 
 {% block content %}
 
@@ -87,7 +88,7 @@
 	    <div id="collapse{{exp.id}}"
 		 class="accordion-body collapse in">
 	      <div class="accordion-inner">
-		<p><em>{{exp.description|default:""}}</em></p>
+		<p><em>{{exp.description|default:""|bleach}}</em></p>
 		{% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":1" %}
 		  {% if forloop.first %}
 		    <ul class="nav nav-list">

@@ -2,6 +2,7 @@
 {% load static from staticfiles %}
 {% load experiment_tags %}
 {% load experimentstats %}
+{% load bleach_tag %}
 
 {% block script %}
 {% endblock script %}
@@ -63,7 +64,7 @@
 	      <div id="collapse{{exp.id}}"
 		   class="accordion-body collapse{% if forloop.first %} in{% endif %}">
 		<div class="accordion-inner">
-		  <p>{{exp.description|default:"<em>No description</em>"}}</p>
+		  <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
 		  {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		    {% if forloop.first %}
 		      <ul class="nav nav-list">
@@ -152,7 +153,7 @@
 	  <div id="collapsepub{{exp.id}}"
 	       class="accordion-body collapse{% if forloop.first and not is_authenticated %} in{% endif %}">
 	    <div class="accordion-inner">
-	      <p>{{exp.description|default:"<em>No description</em>"}}</p>
+	      <p>{{exp.description|default:"<em>No description</em>"|bleach}}</p>
 	      {% for ds in exp.datasets.all|dictsortreversed:"id"|slice:":5" %}
 		{% if forloop.first %}
 		  <ul class="nav nav-list">
