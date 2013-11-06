@@ -626,7 +626,6 @@ class DatasetResource(MyTardisModelResource):
         datafiles = Dataset_File.objects.filter(dataset__id=dataset_id)
         auth_bundle = self.build_bundle(request=request)
         auth_bundle.obj = Dataset_File()
-        #import ipdb; ipdb.set_trace()
         self.authorized_read_list(
             datafiles, auth_bundle
             )
@@ -693,6 +692,15 @@ class Dataset_FileResource(MyTardisModelResource):
             file_path = write_uploaded_file_to_dataset(dataset,
                                                        newfile)
             location_name = 'local'
+            if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
+                location = Location.objects.get(name=location_name)
+                import urlparse
+                abs_path = os.path.join(urlparse.urlsplit(location.url).path,
+                                        file_path)
+                from tardis.tardis_portal.util import generate_file_checksums
+                md5, sha512, size, _ = generate_file_checksums(
+                    open(abs_path, 'r'), False)
+                bundle.data['md5sum'] = md5
             del(bundle.data['attached_file'])
         elif 'replicas' not in bundle.data:
             # no replica specified: return upload path and create replica for

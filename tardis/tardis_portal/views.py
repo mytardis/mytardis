@@ -54,7 +54,7 @@ from django.template import Context
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
@@ -677,7 +677,7 @@ def view_dataset(request, dataset_id):
         except (EmptyPage, InvalidPage):
             return paginator.page(paginator.num_pages)
 
-    upload_method = getattr(settings, "UPLOAD_METHOD", "uploadify")
+    upload_method = getattr(settings, "UPLOAD_METHOD", False)
 
     c = Context({
         'dataset': dataset,
@@ -2819,9 +2819,11 @@ def import_staging_files(request, dataset_id):
     c = Context({
         'dataset_id': dataset_id,
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
-        'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-     })
-    return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+        'staging_mount_user_suffix_enable':
+        settings.STAGING_MOUNT_USER_SUFFIX_ENABLE,
+    })
+    return HttpResponse(
+        render(request, 'tardis_portal/ajax/import_staging_files.html', c))
 
 
 def list_staging_files(request, dataset_id):
@@ -2848,7 +2850,8 @@ def list_staging_files(request, dataset_id):
         'dataset_id': dataset_id,
         'directory_listing': staging_list(from_path, staging, root=root),
      })
-    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)
+    return HttpResponse(render(
+        request, 'tardis_portal/ajax/list_staging_files.html', c))
 
 
 @authz.dataset_write_permissions_required
@@ -2878,6 +2881,19 @@ def upload_files(request, dataset_id,
                  'session_id': request.session.session_key
                  })
     return render_to_response(template_name, c)
+
+
+def remove_csrf_token(request):
+    '''
+    rather than fixing the form code that loops over all POST entries
+    indiscriminately, I am removing the csrf token with this hack.
+    This is only required in certain form code and can be removed should
+    this ever be fixed
+    '''
+    new_post_dict = request.POST.copy()
+    del(new_post_dict['csrfmiddlewaretoken'])
+    request.POST = new_post_dict
+    return request
 
 
 @login_required
@@ -2915,9 +2931,10 @@ def edit_parameters(request, parameterset, otype):
     valid = True
 
     if request.method == 'POST':
+        request = remove_csrf_token(request)
 
         class DynamicForm(create_parameterset_edit_form(
-            parameterset, request=request)):
+                parameterset, request=request)):
             pass
 
         form = DynamicForm(request.POST)
@@ -3002,7 +3019,7 @@ def add_par(request, parentObject, otype, stype):
     valid = True
 
     if request.method == 'POST':
-
+        request = remove_csrf_token(request)
         class DynamicForm(create_datafile_add_form(
             schema.namespace, parentObject, request=request)):
             pass
@@ -3332,7 +3349,6 @@ def stage_files_to_dataset(request, dataset_id):
     """
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
-
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()

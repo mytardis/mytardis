@@ -88,6 +88,7 @@ $('.add_files').live('click', function(){
 </button>
 
 <script type="text/javascript">
+//@ sourceURL=staging.js
 $('#staging-import-button').click(function() {
   // Get files
   var files = _.map(
@@ -107,6 +108,7 @@ $('#staging-import-button').click(function() {
     type: 'POST',
     url: '{% url 'tardis.tardis_portal.views.stage_files_to_dataset' dataset_id %}',
     data: JSON.stringify(files),
+    headers: {'X-CSRFToken': '{{csrf_token}}'},
     contentType: "application/json; charset=utf-8",
     dataType: 'json',
     error: function(jqXHR, textStatus, errorThrown) {

@@ -6,7 +6,8 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-tags = getattr(settings, 'ALLOWED_HTML_TAGS', bleach.ALLOWED_TAGS)
+tags = getattr(settings, 'BLEACH_ALLOWED_TAGS', bleach.ALLOWED_TAGS)
+attributes = getattr(settings, 'BLEACH_ALLOWED_ATTRIBUTES', bleach.ALLOWED_ATTRIBUTES)
 
 
 def bleach_value(value):

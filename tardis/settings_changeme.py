@@ -109,6 +109,7 @@ MIDDLEWARE_CLASSES = (
     #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.middleware.cache.FetchFromCacheMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
@@ -436,9 +437,10 @@ TRANSFER_PROVIDERS = {
     'dav': 'tardis.tardis_portal.transfer.WebDAVTransfer',
     'local': 'tardis.tardis_portal.transfer.LocalTransfer'}
 
-UPLOAD_METHOD = "uploadify"
+UPLOAD_METHOD = False
 '''
-can be changed to an app that provides an upload_button function,
+Old version: UPLOAD_METHOD = "uploadify".
+This can be changed to an app that provides an upload_button function,
 eg. "tardis.apps.filepicker.views.upload_button" to use a fancy
 commercial uploader.
 To use filepicker, please also get an API key at http://filepicker.io
@@ -511,4 +513,31 @@ AUTOGENERATE_API_KEY = False
 '''
 Generate a tastypie API key with user post_save
 (tardis/tardis_portal/models/hooks.py)
+'''
+
+BLEACH_ALLOWED_TAGS = [
+    'a',
+    'abbr',
+    'acronym',
+    'b',
+    'blockquote',
+    'code',
+    'em',
+    'i',
+    'li',
+    'ol',
+    'strong',
+    'ul',
+]
+'''
+These are the default bleach values and shown here as an example.
+'''
+
+BLEACH_ALLOWED_ATTRIBUTES = {
+    'a': ['href', 'title'],
+    'abbr': ['title'],
+    'acronym': ['title'],
+}
+'''
+These are the default bleach values and shown here as an example.
 '''

@@ -25,3 +25,4 @@ docs/Makefile
 var/
 versions.cfg
 docs/pydoc
+tardis/tardis_portal/tests/rifcs/MyTARDIS-1.xml

@@ -4,7 +4,7 @@
 
 
 {% block content %}
-<form class="form-horizontal" method="post">
+<form class="form-horizontal" method="post">{% csrf_token %}
 {{ form|bootstrap }}
 
 <div class="form-actions">

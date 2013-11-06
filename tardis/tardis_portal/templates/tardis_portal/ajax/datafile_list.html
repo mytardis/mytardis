@@ -35,20 +35,6 @@
 
 {{ paginator_block }}
 
-<p>
-{# uploadify here #}
-
-{% if has_write_permissions %}
-  {% if not experiment.public %}
-    {% if not immutable %}
-      <div class="upload_files_container"></div>
-    {% endif %}
-  {% endif %}
-{% else %}
-  {# Spacing to keep display the same #}
-  <div></div>
-{% endif %}
-
 <p id="filename-search" class="js-required" data-action="/ajax/datafile_list/{{dataset.id}}/" data-method="GET" style="padding: 5px 0 5px 10px; border: 1px solid #DDDDDD;">
   <input id="filename-search-text" style="width: 95%; font-size: 120%; margin-top: 5px;"
       title='Enter part or all of a filename, then press enter. e.g. Enter "175" to show only files containing "175" in their filename.'
@@ -60,34 +46,8 @@
       value="{{filename_search|default:''}}" />
 </p>
 
-<form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
-  <div class="pull-left">
-    {% if has_download_permissions %}
-    <button type="submit" class="btn btn-mini download-selected">
-      <i class="icon-download-alt"></i>
-      Download Selected Files
-    </button>
-    <input type="hidden" name="comptype" value="{{default_format}}"/>
-    <input type="hidden" name="organization" value="{{default_organization}}"/>
-    {% endif %}
-  </div>
+<form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
 
-<div class="pull-right">
-  {% if not dataset.immutable %}
-    {% if has_write_permissions %}
-        <a data-dataset_id="{{dataset.id}}" class="upload_files_link btn btn-mini" title="Upload Files">
-          <i class="icon-upload-alt"></i>
-          Upload Files
-        </a>
-    {% endif %}
-    {% if has_write_permissions and has_staging_access %}
-        <a data-dataset_id="{{dataset.id}}" class="import_staging_files_link btn btn-mini" title="Import Staging Files">
-          <i class="icon-arrow-right"></i>
-          Import Staging Files
-        </a>
-    {% endif %}
-  {% endif %}
-</div>
 <div class="clearfix"></div>
 <table class="datafiles table table-condensed">
 {% if has_download_permissions %}
@@ -95,8 +55,15 @@
 <tr id="datafile-selectors" class="js-required">
 <td colspan="3">
 Select: <a class="dataset_selector_all btn btn-mini">All</a> / <a class="dataset_selector_none btn btn-mini">None</a>
-</td>
-</tr>
+<div class="pull-right">
+  <button type="submit" class="btn btn-mini download-selected">
+      <i class="icon-download-alt"></i>
+      Download Selected Files
+    </button>
+    <input type="hidden" name="comptype" value="{{default_format}}"/>
+    <input type="hidden" name="organization" value="{{default_organization}}"/>
+</div></td>
+  </tr>
 </thead>
 {% endif %}
 <tbody>
