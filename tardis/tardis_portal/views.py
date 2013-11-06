@@ -54,7 +54,7 @@ from django.template import Context
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.decorators import login_required, permission_required
@@ -2819,9 +2819,11 @@ def import_staging_files(request, dataset_id):
     c = Context({
         'dataset_id': dataset_id,
         'staging_mount_prefix': settings.STAGING_MOUNT_PREFIX,
-        'staging_mount_user_suffix_enable': settings.STAGING_MOUNT_USER_SUFFIX_ENABLE
-     })
-    return render_to_response('tardis_portal/ajax/import_staging_files.html', c)
+        'staging_mount_user_suffix_enable':
+        settings.STAGING_MOUNT_USER_SUFFIX_ENABLE,
+    })
+    return HttpResponse(
+        render(request, 'tardis_portal/ajax/import_staging_files.html', c))
 
 
 def list_staging_files(request, dataset_id):
@@ -2848,7 +2850,8 @@ def list_staging_files(request, dataset_id):
         'dataset_id': dataset_id,
         'directory_listing': staging_list(from_path, staging, root=root),
      })
-    return render_to_response('tardis_portal/ajax/list_staging_files.html', c)
+    return HttpResponse(render(
+        request, 'tardis_portal/ajax/list_staging_files.html', c))
 
 
 @authz.dataset_write_permissions_required
@@ -3346,7 +3349,6 @@ def stage_files_to_dataset(request, dataset_id):
     """
     Takes a JSON list of filenames to import from the staging area to this
     dataset.
-
     """
     if not has_dataset_write(request, dataset_id):
         return HttpResponseForbidden()
