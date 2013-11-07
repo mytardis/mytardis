@@ -60,7 +60,7 @@
       value="{{filename_search|default:''}}" />
 </p>
 
-<form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">
+<form id="datafile-download" method="POST" action="{% url 'tardis.tardis_portal.download.streaming_download_datafiles' %}" target="_blank">{% csrf_token %}
   <div class="pull-left">
     {% if has_download_permissions %}
     <button type="submit" class="btn btn-mini download-selected">

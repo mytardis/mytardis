@@ -422,6 +422,15 @@ $(document).ready(function() {
 </script>
 
 <script type="text/javascript">
+$(function(){
+var oldSync = Backbone.sync;
+Backbone.sync = function(method, model, options){
+  options.beforeSend = function(xhr){
+    xhr.setRequestHeader('X-CSRFToken', '{{csrf_token}}');
+  };
+  return oldSync(method, model, options);
+};
+});
 var datasetTiles = (function() {
 
     var datasets = new MyTardis.Datasets();

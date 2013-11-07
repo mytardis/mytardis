@@ -77,7 +77,7 @@ $('#legal-section .cancel-button').live("click", function() {
 <h3>Step 1: Change Public Access:</h3>
 <br/>
 <form action="{% url 'tardis.tardis_portal.views.choose_rights' experiment.id %}"
-      method="post" class="experiment-rights form-horizontal">
+      method="post" class="experiment-rights form-horizontal">{% csrf_token %}
   {% load bootstrap %}
   {{ form|bootstrap }}
 

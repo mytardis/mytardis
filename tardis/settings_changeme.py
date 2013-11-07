@@ -109,6 +109,7 @@ MIDDLEWARE_CLASSES = (
     #'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     #'django.middleware.cache.FetchFromCacheMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'tardis.tardis_portal.logging_middleware.LoggingMiddleware',
@@ -511,4 +512,31 @@ AUTOGENERATE_API_KEY = False
 '''
 Generate a tastypie API key with user post_save
 (tardis/tardis_portal/models/hooks.py)
+'''
+
+BLEACH_ALLOWED_TAGS = [
+    'a',
+    'abbr',
+    'acronym',
+    'b',
+    'blockquote',
+    'code',
+    'em',
+    'i',
+    'li',
+    'ol',
+    'strong',
+    'ul',
+]
+'''
+These are the default bleach values and shown here as an example.
+'''
+
+BLEACH_ALLOWED_ATTRIBUTES = {
+    'a': ['href', 'title'],
+    'abbr': ['title'],
+    'acronym': ['title'],
+}
+'''
+These are the default bleach values and shown here as an example.
 '''
