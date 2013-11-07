@@ -1,9 +1,10 @@
 {% load static from staticfiles %}
 {% block js_libraries %}
 {# See js/lib/README.rst for more info #}
-<script type="text/javascript" src="{% static 'js/lib/jquery-1.7.1.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-1.10.2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-migrate-1.2.1.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jstree/jquery.jstree.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.8.18.custom.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lib/jquery-ui-1.10.3.custom.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/jquery.cookie.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/flash_detect_min.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/lib/async.min.js' %}"></script>
@@ -45,7 +46,9 @@
 Font Awesome - http://fortawesome.github.com/Font-Awesome
 The Font Awesome webfont, CSS, and LESS files are licensed under CC BY 3.0.
 -->
-<link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet">
+<link href="{% static 'font-awesome/css/font-awesome.css' %}" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static 'css/jquery.fileupload.css' %}"/>
+
 {% endblock %}
 
 {% block site_js %}
