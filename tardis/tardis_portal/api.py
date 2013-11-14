@@ -218,8 +218,12 @@ class ACLAuthorization(Authorization):
             return has_datafile_access(
                 bundle.request, bundle.obj.parameterset.dataset_file.id)
         elif type(bundle.obj) == User:
-            # allow all authenticated users to read user list
-            return bundle.request.user.is_authenticated()
+            # allow all authenticated users to read public user info
+            # the dehydrate function also adds/removes some information
+            authenticated = bundle.request.user.is_authenticated()
+            public_user = bundle.obj.experiment_set.filter(
+                public_access__gt=1).count() > 0
+            return public_user or authenticated
         elif type(bundle.obj) == Schema:
             return bundle.request.user.is_authenticated()
         elif type(bundle.obj) == ParameterName:
@@ -400,6 +404,48 @@ class UserResource(ModelResource):
         fields = ['username', 'first_name', 'last_name']
         serializer = default_serializer
 
+    def dehydrate(self, bundle):
+        '''
+        use cases:
+        public user:
+          anonymous:
+            name, uri, email, id
+          authenticated:
+            other user:
+              name, uri, email, id
+            same user:
+              name, uri, email, id, username
+        private user:
+          anonymous:
+            none
+          authenticated:
+            other user:
+              name, uri, id
+            same user:
+              name, uri, email, id, username
+        '''
+        authuser = bundle.request.user
+        authenticated = authuser.is_authenticated()
+        queried_user = bundle.obj
+        public_user = queried_user.experiment_set.filter(
+            public_access__gt=1).count() > 0
+        same_user = authuser == queried_user
+
+        # add the database id for convenience
+        bundle.data['id'] = queried_user.id
+
+        # allow the user to find out their username and email
+        if same_user and authenticated:
+            bundle.data['email'] = queried_user.email
+        else:
+            del(bundle.data['username'])
+
+        # add public information
+        if public_user:
+            bundle.data['email'] = queried_user.email
+
+        return bundle
+
 
 class MyTardisModelResource(ModelResource):
 
@@ -519,6 +565,24 @@ class ExperimentResource(MyTardisModelResource):
         filtering = {
             'title': ('exact',),
         }
+
+    def dehydrate(self, bundle):
+        exp = bundle.obj
+        authors = [{'name': a.author, 'url': a.url}
+                   for a in exp.author_experiment_set.all()]
+        bundle.data['authors'] = authors
+        lic = exp.license
+        if lic is not None:
+            bundle.data['license'] = {
+                'name': lic.name,
+                'url': lic.url,
+                'description': lic.internal_description,
+                'image_url': lic.image_url,
+                'allows_distribution': lic.allows_distribution,
+            }
+        owners = exp.get_owners()
+        bundle.data['owner_ids'] = [o.id for o in owners]
+        return bundle
 
     def hydrate_m2m(self, bundle):
         '''
