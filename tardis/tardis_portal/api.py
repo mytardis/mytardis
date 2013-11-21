@@ -187,6 +187,10 @@ class ACLAuthorization(Authorization):
                 if dfp.parameterset.dataset_file in datafiles:
                     dfp_list.append(dfp)
             return dfp_list
+        elif type(bundle.obj) == Schema:
+            return object_list
+        elif type(bundle.obj) == ParameterName:
+            return object_list
         else:
             return []
 
@@ -225,9 +229,9 @@ class ACLAuthorization(Authorization):
                 public_access__gt=1).count() > 0
             return public_user or authenticated
         elif type(bundle.obj) == Schema:
-            return bundle.request.user.is_authenticated()
+            return True
         elif type(bundle.obj) == ParameterName:
-            return bundle.request.user.is_authenticated()
+            return True
         elif type(bundle.obj) == Location:
             return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
