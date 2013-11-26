@@ -530,7 +530,7 @@ $('#modal-metadata .submit-button').live('click', function() {
     {% else %}
       {% for p in protocol %}
         <a class="btn btn-primary btn-mini" href="{{p.1}}"
-           title="Download Entire Experiment as {{p.0|upper}}">
+           title="Download Entire Dataset as {{p.0|upper}}">
           <i class="icon-download-alt"></i>
           {{p.0|upper}}
         </a>
@@ -549,6 +549,11 @@ $('#modal-metadata .submit-button').live('click', function() {
       </a>
     </div>
     {% endif %}
+    </div>
+  </div>
+  <div class="row-fluid">
+    <div id="progress" class="progress span12" style="height:4px;min-height:4px;margin-bottom:8px;">
+        <div class="progress-bar progress-bar-success" style="background-color:blue;height:4px;width:0%;"></div>
     </div>
   </div>
       <div id="datafiles-pane" class="dropzone"></div>
@@ -670,6 +675,12 @@ $(function () {
             mimetype: data.files[0].type
         };
         data.formData = {json_data: JSON.stringify(jsondata)};
+    }).on('fileuploadprogressall', function (e, data) {
+        var progress = parseInt(data.loaded / data.total * 100, 10);
+        $('#progress .progress-bar').css(
+            'width',
+            progress + '%'
+        );
     });
 });
 var showDropzone = function() {
