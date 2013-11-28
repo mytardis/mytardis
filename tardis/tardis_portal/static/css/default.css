@@ -244,3 +244,8 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
     text-transform: none;
 }
 /* end index page */
+/* autocomplete defaults */
+.ui-autocomplete {
+    z-index: 1234 !important;
+}
+/* end autocomplete defaults */
