@@ -15,7 +15,10 @@ class StorageBox(models.Model):
     status = models.CharField(max_length=100)
 
     def get_options_as_dict(self):
-        return {o.key: o.value for o in self.options.all()}
+        opts_dict = {}
+        for o in self.options.all():
+            opts_dict[o.key] = o.value
+        return opts_dict
 
     def get_initialised_storage_instance(self):
         storage_class = django_storage.get_storage_class(
