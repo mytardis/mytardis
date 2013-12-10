@@ -90,7 +90,7 @@ from tardis.tardis_portal.tasks import create_staging_datafiles,\
     create_staging_datafile
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
-    DatafileParameter, DatasetParameter, ObjectACL, Dataset_File, \
+    DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
@@ -123,7 +123,7 @@ def get_dataset_info(dataset, include_thumbnail=False, exclude=None):
     if exclude is None or 'datafiles' not in exclude or 'file_count' \
        not in exclude:
         datafiles = list(
-            dataset.dataset_file_set.values_list('id', flat=True))
+            dataset.datafile_set.values_list('id', flat=True))
         if exclude is None or 'datafiles' not in exclude:
             obj['datafiles'] = datafiles
         if exclude is None or 'file_count' not in exclude:
@@ -263,8 +263,8 @@ def load_datafile_image(request, parameter_id):
         parameter = DatafileParameter.objects.get(pk=parameter_id)
     except DatafileParameter.DoesNotExist:
         return HttpResponseNotFound()
-    dataset_file = parameter.parameterset.dataset_file
-    if authz.has_datafile_access(request, dataset_file.id):
+    datafile = parameter.parameterset.datafile
+    if authz.has_datafile_access(request, datafile.id):
         return load_image(request, parameter)
     else:
         return return_response_error(request)
@@ -302,11 +302,11 @@ def display_dataset_image(
 
 @authz.datafile_access_required
 def display_datafile_image(
-    request, dataset_file_id, parameterset_id, parameter_name):
+    request, datafile_id, parameterset_id, parameter_name):
 
     # TODO handle not exist
 
-    if not authz.has_datafile_access(request, dataset_file_id):
+    if not authz.has_datafile_access(request, datafile_id):
         return return_response_error(request)
 
     image = DatafileParameter.objects.get(name__name=parameter_name,
@@ -574,12 +574,12 @@ def experiment_description(request, experiment_id):
     c['authors'] = experiment.author_experiment_set.all()
 
     c['datafiles'] = \
-        Dataset_File.objects.filter(dataset__experiments=experiment_id)
+        DataFile.objects.filter(dataset__experiments=experiment_id)
 
     c['owners'] = experiment.get_owners()
 
     # calculate the sum of the datafile sizes
-    c['size'] = Dataset_File.sum_sizes(c['datafiles'])
+    c['size'] = DataFile.sum_sizes(c['datafiles'])
 
     c['has_download_permissions'] = \
         authz.has_experiment_download_access(request, experiment_id)
@@ -663,7 +663,7 @@ def view_dataset(request, dataset_id):
         # need to fix.
         pgresults = 100
 
-        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+        paginator = Paginator(dataset.datafile_set.all(), pgresults)
 
         try:
             page = int(request.GET.get('page', '1'))
@@ -1189,7 +1189,7 @@ def register_experiment_ws_xmldata(request):
 
 @never_cache
 @authz.datafile_access_required
-def display_datafile_details(request, dataset_file_id):
+def display_datafile_details(request, datafile_id):
     """
     Displays a box, with a list of interaction options depending on
     the file type given and displays the one with the highest priority
@@ -1198,7 +1198,7 @@ def display_datafile_details(request, dataset_file_id):
     Given URLs are called with the datafile id appended.
     """
     # retrieve valid interactions for file type
-    the_file = Dataset_File.objects.get(id=dataset_file_id)
+    the_file = DataFile.objects.get(id=datafile_id)
     the_schemas = [p.schema.namespace for p in the_file.getParameterSets()]
     default_view = "Datafile Metadata"
     apps = [
@@ -1209,14 +1209,14 @@ def display_datafile_details(request, dataset_file_id):
     views = []
     for ns, url in apps:
         if ns == default_view:
-            views.append({"url": "%s/%s/" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, datafile_id),
                           "name": default_view})
         elif ns in the_schemas:
             schema = Schema.objects.get(namespace__exact=ns)
-            views.append({"url": "%s/%s/" % (url, dataset_file_id),
+            views.append({"url": "%s/%s/" % (url, datafile_id),
                           "name": schema.name})
     context = Context({
-        'datafile_id': dataset_file_id,
+        'datafile_id': datafile_id,
         'views': views,
     })
     return HttpResponse(render_response_index(
@@ -1227,13 +1227,13 @@ def display_datafile_details(request, dataset_file_id):
 
 @never_cache
 @authz.datafile_access_required
-def retrieve_parameters(request, dataset_file_id):
+def retrieve_parameters(request, datafile_id):
 
     parametersets = DatafileParameterSet.objects.all()
-    parametersets = parametersets.filter(dataset_file__pk=dataset_file_id)\
+    parametersets = parametersets.filter(datafile__pk=datafile_id)\
                                  .exclude(schema__hidden=True)
 
-    datafile = Dataset_File.objects.get(id=dataset_file_id)
+    datafile = DataFile.objects.get(id=datafile_id)
     dataset_id = datafile.dataset.id
     has_write_permissions = authz.has_dataset_write(request, dataset_id)
 
@@ -1261,7 +1261,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         sqs = SearchQuerySet(query=search_query)
         query =  SearchQueryString(request.GET['query'])
         results = sqs.raw_search(query.query_string() + ' AND dataset_id_stored:%i' % (int(dataset_id))).load_all()
-        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'dataset_file' and r.dataset_id_stored == int(dataset_id)]
+        highlighted_dsf_pks = [int(r.pk) for r in results if r.model_name == 'datafile' and r.dataset_id_stored == int(dataset_id)]
 
         params['query'] = query.query_string()
 
@@ -1269,7 +1269,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         highlighted_dsf_pks = [r.pk for r in request.session['datafileResults']]
 
     dataset_results = \
-        Dataset_File.objects.filter(
+        DataFile.objects.filter(
             dataset__pk=dataset_id,
         ).order_by('filename')
 
@@ -1325,7 +1325,7 @@ def retrieve_datafile_list(request, dataset_id, template_name='tardis_portal/aja
         'dataset': Dataset.objects.get(id=dataset_id),
         'filename_search': filename_search,
         'is_owner': is_owner,
-        'highlighted_dataset_files': highlighted_dsf_pks,
+        'highlighted_datafiles': highlighted_dsf_pks,
         'has_download_permissions': has_download_permissions,
         'has_write_permissions': has_write_permissions,
         'search_query' : query,
@@ -1379,7 +1379,7 @@ def search_experiment(request):
         result = {}
         result['sr'] = e
         result['dataset_hit'] = False
-        result['dataset_file_hit'] = False
+        result['datafile_hit'] = False
         result['experiment_hit'] = True
         results.append(result)
     c = Context({'header': 'Search Experiment',
@@ -1552,7 +1552,7 @@ def __filterParameters(parameters, datafile_results,
     :param searchFilterData: the cleaned up search form data
     :param paramType: either ``datafile`` or ``dataset``
     :type paramType: :py:class:`tardis.tardis_portal.models.Dataset` or
-       :py:class:`tardis.tardis_portal.models.Dataset_File`
+       :py:class:`tardis.tardis_portal.models.DataFile`
 
     :returns: A list of datafiles as a result of the query or None if the
       provided search request is invalid
@@ -1774,7 +1774,7 @@ def __processDatafileParameters(request, searchQueryType, form):
        is the provided searchQueryType is not supported
     :returns: A list of datafiles as a result of the query or None if the
        provided search request is invalid.
-    :rtype: list of :py:class:`tardis.tardis_portal.models.Dataset_Files` or
+    :rtype: list of :py:class:`tardis.tardis_portal.models.DataFiles` or
        None
 
     """
@@ -1897,7 +1897,7 @@ def search_datafile(request):
         result = {}
         result['sr'] = e
         result['dataset_hit'] = False
-        result['dataset_file_hit'] = True
+        result['datafile_hit'] = True
         result['experiment_hit'] = False
         results.append(result)
 
@@ -2607,8 +2607,8 @@ def stats(request):
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
-        'datafile_count': Dataset_File.objects.all().count(),
-        'datafile_size': Dataset_File.sum_sizes(Dataset_File.objects.all()),
+        'datafile_count': DataFile.objects.all().count(),
+        'datafile_size': DataFile.sum_sizes(DataFile.objects.all()),
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
@@ -2781,9 +2781,9 @@ def upload(request, dataset_id):
             filepath = write_uploaded_file_to_dataset(dataset,
                                                       uploaded_file_post)
             logger.debug('done upload')
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=uploaded_file_post.name,
-                                    size=uploaded_file_post.size)
+            datafile = DataFile(dataset=dataset,
+                                filename=uploaded_file_post.name,
+                                size=uploaded_file_post.size)
             logger.debug('created file')
             replica = Replica(datafile=datafile,
                               url=filepath,
@@ -2917,7 +2917,7 @@ def edit_dataset_par(request, parameterset_id):
 @login_required
 def edit_datafile_par(request, parameterset_id):
     parameterset = DatafileParameterSet.objects.get(id=parameterset_id)
-    if authz.has_dataset_write(request, parameterset.dataset_file.dataset.id):
+    if authz.has_dataset_write(request, parameterset.datafile.dataset.id):
         return edit_parameters(request, parameterset, otype="datafile")
     else:
         return return_response_error(request)
@@ -2970,7 +2970,7 @@ def edit_parameters(request, parameterset, otype):
 
 @login_required
 def add_datafile_par(request, datafile_id):
-    parentObject = Dataset_File.objects.get(id=datafile_id)
+    parentObject = DataFile.objects.get(id=datafile_id)
     if authz.has_dataset_write(request, parentObject.dataset.id):
         return add_par(request, parentObject,
                        otype="datafile", stype=Schema.DATAFILE)
@@ -3062,9 +3062,9 @@ class ExperimentSearchView(SearchView):
 
     def extra_context(self):
         extra = super(ExperimentSearchView, self).extra_context()
-        # Results may contain Experiments, Datasets and Dataset_Files.
+        # Results may contain Experiments, Datasets and DataFiles.
         # Group them into experiments, noting whether or not the search
-        # hits were in the Dataset(s) or Dataset_File(s)
+        # hits were in the Dataset(s) or DataFile(s)
         results = self.results
         facets =  results.facet_counts()
         if facets:
@@ -3089,7 +3089,7 @@ class ExperimentSearchView(SearchView):
             result = {}
             result['sr'] = e
             result['dataset_hit'] = False
-            result['dataset_file_hit'] = False
+            result['datafile_hit'] = False
             result['experiment_hit'] = False
             results.append(result)
 

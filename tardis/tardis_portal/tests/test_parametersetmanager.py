@@ -72,11 +72,11 @@ class ParameterSetManagerTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.datafile = models.Dataset_File(dataset=self.dataset,
-                                            filename="testfile.txt",
-                                            size="42", md5sum='bogus')
+        self.datafile = models.DataFile(dataset=self.dataset,
+                                        filename="testfile.txt",
+                                        size="42", md5sum='bogus')
         self.datafile.save()
- 
+
         self.replica = models.Replica(
             datafile=self.datafile,
             url="file://1/testfile.txt",
@@ -106,7 +106,7 @@ class ParameterSetManagerTestCase(TestCase):
         self.parametername3.save()
 
         self.datafileparameterset = models.DatafileParameterSet(
-            schema=self.schema, dataset_file=self.datafile)
+            schema=self.schema, datafile=self.datafile)
         self.datafileparameterset.save()
 
         self.datafileparameter1 = models.DatafileParameter(
@@ -198,5 +198,3 @@ class ParameterSetManagerTestCase(TestCase):
 
         expect(psm.get_param("parameter3", True))\
             .to_equal(datetime(1970,01,01,0,0,0,tzinfo=pytz.utc))
-
-

@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 from django.test import TestCase
 from tempfile import NamedTemporaryFile
 
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, \
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
     Replica, Location, User, UserProfile
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -44,7 +44,7 @@ class BackgroundTaskTestCase(TestCase):
         cf = ContentFile(content, 'background_task_testfile')
 
         # Create new Datafile
-        datafile = Dataset_File(dataset=self.dataset)
+        datafile = DataFile(dataset=self.dataset)
         datafile.filename = cf.name
         datafile.size = len(content)
         datafile.sha512sum = hashlib.sha512(content).hexdigest()
@@ -72,7 +72,7 @@ class BackgroundTaskTestCase(TestCase):
             content = urandom(1024)
             with NamedTemporaryFile() as f:
                 # Create new Datafile
-                datafile = Dataset_File(dataset=self.dataset)
+                datafile = DataFile(dataset=self.dataset)
                 datafile.filename = 'background_task_testfile'
                 datafile.size = len(content)
                 datafile.sha512sum = hashlib.sha512(content).hexdigest()

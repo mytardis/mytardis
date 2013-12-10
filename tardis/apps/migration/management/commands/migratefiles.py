@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -40,7 +40,7 @@ from django.utils.log import dictConfig
 
 from tardis.tardis_portal.util import get_free_space
 from tardis.tardis_portal.models import Replica, Location, Dataset, \
-    Dataset_File, Experiment
+    DataFile, Experiment
 
 from tardis.apps.migration import MigrationError, \
     MigrationScorer, migrate_replica
@@ -63,37 +63,37 @@ class Command(BaseCommand):
         '    score                       : score and list all datafiles\n' \
         '    destinations                : lists the recognized destinations\n' \
         'where <target> is "datafile", "dataset" or "experiment", and the ' \
-        '<id>s are the mytardis numeric ids for the respective objects\n' 
+        '<id>s are the mytardis numeric ids for the respective objects\n'
 
     option_list = BaseCommand.option_list + (
         make_option('-a', '--all',
                     action='store_true',
                     dest='all',
-                    help='Process all datafiles'), 
+                    help='Process all datafiles'),
         make_option('-s', '--source',
                     action='store',
                     dest='source',
                     help='The destination for the transfer. ' \
                         'The default destination is %s' % \
-                        settings.DEFAULT_MIGRATION_DESTINATION), 
+                        settings.DEFAULT_MIGRATION_DESTINATION),
         make_option('-d', '--dest',
                     action='store',
                     dest='dest',
                     help='The source for the transfer. ' \
-                        'The default source is "local"'), 
+                        'The default source is "local"'),
         make_option('-n', '--dryRun',
                     action='store_true',
                     dest='dryRun',
                     default=False,
                     help='Dry-run mode just lists the replicas that' \
-                        ' would be migrated / restored'), 
+                        ' would be migrated / restored'),
         make_option('--noRemove',
                     action='store_true',
                     dest='noRemove',
                     default=False,
                     help='No-remove mode migrates without removing' \
                         ' the actual file corresponding to the' \
-                        ' source replica') 
+                        ' source replica')
         )
 
     conf = dictConfig(LOGGING)
@@ -145,7 +145,7 @@ class Command(BaseCommand):
                     raise CommandError("No target/ids allowed with --all")
             else:
                 if len(args) == 0:
-                    raise CommandError("Expected a %s target" % subcommand) 
+                    raise CommandError("Expected a %s target" % subcommand)
                 target = args[0]
                 args = args[1:]
             if all:
@@ -159,7 +159,7 @@ class Command(BaseCommand):
             else:
                 raise CommandError("Unknown target: %s" % target)
         else:
-            raise CommandError("Unrecognized subcommand: %s" % subcommand)    
+            raise CommandError("Unrecognized subcommand: %s" % subcommand)
         self._stats()
 
     def _stats(self):
@@ -178,9 +178,9 @@ class Command(BaseCommand):
         ids = []
         for id in args:
             try:
-                Dataset_File.objects.get(id=id)
+                DataFile.objects.get(id=id)
                 ids.append(id)
-            except Dataset_File.DoesNotExist:
+            except DataFile.DoesNotExist:
                 self.stderr.write('Datafile %s does not exist\n' % id)
         self._process_selected_datafiles(args, ids, subcommand, explicit=True)
 
@@ -196,7 +196,7 @@ class Command(BaseCommand):
             ids.extend(self._ids_for_experiment(id))
         self._process_selected_datafiles(args, ids, subcommand)
 
-    def _process_selected_datafiles(self, args, ids, 
+    def _process_selected_datafiles(self, args, ids,
                                     subcommand, explicit=False):
         if len(args) == 0:
             raise CommandError("Expected one or more ids")
@@ -221,7 +221,7 @@ class Command(BaseCommand):
             elif subcommand == 'mirror':
                 ok = migrate_replica(replica, self.dest, mirror=True)
             if self.verbosity > 1:
-                if ok: 
+                if ok:
                     self.stdout.write('%s datafile %s\n' % \
                                           (self._verb(subcommand), id))
                 elif self.verbosity > 2:
@@ -233,7 +233,7 @@ class Command(BaseCommand):
             if explicit and self.verbosity > 2:
                 self.stderr.write('No replica of %s exists at %s\n' % \
                                       (id, self.source.name))
-        except MigrationError as e:              
+        except MigrationError as e:
             self.stderr.write(
                 '%s failed for datafile %s : %s\n' % \
                     (self._noun(subcommand), id, e.args[0]))
@@ -255,7 +255,7 @@ class Command(BaseCommand):
             return 'Restored'
         elif (subcommand == 'mirror'):
             return 'Mirrored'
-        
+
     def _noun(self, subcommand):
         if (subcommand == 'migrate'):
             return 'Migration'
@@ -263,11 +263,11 @@ class Command(BaseCommand):
             return 'Restoration'
         elif (subcommand == 'mirror'):
             return 'Mirroring'
-        
+
     def _ids_for_dataset(self, id):
         try:
             dataset = Dataset.objects.get(id=id)
-            return Dataset_File.objects.filter(dataset=id).\
+            return DataFile.objects.filter(dataset=id).\
                 values_list('id', flat=True)
         except Dataset.DoesNotExist:
             self.stderr.write('Dataset %s does not exist\n' % id)
@@ -276,7 +276,7 @@ class Command(BaseCommand):
     def _ids_for_experiment(self, id):
         try:
             experiment = Experiment.objects.get(id=id)
-            return Dataset_File.objects.\
+            return DataFile.objects.\
                 filter(dataset__experiments__id=id).\
                 values_list('id', flat=True)
         except Experiment.DoesNotExist:
@@ -300,7 +300,7 @@ class Command(BaseCommand):
     def _list_destinations(self):
         for loc in Location.objects.all():
             self.stdout.write('{0:<16} : {1:<8} : {2:<8} : {3:}\n'.
-                              format(loc.name, loc.type, 
+                              format(loc.name, loc.type,
                                      loc.transfer_provider, loc.url))
 
     def _score_all_datafiles(self):
@@ -314,9 +314,9 @@ class Command(BaseCommand):
                 pass
             self.stdout.write("datafile %s / %s, size = %s, " \
                               "score = %s, total_size = %d\n" % \
-                                  (replica.url, datafile.id, 
-                                   datafile.size, score, total)) 
-            
+                                  (replica.url, datafile.id,
+                                   datafile.size, score, total))
+
     def _reclaim(self, args):
         required_space = self._parse_amount(args)
         self._do_reclaim(required_space)
@@ -345,7 +345,7 @@ class Command(BaseCommand):
             raise CommandError("<amount> argument (%s) must be a non-negative" \
                                " number followed  by an optional scale" \
                                " factor (K, M, G or T)" % args[0])
-    
+
     def _do_reclaim(self, required):
         scores = self._do_score_all()
         total = 0
@@ -359,20 +359,20 @@ class Command(BaseCommand):
                 if self.dryRun:
                     self.stdout.write("Would have migrated %s / %s " \
                                           "saving %s bytes\n" % \
-                                          (replica.url, datafile.id, 
+                                          (replica.url, datafile.id,
                                            datafile.size))
                 else:
                     self.stdout.write("Migrating %s / %s saving %s bytes\n" % \
-                                          (replica.url, datafile.id, 
+                                          (replica.url, datafile.id,
                                            datafile.size))
             if self.dryRun:
-                total += long(datafile.size) 
+                total += long(datafile.size)
             else:
                 try:
                     if migrate_replica(replica, self.dest):
-                        total += long(datafile.size) 
+                        total += long(datafile.size)
                         self.transfer_count += 1
-                except MigrationError as e:              
+                except MigrationError as e:
                     self.stderr.write(
                         '%s failed for datafile %s : %s\n' % \
                             (self._noun(subcommand), id, e.args[0]))

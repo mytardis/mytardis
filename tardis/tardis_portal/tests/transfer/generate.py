@@ -36,12 +36,12 @@ from tardis.tardis_portal.models import Location
 def generate_datafile(path, dataset, content=None, size=-1,
                       verify=True, verified=True, verify_checksums_req=False):
     '''Generates a datafile AND a replica to hold its contents'''
-    from tardis.tardis_portal.models import Dataset_File, Replica, Location
+    from tardis.tardis_portal.models import DataFile, Replica, Location
 
     saved = settings.REQUIRE_DATAFILE_CHECKSUMS
     settings.REQUIRE_DATAFILE_CHECKSUMS = False
     try:
-        datafile = Dataset_File()
+        datafile = DataFile()
         if content:
             datafile.size = str(len(content))
         else:

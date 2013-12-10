@@ -69,7 +69,7 @@ class DatasetAdmin(admin.ModelAdmin):
 class DatafileAdminForm(forms.ModelForm):
 
     class Meta:
-        model = models.Dataset_File
+        model = models.DataFile
         widgets = {
             'directory': TextInput(attrs={'size': 120}),
         }
@@ -120,7 +120,7 @@ class FreeTextSearchFieldAdmin(admin.ModelAdmin):
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
-admin.site.register(models.Dataset_File, DatafileAdmin)
+admin.site.register(models.DataFile, DatafileAdmin)
 admin.site.register(models.Replica, ReplicaAdmin)
 admin.site.register(models.Location, LocationAdmin)
 admin.site.register(models.ProviderParameter, ProviderParameterAdmin)

@@ -37,7 +37,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth.decorators import login_required
 
 from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import DataFile
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.util import get_free_space
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
@@ -189,12 +189,12 @@ class StreamableZipFile(ZipFile):
 def _create_download_response(request, datafile_id, disposition='attachment'):
     # Get datafile (and return 404 if absent)
     try:
-        datafile = Dataset_File.objects.get(pk=datafile_id)
-    except Dataset_File.DoesNotExist:
+        datafile = DataFile.objects.get(pk=datafile_id)
+    except DataFile.DoesNotExist:
         return return_response_not_found(request)
     # Check users has access to datafile
     if not has_datafile_download_access(request=request,
-                                        dataset_file_id=datafile.id):
+                                        datafile_id=datafile.id):
         return return_response_error(request)
     # Send an image that can be seen in the browser
     if disposition == 'inline' and datafile.is_image():
@@ -468,7 +468,7 @@ def download_experiment(request, experiment_id, comptype,
     Currently implemented: "zip" and "tar"
     """
     # TODO: intelligent selection of temp file versus in-memory buffering.
-    datafiles = Dataset_File.objects\
+    datafiles = DataFile.objects\
         .filter(dataset__experiments__id=experiment_id)
 
     rootdir = str(experiment_id)
@@ -550,16 +550,16 @@ def download_datafiles(request):
 
             # Generator to produce datafiles from dataset id
             def get_dataset_datafiles(dsid):
-                for datafile in Dataset_File.objects.filter(dataset=dsid):
+                for datafile in DataFile.objects.filter(dataset=dsid):
                     if has_datafile_download_access(
-                            request=request, dataset_file_id=datafile.id):
+                            request=request, datafile_id=datafile.id):
                         yield datafile
 
             # Generator to produce datafile from datafile id
             def get_datafile(dfid):
-                datafile = Dataset_File.objects.get(pk=dfid)
+                datafile = DataFile.objects.get(pk=dfid)
                 if has_datafile_download_access(request=request,
-                                                dataset_file_id=datafile.id):
+                                                datafile_id=datafile.id):
                     yield datafile
 
             # Take chained generators and turn them into a set of datafiles
@@ -584,11 +584,11 @@ def download_datafiles(request):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
             experiment_id = request.POST['expid']
-            datafile = Dataset_File.objects.filter(
+            datafile = DataFile.objects.filter(
                 url__endswith=raw_path,
                 dataset__experiment__id=experiment_id)[0]
             if has_datafile_download_access(request=request,
-                                            dataset_file_id=datafile.id):
+                                            datafile_id=datafile.id):
                 df_set = set([datafile])
     else:
         return render_error_message(
@@ -850,7 +850,7 @@ def streaming_download_experiment(request, experiment_id, comptype='tgz',
     rootdir = experiment.title.replace(' ', '_')
     filename = '%s-complete.tar' % rootdir
 
-    datafiles = Dataset_File.objects.filter(
+    datafiles = DataFile.objects.filter(
         dataset__experiments__id=experiment_id)
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
@@ -863,7 +863,7 @@ def streaming_download_dataset(request, dataset_id, comptype='tgz',
     rootdir = dataset.description.replace(' ', '_')
     filename = '%s-complete.tar' % rootdir
 
-    datafiles = Dataset_File.objects.filter(dataset=dataset)
+    datafiles = DataFile.objects.filter(dataset=dataset)
     return _streaming_downloader(request, datafiles, rootdir, filename,
                                  comptype, organization)
 
@@ -897,16 +897,16 @@ def streaming_download_datafiles(request):
 
             # Generator to produce datafiles from dataset id
             def get_dataset_datafiles(dsid):
-                for datafile in Dataset_File.objects.filter(dataset=dsid):
+                for datafile in DataFile.objects.filter(dataset=dsid):
                     if has_datafile_download_access(
-                            request=request, dataset_file_id=datafile.id):
+                            request=request, datafile_id=datafile.id):
                         yield datafile
 
             # Generator to produce datafile from datafile id
             def get_datafile(dfid):
-                datafile = Dataset_File.objects.get(pk=dfid)
+                datafile = DataFile.objects.get(pk=dfid)
                 if has_datafile_download_access(request=request,
-                                                dataset_file_id=datafile.id):
+                                                datafile_id=datafile.id):
                     yield datafile
 
             # Take chained generators and turn them into a set of datafiles
@@ -931,11 +931,11 @@ def streaming_download_datafiles(request):
             url = urllib.unquote(url)
             raw_path = url.partition('//')[2]
             experiment_id = request.POST['expid']
-            datafile = Dataset_File.objects.filter(
+            datafile = DataFile.objects.filter(
                 url__endswith=raw_path,
                 dataset__experiment__id=experiment_id)[0]
             if has_datafile_download_access(request=request,
-                                            dataset_file_id=datafile.id):
+                                            datafile_id=datafile.id):
                 df_set = set([datafile])
     else:
         return render_error_message(

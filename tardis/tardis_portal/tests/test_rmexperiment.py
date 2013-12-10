@@ -8,7 +8,7 @@ from django.core.management import call_command
 import sys
 
 from tardis.tardis_portal.models import \
-    Experiment, Dataset, Dataset_File, ObjectACL, License, UserProfile, \
+    Experiment, Dataset, DataFile, ObjectACL, License, UserProfile, \
     ExperimentParameterSet, ExperimentParameter, DatasetParameterSet, \
     DatafileParameterSet, Replica, Location
 
@@ -58,7 +58,7 @@ def _create_test_dataset(nosDatafiles):
     ds_ = Dataset(description='happy snaps of plumage')
     ds_.save()
     for i in range (0, nosDatafiles) :
-        df_ = Dataset_File(dataset=ds_, size='21', sha512sum='bogus')
+        df_ = DataFile(dataset=ds_, size='21', sha512sum='bogus')
         df_.save()
         rep_ = Replica(datafile=df_,
                        url='http://planet-python.org/' + str(_next_id()),
@@ -102,30 +102,30 @@ class RmExperimentTestCase(TestCase):
 
     def testList(self):
         (exp1_, exp2_) = _create_test_data()
-        expect(Dataset_File.objects.all().count()).to_be(6)
+        expect(DataFile.objects.all().count()).to_be(6)
         expect(len(exp1_.get_datafiles())).to_be(3)
         expect(len(exp2_.get_datafiles())).to_be(5)
 
         # Check that --list doesn't remove anything
         call_command('rmexperiment', exp1_.pk, list=True)
-        expect(Dataset_File.objects.all().count()).to_be(6)
+        expect(DataFile.objects.all().count()).to_be(6)
         expect(len(exp1_.get_datafiles())).to_be(3)
         expect(len(exp2_.get_datafiles())).to_be(5)
 
     def testRemove(self):
         (exp1_, exp2_) = _create_test_data()
-        expect(Dataset_File.objects.all().count()).to_be(6)
+        expect(DataFile.objects.all().count()).to_be(6)
         expect(len(exp1_.get_datafiles())).to_be(3)
         expect(len(exp2_.get_datafiles())).to_be(5)
 
         # Remove first experiment and check that the shared dataset hasn't been removed
         call_command('rmexperiment', exp1_.pk, confirmed=True)
-        expect(Dataset_File.objects.all().count()).to_be(5)
+        expect(DataFile.objects.all().count()).to_be(5)
         expect(len(exp2_.get_datafiles())).to_be(5)
 
         #Remove second experiment
         call_command('rmexperiment', exp2_.pk, confirmed=True)
-        expect(Dataset_File.objects.all().count()).to_be(0)
+        expect(DataFile.objects.all().count()).to_be(0)
 
         #Check that everything else has been removed too
         expect(ObjectACL.objects.all().count()).to_be(0)

@@ -120,8 +120,8 @@ class ModelTestCase(TestCase):
 
         def _build(dataset, filename, url, protocol):
             from tardis.tardis_portal.models import \
-                Dataset_File, Replica, Location
-            datafile = Dataset_File(dataset=dataset, filename=filename)
+                DataFile, Replica, Location
+            datafile = DataFile(dataset=dataset, filename=filename)
             datafile.save()
             replica = Replica(datafile=datafile, url=url,
                               protocol=protocol,
@@ -156,7 +156,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/test/download/datafile/1/')
             self.assertTrue(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(), 
+            self.assertEqual(df_file.get_absolute_filepath(),
                              os.path.join(settings.FILE_STORE_PATH,
                                           'path/file.txt'))
 
@@ -170,7 +170,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/test/vbl/download/datafile/2/')
             self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(), 
+            self.assertEqual(df_file.get_absolute_filepath(),
                              os.path.join(settings.FILE_STORE_PATH,
                                           'path/file1.txt'))
 
@@ -184,7 +184,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/test/vbl/download/datafile/3/')
             self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(), 
+            self.assertEqual(df_file.get_absolute_filepath(),
                              os.path.join(settings.FILE_STORE_PATH,
                                           'path/file1#txt'))
 
@@ -205,11 +205,11 @@ class ModelTestCase(TestCase):
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 settings.REQUIRE_DATAFILE_CHECKSUMS = False
-                Dataset_File(dataset=dataset, filename='foo.txt', md5sum='bad')
+                DataFile(dataset=dataset, filename='foo.txt', md5sum='bad')
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
-                Dataset_File(dataset=dataset, filename='foo.txt', size='1')
+                DataFile(dataset=dataset, filename='foo.txt', size='1')
 
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
@@ -240,10 +240,10 @@ class ModelTestCase(TestCase):
         dataset.experiments.add(exp)
         dataset.save()
 
-        df_file = models.Dataset_File(dataset=dataset,
-                                      filename='file.txt',
-                                      size='42',
-                                      md5sum='bogus')
+        df_file = models.DataFile(dataset=dataset,
+                                  filename='file.txt',
+                                  size='42',
+                                  md5sum='bogus')
         df_file.save()
 
         df_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
@@ -280,7 +280,7 @@ class ModelTestCase(TestCase):
         exp_parname.save()
 
         df_parset = models.DatafileParameterSet(schema=df_schema,
-                                                dataset_file=df_file)
+                                                datafile=df_file)
         df_parset.save()
 
         ds_parset = models.DatasetParameterSet(schema=ds_schema,

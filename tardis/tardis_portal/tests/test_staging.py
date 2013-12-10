@@ -51,7 +51,7 @@ class TestStagingFiles(TestCase):
         # Disconnect post_save signal
         from django.db.models.signals import post_save
         from tardis.tardis_portal.models import \
-            staging_hook, Dataset_File, Replica, Location
+            staging_hook, DataFile, Replica, Location
         post_save.disconnect(staging_hook, sender=Replica)
 
         from django.contrib.auth.models import User
@@ -86,16 +86,16 @@ class TestStagingFiles(TestCase):
         dataset.save()
 
         # create datafile
-        df = models.Dataset_File(dataset=dataset, size = len(content),
-                                 filename = path.basename(self.file),
-                                 md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
+        df = models.DataFile(dataset=dataset, size = len(content),
+                             filename = path.basename(self.file),
+                             md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
         df.save()
 
         # create replica
         base_url = 'file://' + settings.GET_FULL_STAGING_PATH_TEST
         location = Location.load_location({
-            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external', 
-            'priority': 10, 'transfer_provider': 'local'}) 
+            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external',
+            'priority': 10, 'transfer_provider': 'local'})
         replica = models.Replica(datafile=df, url='file://'+self.file,
                                  protocol="staging",location=location)
         replica.verify()
@@ -105,8 +105,7 @@ class TestStagingFiles(TestCase):
     def tearDown(self):
         # reconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import \
-                                     staging_hook, Dataset_File, Replica
+        from tardis.tardis_portal.models import staging_hook, Replica
         post_save.connect(staging_hook, sender=Replica)
 
 

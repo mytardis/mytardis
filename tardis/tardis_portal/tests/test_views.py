@@ -56,7 +56,7 @@ from django.test.utils import override_settings
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
-    ObjectACL, Experiment, Dataset, Dataset_File, Schema, \
+    ObjectACL, Experiment, Dataset, DataFile, Schema, \
     DatafileParameterSet, Replica, Location
 
 class UploadTestCase(TestCase):
@@ -140,7 +140,7 @@ class UploadTestCase(TestCase):
             {'Filedata': self.f1, 'session_id': session_id})
 
         test_files_db = \
-            Dataset_File.objects.filter(dataset__id=self.dataset.id)
+            DataFile.objects.filter(dataset__id=self.dataset.id)
 
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
@@ -780,17 +780,17 @@ class ContextualViewTest(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.dataset_file = Dataset_File(dataset=self.dataset,
-                                         size=42, filename="foo",
-                                         md5sum="junk")
-        self.dataset_file.save()
+        self.datafile = DataFile(dataset=self.dataset,
+                                 size=42, filename="foo",
+                                 md5sum="junk")
+        self.datafile.save()
 
         self.testschema = Schema(namespace="http://test.com/test/schema",
                                  name="Test View",
                                  type=Schema.DATAFILE,
                                  hidden=True)
         self.testschema.save()
-        self.dfps = DatafileParameterSet(dataset_file=self.dataset_file,
+        self.dfps = DatafileParameterSet(datafile=self.datafile,
                                          schema=self.testschema)
         self.dfps.save()
 
@@ -798,7 +798,7 @@ class ContextualViewTest(TestCase):
         self.user.delete()
         self.exp.delete()
         self.dataset.delete()
-        self.dataset_file.delete()
+        self.datafile.delete()
         self.testschema.delete()
         self.dfps.delete()
         self.acl.delete()
@@ -811,7 +811,7 @@ class ContextualViewTest(TestCase):
         request = flexmock(user=self.user, groups=[("testgroup",flexmock())])
         with self.settings(DATAFILE_VIEWS=[("http://test.com/test/schema", "/test/url"),
                                            ("http://does.not.exist", "/false/url")]):
-            response = display_datafile_details(request, dataset_file_id=self.dataset_file.id)
+            response = display_datafile_details(request, datafile_id=self.datafile.id)
             self.assertEqual(response.status_code, 200)
             self.assertTrue("/ajax/parameters/" in response.content)
             self.assertTrue("/test/url" in response.content)
@@ -848,11 +848,11 @@ class ViewTemplateContextsTest(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.dataset_file = Dataset_File(dataset=self.dataset,
-                                         size=42, filename="foo",
-                                         md5sum="junk")
-        self.dataset_file.save()
-        self.replica = Replica(datafile=self.dataset_file,
+        self.datafile = DataFile(dataset=self.dataset,
+                                 size=42, filename="foo",
+                                 md5sum="junk")
+        self.datafile.save()
+        self.replica = Replica(datafile=self.datafile,
                                url="http://foo",
                                location=self.location,
                                verified=False)
@@ -862,7 +862,7 @@ class ViewTemplateContextsTest(TestCase):
         self.user.delete()
         self.exp.delete()
         self.dataset.delete()
-        self.dataset_file.delete()
+        self.datafile.delete()
         self.acl.delete()
 
     def testExperimentView(self):

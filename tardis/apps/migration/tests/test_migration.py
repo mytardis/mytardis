@@ -34,7 +34,7 @@ from nose.tools import ok_, eq_
 import logging, base64, os, urllib2
 from urllib2 import HTTPError, URLError, urlopen
 
-from tardis.tardis_portal.models import Dataset_File, Replica, Location
+from tardis.tardis_portal.models import DataFile, Replica, Location
 from tardis.tardis_portal.transfer import TransferError
 from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
 from tardis.tardis_portal.tests.transfer.generate import \
@@ -89,7 +89,7 @@ class MigrationTestCase(TestCase):
             dest.provider.get_length(new_replica)
 
         # Refresh the datafile object because it is now stale ...
-        datafile = Dataset_File.objects.get(id=datafile.id)
+        datafile = DataFile.objects.get(id=datafile.id)
         replica = datafile.get_preferred_replica()
 
         # Repeat the process with 'noRemove'
@@ -119,7 +119,7 @@ class MigrationTestCase(TestCase):
             dest.provider.get_length(dummy_replica)
 
         self.assertTrue(migrate_replica(replica, dest, mirror=True))
-        datafile = Dataset_File.objects.get(id=datafile.id)
+        datafile = DataFile.objects.get(id=datafile.id)
         self.assertTrue(datafile.is_local())
         self.assertEquals(dest.provider.get_length(dummy_replica), 9)
 

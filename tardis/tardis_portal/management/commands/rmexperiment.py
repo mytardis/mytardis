@@ -14,7 +14,7 @@ import traceback
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction, DEFAULT_DB_ALIAS
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 from tardis.tardis_portal.models import Author_Experiment, ObjectACL
 from tardis.tardis_portal.models import ExperimentParameterSet, ExperimentParameter
 from tardis.tardis_portal.models import DatasetParameterSet
@@ -52,7 +52,7 @@ class Command(BaseCommand):
 
         # Fetch Datasets and Datafiles and work out which ones would be deleted
         datasets = Dataset.objects.filter(experiments__id=exp.id)
-        datafiles = Dataset_File.objects.filter(dataset__id__in=map((lambda ds : ds.id), datasets))
+        datafiles = DataFile.objects.filter(dataset__id__in=map((lambda ds : ds.id), datasets))
         uniqueDatasets = filter((lambda ds : ds.experiments.count() == 1), datasets)
         uniqueDatasetIds = map((lambda ds : ds.id), uniqueDatasets)
         uniqueDatafiles = filter((lambda df : df.dataset.id in uniqueDatasetIds), datafiles)
@@ -134,8 +134,8 @@ class Command(BaseCommand):
                 dataset.experiments.remove(exp.id)
                 if dataset.experiments.count() == 0:
                     DatasetParameterSet.objects.filter(dataset=dataset).delete()
-                    for datafile in Dataset_File.objects.filter(dataset=dataset):
-                        DatafileParameterSet.objects.filter(dataset_file=datafile).delete()
+                    for datafile in DataFile.objects.filter(dataset=dataset):
+                        DatafileParameterSet.objects.filter(datafile=datafile).delete()
                         datafile.delete()
                     dataset.delete()
             authors.delete()

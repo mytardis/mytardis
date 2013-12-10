@@ -25,7 +25,7 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
-from tardis.tardis_portal.models.datafile import Dataset_File
+from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.location import Location
@@ -169,7 +169,7 @@ class ACLAuthorization(Authorization):
                                       dp.parameterset.dataset.id):
                     dp_list.append(dp)
             return dp_list
-        elif type(bundle.obj) == Dataset_File:
+        elif type(bundle.obj) == DataFile:
             all_dfs = set(
                 get_accessible_datafiles_for_user(bundle.request))
             return list(all_dfs.intersection(object_list))
@@ -177,14 +177,14 @@ class ACLAuthorization(Authorization):
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             dfps_list = []
             for dfps in object_list:
-                if dfps.dataset_file in datafiles:
+                if dfps.datafile in datafiles:
                     dfps_list.append(dfps)
             return dfps_list
         elif type(bundle.obj) == DatafileParameter:
             datafiles = get_accessible_datafiles_for_user(bundle.request)
             dfp_list = []
             for dfp in object_list:
-                if dfp.parameterset.dataset_file in datafiles:
+                if dfp.parameterset.datafile in datafiles:
                     dfp_list.append(dfp)
             return dfp_list
         elif type(bundle.obj) == Schema:
@@ -213,14 +213,14 @@ class ACLAuthorization(Authorization):
         elif type(bundle.obj) == DatasetParameter:
             return has_dataset_access(
                 bundle.request, bundle.obj.parameterset.dataset.id)
-        elif type(bundle.obj) == Dataset_File:
+        elif type(bundle.obj) == DataFile:
             return has_datafile_access(bundle.request, bundle.obj.id)
         elif type(bundle.obj) == DatafileParameterSet:
             return has_datafile_access(
-                bundle.request, bundle.obj.dataset_file.id)
+                bundle.request, bundle.obj.datafile.id)
         elif type(bundle.obj) == DatafileParameter:
             return has_datafile_access(
-                bundle.request, bundle.obj.parameterset.dataset_file.id)
+                bundle.request, bundle.obj.parameterset.datafile.id)
         elif type(bundle.obj) == User:
             # allow all authenticated users to read public user info
             # the dehydrate function also adds/removes some information
@@ -299,35 +299,35 @@ class ACLAuthorization(Authorization):
                 'tardis_portal.change_dataset') and \
                 has_dataset_write(bundle.request,
                                   bundle.obj.parameterset.dataset.id)
-        elif type(bundle.obj) == Dataset_File:
+        elif type(bundle.obj) == DataFile:
             dataset = DatasetResource.get_via_uri(DatasetResource(),
                                                   bundle.data['dataset'],
                                                   bundle.request)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
         elif type(bundle.obj) == DatafileParameterSet:
             dataset = Dataset.objects.get(
-                pk=bundle.obj.dataset_file.dataset.id)
+                pk=bundle.obj.datafile.dataset.id)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
         elif type(bundle.obj) == DatafileParameter:
             dataset = Dataset.objects.get(
-                pk=bundle.obj.parameterset.dataset_file.dataset.id)
+                pk=bundle.obj.parameterset.datafile.dataset.id)
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
         elif type(bundle.obj) == Replica:
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
-                bundle.request.user.has_perm('tardis_portal.add_dataset_file'),
+                bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
@@ -364,7 +364,7 @@ class ACLAuthorization(Authorization):
             return False
         elif type(bundle.obj) == DatasetParameter:
             return False
-        elif type(bundle.obj) == Dataset_File:
+        elif type(bundle.obj) == DataFile:
             return False
         elif type(bundle.obj) == DatafileParameterSet:
             return False
@@ -691,9 +691,9 @@ class DatasetResource(MyTardisModelResource):
         file_path = kwargs.get('file_path', None)
         dataset_id = kwargs['pk']
 
-        datafiles = Dataset_File.objects.filter(dataset__id=dataset_id)
+        datafiles = DataFile.objects.filter(dataset__id=dataset_id)
         auth_bundle = self.build_bundle(request=request)
-        auth_bundle.obj = Dataset_File()
+        auth_bundle.obj = DataFile()
         self.authorized_read_list(
             datafiles, auth_bundle
             )
@@ -702,16 +702,16 @@ class DatasetResource(MyTardisModelResource):
         kwargs['dataset__id'] = dataset_id
         if file_path is not None:
             kwargs['directory__startswith'] = file_path
-        df_res = Dataset_FileResource()
+        df_res = DataFileResource()
         return df_res.dispatch('list', request, **kwargs)
 
 
-class Dataset_FileResource(MyTardisModelResource):
+class DataFileResource(MyTardisModelResource):
     dataset = fields.ForeignKey(DatasetResource, 'dataset')
     parameter_sets = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterSetResource',
         'datafileparameterset_set',
-        related_name='dataset_file',
+        related_name='datafile',
         full=True, null=True)
     datafile = fields.FileField()
     replicas = fields.ToManyField(
@@ -721,12 +721,13 @@ class Dataset_FileResource(MyTardisModelResource):
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Dataset_File.objects.all()
+        queryset = DataFile.objects.all()
         filtering = {
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
         }
+        resource_name = 'dataset_file'
 
     def download_file(self, request, **kwargs):
         '''
@@ -791,7 +792,7 @@ class Dataset_FileResource(MyTardisModelResource):
         return bundle
 
     def post_list(self, request, **kwargs):
-        response = super(Dataset_FileResource, self).post_list(request,
+        response = super(DataFileResource, self).post_list(request,
                                                                **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
@@ -818,11 +819,11 @@ class Dataset_FileResource(MyTardisModelResource):
             return request.POST
         if format.startswith('multipart'):
             jsondata = request.POST['json_data']
-            data = super(Dataset_FileResource, self).deserialize(
+            data = super(DataFileResource, self).deserialize(
                 request, jsondata, format='application/json')
             data.update(request.FILES)
             return data
-        return super(Dataset_FileResource, self).deserialize(request,
+        return super(DataFileResource, self).deserialize(request,
                                                              data, format)
 
     def put_detail(self, request, **kwargs):
@@ -833,12 +834,12 @@ class Dataset_FileResource(MyTardisModelResource):
                 not hasattr(request, '_body'):
             request._body = ''
 
-        return super(Dataset_FileResource, self).put_detail(request, **kwargs)
+        return super(DataFileResource, self).put_detail(request, **kwargs)
 
 
 class DatafileParameterSetResource(ParameterSetResource):
-    dataset_file = fields.ForeignKey(
-        Dataset_FileResource, 'dataset_file')
+    datafile = fields.ForeignKey(
+        DataFileResource, 'datafile')
     parameters = fields.ToManyField(
         'tardis.tardis_portal.api.DatafileParameterResource',
         'datafileparameter_set',
@@ -862,7 +863,7 @@ class LocationResource(MyTardisModelResource):
 
 
 class ReplicaResource(MyTardisModelResource):
-    datafile = fields.ForeignKey(Dataset_FileResource, 'datafile')
+    datafile = fields.ForeignKey(DataFileResource, 'datafile')
     location = fields.ForeignKey(LocationResource, 'location')
 
     class Meta(MyTardisModelResource.Meta):

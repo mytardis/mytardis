@@ -20,7 +20,7 @@ import filecmp, urlparse
 
 from tardis.tardis_portal.download import StreamingFile, StreamableZipFile
 from tardis.tardis_portal.models import \
-    Experiment, Dataset, Dataset_File, Location, Replica
+    Experiment, Dataset, DataFile, Location, Replica
 
 from tempfile import NamedTemporaryFile, mkstemp
 
@@ -191,10 +191,10 @@ class DownloadTestCase(TestCase):
     def _build_datafile(self, testfile, filename, dataset, url,
                         protocol='', checksum=None, size=None, mimetype=''):
         filesize, sha512sum = get_size_and_sha512sum(testfile)
-        datafile = Dataset_File(dataset=dataset, filename=filename,
-                                mimetype=mimetype,
-                                size=str(size if size != None else filesize),
-                                sha512sum=(checksum if checksum else sha512sum))
+        datafile = DataFile(dataset=dataset, filename=filename,
+                            mimetype=mimetype,
+                            size=str(size if size != None else filesize),
+                            sha512sum=(checksum if checksum else sha512sum))
         datafile.save()
         if urlparse.urlparse(url).scheme == '':
             location = Location.get_location('local')
@@ -209,7 +209,7 @@ class DownloadTestCase(TestCase):
                           location=location)
         replica.verify()
         replica.save()
-        return Dataset_File.objects.get(pk=datafile.pk)
+        return DataFile.objects.get(pk=datafile.pk)
 
     def tearDown(self):
         self.user.delete()
@@ -327,7 +327,7 @@ class DownloadTestCase(TestCase):
         # self._check_zip_file(
         #     response.streaming_content, str(self.experiment1.id),
         #     reduce(lambda x, y: x + y,
-        #            [ds.dataset_file_set.all() \
+        #            [ds.datafile_set.all() \
         #                 for ds in self.experiment1.datasets.all()]))
 
         # check download for experiment1 as tar
@@ -341,7 +341,7 @@ class DownloadTestCase(TestCase):
             response.streaming_content, str(self.experiment1.title
                                             .replace(' ', '_')),
             reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all()
+                   [ds.datafile_set.all()
                     for ds in self.experiment1.datasets.all()]))
 
         # check download of file1
@@ -368,7 +368,7 @@ class DownloadTestCase(TestCase):
         #                         'datafile': []})
         # self.assertEqual(response.status_code, 200)
         # self._check_zip_file(response.streaming_content, 'datasets',
-        #                      self.dataset1.dataset_file_set.all())
+        #                      self.dataset1.datafile_set.all())
 
         # check dataset1 download as tar
         response = client.post('/download/datafiles/',
@@ -379,7 +379,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self._check_tar_file(response.streaming_content,
                              'Experiment 1-selection',
-                             self.dataset1.dataset_file_set.all())
+                             self.dataset1.datafile_set.all())
 
         # check dataset2 download
         response = client.post('/download/datafiles/',
@@ -435,7 +435,7 @@ class DownloadTestCase(TestCase):
         # self._check_zip_file(
         #     response.streaming_content, str(self.experiment1.id),
         #     reduce(lambda x, y: x + y,
-        #            [ds.dataset_file_set.all() \
+        #            [ds.datafile_set.all() \
         #                 for ds in self.experiment1.datasets.all()]),
         #     simpleNames=True)
 
@@ -449,7 +449,7 @@ class DownloadTestCase(TestCase):
         self._check_tar_file(
             response.streaming_content, str(self.experiment1.id),
             reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all() \
+                   [ds.datafile_set.all() \
                         for ds in self.experiment1.datasets.all()]),
             simpleNames=True)
 
@@ -468,7 +468,7 @@ class DownloadTestCase(TestCase):
         self._check_tar_file(
             response.streaming_content, str(self.experiment2.id),
             reduce(lambda x, y: x + y,
-                   [ds.dataset_file_set.all() \
+                   [ds.datafile_set.all() \
                         for ds in self.experiment2.datasets.all()]),
             simpleNames=True, noTxt=True)
 
@@ -482,13 +482,13 @@ class DownloadTestCase(TestCase):
         #                         'organization': 'test'})
         # self.assertEqual(response.status_code, 200)
         # self._check_zip_file(response.streaming_content, 'datasets',
-        #                      self.dataset1.dataset_file_set.all(),
+        #                      self.dataset1.datafile_set.all(),
         #                      simpleNames=True)
 
     def testDatasetFile(self):
 
         # check registered text file for physical file meta information
-        df = Dataset_File.objects.get(pk=self.datafile1.id)
+        df = DataFile.objects.get(pk=self.datafile1.id)
 
         try:
             from magic import Magic
@@ -509,7 +509,7 @@ class DownloadTestCase(TestCase):
         pdf1 = self._build_datafile(filename, basename(filename), dataset,
                                     'file://%s' % filename, protocol='file')
         self.assertEqual(pdf1.get_preferred_replica().verify(), True)
-        pdf1 = Dataset_File.objects.get(pk=pdf1.pk)
+        pdf1 = DataFile.objects.get(pk=pdf1.pk)
 
         try:
             from magic import Magic
@@ -533,7 +533,7 @@ class DownloadTestCase(TestCase):
         self.assertEqual(pdf2.size, str(0))
         self.assertEqual(pdf2.md5sum, '')
         self.assertEqual(pdf2.get_preferred_replica().verify(), False)
-        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
+        pdf2 = DataFile.objects.get(pk=pdf2.pk)
         try:
             from magic import Magic
             self.assertEqual(pdf2.mimetype, 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
@@ -546,7 +546,7 @@ class DownloadTestCase(TestCase):
         pdf2.mimetype = ''
         pdf2.save()
         pdf2.get_preferred_replica().save()
-        pdf2 = Dataset_File.objects.get(pk=pdf2.pk)
+        pdf2 = DataFile.objects.get(pk=pdf2.pk)
 
         try:
             from magic import Magic

@@ -38,7 +38,7 @@ from django.core.management.base import CommandError
 from django.conf import settings
 from tardis.test_settings import FILE_STORE_PATH
 
-from tardis.tardis_portal.models import Dataset_File, Location
+from tardis.tardis_portal.models import DataFile, Location
 from tardis.tardis_portal.tests.transfer import SimpleHttpTestServer
 from tardis.tardis_portal.tests.transfer.generate import \
     generate_datafile, generate_dataset, generate_experiment, \
@@ -247,7 +247,7 @@ class MigrateCommandTestCase(TestCase):
                           (datafile.id, datafile2.id, datafile3.id))
         for p, d in [(path, datafile), (path2, datafile2),
                      (path3, datafile3)]:
-            dd = Dataset_File.objects.get(id=d.id)
+            dd = DataFile.objects.get(id=d.id)
             self.assertTrue(os.path.exists(p))
             self.assertTrue(os.path.exists(dd.get_absolute_filepath()))
             self.assertNotEqual(p, dd.get_absolute_filepath())

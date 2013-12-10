@@ -130,15 +130,15 @@ class Experiment(models.Model):
                 {'experiment_id': self.id})
 
     def get_datafiles(self):
-        from .datafile import Dataset_File
-        return Dataset_File.objects.filter(dataset__experiments=self)
+        from .datafile import DataFile
+        return DataFile.objects.filter(dataset__experiments=self)
 
     def get_replicas(self):
         from .replica import Replica
         return Replica.objects.filter(datafile__dataset__experiments=self)
 
     def get_download_urls(self):
-        from .datafile import Dataset_File
+        from .datafile import DataFile
         urls = {}
         params = (('experiment_id', self.id),)
         protocols = frozenset(self.get_replicas()\
@@ -173,8 +173,8 @@ class Experiment(models.Model):
                                    .filter(IMAGE_FILTER)
 
     def get_size(self):
-        from .datafile import Dataset_File
-        return Dataset_File.sum_sizes(self.get_datafiles())
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.get_datafiles())
 
     @classmethod
     def public_access_implies_distribution(cls, public_access_level):

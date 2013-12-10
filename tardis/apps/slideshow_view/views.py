@@ -32,7 +32,7 @@ def view_full_dataset(request, dataset_id):
         # need to fix.
         pgresults = 100
 
-        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+        paginator = Paginator(dataset.datafile_set.all(), pgresults)
 
         try:
             page = int(request.GET.get('page', '1'))
@@ -68,7 +68,7 @@ def view_full_dataset(request, dataset_id):
         'other_experiments': \
             authz.get_accessible_experiments_for_dataset(request, dataset_id),
         'display_images': display_images,
-        'files':dataset.dataset_file_set,
+        'files':dataset.datafile_set,
         'upload_method': upload_method,
         'default_organization':
             getattr(settings, 'DEFAULT_ARCHIVE_ORGANIZATION', 'classic'),

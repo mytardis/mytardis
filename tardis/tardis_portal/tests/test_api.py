@@ -19,7 +19,7 @@ from tardis.tardis_portal.auth.authservice import AuthService
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.models import UserProfile
-from tardis.tardis_portal.models.datafile import Dataset_File
+from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
 from tardis.tardis_portal.models.parameters import ExperimentParameter
@@ -80,7 +80,7 @@ class MyTardisResourceTestCase(ResourceTestCase):
         self.user.user_permissions.add(
             Permission.objects.get(codename='change_dataset'))
         self.user.user_permissions.add(
-            Permission.objects.get(codename='add_dataset_file'))
+            Permission.objects.get(codename='add_datafile'))
         self.user_profile = UserProfile(user=self.user).save()
         self.testexp = Experiment(title="test exp")
         self.testexp.approved = True
@@ -257,9 +257,9 @@ class DatasetResourceTest(MyTardisResourceTestCase):
         super(DatasetResourceTest, self).setUp()
 
 
-class Dataset_FileResourceTest(MyTardisResourceTestCase):
+class DataFileResourceTest(MyTardisResourceTestCase):
     def setUp(self):
-        super(Dataset_FileResourceTest, self).setUp()
+        super(DataFileResourceTest, self).setUp()
         self.django_client = Client()
         self.django_client.login(username=self.username,
                                  password=self.password)
@@ -305,18 +305,18 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
         post_file.write(file_content)
         post_file.flush()
         post_file.seek(0)
-        datafile_count = Dataset_File.objects.count()
+        datafile_count = DataFile.objects.count()
         replica_count = Replica.objects.count()
         self.assertHttpCreated(self.django_client.post(
             '/api/v1/dataset_file/',
             data={"json_data": post_data, "attached_file": post_file}))
-        self.assertEqual(datafile_count + 1, Dataset_File.objects.count())
+        self.assertEqual(datafile_count + 1, DataFile.objects.count())
         self.assertEqual(replica_count + 1, Replica.objects.count())
         # fake-verify Replica, so we can access the file:
         newrep = Replica.objects.order_by('-pk')[0]
         newrep.verified = True
         newrep.save()
-        new_file = Dataset_File.objects.order_by('-pk')[0]
+        new_file = DataFile.objects.order_by('-pk')[0]
         self.assertEqual(file_content, new_file.get_file().read())
 
     def test_shared_fs_single_file(self):
@@ -373,20 +373,20 @@ class Dataset_FileResourceTest(MyTardisResourceTestCase):
             }
             json_data['objects'].append(file_json)
 
-        datafile_count = Dataset_File.objects.count()
+        datafile_count = DataFile.objects.count()
         replica_count = Replica.objects.count()
         self.assertHttpAccepted(self.api_client.patch(
             '/api/v1/dataset_file/',
             data=json_data,
             authentication=self.get_credentials()))
-        self.assertEqual(datafile_count + 2, Dataset_File.objects.count())
+        self.assertEqual(datafile_count + 2, DataFile.objects.count())
         self.assertEqual(replica_count + 2, Replica.objects.count())
         # fake-verify Replica, so we can access the file:
         for newrep in Replica.objects.order_by('-pk')[0:2]:
             newrep.verified = True
             newrep.save()
         for sent_file, new_file in zip(
-                reversed(files), Dataset_File.objects.order_by('-pk')[0:2]):
+                reversed(files), DataFile.objects.order_by('-pk')[0:2]):
             self.assertEqual(sent_file['content'], new_file.get_file().read())
 
 

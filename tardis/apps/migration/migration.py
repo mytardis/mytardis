@@ -132,8 +132,8 @@ def check_file_transferred(replica, location):
     storage location
     """
 
-    from tardis.tardis_portal.models import Dataset_File
-    datafile = Dataset_File.objects.get(pk=replica.datafile.id)
+    from tardis.tardis_portal.models import DataFile
+    datafile = DataFile.objects.get(pk=replica.datafile.id)
 
     # If the remote is capable, get it to send us the checksums and / or
     # file length for its copy of the file

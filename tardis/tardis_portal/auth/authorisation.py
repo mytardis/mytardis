@@ -52,7 +52,8 @@ class ACLAwareBackend(object):
         try:
             perm_label, perm_type = perm.split('.')
             # the following is necessary because of the ridiculous naming
-            # of 'Dataset_File'......
+            # of 'Dataset_File'...... which has since been renamed, so this
+            # can be changed back soon
             type_list = perm_type.split('_')
             perm_action = type_list[0]
             perm_ct = '_'.join(type_list[1:])

@@ -6,6 +6,7 @@ from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
 from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
 
@@ -19,12 +20,16 @@ class Dataset(models.Model):
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
     :attribute description: description of this dataset
+    :attribute storage_box: link to one or many storage boxes of some type.
+        storage boxes have to be the same for all files of a dataset
     """
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
+    storage_box = models.ManyToManyField(
+        StorageBox, related_name='datasets')
     objects = OracleSafeManager()
 
     class Meta:
@@ -101,7 +106,7 @@ class Dataset(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        images = self.dataset_file_set.order_by('filename')\
+        images = self.datafile_set.order_by('filename')\
                                       .filter(IMAGE_FILTER)
         return images
 
@@ -125,8 +130,8 @@ class Dataset(models.Model):
                                'format': 'jpg'})
 
     def get_size(self):
-        from .datafile import Dataset_File
-        return Dataset_File.sum_sizes(self.dataset_file_set)
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.datafile_set)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):

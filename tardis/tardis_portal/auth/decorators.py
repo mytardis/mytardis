@@ -36,7 +36,7 @@ from django.http import HttpResponseRedirect
 from django.db.models import Q
 from django.conf import settings
 
-from tardis.tardis_portal.models import Experiment, Dataset, Dataset_File, GroupAdmin, User
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, GroupAdmin, User
 from tardis.tardis_portal.shortcuts import return_response_error
 
 def get_accessible_experiments(request):
@@ -83,7 +83,7 @@ def get_accessible_datafiles_for_user(request):
     for item in queries:
         query |= item
 
-    return Dataset_File.objects.filter(query)
+    return DataFile.objects.filter(query)
 
 
 def has_experiment_ownership(request, experiment_id):
@@ -136,16 +136,16 @@ def has_dataset_download_access(request, dataset_id):
                for experiment in dataset.experiments.all())
 
 
-def has_datafile_access(request, dataset_file_id):
+def has_datafile_access(request, datafile_id):
     try:
-        dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+        dataset = Dataset.objects.get(datafile=datafile_id)
     except Dataset.DoesNotExist:
         return False
     return has_dataset_access(request, dataset.id)
 
 
-def has_datafile_download_access(request, dataset_file_id):
-    dataset = Dataset.objects.get(dataset_file=dataset_file_id)
+def has_datafile_download_access(request, datafile_id):
+    dataset = Dataset.objects.get(datafile=datafile_id)
     return has_dataset_download_access(request, dataset.id)
 
 def has_read_or_owner_ACL(request, experiment_id):
@@ -301,7 +301,7 @@ def datafile_access_required(f):
 
     def wrap(request, *args, **kwargs):
 
-        if not has_datafile_access(request, kwargs['dataset_file_id']):
+        if not has_datafile_access(request, kwargs['datafile_id']):
             return return_response_error(request)
         return f(request, *args, **kwargs)
 

@@ -149,14 +149,14 @@ def create_staging_datafiles(files, user_id, dataset_id, is_secure):
 
 @task(name="tardis_portal.create_staging_datafile", ignore_result=True)
 def create_staging_datafile(filepath, username, dataset_id):
-    from tardis.tardis_portal.models import Dataset_File, Dataset, Replica, \
+    from tardis.tardis_portal.models import DataFile, Dataset, Replica, \
         Location
     dataset = Dataset.objects.get(id=dataset_id)
 
     url, size = get_staging_url_and_size(username, filepath)
-    datafile = Dataset_File(dataset=dataset,
-                            filename=path.basename(filepath),
-                            size=size)
+    datafile = DataFile(dataset=dataset,
+                        filename=path.basename(filepath),
+                        size=size)
     replica = Replica(datafile=datafile,
                       protocol='staging',
                       url=url,

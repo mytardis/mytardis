@@ -610,7 +610,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                     self.syncRootDir,
                                                     df.url)
 
-                        self.modelDatafile = models.Dataset_File(
+                        self.modelDatafile = models.DataFile(
                             dataset=thisFilesDataset,
                             filename=df.name,
                             size=size,
@@ -722,7 +722,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 # disable creation for the next visit
                                 createParamSetFlag['dataset'] = False
 
-                        elif metsObjectClassName == 'Datafile':
+                        elif metsObjectClassName == 'DataFile':
                             # this will be a good time to save the
                             # "hard" metadata of this datafile so that
                             # when we start adding "soft" metadata
@@ -735,7 +735,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 self.metsObject.dataset.id]
 
                             # also check if the file already exists
-                            datafile = thisFilesDataset.dataset_file_set.filter(
+                            datafile = thisFilesDataset.datafile_set.filter(
                                 filename=self.metsObject.name, size=self.metsObject.size)
 
 
@@ -771,7 +771,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                                     self.syncRootDir,
                                                     self.metsObject.url)
 
-                                self.modelDatafile = models.Dataset_File(
+                                self.modelDatafile = models.DataFile(
                                     dataset=thisFilesDataset,
                                     filename=self.metsObject.name,
                                     size=size,
@@ -789,7 +789,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 replica.save()
 
                             else:
-                                self.modelDatafile = thisFilesDataset.dataset_file_set.get(
+                                self.modelDatafile = thisFilesDataset.datafile_set.get(
                                     filename=self.metsObject.name, size=self.metsObject.size)
                             # TODO: we need to note here that we are
                             # only creating a datafile entry in the DB
@@ -803,7 +803,7 @@ class MetsMetadataInfoHandler(ContentHandler):
                                 # create a new parameter set for the metadata
                                 datafileParameterSet = \
                                     models.DatafileParameterSet(schema=schema,
-                                    dataset_file=self.modelDatafile)
+                                    datafile=self.modelDatafile)
                                 datafileParameterSet.save()
 
                                 # now let's process the datafile parameters

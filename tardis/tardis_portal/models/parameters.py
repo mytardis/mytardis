@@ -13,7 +13,8 @@ from tardis.tardis_portal.managers import OracleSafeManager,\
 
 from .experiment import Experiment
 from .dataset import Dataset
-from .datafile import Dataset_File
+from .datafile import DataFile
+from .storage import StorageBox
 
 import logging
 import operator
@@ -224,7 +225,7 @@ def _getParameter(parameter):
             viewname = ''
             args = []
             if parset == 'DatafileParameterSet':
-                dfid = parameter.parameterset.dataset_file.id
+                dfid = parameter.parameterset.datafile.id
                 psid = parameter.parameterset.id
                 viewname = 'tardis.tardis_portal.views.display_datafile_image'
                 args = [dfid, psid, parameter.name]
@@ -292,6 +293,8 @@ def _getParameter(parameter):
 
 class ParameterSet(models.Model, ParameterSetManagerMixin):
     schema = models.ForeignKey(Schema)
+    storage_box = models.ManyToManyField(
+        StorageBox, related_name='%(class)ss')
     parameter_class = None
 
     class Meta:
@@ -416,11 +419,11 @@ class ExperimentParameter(Parameter):
 
 
 class DatafileParameterSet(ParameterSet):
-    dataset_file = models.ForeignKey(Dataset_File)
+    datafile = models.ForeignKey(DataFile)
     parameter_class = DatafileParameter
 
     def _get_label(self):
-        return ('dataset_file.filename', 'Datafile')
+        return ('datafile.filename', 'Datafile')
 
 
 class DatasetParameterSet(ParameterSet):

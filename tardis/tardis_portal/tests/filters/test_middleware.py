@@ -39,7 +39,7 @@ from django.core.exceptions import MiddlewareNotUsed
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
 from tardis.tardis_portal.models import User, UserProfile, Experiment, \
-    ObjectACL, Location, Dataset, Dataset_File, Replica
+    ObjectACL, Location, Dataset, DataFile, Replica
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
 
@@ -86,10 +86,10 @@ class FilterInitTestCase(TestCase):
 
             size, sha512sum = get_size_and_sha512sum(testfile)
 
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=path.basename(testfile),
-                                    size=size,
-                                    sha512sum=sha512sum)
+            datafile = DataFile(dataset=dataset,
+                                filename=path.basename(testfile),
+                                size=size,
+                                sha512sum=sha512sum)
             datafile.save()
             base_url = 'file://' + path.abspath(path.dirname(testfile))
             location = Location.load_location({
@@ -103,7 +103,7 @@ class FilterInitTestCase(TestCase):
             if index != 1:
                 replica.verified = False
                 replica.save(update_fields=['verified'])
-            return Dataset_File.objects.get(pk=datafile.pk)
+            return DataFile.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
         self.datafiles = [create_datafile(i) for i in (1,2)]
@@ -150,7 +150,7 @@ class FilterInitTestCase(TestCase):
         finally:
             # Remove our hooks!
             for f in TEST_FILTERS:
-                post_save.disconnect(sender=Dataset_File, weak=False,
+                post_save.disconnect(sender=DataFile, weak=False,
                                      dispatch_uid=f[0] + ".datafile")
                 post_save.disconnect(sender=Replica, weak=False,
                                      dispatch_uid=f[0] + ".replica")

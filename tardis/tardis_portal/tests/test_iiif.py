@@ -12,7 +12,7 @@ from django.test.client import Client
 from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.models import User, UserProfile, \
-    Experiment, ObjectACL, Dataset, Dataset_File, Replica, Location
+    Experiment, ObjectACL, Dataset, DataFile, Replica, Location
 
 from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
@@ -56,7 +56,7 @@ def _create_datafile():
             img.format = 'tiff'
             img.save(file=tempfile.file)
             tempfile.file.flush()
-    datafile = Dataset_File(dataset=dataset,
+    datafile = DataFile(dataset=dataset,
                             size=os.path.getsize(tempfile.file.name),
                             filename='iiif_named_file')
     replica = Replica(datafile=datafile,

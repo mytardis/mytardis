@@ -31,7 +31,7 @@ dataset{{result.sr.object.dataset.experiment.datasets.all.count|pluralize }}</st
 </a>
       </span>
       containing
-      <span{% if result.dataset_file_hit %} style="background-color: #FFFF00"{% endif %}>
+      <span{% if result.datafile_hit %} style="background-color: #FFFF00"{% endif %}>
       <a href="{% url 'tardis.tardis_portal.views.view_experiment' key %}?search=true&query={{ search_query.url_safe_query }}#ui-tabs-2">
 <strong>{{ result.sr.experiment_id_stored|experiment_file_count }}</strong>
 file{{ result.sr.experiment_id_stored|experiment_file_count|pluralize }}

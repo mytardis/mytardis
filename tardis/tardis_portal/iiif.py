@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import etag
 from django.utils.cache import patch_cache_control
 
-from tardis.tardis_portal.models import Experiment, Dataset_File
+from tardis.tardis_portal.models import Experiment, DataFile
 from tardis.tardis_portal.auth.decorators import has_datafile_download_access
 
 from wand.exceptions import MissingDelegateError
@@ -94,11 +94,11 @@ def _do_resize(img, size):
 
 def compute_etag(request, datafile_id, *args, **kwargs):
     try:
-        datafile = Dataset_File.objects.get(pk=datafile_id)
-    except Dataset_File.DoesNotExist:
+        datafile = DataFile.objects.get(pk=datafile_id)
+    except DataFile.DoesNotExist:
         return None
     if not has_datafile_download_access(request=request,
-                                        dataset_file_id=datafile.id):
+                                        datafile_id=datafile.id):
         return None
     # OK, we can compute the Etag without giving anything away now
     signature = datafile.sha512sum + json.dumps((args, kwargs))
@@ -111,15 +111,15 @@ def download_image(request, datafile_id, region, size, rotation,
                    quality, format=None): #@ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
-        datafile = Dataset_File.objects.get(pk=datafile_id)
-    except Dataset_File.DoesNotExist:
+        datafile = DataFile.objects.get(pk=datafile_id)
+    except DataFile.DoesNotExist:
         return HttpResponseNotFound()
 
     is_public = datafile.is_public()
     if not is_public:
         # Check users has access to datafile
         if not has_datafile_download_access(request=request,
-                                            dataset_file_id=datafile.id):
+                                            datafile_id=datafile.id):
             return HttpResponseNotFound()
 
     buf = StringIO()
@@ -186,12 +186,12 @@ def download_image(request, datafile_id, region, size, rotation,
 def download_info(request, datafile_id, format): #@ReservedAssignment
     # Get datafile (and return 404 if absent)
     try:
-        datafile = Dataset_File.objects.get(pk=datafile_id)
-    except Dataset_File.DoesNotExist:
+        datafile = DataFile.objects.get(pk=datafile_id)
+    except DataFile.DoesNotExist:
         return HttpResponseNotFound()
     # Check users has access to datafile
     if not has_datafile_download_access(request=request,
-                                        dataset_file_id=datafile.id):
+                                        datafile_id=datafile.id):
         return HttpResponseNotFound()
 
     file_obj = datafile.get_file()

@@ -21,14 +21,14 @@ class Replica(models.Model):
     """Class to store meta-data about a physical file replica
 
     :attribute datafile: the foreign key to the
-       :class:`tardis.tardis_portal.models.Dataset_File` the replica belongs to.
+       :class:`tardis.tardis_portal.models.DataFile` the replica belongs to.
     :attribute url: the url for the replica.  If the file is online, this
        url should be resolveable to a file that contains the data for the
-       Dataset_File.  For offline replicas, the url may represent an element
+       DataFile.  For offline replicas, the url may represent an element
        within an archive.  The archive is not necessarily directly fetchable.
     :attribute protocol: TBD
     :attribute verified: the content of the replica has been verified against
-       the size and checksums recorded in the Dataset_File.
+       the size and checksums recorded in the DataFile.
     :attribute location: the foreign key for the Location that holds the
        Replica.  In the case of a Replica that is a member of an archive, the
        Location denoted the container for the archive not the archive itself.
@@ -37,7 +37,7 @@ class Replica(models.Model):
 
     """
 
-    datafile = models.ForeignKey('Dataset_File')
+    datafile = models.ForeignKey('DataFile')
     url = models.CharField(max_length=400)
     protocol = models.CharField(blank=True, max_length=10)
     verified = models.BooleanField(default=False)

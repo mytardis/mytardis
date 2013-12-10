@@ -385,7 +385,7 @@ class ExperimentForm(forms.ModelForm):
             'author_experiments': author_experiments,
             'authors': authors,
             'datasets': datasets,
-            'dataset_files': dataset_files}
+            'datafiles': datafiles}
             """
             self.data['experiment'].save()
             for ae in self.data['author_experiments']:

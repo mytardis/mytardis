@@ -14,16 +14,16 @@
 #      names of its contributors may be used to endorse or promote products
 #      derived from this software without specific prior written permission.
 #
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE 
-# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
@@ -48,12 +48,12 @@ DEFAULT_PARAMS = {
 class MigrationScorer:
     """
     This class implements the algorithms for scoring a group of Datafiles
-    to figure which ones to migrate if we are running short of space.  The 
+    to figure which ones to migrate if we are running short of space.  The
     general rule is that Datafiles with the largest scores are most eligible
     for migration to slower / cheaper storage.
 
     A MigrationScorer instance memoizes the score contributions of users
-    and experiments and datasets.  It is therefore stateful. 
+    and experiments and datasets.  It is therefore stateful.
     """
 
     def __init__(self, loc_id, params=DEFAULT_PARAMS):
@@ -72,38 +72,38 @@ class MigrationScorer:
         self.file_age_threshold = params['file_age_threshold']
         self.use_file_timestamps = \
             self.file_access_weighting > 0.0 or self.file_age_weighting > 0.0
-    
+
     def score_datafile(self, datafile):
         return self.datafile_score(datafile) * \
             self.dataset_score(datafile.dataset)
 
     def score_datafiles_in_dataset(self, dataset):
-        from tardis.tardis_portal.models import Dataset_File
+        from tardis.tardis_portal.models import DataFile
         ds_score = self.dataset_score(dataset)
         def score_it(datafile):
             return ds_score * self.datafile_score(datafile)
-        datafiles = Dataset_File.objects.filter(dataset=dataset)
+        datafiles = DataFile.objects.filter(dataset=dataset)
         return self._filter_map_sort(datafiles, score_it)
 
     def score_datafiles_in_experiment(self, experiment):
-        from tardis.tardis_portal.models import Dataset_File
+        from tardis.tardis_portal.models import DataFile
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
             return ds_score * self.datafile_score(datafile)
-        datafiles = Dataset_File.objects.\
+        datafiles = DataFile.objects.\
             filter(dataset__experiments__id=experiment.id)
         return self._filter_map_sort(datafiles, score_it)
 
     def score_all_datafiles(self):
-        from tardis.tardis_portal.models import Dataset_File
+        from tardis.tardis_portal.models import DataFile
         def score_it(datafile):
             ds_score = self.dataset_score(datafile.dataset)
             return ds_score * self.datafile_score(datafile)
-        datafiles = Dataset_File.objects.all()
+        datafiles = DataFile.objects.all()
         return self._filter_map_sort(datafiles, score_it)
 
     def _filter_map_sort(self, datafiles, score_it):
-        from tardis.tardis_portal.models import Dataset_File
+        from tardis.tardis_portal.models import DataFile
         def compare(tpl, tpl2):
             if tpl[2] != tpl2[2]:
                 return -1 if tpl2[2] - tpl[2] < 0 else +1
@@ -128,7 +128,7 @@ class MigrationScorer:
                                  self.file_size_weighting)
             if self.use_file_timestamps:
                 stat = os.stat(datafile.get_absolute_filepath())
-                # FIXME - it would be better to use creation / access 
+                # FIXME - it would be better to use creation / access
                 # times maintained by MyTardis rather that file timestamps.
                 # The former would allow us to deal with remote files.  The
                 # latter is sensitive to inadvertent "touching" from outside
@@ -147,7 +147,7 @@ class MigrationScorer:
                             datafile.id, datafile.size, score)
             return score
         except:
-            # Size is zero, or file is missing or something else we 
+            # Size is zero, or file is missing or something else we
             # can't cope with
             logger.exception('Problem scoring datafile %d' % datafile.id)
             return 0.0
@@ -190,7 +190,7 @@ class MigrationScorer:
                 max_score = score
         self.experiment_scores[experiment.id] = max_score
         return max_score
-    
+
     def user_score(self, user):
         from tardis.apps.migration.models import get_user_priority
         try:
@@ -201,8 +201,6 @@ class MigrationScorer:
         score = self.user_priority_weighting[priority]
         self.user_scores[user.id] = score
         return score
-   
+
     def group_score(self, group):
         return 1.0
-
-    

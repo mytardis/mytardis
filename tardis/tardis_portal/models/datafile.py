@@ -17,9 +17,9 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
-class Dataset_File(models.Model):
+class DataFile(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
-    file are described by distinct Replica instances.
+    file are described by distinct DataFileObject instances.
 
     :attribute dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
@@ -42,6 +42,8 @@ class Dataset_File(models.Model):
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
+    deleted = models.BooleanField(default=False)
+    deleted_time = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         app_label = 'tardis_portal'
@@ -71,7 +73,7 @@ class Dataset_File(models.Model):
                 not self.size:
             raise Exception('Every Datafile requires a file size')
         else:
-            super(Dataset_File, self).save(*args, **kwargs)
+            super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -147,10 +149,10 @@ class Dataset_File(models.Model):
                 p = r
         # A datafile with no associated replicas is broken.
         if verified == None and not p:
-            logger.error('Ooops! - Dataset_File %s has no replicas: %s',
+            logger.error('Ooops! - DataFile %s has no replicas: %s',
                          self.id, self)
             if hasattr(settings, 'DEBUG') and settings.DEBUG:
-                raise ValueError('Dataset_File has no replicas')
+                raise ValueError('DataFile has no replicas')
         return p
 
     def has_image(self):
@@ -237,3 +239,33 @@ class Dataset_File(models.Model):
 
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
+
+
+class DataFileObject(models.Model):
+    '''
+    holds one copy of the data for a datafile
+    '''
+
+    datafile = models.ForeignKey(DataFile, related_name="datafile_objects")
+    identifier = models.TextField()
+    verified = models.BooleanField(default=False)
+    last_verified_date = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        app_label = 'tardis_portal'
+
+    def _get_storage_class(self):
+        return self.datafile.dataset.storage_box\
+                                    .get_initialised_storage_instance()
+
+    @property
+    def file_object(self):
+        '''
+        a set of accessor functions that convert the file information to a
+        standard python file object and vice versa
+        '''
+        return self._get_storage_class().open(self.identifier)
+
+    @file_object.setter
+    def file_object(self, file_object):
+        raise NotImplementedError()

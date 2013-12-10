@@ -113,13 +113,13 @@ class MetsExporter():
 
             experimentDiv.add_div(datasetDiv)
 
-            for datafile in dataset.dataset_file_set.filter():
+            for datafile in dataset.datafile_set.filter():
                 replica = datafile.get_preferred_replica(verified=True)
                 if not replica:
                     continue
                 # add entry to fileSec
                 parameterSets = DatafileParameterSet.objects.filter(
-                    dataset_file=datafile)
+                    datafile=datafile)
 
                 if not parameterSets:
                     ADMID_val = None

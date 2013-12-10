@@ -46,7 +46,7 @@ from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .access_control import ObjectACL
 from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
-from .datafile import Dataset_File
+from .datafile import DataFile
 from .replica import Replica
 from .location import Location, ProviderParameter
 from .license import License

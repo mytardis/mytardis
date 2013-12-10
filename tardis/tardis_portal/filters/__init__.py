@@ -50,7 +50,7 @@ logger = logging.getLogger(__name__)
 
 class FilterInitMiddleware(object):
     def __init__(self, filters=None):
-        from tardis.tardis_portal.models import Dataset_File, Replica
+        from tardis.tardis_portal.models import DataFile, Replica
         if not filters:
             filters = getattr(settings, 'POST_SAVE_FILTERS', [])
         for f in filters:
@@ -83,15 +83,15 @@ class FilterInitMiddleware(object):
                     if replica.verified:
                         kw['instance'] = replica.datafile
                         kw['replica'] = replica
-                        kw['sender'] = Dataset_File
+                        kw['sender'] = DataFile
                         dfh(**kw)
                 return replica_hook
-                
+
             # XXX seems to requre a strong ref else it won't fire,
             # could be because some hooks are classes not functions.
             # Need to use dispatch_uid to avoid expensive duplicate signals.
             #https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals
-            post_save.connect(datafile_hook, sender=Dataset_File, 
+            post_save.connect(datafile_hook, sender=DataFile,
                               weak=False, dispatch_uid=cls + ".datafile")
             post_save.connect(make_replica_hook(datafile_hook), sender=Replica,
                               weak=False, dispatch_uid=cls + ".replica")
