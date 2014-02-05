@@ -761,6 +761,10 @@ class DataFileResource(MyTardisModelResource):
             newfile = bundle.data['attached_file'][0]
 
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
+                location = Location.objects.get(name=location_name)
+                import urlparse
+                abs_path = os.path.join(urlparse.urlsplit(location.url).path,
+                                        file_path)
                 from tardis.tardis_portal.util import generate_file_checksums
                 md5, sha512, size, _ = generate_file_checksums(
                     newfile)
@@ -857,6 +861,9 @@ class ReplicaResource(MyTardisModelResource):
 
     class Meta(MyTardisModelResource.Meta):
         queryset = DataFileObject.objects.all()
+        filtering = {
+            'verified': ('exact',),
+        }
 
     def hydrate(self, bundle):
         datafile = bundle.related_obj
