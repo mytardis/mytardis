@@ -11,9 +11,12 @@ from django.conf import settings
 from django.conf.urls.defaults import url
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission
 from django.core.serializers import json
 from django.core.servers.basehttp import FileWrapper
 from django.http import HttpResponse
+from django.db import models
+from django.db import IntegrityError
 
 from tardis.tardis_portal.auth.decorators import \
     get_accessible_datafiles_for_user
@@ -25,6 +28,7 @@ from tardis.tardis_portal.auth.decorators import has_experiment_access
 from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
+from tardis.tardis_portal.models import UserProfile, UserAuthentication
 from tardis.tardis_portal.models.datafile import Dataset_File
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
@@ -46,14 +50,19 @@ from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
 from tastypie.authorization import Authorization
+from tastypie.authorization import DjangoAuthorization
 from tastypie.constants import ALL_WITH_RELATIONS
 from tastypie.exceptions import NotFound
 from tastypie.exceptions import Unauthorized
+from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized
+from tastypie.http import HttpBadRequest
+from tastypie.http import HttpNotFound
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
-
+from tastypie.models import ApiAccess, ApiKey
+from tastypie.models import create_api_key
 
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -258,9 +267,12 @@ class ACLAuthorization(Authorization):
                 has_write_permissions(bundle.request,
                                       bundle.obj.parameterset.experiment.id)
         elif type(bundle.obj) == Dataset:
-            if not bundle.request.user.has_perm(
-                    'tardis_portal.change_dataset'):
-                return False
+            # Commented out by James W, because this is not a standard 
+            # permission turned on by default, but it is required by 
+            # the instrument app to create datasets:
+            #if not bundle.request.user.has_perm(
+                    #'tardis_portal.change_dataset'):
+                #return False
             perm = False
             for exp_uri in bundle.data.get('experiments', []):
                 try:
@@ -397,8 +409,125 @@ class UserResource(ModelResource):
         authorization = ACLAuthorization()
         queryset = User.objects.all()
         allowed_methods = ['get']
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
+        filtering = {
+            'id': ('exact', ),
+            'username': ('exact', ),
+        }
+
+
+# http://stackoverflow.com/questions/10778916/create-a-new-user-using-tastypie-results-in-401
+class UserSignUpResource(ModelResource):
+  class Meta:
+    object_class = User
+    queryset = User.objects.all()
+    allowed_methods = ['post']
+    include_resource_uri = False
+    resource_name = 'newuser'
+    excludes = ['is_active', 'is_staff', 'is_superuser']
+    authentication = ApiKeyAuthentication()
+    authorization = ACLAuthorization()
+    models.signals.post_save.connect(create_api_key, sender=User)
+
+  def obj_create(self, bundle, request=None, **kwargs):
+    try:
+      bundle = super(UserSignUpResource, self).obj_create(bundle, **kwargs)
+    except IntegrityError:
+      raise ImmediateHttpResponse(response=HttpBadRequest('The username already exists'))
+    return bundle
+
+  def apply_authorization_limits(self, request, object_list):
+    return object_list.filter(id=request.user.id, is_superuser=True)
+
+  def hydrate_m2m(self, bundle):
+    newuser = bundle.obj
+    # with standard permissions
+    newuser.user_permissions.add(Permission.objects.get(codename='add_experiment'))
+    newuser.user_permissions.add(Permission.objects.get(codename='change_experiment'))
+    newuser.user_permissions.add(Permission.objects.get(codename='change_group'))
+    newuser.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
+    newuser.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
+    # plus some extra permissions, required by the instrument app
+    newuser.user_permissions.add(Permission.objects.get(codename='add_experimentparameter'))
+    newuser.user_permissions.add(Permission.objects.get(codename='add_dataset'))
+    newuser.user_permissions.add(Permission.objects.get(codename='add_dataset_file'))
+    newuser.user_permissions.add(Permission.objects.get(codename='add_replica'))
+    newuser.save()
+    return super(UserSignUpResource, self).hydrate(bundle)
+
+
+class ApiKeyResource(ModelResource):
+    user = fields.ForeignKey(UserResource, 'user')
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = ApiKey.objects.all()
+        allowed_methods = ['get']
+        #fields = ['username', 'first_name', 'last_name']
+        serializer = default_serializer
+        filtering = {
+            'id': ('exact', ),
+            'user': ALL_WITH_RELATIONS,
+        }
+
+
+# Instrument app needs to be able to create user profile and user authentication
+# records when it finds a new username.  Otherwise when the user logs into
+# MyTardis using their LDAP credentials, they will end up with a "1" at the 
+# end of their username.
+class UserProfileResource(ModelResource):
+    user = fields.ForeignKey(UserResource, 'user')
+    class Meta:
+        object_class = UserProfile
+        queryset = UserProfile.objects.all()
+        include_resource_uri = False
+        #resource_name = 'userprofile'
+        authentication = ApiKeyAuthentication()
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact', ),
+            'user': ALL_WITH_RELATIONS,
+        }
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        try:
+            bundle = super(UserProfileResource, self).obj_create(bundle, **kwargs)
+        except IntegrityError:
+            raise ImmediateHttpResponse(response=HttpBadRequest('The user profile already exists'))
+        return bundle
+
+    def apply_authorization_limits(self, request, object_list):
+        return object_list.filter(id=request.user.id, is_superuser=True)
+
+
+# Instrument app needs to be able to create user profile and user authentication
+# records when it finds a new username.  Otherwise when the user logs into
+# MyTardis using their LDAP credentials, they will end up with a "1" at the 
+# end of their username.
+class UserAuthenticationResource(ModelResource):
+    userProfile = fields.ForeignKey(UserProfileResource, 'userProfile')
+    class Meta:
+        object_class = UserAuthentication
+        queryset = UserAuthentication.objects.all()
+        include_resource_uri = False
+        #resource_name = 'userauthentication'
+        authentication = ApiKeyAuthentication()
+        authorization = ACLAuthorization()
+        filtering = {
+            'id': ('exact', ),
+            'userProfile': ALL_WITH_RELATIONS,
+        }
+
+    def obj_create(self, bundle, request=None, **kwargs):
+        try:
+            bundle = super(UserAuthenticationResource, self).obj_create(bundle, **kwargs)
+        except IntegrityError:
+            raise ImmediateHttpResponse(response=HttpBadRequest('The user authentication already exists'))
+        return bundle
+
+    def apply_authorization_limits(self, request, object_list):
+        return object_list.filter(id=request.user.id, is_superuser=True)
 
 
 class MyTardisModelResource(ModelResource):
@@ -515,9 +644,16 @@ class ExperimentResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+
+        # Ensure that creating a record via POST always return something, 
+        # i.e. the newly created record's JSON representation.
+        always_return_data = True 
+
         queryset = Experiment.objects.all()
         filtering = {
+            'id': ('exact', ),
             'title': ('exact',),
+            'created_by': ALL_WITH_RELATIONS,
         }
 
     def hydrate_m2m(self, bundle):
@@ -604,9 +740,16 @@ class DatasetResource(MyTardisModelResource):
         full=True, null=True)
 
     class Meta(MyTardisModelResource.Meta):
+
+        # Ensure that creating a record via POST always return something, 
+        # i.e. the newly created record's JSON representation.
+        always_return_data = True 
+
         queryset = Dataset.objects.all()
         filtering = {
             'id': ('exact', ),
+            'experiments': ALL_WITH_RELATIONS,
+            'resource_uri': ('exact', ),
             'description': ('exact', ),
             'directory': ('exact', ),
         }
@@ -654,8 +797,14 @@ class Dataset_FileResource(MyTardisModelResource):
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
+
+        # Ensure that creating a record via POST always return something, 
+        # i.e. the newly created record's JSON representation.
+        always_return_data = True 
+
         queryset = Dataset_File.objects.all()
         filtering = {
+            'id': ('exact', ),
             'directory': ('exact', 'startswith'),
             'dataset': ALL_WITH_RELATIONS,
             'filename': ('exact', ),
