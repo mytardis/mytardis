@@ -863,6 +863,7 @@ class ReplicaResource(MyTardisModelResource):
         queryset = DataFileObject.objects.all()
         filtering = {
             'verified': ('exact',),
+            'url': ('exact', 'startswith'),
         }
 
     def hydrate(self, bundle):
