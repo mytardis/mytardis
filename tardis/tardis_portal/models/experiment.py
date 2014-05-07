@@ -6,10 +6,8 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.db.models import Q
 from django.utils.safestring import SafeUnicode
 
-from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
 from tardis.tardis_portal.models import ObjectACL
 
@@ -42,9 +40,9 @@ class Experiment(models.Model):
     PUBLIC_ACCESS_FULL = 100
 
     PUBLIC_ACCESS_CHOICES = (
-        (PUBLIC_ACCESS_NONE,        'No public access (hidden)'),
-        (PUBLIC_ACCESS_METADATA,    'Public Metadata only (no data file access)'),
-        (PUBLIC_ACCESS_FULL,        'Public'),
+        (PUBLIC_ACCESS_NONE, 'No public access (hidden)'),
+        (PUBLIC_ACCESS_METADATA, 'Public Metadata only (no data file access)'),
+        (PUBLIC_ACCESS_FULL, 'Public'),
     )
 
     url = models.URLField(max_length=255,
@@ -138,38 +136,21 @@ class Experiment(models.Model):
         return Replica.objects.filter(datafile__dataset__experiments=self)
 
     def get_download_urls(self):
-        from .datafile import DataFile
         urls = {}
-        params = (('experiment_id', self.id),)
-        protocols = frozenset(self.get_replicas()\
-                                  .values_list('protocol', flat=True)\
-                                  .distinct())
-        # Get built-in download links
-        local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
-        if any(p in protocols for p in local_protocols):
-            view = 'tardis.tardis_portal.download.streaming_download_experiment'
-            for comptype in getattr(settings,
-                                    'DEFAULT_ARCHIVE_FORMATS',
-                                    ['tgz', 'tar']):
-                kwargs = dict(params+(('comptype', comptype),))
-                urls[comptype] = reverse(view, kwargs=kwargs)
-
-        # Get links from download providers
-        for protocol in protocols - local_protocols:
-            try:
-                for module in settings.DOWNLOAD_PROVIDERS:
-                    if module[0] == protocol:
-                        view = '%s.download_experiment' % module[1]
-                        urls[protocol] = reverse(view, kwargs=dict(params))
-            except AttributeError:
-                pass
+        view = 'tardis.tardis_portal.download.streaming_download_experiment'
+        for comptype in getattr(settings,
+                                'DEFAULT_ARCHIVE_FORMATS',
+                                ['tgz', 'tar']):
+            urls[comptype] = reverse(view, kwargs={
+                'experiment_id': self.id,
+                'comptype': comptype})
 
         return urls
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
         return self.get_datafiles().order_by('-modification_time',
-                                              '-created_time') \
+                                             '-created_time') \
                                    .filter(IMAGE_FILTER)
 
     def get_size(self):

@@ -1,116 +1,72 @@
 # -*- coding: utf-8 -*-
 import datetime
+import os
+
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Adding model 'StorageBox'
-        db.create_table(u'tardis_portal_storagebox', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('django_storage_class', self.gf('django.db.models.fields.TextField')()),
-            ('max_size', self.gf('django.db.models.fields.BigIntegerField')()),
-            ('status', self.gf('django.db.models.fields.CharField')(max_length=100)),
-        ))
-        db.send_create_signal('tardis_portal', ['StorageBox'])
+        "Write your forwards methods here."
+        # Note: Don't use "from appname.models import ModelName".
+        # Use orm.ModelName to refer to models in this application,
+        # and orm['appname.ModelName'] for models in other applications.
 
-        # Adding model 'DataFileObject'
-        db.create_table(u'tardis_portal_datafileobject', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('datafile', self.gf('django.db.models.fields.related.ForeignKey')(related_name='datafile_objects', to=orm['tardis_portal.DataFile'])),
-            ('identifier', self.gf('django.db.models.fields.TextField')()),
-            ('verified', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('last_verified_date', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-        ))
-        db.send_create_signal('tardis_portal', ['DataFileObject'])
+        # Locations
+        for location in orm.Location.objects.all():
+            newsb = orm.StorageBox()
+            newsb.name = location.name
+            newsb.description = "converted from Location"
+            newsb.status = "dirty"
+            if location.type in ('local', 'online') and \
+               location.transfer_provider in ('local', ):
+                base_dir = location.url.replace('file://', '')
+                try:
+                    base_dir_stat = os.statvfs(base_dir)
+                except OSError:
+                    # for running this on a test db
+                    print 'Cannot access location %s. OK for testing only' % (
+                        location.name,)
+                    base_dir_stat = os.statvfs('/')
+                disk_size = base_dir_stat.f_frsize * base_dir_stat.f_blocks
+                newsb.max_size = disk_size
+                newsb.save()
+                sb_opt = orm.StorageBoxOption(storage_box=newsb,
+                                              key="location",
+                                              value=base_dir)
+                sb_opt.save()
+            else:
+                # placeholder storage class. Manual intervention required
+                newsb.django_storage_class = \
+                    'tardis.tardis_portal.storage.DummyStorage'
+                newsb.max_size = 0
+                newsb.save()
 
-        # Adding model 'StorageBoxOption'
-        db.create_table(u'tardis_portal_storageboxoption', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('storage_box', self.gf('django.db.models.fields.related.ForeignKey')(related_name='options', to=orm['tardis_portal.StorageBox'])),
-            ('key', self.gf('django.db.models.fields.TextField')()),
-            ('value', self.gf('django.db.models.fields.TextField')()),
-        ))
-        db.send_create_signal('tardis_portal', ['StorageBoxOption'])
+        # Replicas
+        for replica in orm.Replica.objects.all():
+            new_dfo = orm.DataFileObject()
+            new_dfo.datafile = replica.datafile
+            new_dfo.uri = replica.url
+            new_dfo.storage_box = orm.StorageBox.objects.get(
+                name=replica.location.name)
+            new_dfo.save()
+            new_dfo.datafile.dataset.storage_boxes.add(new_dfo.storage_box)
 
-        # Adding M2M table for field storage_box on 'Dataset'
-        m2m_table_name = db.shorten_name(u'tardis_portal_dataset_storage_box')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('dataset', models.ForeignKey(orm['tardis_portal.dataset'], null=False)),
-            ('storagebox', models.ForeignKey(orm['tardis_portal.storagebox'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['dataset_id', 'storagebox_id'])
-
-        # Adding field 'DataFile.deleted'
-        db.add_column(u'tardis_portal_datafile', 'deleted',
-                      self.gf('django.db.models.fields.BooleanField')(default=False),
-                      keep_default=False)
-
-        # Adding field 'DataFile.deleted_time'
-        db.add_column(u'tardis_portal_datafile', 'deleted_time',
-                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
-                      keep_default=False)
-
-        # Adding M2M table for field storage_box on 'DatasetParameterSet'
-        m2m_table_name = db.shorten_name(u'tardis_portal_datasetparameterset_storage_box')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('datasetparameterset', models.ForeignKey(orm['tardis_portal.datasetparameterset'], null=False)),
-            ('storagebox', models.ForeignKey(orm['tardis_portal.storagebox'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['datasetparameterset_id', 'storagebox_id'])
-
-        # Adding M2M table for field storage_box on 'ExperimentParameterSet'
-        m2m_table_name = db.shorten_name(u'tardis_portal_experimentparameterset_storage_box')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('experimentparameterset', models.ForeignKey(orm['tardis_portal.experimentparameterset'], null=False)),
-            ('storagebox', models.ForeignKey(orm['tardis_portal.storagebox'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['experimentparameterset_id', 'storagebox_id'])
-
-        # Adding M2M table for field storage_box on 'DatafileParameterSet'
-        m2m_table_name = db.shorten_name(u'tardis_portal_datafileparameterset_storage_box')
-        db.create_table(m2m_table_name, (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('datafileparameterset', models.ForeignKey(orm['tardis_portal.datafileparameterset'], null=False)),
-            ('storagebox', models.ForeignKey(orm['tardis_portal.storagebox'], null=False))
-        ))
-        db.create_unique(m2m_table_name, ['datafileparameterset_id', 'storagebox_id'])
-
+        if False:
+            files_failed_verification = []
+            # verify all files
+            for dfo in orm.DataFileObject.objects.all():
+                if not dfo.storage_box.django_storage_class == \
+                   'tardis.tardis_portal.storage.DummyStorage':
+                    if not dfo.verify():
+                        files_failed_verification.append(dfo)
+            print files_failed_verification or "All files migrated fine"
 
     def backwards(self, orm):
-        # Deleting model 'StorageBox'
-        db.delete_table(u'tardis_portal_storagebox')
-
-        # Deleting model 'DataFileObject'
-        db.delete_table(u'tardis_portal_datafileobject')
-
-        # Deleting model 'StorageBoxOption'
-        db.delete_table(u'tardis_portal_storageboxoption')
-
-        # Removing M2M table for field storage_box on 'Dataset'
-        db.delete_table(db.shorten_name(u'tardis_portal_dataset_storage_box'))
-
-        # Deleting field 'DataFile.deleted'
-        db.delete_column(u'tardis_portal_datafile', 'deleted')
-
-        # Deleting field 'DataFile.deleted_time'
-        db.delete_column(u'tardis_portal_datafile', 'deleted_time')
-
-        # Removing M2M table for field storage_box on 'DatasetParameterSet'
-        db.delete_table(db.shorten_name(u'tardis_portal_datasetparameterset_storage_box'))
-
-        # Removing M2M table for field storage_box on 'ExperimentParameterSet'
-        db.delete_table(db.shorten_name(u'tardis_portal_experimentparameterset_storage_box'))
-
-        # Removing M2M table for field storage_box on 'DatafileParameterSet'
-        db.delete_table(db.shorten_name(u'tardis_portal_datafileparameterset_storage_box'))
-
+        "Write your backwards methods here."
+        raise RuntimeError("Cannot reverse this migration.")
 
     models = {
         u'auth.group': {
@@ -158,7 +114,7 @@ class Migration(SchemaMigration):
             'url': ('django.db.models.fields.URLField', [], {'max_length': '2000', 'blank': 'True'})
         },
         'tardis_portal.datafile': {
-            'Meta': {'ordering': "['filename']", 'object_name': 'DataFile'},
+            'Meta': {'ordering': "['filename']", 'unique_together': "(['directory', 'filename', 'version'],)", 'object_name': 'DataFile'},
             'created_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'dataset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset']"}),
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -170,14 +126,17 @@ class Migration(SchemaMigration):
             'mimetype': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'}),
             'modification_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'sha512sum': ('django.db.models.fields.CharField', [], {'max_length': '128', 'blank': 'True'}),
-            'size': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'})
+            'size': ('django.db.models.fields.CharField', [], {'max_length': '400', 'blank': 'True'}),
+            'version': ('django.db.models.fields.IntegerField', [], {'default': '1'})
         },
         'tardis_portal.datafileobject': {
-            'Meta': {'object_name': 'DataFileObject'},
-            'datafile': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'datafile_objects'", 'to': "orm['tardis_portal.DataFile']"}),
+            'Meta': {'unique_together': "(['datafile', 'storage_box'],)", 'object_name': 'DataFileObject'},
+            'created_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'datafile': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'file_objects'", 'to': "orm['tardis_portal.DataFile']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'identifier': ('django.db.models.fields.TextField', [], {}),
-            'last_verified_date': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'last_verified_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'storage_box': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'file_objects'", 'to': "orm['tardis_portal.StorageBox']"}),
+            'uri': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'verified': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         'tardis_portal.datafileparameter': {
@@ -203,7 +162,7 @@ class Migration(SchemaMigration):
             'experiments': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'datasets'", 'symmetrical': 'False', 'to': "orm['tardis_portal.Experiment']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'immutable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'storage_box': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'datasets'", 'symmetrical': 'False', 'to': "orm['tardis_portal.StorageBox']"})
+            'storage_boxes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'datasets'", 'blank': 'True', 'to': "orm['tardis_portal.StorageBox']"})
         },
         'tardis_portal.datasetparameter': {
             'Meta': {'ordering': "['name']", 'object_name': 'DatasetParameter'},
@@ -344,10 +303,19 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.storagebox': {
             'Meta': {'object_name': 'StorageBox'},
-            'django_storage_class': ('django.db.models.fields.TextField', [], {}),
+            'description': ('django.db.models.fields.TextField', [], {'default': "'Default Storage'"}),
+            'django_storage_class': ('django.db.models.fields.TextField', [], {'default': "'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'max_size': ('django.db.models.fields.BigIntegerField', [], {}),
-            'status': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+            'status': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'name': ('django.db.models.fields.TextField', [], {'default': "'default'", 'unique': 'True'})
+        },
+        'tardis_portal.storageboxattribute': {
+            'Meta': {'object_name': 'StorageBoxAttribute'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.TextField', [], {}),
+            'storage_box': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'attributes'", 'to': "orm['tardis_portal.StorageBox']"}),
+            'value': ('django.db.models.fields.TextField', [], {})
         },
         'tardis_portal.storageboxoption': {
             'Meta': {'object_name': 'StorageBoxOption'},
@@ -359,7 +327,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 1, 8, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 4, 23, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
@@ -380,3 +348,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['tardis_portal']
+    symmetrical = True

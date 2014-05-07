@@ -26,9 +26,10 @@ from tardis.tardis_portal.auth.decorators import has_write_permissions
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import ObjectACL
 from tardis.tardis_portal.models.datafile import DataFile
+from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-from tardis.tardis_portal.models.location import Location
+#from tardis.tardis_portal.models.location import Location
 from tardis.tardis_portal.models.parameters import DatafileParameter
 from tardis.tardis_portal.models.parameters import DatafileParameterSet
 from tardis.tardis_portal.models.parameters import DatasetParameter
@@ -37,9 +38,10 @@ from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
-from tardis.tardis_portal.models.replica import Replica
-from tardis.tardis_portal.staging import get_sync_root
-from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
+#from tardis.tardis_portal.models.replica import Replica
+from tardis.tardis_portal.models.storage import StorageBox
+#from tardis.tardis_portal.staging import get_sync_root
+#from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -232,7 +234,7 @@ class ACLAuthorization(Authorization):
             return True
         elif type(bundle.obj) == ParameterName:
             return True
-        elif type(bundle.obj) == Location:
+        elif type(bundle.obj) == StorageBox:
             return bundle.request.user.is_authenticated()
         raise NotImplementedError(type(bundle.obj))
 
@@ -324,7 +326,7 @@ class ACLAuthorization(Authorization):
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
                 has_dataset_write(bundle.request, dataset.id),
             ])
-        elif type(bundle.obj) == Replica:
+        elif type(bundle.obj) == DataFileObject:
             return all([
                 bundle.request.user.has_perm('tardis_portal.change_dataset'),
                 bundle.request.user.has_perm('tardis_portal.add_datafile'),
@@ -716,7 +718,7 @@ class DataFileResource(MyTardisModelResource):
     datafile = fields.FileField()
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
-        'replica_set',
+        'file_objects',
         related_name='datafile', full=True)
     temp_url = None
 
@@ -758,37 +760,26 @@ class DataFileResource(MyTardisModelResource):
         if 'attached_file' in bundle.data:
             # have POSTed file
             newfile = bundle.data['attached_file'][0]
-            file_path = write_uploaded_file_to_dataset(dataset,
-                                                       newfile)
-            location_name = 'local'
+
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
-                location = Location.objects.get(name=location_name)
-                import urlparse
-                abs_path = os.path.join(urlparse.urlsplit(location.url).path,
-                                        file_path)
                 from tardis.tardis_portal.util import generate_file_checksums
                 md5, sha512, size, _ = generate_file_checksums(
-                    open(abs_path, 'r'), False)
+                    newfile)
                 bundle.data['md5sum'] = md5
+
+            bundle.data['replicas'] = [{'file_object': newfile}]
             del(bundle.data['attached_file'])
         elif 'replicas' not in bundle.data:
             # no replica specified: return upload path and create replica for
             # new path
-            location_name = 'staging'
-            stage_url = get_sync_root(prefix="%d-" %
-                                      dataset.get_first_experiment().id)
-            # TODO make sure filename isn't duplicate
-            file_path = os.path.join(stage_url, bundle.data['filename'])
-            self.temp_url = file_path
-            file_path = "file://" + file_path
-        else:
-            return bundle
-        newreplica = {
-            'url': file_path,
-            'protocol': 'file',
-            'location': location_name,
-        }
-        bundle.data['replicas'] = [newreplica]
+#            location_name = 'staging'
+            sbox = dataset.get_staging_storage_box()
+            if sbox is None:
+                raise NotImplementedError
+            dfo = DataFileObject(
+                datafile=bundle.obj,
+                storage_box=dataset.get_staging_storage_box())
+            self.temp_url = dfo.get_save_location()
         return bundle
 
     def post_list(self, request, **kwargs):
@@ -859,26 +850,32 @@ class DatafileParameterResource(ParameterResource):
 
 class LocationResource(MyTardisModelResource):
     class Meta(MyTardisModelResource.Meta):
-        queryset = Location.objects.all()
+        queryset = StorageBox.objects.all()
 
 
 class ReplicaResource(MyTardisModelResource):
     datafile = fields.ForeignKey(DataFileResource, 'datafile')
-    location = fields.ForeignKey(LocationResource, 'location')
 
     class Meta(MyTardisModelResource.Meta):
-        queryset = Replica.objects.all()
+        queryset = DataFileObject.objects.all()
 
-    def hydrate_location(self, bundle):
-        try:
-            location = LocationResource.get_via_uri(LocationResource(),
-                                                    bundle.data['location'],
-                                                    bundle.request)
-        except NotFound:
+    def hydrate(self, bundle):
+        datafile = bundle.related_obj
+        bundle.obj.datafile = datafile
+        bundle.data['datafile'] = datafile
+        if 'location' in bundle.data:
             try:
-                location = Location.objects.get(name=bundle.data['location'])
-            except Location.DoesNotExist:
-                raise
-        bundle.obj.location = location
-        del(bundle.data['location'])
+                bundle.obj.storage_box = StorageBox.objects.get(
+                    title=bundle.data['location'])
+            except StorageBox.DoesNotExist:
+                bundle.obj.storage_box = datafile\
+                          .dataset.get_fast_write_storage_box()
+            del(bundle.data['location'])
+        else:
+            bundle.obj.storage_box = datafile\
+                      .dataset.get_fast_write_storage_box()
+
+        bundle.obj.save()
+        bundle.obj.file_object = bundle.data['file_object']
+        del(bundle.data['file_object'])
         return bundle

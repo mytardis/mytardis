@@ -1,13 +1,18 @@
 from os import path
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.core.files import File
 from django.core.urlresolvers import reverse
 
-from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.util import generate_file_checksums
+
+from .fields import DirectoryField
 from .dataset import Dataset
-from .replica import Replica
+from .storage import StorageBox
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -44,10 +49,38 @@ class DataFile(models.Model):
     sha512sum = models.CharField(blank=True, max_length=128)
     deleted = models.BooleanField(default=False)
     deleted_time = models.DateTimeField(blank=True, null=True)
+    version = models.IntegerField(default=1)
+
+    @property
+    def file_object(self):
+        return self.file_objects.get(
+            storage_box=self.dataset.get_best_read_storage_box()).file_object
+
+    @file_object.setter
+    def file_object(self, file_object):
+        '''
+        replace contents of file in all its locations
+        '''
+        oldobjs = None
+        if self.file_objects.count() > 0:
+            oldobjs = list(self.file_objects.all())
+        if self.dataset.storage_boxes.count() == 0:
+            self.dataset.storage_boxes.add(
+                StorageBox.get_default_storage())
+        for storage_box in self.dataset.storage_boxes.all():
+            newfile = DataFileObject(datafile=self,
+                                     storage_box=storage_box)
+            newfile.save()
+            newfile.file_object = file_object
+            newfile.verify.delay()
+        if len(oldobjs) > 0:
+            for obj in oldobjs:
+                obj.delete()
 
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['filename']
+        unique_together = ['directory', 'filename', 'version']
 
     @classmethod
     def sum_sizes(cls, datafiles):
@@ -72,8 +105,7 @@ class DataFile(models.Model):
         elif settings.REQUIRE_DATAFILE_SIZES and \
                 not self.size:
             raise Exception('Every Datafile requires a file size')
-        else:
-            super(DataFile, self).save(*args, **kwargs)
+        super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -113,14 +145,11 @@ class DataFile(models.Model):
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_download_url(self):
-        replica = self.get_preferred_replica()
-        if replica:
-            return replica.get_download_url()
-        else:
-            return None
+        #import ipdb; ipdb.set_trace()
+        return '/api/v1/dataset_file/%d/download' % self.id
 
     def get_file(self):
-        return self.get_preferred_replica().get_file()
+        return self.file_object
 
     def get_absolute_filepath(self):
         return self.get_preferred_replica().get_absolute_filepath()
@@ -130,30 +159,6 @@ class DataFile(models.Model):
 
     def is_local(self):
         return self.get_preferred_replica().is_local()
-
-    def get_preferred_replica(self, verified=None):
-        """Get the Datafile replica that is the preferred one for download.
-        This entails fetching all of the Replicas and ordering by their
-        respective Locations' computed priorities.  The 'verified' parameter
-        allows you to select the preferred verified (or unverified) replica.
-        """
-
-        p = None
-        if verified == None:
-            replicas = Replica.objects.filter(datafile=self)
-        else:
-            replicas = Replica.objects.filter(datafile=self, verified=verified)
-        for r in replicas:
-            if not p or \
-                    p.location.get_priority() < r.location.get_priority():
-                p = r
-        # A datafile with no associated replicas is broken.
-        if verified == None and not p:
-            logger.error('Ooops! - DataFile %s has no replicas: %s',
-                         self.id, self)
-            if hasattr(settings, 'DEBUG') and settings.DEBUG:
-                raise ValueError('DataFile has no replicas')
-        return p
 
     def has_image(self):
         from .parameters import DatafileParameter
@@ -168,9 +173,9 @@ class DataFile(models.Model):
             return False
 
         for ps in pss:
-            dps = DatafileParameter.objects.filter(\
-            parameterset=ps, name__data_type=5,\
-            name__units__startswith="image")
+            dps = DatafileParameter.objects.filter(
+                parameterset=ps, name__data_type=5,
+                name__units__startswith="image")
 
             if len(dps):
                 return True
@@ -200,11 +205,10 @@ class DataFile(models.Model):
         if not pss:
             return None
 
-        preview_image_data = None
         for ps in pss:
-            dps = DatafileParameter.objects.filter(\
-            parameterset=ps, name__data_type=5,\
-            name__units__startswith="image")
+            dps = DatafileParameter.objects.filter(
+                parameterset=ps, name__data_type=5,
+                name__units__startswith="image")
 
             if len(dps):
                 preview_image_par = dps[0]
@@ -240,32 +244,117 @@ class DataFile(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
+    def _get_fastest_file_object(self):
+        s_box = self.dataset.get_fastest_storage_box()
+        return self.datafile_objects.get(storage_box=s_box).file_object
+
 
 class DataFileObject(models.Model):
     '''
     holds one copy of the data for a datafile
     '''
 
-    datafile = models.ForeignKey(DataFile, related_name="datafile_objects")
-    identifier = models.TextField()
+    datafile = models.ForeignKey(DataFile, related_name='file_objects')
+    storage_box = models.ForeignKey(StorageBox, related_name='file_objects')
+    uri = models.TextField(blank=True, null=True)  # optional
+    created_time = models.DateTimeField(auto_now_add=True)
     verified = models.BooleanField(default=False)
-    last_verified_date = models.DateTimeField(blank=True, null=True)
+    last_verified_time = models.DateTimeField(blank=True, null=True)
+
+    _cached_file_object = None
 
     class Meta:
         app_label = 'tardis_portal'
+        unique_together = ['datafile', 'storage_box']
 
-    def _get_storage_class(self):
-        return self.datafile.dataset.storage_box\
-                                    .get_initialised_storage_instance()
+    def _get_default_storage_class(self):
+        return self.datafile.dataset.get_fastest_storage_box()
+
+    def _get_identifier(self):
+        '''
+        the default identifier would be directory and file name, but it may
+        not work for all backends. This function aims to abstract it.
+        '''
+
+        def default_identifier(self):
+            if self.uri is None:
+                path_parts = ["%s-%s" % (self.datafile.dataset.description,
+                                         self.datafile.dataset.id)]
+                path_parts += self.datafile.directory or []
+                path_parts += [self.datafile.filename]
+                self.uri = path.join(*path_parts)
+                self.save()
+            return self.uri
+
+        build_identifier = getattr(
+            self.storage_box.get_initialised_storage_instance(),
+            'build_identifier',
+            default_identifier)
+        return build_identifier(self)
+
+    def get_save_location(self):
+        return self.storage_box.get_save_location(self)
 
     @property
     def file_object(self):
         '''
         a set of accessor functions that convert the file information to a
-        standard python file object and vice versa
+        standard python file object for reading and copy the contents of an
+        existing file_object into the storage backend.
         '''
-        return self._get_storage_class().open(self.identifier)
+        if self._cached_file_object is None:
+            self._cached_file_object = self\
+                .storage_box.get_initialised_storage_instance().open(
+                    self._get_identifier())
+        return self._cached_file_object
 
     @file_object.setter
     def file_object(self, file_object):
-        raise NotImplementedError()
+        '''
+        write contents of file object to storage_box
+        '''
+        if file_object.closed:
+            file_object = File(file_object)
+            file_object.open()
+        file_object.seek(0)
+        self.storage_box.get_initialised_storage_instance()\
+                        .save(self._get_identifier(), file_object)
+
+    def delete(self):
+        super(DataFileObject, self).delete()
+
+    def verify(self):  # too complex # noqa
+        md5, sha512, size, mimetype_buffer = generate_file_checksums(
+            self.file_object)
+        df_md5 = self.datafile.md5sum
+        df_sha512 = self.datafile.sha512sum
+        if df_sha512 is None or df_sha512 == '':
+            if md5 != df_md5:
+                logger.error('DataFileObject with id %d did not verify. '
+                             'MD5 sums did not match')
+                return False
+            self.datafile.sha512sum = sha512
+        elif md5 is None or md5 == '':
+            if sha512 != df_sha512:
+                logger.error('DataFileObject with id %d did not verify. '
+                             'SHA512 sums did not match')
+                return False
+            self.datafile.md5sum = md5
+        else:
+            if not (md5 == df_md5 and sha512 == df_sha512):
+                logger.error('DataFileObject with id %d did not verify. '
+                             'Checksums did not match')
+                return False
+        df_size = self.datafile.size
+        if df_size is None or df_size == '':
+            self.datafile.size = size
+        elif int(df_size) != size:
+            logger.error('DataFileObject with id %d did not verify. '
+                         'File size did not match')
+            return False
+        self.datafile.save()
+
+        self.verified = True
+        self.last_verified_date = datetime.now()
+        self.save()
+        return True

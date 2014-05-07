@@ -31,7 +31,6 @@ core_urls = patterns(
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^help/$', 'user_guide'),
-    (r'^import_params/$', 'import_params'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         mimetype="text/plain"))
@@ -55,8 +54,6 @@ experiment_urls = patterns(
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
     (r'^search/$', 'search_experiment'),
-    (r'^register/$', 'register_experiment_ws_xmldata'),
-    (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',

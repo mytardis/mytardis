@@ -196,6 +196,7 @@ class ObjectACL(models.Model):
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['content_type', 'object_id']
+        verbose_name = "Object ACL"
 
     @classmethod
     def get_effective_query(cls):

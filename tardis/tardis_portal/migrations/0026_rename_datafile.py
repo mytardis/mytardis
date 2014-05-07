@@ -10,8 +10,8 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         db.rename_table('tardis_portal_dataset_file', 'tardis_portal_datafile')
         db.send_create_signal('tardis_portal', ['DataFile'])
-        db.rename_column('tardis_portal_datafileparameterset', 'dataset_file',
-                         'datafile')
+        # db.rename_column('tardis_portal_datafileparameterset', 'dataset_file',
+        #                  'datafile')
         db.rename_column('tardis_portal_datafileparameterset', 'dataset_file_id',
                          'datafile_id')
         # db.alter_column('tardis_portal_datafileparameterset', 'datafile',
@@ -24,10 +24,18 @@ class Migration(SchemaMigration):
             orm['contenttypes.contenttype'].objects.filter(
                 app_label='tardis_portal', model='dataset_file'
             ).update(model='datafile')
+            # cleaning up from 0022-0024. should not affect anyone
+            # as the relevant data has been transferred, just a stale
+            # content_type left over and permissions haven't been used by
+            # anyone for ACL changes AFAIK
+            orm['contenttypes.contenttype'].objects.filter(
+                app_label='tardis_portal', model='experimentacl'
+            ).delete()
+
 
     def backwards(self, orm):
         db.rename_column('tardis_portal_datafileparameterset',
-                         'datafile', 'dataset_file')
+                         'datafile_id', 'dataset_file_id')
         db.rename_table('tardis_portal_datafile', 'tardis_portal_dataset_file')
 
     models = {
