@@ -131,9 +131,6 @@ class Dataset(models.Model):
             return False
         return self._has_any_perm(user_obj)
 
-    def get_best_read_storage_box(self):
-        return self.storage_boxes.all()[0]
-
     def get_most_reliable_storage_box(self):
         return self.storage_boxes.latest('copies')\
                                  .get_initialised_storage_instance()
@@ -143,10 +140,7 @@ class Dataset(models.Model):
                                           attributes_value="True") or [None]
         return boxes[0]
 
-    def get_fast_write_storage_box(self):
-        '''
-        placeholder for providing classification of boxes by performance
-        '''
+    def get_default_storage_box(self):
         if self.storage_boxes.count() == 0:
             self.storage_boxes.add(StorageBox.get_default_storage())
-        return self.storage_boxes.all()[0]
+        return self.storage_boxes.all()[0]  # use first() with Django 1.6+

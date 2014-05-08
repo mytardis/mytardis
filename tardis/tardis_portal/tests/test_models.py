@@ -46,16 +46,13 @@ class ModelTestCase(TestCase):
 
     def setUp(self):
         from django.contrib.auth.models import User
-        from tardis.tardis_portal.models import Location
         user = 'tardis_user1'
         pwd = 'secret'
         email = ''
         self.user = User.objects.create_user(user, email, pwd)
-        Location.force_initialize()
 
     def test_experiment(self):
         from tardis.tardis_portal import models
-        from django.conf import settings
         from os import path
         exp = models.Experiment(title='test exp1',
                                 institution_name='monash',
@@ -68,9 +65,11 @@ class ModelTestCase(TestCase):
         self.assertEqual(exp.approved, False)
         self.assertEqual(exp.handle, None)
         self.assertEqual(exp.created_by, self.user)
-        self.assertEqual(exp.public_access, models.Experiment.PUBLIC_ACCESS_NONE)
-        self.assertEqual(exp.get_absolute_url(), '/test/experiment/view/1/',
-                         exp.get_absolute_url() + ' != /test/experiment/view/1/')
+        self.assertEqual(exp.public_access,
+                         models.Experiment.PUBLIC_ACCESS_NONE)
+        self.assertEqual(
+            exp.get_absolute_url(), '/test/experiment/view/1/',
+            exp.get_absolute_url() + ' != /test/experiment/view/1/')
         self.assertEqual(exp.get_or_create_directory(),
                          path.join(settings.FILE_STORE_PATH, str(exp.id)))
 
@@ -116,17 +115,18 @@ class ModelTestCase(TestCase):
         self.assertTrue(ae3 == authors[1])
 
     def test_datafile(self):
-        from tardis.tardis_portal.models import Experiment, Dataset
+        from tardis.tardis_portal.models import Experiment, Dataset, DataFile
 
         def _build(dataset, filename, url, protocol):
             from tardis.tardis_portal.models import \
-                DataFile, Replica, Location
+                DataFileObject
             datafile = DataFile(dataset=dataset, filename=filename)
             datafile.save()
-            replica = Replica(datafile=datafile, url=url,
-                              protocol=protocol,
-                              location=Location.get_default_location())
-            replica.save()
+            dfo = DataFileObject(
+                datafile=datafile,
+                storage_box=dataset.get_default_storage_box(),
+                uri=url)
+            dfo.save()
             return datafile
 
         exp = Experiment(title='test exp1',
@@ -199,7 +199,7 @@ class ModelTestCase(TestCase):
             self.assertEqual(df_file.get_download_url(),
                              '/test/download/datafile/4/')
             self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(), '') # not local
+            self.assertEqual(df_file.get_absolute_filepath(), '')  # not local
 
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
@@ -215,7 +215,6 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_SIZES = save1
             settings.REQUIRE_DATAFILE_CHECKSUMS = save2
 
-
     def test_location(self):
         from tardis.tardis_portal.models import Location
         self.assertEquals(Location.get_default_location().name,
@@ -227,12 +226,13 @@ class ModelTestCase(TestCase):
     # check conversion of b64encoded images back into files
     def test_parameter(self):
         from tardis.tardis_portal import models
-        exp = models.Experiment(title='test exp1',
-                                institution_name='Australian Synchrotron',
-                                approved=True,
-                                created_by=self.user,
-                                public_access=models.Experiment.PUBLIC_ACCESS_NONE,
-                                )
+        exp = models.Experiment(
+            title='test exp1',
+            institution_name='Australian Synchrotron',
+            approved=True,
+            created_by=self.user,
+            public_access=models.Experiment.PUBLIC_ACCESS_NONE,
+        )
         exp.save()
 
         dataset = models.Dataset(description="dataset description")
@@ -246,37 +246,43 @@ class ModelTestCase(TestCase):
                                   md5sum='bogus')
         df_file.save()
 
-        df_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema1.xml',
-                                  type=models.Schema.DATAFILE)
+        df_schema = models.Schema(
+            namespace='http://www.cern.ch/felzmann/schema1.xml',
+            type=models.Schema.DATAFILE)
         df_schema.save()
 
-        ds_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema2.xml',
-                                  type=models.Schema.DATASET)
+        ds_schema = models.Schema(
+            namespace='http://www.cern.ch/felzmann/schema2.xml',
+            type=models.Schema.DATASET)
         ds_schema.save()
 
-        exp_schema = models.Schema(namespace='http://www.cern.ch/felzmann/schema3.xml',
-                                   type=models.Schema.EXPERIMENT)
+        exp_schema = models.Schema(
+            namespace='http://www.cern.ch/felzmann/schema3.xml',
+            type=models.Schema.EXPERIMENT)
         exp_schema.save()
 
-        df_parname = models.ParameterName(schema=df_schema,
-                                          name='name',
-                                          full_name='full_name',
-                                          units='image/jpg',
-                                          data_type=models.ParameterName.FILENAME)
+        df_parname = models.ParameterName(
+            schema=df_schema,
+            name='name',
+            full_name='full_name',
+            units='image/jpg',
+            data_type=models.ParameterName.FILENAME)
         df_parname.save()
 
-        ds_parname = models.ParameterName(schema=ds_schema,
-                                          name='name',
-                                          full_name='full_name',
-                                          units='image/jpg',
-                                          data_type=models.ParameterName.FILENAME)
+        ds_parname = models.ParameterName(
+            schema=ds_schema,
+            name='name',
+            full_name='full_name',
+            units='image/jpg',
+            data_type=models.ParameterName.FILENAME)
         ds_parname.save()
 
-        exp_parname = models.ParameterName(schema=exp_schema,
-                                          name='name',
-                                          full_name='full_name',
-                                          units='image/jpg',
-                                          data_type=models.ParameterName.FILENAME)
+        exp_parname = models.ParameterName(
+            schema=exp_schema,
+            name='name',
+            full_name='full_name',
+            units='image/jpg',
+            data_type=models.ParameterName.FILENAME)
         exp_parname.save()
 
         df_parset = models.DatafileParameterSet(schema=df_schema,

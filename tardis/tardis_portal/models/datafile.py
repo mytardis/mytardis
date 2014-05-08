@@ -152,13 +152,13 @@ class DataFile(models.Model):
         return self.file_object
 
     def get_absolute_filepath(self):
-        return self.get_preferred_replica().get_absolute_filepath()
+        return self.default_dfo.get_absolute_filepath()
 
     def get_file_getter(self):
-        return self.get_preferred_replica().get_file_getter()
+        return self.default_dfo.get_file_getter()
 
     def is_local(self):
-        return self.get_preferred_replica().is_local()
+        return self.default_dfo.is_local()
 
     def has_image(self):
         from .parameters import DatafileParameter
@@ -244,9 +244,19 @@ class DataFile(models.Model):
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
 
-    def _get_fastest_file_object(self):
-        s_box = self.dataset.get_fastest_storage_box()
-        return self.datafile_objects.get(storage_box=s_box).file_object
+    @property
+    def default_dfo(self):
+        s_box = self.dataset.get_default_storage_box()
+        return self.file_objects.get(storage_box=s_box)
+
+    @property
+    def verified(self):
+        return all([obj.verified for obj in self.file_objects.all()])
+
+    def verify(self, reverify=False):
+        for obj in self.file_objects.all():
+            if reverify or not obj.verified:
+                obj.verify()
 
 
 class DataFileObject(models.Model):

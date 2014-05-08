@@ -44,13 +44,15 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
+from tardis.tardis_portal.models.datafile import DataFileObject
 
 logger = logging.getLogger(__name__)
 
 
 class FilterInitMiddleware(object):
-    def __init__(self, filters=None):
-        from tardis.tardis_portal.models import DataFile, Replica
+
+    def __init__(self, filters=None):  # noqa # TODO too complex
+        from tardis.tardis_portal.models import DataFile
         if not filters:
             filters = getattr(settings, 'POST_SAVE_FILTERS', [])
         for f in filters:
@@ -73,28 +75,30 @@ class FilterInitMiddleware(object):
                     if datafile.get_preferred_replica(verified=True):
                         dfh(**kw)
                 return datafile_hook
-            datafile_hook = make_datafile_hook(self._safe_import(cls, args, kw))
+            datafile_hook = make_datafile_hook(
+                self._safe_import(cls, args, kw))
 
             # This dispatches a replica save to a datafile filter if the
             # replica is now in 'verified' state.
-            def make_replica_hook(dfh):
-                def replica_hook(**kw):
-                    replica = kw.get('instance')
-                    if replica.verified:
-                        kw['instance'] = replica.datafile
-                        kw['replica'] = replica
+            def make_dfo_hook(dfh):
+                def dfo_hook(**kw):
+                    dfo = kw.get('instance')
+                    if dfo.verified:
+                        kw['instance'] = dfo.datafile
+                        kw['dfo'] = dfo  # not actually needed it seems
                         kw['sender'] = DataFile
                         dfh(**kw)
-                return replica_hook
+                return dfo_hook
 
             # XXX seems to requre a strong ref else it won't fire,
             # could be because some hooks are classes not functions.
             # Need to use dispatch_uid to avoid expensive duplicate signals.
-            #https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals
+            # https://docs.djangoproject.com/en/dev/topics/signals/#preventing-duplicate-signals # noqa # long url
             post_save.connect(datafile_hook, sender=DataFile,
                               weak=False, dispatch_uid=cls + ".datafile")
-            post_save.connect(make_replica_hook(datafile_hook), sender=Replica,
-                              weak=False, dispatch_uid=cls + ".replica")
+            post_save.connect(make_dfo_hook(datafile_hook),
+                              sender=DataFileObject,
+                              weak=False, dispatch_uid=cls + ".dfo")
             logger.debug('Initialised postsave hooks %s' % post_save.receivers)
 
         # disable middleware
@@ -114,8 +118,9 @@ class FilterInitMiddleware(object):
         try:
             filter_class = getattr(mod, filter_classname)
         except AttributeError:
-            raise ImproperlyConfigured('Filter module "%s" does not define a "%s" class' %
-                                       (filter_module, filter_classname))
+            raise ImproperlyConfigured(
+                'Filter module "%s" does not define a "%s" class' %
+                (filter_module, filter_classname))
 
         filter_instance = filter_class(*args, **kw)
         return filter_instance

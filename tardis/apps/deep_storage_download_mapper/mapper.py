@@ -1,6 +1,6 @@
 '''
 File mapper that works for files stored in deep directory structures.
-It replicates the structure as stored in the File Replica
+It recreates the structure as stored in the datafile directory
 '''
 import os
 

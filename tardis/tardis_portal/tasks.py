@@ -46,9 +46,9 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
     '''
     # Use a transaction for safety
     with transaction.commit_on_success():
-        # Get replica locked for write (to prevent concurrent actions)
+        # Get dfo locked for write (to prevent concurrent actions)
         dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
-        if not dfo.verified or reverify:
+        if reverify or not dfo.verified:
             dfo.verify()
 
 

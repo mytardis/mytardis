@@ -131,10 +131,6 @@ class Experiment(models.Model):
         from .datafile import DataFile
         return DataFile.objects.filter(dataset__experiments=self)
 
-    def get_replicas(self):
-        from .replica import Replica
-        return Replica.objects.filter(datafile__dataset__experiments=self)
-
     def get_download_urls(self):
         urls = {}
         view = 'tardis.tardis_portal.download.streaming_download_experiment'

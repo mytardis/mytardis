@@ -145,18 +145,9 @@ class DatafileAdmin(admin.ModelAdmin):
     inlines = [DataFileObjectInline, ]
 
 
-class ReplicaAdmin(admin.ModelAdmin):
-    search_fields = ['url', 'id']
-
-
 class ProviderParameterNameInline(admin.TabularInline):
     model = models.ProviderParameter
     extra = 0
-
-
-class LocationAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'id']
-    inlines = [ProviderParameterNameInline]
 
 
 class ProviderParameterAdmin(admin.ModelAdmin):
@@ -192,8 +183,6 @@ admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.DataFile, DatafileAdmin)
-admin.site.register(models.Replica, ReplicaAdmin)
-admin.site.register(models.Location, LocationAdmin)
 admin.site.register(models.ProviderParameter, ProviderParameterAdmin)
 admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)

@@ -84,14 +84,14 @@ from tardis.tardis_portal.forms import ExperimentForm, DatasetForm, \
 from tardis.tardis_portal.errors import UnsupportedSearchQueryTypeError
 
 from tardis.tardis_portal.staging import get_full_staging_path, \
-    write_uploaded_file_to_dataset, staging_list
+    staging_list
 
 from tardis.tardis_portal.tasks import create_staging_datafiles
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
-    Dataset, Location, Replica, ExperimentParameterSet, DatasetParameterSet, \
+    Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
 from tardis.tardis_portal import constants
@@ -2577,29 +2577,14 @@ def upload(request, dataset_id):
         if request.FILES:
 
             uploaded_file_post = request.FILES['Filedata']
-            filepath = write_uploaded_file_to_dataset(dataset,
-                                                      uploaded_file_post)
             logger.debug('done upload')
             datafile = DataFile(dataset=dataset,
                                 filename=uploaded_file_post.name,
                                 size=uploaded_file_post.size)
-            logger.debug('created file')
-            replica = Replica(datafile=datafile,
-                              url=filepath,
-                              protocol='',
-                              location=Location.get_default_location())
-            logger.debug('created replica')
-            try:
-                replica.verify(allowEmptyChecksums=True)
-            except Exception as e:
-                logger.error(e, exc_info=True)
-                raise e
-            logger.debug('verified')
             datafile.save()
+            logger.debug('created file')
+            datafile.file_object = uploaded_file_post
             logger.debug('saved datafile')
-            replica.datafile = datafile
-            logger.debug('saved replica')
-            replica.save()
 
     return HttpResponse('True')
 

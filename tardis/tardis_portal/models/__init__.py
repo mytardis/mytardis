@@ -51,8 +51,6 @@ from .datafile import DataFileObject
 from .storage import StorageBox
 from .storage import StorageBoxOption
 from .storage import StorageBoxAttribute
-from .replica import Replica
-from .location import Location, ProviderParameter
 from .license import License
 from .parameters import DatafileParameter, DatafileParameterSet, \
                         DatasetParameter, DatasetParameterSet, \

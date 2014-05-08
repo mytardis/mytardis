@@ -42,7 +42,10 @@ from datetime import datetime
 from django.test import TestCase
 import iso8601
 import pytz
-from tardis.tardis_portal import models
+from tardis.tardis_portal.models import Experiment, Dataset, DataFile, \
+    DataFileObject, Schema, ParameterName, DatafileParameterSet, \
+    DatafileParameter
+
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 
@@ -59,62 +62,59 @@ class ParameterSetManagerTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
-        models.Location.force_initialize()
-
-        self.exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user,
-                                )
+        self.exp = Experiment(title='test exp1',
+                              institution_name='monash',
+                              created_by=self.user)
         self.exp.save()
 
-        self.dataset = models.Dataset(description="dataset description...")
+        self.dataset = Dataset(description="dataset description...")
         self.dataset.save()
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.datafile = models.DataFile(dataset=self.dataset,
-                                        filename="testfile.txt",
-                                        size="42", md5sum='bogus')
+        self.datafile = DataFile(dataset=self.dataset,
+                                 filename="testfile.txt",
+                                 size="42", md5sum='bogus')
         self.datafile.save()
 
-        self.replica = models.Replica(
+        self.dfo = DataFileObject(
             datafile=self.datafile,
-            url="file://1/testfile.txt",
-            location=models.Location.get_default_location())
-        self.replica.save()
+            storage_box=self.datafile.dataset.get_default_storage_box(),
+            uri="1/testfile.txt")
+        self.dfo.save()
 
-        self.schema = models.Schema(
+        self.schema = Schema(
             namespace="http://localhost/psmtest/df/",
             name="Parameter Set Manager", type=3)
         self.schema.save()
 
-        self.parametername1 = models.ParameterName(
+        self.parametername1 = ParameterName(
             schema=self.schema, name="parameter1",
             full_name="Parameter 1")
         self.parametername1.save()
 
-        self.parametername2 = models.ParameterName(
+        self.parametername2 = ParameterName(
             schema=self.schema, name="parameter2",
             full_name="Parameter 2",
-            data_type=models.ParameterName.NUMERIC)
+            data_type=ParameterName.NUMERIC)
         self.parametername2.save()
 
-        self.parametername3 = models.ParameterName(
+        self.parametername3 = ParameterName(
             schema=self.schema, name="parameter3",
             full_name="Parameter 3",
-            data_type=models.ParameterName.DATETIME)
+            data_type=ParameterName.DATETIME)
         self.parametername3.save()
 
-        self.datafileparameterset = models.DatafileParameterSet(
+        self.datafileparameterset = DatafileParameterSet(
             schema=self.schema, datafile=self.datafile)
         self.datafileparameterset.save()
 
-        self.datafileparameter1 = models.DatafileParameter(
+        self.datafileparameter1 = DatafileParameter(
             parameterset=self.datafileparameterset,
             name=self.parametername1, string_value="test1")
         self.datafileparameter1.save()
 
-        self.datafileparameter2 = models.DatafileParameter(
+        self.datafileparameter2 = DatafileParameter(
             parameterset=self.datafileparameterset,
             name=self.parametername2, numerical_value=2)
         self.datafileparameter2.save()
@@ -131,8 +131,8 @@ class ParameterSetManagerTestCase(TestCase):
 
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        self.assertTrue(psm.get_schema().namespace\
-            == "http://localhost/psmtest/df/")
+        self.assertTrue(psm.get_schema().namespace
+                        == "http://localhost/psmtest/df/")
 
         self.assertTrue(psm.get_param("parameter1").string_value == "test1")
 
@@ -140,19 +140,19 @@ class ParameterSetManagerTestCase(TestCase):
 
     def test_new_parameterset(self):
 
-        psm = ParameterSetManager(parentObject=self.datafile,\
-            schema="http://localhost/psmtest/df2/")
+        psm = ParameterSetManager(parentObject=self.datafile,
+                                  schema="http://localhost/psmtest/df2/")
 
-        self.assertTrue(psm.get_schema().namespace\
-            == "http://localhost/psmtest/df2/")
+        self.assertTrue(psm.get_schema().namespace
+                        == "http://localhost/psmtest/df2/")
 
         psm.set_param("newparam1", "test3", "New Parameter 1")
 
-        self.assertTrue(psm.get_param("newparam1").string_value\
-            == "test3")
+        self.assertTrue(psm.get_param("newparam1").string_value
+                        == "test3")
 
-        self.assertTrue(psm.get_param("newparam1").name.full_name\
-            == "New Parameter 1")
+        self.assertTrue(psm.get_param("newparam1").name.full_name
+                        == "New Parameter 1")
 
         psm.new_param("newparam1", "test4")
 
@@ -182,10 +182,10 @@ class ParameterSetManagerTestCase(TestCase):
         '''
         psm = ParameterSetManager(parameterset=self.datafileparameterset)
 
-        psm.new_param("parameter3", datetime(1970,01,01,10,0,0))
+        psm.new_param("parameter3", datetime(1970, 01, 01, 10, 0, 0))
 
         expect(psm.get_param("parameter3", True))\
-            .to_equal(datetime(1970,01,01,0,0,0,tzinfo=pytz.utc))
+            .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))
 
     def test_tz_aware_date_handling(self):
         '''
@@ -197,4 +197,4 @@ class ParameterSetManagerTestCase(TestCase):
                       iso8601.parse_date('1970-01-01T08:00:00+08:00'))
 
         expect(psm.get_param("parameter3", True))\
-            .to_equal(datetime(1970,01,01,0,0,0,tzinfo=pytz.utc))
+            .to_equal(datetime(1970, 01, 01, 0, 0, 0, tzinfo=pytz.utc))

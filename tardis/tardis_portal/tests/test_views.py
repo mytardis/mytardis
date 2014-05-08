@@ -46,18 +46,15 @@ from flexmock import flexmock
 
 from django.conf import settings
 from django.core.urlresolvers import resolve, reverse
-from django.contrib.auth import authenticate
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group, Permission
 
-from django.test.utils import override_settings
-
-from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.models import UserProfile, UserAuthentication, \
     ObjectACL, Experiment, Dataset, DataFile, Schema, \
-    DatafileParameterSet, Replica, Location
+    DatafileParameterSet
+
 
 class UploadTestCase(TestCase):
 
@@ -74,10 +71,8 @@ class UploadTestCase(TestCase):
 
         self.test_dir = mkdtemp()
 
-        Location.force_initialize()
-
         self.exp = Experiment(title='test exp1',
-                institution_name='monash', created_by=self.user)
+                              institution_name='monash', created_by=self.user)
         self.exp.save()
 
         acl = ObjectACL(
@@ -96,8 +91,9 @@ class UploadTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.experiment_path = path.join(settings.FILE_STORE_PATH,
-                str(self.dataset.get_first_experiment().id))
+        self.experiment_path = path.join(
+            settings.FILE_STORE_PATH,
+            str(self.dataset.get_first_experiment().id))
 
         self.dataset_path = path.join(self.experiment_path,
                                       str(self.dataset.id))
@@ -136,8 +132,8 @@ class UploadTestCase(TestCase):
         c.login(username='tardis_user1', password='secret')
         session_id = c.session.session_key
 
-        response = c.post('/upload/' + str(self.dataset.id) + '/',
-            {'Filedata': self.f1, 'session_id': session_id})
+        c.post('/upload/' + str(self.dataset.id) + '/',
+               {'Filedata': self.f1, 'session_id': session_id})
 
         test_files_db = \
             DataFile.objects.filter(dataset__id=self.dataset.id)
@@ -145,11 +141,11 @@ class UploadTestCase(TestCase):
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
-        url = test_files_db[0].get_preferred_replica().url
+        url = test_files_db[0].file_objects.all()[0].uri
         self.assertTrue(url == '%d/%d/testfile.txt' %
                         (self.dataset.get_first_experiment().id,
                          self.dataset.id))
-        self.assertTrue(test_files_db[0].get_preferred_replica().verified)
+        self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
     def testUploadComplete(self):
         from django.http import QueryDict, HttpRequest
@@ -172,9 +168,10 @@ class listTestCase(TestCase):
 
     def setUp(self):
 
-        self.accounts = [('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
-                         ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
-                         ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
+        self.accounts = [
+            ('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
+            ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
+            ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
 
         for (uname, pwd, first, last) in self.accounts:
             user = User.objects.create_user(uname, '', pwd)
@@ -182,7 +179,7 @@ class listTestCase(TestCase):
             user.last_name = last
             user.save()
             profile = UserProfile(user=user,
-                                         isDjangoAccount=True)
+                                  isDjangoAccount=True)
             profile.save()
         self.users = User.objects.all()
 
@@ -204,7 +201,8 @@ class listTestCase(TestCase):
         users_dict = json.loads(response.content)
         self.assertTrue(len(users_dict) == self.users.count())
         for user in self.users:
-            user_info = [ u for u in users_dict if u['username'] == user.username ]
+            user_info = [u for u in users_dict
+                         if u['username'] == user.username]
             self.assertTrue(len(user_info) == 1)
             self.assertTrue(user_info[0]['first_name'] == user.first_name)
             self.assertTrue(user_info[0]['last_name'] == user.last_name)
@@ -240,12 +238,12 @@ class listTestCase(TestCase):
         self.assertTrue(users_dict[0]['username'] == acct.username)
 
         # Partial match on "first_name last_name"
-        response = self.client.get('/ajax/user_list/?q=onefirstname useronelast')
+        response = self.client.get(
+            '/ajax/user_list/?q=onefirstname useronelast')
         self.assertEqual(response.status_code, 200)
         users_dict = json.loads(response.content)
         self.assertTrue(len(users_dict) == 1)
         self.assertTrue(users_dict[0]['username'] == 'user1')
-
 
     def testGetGroupList(self):
 
@@ -260,13 +258,15 @@ class listTestCase(TestCase):
     def tearDown(self):
         self.client.logout()
 
+
 class TokenuserDeniedAccessTestCase(TestCase):
 
     def setUp(self):
 
-        self.accounts = [('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
-                         ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
-                         ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
+        self.accounts = [
+            ('user1', 'pwd1', 'useronefirstname', 'useronelastname'),
+            ('user2', 'pwd2', 'usertwofirstname', 'usertwolastname'),
+            ('user3', 'pwd3', 'userthreefirstname', 'userthreelastname')]
 
         self.token_accounts = [(settings.TOKEN_USERNAME, '', 'Token', 'User')]
 
@@ -278,7 +278,7 @@ class TokenuserDeniedAccessTestCase(TestCase):
             user.last_name = last
             user.save()
             profile = UserProfile(user=user,
-                                         isDjangoAccount=True)
+                                  isDjangoAccount=True)
             profile.save()
         self.users = User.objects.all()
 
@@ -293,16 +293,17 @@ class TokenuserDeniedAccessTestCase(TestCase):
         response = self.client.get('/ajax/user_list/?q=')
         self.assertEqual(response.status_code, 200)
         users_dict = json.loads(response.content)
-        self.assertEqual(len(self.users) - len(self.token_accounts), len(users_dict))
+        self.assertEqual(len(self.users) - len(self.token_accounts),
+                         len(users_dict))
         for user in self.users:
-            user_info = [ u for u in users_dict if u['username'] == user.username ]
+            user_info = [u for u in users_dict
+                         if u['username'] == user.username]
             if user.username == settings.TOKEN_USERNAME:
                 self.assertEqual([], user_info)
             else:
                 self.assertEqual(1, len(user_info))
                 self.assertEqual(user_info[0]['first_name'], user.first_name)
                 self.assertEqual(user_info[0]['last_name'], user.last_name)
-
 
         # Match on first name
         response = self.client.get('/ajax/user_list/?q=token')
@@ -316,10 +317,12 @@ class TokenuserDeniedAccessTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         users_dict = json.loads(response.content)
 
-        self.assertEqual(len(self.users) - len(self.token_accounts), len(users_dict))
+        self.assertEqual(len(self.users) - len(self.token_accounts),
+                         len(users_dict))
 
     def tearDown(self):
         self.client.logout()
+
 
 class RightsTestCase(TestCase):
 
@@ -359,12 +362,13 @@ class RightsTestCase(TestCase):
         expect(response.status_code).to_equal(403)
 
         # Fill in remaining details
-        user.first_name = "Voltaire" # Mononymous persons are just fine
+        user.first_name = "Voltaire"  # Mononymous persons are just fine
         user.save()
 
         # Get "Choose Rights" page, and check that we're now allowed access
         response = client.get(rights_url)
         expect(response.status_code).to_equal(200)
+
 
 class ManageAccountTestCase(TestCase):
 
@@ -400,13 +404,14 @@ class ManageAccountTestCase(TestCase):
 
         # Update account details
         response = client.post(manage_url,
-                               { 'first_name': 'Tommy',
-                                 'email': 'tommy@atkins.net'})
+                               {'first_name': 'Tommy',
+                                'email': 'tommy@atkins.net'})
         # Expect 303 See Also redirect on update
         expect(response.status_code).to_equal(303)
 
         user = User.objects.get(id=user.id)
         expect(user.get_profile().isValidPublicContact()).to_be(True)
+
 
 class StageFilesTestCase(TestCase):
 
@@ -429,8 +434,6 @@ class StageFilesTestCase(TestCase):
             makedirs(staging_dir)
         # Ensure that staging dir is set up properly
         expect(get_full_staging_path(username)).to_be_truthy()
-
-        Location.force_initialize()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -462,7 +465,6 @@ class StageFilesTestCase(TestCase):
         self.assertTrue(login)
         # Return authenticated client
         return client
-
 
     def _get_staging_url(self):
         return reverse('tardis.tardis_portal.views.stage_files_to_dataset',
@@ -518,14 +520,13 @@ class StageFilesTestCase(TestCase):
 
         staging_dir = get_full_staging_path(self.username)
 
-        from os.path import basename
         from tempfile import NamedTemporaryFile
         with NamedTemporaryFile('w', dir=staging_dir) as f:
             # Write some content
             f.write('This is just some content')
             f.flush()
 
-            data = [ f.name ]
+            data = [f.name]
             content_type = 'application/json; charset=utf-8'
             response = client.post(self._get_staging_url(),
                                    data=json.dumps(data),
@@ -538,6 +539,7 @@ class StageFilesTestCase(TestCase):
             # Can't test for async file staging
             emails = json.loads(response.content)
             expect(len(emails)).to_equal(1)
+
 
 class ExperimentTestCase(TestCase):
 
@@ -576,8 +578,8 @@ class ExperimentTestCase(TestCase):
                 'authors': 'Tom Lehrer, Arthur Sullivan',
                 'institution_name': 'The University of California',
                 'description':
-                    "There's antimony, arsenic, aluminum, selenium," +
-                    "And hydrogen and oxygen and nitrogen and rhenium..."
+                "There's antimony, arsenic, aluminum, selenium," +
+                "And hydrogen and oxygen and nitrogen and rhenium..."
                 }
         response = client.post(create_url, data=data)
         # Expect redirect to created experiment
@@ -589,7 +591,7 @@ class ExperimentTestCase(TestCase):
         expect(response.status_code).to_equal(200)
 
         experiment_id = resolve(urlparse(created_url).path)\
-                            .kwargs['experiment_id']
+            .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
             expect(getattr(experiment, attr)).to_equal(data[attr])
@@ -619,11 +621,13 @@ class ExperimentTestCase(TestCase):
 
         # Create client and go to account management URL
         data = {'title': 'I Am the Very Model of a Modern Major-General',
-                'authors': 'W. S. Gilbert(http://en.wikipedia.org/wiki/W._S._Gilbert), Arthur Sullivan (http://en.wikipedia.org/wiki/Arthur_Sullivan)',
+                'authors': 'W. S. Gilbert(http://en.wikipedia.org/wiki/'
+                'W._S._Gilbert), Arthur Sullivan (http://en.wikipedia.org/'
+                'wiki/Arthur_Sullivan)',
                 'institution_name': 'Savoy Theatre',
                 'description':
-                    "I am the very model of a modern Major-General,"+
-                    "I've information vegetable, animal, and mineral,"
+                "I am the very model of a modern Major-General," +
+                "I've information vegetable, animal, and mineral,"
                 }
         response = client.post(edit_url, data=data)
         # Expect redirect to created experiment
@@ -635,7 +639,7 @@ class ExperimentTestCase(TestCase):
         expect(response.status_code).to_equal(200)
 
         experiment_id = resolve(urlparse(created_url).path)\
-                            .kwargs['experiment_id']
+            .kwargs['experiment_id']
         experiment = Experiment.objects.get(id=experiment_id)
         for attr in ('title', 'description', 'institution_name'):
             expect(getattr(experiment, attr)).to_equal(data[attr])
@@ -647,15 +651,14 @@ class ExperimentTestCase(TestCase):
             .to_equal(['http://en.wikipedia.org/wiki/W._S._Gilbert',
                        'http://en.wikipedia.org/wiki/Arthur_Sullivan'])
 
-
     def testDatasetJson(self):
         user = self.user
 
         # Create test experiment and make user the owner of it
         def create_experiment(i):
             experiment = Experiment(title='Text Experiment #%d' % i,
-                                     institution_name='Test Uni',
-                                     created_by=user)
+                                    institution_name='Test Uni',
+                                    created_by=user)
             experiment.save()
             acl = ObjectACL(
                 pluginId=django_user,
@@ -668,7 +671,7 @@ class ExperimentTestCase(TestCase):
             acl.save()
             return experiment
 
-        experiments = map(create_experiment, range(1,6))
+        experiments = map(create_experiment, range(1, 6))
         experiment = experiments[0]
 
         # Create some datasets
@@ -677,7 +680,7 @@ class ExperimentTestCase(TestCase):
             ds.experiments.add(experiment)
             ds.save()
             return (i, ds)
-        datasets = dict(map(create_dataset, range(1,11)))
+        datasets = dict(map(create_dataset, range(1, 11)))
 
         # Login as user
         client = Client()
@@ -685,8 +688,9 @@ class ExperimentTestCase(TestCase):
         self.assertTrue(login)
 
         # Get JSON
-        json_url = reverse('tardis.tardis_portal.views.experiment_datasets_json',
-                           kwargs={'experiment_id': str(experiment.id)})
+        json_url = reverse(
+            'tardis.tardis_portal.views.experiment_datasets_json',
+            kwargs={'experiment_id': str(experiment.id)})
 
         # How to check items
         def check_item(item):
@@ -698,8 +702,8 @@ class ExperimentTestCase(TestCase):
             # todo - put ye test back
             # Check experiment list is the same
             expect(frozenset(item['experiments']))\
-                .to_equal(frozenset(dataset.experiments\
-                                        .values_list('id', flat=True)))
+                .to_equal(frozenset(dataset.experiments
+                                    .values_list('id', flat=True)))
 
         # Check the JSON
         response = client.get(json_url)
@@ -715,19 +719,20 @@ class ExperimentTestCase(TestCase):
             # Attempt to remove the dataset from the original experiment
             # Should fail because it would leave the dataset orphaned
             response = client.delete(json_url+str(item['id']),
-                                      content_type='application/json')
+                                     content_type='application/json')
             expect(response.status_code).to_equal(403)
             # Add the dataset to another experiment with PUT
             new_url = reverse('tardis.tardis_portal.views.dataset_json',
-                           kwargs={'experiment_id': str(experiments[1].id),
-                                   'dataset_id': item['id']})
+                              kwargs={'experiment_id': str(experiments[1].id),
+                                      'dataset_id': item['id']})
             response = client.put(new_url,
                                   data=json.dumps(item),
                                   content_type='application/json')
             item = json.loads(response.content)
             check_item(item)
             # This dataset should now have two experiments
-            expect(item['experiments']).to_equal([e.id for e in experiments[:2]])
+            expect(item['experiments'])\
+                .to_equal([e.id for e in experiments[:2]])
             # Add the rest of the experiments to the dataset
             item['experiments'] = [e.id for e in experiments]
             # Send the revised dataset back to be altered with PUT
@@ -741,12 +746,13 @@ class ExperimentTestCase(TestCase):
             # Remove the dataset from the original experiment
             # Should succeed because there are now many more experiments
             response = client.delete(json_url+str(item['id']),
-                                      content_type='application/json')
+                                     content_type='application/json')
             expect(response.status_code).to_equal(200)
             item = json.loads(response.content)
             check_item(item)
             # Expect the item is now in all but the first experiment
-            expect(item['experiments']).to_equal([e.id for e in experiments][1:])
+            expect(item['experiments'])\
+                .to_equal([e.id for e in experiments][1:])
             # Check it no longer exists
             response = client.get(json_url+str(item['id']))
             expect(response.status_code).to_equal(404)
@@ -805,17 +811,21 @@ class ContextualViewTest(TestCase):
 
     def testDetailsDisplay(self):
         """
-        test display of view for an existing schema and no display for an undefined one.
+        test display of view for an existing schema and no display for an
+        undefined one.
         """
         from tardis.tardis_portal.views import display_datafile_details
-        request = flexmock(user=self.user, groups=[("testgroup",flexmock())])
-        with self.settings(DATAFILE_VIEWS=[("http://test.com/test/schema", "/test/url"),
-                                           ("http://does.not.exist", "/false/url")]):
-            response = display_datafile_details(request, datafile_id=self.datafile.id)
+        request = flexmock(user=self.user, groups=[("testgroup", flexmock())])
+        with self.settings(DATAFILE_VIEWS=[
+                ("http://test.com/test/schema", "/test/url"),
+                ("http://does.not.exist", "/false/url")]):
+            response = display_datafile_details(
+                request, datafile_id=self.datafile.id)
             self.assertEqual(response.status_code, 200)
             self.assertTrue("/ajax/parameters/" in response.content)
             self.assertTrue("/test/url" in response.content)
             self.assertFalse("/false/url" in response.content)
+
 
 class ViewTemplateContextsTest(TestCase):
 
@@ -823,8 +833,6 @@ class ViewTemplateContextsTest(TestCase):
         """
         setting up essential objects, copied from tests above
         """
-        Location.force_initialize()
-        self.location = Location.get_location('local')
 
         user = 'tardis_user1'
         pwd = 'secret'
@@ -852,11 +860,6 @@ class ViewTemplateContextsTest(TestCase):
                                  size=42, filename="foo",
                                  md5sum="junk")
         self.datafile.save()
-        self.replica = Replica(datafile=self.datafile,
-                               url="http://foo",
-                               location=self.location,
-                               verified=False)
-        self.replica.save()
 
     def tearDown(self):
         self.user.delete()
@@ -870,16 +873,14 @@ class ViewTemplateContextsTest(TestCase):
         test some template context parameters for an experiment view
         """
         from tardis.tardis_portal.views import view_experiment
-        from tardis.tardis_portal.shortcuts import render_response_index
         from django.http import HttpRequest
-        from django.template import Context
         import sys
 
         # Default behavior
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
-        request.user=self.user
-        request.groups=[]
+        request.user = self.user
+        request.groups = []
         context = {'organization': ['test', 'test2'],
                    'default_organization': 'test',
                    'default_format': 'tar',
@@ -896,8 +897,8 @@ class ViewTemplateContextsTest(TestCase):
         try:
             setattr(settings, "USER_AGENT_SENSING", True)
             request = HttpRequest()
-            request.user=self.user
-            request.groups=[]
+            request.user = self.user
+            request.groups = []
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
             setattr(request, 'user_agent', mock_agent)
             context = {'organization': ['classic', 'test', 'test2'],
@@ -910,26 +911,23 @@ class ViewTemplateContextsTest(TestCase):
             response = view_experiment(request, experiment_id=self.exp.id)
             self.assertEqual(response.status_code, 200)
         finally:
-            if saved_setting != None:
+            if saved_setting is not None:
                 setattr(settings, "USER_AGENT_SENSING", saved_setting)
             else:
                 delattr(settings, "USER_AGENT_SENSING")
-
 
     def testDatasetView(self):
         """
         test some context parameters for a dataset view
         """
         from tardis.tardis_portal.views import view_dataset
-        from tardis.tardis_portal.shortcuts import render_response_index
         from django.http import HttpRequest
-        from django.template import Context
         import sys
 
         views_module = flexmock(sys.modules['tardis.tardis_portal.views'])
         request = HttpRequest()
-        request.user=self.user
-        request.groups=[]
+        request.user = self.user
+        request.groups = []
         context = {'default_organization': 'test',
                    'default_format': 'tar'}
         views_module.should_call('render_response_index'). \
@@ -943,8 +941,8 @@ class ViewTemplateContextsTest(TestCase):
         try:
             setattr(settings, "USER_AGENT_SENSING", True)
             request = HttpRequest()
-            request.user=self.user
-            request.groups=[]
+            request.user = self.user
+            request.groups = []
             mock_agent = _MiniMock(os=_MiniMock(family="Macintosh"))
             setattr(request, 'user_agent', mock_agent)
             context = {'default_organization': 'classic',
@@ -955,7 +953,7 @@ class ViewTemplateContextsTest(TestCase):
             response = view_dataset(request, dataset_id=self.dataset.id)
             self.assertEqual(response.status_code, 200)
         finally:
-            if saved_setting != None:
+            if saved_setting is not None:
                 setattr(settings, "USER_AGENT_SENSING", saved_setting)
             else:
                 delattr(settings, "USER_AGENT_SENSING")
@@ -964,15 +962,18 @@ class ViewTemplateContextsTest(TestCase):
 class _ContextMatcher(object):
     def __init__(self, template):
         self.template = template
+
     def __eq__(self, other):
         for (key, value) in self.template.items():
             if not key in other or other[key] != value:
                 return False
         return True
 
+
 class _AnyMatcher(object):
     def __eq__(self, other):
         return True
+
 
 class _MiniMock(object):
     def __new__(cls, **attrs):

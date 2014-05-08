@@ -1,20 +1,16 @@
 from lxml import etree
 import json
 import os
-import tempfile
 
 from compare import ensure, expect
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.core.files.uploadedfile import TemporaryUploadedFile
 from django.test import TestCase
 from django.test.client import Client
-from nose.plugins.skip import SkipTest
+# from nose.plugins.skip import SkipTest
 
 from tardis.tardis_portal.models import User, UserProfile, \
-    Experiment, ObjectACL, Dataset, DataFile, Replica, Location
-
-from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
+    Experiment, ObjectACL, Dataset, DataFile
 
 from wand.image import Image
 
@@ -25,12 +21,11 @@ http://library.stanford.edu/iiif/image-api/
 
 """
 
+
 def _create_datafile():
     user = User.objects.create_user('testuser', 'user@email.test', 'pwd')
     user.save()
     UserProfile(user=user).save()
-
-    Location.force_initialize()
 
     full_access = Experiment.PUBLIC_ACCESS_FULL
     experiment = Experiment.objects.create(title="IIIF Test",
@@ -57,15 +52,10 @@ def _create_datafile():
             img.save(file=tempfile.file)
             tempfile.file.flush()
     datafile = DataFile(dataset=dataset,
-                            size=os.path.getsize(tempfile.file.name),
-                            filename='iiif_named_file')
-    replica = Replica(datafile=datafile,
-                      url=write_uploaded_file_to_dataset(dataset, tempfile),
-                      location=Location.get_default_location())
-    replica.verify(allowEmptyChecksums=True)
+                        size=os.path.getsize(tempfile.file.name),
+                        filename='iiif_named_file')
     datafile.save()
-    replica.datafile = datafile
-    replica.save()
+    datafile.file_object = tempfile
     return datafile
 
 
@@ -74,9 +64,9 @@ def _check_compliance_level(response):
     Current complies with Level 1 API, so should assert no more.
     """
     import re
-    ensure(re.search(r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/'+\
+    ensure(re.search(r'\<http:\/\/library.stanford.edu\/iiif\/image-api\/' +
                      r'compliance.html#level[01]\>;rel="compliesTo"',
-                     response['Link']) != None,
+                     response['Link']) is not None,
            True,
            "Compliance header missing")
 
@@ -89,16 +79,16 @@ class Level0TestCase(TestCase):
         self.width = 70
         self.height = 46
 
-
     def testCanGetInfoAsXML(self):
         client = Client()
         kwargs = {'datafile_id': self.datafile.id,
-                  'format': 'xml' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_info',
-                                      kwargs=kwargs))
+                  'format': 'xml'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_info',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         # Check the response content is good
-        nsmap = { 'i': 'http://library.stanford.edu/iiif/image-api/ns/' }
+        nsmap = {'i': 'http://library.stanford.edu/iiif/image-api/ns/'}
         xml = etree.fromstring(response.content)
         identifier = xml.xpath('/i:info/i:identifier', namespaces=nsmap)[0]
         expect(int(identifier.text)).to_equal(self.datafile.id)
@@ -109,13 +99,13 @@ class Level0TestCase(TestCase):
         # Check compliance level
         _check_compliance_level(response)
 
-
     def testCanGetInfoAsJSON(self):
         client = Client()
         kwargs = {'datafile_id': self.datafile.id,
-                  'format': 'json' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_info',
-                                      kwargs=kwargs))
+                  'format': 'json'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_info',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         # Check the response content is good
         data = json.loads(response.content)
@@ -131,9 +121,10 @@ class Level0TestCase(TestCase):
                   'region': 'full',
                   'size': 'full',
                   'rotation': '0',
-                  'quality': 'native' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                      kwargs=kwargs))
+                  'quality': 'native'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_image',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         with Image(blob=response.content) as img:
             expect(img.format).to_equal('TIFF')
@@ -141,6 +132,7 @@ class Level0TestCase(TestCase):
             expect(img.height).to_equal(self.height)
         # Check compliance level
         _check_compliance_level(response)
+
 
 class Level1TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
@@ -157,9 +149,10 @@ class Level1TestCase(TestCase):
                   'size': 'full',
                   'rotation': '0',
                   'quality': 'native',
-                  'format': 'jpg' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                      kwargs=kwargs))
+                  'format': 'jpg'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_image',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         with Image(blob=response.content) as img:
             expect(img.format).to_equal('JPEG')
@@ -176,9 +169,10 @@ class Level1TestCase(TestCase):
                   'size': 'full',
                   'rotation': '0',
                   'quality': 'native',
-                  'format': 'jpg' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                      kwargs=kwargs))
+                  'format': 'jpg'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_image',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         with Image(blob=response.content) as img:
             expect(img.width).to_equal(25)
@@ -189,9 +183,10 @@ class Level1TestCase(TestCase):
                   'size': 'full',
                   'rotation': '0',
                   'quality': 'native',
-                  'format': 'jpg' }
-        response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                      kwargs=kwargs))
+                  'format': 'jpg'}
+        response = client.get(
+            reverse('tardis.tardis_portal.iiif.download_image',
+                    kwargs=kwargs))
         expect(response.status_code).to_equal(200)
         with Image(blob=response.content) as img:
             expect(img.width).to_equal(10)
@@ -201,26 +196,28 @@ class Level1TestCase(TestCase):
 
     def testHandleSizing(self):
         client = Client()
+
         def get_with_size(sizearg):
             kwargs = {'datafile_id': self.datafile.id,
                       'region': 'full',
                       'size': sizearg,
                       'rotation': '0',
                       'quality': 'native',
-                      'format': 'jpg' }
-            response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                          kwargs=kwargs))
+                      'format': 'jpg'}
+            response = client.get(
+                reverse('tardis.tardis_portal.iiif.download_image',
+                        kwargs=kwargs))
             expect(response.status_code).to_equal(200)
             return response
 
         permutations = [
-                        # Width (aspect ratio preserved)
-                        {'arg': '50,', 'width': 50, 'height': 33},
-                        # Height (aspect ratio preserved)
-                        {'arg': ',30', 'width': 46, 'height': 30},
-                        # Percent size (aspect ratio preserved)
-                        {'arg': 'pct:50', 'width': 35, 'height': 23},
-                        ]
+            # Width (aspect ratio preserved)
+            {'arg': '50,', 'width': 50, 'height': 33},
+            # Height (aspect ratio preserved)
+            {'arg': ',30', 'width': 46, 'height': 30},
+            # Percent size (aspect ratio preserved)
+            {'arg': 'pct:50', 'width': 35, 'height': 23},
+        ]
         for data in permutations:
             response = get_with_size(data['arg'])
             with Image(blob=response.content) as img:
@@ -229,19 +226,21 @@ class Level1TestCase(TestCase):
 
     def testHandleRotation(self):
         client = Client()
+
         def get_with_rotation(rotation):
             kwargs = {'datafile_id': self.datafile.id,
                       'region': 'full',
                       'size': 'full',
                       'rotation': rotation,
                       'quality': 'native',
-                      'format': 'jpg' }
-            response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                          kwargs=kwargs))
+                      'format': 'jpg'}
+            response = client.get(
+                reverse('tardis.tardis_portal.iiif.download_image',
+                        kwargs=kwargs))
             expect(response.status_code).to_equal(200)
             return response
 
-        rotations = [ get_with_rotation(i) for i in [0,90,180,270] ]
+        rotations = [get_with_rotation(i) for i in [0, 90, 180, 270]]
         for response in rotations[::2]:
             with Image(blob=response.content) as img:
                 expect(img.width).to_equal(self.width)
@@ -250,6 +249,7 @@ class Level1TestCase(TestCase):
             with Image(blob=response.content) as img:
                 expect(img.width).to_equal(self.height)
                 expect(img.height).to_equal(self.width)
+
 
 class Level2TestCase(TestCase):
     """ As per: http://library.stanford.edu/iiif/image-api/compliance.html """
@@ -268,8 +268,8 @@ class Level2TestCase(TestCase):
                       'size': 'full',
                       'rotation': '0',
                       'quality': 'native',
-                      'format': ext }
-            response = client.get(reverse('tardis.tardis_portal.iiif.'+
+                      'format': ext}
+            response = client.get(reverse('tardis.tardis_portal.iiif.' +
                                           'download_image',
                                           kwargs=kwargs))
             expect(response.status_code).to_equal(200)
@@ -282,37 +282,42 @@ class Level2TestCase(TestCase):
 
     def testHandleSizing(self):
         client = Client()
+
         def get_with_size(sizearg):
             kwargs = {'datafile_id': self.datafile.id,
                       'region': 'full',
                       'size': sizearg,
                       'rotation': '0',
                       'quality': 'native',
-                      'format': 'jpg' }
-            response = client.get(reverse('tardis.tardis_portal.iiif.download_image',
-                                          kwargs=kwargs))
+                      'format': 'jpg'}
+            response = client.get(
+                reverse('tardis.tardis_portal.iiif.download_image',
+                        kwargs=kwargs))
             expect(response.status_code).to_equal(200)
             return response
 
         permutations = [
-                        # Exact dimensions *without* aspect ratio preserved
-                        {'arg': '16,16', 'width': 16, 'height': 16},
-                        # Maximum dimensions (aspect ratio preserved)
-                        {'arg': '!16,16', 'width': 16, 'height': 11},
-                        {'arg': '!90,11', 'width': 17, 'height': 11},
-                        {'arg': '!16,10', 'width': 15, 'height': 10},
-                        ]
+            # Exact dimensions *without* aspect ratio preserved
+            {'arg': '16,16', 'width': 16, 'height': 16},
+            # Maximum dimensions (aspect ratio preserved)
+            {'arg': '!16,16', 'width': 16, 'height': 11},
+            {'arg': '!90,11', 'width': 17, 'height': 11},
+            {'arg': '!16,10', 'width': 15, 'height': 10},
+        ]
         for data in permutations:
             response = get_with_size(data['arg'])
             with Image(blob=response.content) as img:
                 expect(img.width).to_equal(data['width'])
                 expect(img.height).to_equal(data['height'])
 
-    def testCanGetRequiredQualities(self):
-        client = Client()
-        data = [('native', 3019), ('color', 3019), ('grey', 205), ('bitonal', 2)]
-        # Not currently implemented
-        raise SkipTest
+    # def testCanGetRequiredQualities(self):
+    #     client = Client()
+    #     data = [('native', 3019),
+    #             ('color', 3019),
+    #             ('grey', 205),
+    #             ('bitonal', 2)]
+    #     # Not currently implemented
+    #     raise SkipTest
 
 
 class ExtraTestCases(TestCase):
@@ -327,7 +332,7 @@ class ExtraTestCases(TestCase):
         client = Client()
         for format_ in ('json', 'xml'):
             kwargs = {'datafile_id': self.datafile.id,
-                      'format': format_ }
+                      'format': format_}
             url = reverse('tardis.tardis_portal.iiif.download_info',
                           kwargs=kwargs)
             response = client.get(url)
@@ -341,8 +346,9 @@ class ExtraTestCases(TestCase):
                   'region': 'full',
                   'size': 'full',
                   'rotation': '0',
-                  'quality': 'native' }
-        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+                  'quality': 'native'}
+        url = reverse('tardis.tardis_portal.iiif.download_image',
+                      kwargs=kwargs)
         response = client.get(url)
         expect(response.status_code).to_equal(200)
         # Check etag exists
@@ -354,8 +360,9 @@ class ExtraTestCases(TestCase):
                   'region': 'full',
                   'size': 'full',
                   'rotation': '0',
-                  'quality': 'native' }
-        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+                  'quality': 'native'}
+        url = reverse('tardis.tardis_portal.iiif.download_image',
+                      kwargs=kwargs)
         response = client.get(url)
         expect(response.status_code).to_equal(200)
         # Check etag exists
@@ -374,7 +381,8 @@ class ExtraTestCases(TestCase):
         experiment.public_access = Experiment.PUBLIC_ACCESS_NONE
         experiment.save()
 
-        url = reverse('tardis.tardis_portal.iiif.download_image', kwargs=kwargs)
+        url = reverse('tardis.tardis_portal.iiif.download_image',
+                      kwargs=kwargs)
         response = client.get(url)
         expect(response.status_code).to_equal(200)
         # Check etag exists

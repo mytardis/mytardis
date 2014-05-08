@@ -42,17 +42,15 @@ from django.test import TestCase
 
 class TestStagingFiles(TestCase):
     def setUp(self):
-        from tardis.tardis_portal import models
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
-        from os import path
         import os
 
         # Disconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import \
-            staging_hook, DataFile, Replica, Location
-        post_save.disconnect(staging_hook, sender=Replica)
+        from tardis.tardis_portal.models import Experiment, \
+            staging_hook, Dataset, DataFile, DataFileObject, StorageBox
+        post_save.disconnect(staging_hook, sender=DataFileObject)
 
         from django.contrib.auth.models import User
         user = 'tardis_user1'
@@ -66,50 +64,46 @@ class TestStagingFiles(TestCase):
             pass
         self.temp = mkdtemp(dir=settings.GET_FULL_STAGING_PATH_TEST)
 
-        self.file = mktemp(dir=self.temp)
+        self.filepath = mktemp(dir=self.temp)
         content = 'test file'
-        with open(self.file, "w+b") as f:
+        with open(self.filepath, "w+b") as f:
             f.write(content)
 
-        Location.force_initialize()
-
         # make datafile
-        exp = models.Experiment(title='test exp1',
-                                institution_name='monash',
-                                created_by=self.user)
+        exp = Experiment(title='test exp1',
+                         institution_name='monash',
+                         created_by=self.user)
         exp.save()
 
         # make dataset
-        dataset = models.Dataset(description="dataset description...")
+        dataset = Dataset(description="dataset description...")
         dataset.save()
         dataset.experiments.add(exp)
         dataset.save()
 
         # create datafile
-        df = models.DataFile(dataset=dataset, size = len(content),
-                             filename = path.basename(self.file),
-                             md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
+        df = DataFile(dataset=dataset, size=len(content),
+                      filename=path.basename(self.file),
+                      md5sum='f20d9f2072bbeb6691c0f9c5099b01f3')
         df.save()
 
         # create replica
-        base_url = 'file://' + settings.GET_FULL_STAGING_PATH_TEST
-        location = Location.load_location({
-            'name': 'staging-test-yyy', 'url': base_url, 'type': 'external',
-            'priority': 10, 'transfer_provider': 'local'})
-        replica = models.Replica(datafile=df, url='file://'+self.file,
-                                 protocol="staging",location=location)
-        replica.verify()
-        replica.save()
-        self.replica = replica
+        base_url = settings.GET_FULL_STAGING_PATH_TEST
+        df.dataset.storage_boxes.add(
+            StorageBox.get_default_storage(location=base_url))
+        dfo = DataFileObject(datafile=df,
+                             uri=self.filepath,
+                             storage_box=df.dataset.storage_boxes.all()[-1])
+        dfo.save()
+        self.dfo = dfo
 
     def tearDown(self):
         # reconnect post_save signal
         from django.db.models.signals import post_save
-        from tardis.tardis_portal.models import staging_hook, Replica
-        post_save.connect(staging_hook, sender=Replica)
-
+        from tardis.tardis_portal.models import staging_hook, DataFileObject
+        post_save.connect(staging_hook, sender=DataFileObject)
 
     def test_stage_replica(self):
         from tardis.tardis_portal import staging
 
-        staging.stage_replica(self.replica)
+        staging.stage_replica(self.dfo)

@@ -38,7 +38,6 @@ from tardis.tardis_portal.models.parameters import ExperimentParameter
 from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
-#from tardis.tardis_portal.models.replica import Replica
 from tardis.tardis_portal.models.storage import StorageBox
 #from tardis.tardis_portal.staging import get_sync_root
 #from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
