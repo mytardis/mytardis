@@ -145,15 +145,6 @@ class DatafileAdmin(admin.ModelAdmin):
     inlines = [DataFileObjectInline, ]
 
 
-class ProviderParameterNameInline(admin.TabularInline):
-    model = models.ProviderParameter
-    extra = 0
-
-
-class ProviderParameterAdmin(admin.ModelAdmin):
-    search_fields = ['name', 'location__name', 'location__id']
-
-
 class ParameterNameInline(admin.TabularInline):
     model = models.ParameterName
     extra = 0
@@ -183,7 +174,6 @@ admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
 admin.site.register(models.DataFile, DatafileAdmin)
-admin.site.register(models.ProviderParameter, ProviderParameterAdmin)
 admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)

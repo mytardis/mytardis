@@ -54,7 +54,7 @@ class DataFile(models.Model):
     @property
     def file_object(self):
         return self.file_objects.get(
-            storage_box=self.dataset.get_best_read_storage_box()).file_object
+            storage_box=self.dataset.get_default_storage_box()).file_object
 
     @file_object.setter
     def file_object(self, file_object):
