@@ -241,6 +241,10 @@ from tardis.tardis_portal.api import ParameterNameResource
 from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
 from tardis.tardis_portal.api import UserResource
+from tardis.tardis_portal.api import UserSignUpResource
+from tardis.tardis_portal.api import UserProfileResource
+from tardis.tardis_portal.api import UserAuthenticationResource
+from tardis.tardis_portal.api import ApiKeyResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
@@ -257,6 +261,10 @@ v1_api.register(ParameterNameResource())
 v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
 v1_api.register(UserResource())
+v1_api.register(UserSignUpResource())
+v1_api.register(UserProfileResource())
+v1_api.register(UserAuthenticationResource())
+v1_api.register(ApiKeyResource())
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
