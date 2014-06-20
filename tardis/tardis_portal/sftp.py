@@ -34,18 +34,20 @@ def split_path(p):
 
 class DynamicTree(object):
 
-    def __init__(self):
+    def __init__(self, host_obj=None):
         self.name = None
         self.obj = None  # an object if applicable
         self.update = self.update_nothing
         self.last_updated = None  # a time.time() number
+        self.host_obj = host_obj
         self.clear_children()
 
-    def update_nothing(self, iface):
+    def update_nothing(self):
         pass
 
     def clear_children(self):
-        self.children = collections.defaultdict(DynamicTree)
+        self.children = collections.defaultdict(
+            lambda: DynamicTree(self.host_obj))
 
     def add_path(self, path):
         path = path.strip('/')
@@ -77,34 +79,38 @@ class DynamicTree(object):
                 leaf.update()
         return leaf
 
-    def update_experiments(self, iface):
+    def update_experiments(self):
         exps = [("%s_%d" % (exp.title.replace(' ', '_'), exp.id), exp)
-                for exp in iface.experiments]
+                for exp in self.host_obj.experiments]
         self.clear_children()
         for exp_name, exp in exps:
             child = self.children[exp_name]
             child.name = exp_name
             child.obj = exp
-            child.update = self.update_datasets
+            child.update = child.update_datasets
 
-    def update_datasets(self, leaf, iface):
+    def update_datasets(self):
         datasets = [("%s_%d" % (ds.description.replace(' ', '_'), ds.id), ds)
-                    for ds in leaf.obj.datasets.all()]
-        leaf.clear_children()
+                    for ds in self.obj.datasets.all()]
+        self.clear_children()
         for ds_name, ds in datasets:
-            child = leaf.children[ds_name]
+            child = self.children[ds_name]
             child.name = ds_name
             child.obj = ds
-            child.update = leaf.update_datafiles
+            child.update = child.update_datafiles
 
-    def update_datafiles(self, leaf, iface):
-        datafiles = [("%s_%d" % (df.name.replace(' ', '_'), df.id), df)
-                     for df in leaf.obj.datafiles.all()]
-        leaf.clear_children()
+    def update_datafiles(self):
+        datafiles = [("%s_%d" % (df.filename.replace(' ', '_'), df.id), df)
+                     for df in self.obj.datafile_set.all()]
+        self.clear_children()
         for df_name, df in datafiles:
-            child = leaf.children[df_name]
+            child = self.children[df_name]
             child.name = df_name
-            child.obj = df.file_object
+            try:
+                child.obj = df.file_object
+            except IOError:
+                child.obj = file
+                child.name = df_name + "_offline"
 
 
 class MyTSFTPServerInterface(SFTPServerInterface):
@@ -139,10 +145,11 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         overridden to perform any necessary setup before handling callbacks
         from SFTP operations.
         """
+        #import ipdb; ipdb.set_trace()
         self.user = self.server.user
         self.username = self.server.user.username
         self.cwd = "/home/%s" % self.username
-        self.tree = DynamicTree()
+        self.tree = DynamicTree(self)
         self.tree.name = '/'
         self.tree.add_path(self.cwd)
         exp_leaf = self.tree.add_path(os.path.join(self.cwd, 'experiments'))
@@ -226,10 +233,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         relative paths to escape restricted folders, if you're doing a direct
         translation from the SFTP server path to your local filesystem.
         """
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
         path = os.path.normpath(path)
         leaf = self.tree.get_leaf(path, update=True)
-        leaf.update(self)
         stats = [self.stat(os.path.join(path, child))
                  for child in leaf.children.keys()]
         return stats
@@ -254,7 +260,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         stat.st_uid
         '''
         #import ipdb; ipdb.set_trace()
-        leaf = self.tree.get_leaf(path)
+        leaf = self.tree.get_leaf(path, update=True)
         sftp_stat = SFTPAttributes()
         sftp_stat.filename = leaf.name
         sftp_stat.st_size = getattr(leaf.obj, 'size', 1)
