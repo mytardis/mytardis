@@ -1,5 +1,4 @@
 import collections
-import functools
 import logging
 import os
 import SocketServer
@@ -11,20 +10,26 @@ from paramiko import InteractiveQuery,  RSAKey, ServerInterface,\
     SFTPAttributes, SFTPHandle,\
     SFTPServer, SFTPServerInterface, Transport
 from paramiko import OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,\
-    SFTP_OP_UNSUPPORTED
+    SFTP_OP_UNSUPPORTED, SFTP_NO_SUCH_FILE
 from paramiko.common import AUTH_FAILED, AUTH_SUCCESSFUL
 
-from django.conf import settings
-from django.contrib.sites.models import Site
-
-from tardis.tardis_portal.auth import auth_service
-from tardis.tardis_portal.models import Experiment
-
 logger = logging.getLogger(__name__)
+
+paramiko_log = logging.getLogger('paramiko.transport')
+if not paramiko_log.handlers:
+    paramiko_log.addHandler(logging.FileHandler('sftpd.log'))
+
+from django.conf import settings
 
 if getattr(settings, 'SFTP_GEVENT', False):
     from gevent import monkey
     monkey.patch_all()
+
+# django db related modules must be imported after monkey-patching
+from django.contrib.sites.models import Site
+
+from tardis.tardis_portal.auth import auth_service
+from tardis.tardis_portal.models import DataFile, Experiment
 
 
 def split_path(p):
@@ -100,17 +105,26 @@ class DynamicTree(object):
             child.update = child.update_datafiles
 
     def update_datafiles(self):
-        datafiles = [("%s_%d" % (df.filename.replace(' ', '_'), df.id), df)
+        datafiles = [("%s" % (df.filename.replace(' ', '_')), df)
                      for df in self.obj.datafile_set.all()]
         self.clear_children()
         for df_name, df in datafiles:
+            # try:
+            #     file_obj = df.file_object
+            #     file_name = df_name
+            # except IOError:
+            #     file_name = df_name + "_offline"
+            #     if getattr(settings, 'DEBUG', False):
+            #         placeholder = df.file_objects.all()[0].uri
+            #     else:
+            #         placeholder = 'offline file, contact administrator'
+            #     file_obj = StringIO(placeholder)
+            # child = self.children[file_name]
+            # child.name = file_name
+            # child.obj = file_obj
             child = self.children[df_name]
             child.name = df_name
-            try:
-                child.obj = df.file_object
-            except IOError:
-                child.obj = file
-                child.name = df_name + "_offline"
+            child.obj = df
 
 
 class MyTSFTPServerInterface(SFTPServerInterface):
@@ -141,11 +155,8 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
     def session_started(self):
         """
-        The SFTP server session has just started.  This method is meant to be
-        overridden to perform any necessary setup before handling callbacks
-        from SFTP operations.
+        run on connection initialisation
         """
-        #import ipdb; ipdb.set_trace()
         self.user = self.server.user
         self.username = self.server.user.username
         self.cwd = "/home/%s" % self.username
@@ -157,10 +168,8 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
     def session_ended(self):
         """
-        The SFTP server session has just ended, either cleanly or via an
-        exception.  This method is meant to be overridden to perform any
-        necessary cleanup before this C{SFTPServerInterface} object is
-        destroyed.
+        run cleanup on exceptions or disconnection.
+        idea: collect stats and store them in this function
         """
         pass
 
@@ -191,9 +200,8 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @note: The SFTP protocol defines all files to be in "binary" mode.
             There is no equivalent to python's "text" mode.
 
-        @param path: the requested path (relative or absolute) of the file
-            to be opened.
-        @type path: str
+        @param df: the requested DataFile object
+        @type path: L{DataFile}
         @param flags: flags or'd together from the C{os} module indicating the
             requested mode for opening the file.
         @type flags: int
@@ -202,12 +210,12 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @return: a new L{SFTPHandle} I{or error code}.
         @rtype L{SFTPHandle}
         """
-        #import ipdb; ipdb.set_trace()
-        return SFTPHandle(self, path, flags, attr)
+        leaf = self.tree.get_leaf(path)
+        return MyTSFTPHandle(leaf.obj, flags, attr)
 
     def list_folder(self, path):
         """
-        Return a list of files within a given folder.  The C{path} will use
+        Returns a list of files within a given folder.  The C{path} will use
         posix notation (C{"/"} separates folder names) and may be an absolute
         or relative path.
 
@@ -215,8 +223,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         objects, which are similar in structure to the objects returned by
         C{os.stat}.  In addition, each object should have its C{filename}
         field filled in, since this is important to a directory listing and
-        not normally present in C{os.stat} results.  The method
-        L{SFTPAttributes.from_stat} will usually do what you want.
+        not normally present in C{os.stat} results.
 
         In case of an error, you should return one of the C{SFTP_*} error
         codes, such as L{SFTP_PERMISSION_DENIED}.
@@ -226,12 +233,6 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         @return: a list of the files in the given folder, using
             L{SFTPAttributes} objects.
         @rtype: list of L{SFTPAttributes} I{or error code}
-
-        @note: You should normalize the given C{path} first (see the
-        C{os.path} module) and check appropriate permissions before returning
-        the list of files.  Be careful of malicious clients attempting to use
-        relative paths to escape restricted folders, if you're doing a direct
-        translation from the SFTP server path to your local filesystem.
         """
         #import ipdb; ipdb.set_trace()
         path = os.path.normpath(path)
@@ -254,21 +255,20 @@ class MyTSFTPServerInterface(SFTPServerInterface):
             code (like L{SFTP_PERMISSION_DENIED}).
         @rtype: L{SFTPAttributes} I{or error code}
         """
-        '''stat.FLAG_AMTIME stat.FLAG_PERMISSIONS stat.FLAG_UIDGID stat.attr
-        stat.st_atime stat.st_mode stat.FLAG_EXTENDED
-        stat.FLAG_SIZE stat.asbytes stat.from_stat stat.st_gid stat.st_mtime
-        stat.st_uid
-        '''
-        #import ipdb; ipdb.set_trace()
         leaf = self.tree.get_leaf(path, update=True)
+        if leaf is None:
+            return SFTP_NO_SUCH_FILE
         sftp_stat = SFTPAttributes()
         sftp_stat.filename = leaf.name
-        sftp_stat.st_size = getattr(leaf.obj, 'size', 1)
-        if not isinstance(leaf.obj, file):
+        sftp_stat.st_size = int(getattr(leaf.obj, 'size', 1))
+        if not isinstance(leaf.obj, DataFile):
             sftp_stat.st_mode = 0777 | stat.S_IFDIR
         else:
             sftp_stat.st_mode = 0777 | stat.S_IFREG
-
+        sftp_stat.st_uid = self.user.id
+        sftp_stat.st_gid = 20
+        sftp_stat.st_atime = time.time()
+        sftp_stat.st_mtime = time.time()
         return sftp_stat
 
     def lstat(self, path):
@@ -279,17 +279,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
     def canonicalize(self, path):
         """
-        Return the canonical form of a path on the server.  For example,
-        if the server's home folder is C{/home/foo}, the path
-        C{"../betty"} would be canonicalized to C{"/home/betty"}.  Note
-        the obvious security issues: if you're serving files only from a
-        specific folder, you probably don't want this method to reveal path
-        names outside that folder.
-
-        You may find the python methods in C{os.path} useful, especially
-        C{os.path.normpath} and C{os.path.realpath}.
-
-        The default implementation returns C{os.path.normpath('/' + path)}.
+        Return the canonical form of a path on the server.
         """
         if path == ".":
             return self.cwd
@@ -299,26 +289,24 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 class MyTSFTPHandle(SFTPHandle):
     '''
     SFTP File Handle
-
-    Abstract object representing a handle to an open file (or folder) in an
-    SFTP server implementation.  Each handle has a string representation used
-    by the client to refer to the underlying file.
-
-    Server implementations can (and should) subclass SFTPHandle to implement
-    features of a file handle, like L{stat} or L{chattr}.
     '''
 
-    def __init__(self, path, flags=0, optional_args=None):
+    def __init__(self, df, flags=0, optional_args=None):
         """
-        Create a new file handle representing a local file being served over
-        SFTP.  If C{flags} is passed in, it's used to determine if the file
-        is open in append mode.
+        Create a new file handle
 
         @param flags: optional flags as passed to L{SFTPServerInterface.open}
         @type flags: int
         """
-        super(SFTPHandle, self).__init__(flags)
-        self.readfile = Datafile.file_object
+        super(MyTSFTPHandle, self).__init__(flags=flags)
+        try:
+            self.readfile = df.file_object
+        except IOError:
+            if getattr(settings, 'DEBUG', False):
+                fo = df.file_objects.all()[0]
+                error_string = "%s:%s" % (fo.storage_box.name,
+                                          fo.uri)
+                self.readfile = StringIO(error_string)
 
     def stat(self):
         """
@@ -376,9 +364,6 @@ class MyTServerInterface(ServerInterface):
         return self.myt_auth(self.username, responses[0])
 
     def check_channel_request(self, kind, chanid):
-        #import rpdb2; rpdb2.start_embedded_debugger('password')
-        #import ipdb; ipdb.set_trace()
-        # import pudb; pudb.set_trace()
         if kind == 'session':
             return OPEN_SUCCEEDED
         return OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED
@@ -389,6 +374,8 @@ class MyTSFTPRequestHandler(SocketServer.BaseRequestHandler):
     auth_timeout = 60
 
     def setup(self):
+        #import ipdb; ipdb.set_trace()
+
         self.transport = Transport(self.request)
         self.transport.load_server_moduli()
         so = self.transport.get_security_options()
