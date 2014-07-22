@@ -228,8 +228,17 @@
 	    }
 	};
       </script>
-
+      
       <div id="message-container" ></div>
+      
+      {% if messages %}
+		<ul class="messages">
+        {% for message in messages %}
+           <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+      
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-error{% endif %}"
            style="display: none">
