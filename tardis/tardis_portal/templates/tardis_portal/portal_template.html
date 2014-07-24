@@ -229,15 +229,13 @@
 	};
       </script>
       
-      <div id="message-container" ></div>
-      
       {% if messages %}
-		<ul class="messages">
+	  <div id="message-container" >
         {% for message in messages %}
-           <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        <p{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</p>
         {% endfor %}
-        </ul>
-      {% endif %}
+      </div>
+      {% endif %}      
       
       <div id="status-alert"
            class="alert alert-block {% if error %}alert-error{% endif %}"
