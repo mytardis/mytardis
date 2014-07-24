@@ -232,7 +232,10 @@
       {% if messages %}
 	  <div id="message-container" >
         {% for message in messages %}
-        <p{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>{{ message }}</p>
+        <p{% if message.tags %} class="alert alert-block alert-{{ message.tags }}"{% endif %}>
+        	<a class="close" data-dismiss="alert">&times;</a>
+        	{{ message }}
+        </p>
         {% endfor %}
       </div>
       {% endif %}      
