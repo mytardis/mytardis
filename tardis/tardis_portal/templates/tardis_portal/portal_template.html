@@ -229,8 +229,10 @@
 	};
       </script>
       
+      <div id="message-container"></div>
+      
       {% if messages %}
-	  <div id="message-container" >
+	  <div id="django-message-container" >
         {% for message in messages %}
         <p{% if message.tags %} class="alert alert-block alert-{{ message.tags }}"{% endif %}>
         	<a class="close" data-dismiss="alert">&times;</a>
