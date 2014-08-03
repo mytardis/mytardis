@@ -45,7 +45,13 @@ class Migration(DataMigration):
                 newsb.save()
 
         # Replicas
-        for replica in orm.Replica.objects.all():
+        total = float(orm.Replica.objects.all().count())
+        counter = 0
+        percent = 0
+        print 'total replicas: %d ' % int(total)
+        import resource
+        print 'memory used: %d' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        for replica in orm.Replica.objects.all().iterator():
             new_dfo = orm.DataFileObject()
             new_dfo.datafile = replica.datafile
             new_dfo.uri = replica.url
@@ -53,6 +59,11 @@ class Migration(DataMigration):
                 name=replica.location.name)
             new_dfo.save()
             new_dfo.datafile.dataset.storage_boxes.add(new_dfo.storage_box)
+            counter += 1
+            if int(counter/total * 100) > percent:
+                percent += 1
+                print '{0} % done '.format(percent),
+                print 'memory used: %d' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
 
         if False:
             files_failed_verification = []
