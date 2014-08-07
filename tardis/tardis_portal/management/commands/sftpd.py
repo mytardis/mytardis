@@ -1,6 +1,7 @@
 import logging
 from optparse import make_option
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import tardis.tardis_portal.sftp as sftp
@@ -15,8 +16,14 @@ class Command(BaseCommand):
                     type='string',
                     dest='host',
                     default=None,
-                    help='Host name to bind'),
-        )
+                    help='Host name to bind to'),
+        make_option('-P', '--port',
+                    action='store',
+                    type='int',
+                    dest='port',
+                    default=getattr(settings, 'SFTPD_PORT', 2200),
+                    help='Port to listen on, default: 2200'),
+    )
 
     def handle(self, *args, **kwargs):
         sftp.start_server(host=kwargs['host'])

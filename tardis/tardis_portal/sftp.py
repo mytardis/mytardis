@@ -419,9 +419,9 @@ def start_server(host=None, port=None, keyfile=None):
     if host is None:
         current_site = Site.objects.get_current()
         host = current_site.domain
-    port = port or getattr(settings, 'SFTP_PORT', 2200)
+    port = port or getattr(settings, 'SFTPD_PORT', 2200)
     host_key_string = getattr(
-        settings, 'SFTP_HOST_KEY',
+        settings, 'SFTPD_HOST_KEY',
         "-----BEGIN RSA PRIVATE KEY-----\n"
         "MIICXgIBAAKCAIEAl7sAF0x2O/HwLhG68b1uG8KHSOTqe3Cdlj5i/1RhO7E2BJ4B\n"
         "3jhKYDYtupRnMFbpu7fb21A24w3Y3W5gXzywBxR6dP2HgiSDVecoDg2uSYPjnlDk\n"
@@ -441,7 +441,6 @@ def start_server(host=None, port=None, keyfile=None):
         keyfile or StringIO(host_key_string))
     server = MyTSFTPServer((host, port), host_key=host_key)
     try:
-        #import rpdb2; rpdb2.start_embedded_debugger('password')
         server.serve_forever()
     except (SystemExit, KeyboardInterrupt):
         server.server_close()
