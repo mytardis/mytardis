@@ -36,8 +36,8 @@ custom buildout.cfg:
     redis
     hiredis
 '''
-#BROKER_URL = 'redis://localhost:6379/0'
-#CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # A dictionary containing the settings for all caches to be used with
 # Django. The CACHES setting must configure a default cache; any
@@ -47,12 +47,12 @@ custom buildout.cfg:
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 # to your MIDDLEWARE_CLASSES setting below
 
-#CACHES = {
+# CACHES = {
 #    'default': {
 #        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
 #        'LOCATION': '127.0.0.1:11211',
 #    }
-#}
+# }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -106,9 +106,9 @@ add text to the footer to acknowledge someone
 # 'django.middleware.cache.UpdateCacheMiddleware' and
 # 'django.middleware.cache.FetchFromCacheMiddleware'
 MIDDLEWARE_CLASSES = (
-    #'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.cache.FetchFromCacheMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -306,14 +306,14 @@ EMAIL_HOST_PASSWORD = 'bob'
 EMAIL_USE_TLS = True
 
 # Post Save Filters
-#POST_SAVE_FILTERS = [
+# POST_SAVE_FILTERS = [
 #    ("tardis.tardis_portal.filters.exif.make_filter",
 #     ["EXIF", "http://exif.schema"]),  # this filter requires pyexiv2
 #                                       # http://tilloy.net/dev/pyexiv2/
 #    ]
 
 # Post Save Filters
-#POST_SAVE_FILTERS = [
+# POST_SAVE_FILTERS = [
 #    ("tardis.tardis_portal.filters.diffractionimage.make_filter",
 #     ["DIFFRACTION", "http://www.tardis.edu.au/schemas/trdDatafile/1",
 #      "/Users/steve/Desktop/diffdump"]),  #  requires ccp4 diffdump binary
@@ -364,9 +364,6 @@ else:
 
 DEFAULT_INSTITUTION = "Monash University"
 
-#Are the datasets ingested via METS xml (web services) to be immutable?
-IMMUTABLE_METS_DATASETS = True
-
 TOKEN_EXPIRY_DAYS = 30
 TOKEN_LENGTH = 30
 TOKEN_USERNAME = 'tokenuser'
@@ -389,7 +386,7 @@ RELATED_OTHER_INFO_SCHEMA_NAMESPACE = \
 
 DOI_ENABLE = False
 DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
-#DOI_TEMPLATE_DIR = path.join(
+# DOI_TEMPLATE_DIR = path.join(
 #    TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
 DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
 DOI_APP_ID = ''
@@ -460,7 +457,7 @@ eg. "tardis.apps.filepicker.views.upload_button" to use a fancy
 commercial uploader.
 To use filepicker, please also get an API key at http://filepicker.io
 '''
-#FILEPICKER_API_KEY = "YOUR KEY"
+# FILEPICKER_API_KEY = "YOUR KEY"
 
 ARCHIVE_FILE_MAPPERS = {
     'deep-storage': (
@@ -513,8 +510,8 @@ MYTARDIS_VERSION = get_git_version()
 # If you want enable user agent sensing, copy this to settings.py
 # and uncomment it.
 #
-#USER_AGENT_SENSING = True
-#if USER_AGENT_SENSING:
+# USER_AGENT_SENSING = True
+# if USER_AGENT_SENSING:
 #    from os import environ
 #    # Workaround for bug in ua_parser ... can't find its builtin copy
 #    # of regexes.yaml ... in versions 0.3.2 and earlier.  Remove when fixed.
@@ -577,4 +574,23 @@ SFTP_HOST_KEY = (
     "-----END RSA PRIVATE KEY-----\n")
 '''
 public, useless key, debugging use only
+'''
+
+# Show the Rapid Connect login button.
+RAPID_CONNECT_ENABLED = False
+
+RAPID_CONNECT_CONFIG = {}
+
+RAPID_CONNECT_CONFIG['secret'] = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME'
+'''something like
+'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
+'''
+
+RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au'
+''' 'https://rapid.test.aaf.edu.au' or 'https://rapid.aaf.edu.au'
+'''
+RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/'
+'''Public facing URL that accepts the HTTP/HTTPS POST request from
+Rapid Connect.
 '''
