@@ -512,3 +512,14 @@ AUTOGENERATE_API_KEY = False
 Generate a tastypie API key with user post_save
 (tardis/tardis_portal/models/hooks.py)
 '''
+
+# Show the Rapid Connect login button.
+RAPID_CONNECT_ENABLED = False
+
+RAPID_CONNECT_CONFIG = {}
+
+RAPID_CONNECT_CONFIG['secret']           = 'CHANGE_ME'
+RAPID_CONNECT_CONFIG['authnrequest_url'] = 'CHANGE_ME' # something like 'https://rapid.test.aaf.edu.au/jwt/authnrequest/research/XXXXXXXXXXXXXXXX'
+
+RAPID_CONNECT_CONFIG['iss'] = 'https://rapid.test.aaf.edu.au' # or 'https://rapid.aaf.edu.au'
+RAPID_CONNECT_CONFIG['aud'] = 'https://example.com/rc/' # Public facing URL that accepts the HTTP/HTTPS POST request from Rapid Connect.

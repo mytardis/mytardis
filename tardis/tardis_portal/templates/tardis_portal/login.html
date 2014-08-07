@@ -14,4 +14,14 @@
     </div>
   </fieldset>
 </form>
+
+{% if RAPID_CONNECT_ENABLED %}
+
+    <legend>Australian Access Federation login:</legend>
+
+    <p> <a href={{ RAPID_CONNECT_LOGIN_URL }} class="btn btn-large btn-info">LOGIN VIA THE AUSTRALIAN ACCESS FEDERATION</a> </p>
+
+{% endif %}
+
+
 {% endblock content %}
