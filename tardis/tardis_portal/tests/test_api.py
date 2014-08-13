@@ -331,7 +331,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
         from django.conf import settings
         for file_dict in files:
             post_file = tempfile.NamedTemporaryFile(
-                dir=settings.FILE_STORE_PATH)
+                dir=settings.DEFAULT_STORAGE_BASE_DIR)
             file_dict['filename'] = os.path.basename(post_file.name)
             file_dict['full_path'] = post_file.name
             post_file.write(file_dict['content'])
@@ -356,7 +356,6 @@ class DataFileResourceTest(MyTardisResourceTestCase):
             return mime.from_file(filename)
 
         json_data = {"objects": []}
-        #from nose.tools import set_trace; set_trace()
         for file_dict in files:
             file_json = {
                 'dataset': clumsily_build_uri('dataset', self.testds),
@@ -366,7 +365,7 @@ class DataFileResourceTest(MyTardisResourceTestCase):
                 'mimetype': guess_mime(file_dict['full_path']),
                 'replicas': [{
                     'url': file_dict['filename'],
-                    'location': 'local',
+                    'location': 'default',
                     'protocol': 'file',
                 }],
             }

@@ -70,9 +70,10 @@ class FilterInitMiddleware(object):
             # We only dispatch to the filter if the datafile's preferred
             # replica is verified.
             def make_datafile_hook(dfh):
+
                 def datafile_hook(**kw):
                     datafile = kw.get('instance')
-                    if datafile.get_preferred_replica(verified=True):
+                    if datafile.verified:
                         dfh(**kw)
                 return datafile_hook
             datafile_hook = make_datafile_hook(
@@ -81,6 +82,7 @@ class FilterInitMiddleware(object):
             # This dispatches a replica save to a datafile filter if the
             # replica is now in 'verified' state.
             def make_dfo_hook(dfh):
+
                 def dfo_hook(**kw):
                     dfo = kw.get('instance')
                     if dfo.verified:

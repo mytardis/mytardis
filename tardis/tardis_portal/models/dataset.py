@@ -132,8 +132,7 @@ class Dataset(models.Model):
         return self._has_any_perm(user_obj)
 
     def get_most_reliable_storage_box(self):
-        return self.storage_boxes.latest('copies')\
-                                 .get_initialised_storage_instance()
+        return self.storage_boxes.latest('copies')
 
     def get_staging_storage_box(self):
         boxes = self.storage_boxes.filter(attributes__key="staging",

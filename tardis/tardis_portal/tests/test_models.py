@@ -148,80 +148,50 @@ class ModelTestCase(TestCase):
             settings.REQUIRE_DATAFILE_CHECKSUMS = False
             df_file = _build(dataset, 'file.txt', 'path/file.txt', '')
             self.assertEqual(df_file.filename, 'file.txt')
-            self.assertEqual(df_file.get_preferred_replica().url,
+            self.assertEqual(df_file.default_dfo.uri,
                              'path/file.txt')
-            self.assertEqual(df_file.get_preferred_replica().protocol, '')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/test/download/datafile/1/')
-            self.assertTrue(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(),
-                             os.path.join(settings.FILE_STORE_PATH,
-                                          'path/file.txt'))
+                             '/api/v1/dataset_file/1/download')
 
             df_file = _build(dataset, 'file1.txt', 'path/file1.txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
-            self.assertEqual(df_file.get_preferred_replica().url,
+            self.assertEqual(df_file.default_dfo.uri,
                              'path/file1.txt')
-            self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/test/vbl/download/datafile/2/')
-            self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(),
-                             os.path.join(settings.FILE_STORE_PATH,
-                                          'path/file1.txt'))
-
+                             '/api/v1/dataset_file/2/download')
             df_file = _build(dataset, 'file1.txt', 'path/file1#txt', 'vbl')
             self.assertEqual(df_file.filename, 'file1.txt')
-            self.assertEqual(df_file.get_preferred_replica().url,
-                             'path/file1#txt')
-            self.assertEqual(df_file.get_preferred_replica().protocol, 'vbl')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/test/vbl/download/datafile/3/')
-            self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(),
-                             os.path.join(settings.FILE_STORE_PATH,
-                                          'path/file1#txt'))
+                             '/api/v1/dataset_file/3/download')
 
             df_file = _build(dataset, 'f.txt',
                              'http://localhost:8080/filestore/f.txt', '')
             self.assertEqual(df_file.filename, 'f.txt')
-            self.assertEqual(df_file.get_preferred_replica().url,
-                             'http://localhost:8080/filestore/f.txt')
-            self.assertEqual(df_file.get_preferred_replica().protocol, '')
             self.assertEqual(df_file.dataset, dataset)
             self.assertEqual(df_file.size, '')
             self.assertEqual(df_file.get_download_url(),
-                             '/test/download/datafile/4/')
-            self.assertFalse(df_file.is_local())
-            self.assertEqual(df_file.get_absolute_filepath(), '')  # not local
-
+                             '/api/v1/dataset_file/4/download')
             # Now check the 'REQUIRE' config params
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = True
                 settings.REQUIRE_DATAFILE_CHECKSUMS = False
-                DataFile(dataset=dataset, filename='foo.txt', md5sum='bad')
+                DataFile(dataset=dataset, filename='foo.txt',
+                         md5sum='bad').save()
             with self.assertRaises(Exception):
                 settings.REQUIRE_DATAFILE_SIZES = False
                 settings.REQUIRE_DATAFILE_CHECKSUMS = True
-                DataFile(dataset=dataset, filename='foo.txt', size='1')
+                DataFile(dataset=dataset, filename='foo.txt',
+                         size='1').save()
 
         finally:
             settings.REQUIRE_DATAFILE_SIZES = save1
             settings.REQUIRE_DATAFILE_CHECKSUMS = save2
-
-    def test_location(self):
-        from tardis.tardis_portal.models import Location
-        self.assertEquals(Location.get_default_location().name,
-                          'local')
-        self.assertEquals(Location.get_location('staging').name,
-                          'staging')
-        self.assertEquals(len(Location.objects.all()), 6)
 
     # check conversion of b64encoded images back into files
     def test_parameter(self):

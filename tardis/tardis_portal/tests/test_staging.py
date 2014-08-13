@@ -39,9 +39,12 @@ from os import path
 
 from django.test import TestCase
 
+from nose.plugins.skip import SkipTest
+
 
 class TestStagingFiles(TestCase):
     def setUp(self):
+        raise SkipTest  # temporarily disabling this feature, needs coding
         from tempfile import mkdtemp, mktemp
         from django.conf import settings
         import os

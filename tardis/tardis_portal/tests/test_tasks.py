@@ -52,7 +52,6 @@ class BackgroundTaskTestCase(TestCase):
 
         # Check that it's not currently verified
         expect(datafile.verified).to_be(False)
-
         # Check it verifies
         verify_dfos()
         expect(datafile.verified).to_be(True)

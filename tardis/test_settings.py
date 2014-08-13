@@ -132,3 +132,5 @@ DEFAULT_ARCHIVE_ORGANIZATION = 'test'
 DEFAULT_ARCHIVE_FORMATS = ['tar', 'tgz']
 
 AUTOGENERATE_API_KEY = True
+
+MIDDLEWARE_CLASSES += ('tardis.tardis_portal.filters.FilterInitMiddleware',)

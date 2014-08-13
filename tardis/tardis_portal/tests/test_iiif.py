@@ -11,6 +11,7 @@ from django.test.client import Client
 
 from tardis.tardis_portal.models import User, UserProfile, \
     Experiment, ObjectACL, Dataset, DataFile
+from tardis.tardis_portal.util import generate_file_checksums
 
 from wand.image import Image
 
@@ -53,7 +54,10 @@ def _create_datafile():
             tempfile.file.flush()
     datafile = DataFile(dataset=dataset,
                         size=os.path.getsize(tempfile.file.name),
-                        filename='iiif_named_file')
+                        filename='iiif_named_file',
+                        mimetype='image/tiff')
+    datafile.md5sum, datafile.sha512sum, _, _ = \
+        generate_file_checksums(open(tempfile.file.name, 'r'))
     datafile.save()
     datafile.file_object = tempfile
     return datafile

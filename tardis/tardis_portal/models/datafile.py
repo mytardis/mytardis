@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.core.files import File
 from django.core.urlresolvers import reverse
 
+from celery.contrib.methods import task
+
 from tardis.tardis_portal.util import generate_file_checksums
 
 from .fields import DirectoryField
@@ -61,7 +63,7 @@ class DataFile(models.Model):
         '''
         replace contents of file in all its locations
         '''
-        oldobjs = None
+        oldobjs = []
         if self.file_objects.count() > 0:
             oldobjs = list(self.file_objects.all())
         if self.dataset.storage_boxes.count() == 0:
@@ -99,8 +101,9 @@ class DataFile(models.Model):
                                         .values_list('size', flat=True), 0)
 
     def save(self, *args, **kwargs):
+        require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
-                not self.md5sum and not self.sha512sum:
+                not self.md5sum and not self.sha512sum and require_checksums:
             raise Exception('Every Datafile requires a checksum')
         elif settings.REQUIRE_DATAFILE_SIZES and \
                 not self.size:
@@ -132,7 +135,7 @@ class DataFile(models.Model):
             suffix = path.splitext(self.filename)[-1]
             try:
                 import mimetypes
-                return mimetypes.types_map['.%s' % suffix.lower()]
+                return mimetypes.types_map[suffix.lower()]
             except KeyError:
                 return 'application/octet-stream'
 
@@ -254,9 +257,8 @@ class DataFile(models.Model):
         return all([obj.verified for obj in self.file_objects.all()])
 
     def verify(self, reverify=False):
-        for obj in self.file_objects.all():
-            if reverify or not obj.verified:
-                obj.verify()
+        return all([obj.verify() for obj in self.file_objects.all()
+                    if reverify or not obj.verified])
 
 
 class DataFileObject(models.Model):
@@ -286,15 +288,16 @@ class DataFileObject(models.Model):
         not work for all backends. This function aims to abstract it.
         '''
 
-        def default_identifier(self):
-            if self.uri is None:
-                path_parts = ["%s-%s" % (self.datafile.dataset.description,
-                                         self.datafile.dataset.id)]
-                path_parts += self.datafile.directory or []
-                path_parts += [self.datafile.filename]
-                self.uri = path.join(*path_parts)
-                self.save()
-            return self.uri
+        def default_identifier(dfo):
+            if dfo.uri is None:
+                path_parts = ["%s-%s" % (dfo.datafile.dataset.description
+                                         or 'untitled',
+                                         dfo.datafile.dataset.id)]
+                path_parts += dfo.datafile.directory or []
+                path_parts += [dfo.datafile.filename]
+                dfo.uri = path.join(*path_parts)
+                dfo.save()
+            return dfo.uri
 
         build_identifier = getattr(
             self.storage_box.get_initialised_storage_instance(),
@@ -312,7 +315,7 @@ class DataFileObject(models.Model):
         standard python file object for reading and copy the contents of an
         existing file_object into the storage backend.
         '''
-        if self._cached_file_object is None:
+        if self._cached_file_object is None or self._cached_file_object.closed:
             self._cached_file_object = self\
                 .storage_box.get_initialised_storage_instance().open(
                     self._get_identifier())
@@ -327,12 +330,14 @@ class DataFileObject(models.Model):
             file_object = File(file_object)
             file_object.open()
         file_object.seek(0)
-        self.storage_box.get_initialised_storage_instance()\
-                        .save(self._get_identifier(), file_object)
+        self.uri = self.storage_box.get_initialised_storage_instance()\
+                                   .save(self._get_identifier(), file_object)
+        self.save()
 
     def delete(self):
         super(DataFileObject, self).delete()
 
+    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)
     def verify(self):  # too complex # noqa
         md5, sha512, size, mimetype_buffer = generate_file_checksums(
             self.file_object)
@@ -344,12 +349,14 @@ class DataFileObject(models.Model):
                              'MD5 sums did not match')
                 return False
             self.datafile.sha512sum = sha512
-        elif md5 is None or md5 == '':
+            self.datafile.save()
+        elif df_md5 is None or df_md5 == '':
             if sha512 != df_sha512:
                 logger.error('DataFileObject with id %d did not verify. '
                              'SHA512 sums did not match')
                 return False
             self.datafile.md5sum = md5
+            self.datafile.save()
         else:
             if not (md5 == df_md5 and sha512 == df_sha512):
                 logger.error('DataFileObject with id %d did not verify. '
@@ -358,13 +365,13 @@ class DataFileObject(models.Model):
         df_size = self.datafile.size
         if df_size is None or df_size == '':
             self.datafile.size = size
+            self.datafile.save()
         elif int(df_size) != size:
             logger.error('DataFileObject with id %d did not verify. '
                          'File size did not match')
             return False
-        self.datafile.save()
 
         self.verified = True
-        self.last_verified_date = datetime.now()
-        self.save()
+        self.last_verified_time = datetime.now()
+        self.save(update_fields=['verified', 'last_verified_time'])
         return True

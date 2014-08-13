@@ -48,7 +48,6 @@ class JEOLSEMFilterTestCase(TestCase):
 
         def create_datafile(index):
             testfile = path.join(base_path, 'jeol_sem_test%d.txt' % index)
-
             size, sha512sum = get_size_and_sha512sum(testfile)
 
             datafile = DataFile(dataset=dataset,
@@ -72,6 +71,7 @@ class JEOLSEMFilterTestCase(TestCase):
 
         # Check a parameter set was created
         dataset = Dataset.objects.get(id=self.dataset.id)
+
         expect(dataset.getParameterSets().count()).to_equal(1)
 
         # Check all the expected parameters are there

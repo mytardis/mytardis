@@ -103,6 +103,7 @@ from tardis.tardis_portal.shortcuts import render_response_index, \
     return_response_error, return_response_not_found, \
     render_response_search, get_experiment_referer
 from tardis.tardis_portal.hacks import oracle_dbops_hack
+from tardis.tardis_portal.util import generate_file_checksums
 from tardis.tardis_portal.util import render_public_access_badge
 
 from haystack.views import SearchView
@@ -2578,10 +2579,14 @@ def upload(request, dataset_id):
 
             uploaded_file_post = request.FILES['Filedata']
             logger.debug('done upload')
+            md5, sha512, size, mimetype_buffer = generate_file_checksums(
+                uploaded_file_post)
             datafile = DataFile(dataset=dataset,
                                 filename=uploaded_file_post.name,
-                                size=uploaded_file_post.size)
-            datafile.save()
+                                size=uploaded_file_post.size,
+                                md5sum=md5,
+                                sha512sum=sha512)
+            datafile.save(require_checksums=False)
             logger.debug('created file')
             datafile.file_object = uploaded_file_post
             logger.debug('saved datafile')

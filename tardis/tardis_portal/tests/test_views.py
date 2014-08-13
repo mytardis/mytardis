@@ -91,15 +91,11 @@ class UploadTestCase(TestCase):
         self.dataset.experiments.add(self.exp)
         self.dataset.save()
 
-        self.experiment_path = path.join(
-            settings.FILE_STORE_PATH,
-            str(self.dataset.get_first_experiment().id))
+        path_parts = [settings.FILE_STORE_PATH,
+                      "%s-%s" % (self.dataset.description or 'untitled',
+                                 self.dataset.id)]
+        self.dataset_path = path.join(*path_parts)
 
-        self.dataset_path = path.join(self.experiment_path,
-                                      str(self.dataset.id))
-
-        if not path.exists(self.experiment_path):
-            mkdir(self.experiment_path)
         if not path.exists(self.dataset_path):
             mkdir(self.dataset_path)
 
@@ -122,7 +118,6 @@ class UploadTestCase(TestCase):
         self.f1.close()
         rmtree(self.test_dir)
         rmtree(self.dataset_path)
-        rmtree(self.experiment_path)
         self.exp.delete()
 
     def testFileUpload(self):
@@ -137,14 +132,13 @@ class UploadTestCase(TestCase):
 
         test_files_db = \
             DataFile.objects.filter(dataset__id=self.dataset.id)
-
         self.assertTrue(path.exists(path.join(self.dataset_path,
                         self.filename)))
         self.assertTrue(self.dataset.id == 1)
         url = test_files_db[0].file_objects.all()[0].uri
-        self.assertTrue(url == '%d/%d/testfile.txt' %
-                        (self.dataset.get_first_experiment().id,
-                         self.dataset.id))
+        self.assertTrue(url ==
+                        path.relpath('%s/testfile.txt' % self.dataset_path,
+                                     settings.FILE_STORE_PATH))
         self.assertTrue(test_files_db[0].file_objects.all()[0].verified)
 
     def testUploadComplete(self):

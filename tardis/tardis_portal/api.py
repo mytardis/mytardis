@@ -5,7 +5,6 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
-import os
 
 from django.conf import settings
 from django.conf.urls.defaults import url
@@ -29,7 +28,6 @@ from tardis.tardis_portal.models.datafile import DataFile
 from tardis.tardis_portal.models.datafile import DataFileObject
 from tardis.tardis_portal.models.dataset import Dataset
 from tardis.tardis_portal.models.experiment import Experiment
-#from tardis.tardis_portal.models.location import Location
 from tardis.tardis_portal.models.parameters import DatafileParameter
 from tardis.tardis_portal.models.parameters import DatafileParameterSet
 from tardis.tardis_portal.models.parameters import DatasetParameter
@@ -39,8 +37,6 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
-#from tardis.tardis_portal.staging import get_sync_root
-#from tardis.tardis_portal.staging import write_uploaded_file_to_dataset
 
 from tastypie import fields
 from tastypie.authentication import BasicAuthentication
@@ -630,8 +626,8 @@ class ExperimentResource(MyTardisModelResource):
         if hasattr(bundle.request, 'GET') and 'EPN' in bundle.request.GET:
             epn = bundle.request.GET['EPN']
             exp_schema = Schema.objects.get(
-                namespace=
-                'http://www.tardis.edu.au/schemas/as/experiment/2010/09/21')
+                namespace='http://www.tardis.edu.au'
+                '/schemas/as/experiment/2010/09/21')
             epn_pn = ParameterName.objects.get(schema=exp_schema, name='EPN')
             parameter = ExperimentParameter.objects.get(name=epn_pn,
                                                         string_value=epn)
@@ -763,10 +759,6 @@ class DataFileResource(MyTardisModelResource):
             newfile = bundle.data['attached_file'][0]
 
             if 'md5sum' not in bundle.data and 'sha512sum' not in bundle.data:
-                location = Location.objects.get(name=location_name)
-                import urlparse
-                abs_path = os.path.join(urlparse.urlsplit(location.url).path,
-                                        file_path)
                 from tardis.tardis_portal.util import generate_file_checksums
                 md5, sha512, size, _ = generate_file_checksums(
                     newfile)
@@ -777,7 +769,7 @@ class DataFileResource(MyTardisModelResource):
         elif 'replicas' not in bundle.data:
             # no replica specified: return upload path and create replica for
             # new path
-#            location_name = 'staging'
+            #  location_name = 'staging'
             sbox = dataset.get_staging_storage_box()
             if sbox is None:
                 raise NotImplementedError
@@ -789,7 +781,7 @@ class DataFileResource(MyTardisModelResource):
 
     def post_list(self, request, **kwargs):
         response = super(DataFileResource, self).post_list(request,
-                                                               **kwargs)
+                                                           **kwargs)
         if self.temp_url is not None:
             response.content = self.temp_url
             self.temp_url = None
@@ -820,7 +812,7 @@ class DataFileResource(MyTardisModelResource):
             data.update(request.FILES)
             return data
         return super(DataFileResource, self).deserialize(request,
-                                                             data, format)
+                                                         data, format)
 
     def put_detail(self, request, **kwargs):
         '''
@@ -869,22 +861,26 @@ class ReplicaResource(MyTardisModelResource):
         }
 
     def hydrate(self, bundle):
+        if 'url' in bundle.data:
+            bundle.data['uri'] = bundle.data['url']
+            del(bundle.data['url'])
         datafile = bundle.related_obj
         bundle.obj.datafile = datafile
         bundle.data['datafile'] = datafile
         if 'location' in bundle.data:
             try:
                 bundle.obj.storage_box = StorageBox.objects.get(
-                    title=bundle.data['location'])
+                    name=bundle.data['location'])
             except StorageBox.DoesNotExist:
                 bundle.obj.storage_box = datafile\
-                          .dataset.get_fast_write_storage_box()
+                          .dataset.get_default_storage_box()
             del(bundle.data['location'])
         else:
             bundle.obj.storage_box = datafile\
-                      .dataset.get_fast_write_storage_box()
+                      .dataset.get_default_storage_box()
 
         bundle.obj.save()
-        bundle.obj.file_object = bundle.data['file_object']
-        del(bundle.data['file_object'])
+        if 'file_object' in bundle.data:
+            bundle.obj.file_object = bundle.data['file_object']
+            del(bundle.data['file_object'])
         return bundle

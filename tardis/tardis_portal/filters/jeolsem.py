@@ -56,7 +56,6 @@ class JEOLSEMFilter(object):
             logger.debug(e)
             return
 
-
     def _get_schema(self):
         """Return the schema object that the paramaterset will use.
         """
@@ -85,15 +84,13 @@ class JEOLSEMFilter(object):
     def is_text_file(self, datafile):
         return datafile.get_mimetype() == 'text/plain'
 
-
     def get_file_contents(self, datafile):
         from contextlib import closing
         file_ = datafile.get_file()
-        if file_ == None:
+        if file_ is None:
             return ''
         with closing(file_) as f:
             return f.read()
-
 
     def is_jeol_sem_metadata(self, filedata):
         for line in StringIO(filedata):
