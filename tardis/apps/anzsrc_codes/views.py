@@ -1,8 +1,11 @@
 import json
+import logging
 
 from rdflib import plugin, URIRef
 from rdflib.graph import Graph
 from rdflib.parser import Parser
+
+from urllib2 import URLError
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
@@ -23,8 +26,14 @@ PARAMETER_NAMES = FoRCodeForm().fields.keys()
 plugin.register('application/octet-stream', Parser,
      'rdflib.plugins.parsers.notation3', 'N3Parser')
 
+logger = logging.getLogger(__name__)
+
 for_graph = Graph()
-for_graph.parse(SCHEMA_URI)
+try:
+    for_graph.parse(SCHEMA_URI)
+except URLError:
+    log.debug('no data connection to get external schema definition')
+
 
 def _get_schema_func(schema_uri):
     def get_schema():
