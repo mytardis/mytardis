@@ -35,6 +35,8 @@ http://docs.djangoproject.com/en/dev/topics/testing/
 .. moduleauthor::  Russell Sim <russell.sim@monash.edu>
 
 """
+# for skiptest:
+# pylint: disable=W0101
 from os import path
 
 from django.test import TestCase

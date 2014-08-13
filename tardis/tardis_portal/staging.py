@@ -95,7 +95,7 @@ def staging_list(pathname=settings.STAGING_PATH,
                 directory_listing = directory_listing + li + '</li>'
 
     if root:
-    # root call
+        # root call
         directory_listing = '<ul><li id="phtml_1"><a>'\
             + str(path.split(path.dirname(pathname))[1]) \
             + '</a><ul>' \
@@ -165,7 +165,6 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
     :rtype: the path of the file written to
     """
     raise DeprecationWarning
-    raise Exception
 
 
 def get_full_staging_path(username):

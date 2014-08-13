@@ -199,8 +199,6 @@ class DownloadTestCase(TestCase):
     def _check_zip_file(self, content, rootdir, datafiles,
                         simpleNames=False, noTxt=False):
         with NamedTemporaryFile('w') as tempfile:
-            #import rpdb2; rpdb2.start_embedded_debugger("a")
-            #import ipdb; ipdb.set_trace()
             for c in content:
                 tempfile.write(c)
             tempfile.flush()
@@ -402,7 +400,7 @@ class DownloadTestCase(TestCase):
     def testDatasetFile(self):
         return
         # check registered text file for physical file meta information
-        df = DataFile.objects.get(pk=self.datafile1.id)
+        df = DataFile.objects.get(pk=self.datafile1.id)  # skipping test # noqa # pylint: disable=W0101
 
         try:
             from magic import Magic
@@ -420,7 +418,8 @@ class DownloadTestCase(TestCase):
 
         dataset = Dataset.objects.get(pk=self.dataset1.id)
 
-        pdf1 = self._build_datafile(filename, basename(filename), dataset)
+        pdf1 = self._build_datafile(filename, basename(filename), dataset,
+                                    filename)
         self.assertEqual(pdf1.default_dfo.verify(), True)
         pdf1 = DataFile.objects.get(pk=pdf1.pk)
 

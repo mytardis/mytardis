@@ -1,3 +1,7 @@
+'''
+SFTP Server
+'''
+# pylint: disable=R0923
 import collections
 import logging
 import os
