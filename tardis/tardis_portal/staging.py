@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-from django.core.exceptions import SuspiciousOperation
-
 """
 staging.py
 
@@ -38,10 +36,8 @@ staging.py
 """
 
 import logging
-import shutil
-from urllib2 import build_opener
 import os
-from os import path, makedirs, listdir, rmdir
+from os import path, makedirs, listdir
 import posixpath
 
 from django.conf import settings
@@ -57,7 +53,6 @@ def get_dataset_path(dataset):
 def staging_list(pathname=settings.STAGING_PATH,
                  dirname=settings.STAGING_PATH, root=False):
     from django.utils import _os
-    from django.core.files.storage import default_storage
     """Traverse a path and return an alphabetically by filename
     sorted nested group of
     unordered (<ul>) list HTML tags::
@@ -100,7 +95,7 @@ def staging_list(pathname=settings.STAGING_PATH,
                 directory_listing = directory_listing + li + '</li>'
 
     if root:
-    # root call
+        # root call
         directory_listing = '<ul><li id="phtml_1"><a>'\
             + str(path.split(path.dirname(pathname))[1]) \
             + '</a><ul>' \
@@ -110,67 +105,10 @@ def staging_list(pathname=settings.STAGING_PATH,
     return directory_listing
 
 
-class StagingHook():
-    __name__ = 'StagingHook'
-
-    def __init__(self, staging=None, store=None):
-        self.staging = staging or settings.STAGING_PATH
-        self.store = store or settings.FILE_STORE_PATH
-
-    def __call__(self, sender, **kwargs):
-        """
-        post save callback
-
-        sender
-            The model class.
-        instance
-            The actual instance being saved.
-        created
-            A boolean; True if a new record was created.
-        """
-        instance = kwargs.get('instance')
-        created = kwargs.get('created')
-        if not created:
-            # Don't extract on edit
-            return
-        if not instance.protocol == "staging":
-            return
-        stage_replica(instance)
-
-
-def stage_replica(replica):
-    from django.core.files.uploadedfile import TemporaryUploadedFile
-    from tardis.tardis_portal.models import Replica, Location
-    if not replica.location.type == 'external':
-        raise ValueError('Only external replicas can be staged')
-    if getattr(settings, "DEEP_DATASET_STORAGE", False):
-        relurl = path.relpath(replica.url[7:], settings.SYNC_TEMP_PATH)
-        spliturl = relurl.split(os.sep)[1:]
-        subdir = path.dirname(path.join(*spliturl))
-    else:
-        subdir = None
-    with TemporaryUploadedFile(replica.datafile.filename,
-                               None, None, None) as tf:
-        if replica.verify(tempfile=tf.file):
-            if not replica.stay_remote:
-                tf.file.flush()
-                target_replica = {
-                    'datafile': replica.datafile,
-                    'url': write_uploaded_file_to_dataset(
-                        replica.datafile.dataset, tf,
-                        subdir=subdir),
-                    'location': Location.get_default_location(),
-                    'verified': True,
-                    'protocol': ''}
-                Replica.objects.filter(id=replica.id).update(**target_replica)
-            return True
-        else:
-            return False
-
-
 def get_sync_location():
     from tardis.tardis_portal.models import Location
     return Location.get_location('sync')
+
 
 def get_sync_root(prefix=''):
     from uuid import uuid4 as uuid
@@ -217,6 +155,7 @@ def get_staging_path():
 def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
                                    subdir=None):
     """
+    Broken, now that the storagebox takes care of writing files.
     Writes file POST data to the dataset directory in the file store
 
     :param dataset: dataset whose directory to be written to
@@ -225,30 +164,7 @@ def write_uploaded_file_to_dataset(dataset, uploaded_file_post,
     :type uploaded_file_post: types.FileType
     :rtype: the path of the file written to
     """
-
-    filename = uploaded_file_post.name
-    if subdir is not None:
-        filename = path.join(subdir, filename)
-
-    from django.core.files.storage import default_storage
-
-    # Path on disk can contain subdirectories - but if the request
-    # gets tricky with "../" or "/var" or something we strip them
-    # out..
-    try:
-        copyto = path.join(get_dataset_path(dataset), filename)
-        default_storage.path(copyto)
-    except (SuspiciousOperation, ValueError):
-        copyto = path.join(get_dataset_path(dataset), path.basename(filename))
-
-    logger.debug("Writing uploaded file %s" % copyto)
-
-    realcopyto = default_storage.save(copyto, uploaded_file_post)
-
-    if copyto != realcopyto:
-        logger.debug("Actually wrote uploaded file to %s" % copyto)
-
-    return realcopyto
+    raise DeprecationWarning
 
 
 def get_full_staging_path(username):
@@ -256,7 +172,7 @@ def get_full_staging_path(username):
     # staging protocol
     try:
         from tardis.tardis_portal.models import UserAuthentication
-        userAuth = UserAuthentication.objects.get(
+        UserAuthentication.objects.get(
             userProfile__user__username=username,
             authenticationMethod=settings.STAGING_PROTOCOL)
     except UserAuthentication.DoesNotExist:

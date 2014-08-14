@@ -34,7 +34,7 @@
     {% if has_write_permissions %}
       <div class="pull-right">
         <a href="{% url 'tardis.tardis_portal.views.edit_datafile_par' parameterset.id %}"
-           data-toggle_selector="#datafile_metadata_toggle_{{parameterset.dataset_file_id}}"
+           data-toggle_selector="#datafile_metadata_toggle_{{parameterset.datafile_id}}"
            class="edit-metadata btn btn-mini btn-warning">
           <i class="icon-pencil"></i>
           Edit

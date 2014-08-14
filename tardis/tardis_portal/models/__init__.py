@@ -46,11 +46,12 @@ from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .access_control import ObjectACL
 from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
-from .datafile import Dataset_File
-from .replica import Replica
-from .location import Location, ProviderParameter
+from .datafile import DataFile
+from .datafile import DataFileObject
+from .storage import StorageBox
+from .storage import StorageBoxOption
+from .storage import StorageBoxAttribute
 from .license import License
-from .hooks import staging_hook
 from .parameters import DatafileParameter, DatafileParameterSet, \
                         DatasetParameter, DatasetParameterSet, \
                         ExperimentParameter, ExperimentParameterSet, \

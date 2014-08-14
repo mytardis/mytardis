@@ -6,6 +6,7 @@ from django.db import models
 
 from tardis.tardis_portal.managers import OracleSafeManager
 from tardis.tardis_portal.models.fields import DirectoryField
+from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
 
@@ -19,12 +20,16 @@ class Dataset(models.Model):
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
     :attribute description: description of this dataset
+    :attribute storage_box: link to one or many storage boxes of some type.
+        storage boxes have to be the same for all files of a dataset
     """
 
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
+    storage_boxes = models.ManyToManyField(
+        StorageBox, related_name='datasets', blank=True)
     objects = OracleSafeManager()
 
     class Meta:
@@ -59,36 +64,16 @@ class Dataset(models.Model):
         return ('tardis.tardis_portal.views.view_dataset', (),
                 {'dataset_id': self.id})
 
-    def get_replicas(self):
-        from .replica import Replica
-        return Replica.objects.filter(datafile__dataset=self)
-
     def get_download_urls(self):
+        view = 'tardis.tardis_portal.download.streaming_download_' \
+               'dataset'
         urls = {}
-        params = (('dataset_id', self.id),)
-        protocols = frozenset(self.get_replicas()
-                                  .values_list('protocol', flat=True)
-                                  .distinct())
-        # Get built-in download links
-        local_protocols = frozenset(('', 'tardis', 'file', 'http', 'https'))
-        if any(p in protocols for p in local_protocols):
-            view = 'tardis.tardis_portal.download.streaming_download_' \
-                   'dataset'
-            for comptype in getattr(settings,
-                                    'DEFAULT_ARCHIVE_FORMATS',
-                                    ['tgz', 'tar']):
-                kwargs = dict(params+(('comptype', comptype),))
-                urls[comptype] = reverse(view, kwargs=kwargs)
-
-        # Get links from download providers
-        for protocol in protocols - local_protocols:
-            try:
-                for module in settings.DOWNLOAD_PROVIDERS:
-                    if module[0] == protocol:
-                        view = '%s.download_dataset' % module[1]
-                        urls[protocol] = reverse(view, kwargs=dict(params))
-            except AttributeError:
-                pass
+        for comptype in getattr(settings,
+                                'DEFAULT_ARCHIVE_FORMATS',
+                                ['tgz', 'tar']):
+            urls[comptype] = reverse(view, kwargs={
+                'dataset_id': self.id,
+                'comptype': comptype})
 
         return urls
 
@@ -101,8 +86,8 @@ class Dataset(models.Model):
 
     def get_images(self):
         from .datafile import IMAGE_FILTER
-        images = self.dataset_file_set.order_by('filename')\
-                                      .filter(IMAGE_FILTER)
+        images = self.datafile_set.order_by('filename')\
+                                  .filter(IMAGE_FILTER)
         return images
 
     def _get_image(self):
@@ -125,8 +110,8 @@ class Dataset(models.Model):
                                'format': 'jpg'})
 
     def get_size(self):
-        from .datafile import Dataset_File
-        return Dataset_File.sum_sizes(self.dataset_file_set)
+        from .datafile import DataFile
+        return DataFile.sum_sizes(self.datafile_set)
 
     def _has_any_perm(self, user_obj):
         if not hasattr(self, 'id'):
@@ -145,3 +130,16 @@ class Dataset(models.Model):
         if self.immutable:
             return False
         return self._has_any_perm(user_obj)
+
+    def get_most_reliable_storage_box(self):
+        return self.storage_boxes.latest('copies')
+
+    def get_staging_storage_box(self):
+        boxes = self.storage_boxes.filter(attributes__key="staging",
+                                          attributes_value="True") or [None]
+        return boxes[0]
+
+    def get_default_storage_box(self):
+        if self.storage_boxes.count() == 0:
+            self.storage_boxes.add(StorageBox.get_default_storage())
+        return self.storage_boxes.all()[0]  # use first() with Django 1.6+

@@ -7,7 +7,7 @@ from contextlib import closing
 from urllib2 import urlopen
 
 from django.core.management.base import BaseCommand, CommandError
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import DataFile
 
 CHUNK_SIZE = 32*1024
 
@@ -27,7 +27,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity', 1))
 
-        for df in Dataset_File.objects.all():
+        for df in DataFile.objects.all():
             for algorithm in ('sha512', 'md5'):
                 try:
                     validate_digest(algorithm, df)
@@ -64,10 +64,3 @@ def validate_digest(algorithm, datafile):
 
     if expected != digest.hexdigest():
         raise ValidationFailed
-
-
-
-
-
-
-

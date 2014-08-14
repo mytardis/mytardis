@@ -128,7 +128,7 @@ class DiffractionImageFilter(object):
             return None
 
     def saveDiffractionImageMetadata(self, instance, schema, metadata):
-        """Save all the metadata to a Dataset_Files paramamter set.
+        """Save all the metadata to a DataFiles paramamter set.
         """
         parameters = self.getParameters(schema, metadata)
         if not parameters:
@@ -136,11 +136,11 @@ class DiffractionImageFilter(object):
 
         try:
             ps = DatafileParameterSet.objects.get(schema=schema,
-                                                  dataset_file=instance)
+                                                  datafile=instance)
             return ps  # if already exists then just return it
         except DatafileParameterSet.DoesNotExist:
             ps = DatafileParameterSet(schema=schema,
-                                      dataset_file=instance)
+                                      datafile=instance)
             ps.save()
 
         for p in parameters:

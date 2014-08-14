@@ -1,17 +1,18 @@
 '''
 File mapper that works for files stored in deep directory structures.
-It replicates the structure as stored in the File Replica
+It recreates the structure as stored in the datafile directory
 '''
 import os
 
 
 def deep_storage_mapper(datafile, rootdir):
-    url = datafile.get_preferred_replica().url
-    expid = str(datafile.dataset.get_first_experiment().id)
+    dataset = datafile.dataset
+    exp = dataset.get_first_experiment()
+    filepath = os.path.join(dataset.directory or '', dataset.description,
+                            datafile.directory or '', datafile.filename)
     if rootdir != 'datasets':
-        return url
-    elif expid is not None:
-        return os.path.join(rootdir,
-                            os.path.relpath(url, expid))
+        return os.path.join(rootdir, filepath)
+    elif exp is not None:
+        return os.path.join(exp.directory or '', exp.title, filepath)
     else:
         raise Exception

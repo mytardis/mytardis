@@ -1,13 +1,20 @@
 from os import path
+from datetime import datetime
 
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.core.files import File
 from django.core.urlresolvers import reverse
 
-from tardis.tardis_portal.models.fields import DirectoryField
+from celery.contrib.methods import task
+
+from tardis.tardis_portal.util import generate_file_checksums
+
+from .fields import DirectoryField
 from .dataset import Dataset
-from .replica import Replica
+from .storage import StorageBox
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -17,9 +24,9 @@ IMAGE_FILTER = (Q(mimetype__startswith='image/') &
     (Q(datafileparameterset__datafileparameter__name__units__startswith="image"))  # noqa
 
 
-class Dataset_File(models.Model):
+class DataFile(models.Model):
     """Class to store meta-data about a file.  The physical copies of a
-    file are described by distinct Replica instances.
+    file are described by distinct DataFileObject instances.
 
     :attribute dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
@@ -42,10 +49,40 @@ class Dataset_File(models.Model):
     mimetype = models.CharField(blank=True, max_length=80)
     md5sum = models.CharField(blank=True, max_length=32)
     sha512sum = models.CharField(blank=True, max_length=128)
+    deleted = models.BooleanField(default=False)
+    deleted_time = models.DateTimeField(blank=True, null=True)
+    version = models.IntegerField(default=1)
+
+    @property
+    def file_object(self):
+        return self.file_objects.get(
+            storage_box=self.dataset.get_default_storage_box()).file_object
+
+    @file_object.setter
+    def file_object(self, file_object):
+        '''
+        replace contents of file in all its locations
+        '''
+        oldobjs = []
+        if self.file_objects.count() > 0:
+            oldobjs = list(self.file_objects.all())
+        if self.dataset.storage_boxes.count() == 0:
+            self.dataset.storage_boxes.add(
+                StorageBox.get_default_storage())
+        for storage_box in self.dataset.storage_boxes.all():
+            newfile = DataFileObject(datafile=self,
+                                     storage_box=storage_box)
+            newfile.save()
+            newfile.file_object = file_object
+            newfile.verify.delay()
+        if len(oldobjs) > 0:
+            for obj in oldobjs:
+                obj.delete()
 
     class Meta:
         app_label = 'tardis_portal'
         ordering = ['filename']
+        unique_together = ['directory', 'filename', 'version']
 
     @classmethod
     def sum_sizes(cls, datafiles):
@@ -64,14 +101,14 @@ class Dataset_File(models.Model):
                                         .values_list('size', flat=True), 0)
 
     def save(self, *args, **kwargs):
+        require_checksums = kwargs.pop('require_checksums', True)
         if settings.REQUIRE_DATAFILE_CHECKSUMS and \
-                not self.md5sum and not self.sha512sum:
+                not self.md5sum and not self.sha512sum and require_checksums:
             raise Exception('Every Datafile requires a checksum')
         elif settings.REQUIRE_DATAFILE_SIZES and \
                 not self.size:
             raise Exception('Every Datafile requires a file size')
-        else:
-            super(Dataset_File, self).save(*args, **kwargs)
+        super(DataFile, self).save(*args, **kwargs)
 
     def get_size(self):
         return self.size
@@ -98,7 +135,7 @@ class Dataset_File(models.Model):
             suffix = path.splitext(self.filename)[-1]
             try:
                 import mimetypes
-                return mimetypes.types_map['.%s' % suffix.lower()]
+                return mimetypes.types_map[suffix.lower()]
             except KeyError:
                 return 'application/octet-stream'
 
@@ -111,47 +148,20 @@ class Dataset_File(models.Model):
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_download_url(self):
-        replica = self.get_preferred_replica()
-        if replica:
-            return replica.get_download_url()
-        else:
-            return None
+        #import ipdb; ipdb.set_trace()
+        return '/api/v1/dataset_file/%d/download' % self.id
 
     def get_file(self):
-        return self.get_preferred_replica().get_file()
+        return self.file_object
 
     def get_absolute_filepath(self):
-        return self.get_preferred_replica().get_absolute_filepath()
+        return self.default_dfo.get_absolute_filepath()
 
     def get_file_getter(self):
-        return self.get_preferred_replica().get_file_getter()
+        return self.default_dfo.get_file_getter()
 
     def is_local(self):
-        return self.get_preferred_replica().is_local()
-
-    def get_preferred_replica(self, verified=None):
-        """Get the Datafile replica that is the preferred one for download.
-        This entails fetching all of the Replicas and ordering by their
-        respective Locations' computed priorities.  The 'verified' parameter
-        allows you to select the preferred verified (or unverified) replica.
-        """
-
-        p = None
-        if verified == None:
-            replicas = Replica.objects.filter(datafile=self)
-        else:
-            replicas = Replica.objects.filter(datafile=self, verified=verified)
-        for r in replicas:
-            if not p or \
-                    p.location.get_priority() < r.location.get_priority():
-                p = r
-        # A datafile with no associated replicas is broken.
-        if verified == None and not p:
-            logger.error('Ooops! - Dataset_File %s has no replicas: %s',
-                         self.id, self)
-            if hasattr(settings, 'DEBUG') and settings.DEBUG:
-                raise ValueError('Dataset_File has no replicas')
-        return p
+        return self.default_dfo.is_local()
 
     def has_image(self):
         from .parameters import DatafileParameter
@@ -166,9 +176,9 @@ class Dataset_File(models.Model):
             return False
 
         for ps in pss:
-            dps = DatafileParameter.objects.filter(\
-            parameterset=ps, name__data_type=5,\
-            name__units__startswith="image")
+            dps = DatafileParameter.objects.filter(
+                parameterset=ps, name__data_type=5,
+                name__units__startswith="image")
 
             if len(dps):
                 return True
@@ -198,11 +208,10 @@ class Dataset_File(models.Model):
         if not pss:
             return None
 
-        preview_image_data = None
         for ps in pss:
-            dps = DatafileParameter.objects.filter(\
-            parameterset=ps, name__data_type=5,\
-            name__units__startswith="image")
+            dps = DatafileParameter.objects.filter(
+                parameterset=ps, name__data_type=5,
+                name__units__startswith="image")
 
             if len(dps):
                 preview_image_par = dps[0]
@@ -237,3 +246,132 @@ class Dataset_File(models.Model):
 
     def _has_delete_perm(self, user_obj):
         return self._has_any_perm(user_obj)
+
+    @property
+    def default_dfo(self):
+        s_box = self.dataset.get_default_storage_box()
+        return self.file_objects.get(storage_box=s_box)
+
+    @property
+    def verified(self):
+        return all([obj.verified for obj in self.file_objects.all()])
+
+    def verify(self, reverify=False):
+        return all([obj.verify() for obj in self.file_objects.all()
+                    if reverify or not obj.verified])
+
+
+class DataFileObject(models.Model):
+    '''
+    holds one copy of the data for a datafile
+    '''
+
+    datafile = models.ForeignKey(DataFile, related_name='file_objects')
+    storage_box = models.ForeignKey(StorageBox, related_name='file_objects')
+    uri = models.TextField(blank=True, null=True)  # optional
+    created_time = models.DateTimeField(auto_now_add=True)
+    verified = models.BooleanField(default=False)
+    last_verified_time = models.DateTimeField(blank=True, null=True)
+
+    _cached_file_object = None
+
+    class Meta:
+        app_label = 'tardis_portal'
+        unique_together = ['datafile', 'storage_box']
+
+    def _get_default_storage_class(self):
+        return self.datafile.dataset.get_fastest_storage_box()
+
+    def _get_identifier(self):
+        '''
+        the default identifier would be directory and file name, but it may
+        not work for all backends. This function aims to abstract it.
+        '''
+
+        def default_identifier(dfo):
+            if dfo.uri is None:
+                path_parts = ["%s-%s" % (dfo.datafile.dataset.description
+                                         or 'untitled',
+                                         dfo.datafile.dataset.id)]
+                path_parts += dfo.datafile.directory or []
+                path_parts += [dfo.datafile.filename]
+                dfo.uri = path.join(*path_parts)
+                dfo.save()
+            return dfo.uri
+
+        build_identifier = getattr(
+            self.storage_box.get_initialised_storage_instance(),
+            'build_identifier',
+            default_identifier)
+        return build_identifier(self)
+
+    def get_save_location(self):
+        return self.storage_box.get_save_location(self)
+
+    @property
+    def file_object(self):
+        '''
+        a set of accessor functions that convert the file information to a
+        standard python file object for reading and copy the contents of an
+        existing file_object into the storage backend.
+        '''
+        if self._cached_file_object is None or self._cached_file_object.closed:
+            self._cached_file_object = self\
+                .storage_box.get_initialised_storage_instance().open(
+                    self._get_identifier())
+        return self._cached_file_object
+
+    @file_object.setter
+    def file_object(self, file_object):
+        '''
+        write contents of file object to storage_box
+        '''
+        if file_object.closed:
+            file_object = File(file_object)
+            file_object.open()
+        file_object.seek(0)
+        self.uri = self.storage_box.get_initialised_storage_instance()\
+                                   .save(self._get_identifier(), file_object)
+        self.save()
+
+    def delete(self):
+        super(DataFileObject, self).delete()
+
+    @task(name="tardis_portal.verify_dfo_method", ignore_result=True)
+    def verify(self):  # too complex # noqa
+        md5, sha512, size, mimetype_buffer = generate_file_checksums(
+            self.file_object)
+        df_md5 = self.datafile.md5sum
+        df_sha512 = self.datafile.sha512sum
+        if df_sha512 is None or df_sha512 == '':
+            if md5 != df_md5:
+                logger.error('DataFileObject with id %d did not verify. '
+                             'MD5 sums did not match')
+                return False
+            self.datafile.sha512sum = sha512
+            self.datafile.save()
+        elif df_md5 is None or df_md5 == '':
+            if sha512 != df_sha512:
+                logger.error('DataFileObject with id %d did not verify. '
+                             'SHA512 sums did not match')
+                return False
+            self.datafile.md5sum = md5
+            self.datafile.save()
+        else:
+            if not (md5 == df_md5 and sha512 == df_sha512):
+                logger.error('DataFileObject with id %d did not verify. '
+                             'Checksums did not match')
+                return False
+        df_size = self.datafile.size
+        if df_size is None or df_size == '':
+            self.datafile.size = size
+            self.datafile.save()
+        elif int(df_size) != size:
+            logger.error('DataFileObject with id %d did not verify. '
+                         'File size did not match')
+            return False
+
+        self.verified = True
+        self.last_verified_time = datetime.now()
+        self.save(update_fields=['verified', 'last_verified_time'])
+        return True

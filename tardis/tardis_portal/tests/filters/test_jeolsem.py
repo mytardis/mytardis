@@ -1,15 +1,11 @@
 from os import path
-from compare import expect, ensure
+from compare import expect
 
-from django.conf import settings
-from django.core.urlresolvers import reverse
 from django.test import TestCase
-from django.test.client import Client
 
 from tardis.tardis_portal.filters.jeolsem import JEOLSEMFilter
 from tardis.tardis_portal.models import User, UserProfile, \
-    ObjectACL, Experiment, Dataset, Dataset_File, Replica, Location
-from tardis.tardis_portal.models.parameters import DatasetParameterSet
+    ObjectACL, Experiment, Dataset, DataFile, DataFileObject, StorageBox
 from tardis.tardis_portal.ParameterSetManager import ParameterSetManager
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
@@ -25,8 +21,6 @@ class JEOLSEMFilterTestCase(TestCase):
         user = User.objects.create_user(username, email, password)
         profile = UserProfile(user=user, isDjangoAccount=True)
         profile.save()
-
-        Location.force_initialize()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -48,38 +42,36 @@ class JEOLSEMFilterTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
 
-        def create_datafile(index):
-            testfile = path.join(path.dirname(__file__), 'fixtures',
-                                 'jeol_sem_test%d.txt' % index)
+        base_path = path.join(path.dirname(__file__), 'fixtures')
+        s_box = StorageBox.get_default_storage(location=base_path)
+        dataset.storage_boxes.add(s_box)
 
+        def create_datafile(index):
+            testfile = path.join(base_path, 'jeol_sem_test%d.txt' % index)
             size, sha512sum = get_size_and_sha512sum(testfile)
 
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=path.basename(testfile),
-                                    size=size,
-                                    sha512sum=sha512sum)
+            datafile = DataFile(dataset=dataset,
+                                filename=path.basename(testfile),
+                                size=size,
+                                sha512sum=sha512sum)
             datafile.save()
-            base_url = 'file://' + path.abspath(path.dirname(testfile))
-            location = Location.load_location({
-                'name': 'test-jeol', 'url': base_url, 'type': 'external',
-                'priority': 10, 'transfer_provider': 'local'})
-            replica = Replica(datafile=datafile,
-                              url='file://'+path.abspath(testfile),
-                              protocol='file',
-                              location=location)
-            replica.verify()
-            replica.save()
-            return Dataset_File.objects.get(pk=datafile.pk)
+            dfo = DataFileObject(
+                datafile=datafile,
+                storage_box=datafile.dataset.get_default_storage_box(),
+                uri=path.basename(testfile))
+            dfo.save()
+
+            return DataFile.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
-        self.datafiles = [create_datafile(i) for i in (1,2)]
-
+        self.datafiles = [create_datafile(i) for i in (1, 2)]
 
     def testJEOLSimple(self):
         JEOLSEMFilter()(None, instance=self.datafiles[0])
 
         # Check a parameter set was created
         dataset = Dataset.objects.get(id=self.dataset.id)
+
         expect(dataset.getParameterSets().count()).to_equal(1)
 
         # Check all the expected parameters are there
@@ -95,7 +87,6 @@ class JEOLSEMFilterTestCase(TestCase):
         JEOLSEMFilter()(None, instance=self.datafiles[0])
         dataset = Dataset.objects.get(id=self.dataset.id)
         expect(dataset.getParameterSets().count()).to_equal(1)
-
 
     def testJEOLComplex(self):
         JEOLSEMFilter()(None, instance=self.datafiles[1])

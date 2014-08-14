@@ -1,11 +1,14 @@
 from django.conf import settings
 
+import ctypes
 import hashlib
+import os
+import platform
 import pystache
 import pytz
-import os, platform, ctypes, stat, time, struct
 
 LOCAL_TZ = pytz.timezone(settings.TIME_ZONE)
+
 
 def get_local_time(dt):
     '''
@@ -15,10 +18,11 @@ def get_local_time(dt):
     this *should* keep providing correct behaviour.
     '''
     # If datetime is already naive, simply set TZ
-    if (dt.tzinfo == None):
+    if dt.tzinfo is None:
         return dt.replace(tzinfo=LOCAL_TZ)
     # Otherwise convert
     return dt.astimezone(LOCAL_TZ)
+
 
 def get_utc_time(dt):
     '''
@@ -28,9 +32,10 @@ def get_utc_time(dt):
     this *should* keep providing correct behaviour.
     '''
     # If datetime is already naive, set TZ
-    if (dt.tzinfo == None):
+    if dt.tzinfo is None:
         dt = dt.replace(tzinfo=LOCAL_TZ)
     return dt.astimezone(pytz.utc)
+
 
 def get_free_space(fs_dir):
     """ Return free space on the file system holding the given directory
@@ -39,8 +44,8 @@ def get_free_space(fs_dir):
     sys_type = platform.system()
     if sys_type == 'Windows':
         free_bytes = ctypes.c_ulonglong(0)
-        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(fs_dir), 
-                                                   None, None, 
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(fs_dir),
+                                                   None, None,
                                                    ctypes.pointer(free_bytes))
         return free_bytes.value
     elif sys_type == 'Darwin' or sys_type == 'DragonFly' or 'BSD' in sys_type:
@@ -50,10 +55,11 @@ def get_free_space(fs_dir):
         st = os.statvfs(fs_dir)
         return st.f_bfree * st.f_bsize
     else:
-        raise RuntimeError('Unsupported / unexpected platform type: %s' % \
-                               sys_type)
+        raise RuntimeError('Unsupported / unexpected platform type: %s' %
+                           sys_type)
 
-def generate_file_checksums(sourceFile, tempFile):
+
+def generate_file_checksums(sourceFile, tempFile=None):
     '''
     Generate checksums, etcetera for a file read from 'sourceFile'.
     If 'tempFile' is provided, the bytes are written to it as they are read.
@@ -70,27 +76,31 @@ def generate_file_checksums(sourceFile, tempFile):
         mimetype_buffer = ''
         for chunk in iter(lambda: f.read(32 * sha512.block_size), ''):
             size += len(chunk)
-            if len(mimetype_buffer) < 8096: # Arbitrary memory limit
+            if len(mimetype_buffer) < 8096:  # Arbitrary memory limit
                 mimetype_buffer += chunk
             md5.update(chunk)
             sha512.update(chunk)
-            if tempFile:
+            if tempFile is not None:
                 tempFile.write(chunk)
-    return (md5.hexdigest(), sha512.hexdigest(), 
+    return (md5.hexdigest(), sha512.hexdigest(),
             size, mimetype_buffer)
+
 
 def _load_template(template_name):
     from mustachejs.loading import find
     with open(find(template_name), 'r') as f:
         return f.read()
 
+
 def _mustache_render(tmpl, data):
     from django.utils.safestring import mark_safe
     return mark_safe(pystache.render(tmpl, data))
 
+
 def render_mustache(template_name, data):
     return _mustache_render(_load_template(template_name), data)
-    
+
+
 def render_public_access_badge(experiment):
     if experiment.public_access == experiment.PUBLIC_ACCESS_NONE:
         return render_mustache('tardis_portal/badges/public_access', {
@@ -108,4 +118,4 @@ def render_public_access_badge(experiment):
             'title': 'All data is public',
             'label': 'Public',
             'public': True,
-        })    
+        })

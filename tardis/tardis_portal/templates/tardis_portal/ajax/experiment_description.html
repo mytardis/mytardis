@@ -103,7 +103,7 @@
   <dl class="download_entire_experiment">
     <dt>Download All</dt>
     <dd>
-    {% if organization|length > 1 %}
+      {% if organization|length > 1 %}
       {% for p in protocol %}
         {% for o in organization %}
           <a class="btn btn-primary btn-mini" href="{{p.1}}{{o}}"
@@ -132,4 +132,3 @@
   {% endblock downloads %}
 
 </div>
-

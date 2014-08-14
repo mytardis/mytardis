@@ -31,7 +31,6 @@ core_urls = patterns(
     (r'^about/$', 'about'),
     (r'^stats/$', 'stats'),
     (r'^help/$', 'user_guide'),
-    (r'^import_params/$', 'import_params'),
     (r'^robots\.txt$', lambda r: HttpResponse(
         "User-agent: *\nDisallow: /download/\nDisallow: /stats/",
         mimetype="text/plain"))
@@ -55,8 +54,6 @@ experiment_urls = patterns(
     (r'^list', include(experiment_lists)),
     (r'^view/$', 'experiment_index'),  # Legacy URL
     (r'^search/$', 'search_experiment'),
-    (r'^register/$', 'register_experiment_ws_xmldata'),
-    (r'^metsexport/(?P<experiment_id>\d+)/$', 'metsexport_experiment'),
     (r'^create/$', 'create_experiment'),
     (r'^control_panel/(?P<experiment_id>\d+)/access_list/add/user/'
      '(?P<username>[\w\-][\w\-\.]+(@[\w\-][\w\-\.]+[a-zA-Z]{1,4})*)/$',
@@ -147,8 +144,8 @@ json_urls = patterns(
 
 ajax_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^parameters/(?P<dataset_file_id>\d+)/$', 'retrieve_parameters'),
-    (r'^datafile_details/(?P<dataset_file_id>\d+)/$',
+    (r'^parameters/(?P<datafile_id>\d+)/$', 'retrieve_parameters'),
+    (r'^datafile_details/(?P<datafile_id>\d+)/$',
      'display_datafile_details'),
     (r'^dataset_metadata/(?P<dataset_id>\d+)/$', 'retrieve_dataset_metadata'),
     (r'^experiment_metadata/(?P<experiment_id>\d+)/$',
@@ -232,7 +229,7 @@ display_urls = patterns(
     (r'^DatasetImage/(?P<dataset_id>\d+)/(?P<parameterset_id>\d+)/'
      '(?P<parameter_name>\w+)/$',
      'display_dataset_image'),
-    (r'^DatafileImage/(?P<dataset_file_id>\d+)/'
+    (r'^DatafileImage/(?P<datafile_id>\d+)/'
      '(?P<parameterset_id>\d+)/(?P<parameter_name>\w+)/$',
      'display_datafile_image'),
 )
@@ -241,7 +238,7 @@ display_urls = patterns(
 from tardis.tardis_portal.api import DatasetParameterSetResource
 from tardis.tardis_portal.api import DatasetParameterResource
 from tardis.tardis_portal.api import DatasetResource
-from tardis.tardis_portal.api import Dataset_FileResource
+from tardis.tardis_portal.api import DataFileResource
 from tardis.tardis_portal.api import DatafileParameterSetResource
 from tardis.tardis_portal.api import DatafileParameterResource
 from tardis.tardis_portal.api import ExperimentParameterResource
@@ -257,7 +254,7 @@ v1_api = Api(api_name='v1')
 v1_api.register(DatasetParameterSetResource())
 v1_api.register(DatasetParameterResource())
 v1_api.register(DatasetResource())
-v1_api.register(Dataset_FileResource())
+v1_api.register(DataFileResource())
 v1_api.register(DatafileParameterSetResource())
 v1_api.register(DatafileParameterResource())
 v1_api.register(ExperimentParameterResource())

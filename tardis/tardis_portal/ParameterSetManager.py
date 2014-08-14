@@ -4,7 +4,7 @@ from django.utils.timezone import is_aware, make_aware
 
 from tardis.tardis_portal.models import Experiment
 from tardis.tardis_portal.models import Dataset
-from tardis.tardis_portal.models import Dataset_File
+from tardis.tardis_portal.models import DataFile
 
 import pytz
 
@@ -82,9 +82,9 @@ class ParameterSetManager(object):
 
             self.namespace = schema
 
-            if isinstance(parentObject, Dataset_File):
+            if isinstance(parentObject, DataFile):
                 self.parameterset = DatafileParameterSet(
-                    schema=self.get_schema(), dataset_file=parentObject)
+                    schema=self.get_schema(), datafile=parentObject)
 
                 self.parameterset.save()
 

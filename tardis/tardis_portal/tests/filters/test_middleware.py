@@ -28,18 +28,15 @@
 #
 
 from os import path
-from compare import expect, ensure
-import traceback
+from compare import expect
 
-from django.conf import settings
 from django.test import TestCase
-from django.test.client import Client
 from django.db.models.signals import post_save
 from django.core.exceptions import MiddlewareNotUsed
 
 from tardis.tardis_portal.filters import FilterInitMiddleware
 from tardis.tardis_portal.models import User, UserProfile, Experiment, \
-    ObjectACL, Location, Dataset, Dataset_File, Replica
+    ObjectACL, Dataset, DataFile, DataFileObject, StorageBox
 
 from tardis.tardis_portal.tests.test_download import get_size_and_sha512sum
 
@@ -47,6 +44,7 @@ TEST_FILTERS = [
     ('tardis.tardis_portal.tests.filters.test_middleware.Filter1',),
     ('tardis.tardis_portal.tests.filters.test_middleware.Filter2',),
 ]
+
 
 class FilterInitTestCase(TestCase):
     def setUp(self):
@@ -57,8 +55,6 @@ class FilterInitTestCase(TestCase):
         user = User.objects.create_user(username, email, password)
         profile = UserProfile(user=user, isDjangoAccount=True)
         profile.save()
-
-        Location.force_initialize()
 
         # Create test experiment and make user the owner of it
         experiment = Experiment(title='Text Experiment',
@@ -80,34 +76,33 @@ class FilterInitTestCase(TestCase):
         dataset.experiments.add(experiment)
         dataset.save()
 
+        base_path = path.join(path.dirname(__file__), 'fixtures')
+        s_box = StorageBox.get_default_storage(location=base_path)
+        dataset.storage_boxes.add(s_box)
+
         def create_datafile(index):
-            testfile = path.join(path.dirname(__file__), 'fixtures',
-                                 'middleware_test%d.txt' % index)
+            testfile = path.join(base_path, 'middleware_test%d.txt' % index)
 
             size, sha512sum = get_size_and_sha512sum(testfile)
 
-            datafile = Dataset_File(dataset=dataset,
-                                    filename=path.basename(testfile),
-                                    size=size,
-                                    sha512sum=sha512sum)
+            datafile = DataFile(dataset=dataset,
+                                filename=path.basename(testfile),
+                                size=size,
+                                sha512sum=sha512sum)
             datafile.save()
-            base_url = 'file://' + path.abspath(path.dirname(testfile))
-            location = Location.load_location({
-                'name': 'test-middleware', 'url': base_url, 'type': 'external',
-                'priority': 10, 'transfer_provider': 'local'})
-            replica = Replica(datafile=datafile,
-                              url='file://'+path.abspath(testfile),
-                              protocol='file',
-                              location=location)
-            replica.save()
+            dfo = DataFileObject(
+                datafile=datafile,
+                storage_box=datafile.dataset.get_default_storage_box(),
+                uri=path.basename(testfile))
+            dfo.save()
+
             if index != 1:
-                replica.verified = False
-                replica.save(update_fields=['verified'])
-            return Dataset_File.objects.get(pk=datafile.pk)
+                dfo.verified = False
+                dfo.save(update_fields=['verified'])
+            return DataFile.objects.get(pk=datafile.pk)
 
         self.dataset = dataset
-        self.datafiles = [create_datafile(i) for i in (1,2)]
-
+        self.datafiles = [create_datafile(i) for i in (1, 2)]
 
     def testFiltering(self):
         try:
@@ -131,7 +126,7 @@ class FilterInitTestCase(TestCase):
             t = Filter2.getTuples()
             expect(len(t)).to_equal(0)
 
-            self.datafiles[0].get_preferred_replica().save()
+            self.datafiles[0].default_dfo.save()
             t = Filter1.getTuples()
             expect(len(t)).to_equal(2)
             expect(t[0][0]).to_equal(self.datafiles[0])
@@ -141,19 +136,20 @@ class FilterInitTestCase(TestCase):
             expect(t[0][0]).to_equal(self.datafiles[0])
             expect(t[0][1]).to_be_truthy()
 
-            self.datafiles[1].get_preferred_replica().save()
+            self.datafiles[1].default_dfo.save()
             t = Filter1.getTuples()
-            expect(len(t)).to_equal(1)
+            # 2 because the missing md5 sum save runs the filter as well
+            expect(len(t)).to_equal(2)
             t = Filter2.getTuples()
-            expect(len(t)).to_equal(1)
+            expect(len(t)).to_equal(2)
 
         finally:
             # Remove our hooks!
             for f in TEST_FILTERS:
-                post_save.disconnect(sender=Dataset_File, weak=False,
+                post_save.disconnect(sender=DataFile, weak=False,
                                      dispatch_uid=f[0] + ".datafile")
-                post_save.disconnect(sender=Replica, weak=False,
-                                     dispatch_uid=f[0] + ".replica")
+                post_save.disconnect(sender=DataFileObject, weak=False,
+                                     dispatch_uid=f[0] + ".dfo")
 
 
 class Filter1:
@@ -167,8 +163,9 @@ class Filter1:
 
     def __call__(self, sender, **kwargs):
         datafile = kwargs.get('instance')
-        replica = kwargs.get('replica')
+        replica = kwargs.get('dfo')
         Filter1.tuples = Filter1.tuples + [(datafile, replica)]
+
 
 class Filter2:
     tuples = []
@@ -181,5 +178,5 @@ class Filter2:
 
     def __call__(self, sender, **kwargs):
         datafile = kwargs.get('instance')
-        replica = kwargs.get('replica')
+        replica = kwargs.get('dfo')
         Filter2.tuples = Filter2.tuples + [(datafile, replica)]

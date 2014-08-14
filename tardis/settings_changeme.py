@@ -68,7 +68,7 @@ TIME_ZONE = 'Australia/Melbourne'
 LANGUAGE_CODE = 'en-us'
 
 # Date format to use by default. ("jS F Y" => "8th March 2012")
-# https://docs.djangoproject.com/en/1.3/ref/templates/builtins/#std:templatefilter-date
+# https://docs.djangoproject.com/en/1.3/ref/templates/builtins/#std:templatefilter-date  # noqa
 
 DATE_FORMAT = "jS F Y"
 DATETIME_FORMAT = "jS F Y H:i"
@@ -146,7 +146,7 @@ TEMPLATE_LOADERS = (
 # Don't forget to use absolute paths, not relative paths.
 TEMPLATE_DIRS = (
     path.join(path.dirname(__file__),
-    'tardis_portal/templates/').replace('\\', '/'),
+              'tardis_portal/templates/').replace('\\', '/'),
 )
 
 
@@ -155,7 +155,8 @@ TEMPLATE_DIRS = (
 DISABLE_TRANSACTION_MANAGEMENT = False
 
 STATIC_DOC_ROOT = path.join(path.dirname(__file__),
-                               'tardis_portal/site_media').replace('\\', '/')
+                            'tardis_portal/site_media').replace('\\', '/')
+
 
 def get_admin_media_path():
     import pkgutil
@@ -164,15 +165,21 @@ def get_admin_media_path():
 
 ADMIN_MEDIA_STATIC_DOC_ROOT = get_admin_media_path()
 
-FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
-    '../var/store/')).replace('\\', '/')
+# FILE_STORE_PATH = path.abspath(path.join(path.dirname(__file__),
+#     '../var/store/')).replace('\\', '/')
 STAGING_PATH = path.abspath(path.join(path.dirname(__file__),
-    '../var/staging/')).replace('\\', '/')
-SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
-    '../var/sync/')).replace('\\', '/')
+                                      '../var/staging/')).replace('\\', '/')
+# SYNC_TEMP_PATH = path.abspath(path.join(path.dirname(__file__),
+#     '../var/sync/')).replace('\\', '/')
 
+DEFAULT_STORAGE_BASE_DIR = path.abspath(path.join(path.dirname(__file__),
+                                        '../var/store/')).replace('\\', '/')
 
-METADATA_STORE_PATH = FILE_STORE_PATH
+# LEGACY, ignore
+FILE_STORE_PATH = DEFAULT_STORAGE_BASE_DIR
+INITIAL_LOCATIONS = {}
+
+METADATA_STORE_PATH = DEFAULT_STORAGE_BASE_DIR
 '''
 storage path for image paths stored in parameters. Better to set to another
 location if possible
@@ -186,11 +193,12 @@ REQUIRE_DATAFILE_CHECKSUMS = True
 REQUIRE_DATAFILE_SIZES = True
 REQUIRE_VALIDATION_ON_INGESTION = True
 
-DEFAULT_FILE_STORAGE = 'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
+DEFAULT_FILE_STORAGE = \
+    'tardis.tardis_portal.storage.MyTardisLocalFileSystemStorage'
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = FILE_STORE_PATH
+MEDIA_ROOT = DEFAULT_STORAGE_BASE_DIR
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -201,7 +209,7 @@ MEDIA_URL = None
 STATIC_URL = '/static/'
 
 # Used by "django collectstatic"
-STATIC_ROOT = path.abspath(path.join(path.dirname(__file__),'..','static'))
+STATIC_ROOT = path.abspath(path.join(path.dirname(__file__), '..', 'static'))
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
@@ -213,7 +221,8 @@ STATICFILES_DIRS = (
 )
 
 # Use cachable copies of static files
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
+STATICFILES_STORAGE = \
+    'django.contrib.staticfiles.storage.CachedStaticFilesStorage'
 
 # A tuple of strings designating all applications that are enabled in
 # this Django installation.
@@ -366,23 +375,28 @@ REQUIRE_VALID_PUBLIC_CONTACTS = True
 
 # RIF-CS Settings
 OAI_DOCS_PATH = path.abspath(path.join(path.dirname(__file__), '../var/oai'))
-RIFCS_PROVIDERS = ('tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
-RIFCS_TEMPLATE_DIR = path.join(path.dirname(__file__),
+RIFCS_PROVIDERS = (
+    'tardis.tardis_portal.publish.provider.rifcsprovider.RifCsProvider',)
+RIFCS_TEMPLATE_DIR = path.join(
+    path.dirname(__file__),
     'tardis_portal/templates/tardis_portal/rif-cs/profiles/')
 RIFCS_GROUP = "MyTARDIS Default Group"
 RIFCS_KEY = "keydomain.example"
-RELATED_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
-RELATED_OTHER_INFO_SCHEMA_NAMESPACE = 'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
+RELATED_INFO_SCHEMA_NAMESPACE = \
+    'http://www.tardis.edu.au/schemas/related_info/2011/11/10'
+RELATED_OTHER_INFO_SCHEMA_NAMESPACE = \
+    'http://www.tardis.edu.au/schemas/experiment/annotation/2011/07/07'
 
 DOI_ENABLE = False
 DOI_XML_PROVIDER = 'tardis.tardis_portal.ands_doi.DOIXMLProvider'
-#DOI_TEMPLATE_DIR = path.join(TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
+#DOI_TEMPLATE_DIR = path.join(
+#    TARDIS_DIR, 'tardis_portal/templates/tardis_portal/doi/')
 DOI_TEMPLATE_DIR = path.join('tardis_portal/doi/')
 DOI_APP_ID = ''
 DOI_NAMESPACE = 'http://www.tardis.edu.au/schemas/doi/2011/12/07'
 DOI_MINT_URL = 'https://services.ands.org.au/home/dois/doi_mint.php'
 DOI_RELATED_INFO_ENABLE = False
-DOI_BASE_URL='http://mytardis.example.com'
+DOI_BASE_URL = 'http://mytardis.example.com'
 
 OAIPMH_PROVIDERS = [
     'tardis.apps.oaipmh.provider.experiment.DcExperimentProvider',
@@ -413,23 +427,23 @@ CELERYBEAT_SCHEDULE = {
 
 djcelery.setup_loader()
 
-DEFAULT_LOCATION = "local"
+# DEFAULT_LOCATION = "local"
 
-INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
-                      'url': 'file://' + FILE_STORE_PATH,
-                      'provider': 'local',
-                      'type': 'online',
-                      'priority': 10},
-#                     {'name': 'sync',
-#                      'url': 'file://' + SYNC_PATH,
-#                      'provider': 'local',
-#                      'type': 'external',
-#                      'priority': 8},
-                     {'name': 'staging',
-                      'provider': 'local',
-                      'url': 'file://' + STAGING_PATH,
-                      'type': 'external',
-                      'priority': 5}]
+# INITIAL_LOCATIONS = [{'name': DEFAULT_LOCATION,
+#                       'url': 'file://' + FILE_STORE_PATH,
+#                       'provider': 'local',
+#                       'type': 'online',
+#                       'priority': 10},
+# #                     {'name': 'sync',
+# #                      'url': 'file://' + SYNC_PATH,
+# #                      'provider': 'local',
+# #                      'type': 'external',
+# #                      'priority': 8},
+#                      {'name': 'staging',
+#                       'provider': 'local',
+#                       'url': 'file://' + STAGING_PATH,
+#                       'type': 'external',
+#                       'priority': 5}]
 
 DEFAULT_MIGRATION_DESTINATION = 'unknown'
 
@@ -463,12 +477,12 @@ Site's preferred archive types, with the most preferred first
 other available option: 'tgz'. Add to list if desired
 '''
 
-DEEP_DATASET_STORAGE = True
-'''
-Set to true if you want to preserve folder structure on "stage_file" ingest,
-eg. via the METS importer.
-Currently, only tested for the METS importer.
-'''
+# DEEP_DATASET_STORAGE = True
+# '''
+# Set to true if you want to preserve folder structure on "stage_file" ingest,
+# eg. via the METS importer.
+# Currently, only tested for the METS importer.
+# '''
 
 
 # Get version from git to be displayed on About page.
@@ -541,4 +555,26 @@ BLEACH_ALLOWED_ATTRIBUTES = {
 }
 '''
 These are the default bleach values and shown here as an example.
+'''
+
+SFTP_PORT = 2200
+SFTP_GEVENT = False
+SFTP_HOST_KEY = (
+    "-----BEGIN RSA PRIVATE KEY-----\n"
+    "MIICXgIBAAKCAIEAl7sAF0x2O/HwLhG68b1uG8KHSOTqe3Cdlj5i/1RhO7E2BJ4B\n"
+    "3jhKYDYtupRnMFbpu7fb21A24w3Y3W5gXzywBxR6dP2HgiSDVecoDg2uSYPjnlDk\n"
+    "HrRuviSBG3XpJ/awn1DObxRIvJP4/sCqcMY8Ro/3qfmid5WmMpdCZ3EBeC0CAwEA\n"
+    "AQKCAIBSGefUs5UOnr190C49/GiGMN6PPP78SFWdJKjgzEHI0P0PxofwPLlSEj7w\n"
+    "RLkJWR4kazpWE7N/bNC6EK2pGueMN9Ag2GxdIRC5r1y8pdYbAkuFFwq9Tqa6j5B0\n"
+    "GkkwEhrcFNBGx8UfzHESXe/uE16F+e8l6xBMcXLMJVo9Xjui6QJBAL9MsJEx93iO\n"
+    "zwjoRpSNzWyZFhiHbcGJ0NahWzc3wASRU6L9M3JZ1VkabRuWwKNuEzEHNK8cLbRl\n"
+    "TyH0mceWXcsCQQDLDEuWcOeoDteEpNhVJFkXJJfwZ4Rlxu42MDsQQ/paJCjt2ONU\n"
+    "WBn/P6iYDTvxrt/8+CtLfYc+QQkrTnKn3cLnAkEAk3ixXR0h46Rj4j/9uSOfyyow\n"
+    "qHQunlZ50hvNz8GAm4TU7v82m96449nFZtFObC69SLx/VsboTPsUh96idgRrBQJA\n"
+    "QBfGeFt1VGAy+YTLYLzTfnGnoFQcv7+2i9ZXnn/Gs9N8M+/lekdBFYgzoKN0y4pG\n"
+    "2+Q+Tlr2aNlAmrHtkT13+wJAJVgZATPI5X3UO0Wdf24f/w9+OY+QxKGl86tTQXzE\n"
+    "4bwvYtUGufMIHiNeWP66i6fYCucXCMYtx6Xgu2hpdZZpFw==\n"
+    "-----END RSA PRIVATE KEY-----\n")
+'''
+public, useless key, debugging use only
 '''

@@ -30,7 +30,7 @@ def view_full_dataset(request, dataset_id):
         # need to fix.
         pgresults = 100
 
-        paginator = Paginator(dataset.dataset_file_set.all(), pgresults)
+        paginator = Paginator(dataset.datafile_set.all(), pgresults)
 
         try:
             page = int(request.GET.get('page', '1'))

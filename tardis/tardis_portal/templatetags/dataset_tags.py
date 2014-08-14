@@ -75,7 +75,7 @@ def dataset_datafiles_badge(dataset=None, count=None):
     Displays an badge with the number of datafiles for this experiment
     """
     if count is None:
-        count = dataset.dataset_file_set.count()
+        count = dataset.datafile_set.count()
     return render_mustache('tardis_portal/badges/datafile_count', {
         'title': "%d file%s" % (count, pluralize(count)),
         'count': count,
