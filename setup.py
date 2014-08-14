@@ -49,8 +49,10 @@ setup(
         'PyYAML==3.10',
         'django-tastypie==0.9.16-tzfix',
         'bleach',
-        #'pygraphviz',  # for automatic diagram generation for the docs
+        # 'pygraphviz',  # for automatic diagram generation for the docs
         'paramiko',
+        'jwt',
+        'pwgen',
     ],
     dependency_links=[
         'https://github.com/grischa/django-tastypie/tarball/testing-mytardis-deployment#egg=django-tastypie-0.9.16-tzfix',  # noqa
