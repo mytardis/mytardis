@@ -41,10 +41,8 @@ import logging
 from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.exceptions import ImproperlyConfigured
-from django.contrib import auth
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
-from tardis.tardis_portal.staging import get_full_staging_path
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
 from tardis.tardis_portal.auth.utils import get_or_create_user
 
@@ -100,12 +98,12 @@ class AuthService():
         try:
             auth_class = getattr(mod, auth_classname)
         except AttributeError:
-            raise ImproperlyConfigured('Auth module "%s" does not define a "%s" class' %
-                                       (auth_module, auth_classname))
+            raise ImproperlyConfigured(
+                'Auth module "%s" does not define a "%s" class' %
+                (auth_module, auth_classname))
 
         auth_instance = auth_class()
         return auth_instance
-
 
     def _get_or_create_user_from_dict(self, user_dict, auth_method):
         (user, created) = get_or_create_user(auth_method, user_dict['id'])
@@ -113,12 +111,11 @@ class AuthService():
             self._set_user_from_dict(user, user_dict, auth_method)
         return user
 
-
     def _set_user_from_dict(self, user, user_dict, auth_method):
-        for field in [ 'first_name', 'last_name', 'email' ]:
+        for field in ['first_name', 'last_name', 'email']:
             if field not in user_dict:
                 logger.warning('%s.get_user did not return %s' %
-                    (auth_method, field))
+                               (auth_method, field))
         user.email = user_dict.get('email', '')
         user.first_name = user_dict.get('first_name', '')
         user.last_name = user_dict.get('last_name', '')

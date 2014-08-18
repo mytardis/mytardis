@@ -51,7 +51,6 @@ setup(
         'bleach',
         # 'pygraphviz',  # for automatic diagram generation for the docs
         'paramiko',
-        'jwt',
         'pwgen',
     ],
     dependency_links=[

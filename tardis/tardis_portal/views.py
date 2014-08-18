@@ -3239,12 +3239,20 @@ def rcauth(request):
             # Create a user account and profile automatically. In future,
             # support blacklists and whitelists.
             if not User.objects.filter(username=institution_email).count():
-                u = User.objects.create_user(
-                    institution_email, institution_email, pwgen.pwgen(),
-                    first_name=request.session['attributes']['givenname'],
-                    last_name=request.session['attributes']['surname'],
-                )
-                UserProfile(user=u).save()
+                first_name = request.session['attributes']['givenname']
+                c_name = request.session['attributes'].get('cn', '').split(' ')
+                if not first_name and len(c_name) > 1:
+                    first_name = c_name[0]
+                user_args = {
+                    'username': institution_email.lower(),
+                    'email': institution_email.lower(),
+                    'password': pwgen.pwgen(),
+                    'first_name': first_name,
+                    'last_name': request.session['attributes']['surname'],
+                }
+                _get_or_create_user_from_dict(user_args, django_auth)
+                #u = User.objects.create_user(**user_args)
+                #UserProfile(user=u).save()
             else:
                 u = User.objects.get(username=institution_email)
 
