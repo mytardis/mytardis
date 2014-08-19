@@ -327,11 +327,11 @@ class DataFileObject(models.Model):
                 dfo.save()
             return dfo.uri
 
-        build_identifier = getattr(
-            self.storage_box.get_initialised_storage_instance(),
-            'build_identifier',
-            default_identifier)
-        return build_identifier(self)
+        inst = self.storage_box.get_initialised_storage_instance()
+        uri = None
+        if hasattr(inst, 'build_identifier'):
+            uri = inst.build_identifier(self)
+        return uri or default_identifier(self)
 
     def get_save_location(self):
         return self.storage_box.get_save_location(self)
