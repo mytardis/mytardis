@@ -3242,7 +3242,7 @@ def rcauth(request):
             if not first_name and len(c_name) > 1:
                 first_name = c_name[0]
             user_args = {
-                'username': institution_email.lower(),
+                'id': institution_email.lower(),
                 'email': institution_email.lower(),
                 'password': pwgen.pwgen(),
                 'first_name': first_name,
