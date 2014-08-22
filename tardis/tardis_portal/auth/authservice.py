@@ -131,6 +131,8 @@ class AuthService():
         '''
         refactored out for external use by AAF and possibly others
         '''
+        if not self._initialised:
+            self._manual_init()
         if authMethod is None:
             # pick default Django auth
             authMethod = self._authentication_backends[
