@@ -1,7 +1,7 @@
 '''
 SquashFS Storage Box
-'''
-'''
+
+
 setup requirements:
 user-owned mount root dir
 user added to fuse group
@@ -147,7 +147,8 @@ def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None):
         yield top, dirnames, filenames
 
 
-def squashparser(exp, squash_sbox, inst, directory, filename, filepath):
+def squash_parse_datafile(exp, squash_sbox, inst,
+                          directory, filename, filepath):
     '''
     return matching or new datafile for given squashfs file path.
 
@@ -211,9 +212,10 @@ def squashfs_match_experiment(exp, squash_sbox):
     for basedir, dirs, files in dj_storage_walk(inst):
         for filename in files:
             filepath = os.path.join(basedir, filename)
-            datafile = squashparser(exp, squash_sbox, inst,
-                                    basedir, filename, filepath)
-            new_dfo = DataFileObject(datafile=datafile,
-                                     storage_box=squash_sbox,
-                                     uri=filepath)
-            new_dfo.save()
+            datafile = squash_parse_datafile(exp, squash_sbox, inst,
+                                             basedir, filename, filepath)
+            if datafile is not None:
+                new_dfo = DataFileObject(datafile=datafile,
+                                         storage_box=squash_sbox,
+                                         uri=filepath)
+                new_dfo.save()
