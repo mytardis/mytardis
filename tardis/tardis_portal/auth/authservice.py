@@ -127,6 +127,22 @@ class AuthService():
         user.user_permissions.add(Permission.objects.get(codename='change_userauthentication'))
         user.user_permissions.add(Permission.objects.get(codename='change_objectacl'))
 
+    def get_or_create_user(self, user_obj_or_dict, authMethod=None):
+        '''
+        refactored out for external use by AAF and possibly others
+        '''
+        if authMethod is None:
+            # pick default Django auth
+            authMethod = self._authentication_backends[
+                getattr(settings, 'DEFAULT_AUTH', 'localdb')]
+        if isinstance(user_obj_or_dict, dict):
+            user_dict = user_obj_or_dict
+            user_obj_or_dict = self._get_or_create_user_from_dict(
+                user_dict, authMethod)
+        if isinstance(user_obj_or_dict, User):
+            return user_obj_or_dict
+        else:
+            return None
 
     def authenticate(self, authMethod, **credentials):
         """Try and authenticate the user using the auth type he/she
@@ -140,8 +156,6 @@ class AuthService():
         if not self._initialised:
             self._manual_init()
 
-        user = None
-
         if authMethod is None or authMethod == "None":
             authMethods = self._authentication_backends
         else:
@@ -149,15 +163,11 @@ class AuthService():
         for authMethod in authMethods:
             # authenticate() returns either a User or a dictionary describing a
             # user (id, display, email, first_name, last_name).
-            user = self._authentication_backends[
+            authenticate_retval = self._authentication_backends[
                 authMethod].authenticate(**credentials)
-            if isinstance(user, dict):
-                user_dict = user
-                user = self._get_or_create_user_from_dict(user_dict, authMethod)
-            if isinstance(user, User):
-                return user
+            return self.get_or_create_user(authenticate_retval,
+                                           authMethod)
         return None
-
 
     def getUser(self, authMethod, user_id, force_user_create=False):
         """Return a user model based on the given auth method and user id.

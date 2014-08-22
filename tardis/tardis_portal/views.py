@@ -115,7 +115,7 @@ from django.contrib.auth import logout as django_logout
 
 from django.views.decorators.csrf import csrf_exempt
 import django.contrib.auth as djauth
-import jwt
+from tardis.tardis_portal.auth import jwt
 import pwgen
 from tardis.tardis_portal.models.jti import JTI
 
@@ -968,7 +968,6 @@ def login(request):
     handler for login page
     '''
     from tardis.tardis_portal.auth import auth_service
-    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -987,7 +986,7 @@ def login(request):
             next_page = request.POST.get(
                 'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
+            djauth.login(request, user)
             return HttpResponseRedirect(next_page)
 
         c = Context({'status': "Sorry, username and password don't match.",
@@ -3238,30 +3237,21 @@ def rcauth(request):
 
             # Create a user account and profile automatically. In future,
             # support blacklists and whitelists.
-            if not User.objects.filter(username=institution_email).count():
-                first_name = request.session['attributes']['givenname']
-                c_name = request.session['attributes'].get('cn', '').split(' ')
-                if not first_name and len(c_name) > 1:
-                    first_name = c_name[0]
-                user_args = {
-                    'username': institution_email.lower(),
-                    'email': institution_email.lower(),
-                    'password': pwgen.pwgen(),
-                    'first_name': first_name,
-                    'last_name': request.session['attributes']['surname'],
-                }
-                _get_or_create_user_from_dict(user_args, django_auth)
-                #u = User.objects.create_user(**user_args)
-                #UserProfile(user=u).save()
-            else:
-                u = User.objects.get(username=institution_email)
-
-            # Set the backend: http://stackoverflow.com/a/23771930
-            u.backend = 'django.contrib.auth.backends.ModelBackend'
-
-            djauth.login(request, u)
-
-            return redirect('/')
+            first_name = request.session['attributes']['givenname']
+            c_name = request.session['attributes'].get('cn', '').split(' ')
+            if not first_name and len(c_name) > 1:
+                first_name = c_name[0]
+            user_args = {
+                'username': institution_email.lower(),
+                'email': institution_email.lower(),
+                'password': pwgen.pwgen(),
+                'first_name': first_name,
+                'last_name': request.session['attributes']['surname'],
+            }
+            user = auth_service.get_or_create_user(user_args)
+            if user is not None:
+                djauth.login(request, user)
+                return redirect('/')
         else:
             del request.session['attributes']
             del request.session['jwt']
