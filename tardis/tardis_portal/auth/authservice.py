@@ -135,8 +135,7 @@ class AuthService():
             self._manual_init()
         if authMethod is None:
             # pick default Django auth
-            authMethod = self._authentication_backends[
-                getattr(settings, 'DEFAULT_AUTH', 'localdb')]
+            authMethod = getattr(settings, 'DEFAULT_AUTH', 'localdb')
         if isinstance(user_obj_or_dict, dict):
             user_dict = user_obj_or_dict
             user_obj_or_dict = self._get_or_create_user_from_dict(

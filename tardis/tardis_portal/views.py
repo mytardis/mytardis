@@ -3250,6 +3250,7 @@ def rcauth(request):
             }
             user = auth_service.get_or_create_user(user_args)
             if user is not None:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
                 djauth.login(request, user)
                 return redirect('/')
         else:
