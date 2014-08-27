@@ -155,7 +155,11 @@ class DataFile(models.Model):
         return self.file_object
 
     def get_absolute_filepath(self):
-        return self.default_dfo.get_absolute_filepath()
+        dfo = self.default_dfo
+        if dfo is not None:
+            return dfo.get_full_path()
+        else:
+            return None
 
     def get_file_getter(self):
         return self.default_dfo.get_file_getter()
@@ -250,7 +254,10 @@ class DataFile(models.Model):
     @property
     def default_dfo(self):
         s_box = self.dataset.get_default_storage_box()
-        return self.file_objects.get(storage_box=s_box)
+        try:
+            return self.file_objects.get(storage_box=s_box)
+        except DataFileObject.DoesNotExist:
+            return None
 
     @property
     def verified(self):
@@ -375,3 +382,7 @@ class DataFileObject(models.Model):
         self.last_verified_time = datetime.now()
         self.save(update_fields=['verified', 'last_verified_time'])
         return True
+
+    def get_full_path(self):
+        return self.storage_box.get_initialised_storage_instance().path(
+            self.uri)
