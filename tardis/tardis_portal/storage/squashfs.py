@@ -130,13 +130,17 @@ class SquashFSStorage(Storage):
             return dfo.uri
 
 
-def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None):
+def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None,
+                    ignore_dotfiles=True):
     try:
         dirnames, filenames = dj_storage.listdir(top)
     except os.error as err:
         if onerror is not None:
             onerror(err)
         return
+    if ignore_dotfiles:
+        dirnames = [d for d in dirnames if not d.startswith('.')]
+        filenames = [f for f in filenames if not f.startswith('.')]
     if topdown:
         yield top, dirnames, filenames
     for dirname in dirnames:
@@ -204,7 +208,7 @@ def squash_parse_datafile(exp, squash_sbox, inst,
     return df
 
 
-def squashfs_match_experiment(exp, squash_sbox):
+def squashfs_match_experiment(exp, squash_sbox, ignore_dotfiles=True):
     '''matches files already existing in experiment to a squashfs file
     registered as storage box.  '''
 
