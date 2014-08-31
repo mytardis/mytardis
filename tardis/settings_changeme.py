@@ -420,7 +420,7 @@ delay between verification attempts in seconds
 
 CELERYBEAT_SCHEDULE = {
     "verify-files": {
-        "task": "tardis_portal.verify_files",
+        "task": "tardis_portal.verify_dfos",
         "schedule": timedelta(seconds=300)
     },
 }
