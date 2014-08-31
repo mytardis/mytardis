@@ -130,7 +130,12 @@ class ACLAuthorization(Authorization):
            bundle.request.user.is_superuser:
             return object_list
         if type(bundle.obj) == Experiment:
-            return type(bundle.obj).safe.all(bundle.request.user)
+           exp_list = []
+           experiments = Experiment.safe.all(bundle.request.user)
+           for exp in experiments:
+               if exp in object_list:
+                   exp_list.append(exp)
+           return exp_list
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
             eps_list = []
