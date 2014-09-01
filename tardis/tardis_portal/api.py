@@ -620,6 +620,60 @@ class ExperimentResource(MyTardisModelResource):
             if experiment[0] in Experiment.safe.all(bundle.request.user):
                 return experiment
 
+        '''
+        Responds to instrument/owner/date query for instrument app.
+        The initial owner of the experiment will be the facility manager
+        account, e.g. "mmi", and then the experiment will be made accessible
+        to the real "owner", whose username will be recorded as an experiment
+        parameter.  This query can be used to retrieve an experiment using the
+        instrument, owner, and collection date.
+
+        '''
+        if hasattr(bundle.request, 'GET') and \
+                'instrument' in bundle.request.GET and \
+                'owner' in bundle.request.GET and \
+                'date' in bundle.request.GET:
+
+            instrument = bundle.request.GET['instrument']
+            owner = bundle.request.GET['owner']
+            date = bundle.request.GET['date']
+
+            exp_schema = Schema.objects.get(
+                namespace='http://tardis.edu.au'
+                '/schemas/experimentInstrument')
+
+            instrument_pn = ParameterName.objects.get(schema=exp_schema,
+                                                      name='instrument')
+            owner_pn = ParameterName.objects.get(schema=exp_schema,
+                                                 name='owner')
+            date_pn = ParameterName.objects.get(schema=exp_schema, name='date')
+
+            exp_psets = ExperimentParameterSet.objects\
+                .filter(schema=exp_schema)
+            for exp_pset in exp_psets:
+                exp_params = ExperimentParameter.objects\
+                    .filter(parameterset=exp_pset)
+                matched_instrument = False
+                matched_owner = False
+                matched_date = False
+                for exp_param in exp_params:
+                    if exp_param.name.name == "instrument" and \
+                            exp_param.string_value == instrument:
+                        matched_instrument = True
+                    if exp_param.name.name == "owner" and \
+                            exp_param.string_value == owner:
+                        matched_owner = True
+                    if exp_param.name.name == "date" and \
+                            exp_param.string_value == date:
+                        matched_date = True
+                if matched_instrument and matched_owner and matched_date:
+                    experiment_id = exp_pset.experiment.id
+                    exp_list = Experiment.objects.filter(pk=exp_list)
+                    if exp_list[0] in Experiment.safe.all(bundle.request.user):
+                        return exp_list
+
+            return []
+
         return super(ExperimentResource, self).obj_get_list(bundle,
                                                             **kwargs)
 
