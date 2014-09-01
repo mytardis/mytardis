@@ -300,7 +300,8 @@ class DataFileObject(models.Model):
                 path_parts = ["%s-%s" % (dfo.datafile.dataset.description
                                          or 'untitled',
                                          dfo.datafile.dataset.id)]
-                path_parts += dfo.datafile.directory or []
+                if dfo.datafile.directory is not None:
+                    path_parts += [dfo.datafile.directory]
                 path_parts += [dfo.datafile.filename]
                 dfo.uri = path.join(*path_parts)
                 dfo.save()
