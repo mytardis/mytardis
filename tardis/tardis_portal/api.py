@@ -132,6 +132,9 @@ class ACLAuthorization(Authorization):
         if type(bundle.obj) == Experiment:
             experiments = Experiment.safe.all(bundle.request.user)
             return [exp for exp in experiments if exp in object_list]
+        elif bundle.request.user.is_authenticated() and \
+             type(bundle.obj) == User:
+            return object_list
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
             return [eps for eps in object_list
@@ -379,8 +382,12 @@ class UserResource(ModelResource):
         authorization = ACLAuthorization()
         queryset = User.objects.all()
         allowed_methods = ['get']
-        fields = ['username', 'first_name', 'last_name']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']
         serializer = default_serializer
+        filtering = {
+            'id': ('exact', ),
+            'username': ('exact', ),
+        }
 
     def dehydrate(self, bundle):
         '''
