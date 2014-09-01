@@ -130,65 +130,37 @@ class ACLAuthorization(Authorization):
            bundle.request.user.is_superuser:
             return object_list
         if type(bundle.obj) == Experiment:
-            exp_list = []
             experiments = Experiment.safe.all(bundle.request.user)
-            for exp in experiments:
-                if exp in object_list:
-                    exp_list.append(exp)
-            return exp_list
+            return [exp for exp in experiments if exp in object_list]
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
-            eps_list = []
-            for eps in object_list:
-                exp = eps.experiment
-                if exp in experiments:
-                    eps_list.append(eps)
-            return eps_list
+            return [eps for eps in object_list
+                    if eps.experiment in experiments]
         elif type(bundle.obj) == ExperimentParameter:
             experiments = Experiment.safe.all(bundle.request.user)
-            ep_list = []
-            for ep in object_list:
-                exp = ep.experiment
-                if exp in experiments:
-                    ep_list.append(ep)
-            return eps_list
+            return [ep for ep in object_list
+                    if ep.parameterset.experiment in experiments]
         elif type(bundle.obj) == Dataset:
-            datasets = []
-            for ds in object_list:
-                if has_dataset_access(bundle.request, ds.id):
-                    datasets.append(ds)
-            return datasets
+            return [ds for ds in object_list
+                    if has_dataset_access(bundle.request, ds.id)]
         elif type(bundle.obj) == DatasetParameterSet:
-            dps_list = []
-            for dps in object_list:
-                if has_dataset_access(bundle.request, dps.dataset.id):
-                    dps_list.append(dps)
-            return dps_list
+            return [dps for dps in object_list
+                    if has_dataset_access(bundle.request, dps.dataset.id)]
         elif type(bundle.obj) == DatasetParameter:
-            dp_list = []
-            for dp in object_list:
-                if has_dataset_access(bundle.request,
-                                      dp.parameterset.dataset.id):
-                    dp_list.append(dp)
-            return dp_list
+            return [dp for dp in object_list
+                    if has_dataset_access(bundle.request,
+                                          dp.parameterset.dataset.id)]
         elif type(bundle.obj) == DataFile:
             all_dfs = set(
                 get_accessible_datafiles_for_user(bundle.request))
             return list(all_dfs.intersection(object_list))
         elif type(bundle.obj) == DatafileParameterSet:
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            dfps_list = []
-            for dfps in object_list:
-                if dfps.datafile in datafiles:
-                    dfps_list.append(dfps)
-            return dfps_list
+            return [dfps for dfps in object_list if dfps.datafile in datafiles]
         elif type(bundle.obj) == DatafileParameter:
             datafiles = get_accessible_datafiles_for_user(bundle.request)
-            dfp_list = []
-            for dfp in object_list:
-                if dfp.parameterset.datafile in datafiles:
-                    dfp_list.append(dfp)
-            return dfp_list
+            return [dfp for dfp in object_list
+                    if dfp.parameterset.datafile in datafiles]
         elif type(bundle.obj) == Schema:
             return object_list
         elif type(bundle.obj) == ParameterName:
@@ -887,5 +859,6 @@ class ReplicaResource(MyTardisModelResource):
         bundle.obj.save()
         if 'file_object' in bundle.data:
             bundle.obj.file_object = bundle.data['file_object']
+            bundle.data['file_object'].close()
             del(bundle.data['file_object'])
         return bundle
