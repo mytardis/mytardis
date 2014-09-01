@@ -50,6 +50,7 @@ from tastypie.http import HttpUnauthorized
 from tastypie.resources import ModelResource
 from tastypie.serializers import Serializer
 from tastypie.utils import trailing_slash
+from tastypie.contrib.contenttypes.fields import GenericForeignKeyField
 
 
 class PrettyJSONSerializer(Serializer):
@@ -168,6 +169,15 @@ class ACLAuthorization(Authorization):
             return object_list
         elif type(bundle.obj) == ParameterName:
             return object_list
+        elif type(bundle.obj) == ObjectACL:
+            experiments = Experiment.safe.all(bundle.request.user)
+            objacl_list = []
+            for objacl in object_list:
+                if type(objacl.content_object) == Experiment:
+                    exp = Experiment.objects.get(id=objacl.object_id)
+                    if exp in experiments:
+                        objacl_list.append(objacl)
+            return objacl_list
         else:
             return []
 
@@ -308,6 +318,8 @@ class ACLAuthorization(Authorization):
                 has_dataset_write(bundle.request,
                                   bundle.obj.datafile.dataset.id),
             ])
+        elif type(bundle.obj) == ObjectACL:
+            return bundle.request.user.has_perm('tardis_portal.add_objectacl')
         raise NotImplementedError(type(bundle.obj))
 
     def update_list(self, object_list, bundle):
@@ -925,3 +937,20 @@ class ReplicaResource(MyTardisModelResource):
             bundle.data['file_object'].close()
             del(bundle.data['file_object'])
         return bundle
+
+
+class ObjectAclResource(MyTardisModelResource):
+    content_object = GenericForeignKeyField({
+        Experiment: ExperimentResource,
+        # ...
+    }, 'content_object')
+
+    class Meta:
+        authentication = default_authentication
+        authorization = ACLAuthorization()
+        queryset = ObjectACL.objects.all()
+        filtering = {
+            'object_id': ('exact', ),
+            'pluginId': ('exact', ),
+            'entityId': ('exact', ),
+        }
