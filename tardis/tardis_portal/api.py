@@ -551,6 +551,7 @@ class ExperimentResource(MyTardisModelResource):
             'id': ('exact', ),
             'title': ('exact',),
         }
+        always_return_data = True
 
     def dehydrate(self, bundle):
         exp = bundle.obj
@@ -715,6 +716,7 @@ class DatasetResource(MyTardisModelResource):
             'description': ('exact', ),
             'directory': ('exact', ),
         }
+        always_return_data = True
 
     def prepend_urls(self):
         return [
