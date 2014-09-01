@@ -26,6 +26,7 @@ from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
 from django.core.files import File
 from django.core.files.storage import Storage
+from django.db.models import Q
 from django.utils._os import safe_join
 from django.utils.importlib import import_module
 
@@ -171,8 +172,17 @@ def squash_parse_datafile(exp, squash_sbox, inst,
                                                     inst, directory,
                                                     filename, filepath)
 
-    dfos = DataFileObject.objects.filter(datafile__dataset__experiments=exp,
-                                         uri__endswith=filepath)
+    exp_q = Q(datafile__dataset__experiments=exp)
+    path_part_match_q = Q(uri__endswith=filepath)
+    path_exact_match_q = Q(uri=filepath)
+    s_box_q = Q(storage_box=squash_sbox)
+    # check whether file has been registered alread, stored elsewhere:
+    dfos = DataFileObject.objects.filter(exp_q, path_part_match_q,
+                                         ~s_box_q)
+    if len(dfos) == 1:
+        return dfos[0].datafile
+    # file registered already
+    dfos = DataFileObject.objects.filter(exp_q, path_exact_match_q, s_box_q)
     if len(dfos) == 1:
         return dfos[0]
 
@@ -216,10 +226,10 @@ def squashfs_match_experiment(exp, squash_sbox, ignore_dotfiles=True):
     for basedir, dirs, files in dj_storage_walk(inst):
         for filename in files:
             filepath = os.path.join(basedir, filename)
-            datafile = squash_parse_datafile(exp, squash_sbox, inst,
-                                             basedir, filename, filepath)
-            if datafile is not None:
-                new_dfo = DataFileObject(datafile=datafile,
+            parse_result = squash_parse_datafile(exp, squash_sbox, inst,
+                                                 basedir, filename, filepath)
+            if type(parse_result) == DataFile:
+                new_dfo = DataFileObject(datafile=parse_result,
                                          storage_box=squash_sbox,
                                          uri=filepath)
                 new_dfo.save()
