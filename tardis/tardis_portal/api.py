@@ -681,7 +681,7 @@ class ExperimentResource(MyTardisModelResource):
                         matched_date = True
                 if matched_instrument and matched_owner and matched_date:
                     experiment_id = exp_pset.experiment.id
-                    exp_list = Experiment.objects.filter(pk=exp_list)
+                    exp_list = Experiment.objects.filter(pk=experiment_id)
                     if exp_list[0] in Experiment.safe.all(bundle.request.user):
                         return exp_list
 
