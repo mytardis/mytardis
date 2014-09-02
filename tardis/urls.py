@@ -22,6 +22,11 @@ def getTardisApps():
 
 handler500 = 'tardis.views.error_handler'
 
+rapidconnect_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^auth/jwt$', 'rcauth'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
@@ -312,6 +317,9 @@ urlpatterns = patterns(
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^logout/$', logout, {'next_page': '/'}),
+
+    # Rapid Connect
+    (r'^rc/', include(rapidconnect_urls)),
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

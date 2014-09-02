@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- # pylint: disable=C0302
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -113,6 +113,12 @@ from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
 
+from django.views.decorators.csrf import csrf_exempt
+import django.contrib.auth as djauth
+from tardis.tardis_portal.auth import jwt
+import pwgen
+from tardis.tardis_portal.models.jti import JTI
+
 logger = logging.getLogger(__name__)
 
 
@@ -182,6 +188,11 @@ def getNewSearchDatafileSelectionForm(initial=None):
 def logout(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
+
+    # Remove AAF attributes.
+    del request.session['attributes']
+    del request.session['jwt']
+    del request.session['jws']
 
     c = Context({})
     return HttpResponse(render_response_index(request,
@@ -814,9 +825,10 @@ def experiment_dataset_transfer(request, experiment_id):
     c = Context({'experiments': experiments.exclude(id=experiment_id),
                  'url_pattern': get_json_url_pattern()
                  })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_dataset_transfer.html',
-                        c))
+    return HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/experiment_dataset_transfer.html',
+        c))
 
 
 @authz.dataset_access_required
@@ -956,7 +968,6 @@ def login(request):
     handler for login page
     '''
     from tardis.tardis_portal.auth import auth_service
-    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -975,12 +986,13 @@ def login(request):
             next_page = request.POST.get(
                 'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
+            djauth.login(request, user)
             return HttpResponseRedirect(next_page)
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
                      'loginForm': LoginForm()})
+
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
 
@@ -992,6 +1004,10 @@ def login(request):
         next_page = '/'
     c = Context({'loginForm': LoginForm(),
                  'next_page': next_page})
+
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+        'authnrequest_url']
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
@@ -1283,11 +1299,11 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
                     access to any experiments""".format(request.user))
         return datafile_results
 
-    datafile_results = datafile_results.filter(
-        datafileparameterset__datafileparameter__name__schema__namespace__in=
-        Schema
-        .getNamespaces(
-            Schema.DATAFILE, searchQueryType)).distinct()
+    q = {
+        'datafileparameterset__datafileparameter__name__schema__namespace__in':
+        Schema.getNamespaces(Schema.DATAFILE, searchQueryType)
+    }
+    datafile_results = datafile_results.filter(**q).distinct()
 
     # if filename is searchable which i think will always be the case...
     if searchFilterData['filename'] != '':
@@ -1526,10 +1542,10 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'saxs':
+        # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
-        #else:
+        # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
@@ -1707,18 +1723,18 @@ def search_datafile(request):  # too complex # noqa
             return __forwardToSearchDatafileFormPage(request, searchQueryType)
 
     # process the files to be displayed by the paginator...
-    #paginator = Paginator(datafile_results,
+    # paginator = Paginator(datafile_results,
     #                      constants.DATAFILE_RESULTS_PER_PAGE)
 
-    #try:
+    # try:
     #    page = int(request.GET.get('page', '1'))
-    #except ValueError:
+    # except ValueError:
     #    page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
-    #try:
+    # try:
     #    datafiles = paginator.page(page)
-    #except (EmptyPage, InvalidPage):
+    # except (EmptyPage, InvalidPage):
     #    datafiles = paginator.page(paginator.num_pages)
 
     import re
@@ -1745,7 +1761,7 @@ def search_datafile(request):  # too complex # noqa
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
-        #'paginator': paginator,
+        # 'paginator': paginator,
         'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
@@ -1942,7 +1958,7 @@ def retrieve_access_list_tokens(request, experiment_id):
         query['token'] = token.token
         u = u._replace(query=urlencode(query, True))
         return u.geturl()
-        #return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
+        # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
     tokens = [{'expiry_date': token.expiry_date,
                'user': token.user,
                'url': request.build_absolute_uri(token_url(token)),
@@ -2277,7 +2293,7 @@ def change_group_permissions(request, experiment_id, group_id):
 @never_cache
 def create_group(request):
 
-    if not 'group' in request.GET:
+    if 'group' not in request.GET:
         c = Context({'createGroupPermissionsForm':
                      CreateGroupPermissionsForm()})
 
@@ -2479,7 +2495,7 @@ def stats(request):
 @never_cache
 def create_user(request):
 
-    if not 'user' in request.POST:
+    if 'user' not in request.POST:
         c = Context({'createUserPermissionsForm':
                      CreateUserPermissionsForm()})
 
@@ -3182,3 +3198,70 @@ def user_guide(request):
     c = Context({})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/user_guide.html', c))
+
+
+@csrf_exempt
+def rcauth(request):
+    # Only POST is supported on this URL.
+    if request.method != 'POST':
+        raise PermissionDenied
+
+    # Rapid Connect authorization is disabled, so don't
+    # process anything.
+    if not settings.RAPID_CONNECT_ENABLED:
+        raise PermissionDenied
+
+    try:
+        # Verifies signature and expiry time
+        verified_jwt = jwt.decode(request.POST['assertion'],
+                                  settings.RAPID_CONNECT_CONFIG['secret'])
+
+        # Check for a replay attack using the jti value.
+        jti = verified_jwt['jti']
+        if JTI.objects.filter(jti=jti).exists():
+            raise ValueError('Replay attack!')
+        else:
+            JTI(jti=jti).save()
+
+        if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
+           verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
+            request.session['attributes'] = verified_jwt[
+                'https://aaf.edu.au/attributes']
+            request.session['jwt'] = verified_jwt
+            request.session['jws'] = request.POST['assertion']
+
+            institution_email = request.session['attributes']['mail']
+
+            logger.debug('Successfully authenticated %s via Rapid Connect.' %
+                         institution_email)
+
+            # Create a user account and profile automatically. In future,
+            # support blacklists and whitelists.
+            first_name = request.session['attributes']['givenname']
+            c_name = request.session['attributes'].get('cn', '').split(' ')
+            if not first_name and len(c_name) > 1:
+                first_name = c_name[0]
+            user_args = {
+                'id': institution_email.lower(),
+                'email': institution_email.lower(),
+                'password': pwgen.pwgen(),
+                'first_name': first_name,
+                'last_name': request.session['attributes']['surname'],
+            }
+            user = auth_service.get_or_create_user(user_args)
+            if user is not None:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                djauth.login(request, user)
+                return redirect('/')
+        else:
+            del request.session['attributes']
+            del request.session['jwt']
+            del request.session['jws']
+            django_logout(request)
+            raise PermissionDenied  # Error: Not for this audience
+    except jwt.ExpiredSignature:
+        del request.session['attributes']
+        del request.session['jwt']
+        del request.session['jws']
+        django_logout(request)
+        raise PermissionDenied  # Error: Security cookie has expired
