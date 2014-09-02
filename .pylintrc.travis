@@ -41,6 +41,7 @@ load-plugins=
 # formerly disabled:
 # C0112,
 # C0204,
+# C0302,
 # C0321,
 # C0323,
 # E0001,
@@ -62,7 +63,6 @@ load-plugins=
 disable=C0103,
     C0111,
     C0301,
-    C0302,
     C0303,
     C0304,
     C0322,
