@@ -68,7 +68,7 @@ class Migration(SchemaMigration):
             'url': ('django.db.models.fields.URLField', [], {'max_length': '2000', 'blank': 'True'})
         },
         'tardis_portal.datafile': {
-            'Meta': {'ordering': "['filename']", 'unique_together': "(['directory', 'filename', 'version'],)", 'object_name': 'DataFile'},
+            'Meta': {'ordering': "['filename']", 'unique_together': "(['dataset', 'directory', 'filename', 'version'],)", 'object_name': 'DataFile'},
             'created_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'dataset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Dataset']"}),
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -260,7 +260,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 9, 17, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 10, 3, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
