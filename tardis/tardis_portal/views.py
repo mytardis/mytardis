@@ -89,10 +89,13 @@ from tardis.tardis_portal.staging import get_full_staging_path, \
 from tardis.tardis_portal.tasks import create_staging_datafiles
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
+    Facility, FacilityManager, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
+
+from tardis.tardis_portal.models.facility import isFacilityManager, facilitiesManagedBy
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -362,6 +365,15 @@ def my_data(request):
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
 
+@login_required
+def facility_overview(request):
+    '''
+    summary of experiments in a facility
+    '''
+    c = Context({
+        'experiments':''
+    })
+    return HttpResponse(render_response_index(request, 'tardis_portal/facility_overview.html', c))
 
 def public_data(request):
     '''

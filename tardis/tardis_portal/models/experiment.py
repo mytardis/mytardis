@@ -9,7 +9,7 @@ from django.db import models
 from django.utils.safestring import SafeUnicode
 
 from tardis.tardis_portal.managers import OracleSafeManager, ExperimentManager
-from tardis.tardis_portal.models import ObjectACL
+from tardis.tardis_portal.models import ObjectACL, Facility
 
 from .license import License
 
@@ -57,6 +57,7 @@ class Experiment(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User)
+    facility = models.ForeignKey(Facility)
     handle = models.TextField(null=True, blank=True)
     locked = models.BooleanField()
     public_access = \

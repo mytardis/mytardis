@@ -217,7 +217,12 @@ group_urls = patterns(
     (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
-     'remove_user_from_group'),
+     'remove_user_from_group')
+    )
+
+facility_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^overview/$', 'facility_overview')
     )
 
 display_urls = patterns(
@@ -310,6 +315,9 @@ urlpatterns = patterns(
     # Group Views
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
+
+    # Facility views
+    (r'^facility/', include(facility_urls)),
 
     # Display Views
     (r'^display/', include(display_urls)),

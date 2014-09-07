@@ -170,6 +170,8 @@ class ObjectACLAdmin(admin.ModelAdmin):
 class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
 
+admin.site.register(models.Facility)
+admin.site.register(models.FacilityManager)
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)

@@ -44,6 +44,7 @@ from django.contrib.auth.models import User, Group
 
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .access_control import ObjectACL
+from .facility import Facility, FacilityManager
 from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
 from .datafile import DataFile

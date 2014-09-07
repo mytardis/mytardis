@@ -1,0 +1,11 @@
+{% extends "tardis_portal/portal_template.html" %}
+{% load facility_tags %}
+
+{% block content %}
+{% with request|check_if_facility_manager as facility_manager %}
+{% if not facility_manager %}
+<div class="alert alert-block alert-error">
+<span class="message">You don't manage any facilities!</span>
+</div>
+{% endif %}{% endwith %}
+{% endblock content %}
