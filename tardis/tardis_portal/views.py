@@ -367,12 +367,16 @@ def my_data(request):
 
 @login_required
 def facility_overview(request):
-    '''
+    """
     summary of experiments in a facility
-    '''
-    c = Context({
-        'experiments':''
-    })
+    """
+    c = Context({})
+    if isFacilityManager(request.user):
+        Experiment.objects.filter(facility__in=facilitiesManagedBy(request.user))
+        c = Context({
+            'experiments':Experiment.objects.filter(facility__in=facilitiesManagedBy(request.user)).order_by('-update_time')
+        })
+
     return HttpResponse(render_response_index(request, 'tardis_portal/facility_overview.html', c))
 
 def public_data(request):
