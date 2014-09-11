@@ -3255,6 +3255,17 @@ def rcauth(request):
                 'first_name': first_name,
                 'last_name': request.session['attributes']['surname'],
             }
+
+            # Check for an email collision.
+            edupersontargetedid = request.session['attributes']['edupersontargetedid']
+            for matching_user in UserProfile.objects.filter(user__email=user_args['email']):
+                if matching_user.rapidConnectEduPersonTargetedID != edupersontargetedid:
+                    del request.session['attributes']
+                    del request.session['jwt']
+                    del request.session['jws']
+                    django_logout(request)
+                    raise PermissionDenied
+
             user = auth_service.get_or_create_user(user_args)
             if user is not None:
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
