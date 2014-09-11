@@ -166,8 +166,10 @@ class AuthService():
             # user (id, display, email, first_name, last_name).
             authenticate_retval = self._authentication_backends[
                 authMethod].authenticate(**credentials)
-            return self.get_or_create_user(authenticate_retval,
+            user = self.get_or_create_user(authenticate_retval,
                                            authMethod)
+            if user is not None:
+                return user
         return None
 
     def getUser(self, authMethod, user_id, force_user_create=False):
