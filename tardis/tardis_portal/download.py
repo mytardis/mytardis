@@ -179,7 +179,7 @@ def _get_datafile_details_for_archive(mapper, datafiles):
     for df in datafiles:
         mapped_pathname = mapper(df)
         if mapped_pathname:
-            res.append((df.file_object, mapper(df)))
+            res.append((df, mapper(df)))
     return res
 
 
@@ -221,7 +221,8 @@ class UncachedTarStream(TarFile):
     def compute_size(self):
         tarinfo_size = 512
         total_size = 0
-        for the_file, name in self.mapped_file_objs:
+        for df, name in self.mapped_file_objs:
+            the_file = df.file_object
             total_size += tarinfo_size
             size = os.fstat(the_file.fileno()).st_size
             blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
@@ -272,7 +273,8 @@ class UncachedTarStream(TarFile):
         because 'yield's don't bubble up.
         '''
         remainder_buf = None
-        for fileobj, name in self.mapped_file_objs:
+        for df, name in self.mapped_file_objs:
+            fileobj = df.file_object
             self._check('aw')
             tarinfo = self.gettarinfo(name, name, fileobj)
             # tarinfo = copy.copy(tarinfo)
