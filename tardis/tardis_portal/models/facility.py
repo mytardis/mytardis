@@ -18,7 +18,7 @@ def is_facility_manager(user):
      """
      Returns true if the user manages one or more facilities
      """
-     return bool(facilitiesManagedBy(user).count())
+     return bool(facilities_managed_by(user).count())
 
 def facilities_managed_by(user):
     """
