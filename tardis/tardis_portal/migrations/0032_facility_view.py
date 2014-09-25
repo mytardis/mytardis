@@ -8,6 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'InstrumentParameterSet'
+        db.create_table(u'tardis_portal_instrumentparameterset', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('schema', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Schema'])),
+            ('instrument', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Instrument'])),
+        ))
+        db.send_create_signal('tardis_portal', ['InstrumentParameterSet'])
+
+        # Adding M2M table for field storage_box on 'InstrumentParameterSet'
+        m2m_table_name = db.shorten_name(u'tardis_portal_instrumentparameterset_storage_box')
+        db.create_table(m2m_table_name, (
+            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
+            ('instrumentparameterset', models.ForeignKey(orm['tardis_portal.instrumentparameterset'], null=False)),
+            ('storagebox', models.ForeignKey(orm['tardis_portal.storagebox'], null=False))
+        ))
+        db.create_unique(m2m_table_name, ['instrumentparameterset_id', 'storagebox_id'])
+
         # Adding model 'Facility'
         db.create_table(u'tardis_portal_facility', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -16,18 +33,57 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('tardis_portal', ['Facility'])
 
-        # Adding field 'Experiment.facility'
-        db.add_column(u'tardis_portal_experiment', 'facility',
+        # Adding model 'Instrument'
+        db.create_table(u'tardis_portal_instrument', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('owner_facility', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Facility'])),
+        ))
+        db.send_create_signal('tardis_portal', ['Instrument'])
+
+        # Adding model 'InstrumentParameter'
+        db.create_table(u'tardis_portal_instrumentparameter', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.ParameterName'])),
+            ('string_value', self.gf('django.db.models.fields.TextField')(db_index=True, null=True, blank=True)),
+            ('numerical_value', self.gf('django.db.models.fields.FloatField')(db_index=True, null=True, blank=True)),
+            ('datetime_value', self.gf('django.db.models.fields.DateTimeField')(db_index=True, null=True, blank=True)),
+            ('parameterset', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.InstrumentParameterSet'])),
+        ))
+        db.send_create_signal('tardis_portal', ['InstrumentParameter'])
+
+        # Adding field 'DataFile.facility'
+        db.add_column(u'tardis_portal_datafile', 'facility',
                       self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Facility'], null=True),
+                      keep_default=False)
+
+        # Adding field 'DataFile.instrument'
+        db.add_column(u'tardis_portal_datafile', 'instrument',
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Instrument'], null=True),
                       keep_default=False)
 
 
     def backwards(self, orm):
+        # Deleting model 'InstrumentParameterSet'
+        db.delete_table(u'tardis_portal_instrumentparameterset')
+
+        # Removing M2M table for field storage_box on 'InstrumentParameterSet'
+        db.delete_table(db.shorten_name(u'tardis_portal_instrumentparameterset_storage_box'))
+
         # Deleting model 'Facility'
         db.delete_table(u'tardis_portal_facility')
 
-        # Deleting field 'Experiment.facility'
-        db.delete_column(u'tardis_portal_experiment', 'facility_id')
+        # Deleting model 'Instrument'
+        db.delete_table(u'tardis_portal_instrument')
+
+        # Deleting model 'InstrumentParameter'
+        db.delete_table(u'tardis_portal_instrumentparameter')
+
+        # Deleting field 'DataFile.facility'
+        db.delete_column(u'tardis_portal_datafile', 'facility_id')
+
+        # Deleting field 'DataFile.instrument'
+        db.delete_column(u'tardis_portal_datafile', 'instrument_id')
 
 
     models = {
@@ -82,8 +138,10 @@ class Migration(SchemaMigration):
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'deleted_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'directory': ('tardis.tardis_portal.models.fields.DirectoryField', [], {'null': 'True', 'blank': 'True'}),
+            'facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']", 'null': 'True'}),
             'filename': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'instrument': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Instrument']", 'null': 'True'}),
             'md5sum': ('django.db.models.fields.CharField', [], {'max_length': '32', 'blank': 'True'}),
             'mimetype': ('django.db.models.fields.CharField', [], {'max_length': '80', 'blank': 'True'}),
             'modification_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
@@ -149,7 +207,6 @@ class Migration(SchemaMigration):
             'created_time': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']", 'null': 'True'}),
             'handle': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'institution_name': ('django.db.models.fields.CharField', [], {'default': "'Monash University'", 'max_length': '400'}),
@@ -193,6 +250,28 @@ class Migration(SchemaMigration):
             'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
+        },
+        'tardis_portal.instrument': {
+            'Meta': {'object_name': 'Instrument'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'owner_facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']"})
+        },
+        'tardis_portal.instrumentparameter': {
+            'Meta': {'ordering': "['name']", 'object_name': 'InstrumentParameter'},
+            'datetime_value': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.ParameterName']"}),
+            'numerical_value': ('django.db.models.fields.FloatField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'}),
+            'parameterset': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.InstrumentParameterSet']"}),
+            'string_value': ('django.db.models.fields.TextField', [], {'db_index': 'True', 'null': 'True', 'blank': 'True'})
+        },
+        'tardis_portal.instrumentparameterset': {
+            'Meta': {'ordering': "['id']", 'object_name': 'InstrumentParameterSet'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'instrument': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Instrument']"}),
+            'schema': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Schema']"}),
+            'storage_box': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'instrumentparametersets'", 'symmetrical': 'False', 'to': "orm['tardis_portal.StorageBox']"})
         },
         'tardis_portal.jti': {
             'Meta': {'object_name': 'JTI'},

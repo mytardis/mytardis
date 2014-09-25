@@ -51,6 +51,12 @@ class ExperimentParameterInline(admin.TabularInline):
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
+class InstrumentParameterInline(admin.TabularInline):
+    model = models.InstrumentParameter
+    extra = 0
+
+class InstrumentParameterSetAdmin(admin.ModelAdmin):
+    inlines = [InstrumentParameterInline]
 
 class ObjectACLInline(generic.GenericTabularInline):
     model = models.ObjectACL
@@ -171,7 +177,7 @@ class FreeTextSearchFieldAdmin(admin.ModelAdmin):
     pass
 
 admin.site.register(models.Facility)
-admin.site.register(models.FacilityManager)
+admin.site.register(models.Instrument)
 admin.site.register(models.Experiment, ExperimentAdmin)
 admin.site.register(models.License)
 admin.site.register(models.Dataset, DatasetAdmin)
@@ -180,11 +186,13 @@ admin.site.register(models.Schema, SchemaAdmin)
 admin.site.register(models.ParameterName, ParameterNameAdmin)
 admin.site.register(models.DatafileParameter)
 admin.site.register(models.DatasetParameter)
+admin.site.register(models.InstrumentParameter)
 admin.site.register(models.Author_Experiment)
 admin.site.register(models.UserProfile)
 admin.site.register(models.ExperimentParameter)
 admin.site.register(models.DatafileParameterSet)
 admin.site.register(models.DatasetParameterSet)
+admin.site.register(models.InstrumentParameterSet, InstrumentParameterSetAdmin)
 admin.site.register(models.Token)
 admin.site.register(models.ExperimentParameterSet, ExperimentParameterSetAdmin)
 admin.site.register(models.GroupAdmin)

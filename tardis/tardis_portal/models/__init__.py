@@ -44,7 +44,8 @@ from django.contrib.auth.models import User, Group
 
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .access_control import ObjectACL
-from .facility import Facility, FacilityManager
+from .facility import Facility
+from .instrument import Instrument
 from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
 from .datafile import DataFile
@@ -59,5 +60,6 @@ from .license import License
 from .parameters import DatafileParameter, DatafileParameterSet, \
                         DatasetParameter, DatasetParameterSet, \
                         ExperimentParameter, ExperimentParameterSet, \
+                        InstrumentParameter, InstrumentParameterSet, \
                         FreeTextSearchField, ParameterName, Schema
 from .token import Token
