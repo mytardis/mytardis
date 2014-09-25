@@ -1,5 +1,5 @@
 from django import template
-from tardis.tardis_portal.models.facility import isFacilityManager
+from tardis.tardis_portal.models.facility import is_facility_manager
 
 register = template.Library()
 
@@ -10,6 +10,6 @@ def check_if_facility_manager(request):
     facility manager.
     """
     if (request.user.is_authenticated()):
-        return isFacilityManager(request.user)
+        return is_facility_manager(request.user)
     else:
         return False
