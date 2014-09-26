@@ -31,8 +31,6 @@ class DataFile(models.Model):
 
     :attribute dataset: the foreign key to the
        :class:`tardis.tardis_portal.models.Dataset` the file belongs to.
-    :attribute facility: the foreign key to the facility that generated this data
-    :attribute instrument: the foreign key to the instrument that generated this data
     :attribute filename: the name of the file, excluding the path.
     :attribute size: the size of the file.
     :attribute created_time: time the file was added to tardis
@@ -44,8 +42,6 @@ class DataFile(models.Model):
     """
 
     dataset = models.ForeignKey(Dataset)
-    facility = models.ForeignKey(Facility, null=True)
-    instrument = models.ForeignKey(Instrument, null=True)
     filename = models.CharField(max_length=400)
     directory = DirectoryField(blank=True, null=True)
     size = models.CharField(blank=True, max_length=400)
