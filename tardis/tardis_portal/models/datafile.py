@@ -14,8 +14,6 @@ from tardis.tardis_portal.util import generate_file_checksums
 from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox
-from .facility import Facility
-from .instrument import Instrument
 
 import logging
 logger = logging.getLogger(__name__)

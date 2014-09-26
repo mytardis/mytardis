@@ -9,6 +9,8 @@ from tardis.tardis_portal.models.fields import DirectoryField
 from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
+from .facility import Facility
+from .instrument import Instrument
 
 import logging
 logger = logging.getLogger(__name__)
