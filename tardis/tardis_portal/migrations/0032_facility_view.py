@@ -52,14 +52,9 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('tardis_portal', ['InstrumentParameter'])
 
-        # Adding field 'Dataset.facility'
-        db.add_column(u'tardis_portal_dataset', 'facility',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Facility'], null=True),
-                      keep_default=False)
-
         # Adding field 'Dataset.instrument'
         db.add_column(u'tardis_portal_dataset', 'instrument',
-                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Instrument'], null=True),
+                      self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Instrument'], null=True, blank=True),
                       keep_default=False)
 
 
@@ -78,9 +73,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'InstrumentParameter'
         db.delete_table(u'tardis_portal_instrumentparameter')
-
-        # Deleting field 'Dataset.facility'
-        db.delete_column(u'tardis_portal_dataset', 'facility_id')
 
         # Deleting field 'Dataset.instrument'
         db.delete_column(u'tardis_portal_dataset', 'instrument_id')
@@ -178,10 +170,9 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'directory': ('tardis.tardis_portal.models.fields.DirectoryField', [], {'null': 'True', 'blank': 'True'}),
             'experiments': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'datasets'", 'symmetrical': 'False', 'to': "orm['tardis_portal.Experiment']"}),
-            'facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']", 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'immutable': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'instrument': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Instrument']", 'null': 'True'}),
+            'instrument': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Instrument']", 'null': 'True', 'blank': 'True'}),
             'storage_boxes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'datasets'", 'blank': 'True', 'to': "orm['tardis_portal.StorageBox']"})
         },
         'tardis_portal.datasetparameter': {
@@ -354,7 +345,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 10, 26, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 10, 27, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})

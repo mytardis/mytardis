@@ -9,7 +9,6 @@ from tardis.tardis_portal.models.fields import DirectoryField
 from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
-from .facility import Facility
 from .instrument import Instrument
 
 import logging
@@ -28,8 +27,7 @@ class Dataset(models.Model):
         storage boxes have to be the same for all files of a dataset
     """
 
-    facility = models.ForeignKey(Facility, null=True)
-    instrument = models.ForeignKey(Instrument, null=True)
+    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)

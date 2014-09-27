@@ -90,6 +90,7 @@ from tardis.tardis_portal.tasks import create_staging_datafiles
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     Facility, \
+    Instrument, InstrumentParameter, InstrumentParameterSet, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
