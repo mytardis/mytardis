@@ -222,7 +222,9 @@ group_urls = patterns(
 
 facility_urls = patterns(
     'tardis.tardis_portal.views',
-    (r'^overview/$', 'facility_overview')
+    (r'^overview/$', 'facility_overview'),
+    (r'^fetch_data/$', 'fetch_facility_data'),
+    (r'^fetch_facilities_list/$','fetch_facilities_list')
     )
 
 display_urls = patterns(
