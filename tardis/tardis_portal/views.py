@@ -392,7 +392,7 @@ def fetch_facility_data(request):
         datafile_objects = DataFile.objects.filter(dataset = dataset)
         owner = parent_experiment.created_by
         datafiles = []
-        dataset_size = 0;
+        dataset_size = 0
         # The datetime objects here are kept as None if they aren't set, otherwise they're converted to milliseconds
         # so AngularJS can format them nicely there.
         for datafile in datafile_objects:
