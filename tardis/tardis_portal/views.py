@@ -53,6 +53,7 @@ from operator import itemgetter
 from django.core import serializers
 from django.template import Context
 from django.conf import settings
+from django.db import connection
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render_to_response, redirect, render
@@ -2554,11 +2555,17 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
 def stats(request):
     # using count() is more efficient than using len() on a query set
+    cursor = connection.cursor()
+    if cursor.db.vendor == 'postgresql':
+        cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
+        datafile_size = int(cursor.fetchone()[0])
+    else:
+        datafile_size = DataFile.sum_sizes(DataFile.objects.all())
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
         'datafile_count': DataFile.objects.all().count(),
-        'datafile_size': DataFile.sum_sizes(DataFile.objects.all()),
+        'datafile_size': datafile_size,
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
