@@ -37,7 +37,7 @@ class Migration(SchemaMigration):
         db.create_table(u'tardis_portal_instrument', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('owner_facility', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Facility'])),
+            ('facility', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['tardis_portal.Facility'])),
         ))
         db.send_create_signal('tardis_portal', ['Instrument'])
 
@@ -244,9 +244,9 @@ class Migration(SchemaMigration):
         },
         'tardis_portal.instrument': {
             'Meta': {'object_name': 'Instrument'},
+            'facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'owner_facility': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Facility']"})
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'tardis_portal.instrumentparameter': {
             'Meta': {'ordering': "['name']", 'object_name': 'InstrumentParameter'},
@@ -345,7 +345,7 @@ class Migration(SchemaMigration):
         'tardis_portal.token': {
             'Meta': {'object_name': 'Token'},
             'experiment': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['tardis_portal.Experiment']"}),
-            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 10, 27, 0, 0)'}),
+            'expiry_date': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2014, 11, 1, 0, 0)'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'token': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})

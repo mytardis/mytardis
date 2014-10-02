@@ -217,14 +217,14 @@ group_urls = patterns(
     (r'^(?P<group_id>\d+)/add/(?P<username>[\w\.]+)/$',
      'add_user_to_group'),
     (r'^(?P<group_id>\d+)/remove/(?P<username>[\w\.]+)/$',
-     'remove_user_from_group')
+     'remove_user_from_group'),
     )
 
 facility_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^overview/$', 'facility_overview'),
     (r'^fetch_data/$', 'fetch_facility_data'),
-    (r'^fetch_facilities_list/$','fetch_facilities_list')
+    (r'^fetch_facilities_list/$', 'fetch_facilities_list'),
     )
 
 display_urls = patterns(
@@ -246,7 +246,7 @@ display_urls = patterns(
      'display_datafile_image'),
 )
 
-## API SECTION
+# # API SECTION
 from tardis.tardis_portal.api import DatasetParameterSetResource
 from tardis.tardis_portal.api import DatasetParameterResource
 from tardis.tardis_portal.api import DatasetResource
@@ -281,7 +281,7 @@ api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
-## END API SECTION
+# # END API SECTION
 
 apppatterns = patterns('',)
 for app in getTardisApps():

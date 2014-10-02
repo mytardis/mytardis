@@ -36,6 +36,7 @@ views.py
 .. moduleauthor:: Ulrich Felzmaann <ulrich.felzmann@versi.edu.au>
 
 """
+import time
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -50,7 +51,6 @@ import logging
 import json
 from operator import itemgetter
 
-from django.core import serializers
 from django.template import Context
 from django.conf import settings
 from django.db import connection
@@ -91,14 +91,12 @@ from tardis.tardis_portal.staging import get_full_staging_path, \
 from tardis.tardis_portal.tasks import create_staging_datafiles
 
 from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
-    Facility, \
-    Instrument, InstrumentParameter, InstrumentParameterSet, \
     DatafileParameter, DatasetParameter, ObjectACL, DataFile, \
     DatafileParameterSet, ParameterName, GroupAdmin, Schema, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
-from tardis.tardis_portal.models.facility import is_facility_manager, facilities_managed_by
+from tardis.tardis_portal.models.facility import facilities_managed_by
 
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user
@@ -368,12 +366,15 @@ def my_data(request):
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
 
+
 @login_required
 def facility_overview(request):
-    """
+    '''
     summary of experiments in a facility
-    """
-    return HttpResponse(render_response_index(request, 'tardis_portal/facility_overview.html'))
+    '''
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/facility_overview.html'))
+
 
 @never_cache
 @login_required
@@ -381,49 +382,68 @@ def fetch_facility_data(request):
     '''
     json facility datasets
     '''
-    # In lieu of proper pagination, only the 500 most recent datasets are fetched
-    dataset_objects = Dataset.objects.filter(instrument__owner_facility__manager_group__user = request.user).order_by('-id')[:500]
-    import time
+    # In lieu of proper pagination, only the 500 most recent datasets are
+    # fetched
+    dataset_objects = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user
+    ).order_by('-id')[:500]
+
+    def datetime_to_us(dt):
+        '''
+        The datetime objects are kept as None if they aren't set, otherwise
+        they're converted to milliseconds so AngularJS can format them nicely.
+        '''
+        if dt is None:
+            return None
+        return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
+
     # Select only the bits we want from the models
     facility_data = []
     for dataset in dataset_objects:
         instrument = dataset.instrument
         facility = instrument.owner_facility
         parent_experiment = dataset.experiments.get()
-        datafile_objects = DataFile.objects.filter(dataset = dataset)
+        datafile_objects = DataFile.objects.filter(dataset=dataset)
         owner = parent_experiment.created_by
         datafiles = []
         dataset_size = 0
-        # The datetime objects here are kept as None if they aren't set, otherwise they're converted to milliseconds
-        # so AngularJS can format them nicely there.
         for datafile in datafile_objects:
             datafiles.append({
-            "id": datafile.id,
-            "filename": datafile.filename,
-            "size": int(datafile.size),
-            "created_time": None if datafile.created_time is None else time.mktime(datafile.created_time.timetuple()) * 1000 + datafile.created_time.microsecond / 1000,
-            "modification_time": None if datafile.modification_time is None else time.mktime(datafile.modification_time.timetuple()) * 1000 + datafile.modification_time.microsecond / 1000
+                "id": datafile.id,
+                "filename": datafile.filename,
+                "size": int(datafile.size),
+                "created_time": datetime_to_us(datafile.created_time),
+                "modification_time": datetime_to_us(datafile.modification_time)
             })
             dataset_size = dataset_size + int(datafile.size)
-        obj = {"id":               dataset.id,
-               "parent_experiment":{"id":parent_experiment.id,
-                                    "title": parent_experiment.title,
-                                    "created_time": None if parent_experiment.created_time is None else time.mktime(parent_experiment.created_time.timetuple()) * 1000 + parent_experiment.created_time.microsecond / 1000
-                                   },
-               "description":      dataset.description,
-               "institution":      parent_experiment.institution_name,
-               "datafiles":        datafiles,
-               "size":             dataset_size,
-               "owner":            {"id":   owner.id,
-                                   "name":  owner.username},
-               "instrument":       {"id":   instrument.id,
-                                    "name": instrument.name},
-               "facility":         {"id":   facility.id,
-                                    "name": facility.name}
-               }
+        obj = {
+            "id": dataset.id,
+            "parent_experiment": {
+                "id": parent_experiment.id,
+                "title": parent_experiment.title,
+                "created_time": datetime_to_us(parent_experiment.created_time),
+            },
+            "description": dataset.description,
+            "institution": parent_experiment.institution_name,
+            "datafiles": datafiles,
+            "size": dataset_size,
+            "owner": {
+                "id": owner.id,
+                "name": owner.username,
+            },
+            "instrument": {
+                "id": instrument.id,
+                "name": instrument.name,
+            },
+            "facility": {
+                "id": facility.id,
+                "name": facility.name,
+            },
+        }
         facility_data.append(obj)
 
     return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+
 
 @never_cache
 @login_required
@@ -433,9 +453,10 @@ def fetch_facilities_list(request):
     '''
     facility_data = []
     for facility in facilities_managed_by(request.user):
-        facility_data.append({"id":facility.id, "name":facility.name})
+        facility_data.append({"id": facility.id, "name": facility.name})
 
     return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+
 
 def public_data(request):
     '''

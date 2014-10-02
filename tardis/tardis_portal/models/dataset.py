@@ -20,20 +20,22 @@ class Dataset(models.Model):
 
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
-    :attribute facility: the foreign key to the facility that generated this data
-    :attribute instrument: the foreign key to the instrument that generated this data
+    :attribute facility: the foreign key to the facility that generated
+        this data
+    :attribute instrument: the foreign key to the instrument that generated
+        this data
     :attribute description: description of this dataset
     :attribute storage_box: link to one or many storage boxes of some type.
         storage boxes have to be the same for all files of a dataset
     """
 
-    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)
     immutable = models.BooleanField(default=False)
     storage_boxes = models.ManyToManyField(
         StorageBox, related_name='datasets', blank=True)
+    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
 
     class Meta:
