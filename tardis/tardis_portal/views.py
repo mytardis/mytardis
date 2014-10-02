@@ -401,7 +401,7 @@ def fetch_facility_data(request):
     facility_data = []
     for dataset in dataset_objects:
         instrument = dataset.instrument
-        facility = instrument.owner_facility
+        facility = instrument.facility
         parent_experiment = dataset.experiments.get()
         datafile_objects = DataFile.objects.filter(dataset=dataset)
         owner = parent_experiment.created_by
