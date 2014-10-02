@@ -6,16 +6,28 @@
 {% load bleach_tag %}
 
 {% block content %}
+{% with request|check_if_facility_manager as facility_manager %}
 <script type="text/javascript" src="/static/angular/angular.min.js"></script>
 <script type="text/javascript" src="/static/js/facility_view.js"></script>
-<div id="content" ng-app="facility_view">
+<div id="content" ng-app="facility_view" ng-controller="FacilityCtrl">
+{% verbatim %}
     <div class="row-fluid">
         <div class="span12">
             <h1>Facility Overview</h1>
-            <hr />
+        </div>
+        <div class="pull-left"><h2 style="color:#999999">{{selectedFacilityName | capitalise}}</h2></div>
+        <div class="btn-group pull-right" ng-show="showFacilitySelector()">
+            <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown">Facility: {{selectedFacilityName | capitalise}} <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li style="text-align:center"><strong>Select a facility</strong></li>
+                <li ng-repeat="facility in facilities">
+                    <a href="#" ng-click="selectFacility(facility.id,facility.name)">{{facility.name | capitalise}}</a>
+                </li>
+            </ul>
         </div>
     </div>
-{% with request|check_if_facility_manager as facility_manager %}
+    <hr />
+{% endverbatim %}
 {% if not facility_manager %}
     <div class="row-fluid">    
         <div class="alert alert-block alert-error">
@@ -24,17 +36,9 @@
     </div>
 {% else %}
 {% verbatim %}
-    <div ng-controller="FacilityCtrl">
+    <div>
         <div class="row-fluid">
-            <div class="span4">
-                <ul class="nav nav-list well" id="facilities-list">
-                    <li class="nav-header">Select a facility</li>
-                    <li ng-repeat="facility in facilities" ng-class="{ active:isFacilitySelected(facility.id) }">
-                        <a href="#" ng-click="selectFacility(facility.id,facility.name)">{{facility.name}}</a>
-                    </li>
-                </ul>
-            </div>
-            <div class="span8 well">
+            <div class="span12 well">
                 <div class="row-fluid">
                     <div class="span8" style="text-align: center">
                         <ul class="nav nav-pills">
@@ -44,7 +48,7 @@
                         </ul>
                     </div>
                     <div class="span4">
-                        <div class="btn-group">
+                        <div class="btn-group pull-right">
                             <a class="btn" href="#" ng-click="fetchFacilityData(); refreshCountdown = refreshInterval"><i class="icon-refresh"></i> Update</a>
                             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                                 Auto refresh <span ng-show="refreshInterval === 0">(never)</span>

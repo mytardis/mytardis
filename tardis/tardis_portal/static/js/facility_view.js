@@ -2,8 +2,19 @@
 
   var app = angular.module('facility_view', []);
 
+  // Capitalises the first letter (adapted from http://codepen.io/WinterJoey/pen/sfFaK)
+  app.filter('capitalise', function() {
+      return function(input, all) {
+        return (!!input) ? input.replace(/([^\W_]+[^\s-]*) */g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();}) : '';
+      }
+  });
+
   app.controller('FacilityCtrl', function($scope, $http, $interval, $log, $filter) {
 
+    // Whether to show the facility selector
+    $scope.showFacilitySelector = function() {
+      return ($scope.facilities.length > 1);
+    }
     // Toggle the facility selector
     $scope.selectFacility = function(id, name) {
       $scope.selectedFacility = id;
@@ -61,9 +72,11 @@
     function initialiseFacilitiesData() {
       $http.get('/facility/fetch_facilities_list/').success(function(data) {
         $scope.facilities = data;
-        $scope.selectedFacility = $scope.facilities[0].id;
-        $scope.selectedFacilityName = $scope.facilities[0].name;
-        $scope.fetchFacilityData();
+        if ($scope.facilities.length > 0) { // If the user is allowed to manage any facilities...
+          $scope.selectedFacility = $scope.facilities[0].id;
+          $scope.selectedFacilityName = $scope.facilities[0].name;
+          $scope.fetchFacilityData();
+        }
       });
     }
 
@@ -172,6 +185,7 @@
 
     // Do initialisation
     initialiseFacilitiesData();
+    $scope.facilities = [];
     $scope.selectedDataView = 1;
     $scope.refreshInterval = 0;
     $scope.refreshCountdown = 0;
