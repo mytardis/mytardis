@@ -51,12 +51,15 @@ class ExperimentParameterInline(admin.TabularInline):
 class ExperimentParameterSetAdmin(admin.ModelAdmin):
     inlines = [ExperimentParameterInline]
 
+
 class InstrumentParameterInline(admin.TabularInline):
     model = models.InstrumentParameter
     extra = 0
 
+
 class InstrumentParameterSetAdmin(admin.ModelAdmin):
     inlines = [InstrumentParameterInline]
+
 
 class ObjectACLInline(generic.GenericTabularInline):
     model = models.ObjectACL

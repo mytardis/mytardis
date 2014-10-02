@@ -2,8 +2,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.utils.safestring import mark_safe
 from django.utils.timezone import is_aware, is_naive, make_aware, make_naive
 
@@ -52,7 +50,7 @@ class Schema(models.Model):
     namespace = models.URLField(unique=True,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
-    type = models.IntegerField( #@ReservedAssignment
+    type = models.IntegerField(  # @ReservedAssignment
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
 
     # subtype will be used for categorising the type of experiment, dataset
@@ -75,8 +73,8 @@ class Schema(models.Model):
 
     @classmethod
     def getSubTypes(cls):
-        return set([schema.subtype for schema in Schema.objects.all() \
-            if schema.subtype])
+        return set([schema.subtype for schema in Schema.objects.all()
+                    if schema.subtype])
 
     @classmethod
     def getNamespaces(cls, type_, subtype=None):
@@ -92,8 +90,9 @@ class Schema(models.Model):
                     Schema.objects.filter(type=type_)]
 
     def __unicode__(self):
-        return self._getSchemaTypeName(self.type) + (self.subtype and ' for ' +
-            self.subtype.upper() or '') + ': ' + self.namespace
+        return self._getSchemaTypeName(self.type) + (
+            self.subtype and ' for ' + self.subtype.upper() or ''
+        ) + ': ' + self.namespace
 
     class UnsupportedType(Exception):
 
@@ -115,7 +114,7 @@ class ParameterName(models.Model):
         (EXACT_VALUE_COMPARISON, 'Exact value'),
         (CONTAINS_COMPARISON, 'Contains'),
         # TODO: enable this next time if i figure out how to support
-        #(NOT_EQUAL_COMPARISON, 'Not equal'),
+        # (NOT_EQUAL_COMPARISON, 'Not equal'),
         (RANGE_COMPARISON, 'Range'),
         (GREATER_THAN_COMPARISON, 'Greater than'),
         (GREATER_THAN_EQUAL_COMPARISON, 'Greater than or equal'),
@@ -285,9 +284,9 @@ def _getParameter(parameter):
             if viewname:
                 value = "<a href='%s' target='_blank'><img style='width: 300px;' src='%s' /></a>" % \
                      (reverse(viewname=viewname,
-                     args=[parameter.id]),
-                     reverse(viewname=viewname,
-                     args=[parameter.id]))
+                              args=[parameter.id]),
+                      reverse(viewname=viewname,
+                              args=[parameter.id]))
                 return mark_safe(value)
         else:
             return parameter.string_value
@@ -426,9 +425,11 @@ class ExperimentParameter(Parameter):
         except StandardError:
             logger.exception('')
 
+
 class InstrumentParameter(Parameter):
     parameterset = models.ForeignKey('InstrumentParameterSet')
     parameter_type = 'Instrument'
+
 
 class DatafileParameterSet(ParameterSet):
     datafile = models.ForeignKey(DataFile)
@@ -445,12 +446,14 @@ class DatasetParameterSet(ParameterSet):
     def _get_label(self):
         return ('dataset.description', 'Dataset')
 
+
 class InstrumentParameterSet(ParameterSet):
     instrument = models.ForeignKey(Instrument)
     parameter_class = InstrumentParameter
 
     def _get_label(self):
         return ('instrument.name', 'Instrument')
+
 
 class ExperimentParameterSet(ParameterSet):
     experiment = models.ForeignKey(Experiment)

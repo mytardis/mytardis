@@ -3,6 +3,7 @@ from tardis.tardis_portal.models.facility import is_facility_manager
 
 register = template.Library()
 
+
 @register.filter
 def check_if_facility_manager(request):
     """
