@@ -9,6 +9,7 @@ from tardis.tardis_portal.models.fields import DirectoryField
 from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
+from .instrument import Instrument
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,11 +20,14 @@ class Dataset(models.Model):
 
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
+    :attribute facility: the foreign key to the facility that generated this data
+    :attribute instrument: the foreign key to the instrument that generated this data
     :attribute description: description of this dataset
     :attribute storage_box: link to one or many storage boxes of some type.
         storage boxes have to be the same for all files of a dataset
     """
 
+    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     experiments = models.ManyToManyField(Experiment, related_name='datasets')
     description = models.TextField(blank=True)
     directory = DirectoryField(blank=True, null=True)

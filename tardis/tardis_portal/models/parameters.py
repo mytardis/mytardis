@@ -15,6 +15,7 @@ from .experiment import Experiment
 from .dataset import Dataset
 from .datafile import DataFile
 from .storage import StorageBox
+from .instrument import Instrument
 
 import logging
 import operator
@@ -38,10 +39,13 @@ class Schema(models.Model):
     DATASET = 2
     DATAFILE = 3
     NONE = 4
+    INSTRUMENT = 5
+
     _SCHEMA_TYPES = (
         (EXPERIMENT, 'Experiment schema'),
         (DATASET, 'Dataset schema'),
         (DATAFILE, 'Datafile schema'),
+        (INSTRUMENT, 'Instrument schema'),
         (NONE, 'None')
     )
 
@@ -240,6 +244,11 @@ def _getParameter(parameter):
                 viewname = 'tardis.tardis_portal.views.'
                 'display_experiment_image'
                 args = [eid, psid, parameter.name]
+            elif parset == 'InstrumentParameterSet':
+                iid = parameter.parameterset.instrument.id
+                psid = parameter.parameterset.id
+                # viewname = 'tardis.tardis_portal.views.display_instrument_image'
+                args = [iid, psid, parameter.name]
             if viewname:
                 value = "<img src='%s' />" % reverse(viewname=viewname,
                                                      args=args)
@@ -417,6 +426,9 @@ class ExperimentParameter(Parameter):
         except StandardError:
             logger.exception('')
 
+class InstrumentParameter(Parameter):
+    parameterset = models.ForeignKey('InstrumentParameterSet')
+    parameter_type = 'Instrument'
 
 class DatafileParameterSet(ParameterSet):
     datafile = models.ForeignKey(DataFile)
@@ -433,6 +445,12 @@ class DatasetParameterSet(ParameterSet):
     def _get_label(self):
         return ('dataset.description', 'Dataset')
 
+class InstrumentParameterSet(ParameterSet):
+    instrument = models.ForeignKey(Instrument)
+    parameter_class = InstrumentParameter
+
+    def _get_label(self):
+        return ('instrument.name', 'Instrument')
 
 class ExperimentParameterSet(ParameterSet):
     experiment = models.ForeignKey(Experiment)

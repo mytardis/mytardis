@@ -39,6 +39,7 @@
 <form action="." method="post" class="form-horizontal">
   {% load bootstrap %}
   {{ form|bootstrap }}
+  {% csrf_token %}
   <div class="form-actions">
     <button type="submit" class="btn btn-warning">
       <i class="icon-user"></i>
