@@ -260,6 +260,7 @@ from tardis.tardis_portal.api import LocationResource
 from tardis.tardis_portal.api import ParameterNameResource
 from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
+from tardis.tardis_portal.api import StorageBoxResource
 from tardis.tardis_portal.api import UserResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
@@ -276,6 +277,7 @@ v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
 v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
+v1_api.register(StorageBoxResource())
 v1_api.register(UserResource())
 api_urls = patterns(
     '',

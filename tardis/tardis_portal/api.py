@@ -637,6 +637,11 @@ class DatasetParameterResource(ParameterResource):
         queryset = DatasetParameter.objects.all()
 
 
+class StorageBoxResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        queryset = StorageBox.objects.all()
+
+
 class DatasetResource(MyTardisModelResource):
     experiments = fields.ToManyField(
         ExperimentResource, 'experiments', related_name='datasets')
@@ -645,6 +650,11 @@ class DatasetResource(MyTardisModelResource):
         'datasetparameterset_set',
         related_name='dataset',
         full=True, null=True)
+    storage_boxes = fields.ToManyField(
+        StorageBoxResource,
+        'storage_boxes',
+        related_name='datasets',
+        null=True)
 
     class Meta(MyTardisModelResource.Meta):
         queryset = Dataset.objects.all()
@@ -744,15 +754,14 @@ class DataFileResource(MyTardisModelResource):
             bundle.data['replicas'] = [{'file_object': newfile}]
             del(bundle.data['attached_file'])
         elif 'replicas' not in bundle.data:
-            # no replica specified: return upload path and create replica for
+            # no replica specified: return upload path and create dfo for
             # new path
-            #  location_name = 'staging'
             sbox = dataset.get_staging_storage_box()
             if sbox is None:
                 raise NotImplementedError
             dfo = DataFileObject(
                 datafile=bundle.obj,
-                storage_box=dataset.get_staging_storage_box())
+                storage_box=sbox)
             self.temp_url = dfo.get_save_location()
         return bundle
 
