@@ -134,7 +134,7 @@ class ACLAuthorization(Authorization):
             experiments = Experiment.safe.all(bundle.request.user)
             return [exp for exp in experiments if exp in object_list]
         elif bundle.request.user.is_authenticated() and \
-             type(bundle.obj) == User:
+                type(bundle.obj) == User:
             return object_list
         elif type(bundle.obj) == ExperimentParameterSet:
             experiments = Experiment.safe.all(bundle.request.user)
