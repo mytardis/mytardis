@@ -33,7 +33,6 @@ if getattr(settings, 'SFTP_GEVENT', False):
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import AnonymousUser
 
-from tardis.tardis_portal.auth import auth_service
 from tardis.tardis_portal.models import DataFile, Experiment
 
 
@@ -137,8 +136,7 @@ class MyTSFTPServerInterface(SFTPServerInterface):
     '''
 
     _cache_time = 60  # in seconds
-    _exps_cache = {'all': None,
-                   'last_update': None}
+    _exps_cache = {}
 
     def __init__(self, server, *args, **kwargs):
         """
@@ -150,12 +148,16 @@ class MyTSFTPServerInterface(SFTPServerInterface):
 
     @property
     def experiments(self):
-        if self._exps_cache['all'] is None:
-            self._exps_cache['all'] = Experiment.safe.all(self.user)
-            self._exps_cache['last_update'] = time.time()
-        elif self._exps_cache['last_update'] - time.time() > self._cache_time:
-            self._exps_cache['all']._result_cache = None
-        return self._exps_cache['all']
+        u = self.user.username
+        if u not in self._exps_cache:
+            self._exps_cache[u] = {'all': None, 'last_update': None}
+        if self._exps_cache[u]['all'] is None:
+            self._exps_cache[u]['all'] = Experiment.safe.all(self.user)
+            self._exps_cache[u]['last_update'] = time.time()
+        elif self._exps_cache[u]['last_update'] - time.time() > \
+             self._cache_time:
+            self._exps_cache[u]['all']._result_cache = None
+        return self._exps_cache[u]['all']
 
     def session_started(self):
         """
@@ -238,7 +240,6 @@ class MyTSFTPServerInterface(SFTPServerInterface):
             L{SFTPAttributes} objects.
         @rtype: list of L{SFTPAttributes} I{or error code}
         """
-        #import ipdb; ipdb.set_trace()
         path = os.path.normpath(path)
         leaf = self.tree.get_leaf(path, update=True)
         stats = [self.stat(os.path.join(path, child))
@@ -261,7 +262,9 @@ class MyTSFTPServerInterface(SFTPServerInterface):
         """
         leaf = self.tree.get_leaf(path, update=False)
         if leaf is None:
-            return SFTP_NO_SUCH_FILE
+            leaf = self.tree.get_leaf(path, update=True)
+            if leaf is None:
+                return SFTP_NO_SUCH_FILE
         sftp_stat = SFTPAttributes()
         sftp_stat.filename = leaf.name
         sftp_stat.st_size = int(getattr(leaf.obj, 'size', 1))
@@ -334,6 +337,8 @@ class MyTServerInterface(ServerInterface):
         return ','.join(auth_methods)
 
     def myt_auth(self, username, password):
+        from tardis.tardis_portal.auth import auth_service
+
         class FakeRequest(object):
             POST = {}
             session = {}
