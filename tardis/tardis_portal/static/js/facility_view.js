@@ -9,7 +9,46 @@
       }
   });
 
+  // Filter to produce nice file size formatting (adapted from https://gist.github.com/yrezgui/5653591)
+  app.filter('filesize', function () {
+    var units = [
+      'bytes',
+      'KB',
+      'MB',
+      'GB',
+      'TB',
+      'PB'
+    ];
+
+    return function( bytes, precision ) {
+      if ( isNaN( parseFloat( bytes )) || ! isFinite( bytes ) ) {
+        return '?';
+      }
+
+      var unit = 0;
+
+      while ( bytes >= 1024 ) {
+        bytes /= 1024;
+        unit ++;
+      }
+
+      return bytes.toFixed( + precision ) + ' ' + units[ unit ];
+    };
+  });
+
+
   app.controller('FacilityCtrl', function($scope, $http, $interval, $log, $filter) {
+
+    // Whether to show the "no data" alert
+    $scope.showDataUnvailableAlert = function() {
+      if ($scope.loading) {
+        return false;
+      } else if (typeof $scope.datasets !== 'undefined') {
+        return $scope.datasets.length === 0;
+      } else {
+        return true;
+      }
+    }
 
     // Whether to show the facility selector
     $scope.showFacilitySelector = function() {
@@ -82,7 +121,7 @@
 
     // Fetch data for all facilities
     // callback is called after data is fetched
-    $scope.fetchFacilityData = function(startIndex, endIndex, callback) {
+    $scope.fetchFacilityData = function(startIndex, endIndex) {
       // Default range of values to fetch
       if (typeof startIndex === 'undefined') {
         startIndex = 0;
@@ -90,7 +129,9 @@
       if (typeof endIndex === 'undefined') {
         endIndex = 100;
       }
+      $scope.loading = true;
       $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/'+startIndex+'/'+endIndex+'/').success(function(data) {
+        $scope.loading = false;
         $scope.datasets = data;
         if ($scope.datasets.length > 0) {
           $scope.dataByUser = groupByUser($scope.datasets);
