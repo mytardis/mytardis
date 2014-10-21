@@ -49,9 +49,18 @@ class Schema(models.Model):
         (NONE, 'None')
     )
 
+    _SCHEMA_TYPES_SHORT = (
+        (EXPERIMENT, 'experiment'),
+        (DATASET, 'dataset'),
+        (DATAFILE, 'datafile'),
+        (INSTRUMENT, 'instrument'),
+        (NONE, 'none')
+    )
+
     namespace = models.URLField(unique=True,
                                 max_length=255)
     name = models.CharField(blank=True, null=True, max_length=50)
+    # WHY 'type', a reserved word? Someone please refactor and migrate db
     type = models.IntegerField(  # @ReservedAssignment
         choices=_SCHEMA_TYPES, default=EXPERIMENT)
 
@@ -90,6 +99,29 @@ class Schema(models.Model):
         else:
             return [schema.namespace for schema in
                     Schema.objects.filter(type=type_)]
+
+    @classmethod
+    def get_schema_type_name(cls, schema_type, short=False):
+        if short:
+            type_list = cls._SCHEMA_TYPES_SHORT
+        else:
+            type_list = cls._SCHEMA_TYPES
+        return dict(type_list).get(schema_type, None)
+
+    @classmethod
+    def get_internal_schema(cls, schema_type):
+        name_prefix, ns_prefix = getattr(
+            settings, 'INTERNAL_SCHEMA_PREFIXES',
+            ('internal schema', 'http://mytardis.org/schemas/internal'))
+        type_name = cls.get_schema_type_name(schema_type)
+        name = name_prefix + ': ' + type_name
+        type_name_short = cls.get_schema_type_name(schema_type, short=True)
+        ns = '/'.join([ns_prefix, type_name_short])
+        return Schema.objects.get_or_create(
+            name=name,
+            namespace=ns,
+            type=schema_type,
+            hidden=True)
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (

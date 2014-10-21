@@ -152,6 +152,23 @@ def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None,
         yield top, dirnames, filenames
 
 
+def get_parser_module(exp):
+    parsers = getattr(settings, 'SQUASH_PARSER', {})
+    namespaces = exp.experimentparameterset_set.all().values_list(
+        'schema__namespace', flat=True)
+    for ns in namespaces:
+        parser = parsers.get(ns)
+        if parser is not None:
+            return import_module(parser)
+    return None
+
+
+def squash_parse_box_data(exp, squash_sbox, inst):
+    parser_module = get_parser_module(exp)
+    if parser_module is not None:
+        return parser_module.parse_squashfs_box_data(exp, squash_sbox, inst)
+
+
 def squash_parse_datafile(exp, squash_sbox, inst,
                           directory, filename, filepath):
     '''
@@ -161,16 +178,11 @@ def squash_parse_datafile(exp, squash_sbox, inst,
 
     by default use 'squashfs-files' as dataset name
     '''
-    parsers = getattr(settings, 'SQUASH_PARSER', {})
-    namespaces = exp.experimentparameterset_set.all().values_list(
-        'schema__namespace', flat=True)
-    for ns in namespaces:
-        parser = parsers.get(ns)
-        if parser is not None:
-            parse_module = import_module(parser)
-            return parse_module.parse_squashfs_file(exp, squash_sbox,
-                                                    inst, directory,
-                                                    filename, filepath)
+    parser_module = get_parser_module(exp)
+    if parser_module is not None:
+        return parser_module.parse_squashfs_file(exp, squash_sbox,
+                                                 inst, directory,
+                                                 filename, filepath)
 
     exp_q = Q(datafile__dataset__experiments=exp)
     path_part_match_q = Q(uri__endswith=filepath)
@@ -223,11 +235,13 @@ def squashfs_match_experiment(exp, squash_sbox, ignore_dotfiles=True):
     registered as storage box.  '''
 
     inst = squash_sbox.get_initialised_storage_instance()
+    box_data = squash_parse_box_data(exp, squash_sbox, inst)
     for basedir, dirs, files in dj_storage_walk(inst):
         for filename in files:
             filepath = os.path.join(basedir, filename)
             parse_result = squash_parse_datafile(exp, squash_sbox, inst,
-                                                 basedir, filename, filepath)
+                                                 basedir, filename, filepath,
+                                                 box_data)
             if type(parse_result) == DataFile:
                 new_dfo = DataFileObject(datafile=parse_result,
                                          storage_box=squash_sbox,
