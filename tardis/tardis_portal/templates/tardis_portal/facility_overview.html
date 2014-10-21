@@ -54,7 +54,7 @@
     <div class="span4">
         <!-- Auto-refresh button -->
         <div class="btn-group pull-right">
-            <a class="btn" href="#" ng-click="fetchFacilityData(); refreshCountdown = refreshInterval"><i
+            <a class="btn" href="#" ng-click="fetchFacilityData(0,defaultFetchLimit); refreshCountdown = refreshInterval"><i
                     class="icon-refresh"></i> Update</a>
             <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
                 Auto refresh <span ng-show="refreshInterval === 0">(never)</span>
