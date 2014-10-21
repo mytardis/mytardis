@@ -58,7 +58,8 @@
     $scope.selectFacility = function(id, name) {
       $scope.selectedFacility = id;
       $scope.selectedFacilityName = name;
-      $scope.fetchFacilityData();
+      $scope.currentFetchLimit = $scope.defaultFetchLimit;
+      $scope.fetchFacilityData(0, $scope.currentFetchLimit);
     };
     // Check which facility is selected
     $scope.isFacilitySelected = function(id) {
@@ -107,6 +108,19 @@
       }
     }
 
+    // Load more entries
+    $scope.loadMoreEntries = function(increment) {
+      if ($scope.currentFetchLimit >= $scope.totalDatasets) {
+        return;
+      }
+      if ($scope.currentFetchLimit + increment > $scope.totalDatasets) {
+        $scope.currentFetchLimit = $scope.totalDatasets;
+      } else {
+        $scope.currentFetchLimit += increment;
+      }
+      $scope.fetchFacilityData(0, $scope.currentFetchLimit);
+    }
+
     // Fetch the list of facilities available to the user and facilities data
     function initialiseFacilitiesData() {
       $http.get('/facility/fetch_facilities_list/').success(function(data) {
@@ -114,22 +128,21 @@
         if ($scope.facilities.length > 0) { // If the user is allowed to manage any facilities...
           $scope.selectedFacility = $scope.facilities[0].id;
           $scope.selectedFacilityName = $scope.facilities[0].name;
-          $scope.fetchFacilityData();
+          $scope.fetchFacilityData(0, $scope.defaultFetchLimit);
         }
       });
     }
 
-    // Fetch data for all facilities
-    // callback is called after data is fetched
+    // Fetch data for facility
     $scope.fetchFacilityData = function(startIndex, endIndex) {
-      // Default range of values to fetch
-      if (typeof startIndex === 'undefined') {
-        startIndex = 0;
-      }
-      if (typeof endIndex === 'undefined') {
-        endIndex = 100;
-      }
       $scope.loading = true;
+      $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/count/').success(function(data) {
+        $scope.totalDatasets = data.facility_data_count;
+        if ($scope.currentFetchLimit > $scope.totalDatasets) {
+          $scope.defaultFetchLimit = $scope.totalDatasets;
+          $scope.currentFetchLimit = $scope.defaultFetchLimit;
+        }
+      });
       $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/'+startIndex+'/'+endIndex+'/').success(function(data) {
         $scope.loading = false;
         $scope.datasets = data;
@@ -200,7 +213,7 @@
       if ($scope.refreshCountdown > 0 && $scope.refreshInterval > 0) {
         $scope.refreshCountdown--;
       } else if ($scope.refreshInterval > 0) {
-        $scope.fetchFacilityData();
+        $scope.fetchFacilityData(0, $scope.currentFetchLimit);
         $scope.refreshCountdown = $scope.refreshInterval;
       }
     }, 1000);
@@ -228,12 +241,17 @@
       return strMins + ":" + strSecs;
     }
 
-    // Do initialisation
-    initialiseFacilitiesData();
+    // Set default settings
+    $scope.defaultFetchLimit = 50;
+    $scope.currentFetchLimit = $scope.defaultFetchLimit;
     $scope.facilities = [];
     $scope.selectedDataView = 1;
     $scope.refreshInterval = 0;
     $scope.refreshCountdown = 0;
+
+    // Do initial data fetch
+    initialiseFacilitiesData();
+
   });
 
 })();

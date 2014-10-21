@@ -84,8 +84,8 @@
         <em>instrument</em>
         and <em>facility</em> attributes.
     </div>
-    <!-- Data filters -->
     <div ng-show="datasets.length">
+        <!-- Data filters -->
         <div class="row-fluid">
             <form class="well form-inline"><strong>Filter by: </strong>
                 <input type="text" class="input-small" placeholder="user name"
@@ -248,6 +248,7 @@
                 </tr>
             </table>
         </div>
+        <div class="span12" style="text-align:center"><a class="btn btn-large" ng-click="loadMoreEntries(50)" ng-class="(currentFetchLimit >= totalDatasets)?'disabled':''">Load more (showing {{currentFetchLimit}} of {{totalDatasets}})</a></div>
     </div>
     <!-- Reminder shown when filters are active -->
     <div class="alert alert-info" ng-show="filtersActive()">
