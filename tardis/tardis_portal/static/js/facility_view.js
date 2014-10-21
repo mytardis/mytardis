@@ -139,8 +139,7 @@
       $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/count/').success(function(data) {
         $scope.totalDatasets = data.facility_data_count;
         if ($scope.currentFetchLimit > $scope.totalDatasets) {
-          $scope.defaultFetchLimit = $scope.totalDatasets;
-          $scope.currentFetchLimit = $scope.defaultFetchLimit;
+          $scope.currentFetchLimit = $scope.totalDatasets;
         }
       });
       $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/'+startIndex+'/'+endIndex+'/').success(function(data) {
