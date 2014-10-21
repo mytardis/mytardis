@@ -147,5 +147,12 @@ class Dataset(models.Model):
 
     def get_default_storage_box(self):
         if self.storage_boxes.count() == 0:
-            self.storage_boxes.add(StorageBox.get_default_storage())
+            logger.debug('storage box for dataset %d not set explicitly. fix!'
+                         % self.id)
+            for df in self.datafile_set.all().iterator():
+                for dfo in df.file_objects.all().iterator():
+                    self.storage_boxes.add(dfo.storage_box)
+            if self.storage_boxes.count() == 0:
+                # still zero, add default
+                self.storage_boxes.add(StorageBox.get_default_storage())
         return self.storage_boxes.all()[0]  # use first() with Django 1.6+
