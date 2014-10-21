@@ -19,7 +19,7 @@
     $scope.selectFacility = function(id, name) {
       $scope.selectedFacility = id;
       $scope.selectedFacilityName = name;
-      sortAndFilterData($scope.datasets, id);
+      $scope.fetchFacilityData();
     };
     // Check which facility is selected
     $scope.isFacilitySelected = function(id) {
@@ -82,20 +82,24 @@
 
     // Fetch data for all facilities
     // callback is called after data is fetched
-    $scope.fetchFacilityData = function(callback) {
-      $http.get('/facility/fetch_data/').success(function(data) {
-        $scope.datasets = data;
-        sortAndFilterData(data, $scope.selectedFacility);
-      });
-    }
-
-    // Sort and filter all data for the selected facility
-    function sortAndFilterData(data, facilityId) {
-      $scope.filteredData = $filter('filter')(data, {'facility': {'id':facilityId}});
-      if ($scope.filteredData.length > 0) {
-        $scope.filteredDataByUser = groupByUser($scope.filteredData);
-        $scope.filteredDataByInstrument = groupByInstrument($scope.filteredData);
+    $scope.fetchFacilityData = function(startIndex, endIndex, callback) {
+      // Default range of values to fetch
+      if (typeof startIndex === 'undefined') {
+        startIndex = 0;
       }
+      if (typeof endIndex === 'undefined') {
+        endIndex = 100;
+      }
+      $http.get('/facility/fetch_data/'+$scope.selectedFacility+'/'+startIndex+'/'+endIndex+'/').success(function(data) {
+        $scope.datasets = data;
+        if ($scope.datasets.length > 0) {
+          $scope.dataByUser = groupByUser($scope.datasets);
+          $scope.dataByInstrument = groupByInstrument($scope.datasets);
+        } else {
+          $scope.dataByUser = [];
+          $scope.dataByInstrument = [];
+        }
+      });
     }
 
     // Group facilities data by user
@@ -109,7 +113,7 @@
       for (var i = 0; i < data.length; i++) {
         if (tmp.owner.id !== data[i].owner.id) {
           result.push(tmp);
-          tmp = data[i].owner;
+          tmp = {"owner":data[i].owner};
           tmp['datasets'] = [];
         }
         var dataset = {};
@@ -135,7 +139,7 @@
       for (var i = 0; i < data.length; i++) {
         if (tmp.instrument.id !== data[i].instrument.id) {
           result.push(tmp);
-          tmp = data[i].instrument;
+          tmp = {"instrument":data[i].instrument};
           tmp['datasets'] = [];
         }
         var dataset = {};
