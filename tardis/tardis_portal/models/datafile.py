@@ -142,6 +142,7 @@ class DataFile(models.Model):
         """Return datafile parametersets associated with this datafile.
 
         """
+        from .parameters import Schema
         if schemaType == Schema.DATAFILE or schemaType is None:
             return self.datafileparameterset_set.filter(
                 schema__type=Schema.DATAFILE)
