@@ -153,7 +153,7 @@ def dj_storage_walk(dj_storage, top='.', topdown=True, onerror=None,
 
 
 def get_parser_module(exp):
-    parsers = getattr(settings, 'SQUASH_PARSER', {})
+    parsers = getattr(settings, 'SQUASH_PARSERS', {})
     namespaces = exp.experimentparameterset_set.all().values_list(
         'schema__namespace', flat=True)
     for ns in namespaces:
@@ -170,7 +170,7 @@ def squash_parse_box_data(exp, squash_sbox, inst):
 
 
 def squash_parse_datafile(exp, squash_sbox, inst,
-                          directory, filename, filepath):
+                          directory, filename, filepath, box_data):
     '''
     return matching or new datafile for given squashfs file path.
 
@@ -182,7 +182,7 @@ def squash_parse_datafile(exp, squash_sbox, inst,
     if parser_module is not None:
         return parser_module.parse_squashfs_file(exp, squash_sbox,
                                                  inst, directory,
-                                                 filename, filepath)
+                                                 filename, filepath, box_data)
 
     exp_q = Q(datafile__dataset__experiments=exp)
     path_part_match_q = Q(uri__endswith=filepath)
