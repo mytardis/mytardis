@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- # pylint: disable=C0302
 #
 # Copyright (c) 2010-2011, Monash e-Research Centre
 #   (Monash University, Australia)
@@ -36,6 +36,7 @@ views.py
 .. moduleauthor:: Ulrich Felzmaann <ulrich.felzmann@versi.edu.au>
 
 """
+import time
 
 from tardis.tardis_portal.auth.decorators import \
     has_experiment_write, has_dataset_write
@@ -52,6 +53,7 @@ from operator import itemgetter
 
 from django.template import Context
 from django.conf import settings
+from django.db import connection
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render_to_response, redirect, render
@@ -94,6 +96,8 @@ from tardis.tardis_portal.models import Experiment, ExperimentParameter, \
     Dataset, ExperimentParameterSet, DatasetParameterSet, \
     License, UserProfile, UserAuthentication, Token
 
+from tardis.tardis_portal.models.facility import facilities_managed_by
+
 from tardis.tardis_portal import constants
 from tardis.tardis_portal.auth.localdb_auth import django_user
 from tardis.tardis_portal.auth.localdb_auth import auth_key as localdb_auth_key
@@ -112,6 +116,12 @@ from tardis.tardis_portal.search_query import FacetFixedSearchQuery
 from tardis.tardis_portal.forms import RawSearchForm
 from tardis.tardis_portal.search_backend import HighlightSearchBackend
 from django.contrib.auth import logout as django_logout
+
+from django.views.decorators.csrf import csrf_exempt
+import django.contrib.auth as djauth
+from tardis.tardis_portal.auth import jwt
+import pwgen
+from tardis.tardis_portal.models.jti import JTI
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +192,11 @@ def getNewSearchDatafileSelectionForm(initial=None):
 def logout(request):
     if 'datafileResults' in request.session:
         del request.session['datafileResults']
+
+    # Remove AAF attributes.
+    del request.session['attributes']
+    del request.session['jwt']
+    del request.session['jws']
 
     c = Context({})
     return HttpResponse(render_response_index(request,
@@ -350,6 +365,97 @@ def my_data(request):
     })
     return HttpResponse(render_response_index(
         request, 'tardis_portal/my_data.html', c))
+
+
+@login_required
+def facility_overview(request):
+    '''
+    summary of experiments in a facility
+    '''
+    return HttpResponse(render_response_index(
+        request, 'tardis_portal/facility_overview.html'))
+
+
+@never_cache
+@login_required
+def fetch_facility_data(request):
+    '''
+    json facility datasets
+    '''
+    # In lieu of proper pagination, only the 500 most recent datasets are
+    # fetched
+    dataset_objects = Dataset.objects.filter(
+        instrument__facility__manager_group__user=request.user
+    ).order_by('-id')[:500]
+
+    def datetime_to_us(dt):
+        '''
+        The datetime objects are kept as None if they aren't set, otherwise
+        they're converted to milliseconds so AngularJS can format them nicely.
+        '''
+        if dt is None:
+            return None
+        return time.mktime(dt.timetuple()) * 1000 + dt.microsecond / 1000
+
+    # Select only the bits we want from the models
+    facility_data = []
+    for dataset in dataset_objects:
+        instrument = dataset.instrument
+        facility = instrument.facility
+        parent_experiment = dataset.experiments.get()
+        datafile_objects = DataFile.objects.filter(dataset=dataset)
+        owner = parent_experiment.created_by
+        datafiles = []
+        dataset_size = 0
+        for datafile in datafile_objects:
+            datafiles.append({
+                "id": datafile.id,
+                "filename": datafile.filename,
+                "size": int(datafile.size),
+                "created_time": datetime_to_us(datafile.created_time),
+                "modification_time": datetime_to_us(datafile.modification_time)
+            })
+            dataset_size = dataset_size + int(datafile.size)
+        obj = {
+            "id": dataset.id,
+            "parent_experiment": {
+                "id": parent_experiment.id,
+                "title": parent_experiment.title,
+                "created_time": datetime_to_us(parent_experiment.created_time),
+            },
+            "description": dataset.description,
+            "institution": parent_experiment.institution_name,
+            "datafiles": datafiles,
+            "size": dataset_size,
+            "owner": {
+                "id": owner.id,
+                "name": owner.username,
+            },
+            "instrument": {
+                "id": instrument.id,
+                "name": instrument.name,
+            },
+            "facility": {
+                "id": facility.id,
+                "name": facility.name,
+            },
+        }
+        facility_data.append(obj)
+
+    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
+
+
+@never_cache
+@login_required
+def fetch_facilities_list(request):
+    '''
+    json list of facilities managed by the current user
+    '''
+    facility_data = []
+    for facility in facilities_managed_by(request.user):
+        facility_data.append({"id": facility.id, "name": facility.name})
+
+    return HttpResponse(json.dumps(facility_data), mimetype='application/json')
 
 
 def public_data(request):
@@ -814,9 +920,10 @@ def experiment_dataset_transfer(request, experiment_id):
     c = Context({'experiments': experiments.exclude(id=experiment_id),
                  'url_pattern': get_json_url_pattern()
                  })
-    return HttpResponse(render_response_index(request,
-                        'tardis_portal/ajax/experiment_dataset_transfer.html',
-                        c))
+    return HttpResponse(render_response_index(
+        request,
+        'tardis_portal/ajax/experiment_dataset_transfer.html',
+        c))
 
 
 @authz.dataset_access_required
@@ -956,7 +1063,6 @@ def login(request):
     handler for login page
     '''
     from tardis.tardis_portal.auth import auth_service
-    from django.contrib.auth import login
 
     if request.user.is_authenticated():
         # redirect the user to the home page if he is trying to go to the
@@ -975,12 +1081,13 @@ def login(request):
             next_page = request.POST.get(
                 'next_page', request.GET.get('next_page', '/'))
             user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
+            djauth.login(request, user)
             return HttpResponseRedirect(next_page)
 
         c = Context({'status': "Sorry, username and password don't match.",
                      'error': True,
                      'loginForm': LoginForm()})
+
         return HttpResponseForbidden(
             render_response_index(request, 'tardis_portal/login.html', c))
 
@@ -992,6 +1099,10 @@ def login(request):
         next_page = '/'
     c = Context({'loginForm': LoginForm(),
                  'next_page': next_page})
+
+    c['RAPID_CONNECT_ENABLED'] = settings.RAPID_CONNECT_ENABLED
+    c['RAPID_CONNECT_LOGIN_URL'] = settings.RAPID_CONNECT_CONFIG[
+        'authnrequest_url']
 
     return HttpResponse(render_response_index(request,
                         'tardis_portal/login.html', c))
@@ -1283,11 +1394,11 @@ def __getFilteredDatafiles(request, searchQueryType, searchFilterData):
                     access to any experiments""".format(request.user))
         return datafile_results
 
-    datafile_results = datafile_results.filter(
-        datafileparameterset__datafileparameter__name__schema__namespace__in=
-        Schema
-        .getNamespaces(
-            Schema.DATAFILE, searchQueryType)).distinct()
+    q = {
+        'datafileparameterset__datafileparameter__name__schema__namespace__in':
+        Schema.getNamespaces(Schema.DATAFILE, searchQueryType)
+    }
+    datafile_results = datafile_results.filter(**q).distinct()
 
     # if filename is searchable which i think will always be the case...
     if searchFilterData['filename'] != '':
@@ -1526,10 +1637,10 @@ def __forwardToSearchDatafileFormPage(request, searchQueryType,
 
     url = 'tardis_portal/search_datafile_form.html'
     if not searchForm:
-        #if searchQueryType == 'saxs':
+        # if searchQueryType == 'saxs':
         SearchDatafileForm = createSearchDatafileForm(searchQueryType)
         searchForm = SearchDatafileForm()
-        #else:
+        # else:
         #    # TODO: what do we need to do if the user didn't provide a page to
         #            display?
         #    pass
@@ -1707,18 +1818,18 @@ def search_datafile(request):  # too complex # noqa
             return __forwardToSearchDatafileFormPage(request, searchQueryType)
 
     # process the files to be displayed by the paginator...
-    #paginator = Paginator(datafile_results,
+    # paginator = Paginator(datafile_results,
     #                      constants.DATAFILE_RESULTS_PER_PAGE)
 
-    #try:
+    # try:
     #    page = int(request.GET.get('page', '1'))
-    #except ValueError:
+    # except ValueError:
     #    page = 1
 
     # If page request (9999) is out of :range, deliver last page of results.
-    #try:
+    # try:
     #    datafiles = paginator.page(page)
-    #except (EmptyPage, InvalidPage):
+    # except (EmptyPage, InvalidPage):
     #    datafiles = paginator.page(paginator.num_pages)
 
     import re
@@ -1745,7 +1856,7 @@ def search_datafile(request):  # too complex # noqa
     c = Context({
         'experiments': results,
         'datafiles': datafile_results,
-        #'paginator': paginator,
+        # 'paginator': paginator,
         'query_string': cleanedUpQueryString,
         'subtitle': 'Search Datafiles',
         'nav': [{'name': 'Search Datafile', 'link': '/search/datafile/'}],
@@ -1942,7 +2053,7 @@ def retrieve_access_list_tokens(request, experiment_id):
         query['token'] = token.token
         u = u._replace(query=urlencode(query, True))
         return u.geturl()
-        #return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
+        # return '%s?token=%s' % (request.META['HTTP_REFERER'], token.token)
     tokens = [{'expiry_date': token.expiry_date,
                'user': token.user,
                'url': request.build_absolute_uri(token_url(token)),
@@ -2277,7 +2388,7 @@ def change_group_permissions(request, experiment_id, group_id):
 @never_cache
 def create_group(request):
 
-    if not 'group' in request.GET:
+    if 'group' not in request.GET:
         c = Context({'createGroupPermissionsForm':
                      CreateGroupPermissionsForm()})
 
@@ -2465,11 +2576,17 @@ def remove_experiment_access_group(request, experiment_id, group_id):
 
 def stats(request):
     # using count() is more efficient than using len() on a query set
+    cursor = connection.cursor()
+    if cursor.db.vendor == 'postgresql':
+        cursor.execute("SELECT SUM(size::bigint) FROM tardis_portal_datafile")
+        datafile_size = int(cursor.fetchone()[0])
+    else:
+        datafile_size = DataFile.sum_sizes(DataFile.objects.all())
     c = Context({
         'experiment_count': Experiment.objects.all().count(),
         'dataset_count': Dataset.objects.all().count(),
         'datafile_count': DataFile.objects.all().count(),
-        'datafile_size': DataFile.sum_sizes(DataFile.objects.all()),
+        'datafile_size': datafile_size,
     })
     return HttpResponse(render_response_index(request,
                         'tardis_portal/stats.html', c))
@@ -2479,7 +2596,7 @@ def stats(request):
 @never_cache
 def create_user(request):
 
-    if not 'user' in request.POST:
+    if 'user' not in request.POST:
         c = Context({'createUserPermissionsForm':
                      CreateUserPermissionsForm()})
 
@@ -3182,3 +3299,70 @@ def user_guide(request):
     c = Context({})
     return HttpResponse(render_response_index(request,
                         'tardis_portal/user_guide.html', c))
+
+
+@csrf_exempt
+def rcauth(request):
+    # Only POST is supported on this URL.
+    if request.method != 'POST':
+        raise PermissionDenied
+
+    # Rapid Connect authorization is disabled, so don't
+    # process anything.
+    if not settings.RAPID_CONNECT_ENABLED:
+        raise PermissionDenied
+
+    try:
+        # Verifies signature and expiry time
+        verified_jwt = jwt.decode(request.POST['assertion'],
+                                  settings.RAPID_CONNECT_CONFIG['secret'])
+
+        # Check for a replay attack using the jti value.
+        jti = verified_jwt['jti']
+        if JTI.objects.filter(jti=jti).exists():
+            raise ValueError('Replay attack!')
+        else:
+            JTI(jti=jti).save()
+
+        if verified_jwt['aud'] == settings.RAPID_CONNECT_CONFIG['aud'] and \
+           verified_jwt['iss'] == settings.RAPID_CONNECT_CONFIG['iss']:
+            request.session['attributes'] = verified_jwt[
+                'https://aaf.edu.au/attributes']
+            request.session['jwt'] = verified_jwt
+            request.session['jws'] = request.POST['assertion']
+
+            institution_email = request.session['attributes']['mail']
+
+            logger.debug('Successfully authenticated %s via Rapid Connect.' %
+                         institution_email)
+
+            # Create a user account and profile automatically. In future,
+            # support blacklists and whitelists.
+            first_name = request.session['attributes']['givenname']
+            c_name = request.session['attributes'].get('cn', '').split(' ')
+            if not first_name and len(c_name) > 1:
+                first_name = c_name[0]
+            user_args = {
+                'id': institution_email.lower(),
+                'email': institution_email.lower(),
+                'password': pwgen.pwgen(),
+                'first_name': first_name,
+                'last_name': request.session['attributes']['surname'],
+            }
+            user = auth_service.get_or_create_user(user_args)
+            if user is not None:
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                djauth.login(request, user)
+                return redirect('/')
+        else:
+            del request.session['attributes']
+            del request.session['jwt']
+            del request.session['jws']
+            django_logout(request)
+            raise PermissionDenied  # Error: Not for this audience
+    except jwt.ExpiredSignature:
+        del request.session['attributes']
+        del request.session['jwt']
+        del request.session['jws']
+        django_logout(request)
+        raise PermissionDenied  # Error: Security cookie has expired

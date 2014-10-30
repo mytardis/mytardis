@@ -28,7 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
+# flake8: noqa
 """
 models/__init__.py
 
@@ -44,6 +44,8 @@ from django.contrib.auth.models import User, Group
 
 from .access_control import UserAuthentication, UserProfile, GroupAdmin
 from .access_control import ObjectACL
+from .facility import Facility
+from .instrument import Instrument
 from .experiment import Experiment, Author_Experiment
 from .dataset import Dataset
 from .datafile import DataFile
@@ -51,9 +53,13 @@ from .datafile import DataFileObject
 from .storage import StorageBox
 from .storage import StorageBoxOption
 from .storage import StorageBoxAttribute
+
+from .jti import JTI
+
 from .license import License
 from .parameters import DatafileParameter, DatafileParameterSet, \
                         DatasetParameter, DatasetParameterSet, \
                         ExperimentParameter, ExperimentParameterSet, \
+                        InstrumentParameter, InstrumentParameterSet, \
                         FreeTextSearchField, ParameterName, Schema
 from .token import Token

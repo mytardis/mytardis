@@ -22,6 +22,11 @@ def getTardisApps():
 
 handler500 = 'tardis.views.error_handler'
 
+rapidconnect_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^auth/jwt$', 'rcauth'),
+)
+
 core_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^$', 'index'),
@@ -215,6 +220,13 @@ group_urls = patterns(
      'remove_user_from_group'),
     )
 
+facility_urls = patterns(
+    'tardis.tardis_portal.views',
+    (r'^overview/$', 'facility_overview'),
+    (r'^fetch_data/$', 'fetch_facility_data'),
+    (r'^fetch_facilities_list/$', 'fetch_facilities_list'),
+    )
+
 display_urls = patterns(
     'tardis.tardis_portal.views',
     (r'^ExperimentImage/load/(?P<parameter_id>\d+)/$',
@@ -234,7 +246,7 @@ display_urls = patterns(
      'display_datafile_image'),
 )
 
-## API SECTION
+# # API SECTION
 from tardis.tardis_portal.api import DatasetParameterSetResource
 from tardis.tardis_portal.api import DatasetParameterResource
 from tardis.tardis_portal.api import DatasetResource
@@ -248,6 +260,7 @@ from tardis.tardis_portal.api import LocationResource
 from tardis.tardis_portal.api import ParameterNameResource
 from tardis.tardis_portal.api import ReplicaResource
 from tardis.tardis_portal.api import SchemaResource
+from tardis.tardis_portal.api import StorageBoxResource
 from tardis.tardis_portal.api import UserResource
 from tastypie.api import Api
 v1_api = Api(api_name='v1')
@@ -264,12 +277,13 @@ v1_api.register(LocationResource())
 v1_api.register(ParameterNameResource())
 v1_api.register(ReplicaResource())
 v1_api.register(SchemaResource())
+v1_api.register(StorageBoxResource())
 v1_api.register(UserResource())
 api_urls = patterns(
     '',
     (r'^', include(v1_api.urls)),
 )
-## END API SECTION
+# # END API SECTION
 
 apppatterns = patterns('',)
 for app in getTardisApps():
@@ -306,12 +320,18 @@ urlpatterns = patterns(
     (r'^groups/$', 'tardis.tardis_portal.views.manage_groups'),
     (r'^group/', include(group_urls)),
 
+    # Facility views
+    (r'^facility/', include(facility_urls)),
+
     # Display Views
     (r'^display/', include(display_urls)),
 
     # Login/out
     (r'^login/$', 'tardis.tardis_portal.views.login'),
     (r'^logout/$', logout, {'next_page': '/'}),
+
+    # Rapid Connect
+    (r'^rc/', include(rapidconnect_urls)),
 
     # Admin
     (r'^admin/doc/', include('django.contrib.admindocs.urls')),

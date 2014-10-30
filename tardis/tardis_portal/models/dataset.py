@@ -9,6 +9,7 @@ from tardis.tardis_portal.models.fields import DirectoryField
 from tardis.tardis_portal.models.storage import StorageBox
 
 from .experiment import Experiment
+from .instrument import Instrument
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,6 +20,10 @@ class Dataset(models.Model):
 
     :attribute experiment: a forign key to the
        :class:`tardis.tardis_portal.models.Experiment`
+    :attribute facility: the foreign key to the facility that generated
+        this data
+    :attribute instrument: the foreign key to the instrument that generated
+        this data
     :attribute description: description of this dataset
     :attribute storage_box: link to one or many storage boxes of some type.
         storage boxes have to be the same for all files of a dataset
@@ -30,6 +35,7 @@ class Dataset(models.Model):
     immutable = models.BooleanField(default=False)
     storage_boxes = models.ManyToManyField(
         StorageBox, related_name='datasets', blank=True)
+    instrument = models.ForeignKey(Instrument, null=True, blank=True)
     objects = OracleSafeManager()
 
     class Meta:
@@ -141,5 +147,12 @@ class Dataset(models.Model):
 
     def get_default_storage_box(self):
         if self.storage_boxes.count() == 0:
-            self.storage_boxes.add(StorageBox.get_default_storage())
+            logger.debug('storage box for dataset %d not set explicitly. fix!'
+                         % self.id)
+            for df in self.datafile_set.all().iterator():
+                for dfo in df.file_objects.all().iterator():
+                    self.storage_boxes.add(dfo.storage_box)
+            if self.storage_boxes.count() == 0:
+                # still zero, add default
+                self.storage_boxes.add(StorageBox.get_default_storage())
         return self.storage_boxes.all()[0]  # use first() with Django 1.6+

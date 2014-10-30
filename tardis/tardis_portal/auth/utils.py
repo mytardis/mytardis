@@ -24,21 +24,22 @@ def get_or_create_user(auth_method, user_id, email=''):
 
 def create_user(auth_method, user_id, email=''):
     # length of the maximum username
-    max_length = 30
+    max_length = 254
 
     # the username to be used on the User table
-    if user_id.find('@') > 0:
-        username_prefix = user_id.partition('@')[0][:max_length]
-    else:
-        username_prefix = user_id[:max_length]
-    unique_username = username_prefix
-
+    # if user_id.find('@') > 0:
+    #     username_prefix = user_id.partition('@')[0][:max_length]
+    # else:
+    #     username_prefix = user_id[:max_length]
+    unique_username = user_id[:max_length]
+    username_prefix = unique_username
     # Generate a unique username
     i = 0
     try:
         while (User.objects.get(username=unique_username)):
             i += 1
-            unique_username = username_prefix[:max_length - len(str(i))] + str(i)
+            unique_username = username_prefix[
+                :max_length - len(str(i))] + str(i)
     except User.DoesNotExist:
         pass
 
@@ -48,11 +49,13 @@ def create_user(auth_method, user_id, email=''):
                                     email=email)
     user.save()
     userProfile = configure_user(user)
-    userAuth = UserAuthentication(userProfile=userProfile,
+    userAuth = UserAuthentication(
+        userProfile=userProfile,
         username=user_id, authenticationMethod=auth_method)
     userAuth.save()
 
     return user
+
 
 def configure_user(user):
     """ Configure a user account that has just been created by adding
