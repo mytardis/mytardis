@@ -224,7 +224,7 @@ class UncachedTarStream(TarFile):
         for df, name in self.mapped_file_objs:
             the_file = df.file_object
             total_size += tarinfo_size
-            size = os.fstat(the_file.fileno()).st_size
+            size = int(df.get_size())
             blocks, remainder = divmod(size, tarfile.BLOCKSIZE)
             total_size += blocks * tarfile.BLOCKSIZE
             if remainder > 0:
@@ -276,7 +276,8 @@ class UncachedTarStream(TarFile):
         for df, name in self.mapped_file_objs:
             fileobj = df.file_object
             self._check('aw')
-            tarinfo = self.gettarinfo(name, name, fileobj)
+            tarinfo = tarfile.TarInfo(name)
+            tarinfo.size = int(df.get_size())
             # tarinfo = copy.copy(tarinfo)
             buf = tarinfo.tobuf(self.format, self.encoding, self.errors)
             stream_buffers, remainder_buf = self.prepare_output(
