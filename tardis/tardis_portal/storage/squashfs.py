@@ -243,7 +243,7 @@ def squashfs_match_experiment(exp, squash_sbox, ignore_dotfiles=True):
                                                  basedir, filename, filepath,
                                                  box_data)
             if type(parse_result) == DataFile:
-                new_dfo = DataFileObject(datafile=parse_result,
-                                         storage_box=squash_sbox,
-                                         uri=filepath)
-                new_dfo.save()
+                new_dfo, created = DataFileObject.objects.get_or_create(
+                    datafile=parse_result,
+                    storage_box=squash_sbox,
+                    uri=filepath)

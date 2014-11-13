@@ -121,7 +121,7 @@ class Schema(models.Model):
             name=name,
             namespace=ns,
             type=schema_type,
-            hidden=True)
+            hidden=True)[0]
 
     def __unicode__(self):
         return self._getSchemaTypeName(self.type) + (
