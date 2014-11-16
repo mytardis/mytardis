@@ -16,6 +16,7 @@ from tardis.tardis_portal.models import Dataset
 from tardis.tardis_portal.staging import get_staging_url_and_size
 from tardis.tardis_portal.email import email_user
 
+from tardis.tardis_portal.staging import stage_dfo
 
 # Ensure filters are loaded
 try:
@@ -49,7 +50,11 @@ def verify_dfo(dfo_id, only_local=False, reverify=False):
         # Get dfo locked for write (to prevent concurrent actions)
         dfo = DataFileObject.objects.select_for_update().get(id=dfo_id)
         if reverify or not dfo.verified:
-            dfo.verify()
+            if dfo.storage_box.attributes\
+                    .filter(key="staging", value="True").count():
+                stage_dfo(dfo)
+            else:
+                dfo.verify()
 
 
 @task(name="tardis_portal.create_staging_datafiles", ignore_result=True)  # too complex # noqa

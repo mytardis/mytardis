@@ -7,6 +7,7 @@ Implemented with Tastypie.
 import json as simplejson
 from datetime import datetime
 from ipware.ip import get_ip
+import os
 
 from django.conf import settings
 from django.conf.urls.defaults import url
@@ -39,6 +40,7 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.staging import get_sync_root
 from tardis.tardis_portal.models.uploader import Uploader
 from tardis.tardis_portal.models.uploader import UploaderStagingHost
 from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
@@ -784,7 +786,7 @@ class DataFileResource(MyTardisModelResource):
     replicas = fields.ToManyField(
         'tardis.tardis_portal.api.ReplicaResource',
         'file_objects',
-        related_name='datafile', full=True)
+        related_name='datafile', full=True, null=True)
     temp_url = None
 
     class Meta(MyTardisModelResource.Meta):
@@ -795,6 +797,7 @@ class DataFileResource(MyTardisModelResource):
             'filename': ('exact', ),
         }
         resource_name = 'dataset_file'
+        always_return_data = True
 
     def download_file(self, request, **kwargs):
         '''
@@ -843,15 +846,30 @@ class DataFileResource(MyTardisModelResource):
             dfo = DataFileObject(
                 datafile=bundle.obj,
                 storage_box=sbox)
-            self.temp_url = dfo.get_save_location()
+            dfo.datafile.dataset = dataset
+            stage_url = get_sync_root(prefix="%d-" %
+                                      dataset.id,
+                                      sbox=sbox)
+            uri = stage_url
+            uri = os.path.join(uri, bundle.data['filename'])
+            bundle.data['replicas'] = [{'uri': uri,
+                                        'location': sbox.options\
+                                        .get(key='location').value}]
         return bundle
 
     def post_list(self, request, **kwargs):
         response = super(DataFileResource, self).post_list(request,
                                                            **kwargs)
-        if self.temp_url is not None:
-            response.content = self.temp_url
-            self.temp_url = None
+        # The following change in response could break some
+        # MyTardis API users' code, so consultation would be
+        # needed before merging / releasing.
+
+        # Since we are now using always_return_data=True in
+        # this resource's Meta, we don't need to explicitly
+        # return just the temp_url - it will be inclded
+        # automatically in the "uri" field of the "replicas"
+        # list in the JSON output.
+
         return response
 
     def prepend_urls(self):
@@ -936,8 +954,9 @@ class ReplicaResource(MyTardisModelResource):
         bundle.data['datafile'] = datafile
         if 'location' in bundle.data:
             try:
-                bundle.obj.storage_box = StorageBox.objects.get(
-                    name=bundle.data['location'])
+                bundle.obj.storage_box = StorageBox.objects\
+                    .get(options__key='location',
+                         options__value=bundle.data['location'])
             except StorageBox.DoesNotExist:
                 bundle.obj.storage_box = datafile\
                           .dataset.get_default_storage_box()
@@ -945,12 +964,15 @@ class ReplicaResource(MyTardisModelResource):
         else:
             bundle.obj.storage_box = datafile\
                       .dataset.get_default_storage_box()
+        if 'uri' in bundle.data:
+            bundle.obj.uri = bundle.data['uri']
 
         bundle.obj.save()
         if 'file_object' in bundle.data:
-            bundle.obj.file_object = bundle.data['file_object']
-            bundle.data['file_object'].close()
-            del(bundle.data['file_object'])
+            if bundle.data['file_object'] is not None:
+                bundle.obj.file_object = bundle.data['file_object']
+                bundle.data['file_object'].close()
+                del(bundle.data['file_object'])
         return bundle
 
 

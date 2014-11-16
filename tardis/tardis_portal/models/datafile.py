@@ -54,8 +54,9 @@ class DataFile(models.Model):
 
     @property
     def file_object(self):
+        dfos = DataFileObject.objects.filter(datafile=self)
         return self.file_objects.get(
-            storage_box=self.dataset.get_default_storage_box()).file_object
+            storage_box=dfos[0].storage_box).file_object
 
     @file_object.setter
     def file_object(self, file_object):
@@ -344,9 +345,26 @@ class DataFileObject(models.Model):
         super(DataFileObject, self).delete()
 
     @task(name="tardis_portal.verify_dfo_method", ignore_result=True)
-    def verify(self):  # too complex # noqa
+    def verify(self, tempfile=None):  # too complex # noqa
+        '''
+        If passed a file handle, it will write the file to it instead
+        of discarding data as it's read.
+        '''
+        allowEmptyChecksums = not getattr(settings,
+                                          "REQUIRE_DATAFILE_CHECKSUMS", True)
+        df = self.datafile
+        if not (allowEmptyChecksums or df.sha512sum or df.md5sum):
+            logger.error("Datafile for %s has no checksums", self.uri)
+            return False
+        try:
+            file_object = self.file_object
+        except IOError:
+            logger.error("DFO %d not found/accessible at: %s" %
+                         (self.id, self.uri))
+            return False
+
         md5, sha512, size, mimetype_buffer = generate_file_checksums(
-            self.file_object)
+            self.file_object, tempfile)
         df_md5 = self.datafile.md5sum
         df_sha512 = self.datafile.sha512sum
         if df_sha512 is None or df_sha512 == '':

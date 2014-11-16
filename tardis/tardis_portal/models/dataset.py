@@ -143,6 +143,9 @@ class Dataset(models.Model):
     def get_staging_storage_box(self):
         boxes = self.storage_boxes.filter(attributes__key="staging",
                                           attributes__value="True") or [None]
+        if boxes[0] is None:
+            boxes = StorageBox.objects.filter(attributes__key="staging",
+                                              attributes__value="True") or [None]
         return boxes[0]
 
     def get_default_storage_box(self):
