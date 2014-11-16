@@ -5,6 +5,8 @@ Implemented with Tastypie.
 .. moduleauthor:: Grischa Meyer <grischa@gmail.com>
 '''
 import json as simplejson
+from datetime import datetime
+from ipware.ip import get_ip
 
 from django.conf import settings
 from django.conf.urls.defaults import url
@@ -37,8 +39,12 @@ from tardis.tardis_portal.models.parameters import ExperimentParameterSet
 from tardis.tardis_portal.models.parameters import ParameterName
 from tardis.tardis_portal.models.parameters import Schema
 from tardis.tardis_portal.models.storage import StorageBox
+from tardis.tardis_portal.models.uploader import Uploader
+from tardis.tardis_portal.models.uploader import UploaderStagingHost
+from tardis.tardis_portal.models.uploader import UploaderRegistrationRequest
 
 from tastypie import fields
+from tastypie.authentication import Authentication
 from tastypie.authentication import BasicAuthentication
 from tastypie.authentication import SessionAuthentication
 from tastypie.authentication import ApiKeyAuthentication
@@ -963,3 +969,164 @@ class ObjectAclResource(MyTardisModelResource):
             'pluginId': ('exact', ),
             'entityId': ('exact', ),
         }
+
+
+class UploaderAuthorization(Authorization):
+    '''Authorisation class for Tastypie.
+    '''
+    def read_list(self, object_list, bundle):
+        '''
+        Uploaders should be able to read their own record, i.e.
+        any record whose MAC address matches theirs, but not anyone
+        else's record.
+        '''
+        if hasattr(bundle.request, 'GET') and 'mac_address' in bundle.request.GET:
+            return object_list
+        return []
+
+    def read_detail(self, object_list, bundle):
+        '''
+        Uploaders should be able to read their own record, i.e.
+        any record whose MAC address matches theirs, but not anyone
+        else's record.  See "read_list" method.
+        '''
+        return True
+
+    def create_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def create_detail(self, object_list, bundle):
+        '''
+        Basically anyone can create an uploader record,
+        but if one already exists with the same MAC address,
+        it should be updated, not created.
+        '''
+        return True
+
+    def update_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def update_detail(self, object_list, bundle):
+        '''
+        Uploaders should only be able to update
+        the uploader record whose MAC address 
+        matches theirs (if it exists).
+        '''
+        return bundle.data['mac_address'] == bundle.obj.mac_address
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+
+class UploaderRegistrationRequestAuthorization(Authorization):
+    '''Authorisation class for Tastypie.
+    '''
+    def read_list(self, object_list, bundle):
+        ''' 
+        Uploaders should be able to read their own registration
+        request, i.e. any request associated with an uploader
+        whose MAC address matches theirs, but they shouldn't
+        be able to read anyone else's upload registration request.
+        '''
+        if hasattr(bundle.request, 'GET') and 'uploader__mac_address' in bundle.request.GET:
+            return object_list
+        return []
+
+    def read_detail(self, object_list, bundle):
+        return True
+
+    def create_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def create_detail(self, object_list, bundle):
+        return True
+
+    def update_list(self, object_list, bundle):
+        raise NotImplementedError(type(bundle.obj))
+
+    def update_detail(self, object_list, bundle):
+        '''
+        Currently there is no use case for API users
+        updating their upload registration request
+        record.  It is updated on approval, but
+        only by a Django administrator.
+       
+        '''
+        return False
+
+    def delete_list(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+    def delete_detail(self, object_list, bundle):
+        raise Unauthorized("Sorry, no deletes.")
+
+
+class UploaderResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        authentication = Authentication()
+        authorization = UploaderAuthorization()
+        queryset = Uploader.objects.all()
+        filtering = {
+            'mac_address': ('exact', ),
+            'name': ('exact', ),
+            'id': ('exact', ),
+        }
+        always_return_data = True
+
+    def obj_create(self, bundle, **kwargs):
+        bundle.data['created_time'] = datetime.now()
+        bundle.data['updated_time'] = datetime.now()
+        ip = get_ip(bundle.request)
+        if ip is not None:
+           bundle.data['wan_ip_address'] = ip
+        bundle = super(UploaderResource, self).obj_create(bundle, **kwargs)
+        return bundle
+
+    def obj_update(self, bundle, **kwargs):
+        bundle.data['updated_time'] = datetime.now()
+        ip = get_ip(bundle.request)
+        if ip is not None:
+           bundle.data['wan_ip_address'] = ip
+        bundle = super(UploaderResource, self).obj_update(bundle, **kwargs)
+        return bundle
+
+
+class UploaderStagingHostResource(MyTardisModelResource):
+    class Meta(MyTardisModelResource.Meta):
+        queryset = UploaderStagingHost.objects.all()
+
+
+class UploaderRegistrationRequestResource(MyTardisModelResource):
+    uploader = fields.ForeignKey(
+        'tardis.tardis_portal.api.UploaderResource', 'uploader')
+    approved_staging_host = fields.ForeignKey(
+        'tardis.tardis_portal.api.UploaderStagingHostResource', 'approved_staging_host',
+        null=True, blank=True, default=None)
+
+    class Meta(MyTardisModelResource.Meta):
+        authentication = Authentication()
+        authorization = UploaderRegistrationRequestAuthorization()
+        queryset = UploaderRegistrationRequest.objects.all()
+        filtering = {
+            'id': ('exact', ),
+            'approved': ('exact', ),
+            'uploader': ALL_WITH_RELATIONS,
+        }
+        always_return_data = True
+
+    def obj_create(self, bundle, **kwargs):
+        bundle = super(UploaderRegistrationRequestResource, self).obj_create(bundle, **kwargs)
+        return bundle
+
+    def hydrate(self, bundle):
+        bundle = super(UploaderRegistrationRequestResource, self).hydrate(bundle)
+        bundle.data['request_time'] = datetime.now()
+        return bundle
+
+    def save_related(self, bundle):
+        if not hasattr(bundle.obj, 'approved_staging_host'):
+            bundle.obj.approved_staging_host = None
+        super(UploaderRegistrationRequestResource, self).save_related(bundle)

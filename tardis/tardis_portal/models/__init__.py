@@ -53,6 +53,7 @@ from .datafile import DataFileObject
 from .storage import StorageBox
 from .storage import StorageBoxOption
 from .storage import StorageBoxAttribute
+from .uploader import Uploader, UploaderRegistrationRequest, UploaderStagingHost
 
 from .jti import JTI
 
