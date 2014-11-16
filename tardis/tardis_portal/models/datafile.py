@@ -15,7 +15,6 @@ from .fields import DirectoryField
 from .dataset import Dataset
 from .storage import StorageBox
 
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -148,7 +147,6 @@ class DataFile(models.Model):
         return reverse('view_datafile', kwargs={'datafile_id': self.id})
 
     def get_download_url(self):
-        #import ipdb; ipdb.set_trace()
         return '/api/v1/dataset_file/%d/download' % self.id
 
     def get_file(self):
@@ -198,7 +196,7 @@ class DataFile(models.Model):
         '''
         mimetype = self.get_mimetype()
         return mimetype.startswith('image/') \
-            and not mimetype in ('image/x-icon', 'image/img')
+            and mimetype not in ('image/x-icon', 'image/img')
 
     def get_image_data(self):
         from .parameters import DatafileParameter

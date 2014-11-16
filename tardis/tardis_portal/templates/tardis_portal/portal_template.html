@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static from staticfiles %}
+{% load facility_tags %}
 <html lang="en"
       xmlns="http://www.w3.org/1999/xhtml"
       prefix="xsd: http://www.w3.org/2001/XMLSchema#
@@ -97,6 +98,10 @@
               <li><a href="{% url 'tardis.tardis_portal.views.my_data' %}">My Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.public_data' %}">Public Data</a></li>
               <li><a href="{% url 'tardis.tardis_portal.views.stats' %}">Stats</a></li>
+              {% with request|check_if_facility_manager as facility_manager %}
+              {% if facility_manager %}
+              <li><a href="{% url 'tardis.tardis_portal.views.facility_overview' %}">Facility Overview</a></li>
+              {% endif %}{% endwith %}
               <li><a href="{% url 'tardis.tardis_portal.views.user_guide' %}"><b>Help</b></a></li>
             </ul>
             <ul class="login-nav nav pull-right">
